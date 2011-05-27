@@ -58,6 +58,56 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite.Configuration.suite">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite.Configuration.suite()</summary>
+        <version major="1" minor="70"/>
+        <date day="19" month="5" year="2011"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                You may now call <code>suite()</code> directly on a <code>Configuration</code> object.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+        <issue number="197720"/>
+    </change>
+    <change id="NbModuleSuite.Configuration.addStartupArgument">
+        <api name="nbjunit"/>
+        <summary>NbModuleSuite.Configuration.addStartupArgument</summary>
+        <version major="1" minor="69"/>
+        <date day="8" month="4" year="2011"/>
+        <author login="tomwheeler"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>NbModuleSuite.Configuration now has a
+                <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addStartupArgument(java.lang.String...)">
+                addStartupArgument</a>
+                method which allows one to append one or more command line
+                arguments which will be used to start the application.
+                Arguments which must be passed directly to the JVM should
+                still be specified in the <code>test.run.args</code> property.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+        <issue number="197065" />
+    </change>
+    <change id="NbTestCase.logRoot">
+        <api name="nbjunit"/>
+        <summary><code>NbTestCase.logRoot</code> to collect messages from just some code</summary>
+        <version major="1" minor="68"/>
+        <date day="5" month="5" year="2011"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Overridable method to avoid excessive logging of uninteresting components.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbTestCase"/>
+        <issue number="197572"/>
+    </change>
     <change id="NbModuleSuite.failOn">
         <api name="nbjunit"/>
         <summary>Easy way to fail the test on error or warning</summary>
@@ -395,7 +445,6 @@ made subject to such option by the copyright holder.
       <class package="org.netbeans.junit" name="Log"/>
       <issue number="35067" />
     </change>
-
 </changes>
 
     <htmlcontents>

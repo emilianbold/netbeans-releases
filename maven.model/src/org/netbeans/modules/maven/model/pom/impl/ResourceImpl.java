@@ -45,6 +45,7 @@ import java.util.List;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
+import org.netbeans.modules.maven.model.util.ModelImplUtils;
 
 /**
  *
@@ -107,7 +108,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     public List<String> getIncludes() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().INCLUDES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().INCLUDES.getName())) {
                 return list.getListChildren();
             }
         }
@@ -117,7 +118,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     public void addInclude(String include) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().INCLUDES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().INCLUDES.getName())) {
                 list.addListChild(include);
                 return;
             }
@@ -128,7 +129,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
                  getClassesBefore(ORDER, StringListImpl.class));
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().INCLUDES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().INCLUDES.getName())) {
                 list.addListChild(include);
                 return;
             }
@@ -138,7 +139,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     public void removeInclude(String include) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().INCLUDES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().INCLUDES.getName())) {
                 list.removeListChild(include);
                 return;
             }
@@ -148,7 +149,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     public List<String> getExcludes() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().EXCLUDES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().EXCLUDES.getName())) {
                 return list.getListChildren();
             }
         }
@@ -158,7 +159,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     public void addExclude(String exclude) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().EXCLUDES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().EXCLUDES.getName())) {
                 list.addListChild(exclude);
                 return;
             }
@@ -169,7 +170,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
                  getClassesBefore(ORDER, StringListImpl.class));
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().EXCLUDES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().EXCLUDES.getName())) {
                 list.addListChild(exclude);
                 return;
             }
@@ -179,7 +180,7 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     public void removeExclude(String exclude) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().EXCLUDES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().EXCLUDES.getName())) {
                 list.removeListChild(exclude);
                 return;
             }

@@ -71,6 +71,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  */
 class CompletionContextFinder {
     private static final String NAMESPACE_FALSE_TOKEN = "NAMESPACE_FALSE_TOKEN"; //NOI18N
+    
+    private static final String COMBINED_USE_STATEMENT_TOKENS = "COMBINED_USE_STATEMENT_TOKENS"; //NOI18N
 
     private static final List<Object[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_NEW},
@@ -90,7 +92,8 @@ class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_USE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN}
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
+            new Object[]{PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS}
     );
 
     private static final List<Object[]> NAMESPACE_KEYWORD_TOKENS = Arrays.asList(
@@ -409,7 +412,7 @@ class CompletionContextFinder {
                 break;
             }
 
-            if (tokenID instanceof PHPTokenId) {
+           if (tokenID instanceof PHPTokenId) {
                 if (tokenSequence.token().id() == tokenID){
                     moreTokens = tokenSequence.movePrevious();
                 } else {
@@ -419,6 +422,11 @@ class CompletionContextFinder {
                 }
             } else if (tokenID == NAMESPACE_FALSE_TOKEN){
                 if (!consumeNameSpace(tokenSequence)){
+                    accept = false;
+                    break;
+                }
+            } else if (tokenID == COMBINED_USE_STATEMENT_TOKENS) {
+                if (!consumeClassesInCombinedUse(tokenSequence)) {
                     accept = false;
                     break;
                 }
@@ -456,6 +464,30 @@ class CompletionContextFinder {
                 || tokenSequence.token().id() == PHPTokenId.PHP_STRING);
 
         return hadNSSeparator;
+    }
+    
+    private static boolean consumeClassesInCombinedUse(TokenSequence tokenSequence) {
+        boolean hasCommaDelimiter = false;
+        if (tokenSequence.token().id() != PHPTokenId.PHP_TOKEN
+                && tokenSequence.token().id() != PHPTokenId.WHITESPACE
+                && !consumeNameSpace(tokenSequence)) {
+            return false;
+        }
+        
+        do {
+            if (!tokenSequence.movePrevious()) {
+                return false;
+            }
+            
+            if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN) {
+                hasCommaDelimiter = true;
+            }
+            
+        } while (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
+                || tokenSequence.token().id() == PHPTokenId.WHITESPACE
+                || consumeNameSpace(tokenSequence));
+        
+        return hasCommaDelimiter;
     }
 
     private static Token[] getLeftPreceedingTokens(TokenSequence tokenSequence){

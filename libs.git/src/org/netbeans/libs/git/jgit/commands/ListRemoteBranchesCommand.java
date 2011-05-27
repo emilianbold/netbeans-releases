@@ -42,76 +42,30 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefComparator;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.FetchConnection;
-import org.eclipse.jgit.transport.Transport;
-import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.JGitBranch;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
- * TODO merge with listRemoteTagsCommand when it's implemented
  * @author ondra
  */
-public class ListRemoteBranchesCommand extends GitCommand {
+public class ListRemoteBranchesCommand extends ListRemoteObjectsCommand {
     private HashMap<String, GitBranch> remoteBranches;
-    private final URL remoteUrl;
+    private final String remoteUrl;
 
-    public ListRemoteBranchesCommand (Repository repository, URL remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public ListRemoteBranchesCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
+        super(repository, remoteRepositoryUrl, monitor);
         this.remoteUrl = remoteRepositoryUrl;
     }
 
     @Override
-    protected void run () throws GitException {
-        Repository repository = getRepository();
-        Transport t = null;
-        FetchConnection conn = null;
-        Map<String, Ref> refs;
-        try {
-            t = Transport.open(repository, new URIish(remoteUrl.toString()));
-            conn = t.openFetch();
-            refs = conn.getRefsMap();
-        } catch (URISyntaxException ex) {
-            throw new GitException(ex);
-        } catch (NotSupportedException ex) {
-            throw new GitException(ex);
-        } catch (TransportException ex) {
-            throw new GitException(ex);
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-            if (t != null) {
-                t.close();
-            }
-        }
+    protected void processRefs () {
         remoteBranches = new HashMap<String, GitBranch>();
-        remoteBranches.putAll(getRefs(refs.values(), Constants.R_HEADS));
-    }
-
-    private Map<String, GitBranch> getRefs (Collection<Ref> allRefs, String prefix) {
-        Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
-        for (final Ref ref : RefComparator.sort(allRefs)) {
-            String refName = ref.getLeaf().getName();
-            if (refName.startsWith(prefix)) {
-                String name = refName.substring(refName.indexOf('/', 5) + 1);
-                branches.put(name, new JGitBranch(name, false, false, ref.getLeaf().getObjectId()));
-            }
-        }
-        return branches;
+        remoteBranches.putAll(Utils.refsToBranches(getRefs(), Constants.R_HEADS));
     }
 
     @Override

@@ -67,10 +67,11 @@ import org.openide.util.Utilities;
  * @author  phrebejk
  */
 public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
-    
+
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
     public static final String SHARED_LIBRARIES = "sharedLibraries"; //NOI18N
+    public static final String MAIN_CLASS = "mainClass"; //NOI18N
     
     private PanelConfigureProject panel;
     private boolean valid;
@@ -78,7 +79,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private String projectLocation;
     private final NewJ2SEProjectWizardIterator.WizardType type;
     
-    public PanelOptionsVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    PanelOptionsVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
         initComponents();
         this.panel = panel;
         this.type = type;
@@ -106,14 +108,17 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         setAsMainCheckBox.setSelected(WizardSettings.getSetAsMain(type));
         this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
             
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 mainClassChanged ();
             }
             
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 mainClassChanged ();
             }
             
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 mainClassChanged ();
             }
@@ -121,14 +126,17 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         });
         this.txtLibFolder.getDocument().addDocumentListener( new DocumentListener () {
             
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 librariesLocationChanged ();
             }
             
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 librariesLocationChanged ();
             }
             
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 librariesLocationChanged ();
             }
@@ -138,6 +146,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         
     }
 
+    @Override
     public void actionPerformed( ActionEvent e ) {        
         if ( e.getSource() == createMainCheckBox ) {
             lastMainClassCheck = createMainCheckBox.isSelected();
@@ -146,6 +155,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         }                
     }
     
+    @Override
     public void propertyChange (final PropertyChangeEvent event) {
         final String propName = event.getPropertyName();
         if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(propName)) {
@@ -345,6 +355,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     
 
     
+    @Override
     boolean valid(WizardDescriptor settings) {
         
         if (cbSharable.isSelected()) {
@@ -377,17 +388,29 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         }
     }
     
+    @Override
     void read (WizardDescriptor d) {
+        final String mainClass = (String) d.getProperty(MAIN_CLASS);
+        if (mainClass != null) {
+            mainClassTextField.setText(mainClass);
+        }
+        final String libFolder = (String) d.getProperty(SHARED_LIBRARIES);
+        if (libFolder != null) {
+            currentLibrariesLocation = libFolder;
+            txtLibFolder.setText(currentLibrariesLocation);
+        }
     }
     
+    @Override
     void validate (WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
     }
 
+    @Override
     void store( WizardDescriptor d ) {
         Templates.setDefinesMainProject(d, setAsMainCheckBox.isSelected());
         WizardSettings.setSetAsMain(type, setAsMainCheckBox.isSelected());
-        d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ MAIN_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
         d.putProperty( SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null ); // NOI18N
     }
     
@@ -405,21 +428,24 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private void mainClassChanged () {
         String mainClassName = this.mainClassTextField.getText ();
         StringTokenizer tk = new StringTokenizer (mainClassName, "."); //NOI18N
-        boolean valid = true;
+        boolean _valid = true;
         while (tk.hasMoreTokens()) {
             String token = tk.nextToken();
             if (token.length() == 0 || !Utilities.isJavaIdentifier(token)) {
-                valid = false;
+                _valid = false;
                 break;
             }            
         }
-        this.valid = valid;
+        this.valid = _valid;
         this.panel.fireChangeEvent();
     }
     
     private void librariesLocationChanged() {
         this.panel.fireChangeEvent();
-        
+        String libFolder = txtLibFolder.getText();
+        if (libFolder.length() > 0) {
+            this.currentLibrariesLocation = libFolder;
+        }
     }
     
 }

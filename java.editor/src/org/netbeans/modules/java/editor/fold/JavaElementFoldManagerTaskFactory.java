@@ -45,11 +45,12 @@ package org.netbeans.modules.java.editor.fold;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -58,7 +59,6 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public class JavaElementFoldManagerTaskFactory extends EditorAwareJavaSourceTaskFactory {
 
-    /** Creates a new instance of JavaElementFoldManagerTaskFactory */
     public JavaElementFoldManagerTaskFactory() {
         super(Phase.PARSED, Priority.NORMAL);
     }
@@ -66,5 +66,12 @@ public class JavaElementFoldManagerTaskFactory extends EditorAwareJavaSourceTask
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
         return JavaElementFoldManager.JavaElementFoldTask.getTask(file);
     }
-    
+
+    public static void doRefresh(FileObject file) {
+        for (JavaSourceTaskFactory f : Lookup.getDefault().lookupAll(JavaSourceTaskFactory.class)) {
+            if (f instanceof JavaElementFoldManagerTaskFactory) {
+                ((JavaElementFoldManagerTaskFactory) f).reschedule(file);
+            }
+        }
+    }
 }

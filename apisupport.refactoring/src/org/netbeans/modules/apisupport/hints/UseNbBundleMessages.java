@@ -91,7 +91,7 @@ import static org.netbeans.modules.apisupport.hints.Bundle.*;
 public class UseNbBundleMessages extends AbstractHint {
 
     public UseNbBundleMessages() {
-        super(true, true, AbstractHint.HintSeverity.WARNING);
+        super(true, true, AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
     }
 
     public @Override String getId() {

@@ -75,6 +75,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
@@ -93,7 +94,6 @@ import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
@@ -102,6 +102,7 @@ import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.EntityResourcesIterator;
+import org.netbeans.modules.websvc.rest.wizard.EntityResourcesSetupPanel;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.netbeans.modules.websvc.rest.wizard.WizardProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -123,7 +124,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
     private int index;
     private WizardDescriptor wizard;
-    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor.Panel<?>[] panels;
     private static final String PROP_CMP = "wizard-is-cmp"; //NOI18N
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
     private static final Lookup.Result<PersistenceGeneratorProvider> PERSISTENCE_PROVIDERS =
@@ -155,11 +156,25 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     }
 
     @Override
-    public Set instantiate() throws IOException {
+    public Set<?> instantiate() throws IOException {
         // create the pu first if needed
         if(helper.isCreatePU()) {
             Project project = Templates.getProject(wizard);
-            org.netbeans.modules.j2ee.persistence.wizard.Util.addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.persistence.wizard.Util.buildPersistenceUnitUsingData(project, null, helper.getTableSource().getName(), null, null));
+            if ( RestUtils.hasSpringSupport(project) ) {
+                org.netbeans.modules.j2ee.persistence.wizard.Util.
+                    addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.
+                        persistence.wizard.Util.
+                        buildPersistenceUnitUsingData(project, null, 
+                                helper.getTableSource().getName(), null, null,
+                                Persistence.VERSION_1_0));
+            }
+            else {
+                org.netbeans.modules.j2ee.persistence.wizard.Util.
+                    addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.
+                            persistence.wizard.Util.
+                            buildPersistenceUnitUsingData(project, null, 
+                            helper.getTableSource().getName(), null, null));
+            }
         }
 
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_EntityClassesGeneration");
@@ -279,11 +294,10 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             RestUtils.ensureRestDevelopmentReady(project);
             Set<Entity> entities = Util.getEntities(project, files);
             
-	    if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6(project)) {
-
+            if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6(project)) {
                 String targetPackage = null;
                 String resourcePackage = null;
-                String converterPackage = null;
+                String controllerPackage = null;
                 FileObject targetResourceFolder = null;
 
                 FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
@@ -333,12 +347,12 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                 FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
                 String targetPackage = null;
                 String resourcePackage = null;
-                String converterPackage = null;
+                String controllerPackage = null;
 
                 if (targetFolder != null) {
                     targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
                     resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
-                    converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
+                    controllerPackage = (String) wizard.getProperty(WizardProperties.CONTROLLER_PACKAGE);
                 } else {
                     targetFolder = Templates.getTargetFolder(wizard);
                     SourceGroup targetSourceGroup = null;
@@ -353,11 +367,12 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
                     targetPackage = (targetPackage.length() == 0) ? "" : targetPackage + ".";
                     resourcePackage = targetPackage + EntityResourcesGenerator.RESOURCE_FOLDER;
-                    converterPackage = targetPackage + EntityResourcesGenerator.CONVERTER_FOLDER;
+                    controllerPackage = targetPackage + EntityResourcesGenerator.CONTROLLER_FOLDER;
                 }
 
                 final EntityResourcesGenerator gen = EntityResourcesGeneratorFactory.newInstance(project);
-                gen.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
+                gen.initialize(model, project, targetFolder, targetPackage, 
+                        resourcePackage, controllerPackage, pu);
 
                 RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
 
@@ -427,18 +442,22 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private WizardDescriptor.Panel[] getPanels() {
+    private WizardDescriptor.Panel<?>[] getPanels() {
         if (panels == null) {
 
             String wizardBundleKey = "Templates/WebServices/RestServicesFromDatabase"; // NOI18N
             String wizardTitle = NbBundle.getMessage(EntityResourcesIterator.class, wizardBundleKey); // NOI18N
-            boolean javaEE6Project = RestUtils.isJavaEE6(Templates.getProject(wizard));
+            Project project = Templates.getProject(wizard);
+            boolean withoutController = RestUtils.isJavaEE6( project ) || 
+                RestUtils.hasSpringSupport(project);
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()
                         new org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel.WizardPanel(wizardTitle),
-                        new EntityClassesPanel.WizardPanel(true, javaEE6Project),
-                        new EntityResourcesSetupPanel(NbBundle.getMessage(EntityResourcesIterator.class,
-                        "LBL_RestResourcesAndClasses"), wizard, javaEE6Project)
+                        new EntityClassesPanel.WizardPanel(true, withoutController),
+                        new EntityResourcesSetupPanel(NbBundle.getMessage(
+                                EntityResourcesIterator.class,
+                                "LBL_RestResourcesAndClasses"), wizard, 
+                                withoutController)
                     };
 
             String[] steps = createSteps();

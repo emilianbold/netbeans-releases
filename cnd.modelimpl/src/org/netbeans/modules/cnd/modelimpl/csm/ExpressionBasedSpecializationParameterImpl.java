@@ -55,8 +55,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -65,6 +63,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -103,12 +103,12 @@ public final class ExpressionBasedSpecializationParameterImpl extends Offsetable
     // impl of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeUTF(expression, output);
     }
 
-    public ExpressionBasedSpecializationParameterImpl(DataInput input) throws IOException {
+    public ExpressionBasedSpecializationParameterImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.expression = PersistentUtils.readUTF(input, NameCache.getManager());
     }

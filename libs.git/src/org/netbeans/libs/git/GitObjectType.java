@@ -58,5 +58,29 @@ public enum GitObjectType {
         public String toString() {
             return "BLOB"; //NOI18N
         }
+    },
+    HEAD {
+        @Override
+        public String toString() {
+            return "HEAD"; //NOI18N
+        }
+    },
+    TAG {
+        @Override
+        public String toString() {
+            return "TAG"; //NOI18N
+        }
+    },
+    TREE {
+        @Override
+        public String toString() {
+            return "TREE"; //NOI18N
+        }
+    },
+    UNKNOWN {
+        @Override
+        public String toString() {
+            return "ANY"; //NOI18N
+        }
     }
 }

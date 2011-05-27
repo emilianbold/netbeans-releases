@@ -279,16 +279,29 @@ is divided into following sections:
                 <condition property="is.server.weblogic" value="true">
                     <equals arg1="${{j2ee.server.type}}" arg2="WebLogic9"/>
                 </condition>
+                <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
+                    <and>
+                        <matches string="${{java.specification.version}}" pattern="1\.[56]"/>
+                        <not>
+                            <os family="unix"/>
+                        </not>
+                    </and>
+                </condition>
+                <property name="javac.fork" value="${{jdkBug6558476}}"/>
             </target>
             
             <!-- COS feature - used in run-deploy -->
+            <!-- compiler use deploy.on.save flag to fire changes -->
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <xsl:attribute name="unless">deploy.on.save</xsl:attribute>
                 <condition>
                     <xsl:attribute name="property">deploy.on.save</xsl:attribute>
                     <xsl:attribute name="value">true</xsl:attribute>
-                    <istrue value="${{j2ee.deploy.on.save}}"/>
+                    <or>
+                        <istrue value="${{j2ee.deploy.on.save}}"/>
+                        <istrue value="${{j2ee.compile.on.save}}"/>
+                    </or>
                 </condition>         
             </target>
             
@@ -420,8 +433,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </xsl:if>
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:attribute name="fork">${javac.fork}</xsl:attribute> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 -->
                             <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
-                                <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                             </xsl:if>
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>
@@ -726,7 +739,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
                 <macrodef>
                     <xsl:attribute name="name">nbjpdaappreloaded</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/1</xsl:attribute>
                     <sequential>
                         <nbjpdaappreloaded />
                     </sequential>
@@ -1304,8 +1317,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,-init-cos,-init-deploy,compile,library-inclusion-in-archive,dist-directory-deploy,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
-                <nbjpdaappreloaded />
+                <xsl:attribute name="depends">init,-init-cos,-init-deploy,compile,library-inclusion-in-archive,dist-directory-deploy,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy,-do-update-breakpoints</xsl:attribute>
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">
@@ -1337,6 +1349,12 @@ exists or setup the property manually. For example like this:
                 <ejbjarproject3:java classname="${{run.class}}"/>
             </target>
             
+            <target name="-do-update-breakpoints">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <ejbjarproject1:nbjpdaappreloaded/>
+            </target> 
+
             <xsl:comment>
                 DEBUGGING SECTION
             </xsl:comment>
@@ -1844,15 +1862,18 @@ to simulate
             <xsl:attribute name="depends">init</xsl:attribute>
 
             <xsl:choose>
-                <xsl:when test="$ear">
-                    <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
+                <xsl:when test="$type">
+                    <xsl:choose>
+                        <xsl:when test="$ear">
+                            <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:when>
-                <xsl:otherwise>
-                    <xsl:attribute name="if">no.dist.ear.dir</xsl:attribute>
-                    <xsl:attribute name="unless">no.deps</xsl:attribute>
-                </xsl:otherwise>
             </xsl:choose>
+            <xsl:attribute name="unless">no.deps</xsl:attribute>
 
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
             <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">

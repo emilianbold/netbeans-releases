@@ -86,7 +86,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
-import org.netbeans.jellytools.modules.web.NavigatorOperator;
+import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.QueueTool;
@@ -972,7 +972,7 @@ public class WebProjectValidation extends J2eeTestCase {
             host = "localhost";
             if (WebProjectValidation.isRegistered(Server.TOMCAT)){
                 serverPort = 8084;
-            }else if (WebProjectValidation.isRegistered(Server.GLASSFISH_V3) || WebProjectValidation.isRegistered(Server.GLASSFISH)){
+            }else if (WebProjectValidation.isRegistered(Server.GLASSFISH)){
                 serverPort = 8080;
             }
         }

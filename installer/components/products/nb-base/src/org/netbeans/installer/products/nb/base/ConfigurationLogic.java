@@ -159,9 +159,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.license.accepted")); // NOI18N
-
             filesList.add(
-                    NetBeansUtils.createLicenseAcceptedMarker(installLocation));
+                    NetBeansUtils.createLicenseAcceptedMarker(installLocation, ""));
+
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.license.accepted"), // NOI18N
@@ -748,6 +748,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     public RemovalMode getRemovalMode() {
+        if(Boolean.getBoolean("remove.netbeans.installdir")) {
+            return RemovalMode.ALL;
+        }
         return RemovalMode.LIST;
     }
 

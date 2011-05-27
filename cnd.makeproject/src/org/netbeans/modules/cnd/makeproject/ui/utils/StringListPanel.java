@@ -275,7 +275,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         }
 
         @Override
-        public void editAction(String o) {
+        public void editAction(String o, int i) {
             String s = o;
 
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
@@ -285,7 +285,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            replaceElement(o, newS);
+            replaceElement(o, newS, i);
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

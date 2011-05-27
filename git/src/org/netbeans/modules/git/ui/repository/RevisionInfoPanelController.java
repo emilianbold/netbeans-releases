@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author ondra
  */
-class RevisionInfoPanelController {
+public class RevisionInfoPanelController {
     private final RevisionInfoPanel panel;
     private static final String MSG_LOADING = NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionInfoPanel.loading"); //NOI18N
     private static final String MSG_UNKNOWN = NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionInfoPanel.unknown"); //NOI18N
@@ -90,11 +90,11 @@ class RevisionInfoPanelController {
         loadInfoWorker.monitor.cancel();
         currentCommit = revision;
         setValid(false);
-        if (revision != null) {
+        if (revision == null || revision.isEmpty()) {
+            setUnknownRevision();
+        } else {
             resetInfoFields();
             loadInfoTask.schedule(100);
-        } else {
-            setUnknownRevision();
         }
     }
 

@@ -54,7 +54,6 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.project.Project;
@@ -120,7 +119,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
         for (Artifact ar : compileArtifacts) {
             File f = ar.getFile();
             if (f != null) {
-                Project p = FileOwnerQuery.getOwner(f.toURI());
+                Project p = MavenFileOwnerQueryImpl.getInstance().getOwner(f.toURI());
                 if (p != null) {
                     resultset.add(p);
                 }

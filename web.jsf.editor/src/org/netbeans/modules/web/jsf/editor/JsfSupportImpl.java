@@ -54,13 +54,16 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
-import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * per web-module instance
@@ -77,10 +80,6 @@ public class JsfSupportImpl implements JsfSupport {
         return getOwnImplementation(JsfSupportProvider.get(file));
     }
     
-    public static JsfSupportImpl findFor(Document document) {
-        return getOwnImplementation(JsfSupportProvider.get(document));
-    }
-
     private static JsfSupportImpl getOwnImplementation(JsfSupport instance) {
         if(instance instanceof JsfSupportImpl) {
             return (JsfSupportImpl)instance;
@@ -109,6 +108,7 @@ public class JsfSupportImpl implements JsfSupport {
     private ClassPath classpath;
     private JsfIndex index;
     private MetadataModel<WebBeansModel> webBeansModel;
+    private Lookup lookup;
 
     private JsfSupportImpl(Project project, WebModule wm, ClassPath classPath) {
         this.project = project;
@@ -130,6 +130,15 @@ public class JsfSupportImpl implements JsfSupport {
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
 
+        ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(wm);
+        webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
+
+        //init lookup
+        //TODO do it lazy so it creates the web beans model lazily once looked up
+        InstanceContent ic = new InstanceContent();
+        ic.add(webBeansModel);
+        this.lookup = new AbstractLookup(ic);
+
     }
 
     @Override
@@ -147,15 +156,22 @@ public class JsfSupportImpl implements JsfSupport {
         return wm;
     }
 
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
 
     @Override
     public Library getLibrary(String namespace) {
         return faceletsLibrarySupport.getLibraries().get(namespace);
     }
 
-    /** Library's uri to library map */
+    /** Library's uri to library map 
+     * Please note that a composite components library can be preset twice in the values. 
+     * Once under the declared namespace key and once under the default cc namespace key.
+     */
     @Override
-    public Map<String, FaceletsLibrary> getLibraries() {
+    public Map<String, AbstractFaceletsLibrary> getLibraries() {
         return faceletsLibrarySupport.getLibraries();
     }
 
@@ -172,10 +188,6 @@ public class JsfSupportImpl implements JsfSupport {
     }
 
     public synchronized MetadataModel<WebBeansModel> getWebBeansModel() {
-	if(webBeansModel == null) {
-	    ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(getWebModule());
-	    webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
-	}
 	return webBeansModel;
     }
 

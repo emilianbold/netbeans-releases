@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.18
+#Version 1.21.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -37,7 +37,7 @@ meth public void setClassAssertionStatus(java.lang.String,boolean)
 meth public void setDefaultAssertionStatus(boolean)
 meth public void setPackageAssertionStatus(java.lang.String,boolean)
 supr java.lang.Object
-hfds bootstrapClassPath,classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
+hfds classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
 hcls NativeLibrary
 
 CLSS public abstract interface !annotation java.lang.Deprecated
@@ -102,7 +102,7 @@ meth public java.util.Enumeration<java.net.URL> findResources(java.lang.String) 
 meth public static java.net.URLClassLoader newInstance(java.net.URL[])
 meth public static java.net.URLClassLoader newInstance(java.net.URL[],java.lang.ClassLoader)
 supr java.security.SecureClassLoader
-hfds acc,ucp
+hfds acc,defineClassNoVerifyMethod,ucp
 
 CLSS public java.security.SecureClassLoader
 cons protected init()
@@ -111,7 +111,7 @@ meth protected final java.lang.Class<?> defineClass(java.lang.String,byte[],int,
 meth protected final java.lang.Class<?> defineClass(java.lang.String,java.nio.ByteBuffer,java.security.CodeSource)
 meth protected java.security.PermissionCollection getPermissions(java.security.CodeSource)
 supr java.lang.ClassLoader
-hfds debug,initialized,pdcache
+hfds debug,defineClassCondMethod,initialized,pdcache
 
 CLSS public abstract org.openide.ServiceType
  anno 0 java.lang.Deprecated()

@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ejb.entity;
 
 import java.io.Serializable;
@@ -13,7 +12,7 @@ import javax.persistence.Id;
 
 /**
  *
- * @author lukas
+ * @author jskrivanek
  */
 @Entity
 public class EjbEntity implements Serializable {
@@ -52,7 +51,7 @@ public class EjbEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "ejb.entity.EjbEntity[id=" + id + "]";
+        return "ejb.entity.EjbEntity[ id=" + id + " ]";
     }
 
 }

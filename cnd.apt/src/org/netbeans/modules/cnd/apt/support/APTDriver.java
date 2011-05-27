@@ -44,9 +44,13 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.impl.support.APTDriverImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.openide.filesystems.FileSystem;
@@ -59,6 +63,13 @@ import org.openide.filesystems.FileSystem;
 public final class APTDriver {
     
     private static final Map<FileSystem, APTDriverImpl> drivers = new WeakHashMap<FileSystem, APTDriverImpl>();
+    private static final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private static final Lock rLock;
+    private static final Lock wLock;
+    static {
+        rLock = rwLock.readLock();
+        wLock = rwLock.writeLock();
+    }
     
     /** Creates a new instance of APTCreator */
     private APTDriver() {
@@ -66,14 +77,26 @@ public final class APTDriver {
     
     private static APTDriverImpl getInstance(APTFileBuffer buffer) {
         FileSystem fs = buffer.getFileSystem();
-        synchronized (APTDriver.class) {
-            APTDriverImpl impl = drivers.get(fs);
-            if (impl == null) {
-                impl = new APTDriverImpl();
-                drivers.put(fs, impl);
-            }
-            return impl;
+        APTDriverImpl impl;
+        rLock.lock();
+        try {
+            impl = drivers.get(fs);
+        } finally {
+            rLock.unlock();
         }
+        if (impl == null) {
+            wLock.lock();
+            try {
+                impl = drivers.get(fs);
+                if (impl == null) {
+                    impl = new APTDriverImpl();
+                    drivers.put(fs, impl);
+                }
+            } finally {
+                wLock.unlock();
+            }
+        }
+        return impl;
     }
 
     public static APTFile findAPTLight(APTFileBuffer buffer) throws IOException {
@@ -89,20 +112,26 @@ public final class APTDriver {
     }
     
     public static void invalidateAll() {
-        synchronized (APTDriver.class) {
+        wLock.lock();
+        try {
             for (APTDriverImpl driver : drivers.values()) {
                 driver.invalidateAll();
             }
             drivers.clear();
-        }        
+        } finally {
+            wLock.unlock();
+        }
     }
     
     public static void close() {
-        synchronized (APTDriver.class) {
+        wLock.lock();
+        try {
             for (APTDriverImpl driver : drivers.values()) {
                 driver.close();
             }
             drivers.clear();
-        }        
+        } finally {
+            wLock.unlock();
+        }      
     }
 }

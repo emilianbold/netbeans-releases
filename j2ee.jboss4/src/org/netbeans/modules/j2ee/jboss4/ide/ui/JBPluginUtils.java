@@ -100,7 +100,7 @@ public class JBPluginUtils {
 
     public static final String CLIENT = "client" + File.separator;
 
-    public  static final String COMMON = "common" + File.separator;
+    public static final String COMMON = "common" + File.separator;
 
 
     // For JBoss 5.0 under JBOSS_ROOT_DIR/lib
@@ -189,7 +189,7 @@ public class JBPluginUtils {
                     "lib", // NOI18N
                     "conf/jboss-service.xml", // NOI18N
                     "conf/bootstrap.xml", // NOI18N
-                    "deploy/hdscanner-jboss-beans.xml"   // NOI18N
+                    "deploy/hdscanner-jboss-beans.xml" // NOI18N
                     );
         }
         return domainRequirements6x;
@@ -498,8 +498,22 @@ public class JBPluginUtils {
         return defaultPort;
     }
 
+    public static int getJnpPortNumber(String domainDir) {
+        String jnpPort = getJnpPort(domainDir);
+        if(jnpPort != null) {
+            jnpPort = jnpPort.trim();
+            if (jnpPort.length() > 0) {
+                try {
+                    return Integer.parseInt(jnpPort);
+                } catch(NumberFormatException e) {
+                    // pass through to default
+                }
+            }
+        }  
+        return 1099;
+    }
 
-    public static String getJnpPort(String domainDir){
+    public static String getJnpPort(String domainDir) {
 
         String serviceXml = domainDir+File.separator+"conf"+File.separator+"jboss-service.xml"; //NOI18N
         File xmlFile = new File(serviceXml);

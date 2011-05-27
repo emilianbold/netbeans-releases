@@ -460,7 +460,7 @@ public final class TreeMaker {
     }
 
     /**
-     * Creates new DisjunctiveTypeTree.
+     * Creates new UnionTypeTree.
      *
      * @param typeComponents components from which the DisjunctiveTypeTree should be created.
      *                       The components should either be {@link ExpressionTree} (qualified or unqualified identifier),
@@ -468,8 +468,8 @@ public final class TreeMaker {
      * @return newly created DisjunctiveTypeTree
      * @since 0.70
      */
-    public DisjunctiveTypeTree DisjunctiveType(List<? extends Tree> typeComponents) {
-        return delegate.DisjunctiveType(typeComponents);
+    public UnionTypeTree UnionType(List<? extends Tree> typeComponents) {
+        return delegate.UnionType(typeComponents);
     }
     
     /** Creates a new DoWhileLoopTree.

@@ -45,16 +45,26 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
@@ -496,6 +506,156 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     }
     
     @Override
+    public boolean canIntroduceParameter(Lookup lookup) {
+        Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
+        if(nodes.size() != 1)
+            return false;
+        Node node = nodes.iterator().next();
+        TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
+        }
+        DataObject dObj = node.getCookie(DataObject.class);
+        if(null == dObj)
+            return false;
+        FileObject fileObj = dObj.getPrimaryFile();
+        if(null == fileObj || !RetoucheUtils.isRefactorable(fileObj))
+            return false;
+        
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void doIntroduceParameter(Lookup lookup) {
+        Runnable task;
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (ec != null) {
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
+                        int startOffset,
+                        int endOffset,
+                        CompilationInfo info) {
+                    
+                    TreePath tp = validateSelection(info, startOffset, endOffset);
+                    if (tp==null)
+                        return null;
+                    return wrap(IntroduceParameterUI.create(TreePathHandle.create(tp, info), info));
+                }
+            };
+        } else {
+            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
+
+                RefactoringUI ui;
+
+                @Override
+                protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
+                    ui = IntroduceParameterUI.create(handle, javac);
+                }
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
+                    return wrap(ui);
+                }
+            };
+        }
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
+    }    
+    
+    private static final Set<TypeKind> NOT_ACCEPTED_TYPES = EnumSet.of(TypeKind.ERROR, TypeKind.NONE, TypeKind.OTHER, TypeKind.VOID, TypeKind.EXECUTABLE);
+ 
+    static TreePath validateSelection(CompilationInfo ci, int start, int end) {
+        return validateSelection(ci, start, end, NOT_ACCEPTED_TYPES);
+    }
+
+    public static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
+        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
+
+        for ( ; tp != null; tp = tp.getParentPath()) {
+            Tree leaf = tp.getLeaf();
+
+            if (   !ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface())
+                && (leaf.getKind() != Kind.VARIABLE || ((VariableTree) leaf).getInitializer() == null))
+               continue;
+
+            long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
+            long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
+
+            if (treeStart != start || treeEnd != end) {
+                continue;
+            }
+
+            TypeMirror type = ci.getTrees().getTypeMirror(tp);
+
+            if (type != null && type.getKind() == TypeKind.ERROR) {
+                type = ci.getTrees().getOriginalType((ErrorType) type);
+            }
+
+            if (type == null || ignoredTypes.contains(type.getKind()))
+                continue;
+
+            if(tp.getLeaf().getKind() == Kind.ASSIGNMENT)
+                continue;
+
+            if (tp.getLeaf().getKind() == Kind.ANNOTATION)
+                continue;
+
+            if (!isInsideClass(tp))
+                return null;
+
+            TreePath candidate = tp;
+
+            tp = tp.getParentPath();
+
+            while (tp != null) {
+                switch (tp.getLeaf().getKind()) {
+                    case VARIABLE:
+                        VariableTree vt = (VariableTree) tp.getLeaf();
+                        if (vt.getInitializer() == leaf) {
+                            return candidate;
+                        } else {
+                            return null;
+                        }
+                    case NEW_CLASS:
+                        NewClassTree nct = (NewClassTree) tp.getLeaf();
+                        
+                        if (nct.getIdentifier().equals(candidate.getLeaf())) { //avoid disabling hint ie inside of anonymous class higher in treepath
+                            for (Tree p : nct.getArguments()) {
+                                if (p == leaf) {
+                                    return candidate;
+                                }
+                            }
+
+                            return null;
+                        }
+                }
+
+                leaf = tp.getLeaf();
+                tp = tp.getParentPath();
+            }
+
+            return candidate;
+        }
+
+        return null;
+    }
+
+    private static boolean isInsideClass(TreePath tp) {
+        while (tp != null) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
+                return true;
+            }
+
+            tp = tp.getParentPath();
+        }
+
+        return false;
+    }
+
+    @Override
     public boolean canInnerToOuter(Lookup lookup) {
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         if(nodes.size() != 1)
@@ -629,6 +789,80 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             };
         }
         RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
+    }
+    
+    @Override
+    public boolean canInline(Lookup lookup) {
+        Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
+        if (nodes.size() != 1) {
+            return false;
+        }
+        Node node = nodes.iterator().next();
+        TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
+        }
+        DataObject dObj = node.getCookie(DataObject.class);
+        if (null == dObj) {
+            return false;
+        }
+        FileObject fileObj = dObj.getPrimaryFile();
+        if (null == fileObj || !RetoucheUtils.isRefactorable(fileObj)) {
+            return false;
+        }
+
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void doInline(Lookup lookup) {
+        Runnable task;
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) { // From Editor
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, int startOffset, int endOffset, CompilationInfo info) {
+                    return new InlineRefactoringUI(selectedElement, info);
+                }
+            };
+        } else if (RefactoringActionsProvider.nodeHandle(lookup)) { // From Navigator
+            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
+
+                RefactoringUI ui;
+
+                @Override
+                protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo info) {
+                    ui = new InlineRefactoringUI(handle, info);
+                }
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
+                    return ui;
+                }
+            };
+        } else { // From Projects / Files
+            task = new NodeToFileObjectTask(Collections.singleton(lookup.lookup(Node.class))) {
+
+                RefactoringUI ui;
+
+                @Override
+                protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo info) {
+                    TreePathHandle tph = handles.iterator().next();
+                    ui = new InlineRefactoringUI(tph, info);
+                }
+
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+                    return ui;
+                }
+            };
+        }
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.inlineAction()));
     }
     
     protected RefactoringUI wrap(RefactoringUI orig) {

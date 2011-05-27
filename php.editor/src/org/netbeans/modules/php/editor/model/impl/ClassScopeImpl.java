@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Iterator;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.Collection;
 import java.util.ArrayList;
@@ -75,6 +76,7 @@ import org.openide.util.Union2;
 class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFactory {
 
     private Union2<String, List<ClassScopeImpl>> superClass;
+    private Collection<QualifiedName> possibleFQSuperClassNames;
 
     @Override
     void addElement(ModelElementImpl element) {
@@ -94,29 +96,55 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
         Expression superId = nodeInfo.getSuperClass();
-        String superName = (superId != null) ? QualifiedName.create(superId).toString() : null;
-        this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superName);
+        String superName = null;
+        if (superId != null) {
+            QualifiedName superClassName = QualifiedName.create(superId);
+            this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), (NamespaceScope)inScope);
+            this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
+        } else {
+            this.possibleFQSuperClassNames = Collections.emptyList();
+            this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
+        }
+        
     }
 
     ClassScopeImpl(IndexScope inScope, ClassElement indexedClass) {
         //TODO: in idx is no info about ifaces
         super(inScope, indexedClass);
         final QualifiedName superClassName = indexedClass.getSuperClassName();
-        this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName != null ? superClassName.toFullyQualified().toString() : null);
+        this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName != null ? superClassName.toString() : null);
+        this.possibleFQSuperClassNames = indexedClass.getPossibleFQSuperClassNames();
     }
     //old contructors
 
+    /**
+     * This method returns possible FGNames of the super class that are counted
+     * according the same algorithm as in php runtime. Usually it can be one or two
+     * FQN. 
+     * @return possible fully qualified names, that are guess during parsing. 
+     */
+    public Collection<QualifiedName> getPossibleFQSuperClassNames() {
+        return this.possibleFQSuperClassNames;
+    }
+    
     @NonNull
     public Collection<? extends ClassScope> getSuperClasses() {
-        Collection<? extends ClassScope> retval = null;
-        retval = superClass.hasSecond() ? superClass.second() : null;
-        if (retval == null) {
-            assert superClass.hasFirst();
-            String superClasName = superClass.first();
-            if (superClasName != null) {
-                retval = IndexScopeImpl.getClasses(QualifiedName.create(superClasName), this);
-                assert retval != null;
+        List<ClassScope> retval = null;
+        if (superClass.hasSecond() && superClass.second() != null) {
+            return superClass.second();
+        }
+
+        assert superClass.hasFirst();
+        String superClasName = superClass.first();
+        if(possibleFQSuperClassNames != null && possibleFQSuperClassNames.size() > 0) {
+            retval = new ArrayList<ClassScope>();
+            for (QualifiedName qualifiedName : possibleFQSuperClassNames) {
+                retval.addAll(IndexScopeImpl.getClasses(qualifiedName, this));
             }
+        }
+
+        if (retval == null && superClasName != null) {
+            return IndexScopeImpl.getClasses(QualifiedName.create(superClasName), this);
         }
         return retval != null ? retval : Collections.<ClassScopeImpl>emptyList();
     }
@@ -307,6 +335,16 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         final QualifiedName superClassName = getSuperClassName();
         if (superClassName != null) {
             sb.append(superClassName.toString());
+            sb.append("|");
+            boolean first = true;
+            for (QualifiedName qualifiedName : possibleFQSuperClassNames) {
+                if (!first) {
+                    sb.append(',');
+                } else {
+                    first = true;
+                }
+                sb.append(qualifiedName.toString());
+            }
         }
         sb.append(";");//NOI18N
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);

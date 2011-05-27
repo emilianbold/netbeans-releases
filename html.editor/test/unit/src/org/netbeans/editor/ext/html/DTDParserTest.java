@@ -193,7 +193,7 @@ public class DTDParserTest extends TestBase {
         assertFalse(el.isEmpty());
 
     }
-
+    
     public void testFrameset() {
         DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD("-//W3C//DTD HTML 4.01 Frameset//EN", null);
         assertNotNull(dtd);

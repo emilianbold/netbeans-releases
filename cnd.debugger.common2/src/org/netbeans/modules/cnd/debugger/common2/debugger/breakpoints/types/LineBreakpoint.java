@@ -48,10 +48,16 @@ import org.netbeans.modules.cnd.debugger.common2.utils.props.IntegerProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.openide.filesystems.FileSystem;
+import org.openide.text.Line;
 
 public final class LineBreakpoint extends NativeBreakpoint {
+    
+    private FileSystem fs = null;
 
     public IntegerProperty lineNumber = 
 	new IntegerProperty(pos, "lineNumber", null, false, -1); // NOI18N
@@ -62,7 +68,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
 	super(LineBreakpointType.getDefault(), flags);
     }
 
-    public void setFileName(String fileName) {
+    private void setFileName(String fileName) {
 	if (IpeUtils.sameString(this.fileName.toString(), fileName))
 	    return;
 	this.fileName.set(fileName);
@@ -89,6 +95,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
      */
 
     // override NativeBreakpoint
+    @Override
     public void removeAnnotations() {
 
 	int annoLineNo = annoLineNo();
@@ -99,7 +106,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
     }
 
     // was package private -- only used by makeEditableCopy
-    public void setLineNumber(int newLineNumber) {
+    private void setLineNumber(int newLineNumber) {
 	/* DEBUG
 	System.out.println("LineBreakpoint.setLineNumber(): " + newLineNumber);
 	*/
@@ -138,6 +145,32 @@ public final class LineBreakpoint extends NativeBreakpoint {
 	    // DEBUG System.out.println("\taccepted");
 	    lineNumber.setFromObjectInitial(newLineNumber);
 	}
+    }
+    
+    @Override
+    public void addAnnotation(String filename, int line, long addr) {
+	Line l = null;
+
+	if (line != 0) {
+            if (fs != null) {
+                l = EditorBridge.getLine(filename, line, fs);
+            } else {
+                l = EditorBridge.getLine(filename, line, currentDebugger());
+            }
+        }
+	//if (l != null)
+	addAnnotation(l, addr);
+    }
+    
+    @Override
+    public void seedToplevelAnnotations() {
+	super.seedToplevelAnnotations();
+
+	if (DebuggerManager.isPerTargetBpts()) {
+	    return;
+        }
+
+        addAnnotation(getFileName(), getLineNumber(), 0);
     }
 
     /**
@@ -179,6 +212,12 @@ public final class LineBreakpoint extends NativeBreakpoint {
     public void setFileAndLine(String fileName, int lineNumber) {
 	setFileName(fileName);
 	setLineNumber(lineNumber);
+    }
+    
+    public void setFileAndLine(String fileName, int lineNumber, FileSystem fs) {
+	setFileName(fileName);
+	setLineNumber(lineNumber);
+        this.fs = fs;
     }
 
     protected final String getSummary() {

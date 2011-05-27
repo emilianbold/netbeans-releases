@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -179,6 +179,28 @@ public final class SQLIdentifiers {
             caseRule        = getCaseRule(dbmd);
         }
 
+        /**
+         * Report whether the driver reports correct quoting information
+         * 
+         * At least the informix driver does not follow the api documentation about
+         * the method of {@see DatabaseMetaData#getIdentifierQuoteString()}.
+         * Instead of returning a single space for the case where no quote
+         * character exists it returns the empty string.
+         * 
+         * Other non-conforming drivers can be added when identified.
+         * 
+         * @param dbmd
+         * @return true if driver reports correct quoting character
+         * @throws SQLException 
+         */
+        private static boolean emptyQuoteCharCorrect(DatabaseMetaData dbmd) throws SQLException {
+            if( dbmd.getDriverName().equals("IBM Informix JDBC Driver for IBM Informix Dynamic Server")) {  //NOI18N
+                return true;
+            }
+            return false;
+        }
+        
+        @Override
         public final String quoteIfNeeded(String identifier) {
             Parameters.notNull("identifier", identifier);
 
@@ -189,6 +211,7 @@ public final class SQLIdentifiers {
             return identifier;
         }
 
+        @Override
         public final String quoteAlways(String identifier) {
             Parameters.notNull("identifier", identifier);
 
@@ -317,7 +340,7 @@ public final class SQLIdentifiers {
             try {
                 quoteStr = dbmd.getIdentifierQuoteString().trim();
                 // avoid empty quoteStr; if makes endless CC
-                if (quoteStr.length() == 0) {
+                if (quoteStr.length() == 0 && (! emptyQuoteCharCorrect(dbmd))) {
                     quoteStr = "\""; // NOI18N
                 }
             } catch ( SQLException e ) {

@@ -201,8 +201,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         }
         //this.jmiObject = jmiObject;
         oldName = newName;
-        //[FIXME] this should be oldName of refactored object
-        this.dispOldName = newName;
+        this.dispOldName = jmiObject.getName();
         ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(jmiObject):RetoucheUtils.getClasspathInfoFor(handle);
         refactoring.getContext().add(cpInfo);
         fromListener = true;
@@ -258,8 +257,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
                     suffix = getString("LBL_Parameter");
                 }
             }
-            suffix = suffix + " " + name; // NOI18N
-            panel = new RenamePanel(name, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename") + " " + suffix, !fromListener, fromListener && !byPassPakageRename);
+            suffix = suffix + " " + this.dispOldName; // NOI18N
+            panel = new RenamePanel(handle,  name, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename") + " " + suffix, !fromListener, fromListener && !byPassPakageRename);
         }
         return panel;
     }
@@ -272,7 +271,14 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
-            ((RenameRefactoring) refactoring).setSearchInComments(panel.searchJavadoc());            
+            ((RenameRefactoring) refactoring).setSearchInComments(panel.searchJavadoc());
+            JavaRenameProperties properties = refactoring.getContext().lookup(JavaRenameProperties.class);
+            if (properties==null) {
+                properties = new JavaRenameProperties();
+                refactoring.getContext().add(properties);
+            }
+            properties.setIsRenameGettersSetters(panel.isRenameGettersSetters());
+            
         }// else {
 //            ((MoveClassRefactoring) refactoring).setTargetPackageName(newName);
 //        }
@@ -285,6 +291,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
+            JavaRenameProperties properties = refactoring.getContext().lookup(JavaRenameProperties.class);
+            if (properties==null) {
+                properties = new JavaRenameProperties();
+                refactoring.getContext().add(properties);
+            }
+            properties.setIsRenameGettersSetters(panel.isRenameGettersSetters());
+            
         }// else {
 //            ((MoveClassRefactoring) refactoring).setTargetPackageName(newName);
 //        }

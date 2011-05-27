@@ -44,11 +44,15 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.BorderLayout;
 import java.awt.event.*;
 import java.beans.*;
 import java.awt.datatransfer.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ActionMap;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.text.DefaultEditorKit;
 
 import org.openide.*;
@@ -63,8 +67,8 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.datatransfer.*;
 
-import org.netbeans.modules.form.actions.TestAction;
-import org.netbeans.modules.form.palette.PaletteUtils;
+import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * The ComponentInspector - special explorer for form editor.
@@ -72,12 +76,15 @@ import org.netbeans.modules.form.palette.PaletteUtils;
  * @author Tomas Pavek
  */
 
-public class ComponentInspector extends TopComponent
-                                implements ExplorerManager.Provider
+public class ComponentInspector extends JPanel
+                                implements NavigatorPanelWithUndo, ExplorerManager.Provider
 {
-    private ExplorerManager explorerManager;
+    private FormDesigner formDesigner;
 
-    private TestAction testAction = SystemAction.findObject(TestAction.class, true);
+    private ExplorerManager explorerManager;
+    private ExplorerManagerLookup lookup;
+
+    private PropertyChangeListener nodeSelectionListener;
 
     private PasteAction pasteAction = SystemAction.findObject(PasteAction.class, true);
 
@@ -87,36 +94,12 @@ public class ComponentInspector extends TopComponent
 
     private ClipboardListener clipboardListener;
 
-    /** Currently focused form or null if no form is opened/focused */
-    private FormEditor focusedForm;
-
-    private EmptyInspectorNode emptyInspectorNode;
-    
     private BeanTreeView treeView;
-
-    /** Default icon base for control panel. */
-    private static final String EMPTY_INSPECTOR_ICON_BASE =
-        "org/netbeans/modules/form/resources/emptyInspector.gif"; // NOI18N
-
-    /** The icon for ComponentInspector */
-    private static final String iconURL =
-        "org/netbeans/modules/form/resources/inspector.png"; // NOI18N
 
     private static ComponentInspector instance;
 
     // ------------
     // construction (ComponentInspector is a singleton)
-
-    /** Gets default instance. Don't use directly, it reserved for '.settings' file only,
-     * i.e. deserialization routines, otherwise you can get non-deserialized instance.
-     * 
-     * @return ComponentInspector singleton.
-     */
-    public static synchronized ComponentInspector getDefault() {
-        if (instance == null)
-            instance = new ComponentInspector();
-        return instance;
-    }
 
     /** Finds default instance. Use in client code instead of {@link #getDefault()}.
      * 
@@ -124,12 +107,7 @@ public class ComponentInspector extends TopComponent
      */
     public static synchronized ComponentInspector getInstance() {
         if (instance == null) {
-            TopComponent tc = WindowManager.getDefault().findTopComponent("ComponentInspector"); // NOI18N
-            if (instance == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
-                    "Can not find ComponentInspector component for its ID. Returned " + tc)); // NOI18N
-                instance = new ComponentInspector();
-            }
+            instance = new ComponentInspector();
         }
         return instance;
     }
@@ -138,34 +116,17 @@ public class ComponentInspector extends TopComponent
         return instance != null;
     }
 
-    /** Overriden to explicitely set persistence type of ComponentInspector
-     * to PERSISTENCE_ALWAYS */
-    @Override
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
-    }
-
     private ComponentInspector() {
-        explorerManager = new ExplorerManager();
-
-        associateLookup(
-            ExplorerUtils.createLookup(explorerManager, setupActionMap(getActionMap()))
-        );
-
-        emptyInspectorNode = new EmptyInspectorNode();
-        explorerManager.setRootContext(emptyInspectorNode);
-
-        explorerManager.addPropertyChangeListener(new NodeSelectionListener());
+        lookup = new ExplorerManagerLookup();
 
         setLayout(new java.awt.BorderLayout());
         createComponents();
+        setupActionMap(getActionMap());
 
-        setIcon(ImageUtilities.loadImage(iconURL));
-        setName(FormUtils.getBundleString("CTL_InspectorTitle")); // NOI18N
-        setToolTipText(FormUtils.getBundleString("HINT_ComponentInspector")); // NOI18N
+        HelpCtx.setHelpIDString(this, "gui.component-inspector"); // NOI18N
     }
 
-    javax.swing.ActionMap setupActionMap(javax.swing.ActionMap map) {
+    final javax.swing.ActionMap setupActionMap(javax.swing.ActionMap map) {
         map.put(DefaultEditorKit.copyAction, copyActionPerformer);
         map.put(DefaultEditorKit.cutAction, cutActionPerformer);
         //map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(explorerManager));
@@ -182,164 +143,147 @@ public class ComponentInspector extends TopComponent
             FormUtils.getBundleString("ACS_ComponentTree")); // NOI18N
         treeView.getAccessibleContext().setAccessibleDescription(
             FormUtils.getBundleString("ACSD_ComponentTree")); // NOI18N
-        add(java.awt.BorderLayout.CENTER, treeView);
+        add(treeView, BorderLayout.CENTER);
     }
 
     // --------------
     // overriding superclasses, implementing interfaces
 
-    // ExplorerManager.Provider
     @Override
     public ExplorerManager getExplorerManager() {
+        if (explorerManager == null) {
+            // placeholder ExplorerManager until we get one from FormDesigner
+            explorerManager = new ExplorerManager();
+        }
         return explorerManager;
     }
 
     @Override
     public UndoRedo getUndoRedo() {
-        UndoRedo ur = focusedForm != null ?
-                          focusedForm.getFormUndoRedoManager() : null;
-        return ur != null ? ur : super.getUndoRedo();
+        if (formDesigner != null) {
+            FormModel formModel = formDesigner.getFormModel();
+            if (formModel != null) {
+                UndoRedo ur = formModel.getUndoRedoManager();
+                if (ur != null) {
+                    return ur;
+                }
+            }
+        }
+        return UndoRedo.NONE;
     }
 
     @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("gui.component-inspector"); // NOI18N
-    }
-
-    /** Replaces this in object stream.
-     * 
-     * @return ResolvableHelper
-     */
-    @Override
-    public Object writeReplace() {
-        return new ResolvableHelper();
+    public String getDisplayName() {
+        return FormUtils.getBundleString("CTL_InspectorNavigatorCaption"); // NOI18N
     }
 
     @Override
-    protected void componentActivated() {
+    public String getDisplayHint() {
+        return FormUtils.getBundleString("HINT_ComponentInspector"); // NOI18N
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return this;
+    }
+
+    @Override
+    public void panelActivated(Lookup context) {
         attachActions();
+        // actual context is set via setFormDesigner
     }
 
     @Override
-    protected void componentDeactivated() {
+    public void panelDeactivated() {
         detachActions();
+        // actual context is set via setFormDesigner
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
     }
 
     // ------------
     // activating and focusing
 
-    synchronized void attachActions() {
+    FormDesigner getFormDesigner() {
+        return formDesigner;
+    }
+
+    void setFormDesigner(final FormDesigner designer) {
+        if (designer != formDesigner) {
+            if (java.awt.EventQueue.isDispatchThread()) {
+                setFormDesignerImpl(designer);
+            } else {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setFormDesignerImpl(designer);
+                    }
+                });
+            }
+        }
+    }
+
+    private void setFormDesignerImpl(FormDesigner designer) {
+        if (explorerManager != null) {
+            ExplorerUtils.activateActions(explorerManager, false);
+            if (nodeSelectionListener != null) {
+                explorerManager.removePropertyChangeListener(nodeSelectionListener);
+            }
+        }
+
+        formDesigner = designer;
+
+        if (designer == null) {
+            lookup.setLookupFromExplorerManager(null, null);
+            explorerManager = null;
+            removeAll(); // swing memory leak workaround (old)
+            createComponents();
+            revalidate();
+        } else {
+            explorerManager = designer.getExplorerManager();
+            remove(treeView);
+            add(treeView, BorderLayout.CENTER);
+            lookup.setLookupFromExplorerManager(explorerManager, getActionMap());
+            if (nodeSelectionListener == null) {
+                nodeSelectionListener = new NodeSelectionListener();
+            }
+            explorerManager.addPropertyChangeListener(nodeSelectionListener);
+        }
+    }
+
+    void attachActions() {
+        if (explorerManager == null) {
+            return;
+        }
+
         ExplorerUtils.activateActions(explorerManager, true);
         updatePasteAction();
 
         Clipboard c = getClipboard();
         if (c instanceof ExClipboard) {
             ExClipboard clip = (ExClipboard) c;
-            if (clipboardListener == null)
+            if (clipboardListener == null) {
                 clipboardListener = new ClipboardChangesListener();
+            } else {
+                clip.removeClipboardListener(clipboardListener);
+            }
             clip.addClipboardListener(clipboardListener);
         }
     }
 
-    synchronized void detachActions() {
-        ExplorerUtils.activateActions(explorerManager, false);
+    void detachActions() {
+        if (explorerManager != null) {
+            ExplorerUtils.activateActions(explorerManager, false);
+        }
 
         Clipboard c = getClipboard();
         if (c instanceof ExClipboard) {
             ExClipboard clip = (ExClipboard) c;
             clip.removeClipboardListener(clipboardListener);
         }
-    }
-
-    /** This method focuses the ComponentInspector on given form.
-     * @param form the form to focus on
-     */
-    public void focusForm(final FormEditor form) {
-        if (focusedForm != form)
-            focusFormInAwtThread(form, 0);
-    }
-
-    /** This method focuses the ComponentInspector on given form.
-     * @param form the form to focus on
-     * @param visible true to open inspector, false to close
-     */
-    public void focusForm(final FormEditor form, boolean visible) {
-        if (focusedForm != form)
-            focusFormInAwtThread(form, visible ? 1 : -1);
-    }
-
-    private void focusFormInAwtThread(final FormEditor form,
-                                      final int visibility) {
-        if (java.awt.EventQueue.isDispatchThread()) {
-            focusFormImpl(form, visibility);
-        }
-        else {
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    focusFormImpl(form, visibility);
-                }
-            });
-        }
-    }
-
-    private void focusFormImpl(FormEditor form, int visibility) {
-        focusedForm = form;
-
-        if ((form == null) || (form.getFormDesigner() == null)) {
-            testAction.setFormDesigner(null);
-            PaletteUtils.setContext(null);
-
-            // swing memory leak workaround
-            removeAll();
-            createComponents();
-            revalidate();
-
-            getExplorerManager().setRootContext(emptyInspectorNode);
-        }
-        else {
-            Node[] selectedNodes = form.getFormDesigner().getSelectedComponentNodes();
-
-            testAction.setFormDesigner(form.getFormDesigner());
-            PaletteUtils.setContext(form.getFormDataObject().getPrimaryFile());
-
-            Node formNode = form.getFormRootNode();
-            if (formNode == null) { // form not loaded yet, should not happen
-                System.err.println("Warning: FormEditorSupport.getFormRootNode() returns null"); // NOI18N
-                getExplorerManager().setRootContext(emptyInspectorNode);
-            }
-            else
-                getExplorerManager().setRootContext(formNode);
-            
-            try {
-                getExplorerManager().setSelectedNodes(selectedNodes);
-            } catch (PropertyVetoException ex) {                
-                ex.printStackTrace();   // should not happen
-            }
-                        
-        }
-
-        if (visibility > 0)
-            open();
-        else if (visibility < 0)
-            close();
-    }
-
-    public FormEditor getFocusedForm() {
-        return focusedForm;
-    }
-
-    /** Called to synchronize with FormDesigner. Invokes NodeSelectionListener.
-     */
-    void setSelectedNodes(Node[] nodes, FormEditor form)
-        throws PropertyVetoException
-    {
-        if (form == focusedForm)
-            getExplorerManager().setSelectedNodes(nodes);
-    }
-
-    public Node[] getSelectedNodes() {
-        return getExplorerManager().getSelectedNodes();
     }
 
     private Node[] getSelectedRootNodes() {
@@ -462,21 +406,26 @@ public class ComponentInspector extends TopComponent
             c = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
         return c;
     }
-    
+
     @Override
-    protected String preferredID() {
-        return getClass().getName();
+    public void requestFocus() {
+        treeView.requestFocus();
     }
-    
+
     @Override
     @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow() {
-        super.requestFocusInWindow();
         return treeView.requestFocusInWindow();
     }
 
     // ---------------
     // innerclasses
+
+    private static class ExplorerManagerLookup extends ProxyLookup {
+        void setLookupFromExplorerManager(ExplorerManager manager, ActionMap actionMap) {
+            setLookups(manager != null ? ExplorerUtils.createLookup(manager, actionMap) : Lookup.EMPTY);
+        }
+    }
 
     // listener on nodes selection (ExplorerManager)
     private class NodeSelectionListener implements PropertyChangeListener,
@@ -492,52 +441,15 @@ public class ComponentInspector extends TopComponent
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
-                return;            
-            
-            FormDesigner designer;
-            if (focusedForm == null
-                    || (designer = focusedForm.getFormDesigner()) == null)
-                return;
-
-            Node[] selectedNodes = getExplorerManager().getSelectedNodes();
-
-            if (designer.getDesignerMode() == FormDesigner.MODE_CONNECT) {
-                // specially handle node selection in connection mode
-                if (selectedNodes.length > 0) {
-                    RADComponentCookie cookie = selectedNodes[0].getCookie(RADComponentCookie.class);
-                    if (cookie != null
-                        && cookie.getRADComponent() == designer.getConnectionSource()
-                        && selectedNodes.length > 1)
-                    {
-                        cookie = selectedNodes[selectedNodes.length-1]
-                                .getCookie(RADComponentCookie.class);
-                    }
-                    if (cookie != null)
-                        designer.connectBean(cookie.getRADComponent(), true);
+            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())
+                    && formDesigner != null && formDesigner.getFormModel() != null) {
+                // refresh nodes' lookup with current set of cookies
+                for (Node node : getExplorerManager().getSelectedNodes()) {
+                    ((FormNode)node).updateCookies();
                 }
+                // restart waiting for expensive part of the update
+                timer.restart();
             }
-            else if (evt.getSource() == ComponentInspector.this.getExplorerManager())
-            {   // the change comes from ComponentInspector => synchronize FormDesigner
-                designer.clearSelectionImpl();
-                for (int i=0; i < selectedNodes.length; i++) {
-                    FormCookie formCookie = selectedNodes[i].getCookie(FormCookie.class);
-                    if (formCookie != null) {
-                        Node node = formCookie.getOriginalNode();
-                        if (node instanceof RADComponentNode)
-                            designer.addComponentToSelectionImpl(
-                                ((RADComponentNode)node).getRADComponent());
-                    }
-                }
-                designer.repaintSelection();
-            }
-
-            // refresh nodes' lookup with current set of cookies
-            for (int i=0; i < selectedNodes.length; i++)
-                ((FormNode)selectedNodes[i]).updateCookies();
-
-            // restart waiting for expensive part of the update
-            timer.restart();
         }
 
         @Override
@@ -552,16 +464,7 @@ public class ComponentInspector extends TopComponent
          */
         @Override
         public void run() {
-            Node[] selectedNodes = getExplorerManager().getSelectedNodes();
-            setActivatedNodes(selectedNodes);
-            // set activated nodes also on FormDesigner - to keep it in sync
-            FormDesigner designer = focusedForm != null ?
-                                    focusedForm.getFormDesigner() : null;
-            if (designer != null)
-                designer.setActivatedNodes(selectedNodes);
-
             updatePasteAction();
-
             timer.stop();
         }
     }
@@ -731,22 +634,31 @@ public class ComponentInspector extends TopComponent
 
     // -----------
 
-    // node for empty ComponentInspector
-    private static class EmptyInspectorNode extends AbstractNode {
-        public EmptyInspectorNode() {
-            super(Children.LEAF);
-            setIconBaseWithExtension(EMPTY_INSPECTOR_ICON_BASE);
-        }
-        @Override
-        public boolean canRename() {
-            return false;
-        }
-    }
+//    // node for empty ComponentInspector
+//    private static class EmptyInspectorNode extends AbstractNode {
+//        public EmptyInspectorNode() {
+//            super(Children.LEAF);
+//            setIconBaseWithExtension(EMPTY_INSPECTOR_ICON_BASE);
+//        }
+//        @Override
+//        public boolean canRename() {
+//            return false;
+//        }
+//    }
 
     final public static class ResolvableHelper implements java.io.Serializable {
         static final long serialVersionUID = 7424646018839457544L;
         public Object readResolve() {
-            return ComponentInspector.getDefault();
+            return new TopComponent() {
+                @Override
+                protected void componentOpened() {
+                    close();
+                }
+                @Override
+                public int getPersistenceType() {
+                    return TopComponent.PERSISTENCE_NEVER;
+                }
+            };
         }
     }
 }

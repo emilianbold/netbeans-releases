@@ -160,7 +160,7 @@ public final class CsmProjectContentResolver {
                 CsmEnum elemEnum = null;
                 if (CsmKindUtilities.isEnumerator(ob)) {
                     CsmEnumerator elem = (CsmEnumerator) ob;
-                    if (matchName(elem.getName().toString(), strPrefix, match)) {
+                    if (matchName(elem.getName(), strPrefix, match)) {
                         res.add((CsmEnumerator) ob);
                     }
                 } else if (CsmKindUtilities.isEnum(ob)) {
@@ -179,7 +179,7 @@ public final class CsmProjectContentResolver {
                 if (elemEnum != null) {
                     for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
                         CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
-                        if (matchName(elem.getName().toString(), strPrefix, match)) {
+                        if (matchName(elem.getName(), strPrefix, match)) {
                             res.add(elem);
                         }
                     }
@@ -889,17 +889,17 @@ public final class CsmProjectContentResolver {
         handledNS.add(ns);
         Map<CharSequence, CsmNamespace> res = new LinkedHashMap<CharSequence, CsmNamespace>(); // order is important
         // handle all nested namespaces
+        for (CsmProject lib : ns.getProject().getLibraries()) {
+            CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+            if (n != null && !handledNS.contains(n)) {
+                res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+            }
+        }
         for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
             CsmNamespace nestedNs = (CsmNamespace) it.next();
             // TODO: consider when we add nested namespaces
             if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
                 res.put(nestedNs.getQualifiedName(), nestedNs);
-            }
-        }
-        for (CsmProject lib : ns.getProject().getLibraries()) {
-            CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
-            if (n != null && !handledNS.contains(n)) {
-                res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
             }
         }
         return res;

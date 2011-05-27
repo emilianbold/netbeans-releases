@@ -63,6 +63,8 @@ public class FormEditorModule extends ModuleInstall {
     public void restored() {
         Beans.setDesignTime(true);
 
+        // TODO historically registered here, but it should be better just on search
+        // path (i.e. in editors2 package)
         FormPropertyEditorManager.registerEditor(
             javax.swing.KeyStroke.class,
             org.netbeans.modules.form.editors.KeyStrokeEditor.class);

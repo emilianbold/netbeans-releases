@@ -51,6 +51,7 @@ import java.io.Writer;
 import java.util.Set;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -66,7 +67,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author ondra
  */
-class DiffStreamSource extends StreamSource {
+public class DiffStreamSource extends StreamSource {
 
     private final File baseFile;
     private final String revision;
@@ -188,7 +189,7 @@ class DiffStreamSource extends StreamSource {
         try {
             if (isEditable()) {
                 // we cannot move editable documents because that would break Document sharing
-                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
+                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision, ProgressMonitor.NULL_PROGRESS_MONITOR);
             } else {
                 File tempFolder = Utils.getTempFolder();
                 // To correctly get content of the base file, we need to checkout all files that belong to the same
@@ -198,7 +199,7 @@ class DiffStreamSource extends StreamSource {
                 for (File file : allFiles) {
                     boolean isBase = file.equals(baseFile);
                     try {
-                        File rf = VersionsCache.getInstance().getFileRevision(file, revision);
+                        File rf = VersionsCache.getInstance().getFileRevision(file, revision, ProgressMonitor.NULL_PROGRESS_MONITOR);
                         if (rf == null) {
                             remoteFile = null;
                             return;

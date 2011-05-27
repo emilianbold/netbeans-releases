@@ -46,6 +46,7 @@ package org.netbeans.modules.form;
 
 import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
@@ -69,6 +70,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -113,12 +115,15 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
@@ -157,7 +162,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     /** The embracing multiview TopComponent (holds the form designer and
      * java editor) - we remeber the last active TopComponent (not all clones) */
     private CloneableTopComponent multiviewTC;
-    
+
+    /**
+     * Listener for node delegate's icon changes. It is responsible
+     * for synchronization of node's and multiviewTC's icons.
+     */
+    private NodeListener nodeListener;
+
     // listeners
     private static PropertyChangeListener topcompsListener;
     
@@ -203,6 +214,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             multiviewTC = openCloneableTopComponent();
             multiviewTC.requestActive();
 
+            registerNodeListener();
+
             if (switchToForm) {
                 MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
                 handler.requestActive(handler.getPerspectives()[FORM_ELEMENT_INDEX]);
@@ -211,6 +224,32 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             hideOpeningStatus();
         }
         Logger.getLogger(FormEditor.class.getName()).log(Level.FINER, "Opening form time 1: {0}ms", (System.currentTimeMillis()-ms)); // NOI18N
+    }
+
+    private void registerNodeListener() {
+        if (formDataObject.isValid()) {
+            Node node = formDataObject.getNodeDelegate();
+            multiviewTC.setIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
+            if (nodeListener == null) {
+                NodeListener listener = new NodeAdapter() {
+                    @Override
+                    public void propertyChange(final PropertyChangeEvent ev) {
+                        Mutex.EVENT.writeAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (Node.PROP_ICON.equals(ev.getPropertyName())) {
+                                    if (formDataObject.isValid() && (multiviewTC != null)) {
+                                        multiviewTC.setIcon(formDataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+                                    }
+                                }
+                            }
+                        });
+                    }
+                };
+                node.addNodeListener(org.openide.nodes.NodeOp.weakNodeListener(listener, node));
+                nodeListener = listener;
+            }
+        }
     }
 
     void showOpeningStatus(String fmtMessage) {
@@ -319,6 +358,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
         if (handler != null) {
             handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
+            // will continue in loadOpeningForm
         }
     }
     
@@ -340,7 +380,39 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     public void openAt(Position pos) {
         openAt(createPositionRef(pos.getOffset(), Position.Bias.Forward));
     }
-    
+
+    /**
+     * Callback from multiview (FormDesignerTC), requiring to load form whose
+     * designer is just being opened.
+     * @return true if successfully loaded
+     */
+    boolean loadOpeningForm() {
+        showOpeningStatus("FMT_OpeningForm"); // NOI18N
+
+        formEditor.preCreationUpdate();
+
+        formEditor.loadFormData();
+
+        if (!formEditor.isFormLoaded()) { // loading failed - don't keep empty designer opened
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    selectJavaEditor();
+                }
+            });
+        }
+
+        hideOpeningStatus();
+
+        // report errors during loading
+        reportErrors(FormEditor.LOADING);
+
+        // may do additional setup for just created form
+        formEditor.postCreationUpdate();
+
+        return formEditor.isFormLoaded();
+    }
+
     /** Public method for loading form data from file. Does not open the
      * source editor and designer, does not report errors and does not throw
      * any exceptions. Runs in AWT event dispatch thread, returns after the
@@ -386,13 +458,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             saving = false; // workaround for bug 75225
         }
         if (formEditor != null) {
-            formEditor.reportErrors(FormEditor.SAVING);
+            reportErrors(FormEditor.SAVING);
         }
         
         if (ioEx != null)
             throw ioEx;
     }
-    
+
     void saveSourceOnly() throws IOException {
         try {
             saving = true; // workaround for bug 75225
@@ -401,7 +473,51 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             saving = false; // workaround for bug 75225
         }
     }
-    
+
+    /**
+     * Reports errors occurred during loading or saving the form.
+     * @param operation operation being performed.
+     */
+    private void reportErrors(int operation) {
+        final String errorMsg = formEditor.reportErrors(operation);
+        if (errorMsg != null) {
+            // the form was loaded with some non-fatal errors - some data
+            // was not loaded - show a warning about possible data loss
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    // for some reason this would be displayed before the
+                    // ErrorManager if not invoked later
+                    if (formEditor != null && !formEditor.isFormLoaded()) {
+                        return; // issue #164444
+                    }
+                    
+                    JButton viewOnly = new JButton(FormUtils.getBundleString("CTL_ViewOnly"));		// NOI18N
+                    JButton allowEditing = new JButton(FormUtils.getBundleString("CTL_AllowEditing"));	// NOI18N                                        
+                    
+                    Object ret = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                        errorMsg,
+                        FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE,
+                        new Object[] { viewOnly, allowEditing, NotifyDescriptor.CANCEL_OPTION },
+                        viewOnly ));
+                   
+                    if (ret == viewOnly) {
+                        formEditor.setFormReadOnly();
+                        updateMVTCDisplayName();
+                    } else if(ret == allowEditing) {    
+                        formEditor.destroyInvalidComponents();
+                    } else { // close form, switch to source editor
+                        formEditor.closeForm();
+                        getFormDesignerTC().resetDesigner(false);
+                        selectJavaEditor();
+                    }                                                      
+                }
+            });
+        }
+    }    
+
     // ------------
     // other interface methods
     
@@ -430,7 +546,14 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
         return formEditor;
     }
-    
+
+    private FormDesignerTC getFormDesignerTC() {
+        if (multiviewTC == null) {
+            return null;
+        }
+        return (FormDesignerTC) multiviewTC.getClientProperty("formDesigner"); // NOI18N
+    }
+
     /** Marks the form as modified if it's not yet. Used if changes made
      * in form data don't affect the java source file (generated code). */
     void markFormModified() {
@@ -476,43 +599,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         if (saving) // workaround for bug 75225
             return docLoadTask;
         
-        // after reloading is done, open the form editor again
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                FormDesigner formDesigner = getFormEditor(true).getFormDesigner();
-                if (formDesigner == null) {
-                    if (multiviewTC == null) {
-                        return; // Issue 150534
-                    } else {
-                        formDesigner = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
-                    }
-                }
-                if(formDesigner==null) {
-                    // if formDesigner is null then it haven't been activated yet...
-                    return;
-                }
-                
-                // close
-                getFormEditor().closeForm();
-                formEditor = null;
-                
-                formDesigner.reset(getFormEditor(true));
-                getFormEditor().setFormDesigner(formDesigner);
-                
-                if(formDesigner.isShowing()) {
-                    // load the form only if its open
-                    loadForm();
-                    FormEditor formEditor = getFormEditor();
-                    formEditor.reportErrors(FormEditor.LOADING);
-                    if (!formEditor.isFormLoaded()) { // there was a loading error
-                        formDesigner.removeAll();
-                    } else {
-                        formDesigner.initialize();
-                    }
-                    ComponentInspector.getInstance().focusForm(formEditor);
-                    formDesigner.revalidate();
-                    formDesigner.repaint();
+                FormDesignerTC designerTC = getFormDesignerTC();
+                if (designerTC != null) {
+                    formEditor.closeForm();
+                    designerTC.resetDesigner(true); // will trigger loading
                 }
             }
         });
@@ -520,38 +613,43 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         return docLoadTask;
     }
 
+    /**
+     * Reload the form if opened. It always loads the form, no matter whether on
+     * Source or Design tabs. That's different from standard reload task that
+     * won't load the form if currently not in Design.
+     */
     public FormEditor reloadFormEditor() {
-        if (formEditor == null || !formEditor.isFormLoaded()) {
+        if (!isOpened()) {
             return null;
         }
-        FormDesigner formDesigner = formEditor.getFormDesigner();
-        if (formDesigner == null) {
-            formDesigner = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
-        }
+        FormDesignerTC designerTC = getFormDesignerTC();
         formEditor.closeForm();
-        formEditor = null;
-        formEditor = getFormEditor(true); // new FormEditor instance
-        if (formDesigner != null) {
-            formDesigner.reset(formEditor);
-            formEditor.setFormDesigner(formDesigner);
-        }
         loadForm();
-        formEditor.reportErrors(FormEditor.LOADING);
-        if (formEditor.isFormLoaded() && formDesigner != null && formDesigner.isShowing()) {
-            formDesigner.initialize();
+        if (designerTC != null) {
+            if (formEditor.isFormLoaded()) {
+                designerTC.resetDesigner(true);
+            } else {
+                closeFormEditor();
+            }
         }
+        reportErrors(FormEditor.LOADING);
         return formEditor;
     }
 
+    /**
+     * Closes the form editor without closing the document in editor. The editor
+     * is switched to Source tab, later clicking on Design tab will load the
+     * form again.
+     */
     public void closeFormEditor() {
         if (isOpened()) {
-            final FormDesigner formDesigner = formEditor.getFormDesigner();
+            final FormDesignerTC designerTC = getFormDesignerTC();
             formEditor.closeForm();
             Runnable run = new Runnable() {
                 @Override
                 public void run() {
-                    if (formDesigner != null) {
-                        formDesigner.reset(formEditor); // might be reused
+                    if (designerTC != null) {
+                        designerTC.resetDesigner(false);
                     }
                     selectJavaEditor();
                 }
@@ -581,6 +679,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             formEditor.closeForm();
             formEditor = null;
         }
+        nodeListener = null;
         multiviewTC = null;
         guardedProvider = null;
         guardedEditor = null;
@@ -592,17 +691,16 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         boolean isLast = !en.hasMoreElements();
         if (multiviewTC == mvtc) {
             multiviewTC = null;
-            FormDesigner formDesigner = null;
+            FormDesignerTC designerTC = null;
             // Find another multiviewTC, possibly with loaded formDesigner
             while (en.hasMoreElements()) {
                 multiviewTC = (CloneableTopComponent)en.nextElement();
-                FormDesigner designer = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
-                if (designer != null) {
-                    formDesigner = designer;
+                designerTC = getFormDesignerTC();
+                if (designerTC != null) {
                     break;
                 }
             }
-            if (!isLast && (formDesigner == null)) {
+            if (!isLast && (designerTC == null)) {
                 // Only Java elements are opened in the remaining clones
                 if (formEditor != null) {
                     formEditor.closeForm();
@@ -677,22 +775,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         topcompsListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent ev) {
-                if (TopComponent.Registry.PROP_ACTIVATED.equals(
-                                                ev.getPropertyName()))
-                {   // activated TopComponent has changed
-                    TopComponent active = TopComponent.getRegistry().getActivated();
-                    if (getSelectedElementType(active) != -1) { // it is our multiview
-                        FormEditorSupport fes = getFormEditor(active);
-                        if (fes != null) {
-                            fes.multiviewTC = (CloneableTopComponent) active;
-                            FormDesigner designer = (FormDesigner)active.getClientProperty("formDesigner"); // NOI18N
-                            if (designer != null)
-                                fes.getFormEditor().setFormDesigner(designer);
-                        }
-                    }
-                    checkFormGroupVisibility();
-                }
-                else if (TopComponent.Registry.PROP_OPENED.equals(
+                if (TopComponent.Registry.PROP_OPENED.equals(
                                                 ev.getPropertyName()))
                 {   // set of opened TopComponents has changed - hasn't some
                     // of our views been closed?
@@ -809,11 +892,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
         FormEditorSupport fes = formDataObject.getFormEditor();
         if (fes != null) {
-            FormModel fm = fes.getFormModel();
-            if (fm != null) {
-                FormDesigner fd = FormEditor.getFormDesigner(formDataObject.getFormEditor().getFormModel());
-                if (fd != null && fd.getFormModel() != null) {
-                    if (fd.isShowing() && !fd.isTopRADComponent() && fd.getTopDesignComponent() != null) {
+            FormDesignerTC designerTC = fes.getFormDesignerTC();
+            if (designerTC != null && designerTC.isShowing()) {
+                FormModel fm = fes.getFormModel();
+                if (fm != null) {
+                    FormDesigner fd = FormEditor.getFormDesigner(formDataObject.getFormEditor().getFormModel());
+                    if (fd != null && fd.getFormModel() != null
+                            && !fd.isTopRADComponent() && fd.getTopDesignComponent() != null) {
                         title = FormUtils.getFormattedBundleString(
                                 "FMT_FormTitleWithContainerName", // NOI18N
                                 new Object[] {title, fd.getTopDesignComponent().getName()});
@@ -919,6 +1004,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         multiviewTC.setHtmlDisplayName(titles[1]);
         multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
         opened.add(this);
+        registerNodeListener();
         attachTopComponentsListener();
         try {
             addStatusListener(formDataObject.getPrimaryFile().getFileSystem());
@@ -965,10 +1051,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             final TopComponentGroup paletteGroup = wm.findTopComponentGroup( "commonpalette" ); // NOI18N
             if( null != paletteGroup ) {
                 paletteGroup.open();
-            }
-            ComponentInspector inspector = ComponentInspector.getInstance();
-            if (!Boolean.TRUE.equals(inspector.getClientProperty("isSliding"))) { // NOI18N
-                inspector.requestVisible();
             }
         }
         else if (!designerSelected && !Boolean.FALSE.equals(groupVisible)) {
@@ -1019,7 +1101,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             }
             return (doc == null) ? null : GuardedSectionManager.getInstance(doc);
         } catch (IOException ex) {
-            throw (IllegalStateException) new IllegalStateException("cannot open document").initCause(ex); // NOI18N
+            throw new IllegalStateException("cannot open document", ex); // NOI18N
         }
     }
 
@@ -1099,8 +1181,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         @Override
         public MultiViewElement createElement() {
-            FormEditorSupport formEditor = getFormEditor();
-            return new FormDesigner((formEditor == null) ? null : formEditor.getFormEditor(true));
+            return new FormDesignerTC(getFormEditor());
         }
         
         @Override
@@ -1115,7 +1196,11 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         @Override
         public java.awt.Image getIcon() {
-            return ImageUtilities.loadImage(iconURL);
+            if (dataObject.isValid()) {
+                return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
+            } else {
+                return ImageUtilities.loadImage(iconURL);
+            }
         }
         
         @Override
@@ -1189,7 +1274,11 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         @Override
         public java.awt.Image getIcon() {
-            return ImageUtilities.loadImage(iconURL);
+            if (dataObject.isValid()) {
+                return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
+            } else {
+                return ImageUtilities.loadImage(iconURL);
+            }
         }
         
         @Override

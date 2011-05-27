@@ -396,8 +396,91 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
             </folder>
+            <folder name="Hints">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="html">
+                        <file name="ELHints.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.hints.HintsAdvancedOption.createStatic"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
+
+    <folder name="csl-hints">
+        <folder name="text">
+            <folder name="html">
+                <folder name="hints">
+                    <folder name="general">
+                       <attr name="position" intvalue="200"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.hints.Bundle"/>
+                        <file name="org-netbeans-modules-html-editor-hints-Attribute.instance">
+                           <attr name="position" intvalue="10"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-CharacterReference.instance">
+                           <attr name="position" intvalue="20"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Comments.instance">
+                           <attr name="position" intvalue="30"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Doctype.instance">
+                           <attr name="position" intvalue="40"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Element.instance">
+                           <attr name="position" intvalue="50"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Encoding.instance">
+                           <attr name="position" intvalue="60"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-ForeignContent.instance">
+                           <attr name="position" intvalue="70"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Form.instance">
+                           <attr name="position" intvalue="80"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Ids.instance">
+                           <attr name="position" intvalue="90"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Internal.instance">
+                           <attr name="position" intvalue="100"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Nesting.instance">
+                           <attr name="position" intvalue="110"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Normalization.instance">
+                           <attr name="position" intvalue="120"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Obsolete.instance">
+                           <attr name="position" intvalue="130"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-ProcessingInstruction.instance">
+                           <attr name="position" intvalue="140"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-StrayContent.instance">
+                           <attr name="position" intvalue="150"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-Table.instance">
+                           <attr name="position" intvalue="160"/>                            
+                        </file>                            
+                        <file name="org-netbeans-modules-html-editor-hints-TagsMatching.instance">
+                           <attr name="position" intvalue="170"/>                            
+                        </file>
+                        <file name="org-netbeans-modules-html-editor-hints-UnexpectedChars.instance">
+                           <attr name="position" intvalue="180"/>                            
+                        </file>
+                        <!-- the following hint 'Other' must be last in the hints list!!! -->
+                        <file name="org-netbeans-modules-html-editor-hints-Other.instance">
+                           <attr name="position" intvalue="99999"/>                            
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
 
     <folder name="Loaders">
         <folder name="image">

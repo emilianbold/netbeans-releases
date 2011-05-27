@@ -813,6 +813,36 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 194453 - Static C Structure initialization incorrectly reports as erroneous syntax
         performTest("bug194453.cpp", 9, 62, "bug194453.cpp", 7, 6);
     }
+
+    public void testBug188270() throws Exception {
+        // Bug 188270 - Unable to resolve identifier in nested structs (C)
+        performTest("bug188270.cpp", 13, 12, "bug188270.cpp", 2, 5);
+    }
+
+    public void testBug189039() throws Exception {
+        // Bug 189039 - Unresolved unnamed enum constant in unnamed struct
+        performTest("bug189039.cpp", 11, 62, "bug189039.cpp", 4, 5);
+    }
+
+    public void testBug195307() throws Exception {
+        // Bug 195307 - Unresolved function parameters in function pointer with composed return type
+        performTest("bug195307.cpp", 6, 47, "bug195307.cpp", 6, 43);
+    }
+
+    public void testBug196966() throws Exception {
+        // Bug 196966 - volatile bitfield in structure incorrectly reported as an error
+        performTest("bug196966.cpp", 2, 21, "bug196966.cpp", 2, 5);
+    }    
+
+    public void testBug151199() throws Exception {
+        // Bug 151199 - Unresolved parameter of pointer to function type used as template parameter
+        performTest("bug151199.cpp", 5, 26, "bug151199.cpp", 5, 22);
+    }    
+
+    public void testBug198823() throws Exception {
+        // Bug 198823 - Wrong recognition of function instead of variable
+        performTest("bug198823.cpp", 17, 10, "bug198823.cpp", 3, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

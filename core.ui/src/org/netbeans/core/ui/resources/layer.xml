@@ -45,14 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-
-    <folder name="WarmUp">
-        <file name="org-netbeans-core-ui-warmup-MenuWarmUpTask.instance"/>
-        <file name="org-netbeans-core-ui-warmup-ContextMenuWarmUpTask.instance"/>
-        <file name="org-netbeans-core-ui-warmup-DnDWarmUpTask.instance"/>
-        <file name="org-netbeans-core-ui-warmup-DiagnosticTask.instance"/>
-    </folder>
-
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
 
@@ -150,7 +142,17 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-FileSystemRefreshAction.instance"/>
             <file name="org-openide-actions-RenameAction.instance"/>
             <file name="org-openide-actions-ReorderAction.instance"/>
-            <file name="org-openide-actions-SaveAllAction.instance"/>
+            <file name="org-openide-actions-SaveAllAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+                <attr name="context" methodvalue="org.netbeans.modules.openide.awt.SavableRegistry.getRegistry"/>
+                <attr name="delegate" newvalue="org.openide.actions.SaveAction"/>
+                <attr name="selectionType" stringvalue="ANY"/>
+                <attr name="surviveFocusChange" boolvalue="false"/>
+                <attr name="displayName" bundlevalue="org/openide/loaders/Bundle#SaveAll"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+                <attr name="iconBase" stringvalue="org/openide/loaders/saveAll.gif"/>
+                <attr name="type" stringvalue="org.netbeans.api.actions.Savable"/>
+            </file>
             <file name="org-openide-actions-SaveAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="delegate" newvalue="org.openide.actions.SaveAction"/>
@@ -159,7 +161,7 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org/openide/actions/Bundle#Save"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
                 <attr name="iconBase" stringvalue="org/openide/resources/actions/save.png"/>
-                <attr name="type" stringvalue="org.openide.cookies.SaveCookie"/>
+                <attr name="type" stringvalue="org.netbeans.api.actions.Savable"/>
             </file>
             <file name="org-openide-actions-SaveAsAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.actions.SaveAsAction.create"/>

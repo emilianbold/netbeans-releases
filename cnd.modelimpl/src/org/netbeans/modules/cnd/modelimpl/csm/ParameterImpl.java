@@ -47,9 +47,9 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmParameter
@@ -64,6 +64,9 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     public static ParameterImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope, boolean global) {
         ParameterImpl parameterImpl = new ParameterImpl(ast, file, type, name, scope);
         postObjectCreateRegistration(global, parameterImpl);
+        if (global && (type instanceof TypeImpl)) {
+            ((TypeImpl)type).setOwner(parameterImpl);
+        }
         return parameterImpl;
     }
 
@@ -81,7 +84,7 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     // impl of SelfPersistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);      
         // write UID for unnamed parameter
         if (getName().length() == 0) {
@@ -89,11 +92,14 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
         }
     }  
     
-    public ParameterImpl(DataInput input) throws IOException {
+    public ParameterImpl(RepositoryDataInput input) throws IOException {
         super(input);
         // restore UID for unnamed parameter
         if (getName().length() == 0) {
             super.readUID(input);
-        }        
+        }
+        if (getType() instanceof TypeImpl) {
+            ((TypeImpl)getType()).setOwner(this);
+        }
     } 
 }

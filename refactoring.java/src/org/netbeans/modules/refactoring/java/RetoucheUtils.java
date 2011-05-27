@@ -49,6 +49,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Color;
@@ -120,6 +121,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -222,7 +224,12 @@ public class RetoucheUtils {
             if (type == null) {
                 // #120577: log info to find out what is going wrong
                 FileObject file = SourceUtils.getFile(subTypeHandle, info.getClasspathInfo());
-                throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
+                if (file == null) {
+                    //Deleted file
+                    continue;
+                } else {
+                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
+                }
             }
             for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {
                 if (info.getElements().overrides(method, e, type)) {
@@ -336,11 +343,14 @@ public class RetoucheUtils {
             return false;
 
         //workaround for 143542
+        // XXX why is it checking open projects, rather than just p?
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (Project pr : opened) {
-            for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
-                    return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
+            for (String type : new String[] {JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_TYPE_RESOURCES}) {
+                for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(type)) {
+                    if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
+                        return ClassPath.getClassPath(fo, ClassPath.SOURCE) != null;
+                    }
                 }
             }
         }
@@ -1081,4 +1091,74 @@ public class RetoucheUtils {
         flags.remove(Modifier.FINAL);
         return make.Modifiers(flags, oldMods.getAnnotations());
     }
+    
+    public static String variableClashes(String newName, TreePath tp, CompilationInfo info) {
+        LocalVarScanner lookup = new LocalVarScanner(info, newName);
+        TreePath scopeBlok = tp;
+        EnumSet set = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.FOR_LOOP, Tree.Kind.METHOD);
+        while (!set.contains(scopeBlok.getLeaf().getKind())) {
+            scopeBlok = scopeBlok.getParentPath();
+        }
+        Element var = info.getTrees().getElement(tp);
+        lookup.scan(scopeBlok, var);
+
+        if (lookup.hasRefernces())
+            return new MessageFormat(getString("MSG_LocVariableClash")).format(
+                new Object[] {newName}
+            );
+        
+        TreePath temp = tp;
+        while (temp != null && temp.getLeaf().getKind() != Tree.Kind.METHOD) {
+            Scope scope = info.getTrees().getScope(temp);
+            for (Element el:scope.getLocalElements()) {
+                if (el.getSimpleName().toString().equals(newName)) {
+                    return new MessageFormat(getString("MSG_LocVariableClash")).format(
+                            new Object[] {newName}
+                    );
+                }
+            }
+            temp = temp.getParentPath();
+        }
+        return null;
+    }
+    
+    public static boolean isSetter(ExecutableElement el, Element propertyElement) {
+        String setterName = getSetterName(propertyElement.getSimpleName().toString());
+
+        return el.getSimpleName().contentEquals(setterName) && 
+                el.getReturnType().getKind() == TypeKind.VOID && 
+                el.getParameters().size() == 1 && 
+                el.getParameters().iterator().next().asType().equals(propertyElement.asType());
+    }
+
+    public static boolean isGetter(ExecutableElement el, Element propertyElement) {
+        String getterName = getGetterName(propertyElement.getSimpleName().toString());
+        return el.getSimpleName().contentEquals(getterName) && 
+                el.getReturnType().equals(propertyElement.asType()) && 
+                el.getParameters().isEmpty();
+    }
+
+    public static String getGetterName(String propertyName) {
+        return "get" + capitalizeFirstLetter(propertyName); //NOI18N
+    }
+
+    public static String getSetterName(String propertyName) {
+        return "set" + capitalizeFirstLetter(propertyName); //NOI18N
+    }
+    
+    /** Utility method capitalizes the first letter of string, used to
+     * generate method names for patterns
+     * @param str The string for capitalization.
+     * @return String with the first letter capitalized.
+     */
+    private static String capitalizeFirstLetter( String str ) {
+        if ( str == null || str.length() <= 0 )
+            return str;
+
+        char chars[] = str.toCharArray();
+        chars[0] = Character.toUpperCase(chars[0]);
+        return new String(chars);
+    }
+    
+
 }

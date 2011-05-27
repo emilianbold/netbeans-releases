@@ -88,6 +88,14 @@ implements UpdatingContext {
     
     /** Creates new form UpdaterFrame */
     public UpdaterFrame() {
+        this(null);
+    }
+    
+    private UpdaterFrame(String[] args) {
+        
+        if (args!=null && args.length>0)
+            cli(args);
+        
         initComponents ();
         
         if ( addBorder() )
@@ -221,10 +229,7 @@ implements UpdatingContext {
     * @param args the command line arguments
     */
     public static void main (String... args) {
-        UpdaterFrame panel = new UpdaterFrame ();
-        if (args.length > 0) {
-            panel.cli(args);
-        }
+        UpdaterFrame panel = new UpdaterFrame (args);
         if (!panel.noSplash) {
             panel.showSplash ();
         }

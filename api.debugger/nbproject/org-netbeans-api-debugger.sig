@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26
+#Version 1.30.1
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -71,6 +71,7 @@ CLSS public abstract interface java.util.EventListener
 
 CLSS public final org.netbeans.api.debugger.ActionsManager
 fld public final static java.lang.Object ACTION_CONTINUE
+fld public final static java.lang.Object ACTION_EVALUATE
 fld public final static java.lang.Object ACTION_FIX
 fld public final static java.lang.Object ACTION_KILL
 fld public final static java.lang.Object ACTION_MAKE_CALLEE_CURRENT
@@ -370,6 +371,7 @@ hfds expression,pcs
 CLSS public abstract org.netbeans.spi.debugger.ActionsProvider
 cons public init()
 innr public abstract interface static !annotation Registration
+innr public abstract interface static !annotation Registrations
 meth public abstract boolean isEnabled(java.lang.Object)
 meth public abstract java.util.Set getActions()
 meth public abstract void addActionsProviderListener(org.netbeans.spi.debugger.ActionsProviderListener)
@@ -377,6 +379,7 @@ meth public abstract void doAction(java.lang.Object)
 meth public abstract void removeActionsProviderListener(org.netbeans.spi.debugger.ActionsProviderListener)
 meth public void postAction(java.lang.Object,java.lang.Runnable)
 supr java.lang.Object
+hfds debuggerActionsRP
 hcls ContextAware
 
 CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ActionsProvider$Registration
@@ -387,6 +390,13 @@ intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
 meth public abstract !hasdefault java.lang.String[] actions()
 meth public abstract !hasdefault java.lang.String[] activateForMIMETypes()
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.ActionsProvider$Registrations
+ outer org.netbeans.spi.debugger.ActionsProvider
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.spi.debugger.ActionsProvider$Registration[] value()
 
 CLSS public abstract interface org.netbeans.spi.debugger.ActionsProviderListener
 intf java.util.EventListener
@@ -435,8 +445,15 @@ CLSS public abstract interface !annotation org.netbeans.spi.debugger.DebuggerSer
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
 meth public abstract !hasdefault java.lang.String path()
 meth public abstract java.lang.Class[] types()
+
+CLSS public abstract interface !annotation org.netbeans.spi.debugger.DebuggerServiceRegistrations
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.spi.debugger.DebuggerServiceRegistration[] value()
 
 CLSS public abstract org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider
 cons public init()

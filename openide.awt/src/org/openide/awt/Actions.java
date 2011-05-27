@@ -219,15 +219,21 @@ public class Actions {
     }
 
     /** Connects buttons to action. If the action supplies value for "iconBase"
-     * key from getValue(String) with a path to icons the methods setIcon,
-     * setPressedIcon, setDisabledIcon and setRolloverIcon will be called on the
+     * key from getValue(String) with a path to icons, the methods set*Icon
+     * will be called on the
      * button with loaded icons using the iconBase. E.g. if the value for "iconBase"
-     * will be "com/mycompany/myIcon.gif" following images will be tried "com/mycompany/myIcon.gif"
-     * for setIcon, "com/mycompany/myIcon_pressed.gif" for setPressedIcon,
-     * "com/mycompany/myIcon_disabled.gif" for setDisabledIcon and
-     * "com/mycompany/myIcon_rollover.gif" for setRolloverIcon. SystemAction has
-     * special support for iconBase - please check {@link SystemAction#iconResource}
-     * for more details.
+     * is "com/mycompany/myIcon.gif" then the following images are tried
+     * <ul>
+     *  <li>setIcon with "com/mycompany/myIcon.gif"</li>
+     *  <li>setPressedIcon with "com/mycompany/myIcon_pressed.gif"</li>
+     *  <li>setDisabledIcon with "com/mycompany/myIcon_disabled.gif"</li>
+     *  <li>setRolloverIcon with "com/mycompany/myIcon_rollover.gif"</li>
+     *  <li>setSelectedIcon with "com/mycompany/myIcon_selected.gif"</li>
+     *  <li>setRolloverSelectedIcon with "com/mycompany/myIcon_rolloverSelected.gif"</li>
+     *  <li>setDisabledSelectedIcon with "com/mycompany/myIcon_disabledSelected.gif"</li>
+     * </ul>
+     * SystemAction has special support for iconBase - please check
+     * {@link SystemAction#iconResource} for more details.
      * You can supply an alternative implementation
      * for this method by implementing method
      * {@link ButtonActionConnector#connect(AbstractButton, Action)} and
@@ -236,6 +242,7 @@ public class Actions {
      * @param button the button
      * @param action the action
      * @since 3.29
+     * @since 7.32 for set*SelectedIcon
      */
     public static void connect(AbstractButton button, Action action) {
         for (ButtonActionConnector bac : buttonActionConnectors()) {
@@ -615,6 +622,7 @@ public class Actions {
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
      *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
+     *   &lt;!-- since 7.33: &lt;attr name="context" newvalue="org.my.own.LookupImpl"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * Now the constructor of <code>YourClass</code> needs to have following
@@ -662,7 +670,12 @@ public class Actions {
         return context(map);
     }
     static ContextAwareAction context(Map fo) {
-        return GeneralAction.context(fo);
+        ContextAwareAction caa = GeneralAction.context(fo);
+        Object context = fo.get("context");
+        if (context instanceof Lookup) {
+            return (ContextAwareAction)caa.createContextAwareInstance((Lookup)context);
+        }
+        return caa;
     }
     static ContextAction.Performer<?> inject(final Map fo) {
         Object t = fo.get("selectionType"); // NOI18N
@@ -1024,6 +1037,21 @@ public class Actions {
                     button.setDisabledIcon(dImgIcon);
                 } else if (imgIcon != null) {
                     button.setDisabledIcon(ImageUtilities.createDisabledIcon(imgIcon));
+                }
+
+                ImageIcon sImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_selected"), true); // NOI18N
+                if (sImgIcon != null) {
+                    button.setSelectedIcon(sImgIcon);
+                }
+
+                sImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_rolloverSelected"), true); // NOI18N
+                if (sImgIcon != null) {
+                    button.setRolloverSelectedIcon(sImgIcon);
+                }
+
+                sImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_disabledSelected"), true); // NOI18N
+                if (sImgIcon != null) {
+                    button.setDisabledSelectedIcon(sImgIcon);
                 }
             }
         }

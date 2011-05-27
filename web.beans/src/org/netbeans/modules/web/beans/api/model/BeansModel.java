@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 
@@ -56,12 +57,12 @@ public interface BeansModel {
     /**
      * @return all interceptor classes FQNs found in beans.xml files 
      */
-    Set<String> getIntercetorClasses();
+    LinkedHashSet<String> getInterceptorClasses();
     
     /**
      * @return all decorator classes FQNs found in beans.xml files
      */
-    Set<String> getDecoratorClasses();
+    LinkedHashSet<String> getDecoratorClasses();
     
     /**
      * @return all alternative classes FQNs found in beans.xml files 

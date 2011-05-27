@@ -138,6 +138,14 @@ final class ModuleListParser {
                         String clusterName = tok.nextToken();
                         String moduleList = properties.get(clusterName);
                         if (moduleList != null) {
+                            // Hack to treat libs.junit4 as if it were in platform for purposes of building, yet build to another cluster.
+                            if (clusterName.equals("nb.cluster.platform")) {
+                                moduleList += ",libs.junit4";
+                            } else if (clusterName.equals("nb.cluster.stableuc")) {
+                                moduleList = moduleList.replace(",libs.junit4", "");
+                            }
+
+
                             StringTokenizer tok2 = new StringTokenizer(moduleList, ", ");
                             while (tok2.hasMoreTokens()) {
                                 String module = tok2.nextToken();
@@ -149,7 +157,7 @@ final class ModuleListParser {
                 }
             }
             File scanCache = new File(root, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar +
-                    "private" + File.separatorChar + "scan-cache-" + (doFastScan ? "standard" : "full") + ".ser");
+                    "private" + File.separatorChar + "scan-cache-" + String.format("%H", root) + "-" + (doFastScan ? "standard" : "full") + ".ser");
             if (scanCache.isFile()) {
                 if (project != null) {
                     project.log("Loading module list from " + scanCache);
@@ -878,7 +886,7 @@ final class ModuleListParser {
             String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
 
 
-            Entry entry = new Entry(codenamebase, m, exts,dir, null, null, cluster.getName(),
+            Entry entry = new Entry(codenamebase, m, exts, null, null, null, cluster.getName(),
                     parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap(),
                     new File(moduleAutoDepsDir, codenamebase.replace('.', '-') + ".xml"));
             Entry prev = entries.put(codenamebase, entry);
@@ -967,6 +975,7 @@ final class ModuleListParser {
             return buildPrerequisites;
         }
         /** Get runtime dependencies, OpenIDE-Module-Dependencies entry. 
+         * Each entry is a code name base.
          */
         public String[] getRuntimeDependencies() {
             return runtimeDependencies;

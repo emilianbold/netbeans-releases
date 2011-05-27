@@ -56,8 +56,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +66,8 @@ import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Container for template specialization parameters
@@ -100,6 +100,10 @@ public class SpecializationDescriptor {
         if(start != null) {
             return SpecializationDescriptor.create(TemplateUtils.getSpecializationParameters(start, file, scope, global), global);
         }
+        start = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        if(start != null) {
+            return SpecializationDescriptor.create(TemplateUtils.getSpecializationParameters(start, file, scope, global), global);
+        }
         return null;
     }
 
@@ -111,11 +115,11 @@ public class SpecializationDescriptor {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
-    public SpecializationDescriptor(DataInput input) throws IOException {
+    public SpecializationDescriptor(RepositoryDataInput input) throws IOException {
         this.specializationParams = PersistentUtils.readSpecializationParameters(input);
     }
 
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         PersistentUtils.writeSpecializationParameters(specializationParams, output);
     }
 }

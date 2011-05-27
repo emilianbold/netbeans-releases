@@ -44,26 +44,25 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * A key for CsmProject objects
  */
 
-/*package*/
-final class ProjectKey extends ProjectNameBasedKey {    
+/*package*/ final class ProjectKey extends ProjectNameBasedKey {    
     
     ProjectKey(CharSequence projectUniqueName) {
 	super(projectUniqueName);
     }
     
-    /*package*/ ProjectKey(DataInput aStream) throws IOException {
+    /*package*/ ProjectKey(RepositoryDataInput aStream) throws IOException {
 	super(aStream);
     }
 

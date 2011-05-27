@@ -47,6 +47,8 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -87,7 +89,6 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
-import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
@@ -180,6 +181,8 @@ public class J2SEProjectProperties {
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    //Disables copying of dependencies to dist folder
+    public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
     
     ClassPathSupport cs;
     
@@ -226,6 +229,7 @@ public class J2SEProjectProperties {
     Document BUILD_CLASSES_EXCLUDES_MODEL; 
     ButtonModel JAR_COMPRESS_MODEL;
     ButtonModel DO_JAR_MODEL;
+    ButtonModel COPY_LIBS_MODEL;
                 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -382,6 +386,7 @@ public class J2SEProjectProperties {
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
         DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, kind);
         doJarBooleanKind = kind[0];
+        COPY_LIBS_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, MKDIST_DISABLED);
         
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
@@ -558,7 +563,7 @@ public class J2SEProjectProperties {
         projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
         //Handle platform selection and javac.source javac.target properties
-        PlatformUiSupport.storePlatform (projectProperties, updateHelper, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
+        PlatformUiSupport.storePlatform (projectProperties, updateHelper, J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
                                 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
@@ -687,6 +692,7 @@ public class J2SEProjectProperties {
         for (int i=0; i<data.size();i++) {
             File f = (File) ((Vector)data.elementAt(i)).elementAt(0);
             rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);
+            validateURL(rootURLs[i],f);
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
             rootsAreSame &= !oldRootURLs.isEmpty() &&
                             oldRootURLs.removeFirst().equals(rootURLs[i]) &&
@@ -694,6 +700,23 @@ public class J2SEProjectProperties {
         }
         if (!rootsAreSame || !oldRootURLs.isEmpty ()) {
             roots.putRoots(rootURLs,rootLabels);
+        }
+    }
+
+    private void validateURL(final URL url, final File file) {
+        try {
+            final URI uri = url.toURI();
+            if (!uri.isAbsolute()) {
+                throw new IllegalArgumentException("URI is not absolute: " + uri.toString() + " File: " + file.getAbsolutePath());   //NOI18N
+            }
+            if (uri.isOpaque()) {
+                throw new IllegalArgumentException("URI is not hierarchical: " + uri.toString() + " File: " + file.getAbsolutePath());   //NOI18N
+            }
+            if (!"file".equals(uri.getScheme())) {
+                throw new IllegalArgumentException("URI scheme is not \"file\": " + uri.toString() + " File: " + file.getAbsolutePath());   //NOI18N
+            }
+        } catch (URISyntaxException use) {
+            throw new IllegalArgumentException(use);
         }
     }
     

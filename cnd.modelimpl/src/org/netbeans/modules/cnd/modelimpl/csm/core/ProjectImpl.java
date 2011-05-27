@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
@@ -60,6 +58,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
@@ -176,7 +176,7 @@ public final class ProjectImpl extends ProjectBase {
             // no need for deep parsing util call here in case of save, because it will be called as external notification change anyway
             if (undo) {
                 // but we need to call in case of undo when there are no external modifications
-                DeepReparsingUtils.reparseOnChangedFile(file, this);
+                DeepReparsingUtils.reparseOnEditingFile(this, file);
             }
         }
     }
@@ -295,7 +295,7 @@ public final class ProjectImpl extends ProjectBase {
             for (Iterator iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
-                    ParserQueue.instance().add(file, getPreprocHandler(file.getAbsolutePath()).getState(), ParserQueue.Position.TAIL);
+                    ParserQueue.instance().add(file, getPreprocHandlers(file.getAbsolutePath()), ParserQueue.Position.TAIL);
                 }
             }
         }
@@ -388,8 +388,8 @@ public final class ProjectImpl extends ProjectBase {
 
     public 
     @Override
-    ProjectBase findFileProject(CharSequence absPath) {
-        ProjectBase retValue = super.findFileProject(absPath);
+    ProjectBase findFileProject(CharSequence absPath, boolean waitFilesCreated) {
+        ProjectBase retValue = super.findFileProject(absPath, waitFilesCreated);
         // trick for tracemodel. We should accept all not registered files as well, till it is not system one.
         if (retValue == null && ParserThreadManager.instance().isStandalone()) {
             retValue = absPath.toString().startsWith("/usr") ? retValue : this; // NOI18N
@@ -433,7 +433,7 @@ public final class ProjectImpl extends ProjectBase {
     // impl of persistent
     public 
     @Override
-    void write(DataOutput aStream) throws IOException {
+    void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
@@ -441,7 +441,7 @@ public final class ProjectImpl extends ProjectBase {
         LibraryManager.getInstance().writeProjectLibraries(getUID(), aStream);
     }
 
-    public ProjectImpl(DataInput input) throws IOException {
+    public ProjectImpl(RepositoryDataInput input) throws IOException {
         super(input);
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();

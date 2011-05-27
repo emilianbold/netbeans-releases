@@ -49,7 +49,7 @@ CC-Mac_OS_X := gcc
 DEBUG := -g
 
 CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE
-CFLAGS-Linux := ${CFLAGS-COMMON} -Wimplicit -Werror -std=c99
+CFLAGS-Linux := ${CFLAGS-COMMON} -Wreturn-type -Wimplicit -Werror -std=c99
 CFLAGS-SunOS := ${CFLAGS-COMMON} -xc99 -errwarn
 CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
 
@@ -141,14 +141,17 @@ TEST_ENV_OBJFILES := ${BUILD}/rfs_test_env.o
 #library:
 ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
 	${LINKER} ${LDFLAGS_LIB} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
+	strip ${DIST}/rfs_preload.so
 
 #appliction:
 ${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
 	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
+	strip ${DIST}/rfs_controller
 
 #test environment:
 ${DIST}/rfs_test_env: ${TEST_ENV_OBJFILES}
 	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_test_env ${TEST_ENV_OBJFILES}
+	strip ${DIST}/rfs_test_env
 
 clean:
 	rm -rf ${BUILD} ${DIST}

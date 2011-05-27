@@ -31,7 +31,6 @@ void wait (long timeout )
 void wait (long timeout , int 
 End cursor position = 744
 [<% "Hello World !".| %>, int hashCode (), <% "Hello World !".hashCode(); %>, 868]
-Comparator <String> CASE_INSEN
 char charAt (int index )
 int codePointAt (int index )
 int codePointBefore (int index
@@ -42,13 +41,9 @@ String concat (String str )
 boolean contains (CharSequence
 boolean contentEquals (CharSeq
 boolean contentEquals (StringB
-String copyValueOf (char[] dat
-String copyValueOf (char[] dat
 boolean endsWith (String suffi
 boolean equals (Object anObjec
 boolean equalsIgnoreCase (Stri
-String format (String format ,
-String format (Locale l , Stri
 byte[] getBytes ()
 byte[] getBytes (Charset chars
 byte[] getBytes (String charse
@@ -91,15 +86,6 @@ String toString ()
 String toUpperCase ()
 String toUpperCase (Locale loc
 String trim ()
-String valueOf (Object obj )
-String valueOf (boolean b )
-String valueOf (char c )
-String valueOf (char[] data )
-String valueOf (double d )
-String valueOf (float f )
-String valueOf (int i )
-String valueOf (long l )
-String valueOf (char[] data , 
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 

@@ -86,13 +86,22 @@ public final class WLConnectionSupport {
         String port = instanceProperties.getProperty(WLPluginProperties.PORT_ATTR);
         if ((host == null || host.trim().length() == 0
                 && (port == null || port.trim().length() == 0))) {
-            // getDomainProperties instantiate DocumentBuilderFactory
-            // if we would od it inside call such factory could be loaded
-            // from weblogic classes causing troubles, see #189483
-            Properties domainProperties = WLPluginProperties.getDomainProperties(
-                    instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
-            host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
-            port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
+            
+            if (!deploymentManager.isRemote()) {            
+                // getDomainProperties instantiate DocumentBuilderFactory
+                // if we would od it inside call such factory could be loaded
+                // from weblogic classes causing troubles, see #189483
+                Properties domainProperties = WLPluginProperties.getDomainProperties(
+                        instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
+                host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
+                port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
+            }
+            if ((host == null || host.trim().length() == 0
+                    && (port == null || port.trim().length() == 0))) {
+                String[] parts = deploymentManager.getUri().split(":"); // NOI18N
+                host = parts[3].substring(2);
+                port = parts[4] != null ? parts[4].trim() : parts[4];
+            }
         }
         
         final String resolvedHost = host;

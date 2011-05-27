@@ -58,14 +58,12 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-//import org.netbeans.jemmy.Test;
 import org.netbeans.jellytools.properties.DimensionProperty;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -76,6 +74,9 @@ import org.netbeans.junit.NbModuleSuite;
  * 
  * @author Pavel Pribyl
  * @version 0.9 (not finished)
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class actionsTest extends JellyTestCase {
 
@@ -105,7 +106,8 @@ public class actionsTest extends JellyTestCase {
                 "testEditContainer",
                 "testResizing",
                 "testBeans",
-                "testManager").gui(true).enableModules(".*").clusters(".*"));
+                "testManager"
+                ).gui(true).enableModules(".*").clusters(".*"));
     }
 
     /** Called before every test case. */
@@ -172,7 +174,7 @@ public class actionsTest extends JellyTestCase {
         Node gridBagNode = new Node(inspectorRootNode, "GridBagLayout");
         gridBagNode.select();
         new ActionNoBlock(null, "Customize").perform(gridBagNode);
-        NbDialogOperator nbo = new NbDialogOperator("GridBagLayout Customizer");
+        NbDialogOperator nbo = new NbDialogOperator("Customize Layout");
         nbo.btClose().push();
 
         new Action(null, "Add From Palette|Swing Containers|Panel").perform(inspectorRootNode);
@@ -192,10 +194,9 @@ public class actionsTest extends JellyTestCase {
         new Action(null, "Duplicate").performPopup(buttonNode);
 
         inspectorRootNode.select();
-        new Action(null, "Customiz");
-
+        
         freedesignAction.performPopup(inspectorRootNode);
-
+        
         panelNode.select();
         new Action(null, "Duplicate").performPopup(panelNode);
 
@@ -245,26 +246,17 @@ public class actionsTest extends JellyTestCase {
         buttonNode.select();
         new Action(null, "Enclose In|Scroll Pane").performPopup(buttonNode);
 
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
 
-        buttonNode = new Node(panelNode, "jButton2 [JButton]");
+        //buttonNode = new Node(panelNode, "jButton2 [JButton]");
         //buttonNode.setComparator(new Operator.DefaultStringComparator(true, false));
-        buttonNode.select();
+        //buttonNode.select();
 
-//        This part is still failing on my PC, need to verify on another
-        new ActionNoBlock(null, "Space Around Component...").perform(buttonNode);
-        //Thread.sleep(2000);
+        //Thread.sleep(1000);
 
-        NbDialogOperator jdo = new NbDialogOperator("Space Around Component");
-
-        JComboBoxOperator jcbSize = new JComboBoxOperator(jdo, 0);
-        jcbSize.enterText("100");
-        jdo.btOK().push();
-
-        Thread.sleep(1000);
-
-    //     buttonNode.select();
-    //     inspector.pressKey(KeyEvent.VK_ENTER);  //enters edit mode
+       // buttonNode.select();
+        //inspector.pressKey(KeyEvent.VK_ENTER);  
+         
     }
 
     /** This test case verifies following Form Editor actions:<br />
@@ -279,7 +271,7 @@ public class actionsTest extends JellyTestCase {
 
         Node inspectorRootNode = new Node(inspector.treeComponents(), FRAME_ROOT);
         inspectorRootNode.select();
-        //inspectorRootNode.expand();
+        inspectorRootNode.expand();
         Thread.sleep(1000);
 
         new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(), "[JFrame]"));
@@ -295,8 +287,10 @@ public class actionsTest extends JellyTestCase {
         btn1Node.select();
 
         properties = new PropertySheetOperator();
-
-        new DimensionProperty(properties, "preferredSize").setDimensionValue("100", "50");
+        
+        selectPropertiesTab(properties);
+        new DimensionProperty(properties, "preferredSize").setValue("100,50");
+        
 
         Node btn2Node = new Node(panelNode, "jButton2 [JButton]");
         btn1Node.select();

@@ -72,6 +72,7 @@ import org.openide.util.Exceptions;
  * to analyze parsed information about a document.
  *
  * @author Tor Norbye
+ * @author Petr Pisl
  */
 public class LexUtilities {
     /** Tokens that match a corresponding END statement. Even though while, unless etc.
@@ -354,7 +355,8 @@ public class LexUtilities {
         while (ts.moveNext()) {
             Token<?extends PHPTokenId> token = ts.token();
             
-            if (token.id() == tokenUpId && textEquals(token.text(), up)) {
+            if ((token.id() == tokenUpId && textEquals(token.text(), up))
+                    || (tokenUpId == PHPTokenId.PHP_CURLY_OPEN && token.id() == PHPTokenId.PHP_TOKEN && token.text().charAt(token.text().length() - 1) == '{')) {
                 balance++;
             } else if (token.id() == tokenDownId && textEquals(token.text(), down)) {
                 if (balance == 0) {
@@ -376,7 +378,8 @@ public class LexUtilities {
             Token<?extends PHPTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (token.id() == tokenUpId && textEquals(token.text(), up)) {
+            if (token.id() == tokenUpId && textEquals(token.text(), up)
+                    || (tokenUpId == PHPTokenId.PHP_CURLY_OPEN && token.id() == PHPTokenId.PHP_TOKEN && token.text().charAt(token.text().length() - 1) == '{')) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
@@ -387,6 +390,107 @@ public class LexUtilities {
             }
         }
 
+        return OffsetRange.NONE;
+    }
+    
+    public static OffsetRange findFwdAlternativeSyntax(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, Token<?extends PHPTokenId> upToken) {
+        int balance = 0;
+        Token<?extends PHPTokenId> beginToken = LexUtilities.findPreviousToken(ts, 
+                Arrays.asList(PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
+                PHPTokenId.PHP_WHILE, PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, 
+                PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE));
+        
+        PHPTokenId beginTokenId = beginToken.id();
+        
+        if (beginTokenId == PHPTokenId.PHP_ELSE || beginTokenId == PHPTokenId.PHP_ELSEIF) {
+            beginTokenId = PHPTokenId.PHP_IF;
+        }
+        
+        List<PHPTokenId> possibleEnd;
+        if (beginTokenId == PHPTokenId.PHP_IF) {
+            possibleEnd = Arrays.asList(PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ENDIF);
+        } else if (beginTokenId == PHPTokenId.PHP_WHILE) {
+            possibleEnd = Arrays.asList(PHPTokenId.PHP_WHILE, PHPTokenId.PHP_ENDWHILE);
+        } else if (beginTokenId == PHPTokenId.PHP_FOR) {
+            possibleEnd = Arrays.asList(PHPTokenId.PHP_FOR, PHPTokenId.PHP_ENDFOR);
+        } else if (beginTokenId == PHPTokenId.PHP_FOREACH) {
+            possibleEnd = Arrays.asList(PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_ENDFOREACH);
+        } else if (beginTokenId == PHPTokenId.PHP_SWITCH) {
+            possibleEnd = Arrays.asList(PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_ENDSWITCH);
+        } else if (beginTokenId == PHPTokenId.PHP_CASE) {
+            possibleEnd = Arrays.asList(PHPTokenId.PHP_BREAK, PHPTokenId.PHP_ENDSWITCH);
+        } else {
+            return OffsetRange.NONE;
+        }
+        
+        while (ts.moveNext()) {
+            Token<?extends PHPTokenId> token = LexUtilities.findNextToken(ts, possibleEnd);
+            
+            if (token.id() == beginTokenId) {
+                balance++;
+            } else if (possibleEnd.contains(token.id())) {
+                if (balance == 0) {
+                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
+                }
+                if (beginTokenId != PHPTokenId.PHP_IF || (beginTokenId == PHPTokenId.PHP_IF && token.id() == PHPTokenId.PHP_ENDIF)) {
+                    balance--;
+                }
+            }
+        }
+
+        return OffsetRange.NONE;
+    }
+    
+    
+    public static OffsetRange findBwdAlternativeSyntax(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, Token<?extends PHPTokenId> downToken) {
+        
+        int balance = 0;
+
+        PHPTokenId endTokenId = downToken.id();
+        
+        if (endTokenId == PHPTokenId.PHP_ELSE || endTokenId == PHPTokenId.PHP_ELSEIF) {
+            endTokenId = PHPTokenId.PHP_ENDIF;
+        }
+        
+        List<PHPTokenId> possibleBegin;
+        if (endTokenId == PHPTokenId.PHP_ENDIF) {
+            possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ENDIF);
+        } else if (endTokenId == PHPTokenId.PHP_ELSE) {
+            possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ENDIF);
+        }else if (endTokenId == PHPTokenId.PHP_ENDWHILE) {
+            possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_ENDWHILE);
+        } else if (endTokenId == PHPTokenId.PHP_ENDFOR) {
+            possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_FOR, PHPTokenId.PHP_ENDFOR);
+        } else if (endTokenId == PHPTokenId.PHP_ENDFOREACH) {
+            possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_ENDFOREACH);
+        } else if (endTokenId == PHPTokenId.PHP_ENDSWITCH) {
+            possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_ENDSWITCH);
+        } else if (endTokenId == PHPTokenId.PHP_BREAK) {
+            possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_BREAK, PHPTokenId.PHP_ENDSWITCH);
+        } else {
+            return OffsetRange.NONE;
+        }
+        
+        
+        int columnOffset = 0;
+        while (ts.movePrevious()) {
+            Token<?extends PHPTokenId> token = LexUtilities.findPreviousToken(ts, possibleBegin);
+            
+            if (token.id() == PHPTokenId.PHP_TOKEN) {
+                if (":".equals(token.text().toString())) { //NOI18N
+                    columnOffset = ts.offset();
+                }
+            } else if (token.id() == endTokenId) {
+                balance --;
+            } else {
+                if(balance == 0) {
+                    return new OffsetRange(columnOffset, columnOffset + 1);
+                }
+                if (endTokenId != PHPTokenId.PHP_ENDIF || (endTokenId == PHPTokenId.PHP_ENDIF && token.id() == PHPTokenId.PHP_IF)) {
+                    balance ++;
+                }
+            }
+        }
         return OffsetRange.NONE;
     }
 

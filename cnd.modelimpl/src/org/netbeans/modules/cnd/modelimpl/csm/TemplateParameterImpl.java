@@ -43,8 +43,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +64,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 
@@ -136,6 +136,11 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
@@ -149,7 +154,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     // impl of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output); 
         PersistentUtils.writeUTF(name, output);
         UIDObjectFactory.getDefaultFactory().writeUID(scope, output);
@@ -157,7 +162,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
     
-    public TemplateParameterImpl(DataInput input) throws IOException {
+    public TemplateParameterImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);

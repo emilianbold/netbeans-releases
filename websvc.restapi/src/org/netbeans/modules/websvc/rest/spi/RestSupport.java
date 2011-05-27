@@ -54,10 +54,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -72,7 +75,12 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
@@ -85,6 +93,8 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -111,6 +121,7 @@ public abstract class RestSupport {
     public static final String BASE_URL_TOKEN = "___BASE_URL___";//NOI18N
     public static final String RESTBEANS_TEST_DIR = "build/generated-sources/rest-test";//NOI18N
     public static final String COMMAND_TEST_RESTBEANS = "test-restbeans";//NOI18N
+    public static final String COMMAND_DEPLOY = "run-deploy";//NOI18N
     public static final String TEST_RESBEANS = "test-resbeans";//NOI18N
     public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";//NOI18N
     public static final String TEST_RESBEANS_JS = TEST_RESBEANS + ".js";
@@ -137,6 +148,7 @@ public abstract class RestSupport {
     public static final int PROJECT_TYPE_DESKTOP = 0; //NOI18N
     public static final int PROJECT_TYPE_WEB = 1; //NOI18N
     public static final int PROJECT_TYPE_NB_MODULE = 2; //NOI18N
+    
 
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
@@ -317,7 +329,7 @@ public abstract class RestSupport {
     }
     
     public static ClassPath extendWithJsr311Api(ClassPath classPath) {
-        File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
+        File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, "org.netbeans.modules.websvc.restlib", false);
         if (jerseyRoot != null && jerseyRoot.isDirectory()) {
             File[] jsr311Jars = jerseyRoot.listFiles(new JerseyFilter(JSR311_JAR_PATTERN));
             if (jsr311Jars != null && jsr311Jars.length>0) {
@@ -361,11 +373,15 @@ public abstract class RestSupport {
     public abstract void extendBuildScripts() throws IOException;
     
     
+    public abstract FileObject generateTestClient(File testdir, String url) 
+        throws IOException; 
+    
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
      * this before invoke the build script target.
      * 
      * @param destDir directory to write test client files in.
+     * @param url base url of rest service
      * @return test file object, containing token BASE_URL_TOKEN whether used or not.
      */
     public FileObject generateTestClient(File testdir) throws IOException {        
@@ -474,6 +490,57 @@ public abstract class RestSupport {
         return fo;
     }
     
+    public static FileObject modifyFile(FileObject fo, Map<String,String> replace) 
+        throws IOException 
+    {
+        StringWriter content = new StringWriter();
+        FileLock lock = null;
+        BufferedWriter writer = null;
+        BufferedReader reader = null;
+        try {
+            lock = fo.lock();
+            writer = new BufferedWriter(content);
+            InputStream is = fo.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(is));
+            String line;
+            String lineSep = "\n";//Unix
+            if(File.separatorChar == '\\')//Windows
+                lineSep = "\r\n";
+            while((line = reader.readLine()) != null) {
+                for(Entry<String,String> entry : replace.entrySet()){
+                    line = line.replaceAll(entry.getKey(), entry.getValue());
+                }
+                writer.write(line);
+                writer.write(lineSep);
+            }
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+            if ( reader!= null ){
+                reader.close();
+            }
+            StringBuffer buffer = content.getBuffer();
+            try {
+                OutputStream outputStream = fo.getOutputStream( lock );
+                writer = new BufferedWriter( new OutputStreamWriter( outputStream ) );
+                writer.write( buffer.toString() );
+            }
+            finally {
+                if (writer != null) {
+                    writer.close();
+                }
+            }
+            if (lock != null) {
+                lock.releaseLock();
+            }
+            if (reader != null) {
+                reader.close();
+            }
+        }      
+        return fo;
+    }
+    
     /*
      * Copy File only
      */    
@@ -548,6 +615,34 @@ public abstract class RestSupport {
         for (String type : classPathTypes) {
             try {
                 ProjectClassPathModifier.addLibraries(new Library[] {lib}, sourceRoot, type);
+            } catch(UnsupportedOperationException ex) {
+                Logger.getLogger(getClass().getName()).info(type+" not supported.");
+            }
+        }
+    }
+    
+    protected void addSwdpLibrary(String[] classPathTypes, URL[] urls) throws IOException {
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs == null || sgs.length < 1) {
+            throw new IOException("Project has no Java sources"); //NOI18N
+        }
+        ClassPath classPath = getCompileClassPath(sgs);
+        URL[] roots = urls;
+        if ( classPath != null ){
+            List<URL> toAdd = new ArrayList<URL>(urls.length);
+            for (URL url : urls) {
+                if ( !contains(classPath, url)){
+                    toAdd.add( url );
+                }
+            }
+            roots = toAdd.toArray( new URL[toAdd.size()] );
+        }
+        
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        for (String type : classPathTypes) {
+            try {
+                ProjectClassPathModifier.addRoots(roots, sourceRoot, type);
             } catch(UnsupportedOperationException ex) {
                 Logger.getLogger(getClass().getName()).info(type+" not supported.");
             }
@@ -748,7 +843,10 @@ public abstract class RestSupport {
     }
 
     public boolean isServerGFV3() {
-        return GFV3_SERVER_TYPE.equals(getServerType());
+        if ( getServerType() == null ){
+            return false;
+        }
+        return getServerType().startsWith(GFV3_SERVER_TYPE);
     }
 
     public boolean isServerGFV2() {
@@ -757,6 +855,75 @@ public abstract class RestSupport {
 
     public String getApplicationPath() throws IOException {
         return "resources"; // default application path
+    }
+    
+    public FileObject getApplicationContextXml() {
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
+            lookup(J2eeModuleProvider.class);
+        FileObject[] fobjs = provider.getSourceRoots();
+
+        if (fobjs.length > 0) {
+            FileObject configRoot = fobjs[0];
+            FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
+
+            if (webInf != null) {
+                return webInf.getFileObject("applicationContext", "xml");      //NOI18N
+            }
+        }
+
+        return null;
+    }
+    
+    public abstract File getLocalTargetTestRest();
+    
+    public abstract String getBaseURL() throws IOException;
+    
+    public abstract void deploy() throws IOException;
+    
+    public String getContextRootURL() {
+        String portNumber = "8080"; //NOI18N
+        String host = "localhost"; //NOI18N
+        String contextRoot = "";
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
+        String serverInstanceID = provider.getServerInstanceID();
+        if (serverInstanceID == null ) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(RestSupport.class, "MSG_MissingServer"), 
+                    NotifyDescriptor.ERROR_MESSAGE));
+        } else {
+            // getting port and host name
+            ServerInstance serverInstance = Deployment.getDefault().
+                getServerInstance(serverInstanceID);
+            try {
+                ServerInstance.Descriptor instanceDescriptor = 
+                    serverInstance.getDescriptor();
+                if (instanceDescriptor != null) {
+                    int port = instanceDescriptor.getHttpPort();
+                    if (port>0) {
+                        portNumber = String.valueOf(port);
+                    }
+                    String hostName = instanceDescriptor.getHostname();
+                    if (hostName != null) {
+                        host = hostName;
+                    }
+                }
+            } 
+            catch (InstanceRemovedException ex) {
+                
+            }
+        }
+        J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
+        try {
+            contextRoot = configSupport.getWebContextRoot();
+        } catch (ConfigurationException e) {
+            // TODO the context root value could not be read, let the user know about it
+        }
+        if (contextRoot.length() > 0 && contextRoot.startsWith("/")) { //NOI18N
+            contextRoot = contextRoot.substring(1);
+        }
+        return "http://"+host+":"+portNumber+"/"+ //NOI18N
+                (contextRoot.length()>0 ? contextRoot+"/" : ""); //NOI18N
     }
 
     protected static class JerseyFilter implements FileFilter {
@@ -772,6 +939,32 @@ public abstract class RestSupport {
     }
 
     public abstract int getProjectType();
+    
+    private ClassPath getCompileClassPath(SourceGroup[] groups ){
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        if ( provider == null ){
+            return null;
+        }
+        ClassPath[] paths = new ClassPath[ groups.length];
+        int i=0;
+        for (SourceGroup sourceGroup : groups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, ClassPath.COMPILE);
+            i++;
+        }
+        return ClassPathSupport.createProxyClassPath( paths );
+    }
+    
+    private boolean contains( ClassPath classPath , URL url ){
+        List<ClassPath.Entry> entries = classPath.entries();
+        for (ClassPath.Entry entry : entries) {
+            if ( entry.getURL().equals(url)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
 

@@ -67,7 +67,7 @@ import org.openide.util.NbPreferences;
  */
 public final class CompilerSetPreferences {
     /* Persistance information */
-    private static final double csm_version = 1.1;
+    private static final String csm_version = "1.2"; // NOI18N
     private static final String CSM = "csm."; // NOI18N
     private static final String VERSION = "version"; // NOI18N
     private static final String NO_SETS = ".noOfSets"; // NOI18N
@@ -86,6 +86,7 @@ public final class CompilerSetPreferences {
     private static final String TOOL_FLAVOR = ".toolFlavor."; // NOI18N
     private static final String TOOL_SETTINGS = ".toolSettings."; // NOI18N
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    public static final String VERSION_KEY = CSM + VERSION;
 
     private static CompilerProvider compilerProvider = null;
 
@@ -126,7 +127,7 @@ public final class CompilerSetPreferences {
                     getPreferences().remove(key);
                 }
             }
-            getPreferences().putDouble(CSM + VERSION, csm_version);
+            getPreferences().put(CSM + VERSION, csm_version);
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -149,7 +150,7 @@ public final class CompilerSetPreferences {
         log.log(Level.FINE, "CSM.Save to disk {0} size={1}", new Object[]{manager.getExecutionEnvironment(), manager.getCompilerSets().size()}); // NOI18N
         if (!manager.getCompilerSets().isEmpty()) {
             clearPersistence(manager.getExecutionEnvironment());
-            getPreferences().putDouble(CSM + VERSION, csm_version);
+            getPreferences().put(CSM + VERSION, csm_version);
             String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(manager.getExecutionEnvironment());
             getPreferences().putInt(CSM + executionEnvironmentKey + NO_SETS, manager.getCompilerSets().size());
             getPreferences().putInt(CSM + executionEnvironmentKey + SET_PLATFORM, manager.getPlatform());
@@ -181,8 +182,8 @@ public final class CompilerSetPreferences {
     }
 
     public static CompilerSetManagerImpl restoreFromDisk(ExecutionEnvironment env) {
-        double version = getPreferences().getDouble(CSM + VERSION, 1.0);
-        if (version == 1.0 && env.isLocal()) {
+        String version = getPreferences().get(CSM + VERSION, "1.0"); // NOI18N
+        if ("1.0".equals(version) && env.isLocal()) { // NOI18N
             return restoreFromDisk10();
         }
         String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(env);
@@ -240,11 +241,16 @@ public final class CompilerSetPreferences {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, pform);
                 }
-                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
+                Tool tool = null;
+                if (toolFlavor != null) {
+                    tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
+                }
                 if (tool instanceof AbstractCompiler) {
                     ((AbstractCompiler) tool).loadSettings(getPreferences(), CSM + executionEnvironmentKey + TOOL_SETTINGS + setCount + '.' + toolCount);
                 }
-                cs.addTool(tool);
+                if (tool != null) {
+                    cs.addTool(tool);
+                }
             }
             css.add(cs);
         }
@@ -297,9 +303,14 @@ public final class CompilerSetPreferences {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
-                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
+                Tool tool = null;
+                if (toolFlavor != null) {
+                    tool = CompilerSetPreferences.getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
                         toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath); //NOI18N
-                cs.addTool(tool);
+                }
+                if (tool != null) {
+                    cs.addTool(tool);
+                }
             }
             CompilerSetManagerImpl.completeCompilerSet(ExecutionEnvironmentFactory.getLocal(), cs, css);
             css.add(cs);

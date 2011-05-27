@@ -52,9 +52,8 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -133,20 +132,11 @@ public final class ConfigureUtils {
         return null;
     }
 
-    public static boolean isRunnable(FileObject fileObject) {
-        if (fileObject != null && fileObject.isValid()) {
-            File file = FileUtil.toFile(fileObject);
-            if (file != null) {
-                return isRunnable(file); // XXX:fullRemote: a temporary fixup
-            }
-            return true;
+    public static boolean isRunnable(FileObject configureFileObject) {
+        if (configureFileObject == null) {
+            return false;
         }
-        return false;
-    }
-
-    public static boolean isRunnable(File file) {
-        if (file.exists() && file.isFile() && (file.canRead()||file.canExecute())) {
-            FileObject configureFileObject = CndFileUtils.toFileObject(file);
+        if (configureFileObject.isValid() && configureFileObject.isData() && (configureFileObject.canRead()||FileSystemProvider.canExecute(configureFileObject))) {
             if (configureFileObject == null || !configureFileObject.isValid()) {
                 return false;
             }
@@ -167,10 +157,10 @@ public final class ConfigureUtils {
             if (ses != null) {
                 return true;
             }
-            if (file.getAbsolutePath().endsWith("CMakeLists.txt")){ // NOI18N
+            if (configureFileObject.getPath().endsWith("CMakeLists.txt")){ // NOI18N
                 return AbstractExecutorRunAction.findTools("cmake") != null; // NOI18N
             }
-            if (file.getAbsolutePath().endsWith(".pro")){ // NOI18N
+            if (configureFileObject.getPath().endsWith(".pro")){ // NOI18N
                 return AbstractExecutorRunAction.findTools("qmake") != null; // NOI18N
             }
         }

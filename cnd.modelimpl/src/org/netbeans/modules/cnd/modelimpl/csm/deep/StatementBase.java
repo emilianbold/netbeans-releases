@@ -49,21 +49,19 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Common ancestor for all statements
  * @author Vladimir Kvashin
  */
 public abstract class StatementBase extends OffsetableBase implements CsmStatement {
-    
-    private final AST ast;
     
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
@@ -78,7 +76,6 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     
     private StatementBase(AST ast, CsmFile file, int start, int end, CsmScope scope) {
         super(file, start, end);
-        this.ast = ast;
         if (scope != null) {
             setScope(scope);
         }
@@ -105,10 +102,6 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         }
     }
     
-    protected AST getAst() {
-        return ast;
-    }
-
     @Override
     public void dispose() {
         super.dispose();
@@ -116,14 +109,13 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
     
-    protected StatementBase(DataInput input) throws IOException {
+    protected StatementBase(RepositoryDataInput input) throws IOException {
         super(input);
-        this.ast = null;
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }   
 

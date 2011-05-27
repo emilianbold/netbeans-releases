@@ -44,8 +44,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -54,6 +52,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -113,20 +113,20 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
-    protected OffsetableIdentifiableBase(DataInput input) throws IOException {
+    protected OffsetableIdentifiableBase(RepositoryDataInput input) throws IOException {
         super(input);
     }
 
-    protected final void writeUID(DataOutput output) throws IOException {
+    protected final void writeUID(RepositoryDataOutput output) throws IOException {
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUID(uid, output);
     }
 
-    protected final void readUID(DataInput input) throws IOException {
+    protected final void readUID(RepositoryDataInput input) throws IOException {
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.uid = factory.readUID(input);
     }

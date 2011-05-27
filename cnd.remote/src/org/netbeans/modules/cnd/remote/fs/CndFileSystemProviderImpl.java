@@ -55,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -86,6 +87,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     }
 
     @Override
+    protected FileObject toFileObjectImpl(File file) {
+        return FileSystemProvider.fileToFileObject(file);
+    }
+
+    @Override
     protected CharSequence fileObjectToUrlImpl(FileObject fileObject) {
         return FileSystemProvider.fileObjectToUrl(fileObject);
     }
@@ -103,7 +109,22 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     @Override
     protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
         return FileSystemProvider.getCanonicalPath(fileSystem, absPath.toString());
-    }            
+    }
+
+    @Override
+    protected FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException {
+        return FileSystemProvider.getCanonicalFileObject(fo);
+    }
+
+    @Override
+    protected String getCanonicalPathImpl(FileObject fo) throws IOException {
+        return FileSystemProvider.getCanonicalPath(fo);
+    }
+
+    @Override
+    protected String normalizeAbsolutePathImpl(FileSystem fs, String absPath) {
+        return FileSystemProvider.normalizeAbsolutePath(absPath, fs);
+    }
 
     @Override
     protected FileObject urlToFileObjectImpl(CharSequence url) {
@@ -159,6 +180,32 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
         }
         return null;
     }
+
+    @Override
+    protected boolean addFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+       FileSystemProvider.addFileChangeListener(listener, fileSystem, path);
+       return true;
+    }
+
+    @Override
+    protected boolean removeFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+        FileSystemProvider.removeRecursiveListener(listener, fileSystem, path);
+        return true;
+    }
+
+    @Override
+    protected boolean addFileChangeListenerImpl(FileChangeListener listener) {
+        FileSystemProvider.addFileChangeListener(listener);
+        return true;
+    }
+
+    @Override
+    protected boolean removeFileChangeListenerImpl(FileChangeListener listener) {
+        FileSystemProvider.removeFileChangeListener(listener);
+        return true;
+    }
+    
+    
 
     private FileSystemAndString getFileSystemAndRemotePath(CharSequence path) {
         String prefix = getPrefix();
@@ -228,25 +275,10 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     }
 
     @Override
-    protected String getCaseInsensitivePathImpl(CharSequence path) {
-//        String prefix = CndUtils.getIncludeFileBase();
-        if (Utilities.isWindows()) {
-            path = path.toString().replace('\\', '/');
-        }
-        return path.toString();
-//        if (pathStartsWith(path, prefix)) {
-//            CharSequence start = path.subSequence(0, prefix.length());
-//            CharSequence rest = path.subSequence(prefix.length(), path.length());
-//            return start + rest.toString(); // RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString());
-//        }
-//        return null;
-    }
-
-    @Override
     public void postConnectDownloadFinished(ExecutionEnvironment env) {
         RemoteCodeModelUtils.scheduleReparse(env);
     }
-
+    
     private static class FileSystemAndString {
 
         public final FileSystem fileSystem;

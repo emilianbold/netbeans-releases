@@ -100,7 +100,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.AnnotationProcessingQueryImpl;
@@ -136,6 +136,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.XMLUtil;
+import static org.netbeans.modules.apisupport.project.Bundle.*;
 
 /**
  * A NetBeans module project.
@@ -177,12 +178,19 @@ public final class NbModuleProject implements Project {
         PathCompletions.register();
     }
     
+    @Messages({
+        "# {0} - project directory", "NbModuleProject.too_new=This version of the IDE is too old to read metadata in {0}.",
+        "LBL_source_packages=Source Packages",
+        "LBL_qa-functional_test_packages=Functional Test Packages",
+        "LBL_unit_test_packages=Unit Test Packages",
+        "LBL_javahelp_packages=JavaHelp"
+    })
     public NbModuleProject(AntProjectHelper helper) throws IOException {
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         for (int v = 4; v < 10; v++) {
             if (aux.getConfigurationFragment("data", "http://www.netbeans.org/ns/nb-module-project/" + v, true) != null) { // NOI18N
                 throw Exceptions.attachLocalizedMessage(new IOException("too new"), // NOI18N
-                        NbBundle.getMessage(NbModuleProject.class, "NbModuleProject.too_new", FileUtil.getFileDisplayName(helper.getProjectDirectory())));
+                        NbModuleProject_too_new(FileUtil.getFileDisplayName(helper.getProjectDirectory())));
             }
         }
         this.helper = helper;
@@ -215,25 +223,30 @@ public final class NbModuleProject implements Project {
         // (currently FOQ/SH do not support that)
         sourcesHelper.sourceRoot("${src.dir}")// NOI18N
                 .hint(JavaProjectConstants.SOURCES_HINT_MAIN)
-                .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_source_packages")).add() // as principal root
+                .displayName(LBL_source_packages()).add() // as principal root
                 .type(JavaProjectConstants.SOURCES_TYPE_JAVA).add();    // as typed root
         for (String type : supportedTestTypes(false)) {
             sourcesHelper.sourceRoot("${test." + type + ".src.dir}")// NOI18N
                     .hint(JavaProjectConstants.SOURCES_HINT_TEST)
-                    .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_" + type + "_test_packages")).add() // as principal root
+                    .displayName(type.equals("qa-functional") ? LBL_qa_functional_test_packages() : LBL_unit_test_packages()).add() // as principal root
                     .type(JavaProjectConstants.SOURCES_TYPE_JAVA).add();    // as typed root
         }
         // XXX other principal source roots, as needed...
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
             sourcesHelper.sourceRoot("javahelp").type(SOURCES_TYPE_JAVAHELP)
-                    .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages")).add();
+                    .displayName(LBL_javahelp_packages()).add();
         }
         for (Map.Entry<FileObject,Element> entry : getExtraCompilationUnits().entrySet()) {
             Element pkgrootEl = XMLUtil.findElement(entry.getValue(), "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             String pkgrootS = XMLUtil.findText(pkgrootEl);
-            sourcesHelper.sourceRoot(pkgrootS).type(JavaProjectConstants.SOURCES_TYPE_JAVA)
-                    .displayName(/* XXX should schema incl. display name? */entry.getKey().getNameExt()).add();
+            FileObject root = entry.getKey();
+            // #192773: try to make a unique display name; a schema addition might be better
+            String displayName = FileUtil.getRelativePath(getProjectDirectory(), root);
+            if (displayName == null) {
+                displayName = root.getNameExt();
+            }
+            sourcesHelper.sourceRoot(pkgrootS).type(JavaProjectConstants.SOURCES_TYPE_JAVA).displayName(displayName).add();
         }
         // #56457: support external source roots too.
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -394,7 +407,7 @@ public final class NbModuleProject implements Project {
         return helper.resolveFileObject(evaluator().getProperty("manifest.mf")); // NOI18N
     }
     
-    public Manifest getManifest() {
+    public @CheckForNull Manifest getManifest() {
         return Util.getManifest(getManifestFile());
     }
 

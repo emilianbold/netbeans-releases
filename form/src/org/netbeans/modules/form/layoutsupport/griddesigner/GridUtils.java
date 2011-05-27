@@ -125,9 +125,9 @@ public class GridUtils {
         // to avoid this problem.
         if (container.getLayout() instanceof GridBagLayout) {
             revalidateGrid(manager);
-            int pad = 2;
+            int pad = 4;
             for (Component comp : container.getComponents()) {
-                if (!GridUtils.isPaddingComponent(comp) && (comp instanceof Box.Filler)) {
+                if (!GridUtils.isPaddingComponent(comp)) {
                     Dimension dim = comp.getSize();
                     if (dim.width == 0) {
                         Dimension minSize = comp.getMinimumSize();

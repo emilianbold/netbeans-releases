@@ -43,8 +43,7 @@
 package org.netbeans.libs.git;
 
 import java.io.File;
-import java.net.URL;
-import java.util.Collection;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.libs.git.progress.NotificationListener;
@@ -73,6 +72,12 @@ public interface GitClient {
                 return "--hard"; //NOI18N
             }
         }
+    }
+
+    public enum DiffMode {
+        HEAD_VS_INDEX,
+        HEAD_VS_WORKINGTREE,
+        INDEX_VS_WORKINGTREE
     }
 
     /**
@@ -113,18 +118,19 @@ public interface GitClient {
      * @throws GitException other error
      */
     public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
-    
+
     /**
-     * Checks out the the state of a given revision.
-     * @param revision cannot be null
+     * Checks out a given revision.
+     * @param revision cannot be null. If the value equals to anything other than an existing branch name, the revision will be checked out
+     * and the working tree will be in the detached HEAD state.
      * @param failOnConflict if set to false, the command tries to merge local changes into the new branch
      * @throws GitException other error
      */
-    public void checkoutBranch (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public void checkoutRevision (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Cleans the working tree by recursively removing files that are not under 
- *   * version control starting from the given roots.
+     * version control starting from the given roots.
      * @param roots
      * @param monitor
      * @throws GitException 
@@ -160,25 +166,78 @@ public interface GitClient {
      * @throws GitException  an error occurs
      */
     public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Creates a tag for any object represented by a given taggedObjectId. 
+     * If message is set to null or an empty value and signed set to false than this method creates a lightweight tag
+     * @param tagName
+     * @param taggedObject
+     * @param message
+     * @param signed
+     * @param forceUpdate
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Deletes a given branch from the repository
+     * @param branchName
+     * @param forceDeleteUnmerged if set to true then trying to delete an unmerged branch will not fail but will forcibly delete the branch
+     * @param monitor
+     * @throws GitException.NotMergedException branch has not been fully merged yet and forceDeleteUnmerged is set to false
+     * @throws GitException 
+     */
+    public void deleteBranch (String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) throws GitException.NotMergedException, GitException;
+
+    /**
+     * Deletes a given tag from the repository
+     * @param tagName
+     * @param monitor
+     * @throws GitException 
+     */
+    public void deleteTag (String tagName, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Exports a given commit in the format accepted by git am
+     * @param commit 
+     * @param out 
+     * @param monitor 
+     * @throws GitException
+     */
+    public void exportCommit (String commit, OutputStream out, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Exports changes in files under given roots to the given output stream
+     * @param roots
+     * @param mode
+     * @param out
+     * @param monitor
+     * @throws GitException 
+     */
+    public void exportDiff (File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException;
     
     /**
      * Fetches remote changes for references specified in the config file under a given remote.
-     * @param remote
+     * @param remote should be a name of a remote set up in the repository config file
      * @param monitor
      * @return 
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
     
     /**
      * Fetches remote changes for given reference specifications.
-     * @param remote
+     * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
      * @param fetchRefSpecifications 
      * @param monitor
      * @return 
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
     
     /**
      * Returns all branches
@@ -186,6 +245,24 @@ public interface GitClient {
      * @return
      */
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Returns all tags in the repository
+     * @param monitor
+     * @param allTags if set to false, only commit tags, otherwise tags for all objects are returned
+     * @return
+     * @throws GitException 
+     */
+    public Map<String, GitTag> getTags (ProgressMonitor monitor, boolean allTags) throws GitException;
+
+    /**
+     * Returns a common ancestor for given revisions or null if none found.
+     * @param revisions
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException;
 
     /**
      * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
@@ -203,6 +280,23 @@ public interface GitClient {
      */
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException;
 
+    /**
+     * Returns remote configuration set up for this repository identified by a given remoteName
+     * @param remoteName
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Returns all remote configurations set up for this repository
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException;
+    
     /**
      * Returns the current state of the repository this client is associated with.
      * @return current repository state
@@ -240,33 +334,76 @@ public interface GitClient {
      * @param monitor
      * @return
      * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitBranch> listRemoteBranches (URL remoteRepositoryUrl, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+    
+    /**
+     * Returns pairs tag name/id from a given remote repository
+     * @param remoteRepositoryUrl url of the remote repository
+     * @param monitor
+     * @return
+     * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
+     */
+    public Map<String, String> listRemoteTags (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
 
     /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.
      * @param revision
      * @param monitor
      * @return revision
+     * @throws GitException.MissingObjectException no such revision exists
+     * @throws GitException other error occurs
      */
-    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Digs through the repository's history and returns revisions according to the given search criteria.
      * @param searchCriteria
      * @param monitor 
      * @return revisions that fall between the given boundaries
+     * @throws GitException.MissingObjectException revision specified in search criteria (or head if no such revision is specified) does not exist
+     * @throws GitException other error occurs
      */
-    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
     
     /**
      * Merges a given revision with the current head
      * @param revision
      * @param monitor
      * @return result of the merge
+     * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
      * @throws GitException an error occurs
      */
-    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException;
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException;
+    
+    /**
+     * Pulls changes from a remote repository and merges a given remote branch to an active one.
+     * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
+     * @param fetchRefSpecifications 
+     * @param branchToMerge a remote branch that will be merged into an active branch
+     * @param monitor
+     * @return 
+     * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
+     * @throws GitException.CheckoutConflictException there are local changes in the working tree that would result in a merge conflict
+     * @throws GitException.MissingObjectException given branch to merge does not exist
+     */
+    public GitPullResult pull (String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) throws GitException.AuthorizationException, 
+            GitException.CheckoutConflictException, GitException.MissingObjectException, GitException;
+    
+    /**
+     * Pushes changes for given reference specifications.
+     * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
+     * @param pushRefSpecifications 
+     * @param fetchRefSpecifications 
+     * @param monitor
+     * @return 
+     * @throws GitException 
+     * @throws GitException.AuthorizationException unauthorized access
+     */
+    public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
 
     /**
      * Removes given files/folders from the index and/or from the working tree
@@ -276,6 +413,13 @@ public interface GitClient {
      */
     public void remove (File[] roots, boolean cached, ProgressMonitor monitor) throws GitException;
     public void removeNotificationListener (NotificationListener listener);
+    
+    /**
+     * Removes remote configuration from the config file
+     * @param remote name of the remote
+     * @param monitor 
+     */
+    public void removeRemote (String remote, ProgressMonitor monitor) throws GitException;
 
     /**
      * Renames source file or folder to target
@@ -301,7 +445,31 @@ public interface GitClient {
      * @throws GitException
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+
+    /**
+     * Reverts already committed changes
+     * @param revision
+     * @param commitMessage used as the commit message for the revert commit. If set to null or an empty value, a default value will be used for the commit message
+     * @param commit if set to false, the revert modifications will not be committed but will stay in index
+     * @return 
+     * @throws org.netbeans.libs.git.GitException.MissingObjectException
+     * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
+     * @throws GitException 
+     */
+    public GitRevertResult revert (String revision, String commitMessage, boolean commit, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException.CheckoutConflictException, GitException;
+
+    /**
+     * Sets callback for this client. Some actions (like inter-repository commands) may need it for its work.
+     */
+    public void setCallback (GitClientCallback callback);
     
+    /**
+     * Sets the remote configuration in the configuration file.
+     * @param remoteConfig
+     * @param monitor 
+     */
+    public void setRemote (GitRemoteConfig remoteConfig, ProgressMonitor monitor) throws GitException;
+
     /**
      * Unignores given files
      * @param files

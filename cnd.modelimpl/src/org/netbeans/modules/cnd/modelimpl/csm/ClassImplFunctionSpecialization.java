@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,6 +64,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -197,7 +197,12 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         }
         return Collections.<CsmInheritance>emptyList();
     }
-    
+
+    @Override
+    public boolean isExplicitSpecialization() {
+        return true;
+    }
+
     private static String getClassName(AST ast) {
         CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
         return getClassNameFromFunctionSpecialicationName(funName.toString());
@@ -246,11 +251,11 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
-    public ClassImplFunctionSpecialization(DataInput input) throws IOException {
+    public ClassImplFunctionSpecialization(RepositoryDataInput input) throws IOException {
         super(input);
     }
 

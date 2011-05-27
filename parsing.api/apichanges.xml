@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="IndexingManager-refreshIndexAndWait-checkEditor">
+      <api name="ParsingAPI"/>
+      <summary>Adding refreshIndexAndWait method into the IndexingManager allowing to specify if indexers should use modified content of editors</summary>
+      <version major="1" minor="40"/>
+      <date day="28" month="3" year="2011"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Adding refreshIndexAndWait method into the IndexingManager allowing to specify if indexers should use modified content of editors.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager"/>
+      <issue number="196930"/>
+  </change>
   <change id="IndexingManager-refreshIndex-checkEditor">
       <api name="ParsingAPI"/>
       <summary>Adding refreshIndex method into the IndexingManager allowing to specify if indexers should use modified content of editors</summary>

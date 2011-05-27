@@ -50,8 +50,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
@@ -141,9 +139,4 @@ public abstract class ModelImplBaseTestCase extends ModelBasedTestCase {
         return null;
     }
 
-    protected CsmFile getCsmFile(File testSourceFile) throws Exception {
-        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testSourceFile.getAbsolutePath(), false);
-        assertNotNull("Unresolved CsmFile for test file " + testSourceFile, csmFile);//NOI18N
-        return csmFile;
-    }
 }

@@ -94,6 +94,10 @@ public class Dwarf {
             } else {
                 dwarfReader = new DwarfReader(objFileName, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
                 if (dwarfReader.getLinkedObjectFiles().size() > 0) {
+                    File dSYM = new File(objFileName+".dSYM/Contents/Resources/DWARF/"+new File(objFileName).getName()); // NOI18N
+                    if (dSYM.exists()) {
+                        dwarfReader.setdSYM(dSYM.getAbsolutePath());
+                    }
                     // Mach-O left dwarf info in linked object files
                     mode = Mode.MachoLOF;
                 } else {
@@ -308,7 +312,7 @@ public class Dwarf {
                             break;
                         }
                     }
-                    if (len > 1) {
+                    if (len > 1 || startVirtual == splitVirtual.length - 2) {
                         StringBuilder buf = new StringBuilder();
                         for(int k = 0; k < startReal+len; k++) {
                             buf.append('/').append(splitReal[k]); //NOI18N
@@ -378,10 +382,15 @@ public class Dwarf {
                         }
                     }
                     archiveIndex++;
-                    currentDwarf = new Dwarf(member);
-                    toDispose.add(currentDwarf.magic);
-                    currentList = currentDwarf.iteratorCompilationUnits();
-                    if (!currentList.hasNext()) {
+                    try {
+                        currentDwarf = new Dwarf(member);
+                        toDispose.add(currentDwarf.magic);
+                        currentList = currentDwarf.iteratorCompilationUnits();
+                        if (!currentList.hasNext()) {
+                            continue;
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                         continue;
                     }
                     break;

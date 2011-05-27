@@ -58,17 +58,30 @@
   <li><b>Create Interface.</b> Specify which interfaces to create for the session 
     bean: 
     <ul>
+      <li><b>Local.</b> Allow your session bean to be accessed from clients that
+        are running in the same Java Virtual Machine.</li>
       <li><b>Remote.</b> Allow your session bean to be accessed from remote clients 
         using remote method calls. This usually means clients that are not running 
-        on the session bean's application server.</li>
-      <li><b>Local.</b> Allow your session bean to be accessed from clients that 
-        are running in the same Java Virtual Machine.</li>
+        on the session bean's application server.
+        If you select Remote, the IDE can generate a remote interface for the session bean
+        in a Java class library project if the project that you want to contain the interface is open in the IDE.
+        You can choose the project from the dropdown list that lists the open
+        Java class library projects.
+      </li>
     </ul>
   </li>
 </ul>
-<ul class="note"><li>
-        An interface is optional in Java EE 6 applications when the client accessing the
-        bean is a local client.
+<ul class="note">
+    <li>An interface is optional in Java EE 6 applications when the client accessing the
+    bean is a local client.
+    <p>For more information about the using interfaces, see Chapter 22 Enterprise Beans in
+     the Java EE Tutorial:</p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://download.oracle.com/javaee/6/tutorial/doc/gipjf.html">
+        <param name="text" value="<html><u>http://download.oracle.com/javaee/6/tutorial/doc/gipjf.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object></p>
     </li></ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>

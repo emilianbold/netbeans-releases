@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -74,6 +75,7 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
         private final FileData fileData;
 
         private final Set<String> checkedDirs = new HashSet<String>();
+        private UploadStatus uploadStatus;
 
         public Uploader(Project project, ExecutionEnvironment execEnv) {
             this.project = project;
@@ -90,13 +92,16 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
                 throw new RemoteSyncSupport.PathMapperException(file);
             }
             checkDir(remotePath);
-            Future<Integer> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), execEnv, remotePath, 0700, err);
-            int rc = task.get().intValue();
-            if (rc == 0) {
+            Future<UploadStatus> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), execEnv, remotePath, 0700);
+            uploadStatus = task.get();
+            if (uploadStatus.isOK()) {
                 fileData.setState(file, FileState.COPIED);
             } else {
                 fileData.setState(file, FileState.ERROR);
-                throw new IOException("RC=" + rc); //NOI18N
+                if (err != null) {
+                    err.append(uploadStatus.getError());
+                }
+                throw new IOException("RC=" + uploadStatus.getExitCode()); //NOI18N
             }
         }
 

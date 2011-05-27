@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.actions;
 
-import java.io.File;
 import java.util.ResourceBundle;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -60,9 +59,10 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -109,7 +109,7 @@ public class RunDialogAction extends NodeAction {
 
     @Override
     protected void performAction(final Node[] activatedNodes) {
-        String path = null;
+        FileObject executableFO = null;
         boolean isRun = true;
         if (activatedNodes != null && activatedNodes.length == 1) {
             DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
@@ -117,23 +117,17 @@ public class RunDialogAction extends NodeAction {
             if (dataObject != null  && dataObject.isValid() && MIMENames.isBinary(mime)) {
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
-                    File file = FileUtil.toFile(fo);
-                    if (file != null) {
-                        path = file.getPath();
-                    }
+                    executableFO = fo;
                 }
             }
         } else if (contextFileObject != null) {
-            File file = FileUtil.toFile(contextFileObject);
-            if (file != null) {
-                path = file.getPath();
-            }
+            executableFO = contextFileObject;
             isRun = false;
         }
-        perform(path, isRun);
+        perform(executableFO, isRun);
     }
 
-    private String getMime(DataObject dob) {
+    protected String getMime(DataObject dob) {
         FileObject primaryFile = dob == null ? null : dob.getPrimaryFile();
         String mime = primaryFile == null ? "" : primaryFile.getMIMEType();// NOI18N
         return mime;
@@ -153,12 +147,16 @@ public class RunDialogAction extends NodeAction {
         return true;
     }
 
-    private void perform(String executablePath, boolean isRun) {
+    protected void perform(FileObject executableFO, boolean isRun) {
         init(isRun);
-        perform(new RunDialogPanel(executablePath, runButton, isRun), isRun);
+        try {
+            perform(new RunDialogPanel(executableFO, runButton, isRun), isRun);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
-    private void perform(final RunDialogPanel runDialogPanel, boolean isRun) {
+    private void perform(final RunDialogPanel runDialogPanel, final boolean isRun) {
         if (WindowManager.getDefault().getRegistry().getOpened().isEmpty()){
             // It seems action was invoked from command line
             WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
@@ -169,7 +167,7 @@ public class RunDialogAction extends NodeAction {
 
                         @Override
                         public void run() {
-                            Project project = runDialogPanel.getSelectedProject();
+                            runDialogPanel.getSelectedProject(null);
                         }
                     });
                 }
@@ -188,20 +186,25 @@ public class RunDialogAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
-            Project project = runDialogPanel.getSelectedProject();
-            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-            if (conf != null && isRun) {
-                RunProfile profile = conf.getProfile();
-                String path = runDialogPanel.getExecutablePath();
-                path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                        project,
-                        PredefinedType.RUN,
-                        path, conf,
-                        profile,
-                        false);
-                ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
-            }
+            runDialogPanel.getSelectedProject(new RunDialogPanel.RunProjectAction() {
+
+                @Override
+                public void run(Project project) {
+                    MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+                    if (conf != null && isRun) {
+                        RunProfile profile = conf.getProfile();
+                        String path = runDialogPanel.getExecutablePath();
+                        path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                                project,
+                                PredefinedType.RUN,
+                                path, conf,
+                                profile,
+                                false);
+                        ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+                    }
+                }
+            });
         }
     }
 
@@ -210,12 +213,12 @@ public class RunDialogAction extends NodeAction {
         return new HelpCtx(RunDialogAction.class); // FIXUP ???
     }
 
-    private ResourceBundle bundle;
-
     private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(RunDialogAction.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(RunDialogAction.class, s);
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 }

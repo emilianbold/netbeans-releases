@@ -45,6 +45,7 @@ package org.netbeans.modules.dlight.api.terminal;
 import java.awt.Component;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.terminal.action.TerminalSupportImpl;
+import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.windows.IOContainer;
 
@@ -62,8 +63,8 @@ public final class TerminalSupport {
      * @param ioContainer
      * @param env 
      */
-    public static void openTerminal(IOContainer ioContainer, ExecutionEnvironment env) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, env, null, false);
+    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env) {
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false);
     }
     
     /**
@@ -71,10 +72,28 @@ public final class TerminalSupport {
      * @param ioContainer
      * @param env 
      */
-    public static void openTerminal(IOContainer ioContainer, ExecutionEnvironment env, String dir) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, env, dir, false);
+    public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env, String dir) {
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
     }
 
+    /**
+     * opens terminal tab in default terminals container and change dir into specified directory
+     * @param env 
+     */
+    public static void openTerminal(String termTitle, ExecutionEnvironment env, String dir) {
+        final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
+        Object prev = instance.getClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY);
+        instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, Boolean.FALSE);
+        try {
+            instance.open();
+            instance.requestActive();
+            IOContainer ioContainer = instance.getIOContainer();
+            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false);
+        } finally {
+            instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, prev);
+        }
+    }
+    
     public static Component getToolbarPresenter(Action action) {
         return TerminalSupportImpl.getToolbarPresenter(action);
     }

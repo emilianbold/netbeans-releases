@@ -69,12 +69,14 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -119,6 +121,7 @@ public final class WLPluginProperties {
     //public static final String IS_LOCAL_ATTR = "isLocal";              // NOI18N
     public static final String HOST_ATTR = "host";                     // NOI18N
     public static final String PORT_ATTR = "port";                     // NOI18N
+    public static final String REMOTE_ATTR = "remote";                 // NOI18N
     public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
     public static final String ADMIN_SERVER_NAME= "adminName";      // NOI18N
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
@@ -504,6 +507,7 @@ public final class WLPluginProperties {
         return instFolders.isEmpty() ? null : FileUtil.toFile(
                 instFolders.iterator().next()).getAbsolutePath();
     }
+
     /**
      * Returns map of JDK configuration which is used for starting server
      */
@@ -637,7 +641,8 @@ public final class WLPluginProperties {
     public static boolean isSupportedVersion(Version version) {
         return version != null && (Integer.valueOf(9).equals(version.getMajor())
                     || Integer.valueOf(10).equals(version.getMajor())
-                    || Integer.valueOf(11).equals(version.getMajor()));
+                    || Integer.valueOf(11).equals(version.getMajor())
+                    || Integer.valueOf(12).equals(version.getMajor()));
     }
 
     public static File[] getClassPath(WLDeploymentManager manager) {
@@ -723,7 +728,7 @@ public final class WLPluginProperties {
                 }
                 if (implementationVersion != null) { // NOI18N
                     implementationVersion = implementationVersion.trim();
-                    return Version.fromJsr277NotationWithFallback(implementationVersion);
+                    return Version.fromJsr277OrDottedNotationWithFallback(implementationVersion);
                 }
             } finally {
                 try {
@@ -754,7 +759,7 @@ public final class WLPluginProperties {
             // Retrieve domain version
             if (d.getElementsByTagName("domain-version").getLength() > 0) {
                 String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
-                return  strVersion != null ? Version.fromJsr277NotationWithFallback(strVersion) : null;
+                return  strVersion != null ? Version.fromJsr277OrDottedNotationWithFallback(strVersion) : null;
             }
 
         } catch(FileNotFoundException e) {
@@ -799,6 +804,28 @@ public final class WLPluginProperties {
         return false;
     }
 
+    @CheckForNull
+    public static File getMiddlewareHome(File platformRootFile) {
+        String mwHome = WLProductProperties.getMiddlewareHome(platformRootFile);
+        return getMiddlewareHome(platformRootFile, mwHome);
+    } 
+    
+    @CheckForNull
+    public static File getMiddlewareHome(@NonNull File platformRootFile, @NullAllowed String mwHome) {
+        File middleware = null;
+        if (mwHome != null) {
+            middleware = new File(mwHome);
+        }
+        if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
+            middleware = platformRootFile.getParentFile();
+        }
+
+        if (middleware != null && middleware.exists() && middleware.isDirectory()) {
+            return middleware;
+        }
+        return null;
+    }     
+        
     private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
         if (null == candidate)
             return false;
@@ -817,21 +844,44 @@ public final class WLPluginProperties {
         return true;
     }
 
-    public static enum Vendor {
+    public static final class JvmVendor {
 
-        ORACLE("Oracle"), // NOI18N
+        public static final JvmVendor ORACLE = new JvmVendor("Oracle", // NOI18N
+                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmJRockit"));
 
-        SUN("Sun"); // NOI18N
+        public static final JvmVendor SUN = new JvmVendor("Sun", // NOI18N
+                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmHotSpot"));
+        
+        public static final JvmVendor DEFAULT = new JvmVendor("", // NOI18N
+                NbBundle.getMessage(JvmVendor.class, "LBL_OracleJvmDefault"));
 
         private final String name;
+        
+        private final String displayName;
 
-        Vendor(String name ){
+        private JvmVendor(String name, String displayName) {
             this.name = name;
+            this.displayName = displayName;
+        }
+
+        public String toPropertiesString() {
+            return name;
         }
 
         @Override
         public String toString() {
-            return name;
+            return displayName;
+        }
+
+        public static JvmVendor fromPropertiesString(String value) {
+            if (ORACLE.toPropertiesString().equals(value)) {
+                return ORACLE;
+            } else if (SUN.toPropertiesString().equals(value)) {
+                return SUN;
+            } else if (value == null || value.trim().length() == 0) {
+                return DEFAULT;
+            }
+            return new JvmVendor(value, value);
         }
     }
 }

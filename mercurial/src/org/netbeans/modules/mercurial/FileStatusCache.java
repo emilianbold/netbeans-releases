@@ -431,7 +431,7 @@ public class FileStatusCache {
      * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
      * @param files roots to refresh
      */
-    public void refreshAllRoots (final Set<File> files) {
+    public void refreshAllRoots (final Collection<File> files) {
         long startTime = 0;
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
             startTime = System.currentTimeMillis();
@@ -704,6 +704,9 @@ public class FileStatusCache {
      * These are locally modified and ignored files.
      *
      * Is not recursive for flat roots
+     * 
+     * <strong>Note</strong> that the given roots will be considered seen roots, so you should not pass a <strong>repository root unless the root has indeed been seen in the UI</strong>.
+     * Such a root will be cached and every external event or repository-affecting action will invoke a status scan on the root.
      *
      * @param roots context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses

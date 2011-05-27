@@ -79,16 +79,18 @@ public interface XDebugStarter {
         public final List<Pair<String, String>> pathMapping;
         // <host, port> - can be null if not used
         public final Pair<String, Integer> debugProxy;
+        public final String projectEncoding;
 
-        private Properties(FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping, Pair<String, Integer> debugProxy) {
+        private Properties(FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping, Pair<String, Integer> debugProxy, String projectEncoding) {
             this.startFile = startFile;
             this.closeSession = closeSession;
             this.pathMapping = pathMapping;
             this.debugProxy = debugProxy;
+            this.projectEncoding = projectEncoding;
         }
 
-        public static Properties create(FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping, Pair<String, Integer> debugProxy) {
-            return new Properties(startFile, closeSession, pathMapping, debugProxy);
+        public static Properties create(FileObject startFile, boolean closeSession, List<Pair<String, String>> pathMapping, Pair<String, Integer> debugProxy, String projectEncoding) {
+            return new Properties(startFile, closeSession, pathMapping, debugProxy, projectEncoding);
         }
     }
 }

@@ -470,13 +470,13 @@ import org.openide.util.Utilities;
         }
     }
 
-    private boolean supportedMake(JTextField field) {
-        String txt = field.getText();
-        if (txt.length() == 0) {
-            return false;
-        }
-        return !ToolsPanelSupport.isUnsupportedMake(txt);
-    }
+    //private boolean supportedMake(JTextField field) {
+    //    String txt = field.getText();
+    //    if (txt.length() == 0) {
+    //        return false;
+    //    }
+    //    return !ToolsPanelSupport.isUnsupportedMake(txt);
+    //}
 
     private boolean getLastToolValidation(ToolKind tool) {
         Boolean get = lastValid.get(tool);
@@ -503,10 +503,10 @@ import org.openide.util.Utilities;
         boolean qmakeValid = cbQMakeRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.QMakeTool) : true;
         boolean asValid = cbAsRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.Assembler) : true;
         if (cbMakeRequired.isSelected() && !makeValid) {
-            if (supportedMake(tfMakePath)) {
-                errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedMake")); // NOI18N
-            } else {
+            if (ToolsPanelSupport.isUnsupportedMake(tfMakePath.getText())) {
                 errors.add(ToolsPanel.getString("TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
+            } else {
+                errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedMake")); // NOI18N
             }
         }
         if (cbCRequired.isSelected() && !cValid) {
@@ -564,7 +564,7 @@ import org.openide.util.Utilities;
             lastValid.put(tool, false);
             updateField(field, false, tool);
             return;
-        } else if (tool == PredefinedToolKind.MakeTool && !supportedMake(tfMakePath)) {
+        } else if (tool == PredefinedToolKind.MakeTool && ToolsPanelSupport.isUnsupportedMake(txt)) {
             lastValid.put(tool, false);
             updateField(field, false, tool);
             return;

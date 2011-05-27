@@ -68,9 +68,11 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
@@ -121,10 +123,11 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
             libsuffix = "dll";
         }
         File folderBase = getBaseFolder();
-        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(CndFileUtils.toFileObject(folderBase));
-        MakeConfiguration conf = new MakeConfiguration(folderBase.getAbsolutePath(), "Default", MakeConfiguration.TYPE_APPLICATION);  // NOI18N
+        final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
+        MakeConfiguration conf = new MakeConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION);  // NOI18N
         makeConfigurationDescriptor.init(conf);
-        makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
+        makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
         LibraryItem.ProjectItem projectItem;
         projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
                 "../hello1lib",
@@ -259,10 +262,11 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         // Setup project
         File folderBase = getBaseFolder();
-        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(CndFileUtils.toFileObject(folderBase));
-        MakeConfiguration conf = new MakeConfiguration("/tmp/Xxx", "Default", MakeConfiguration.TYPE_DYNAMIC_LIB);  // NOI18N
+        final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
+        MakeConfiguration conf = new MakeConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_DYNAMIC_LIB);  // NOI18N
         makeConfigurationDescriptor.init(conf);
-        makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
+        makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
 
         CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
         CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");

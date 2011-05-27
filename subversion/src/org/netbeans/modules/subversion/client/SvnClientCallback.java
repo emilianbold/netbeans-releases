@@ -46,6 +46,8 @@ package org.netbeans.modules.subversion.client;
 import java.awt.Dialog;
 import java.net.PasswordAuthentication;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -72,6 +74,9 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
     private char[] certPassword;
     private int sshPort = 22;
     
+    private static final Logger LOG = Logger.getLogger("versioning.subversion.passwordCallback"); //NOI18N
+    protected static final boolean PRINT_PASSWORDS = "true".equals(System.getProperty("versioning.subversion.logpassword", "false")); //NOI18N
+    
     /** Creates a new instance of SvnClientCallback */
     public SvnClientCallback(SVNUrl url, int handledExceptions) {
         this.url = url;
@@ -81,6 +86,9 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
     @Override
     public String getUsername() {
         getAuthData();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getUsername: {0}", username); //NOI18N
+        }
         return username;
     }
 
@@ -90,6 +98,12 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
         String retval = ""; //NOI18N
         if (password != null) {
             retval = new String(password);
+        }
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "getPassword: {0}", retval == null ? "null" : retval.isEmpty() ? "empty" : "non-empty"); //NOI18N
+            if (PRINT_PASSWORDS) {
+                LOG.log(Level.FINEST, "getPassword: returning {0}", retval); //NOI18N
+            }
         }
         return retval;
     }
@@ -133,31 +147,50 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
     @Override
     public String getSSHPrivateKeyPath() {
         getAuthData();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getSSHPrivateKeyPath: {0}", certFilePath); //NOI18N
+        }
         return certFilePath;
     }
 
     @Override
     public String getSSHPrivateKeyPassphrase() {
-        return getCertPassword();
+        String passphrase = getCertPassword();
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "getSSHPrivateKeyPassphrase: {0}", passphrase == null ? "null" : passphrase.isEmpty() ? "empty" : "non-empty"); //NOI18N
+            if (PRINT_PASSWORDS) {
+                LOG.log(Level.FINEST, "getSSHPrivateKeyPassphrase: returning {0}", passphrase); //NOI18N
+            }
+        }
+        return passphrase;
     }
 
     @Override
     public int getSSHPort() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getSSHPort: {0}", sshPort); //NOI18N
+        }
         return sshPort;
-    }
-
-    protected void setSSHPort (int sshPort) {
-        this.sshPort = sshPort;
     }
 
     @Override
     public String getSSLClientCertPassword() {
-        return getCertPassword();
+        String pwd = getCertPassword();
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "getSSLCertPwd: {0}", pwd == null ? "null" : pwd.isEmpty() ? "empty" : "non-empty"); //NOI18N
+            if (PRINT_PASSWORDS) {
+                LOG.log(Level.FINEST, "getSSLCertPwd: returning {0}", pwd); //NOI18N
+            }
+        }
+        return pwd;
     }
 
     @Override
     public String getSSLClientCertPath() {
         getAuthData();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getSSLClientCertPath: {0}", certFilePath); //NOI18N
+        }
         return certFilePath;
     }
 
@@ -194,6 +227,10 @@ public abstract class SvnClientCallback implements ISVNPromptUserPassword {
                 password = rc.getPassword();
                 certFilePath = rc.getCertFile();
                 certPassword = rc.getCertPassword();
+                sshPort = rc.getSshPortNumber();
+                if (sshPort <= 0) {
+                    sshPort = 22;
+                }
             }
         }
     }

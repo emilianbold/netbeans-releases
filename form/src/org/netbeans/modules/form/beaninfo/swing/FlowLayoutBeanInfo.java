@@ -57,6 +57,7 @@ public class FlowLayoutBeanInfo extends BISupport {
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         PropertyDescriptor[] pds = new PropertyDescriptor[] {
             createRW(FlowLayout.class, "alignment"), // NOI18N
+            createRW(FlowLayout.class, "alignOnBaseline"), // NOI18N
             createRW(FlowLayout.class, "hgap"), // NOI18N
             createRW(FlowLayout.class, "vgap"), // NOI18N
         };

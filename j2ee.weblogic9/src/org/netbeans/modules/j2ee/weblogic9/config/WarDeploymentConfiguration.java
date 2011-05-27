@@ -47,16 +47,15 @@ package org.netbeans.modules.j2ee.weblogic9.config;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
@@ -67,15 +66,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescrip
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ServerLibraryConfiguration;
-import org.netbeans.modules.j2ee.weblogic9.config.gen.JspDescriptorType;
-import org.netbeans.modules.j2ee.weblogic9.config.gen.LibraryRefType;
-import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
-import org.netbeans.modules.schema2beans.AttrProp;
-import org.netbeans.modules.schema2beans.BaseBean;
+import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -83,7 +76,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -95,14 +87,18 @@ import org.openide.util.lookup.Lookups;
  * Web module deployment configuration handles creation and updating of the 
  * weblogic.xml configuration file.
  *
+ * @author Petr Hejl
  * @author sherold
  */
 public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         implements ServerLibraryConfiguration, ModuleConfiguration,
         ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener, DeploymentDescriptorConfiguration {
 
+    private static final Logger LOGGER = Logger.getLogger(WarDeploymentConfiguration.class.getName());
 
     private final ChangeSupport serverLibraryChangeSupport = new ChangeSupport(this);
+    
+    private final ConfigurationModifier<WebApplicationModel> modifier = new ConfigurationModifier<WebApplicationModel>();
 
     private final File file;
 
@@ -111,17 +107,29 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     private final DataObject dataObject;
 
     private final FileChangeListener weblogicXmlListener = new WeblogicXmlListener();
+    
+    private final Version serverVersion;
+    
+    private final boolean isWebProfile;
 
-    private WeblogicWebApp webLogicWebApp;
+    private WebApplicationModel webLogicWebApp;
 
     private Set<ServerLibraryDependency> originalDeps;
     
+    public WarDeploymentConfiguration(J2eeModule j2eeModule) {
+        this(j2eeModule, null, false);
+    }
+
     /**
      * Creates a new instance of WarDeploymentConfiguration 
      */
-    public WarDeploymentConfiguration(J2eeModule j2eeModule) {
-        super(j2eeModule);
+    public WarDeploymentConfiguration(J2eeModule j2eeModule,Version serverVersion,
+            boolean isWebProfile) {
+
+        super(j2eeModule, serverVersion);
         this.j2eeModule = j2eeModule;
+        this.serverVersion = serverVersion;
+        this.isWebProfile = isWebProfile;
         file = j2eeModule.getDeploymentConfigurationFile("WEB-INF/weblogic.xml"); // NOI18N
         FileUtil.addFileChangeListener(weblogicXmlListener, file);
 
@@ -175,22 +183,23 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
      *
      * @return WeblogicWebApp graph or null if the weblogic.xml file is not parseable.
      */
-    public final synchronized WeblogicWebApp getWeblogicWebApp() {
+    public final synchronized WebApplicationModel getWeblogicWebApp() {
         if (webLogicWebApp == null) {
             try {
                 if (file.exists()) {
                     // load configuration if already exists
                     try {
-                        webLogicWebApp = WeblogicWebApp.createGraph(file);
+                        webLogicWebApp = WebApplicationModel.forFile(file);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     } catch (RuntimeException re) {
                         // weblogic.xml is not parseable, do nothing
+                        LOGGER.log(Level.INFO, null, re);
                     }
                 } else {
                     // create weblogic.xml if it does not exist yet
                     webLogicWebApp = generateWeblogicWebApp();
-                    ConfigUtil.writefile(file, webLogicWebApp);
+                    webLogicWebApp.write(file);
                 }
             } catch (ConfigurationException ce) {
                 Exceptions.printStackTrace(ce);
@@ -202,7 +211,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     // FIXME this is not a proper implementation - deployment PLAN should be saved
     // not a deployment descriptor
     public void save(OutputStream os) throws ConfigurationException {
-        WeblogicWebApp webLogicWebApp = getWeblogicWebApp();
+        WebApplicationModel webLogicWebApp = getWeblogicWebApp();
         if (webLogicWebApp == null) {
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_cannotSaveNotParseableConfFile", file.getPath());
             throw new ConfigurationException(msg);
@@ -215,111 +224,19 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         }
     }
     
-    // private helper methods -------------------------------------------------
-    
-    /**
-     * Perform webLogicWebApp changes defined by the webLogicWebApp modifier. Update editor
-     * content and save changes, if appropriate.
-     *
-     * @param modifier
-     */
-    private void modifyWeblogicWebApp(WeblogicWebAppModifier modifier) throws ConfigurationException {
-        assert dataObject != null : "DataObject has not been initialized yet"; // NIO18N
-        try {
-            // get the document
-            EditorCookie editor = (EditorCookie)dataObject.getCookie(EditorCookie.class);
-            StyledDocument doc = editor.getDocument();
-            if (doc == null) {
-                doc = editor.openDocument();
-            }
-            
-            // get the up-to-date model
-            WeblogicWebApp newWeblogicWebApp = null;
-            try {
-                // try to create a graph from the editor content
-                byte[] docString = doc.getText(0, doc.getLength()).getBytes();
-                newWeblogicWebApp = WeblogicWebApp.createGraph(new ByteArrayInputStream(docString));
-            } catch (RuntimeException e) {
-                WeblogicWebApp oldWeblogicWebApp = getWeblogicWebApp();
-                if (oldWeblogicWebApp == null) {
-                    // neither the old graph is parseable, there is not much we can do here
-                    // TODO: should we notify the user?
-                    String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_configFileCannotParse", file.getPath());
-                    throw new ConfigurationException(msg);
-                }
-                // current editor content is not parseable, ask whether to override or not
-                NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_weblogicXmlNotValid"),
-                        NotifyDescriptor.OK_CANCEL_OPTION);
-                Object result = DialogDisplayer.getDefault().notify(notDesc);
-                if (result == NotifyDescriptor.CANCEL_OPTION) {
-                    // keep the old content
-                    return;
-                }
-                // use the old graph
-                newWeblogicWebApp = oldWeblogicWebApp;
-            }
-            
-            // perform changes
-            modifier.modify(newWeblogicWebApp);
-            
-            // save, if appropriate
-            boolean modified = dataObject.isModified();
-            replaceDocument(doc, newWeblogicWebApp);
-            if (!modified) {
-                SaveCookie cookie = (SaveCookie)dataObject.getCookie(SaveCookie.class);
-                if (cookie != null) {
-                    cookie.save();
-                }
-            }
-            synchronized (this) {
-                webLogicWebApp = newWeblogicWebApp;
-            }
-        } catch (BadLocationException ble) {
-            // this should not occur, just log it if it happens
-            Exceptions.printStackTrace(ble);
-        } catch (IOException ioe) {
-            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotUpdateFile", file.getPath());
-            throw new ConfigurationException(msg, ioe);
-        }
-    }
-    
     /**
      * Genereate Context graph.
      */
-    private WeblogicWebApp generateWeblogicWebApp() {
-        WeblogicWebApp webLogicWebApp = new WeblogicWebApp();
-        webLogicWebApp.createAttribute("xmlns:j2ee", "xmlns:j2ee", AttrProp.CDATA | AttrProp.IMPLIED, null, null);
-        webLogicWebApp.setAttributeValue("xmlns:j2ee", "http://java.sun.com/xml/ns/j2ee");
-        webLogicWebApp.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
-        webLogicWebApp.setAttributeValue("xsi:schemaLocation", "http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-web-app.xsd"); // NOI18N
-        webLogicWebApp.setContextRoot(new String [] {""}); // NOI18N
-        JspDescriptorType jspDescriptor = new JspDescriptorType();
-        jspDescriptor.setKeepgenerated(true);
-        webLogicWebApp.setJspDescriptor(new JspDescriptorType[] {jspDescriptor});
-        return webLogicWebApp;
-    }
-    
-    /**
-     * Replace the content of the document by the graph.
-     */
-    private void replaceDocument(final StyledDocument doc, BaseBean graph) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            graph.write(out);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+    private WebApplicationModel generateWeblogicWebApp() {
+        WebApplicationModel webApp = WebApplicationModel.generate(serverVersion);
+        webApp.setContextRoot("");
+        webApp.setKeepJspGenerated(true);
+        webApp.setDebug(true);
+        if (!isWebProfile) {
+            // TODO not supported by web profile so far
+            webApp.setFastSwap(true);
         }
-        NbDocument.runAtomic(doc, new Runnable() {
-            public void run() {
-                try {
-                    doc.remove(0, doc.getLength());
-                    doc.insertString(0, out.toString(), null);
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                }
-            }
-        });
+        return webApp;
     }
     
     // TODO: this contextPath fix code will be removed, as soon as it will 
@@ -333,12 +250,12 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     }
     
     public String getContextRoot() throws ConfigurationException {
-        WeblogicWebApp webLogicWebApp = getWeblogicWebApp();
+        WebApplicationModel webLogicWebApp = getWeblogicWebApp();
         if (webLogicWebApp == null) { // graph not parseable
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadContextRoot", file.getPath());
             throw new ConfigurationException(msg);
         }
-        return webLogicWebApp.getContextRoot(0);
+        return webLogicWebApp.getContextRoot();
     }
 
     public void setContextRoot(String contextRoot) throws ConfigurationException {
@@ -359,45 +276,60 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
             contextRoot = ctxRoot;
         }
         final String newContextPath = contextRoot;
-        modifyWeblogicWebApp(new WeblogicWebAppModifier() {
-            public void modify(WeblogicWebApp webLogicWebApp) {
-                webLogicWebApp.setContextRoot(new String [] {newContextPath});
+        modifier.modify(new WeblogicWebAppModifier() {
+            @Override
+            public void modify(WebApplicationModel webLogicWebApp) {
+                webLogicWebApp.setContextRoot(newContextPath);
             }
-        });
+        }, dataObject, file);
+    }
+
+    @Override
+    public void bindDatasourceReference(final String referenceName, final String jndiName) throws ConfigurationException {
+        if (referenceName == null || referenceName.length() == 0
+                || jndiName == null || jndiName.length() == 0) {
+            return;
+        }
+
+        modifier.modify(new WeblogicWebAppModifier() {
+            @Override
+            public void modify(WebApplicationModel webLogicWebApp) {
+                webLogicWebApp.setReference(referenceName, jndiName);
+            }
+        }, dataObject, file);
+    }
+
+    @Override
+    public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
+        WebApplicationModel webLogicWebApp = getWeblogicWebApp();
+        if (webLogicWebApp == null) { // graph not parseable
+            String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadReferenceName", file.getPath());
+            throw new ConfigurationException(msg);
+        }
+        return webLogicWebApp.getReferenceJndiName(referenceName);
     }
 
     @Override
     public void configureLibrary(@NonNull final ServerLibraryDependency library) throws ConfigurationException {
         assert library != null;
 
-        modifyWeblogicWebApp(new WeblogicWebAppModifier() {
-            public void modify(WeblogicWebApp webLogicWebApp) {
-                for (LibraryRefType libRef : webLogicWebApp.getLibraryRef()) {
-                    ServerLibraryDependency lib = getServerLibraryRange(libRef);
-                    if (library.equals(lib)) {
-                        return;
-                    }
-                }
-
-                setServerLibraryRange(webLogicWebApp, library);
+        modifier.modify(new WeblogicWebAppModifier() {
+            @Override
+            public void modify(WebApplicationModel webLogicWebApp) {
+                webLogicWebApp.addLibrary(library);
             }
-        });
+        }, dataObject, file);
     }
 
     @Override
     public Set<ServerLibraryDependency> getLibraries() throws ConfigurationException {
-        WeblogicWebApp webLogicWebApp = getWeblogicWebApp();
+        WebApplicationModel webLogicWebApp = getWeblogicWebApp();
         if (webLogicWebApp == null) { // graph not parseable
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotReadServerLibraries", file.getPath());
             throw new ConfigurationException(msg);
         }
 
-        Set<ServerLibraryDependency> ranges = new HashSet<ServerLibraryDependency>();
-        for (LibraryRefType libRef : webLogicWebApp.getLibraryRef()) {
-            ranges.add(getServerLibraryRange(libRef));
-        }
-
-        return ranges;
+        return webLogicWebApp.getLibraries();
     }
 
     @Override
@@ -462,38 +394,6 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         }
     }
 
-    private ServerLibraryDependency getServerLibraryRange(LibraryRefType libRef) {
-        String name = libRef.getLibraryName();
-        String specVersionString = libRef.getSpecificationVersion();
-        String implVersionString = libRef.getImplementationVersion();
-        boolean exactMatch = libRef.isExactMatch();
-
-        Version spec = specVersionString == null ? null : Version.fromJsr277NotationWithFallback(specVersionString);
-        Version impl = implVersionString == null ? null : Version.fromJsr277NotationWithFallback(implVersionString);
-        if (exactMatch) {
-            return ServerLibraryDependency.exactVersion(name, spec, impl);
-        } else {
-            return ServerLibraryDependency.minimalVersion(name, spec, impl);
-        }
-    }
-
-    private void setServerLibraryRange(WeblogicWebApp webApp, ServerLibraryDependency library) {
-        LibraryRefType libRef = new LibraryRefType();
-        libRef.setLibraryName(library.getName());
-        if (library.isExactMatch()) {
-            libRef.setExactMatch(true);
-        }
-        if (library.getSpecificationVersion() != null) {
-            libRef.setSpecificationVersion(library.getSpecificationVersion().toString());
-        }
-        if (library.getImplementationVersion() != null) {
-            libRef.setImplementationVersion(library.getImplementationVersion().toString());
-        }
-        webApp.setLibraryRef(new LibraryRefType[] {libRef});
-    }
-
-    // private helper interface -----------------------------------------------
-
     private class WeblogicXmlListener implements FileChangeListener {
 
         @Override
@@ -527,7 +427,23 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         }
     }
 
-    private interface WeblogicWebAppModifier {
-        void modify(WeblogicWebApp context);
+    private abstract class WeblogicWebAppModifier implements ConfigurationModifier.DescriptorModifier<WebApplicationModel> {
+
+        @Override
+        public WebApplicationModel load() {
+            return getWeblogicWebApp();
+        }
+
+        @Override
+        public WebApplicationModel load(byte[] source) throws IOException {
+            return WebApplicationModel.forInputStream(new ByteArrayInputStream(source));
+        }
+
+        @Override
+        public void save(WebApplicationModel context) {
+            synchronized (WarDeploymentConfiguration.this) {
+                webLogicWebApp = context;
+            }
+        }
     }
 }

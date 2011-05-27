@@ -56,6 +56,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,6 +76,8 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.actions.EditAction;
 import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
@@ -629,7 +632,10 @@ final class NodeListener implements MouseListener, KeyListener,
     private CopyTextAction newCopyTextAction(TreePath path) {
         try {
             MatchingObject mo = getMatchingObject(path);
-            String filePath = mo.getFile().getCanonicalPath(); // NPE, IOE
+
+            FileObject fileObject = mo.getFileObject();
+            File file = FileUtil.toFile(fileObject);
+            String filePath = ( file != null )?  file.getCanonicalPath() :  fileObject.getPath();
             String ctaName = NbBundle.getBundle(this.getClass()).
                                   getString("LBL_CopyFilePathAction"); // NOI18N
             CopyTextAction cta = new CopyTextAction(ctaName);

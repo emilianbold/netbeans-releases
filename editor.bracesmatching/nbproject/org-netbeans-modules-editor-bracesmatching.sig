@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.13
+#Version 1.17.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -15,11 +15,38 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public abstract interface org.netbeans.spi.editor.bracesmatching.BracesMatcher
 meth public abstract int[] findMatches() throws java.lang.InterruptedException,javax.swing.text.BadLocationException
 meth public abstract int[] findOrigin() throws java.lang.InterruptedException,javax.swing.text.BadLocationException
 
 CLSS public abstract interface org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory
+ anno 0 org.netbeans.spi.editor.mimelookup.MimeLocation(java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass=class org.netbeans.spi.editor.mimelookup.InstanceProvider, java.lang.String subfolderName="BracesMatchers")
 meth public abstract org.netbeans.spi.editor.bracesmatching.BracesMatcher createMatcher(org.netbeans.spi.editor.bracesmatching.MatcherContext)
 
 CLSS public final org.netbeans.spi.editor.bracesmatching.MatcherContext
@@ -40,4 +67,12 @@ meth public static int matchChar(javax.swing.text.Document,int,int,char,char) th
 meth public static org.netbeans.spi.editor.bracesmatching.BracesMatcher defaultMatcher(org.netbeans.spi.editor.bracesmatching.MatcherContext,int,int)
 supr java.lang.Object
 hfds DEFAULT_CHARS
+
+CLSS public abstract interface !annotation org.netbeans.spi.editor.mimelookup.MimeLocation
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass()
+meth public abstract java.lang.String subfolderName()
 

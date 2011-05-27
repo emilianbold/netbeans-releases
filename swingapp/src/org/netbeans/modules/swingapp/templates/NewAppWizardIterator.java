@@ -381,9 +381,15 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
     
     public static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh, 
             FileObject projectFolder) throws IOException {
-        // Getting classpath for the test folder to obtain also testing-only libraries (like JUnit).
-        FileObject fob = projectFolder.getFileObject("test"); // NOI18N
-        FileObject[] roots = ClassPath.getClassPath(fob, ClassPath.EXECUTE).getRoots();
+        FileObject fob = projectFolder.getFileObject("src"); // NOI18N
+        if (fob == null) {
+            throw new IOException("No src dir");
+        }
+        ClassPath execCP = ClassPath.getClassPath(fob, ClassPath.EXECUTE);
+        if (execCP == null) {
+            throw new IOException("No exec CP for " + fob);
+        }
+        FileObject[] roots = execCP.getRoots();
         List<FileObject> classpath = Arrays.asList(roots);
         List<String> libs = new LinkedList<String>();
         for (Library library : LibraryManager.getDefault().getLibraries()) {

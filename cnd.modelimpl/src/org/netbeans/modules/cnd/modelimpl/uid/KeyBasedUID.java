@@ -43,14 +43,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.uid;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -104,11 +104,11 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
         return this.key.equals(other.key);
     }
 
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         KeyObjectFactory.getDefaultFactory().writeKey(key, aStream);
     }
 
-    /* package */ KeyBasedUID(DataInput aStream) throws IOException {
+    /* package */ KeyBasedUID(RepositoryDataInput aStream) throws IOException {
         key = KeyObjectFactory.getDefaultFactory().readKey(aStream);
     }
 

@@ -65,8 +65,11 @@ public class TestDepsTest extends TestBase {
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         File nball = new File(prop);
-        new File(nball, "nbbuild/nbproject/private/scan-cache-full.ser").delete();
-        new File(nball, "nbbuild/nbproject/private/scan-cache-standard.ser").delete();
+        for (File cache : new File(nball, "nbbuild/nbproject/private").listFiles()) {
+            if (cache.getName().matches("scan-cache-.+[.]ser") && !cache.delete()) {
+                throw new IOException(cache.getName());
+            }
+        }
     }
     
     public void testDepsTest () throws Exception {

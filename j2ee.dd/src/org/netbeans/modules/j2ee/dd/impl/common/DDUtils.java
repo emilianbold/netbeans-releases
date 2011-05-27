@@ -59,6 +59,7 @@ import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author pfiala
@@ -66,6 +67,15 @@ import org.netbeans.modules.schema2beans.Schema2BeansException;
 public class DDUtils {
     public static EjbJarProxy createEjbJarProxy(InputStream inputStream) throws IOException {
         return createEjbJarProxy(new InputSource(inputStream));
+    }
+
+    public static EjbJarProxy createEjbJarProxy(FileObject fo) throws IOException {
+        InputStream inputStream = fo.getInputStream();
+        try {
+            return createEjbJarProxy(new InputSource(inputStream));
+        } finally {
+            inputStream.close();
+        }
     }
     
     public static EjbJarProxy createEjbJarProxy(Reader reader) throws IOException {
@@ -141,6 +151,15 @@ public class DDUtils {
             throw new SAXException(ex);
         }
     }
+
+    public static WebApp createWebApp(FileObject fo, String version) throws IOException, SAXException {
+        InputStream inputStream = fo.getInputStream();
+        try {
+            return createWebApp(inputStream, version);
+        } finally {
+            inputStream.close();
+        }
+    }
     
     public static AppClient createAppClient(InputStream is, String version) throws IOException, SAXException {
         try {
@@ -155,5 +174,14 @@ public class DDUtils {
             throw new SAXException(ex);
         }
         return null;
+    }
+
+    public static AppClient createAppClient(FileObject fo, String version) throws IOException, SAXException {
+        InputStream inputStream = fo.getInputStream();
+        try {
+            return createAppClient(inputStream, version);
+        } finally {
+            inputStream.close();
+        }
     }
 }

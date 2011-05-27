@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ejbs.entity.bean;
 
 import java.rmi.RemoteException;
@@ -11,10 +10,9 @@ import javax.ejb.FinderException;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 public interface LRBERemoteHome extends EJBHome {
-
-    ejbs.entity.bean.LRBERemote findByPrimaryKey(java.lang.Long key)  throws FinderException, RemoteException;
     
+    ejbs.entity.bean.LRBERemote findByPrimaryKey(java.lang.Long key) throws FinderException, RemoteException;
 }

@@ -44,14 +44,15 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Base class for CsmOffsetable
@@ -79,6 +80,12 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         // Parameters.notNull("file can not be null", file); // NOI18N
         this.fileUID = UIDCsmConverter.fileToUID(file);
         this.fileRef = null;// to prevent error with "final"
+        if(end < start) {
+            if(CndUtils.isDebugMode()) {            
+                CndUtils.assertTrueInConsole(false, "end < start for " + ((file != null)?file.getAbsolutePath():"null file") + ":[" + start + "-" + end + "]"); // NOI18N
+            }
+            end = start;
+        }
         this.startPosition = PositionManager.createPositionID(fileUID, start, PositionManager.Position.Bias.FOWARD);
         this.endPosition = PositionManager.createPositionID(fileUID, end, PositionManager.Position.Bias.BACKWARD);
     }
@@ -129,9 +136,13 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     
     @Override
     public CsmFile getContainingFile() {
-        return _getFile();
+        return _getFile(true);
     }
 
+    protected final CsmFile getContainingFileImpl(boolean checkNull) {
+        return _getFile(checkNull);
+    }
+    
     @Override
     public CharSequence getText() {
         return getContainingFile().getText(getStartOffset(), getEndOffset());
@@ -150,16 +161,16 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         }
     }
     
-    private synchronized CsmFile _getFile() {
+    private synchronized CsmFile _getFile(boolean checkNull) {
         CsmFile file = this.fileRef;
         if (file == null) {
             file = UIDCsmConverter.UIDtoFile(fileUID);
-            assert file != null : "no object for UID " + fileUID;
+            assert file != null || !checkNull: "no object for UID " + fileUID + " in object " + getClass() + ":" + getOffsetString();
         }
         return file;
     }
 
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         output.writeInt(startPosition);
         output.writeInt(endPosition);
         // not null UID
@@ -167,7 +178,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         UIDObjectFactory.getDefaultFactory().writeUID(this.fileUID, output);
     }
     
-    protected OffsetableBase(DataInput input) throws IOException {
+    protected OffsetableBase(RepositoryDataInput input) throws IOException {
         startPosition = input.readInt();
         endPosition = input.readInt();
 

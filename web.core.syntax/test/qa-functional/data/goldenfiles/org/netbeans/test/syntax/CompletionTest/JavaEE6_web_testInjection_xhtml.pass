@@ -1,108 +1,168 @@
 [${|}, NamedWithName beruska, ${beruska}, 376]
-NamedWithName beruska
-ConversationImpl javax.enterpr
-Model model
-MyManagedBean myManagedBean
-NamedBean namedBean
-ManagedBeanWithName slunicko
 application
 applicationScope[]
+NamedWithName beruska
 cc
-component
+javax.faces.component.UICompon
 cookie[]
-facesContext
-flash
+javax.faces.context.FacesConte
+javax.faces.context.Flash flas
 headerValues[]
 header[]
 initParam[]
-pageScope[]
+MyManagedBean myManagedBean
+NamedBean namedBean
 paramValues[]
 param[]
+request[]
 requestScope[]
-resource
+javax.faces.application.Resour
 session
 sessionScope[]
-view
+ManagedBeanWithName slunicko
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+pageScope[]
 viewScope[]
 End cursor position = 386
 [${|}, MyManagedBean myManagedBean, ${myManagedBean}, 439]
-NamedWithName beruska
-ConversationImpl javax.enterpr
-Model model
-MyManagedBean myManagedBean
-NamedBean namedBean
-ManagedBeanWithName slunicko
 application
 applicationScope[]
+NamedWithName beruska
 cc
-component
+javax.faces.component.UICompon
 cookie[]
-facesContext
-flash
+javax.faces.context.FacesConte
+javax.faces.context.Flash flas
 headerValues[]
 header[]
 initParam[]
-pageScope[]
+MyManagedBean myManagedBean
+NamedBean namedBean
 paramValues[]
 param[]
+request[]
 requestScope[]
-resource
+javax.faces.application.Resour
 session
 sessionScope[]
-view
+ManagedBeanWithName slunicko
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+pageScope[]
 viewScope[]
 End cursor position = 455
 [${|}, NamedBean namedBean, ${namedBean}, 489]
-NamedWithName beruska
-ConversationImpl javax.enterpr
-Model model
-MyManagedBean myManagedBean
-NamedBean namedBean
-ManagedBeanWithName slunicko
 application
 applicationScope[]
+NamedWithName beruska
 cc
-component
+javax.faces.component.UICompon
 cookie[]
-facesContext
-flash
+javax.faces.context.FacesConte
+javax.faces.context.Flash flas
 headerValues[]
 header[]
 initParam[]
-pageScope[]
+MyManagedBean myManagedBean
+NamedBean namedBean
 paramValues[]
 param[]
+request[]
 requestScope[]
-resource
+javax.faces.application.Resour
 session
 sessionScope[]
-view
+ManagedBeanWithName slunicko
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+pageScope[]
 viewScope[]
 End cursor position = 501
 [${|}, ManagedBeanWithName slunicko, ${slunicko}, 547]
-NamedWithName beruska
-ConversationImpl javax.enterpr
-Model model
-MyManagedBean myManagedBean
-NamedBean namedBean
-ManagedBeanWithName slunicko
 application
 applicationScope[]
+NamedWithName beruska
 cc
-component
+javax.faces.component.UICompon
 cookie[]
-facesContext
-flash
+javax.faces.context.FacesConte
+javax.faces.context.Flash flas
 headerValues[]
 header[]
 initParam[]
-pageScope[]
+MyManagedBean myManagedBean
+NamedBean namedBean
 paramValues[]
 param[]
+request[]
 requestScope[]
-resource
+javax.faces.application.Resour
 session
 sessionScope[]
-view
+ManagedBeanWithName slunicko
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+pageScope[]
 viewScope[]
 End cursor position = 558

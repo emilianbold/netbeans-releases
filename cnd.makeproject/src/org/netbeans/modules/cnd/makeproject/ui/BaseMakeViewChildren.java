@@ -109,6 +109,10 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
         }
     }
 
+    private synchronized void resetKeys(Collection<?> keysSet) {
+        setKeys(keysSet);
+    }
+    
     private Runnable getAddNotifyRunnable() {
         return new Runnable() {
             @Override
@@ -123,7 +127,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
                 if (folder != null) { // normally it shouldn't happen, but might happen if the project metadata is broken
                     folder.addChangeListener(BaseMakeViewChildren.this);
                     if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
-                        setKeys(getKeys());
+                        resetKeys(getKeys());
                     }
                 }
             }
@@ -143,7 +147,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     @Override
     @SuppressWarnings("unchecked")
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        resetKeys(Collections.EMPTY_SET);
         if (folder != null) {
             folder.removeChangeListener(this);
         }
@@ -179,12 +183,12 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
 
                 @Override
                 public void run() {
-                    setKeys(keys);
+                    resetKeys(keys);
                 }
             };
         }
         if (todo != null) {
-            EventQueue.invokeLater(todo);
+            LOAD_NODES_RP.post(todo);
         }
     }
 

@@ -105,7 +105,7 @@ public final class FormatterWriterImpl extends Writer {
                     doc.insertString(offset, text, null);
                     Position startPos = doc.createPosition(offset);
                     Position endPos = doc.createPosition(offset + text.length());
-                    indentImpl.reformat(startPos.getOffset(), endPos.getOffset());
+                    indentImpl.reformat(startPos.getOffset(), endPos.getOffset(), startPos.getOffset());
                     int len = endPos.getOffset() - startPos.getOffset();
                     String reformattedText = doc.getText(startPos.getOffset(), len);
                     doc.remove(startPos.getOffset(), len);

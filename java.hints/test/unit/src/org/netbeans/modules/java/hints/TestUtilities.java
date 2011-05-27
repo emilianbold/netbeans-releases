@@ -42,8 +42,12 @@ public class TestUtilities {
     }
 
     public static String detectOffsets(String source, int[] positionOrSpan) {
+        return detectOffsets(source, positionOrSpan, "\\|");
+    }
+
+    public static String detectOffsets(String source, int[] positionOrSpan, String delimiter) {
         //for now, the position/span delimiter is '|', without possibility of escaping:
-        String[] split = source.split("\\|");
+        String[] split = source.split(delimiter);
         
         Assert.assertTrue("incorrect number of position markers (|)", positionOrSpan.length == split.length - 1);
         

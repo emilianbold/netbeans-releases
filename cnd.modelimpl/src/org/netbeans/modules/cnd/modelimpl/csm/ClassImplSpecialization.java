@@ -45,8 +45,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +55,8 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -131,6 +131,11 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         return true;
     }
 
+    @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
 //    public String getTemplateSignature() {
 //	return qualifiedNameSuffix;
 //    }
@@ -170,13 +175,13 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeUTF(qualifiedNameSuffix, output);
         PersistentUtils.writeSpecializationDescriptor(specializationDesctiptor, output);
     }
 
-    public ClassImplSpecialization(DataInput input) throws IOException {
+    public ClassImplSpecialization(RepositoryDataInput input) throws IOException {
         super(input);
         qualifiedNameSuffix = PersistentUtils.readUTF(input, NameCache.getManager());
         specializationDesctiptor = PersistentUtils.readSpecializationDescriptor(input);

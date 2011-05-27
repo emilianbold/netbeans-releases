@@ -165,7 +165,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
     
     @SuppressWarnings("unchecked") // NOI18N
     @Override
-    public void editAction(String o) {
+    public void editAction(String o, int i) {
         String s = o;
         
         InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
@@ -175,7 +175,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        replaceElement(o, newS);
+        replaceElement(o, newS, i);
     }
     
     private String getString(String key) {

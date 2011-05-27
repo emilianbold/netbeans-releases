@@ -57,6 +57,7 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -1310,6 +1311,28 @@ itor tabs #66700).
             cause = cause.getCause();
         }
         return cause instanceof HgCommandCanceledException;
+    }
+
+    /**
+     * Returns an array with root as its only item or all seen roots under the root when it's a repository root
+     * @param root
+     * @return 
+     */
+    public static File[] splitIntoSeenRoots (File root) {
+        File[] roots;
+        File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(root);
+        if (root.equals(repositoryRoot)) {
+            Set<File> seenRoots = Mercurial.getInstance().getSeenRoots(repositoryRoot);
+            roots = seenRoots.toArray(new File[seenRoots.size()]);
+        } else {
+            roots = new File[] { root };
+        }
+        return roots;
+    }
+
+    public static boolean isRepositoryLocked (File repository) {
+        String[] locks = getHgFolderForRoot(repository).list();
+        return locks != null && Arrays.asList(locks).contains("wlock"); //NOI18N
     }
 
     /**

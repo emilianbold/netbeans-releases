@@ -65,15 +65,14 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
     private final GoToSourceAction action;
     private String plainDisplayName = null;
     private String htmlDisplayName = null;
-    private String functionName = null;
     private final boolean useHtmlFormat;
 
     PlainListFunctionCallNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, 
-            FunctionCall functionCall, boolean useHMTL) {
+            FunctionCall functionCall, boolean useHMTL, GoToSourceCallbackAction callbackAction) {
         super(Children.LEAF);
         this.functionCall = functionCall;
         this.useHtmlFormat = useHMTL;
-        action = new GoToSourceAction(sourceFileInfoDataProvider, functionCall, this);
+        action = new GoToSourceAction(callbackAction, sourceFileInfoDataProvider, functionCall, this);
         updateNames();
     }
 
@@ -86,6 +85,13 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
+
+    @Override
+    public String getName() {
+        return plainDisplayName;
+    }
+
+
 
     @Override
     public Action[] getActions(boolean context) {
@@ -124,11 +130,25 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
         return plain;
     }
 
+    private static String getBaseName(String path) {
+        if (path.length() > 0 && (path.charAt(path.length() - 1) == '\\' || path.charAt(path.length() - 1) == '/')) {
+            path = path.substring(0, path.length() - 1);
+        }
+        int sep = path.lastIndexOf('/');
+        if (sep == -1) {
+            sep = path.lastIndexOf('\\');
+        }
+        if (sep != -1) {
+            return path.substring(sep + 1);
+        }
+        return path;
+    }
+
     private synchronized void updateNames() {
         plainDisplayName = functionCall.getDisplayedName();
-
-        String name = FunctionNameUtils.getFunctionName(functionCall.getFunction().getName());
-        String funcName = functionCall.getFunction().getQuilifiedName();
+        String fSignature = functionCall.getFunction().getSignature();
+        String name = functionCall.getFunction().getName();
+        String funcName = name;
         int idx1 = name.indexOf(funcName);
         if (idx1 < 0){//something bad happend, print to log
             DLightLogger.getLogger(PlainListFunctionCallNode.class).log(Level.FINE, "Attention::::StringIndexOutOfBoundsException will "
@@ -140,12 +160,17 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
             funcName = funcName.substring(idx2 + 1);
         }
 
-        this.functionName = funcName;
-
         String prefix = name.substring(0, idx1);
         String suffix = name.substring(idx1 + funcName.length());
-
-        prefix = toHtml(prefix);
+        boolean functionNameWasStripped = false;
+        if (funcName == null || funcName.trim().isEmpty()){
+            functionNameWasStripped = true;
+            funcName = getBaseName(FunctionNameUtils.getFunctionModule(fSignature)) + "+" + FunctionNameUtils.getFunctionModuleOffset(fSignature);//NOI18N
+        }
+        
+        StringBuilder plainNameResult = new StringBuilder();
+        plainNameResult.append(prefix).append(funcName).append(suffix);
+                prefix = toHtml(prefix);
         funcName = toHtml(funcName);
         suffix = toHtml(suffix);
         funcName = "<b>" + funcName + "</b>"; // NOI18N
@@ -155,10 +180,9 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
         StringBuilder result = new StringBuilder("<html>"); // NOI18N
 
         String infoSuffix = null;
-
+        
         if (action != null && action.isEnabled()) {
             result.append("<font color='#000000'>").append(dispName).append("</font>"); // NOI18N
-
             SourceFileInfo sourceInfo = action.getSource();
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 String fname = new File(sourceInfo.getFileName()).getName();
@@ -169,13 +193,26 @@ class PlainListFunctionCallNode extends AbstractNode implements GoToSourceAction
 
                 infoSuffix = infoPrefix + "&nbsp;" + fname + (line > 0 ? ":" + line : ""); // NOI18N
                 result.append("<font color='#808080'>").append(infoSuffix).append("</font>"); // NOI18N
+                plainNameResult.append(" ").append(infoPrefix).append(" ").append(fname).append(line > 0 ? ":" + line : "");//NOI18N
             }
         } else {
             result.append("<font color='#808080'>").append(dispName).append("</font>"); // NOI18N
+            //if we have module name lets add it as in
+            if (!functionNameWasStripped){
+                String moduleName = getBaseName(FunctionNameUtils.getFunctionModule(fSignature));
+                if (moduleName != null && !moduleName.trim().isEmpty()){
+                    String infoPrefix = getMessage("FunctionCallNode.prefix.withoutLine");//NOI18N
+                    final String moduleOffset = FunctionNameUtils.getFunctionModuleOffset(fSignature);
+                    infoSuffix = infoPrefix + "&nbsp;" + moduleName + (moduleOffset != null ? "+" + moduleOffset : "");//NOI18N
+                    result.append("<font color='#808080'>").append(infoSuffix).append("</font>"); // NOI18N
+                    plainNameResult.append(" ").append(infoPrefix).append(" ").append(moduleName).append(moduleOffset != null ? "+" + moduleOffset : "");//NOI18N
+
+                }
+            }
         }
 
         result.append("</html>"); // NOI18N
-
+        plainDisplayName = plainNameResult.toString();
         htmlDisplayName = result.toString();
     }
 

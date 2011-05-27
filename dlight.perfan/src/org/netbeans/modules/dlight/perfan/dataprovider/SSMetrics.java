@@ -55,7 +55,7 @@ public final class SSMetrics {
     private SSMetrics() {
     }
 
-    public final static FunctionMetric getMetric(Column dataColumn) {
+    public static FunctionMetric getMetric(Column dataColumn) {
         return hash.get(dataColumn.getColumnName());
     }
 
@@ -63,7 +63,7 @@ public final class SSMetrics {
 
         private MemoryMetric() {
         }
-        private static String GID = "MemoryMetric"; // NOI18N
+        private final static String GID = "MemoryMetric"; // NOI18N
         public static final FunctionMetric LeakBytesMetric = fm(GID, "e.bleak", Integer.class); // NOI18N
         public static final FunctionMetric LeaksCountMetric = fm(GID, "e.leak", Integer.class); // NOI18N
     }
@@ -72,7 +72,7 @@ public final class SSMetrics {
 
         private THAMetric() {
         }
-        private static String GID = "THAMetric"; // NOI18N
+        private final static String GID = "THAMetric"; // NOI18N
         public static final FunctionMetric DeadlockMetric = fm(GID, "e.deadlocks", Integer.class); // NOI18N
         public static final FunctionMetric RaceMetric = fm(GID, "e.raccess", Integer.class); // NOI18N
     }
@@ -81,7 +81,7 @@ public final class SSMetrics {
 
         private TimeMetric() {
         }
-        private static String GID = "TimeMetric"; // NOI18N
+        private final static String GID = "TimeMetric"; // NOI18N
         static public final FunctionMetric UserFuncTimeInclusive = fm(GID, "i.user", Double.class); // NOI18N
         static public final FunctionMetric UserFuncTimeExclusive = fm(GID, "e.user", Double.class); // NOI18N
         static public final FunctionMetric SyncWaitTimeInclusive = fm(GID, "i.sync", Double.class); // NOI18N

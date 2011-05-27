@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.subversion.ui.repository;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -196,7 +197,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
     static class Http extends ConnectionType {
 
-        private HttpPanel panel = new HttpPanel();
+        private final HttpPanel panel = new HttpPanel();
 
         public Http(Repository repository) {
             super(repository);
@@ -458,9 +459,27 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
     /*
      * The dialog and settings look the same as for https
      */
-    static class SvnSSHSvnKit extends Http {
+    static class SvnSSHSvnKit extends ConnectionType {
+        
+        private final SvnSSHSvnKitPanel panel = new SvnSSHSvnKitPanel();
+        
         public SvnSSHSvnKit(Repository repository) {
             super(repository);
+            panel.proxySettingsButton.addActionListener(this);
+            panel.cbSavePassword.addActionListener(this);
+
+            addSelectOnFocusFields(panel.txtPassword);
+            panel.browseButton.addActionListener(this);
+
+            panel.txtPassword.getDocument().addDocumentListener(this);
+            panel.certPasswordField.getDocument().addDocumentListener(this);
+            panel.txtPassword.addFocusListener(this);
+            panel.certPasswordField.addFocusListener(this);
+
+            panel.txtUserName.getDocument().addDocumentListener(this);
+            panel.txtPort.getDocument().addDocumentListener(this);
+            panel.certFileTextField.getDocument().addDocumentListener(this);
+            panel.proxySettingsButton.setVisible(repository.isSet(Repository.FLAG_SHOW_PROXY));
         }
 
         @Override
@@ -476,10 +495,164 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
             }
             return urlString.substring(4, idx);
         }
-        
+
         @Override
-        protected void updateVisibility (String url) {
-            ((HttpPanel)getPanel()).sslPanel.setVisible(true);
+        JPanel getPanel() {
+            return panel;
+        }
+
+        @Override
+        protected void refresh(RepositoryConnection rc) {
+            panel.txtUserName.setText(rc.getUsername());
+            int portNumber = rc.getSshPortNumber();
+            panel.txtPort.setText(portNumber > 0 ? Integer.toString(portNumber) : ""); //NOI18N
+            panel.txtPassword.setText(rc.getPassword() == null ? "" : new String(rc.getPassword())); //NOI18N
+            panel.cbSavePassword.setSelected(rc.getSavePassword());
+            panel.certFileTextField.setText(rc.getCertFile());
+            panel.certPasswordField.setText(rc.getCertPassword() == null ? "" : new String(rc.getCertPassword())); //NOI18N
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            panel.proxySettingsButton.setEnabled(enabled);
+            panel.txtPassword.setEnabled(enabled);
+            panel.txtUserName.setEnabled(enabled);
+            panel.txtPort.setEnabled(enabled);
+            panel.cbSavePassword.setEnabled(enabled);
+            panel.certFileTextField.setEnabled(enabled);
+            panel.certPasswordField.setEnabled(enabled);
+            panel.browseButton.setEnabled(enabled);
+        }
+
+        @Override
+        public void setEditable(boolean editable) {
+            panel.txtPassword.setEditable(editable);
+            panel.txtUserName.setEditable(editable);
+            panel.txtPort.setEditable(editable);
+            panel.proxySettingsButton.setEnabled(editable);
+            panel.cbSavePassword.setEnabled(editable);
+            panel.certFileTextField.setEnabled(editable);
+            panel.certPasswordField.setEnabled(editable);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(e.getSource() == panel.proxySettingsButton) {
+                onProxyConfiguration();
+            } else if(e.getSource() == panel.cbSavePassword) {
+                onSavePasswordChange();
+            } else if(e.getSource() == panel.browseButton) {
+                onBrowse(panel.certFileTextField);
+            } else {
+                super.actionPerformed(e);
+            }
+        }
+
+        private void onProxyConfiguration () {
+            OptionsDisplayer.getDefault().open("General"); //NOI18N
+        }
+
+        private void onSavePasswordChange () {
+            Runnable awt = new Runnable() {
+                @Override
+                public void run() {
+                    RepositoryConnection rc = repository.getSelectedRCIntern();
+                    if (rc != null) {
+                        rc.setSavePassword(panel.cbSavePassword.isSelected());
+                    }
+                    repository.validateSvnUrl();
+                }
+            };
+            EventQueue.invokeLater(awt);
+        }
+
+        @Override
+        protected void storeConfigValues () {
+
+        }
+
+        @Override
+        protected boolean savePassword () {
+            return panel.cbSavePassword.isSelected();
+        }
+
+        @Override
+        public void onSelectedRepositoryChange (String urlString) {
+
+        }
+
+        @Override
+        protected void textChanged (Document d) {
+            if (d == panel.txtUserName.getDocument()) {
+                onUsernameChange(repository.getSelectedRCIntern());
+            } else if (d == panel.txtPort.getDocument()) {
+                onPortNumberChange(repository.getSelectedRCIntern());
+            } else if (d == panel.txtPassword.getDocument()) {
+                onPasswordChange(repository.getSelectedRCIntern());
+            } else if (d == panel.certFileTextField.getDocument()) {
+                onCertFileChange(repository.getSelectedRCIntern());
+            } else if (d == panel.certPasswordField.getDocument()) {
+                onCertPasswordChange(repository.getSelectedRCIntern());
+            }
+        }
+        
+        private void onUsernameChange (RepositoryConnection rc) {
+            if (rc != null) {
+                rc.setUsername(panel.txtUserName.getText());
+            }
+            repository.setValid(true, "");
+        }
+
+        private void onPasswordChange (RepositoryConnection rc) {
+            if (rc != null) {
+                rc.setPassword(panel.txtPassword.getPassword());
+            }
+            repository.setValid(true, "");
+        }
+
+        private void onPortNumberChange (RepositoryConnection rc) {
+            boolean valid;
+            int portNumber = -1;
+            try {
+                portNumber = Integer.parseInt(panel.txtPort.getText());
+                valid = portNumber > 0;
+            } catch (NumberFormatException ex) {
+                valid = false;
+            }
+            if (rc != null && valid) {
+                rc.setSshPortNumber(portNumber);
+            }
+            if (valid) {
+                repository.setValid(true, "");
+            } else {
+                repository.setValid(false, "Invalid port number");
+            }
+        }
+
+        private void onCertPasswordChange (RepositoryConnection rc) {
+            if (rc != null) {
+                rc.setCertPassword(panel.certPasswordField.getPassword());
+            }
+        }
+
+        private void onCertFileChange (RepositoryConnection rc) {
+            if (rc != null) {
+                rc.setCertFile(panel.certFileTextField.getText());
+            }
+        }
+
+        @Override
+        protected void fillRC(RepositoryConnection editedrc) {
+            editedrc.setUsername(panel.txtUserName.getText());
+            editedrc.setPassword(panel.txtPassword.getPassword());
+            editedrc.setSavePassword(panel.cbSavePassword.isSelected());
+            editedrc.setCertFile(panel.certFileTextField.getText());
+            editedrc.setCertPassword(panel.certPasswordField.getPassword());
+            int portNumber = -1;
+            try {
+                portNumber = Integer.parseInt(panel.txtPort.getText());
+            } catch (NumberFormatException ex) { }
+            editedrc.setSshPortNumber(portNumber);
         }
     }
 }

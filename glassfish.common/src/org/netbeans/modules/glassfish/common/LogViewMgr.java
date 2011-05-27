@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -88,7 +88,6 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -199,7 +198,7 @@ public class LogViewMgr {
         return logViewMgr;
     }
     
-    public void ensureActiveReader(List<Recognizer> recognizers, InputStream serverLog) {
+    public void ensureActiveReader(List<Recognizer> recognizers, InputStream serverLog, Map<String,String> properties) {
         synchronized (readers) {
             boolean activeReader = false;
             for(WeakReference<LoggerRunnable> ref: readers) {
@@ -211,7 +210,7 @@ public class LogViewMgr {
             }
 
             if(!activeReader && serverLog != null) {
-                readInputStreams(recognizers, serverLog instanceof FileInputStream, serverLog);
+                readInputStreams(recognizers, serverLog instanceof FileInputStream, properties, serverLog);
             }
         }
     }
@@ -223,16 +222,16 @@ public class LogViewMgr {
      *
      * @param inputStreams InputStreams to read
      */
-    public void readInputStreams(List<Recognizer> recognizers, boolean fromFile, InputStream... inputStreams) {
+    public void readInputStreams(List<Recognizer> recognizers, boolean fromFile,
+            Map<String,String> properties, InputStream... inputStreams) {
         synchronized (readers) {
             stopReaders();
 
             for(InputStream inputStream : inputStreams){
                 // LoggerRunnable will close the stream if necessary.
-                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile);
+                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile, properties);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
                 Thread t = new Thread(logger);
-                t.setDaemon(true);
                 t.start();
             }
         }
@@ -367,6 +366,11 @@ public class LogViewMgr {
         // created properly and displayed.  However, if the user minimizes the
         // output window or switches to another one, we don't switch back.
         if(io.isClosed()) {
+            try {
+                io.getOut().reset();
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, "ignorable problem", ex);
+            }
             io.select();
 
             // Horrible hack.  closed flag is never reset, so reset it after reopening.
@@ -448,15 +452,18 @@ public class LogViewMgr {
     private class LoggerRunnable implements Runnable {
 
         private final List<Recognizer> recognizers;
-        private final InputStream inputStream;
+        private InputStream inputStream;
         private final boolean ignoreEof;
         private volatile boolean shutdown;
+        private final Map<String, String> properties;
         
-        public LoggerRunnable(List<Recognizer> recognizers, InputStream inputStream, boolean ignoreEof) {
+        public LoggerRunnable(List<Recognizer> recognizers, InputStream inputStream, 
+                boolean ignoreEof, Map<String,String> properties) {
             this.recognizers = recognizers;
             this.inputStream = inputStream;
             this.ignoreEof = ignoreEof;
             this.shutdown = false;
+            this.properties = properties;
         }
 
         public void stop() {
@@ -488,6 +495,7 @@ public class LogViewMgr {
 
                 while(!shutdown && len != -1) {
                     if(ignoreEof) {
+                        reader = followLogRotation(reader);
                         // For file streams, only read if there is something there.
                         while(!shutdown && reader.ready()) {
                             String text = filter.process((char) reader.read());
@@ -569,6 +577,42 @@ public class LogViewMgr {
                 io.getErr().close();
                 io.getOut().close();
             }
+        }
+
+        private synchronized BufferedReader followLogRotation(BufferedReader reader) {
+            BufferedReader retVal = reader;
+            if (null != properties) {
+                InputStream is = null;
+                String dir = properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+                if (null == dir) {
+                    // this log cannot rotate... it isn't based on a file
+                    return retVal;
+                }
+                try {
+                  is  = getServerLogStream(properties);
+                  if (inputStream instanceof FileInputStream && is instanceof FileInputStream) {
+                      FileInputStream fis = (FileInputStream) is;
+                      long newSize = fis.getChannel().size();
+                      long oldSize = ((FileInputStream) inputStream).getChannel().size();
+                      if (oldSize != newSize) {
+                          retVal = new BufferedReader(new InputStreamReader(is));
+                          try {inputStream.close();} catch (IOException ioe) {
+                            Logger.getLogger("glassfish").log(Level.INFO, "closing the old inputstream", ioe); // NOI18N
+                          }
+                          inputStream = is;
+                      }
+                  }
+                } catch (IOException ioe) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, null, ioe); // NOI18N
+                } finally {
+                    if (null != is && !(is == inputStream)) {
+                        try {is.close();} catch (IOException ioe) {
+                            Logger.getLogger("glassfish").log(Level.INFO, "closing the duplicate inputstream", ioe); // NOI18N
+                        }
+                    }
+                }
+            }
+            return retVal;
         }
     }
 
@@ -1066,13 +1110,19 @@ public class LogViewMgr {
     static public void displayOutput(Map<String,String> properties, Lookup lookup) {
         String uri = properties.get(GlassfishModule.URL_ATTR);
         if (null != uri && (uri.contains("gfv3ee6wc") || uri.contains("localhost"))) {
-            LogViewMgr mgr = LogViewMgr.getInstance(uri);
-            List<Recognizer> recognizers = new ArrayList<Recognizer>();
-            if (null != lookup) {
-                recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
+            try {
+                InputStream is = getServerLogStream(properties);
+                LogViewMgr mgr = LogViewMgr.getInstance(uri);
+                List<Recognizer> recognizers = new ArrayList<Recognizer>();
+                if (null != lookup) {
+                    recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
+                }
+                mgr.ensureActiveReader(recognizers, is,properties);
+                mgr.selectIO(true);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, NbBundle.getMessage(LogViewMgr.class,
+                        "WARN_UNREADABLE_LOG_STREAM", uri),ioe);
             }
-            mgr.ensureActiveReader(recognizers, getServerLogStream(properties));
-            mgr.selectIO(true);
         }
     }
 
@@ -1092,7 +1142,7 @@ public class LogViewMgr {
 
     private static final Map<String,PipedInputStream> remoteInputStreams = new HashMap<String,PipedInputStream>();
 
-    static private InputStream getServerLogStream(Map<String, String> ip) {
+    static private InputStream getServerLogStream(Map<String, String> ip) throws IOException {
         InputStream result = null;
         String domainsFolder = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
@@ -1124,7 +1174,9 @@ public class LogViewMgr {
                         RequestProcessor RLRRP = new RequestProcessor("Remote log reader for "+ key);
                         RLRRP.post(new FetchLogEntries(pos,ip));
                     } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                        // close the output stream, since the is did not create
+                        try { pos.close(); } catch (IOException ex) {}
+                        throw ioe;
                     }
                 }
             }
@@ -1177,11 +1229,11 @@ public class LogViewMgr {
                     }
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, "possible problem", ex);
             } finally {
             }
         }

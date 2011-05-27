@@ -91,6 +91,13 @@ public final class HighlightURLs implements DocumentListener, Runnable {
         }
 
         final HighlightURLs h = new HighlightURLs(doc);
+        
+        doc.putProperty(REGISTERED_KEY, true);
+        
+        if (h.coloring == null) {
+            LOG.log(Level.WARNING, "'url' coloring cannot be found");
+            return;
+        }
 
         doc.addDocumentListener(h);
 
@@ -109,8 +116,6 @@ public final class HighlightURLs implements DocumentListener, Runnable {
             }
         });
         h.schedule();
-
-        doc.putProperty(REGISTERED_KEY, true);
     }
     
     private HighlightURLs(BaseDocument doc) {

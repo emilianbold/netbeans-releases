@@ -32,7 +32,7 @@ TestBean testBean
 <%--CC
 <% testBean.|
 void setName
-<% testBean.setName(name)
+<% testBean.setName(name);
 --%>
 
 <%-- completion for String object inside scriptlets --%>

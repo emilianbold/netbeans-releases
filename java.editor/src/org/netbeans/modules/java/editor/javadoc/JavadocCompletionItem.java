@@ -220,7 +220,7 @@ final class JavadocCompletionItem implements CompletionItem {
             boolean isDeprecated) {
         
         CompletionItem delegate = JavaCompletionItem.createExecutableItem(
-                info, e, et, startOffset, isInherited, isDeprecated, false, false, false);
+                info, e, et, startOffset, isInherited, isDeprecated, false, false, false, false);
         return new JavadocExecutableItem(delegate, e, startOffset);
     }
     
@@ -229,7 +229,7 @@ final class JavadocCompletionItem implements CompletionItem {
         
         CompletionItem delegate = JavaCompletionItem.createTypeItem(
                 info, elem, (DeclaredType) elem.asType(), startOffset,
-                displayPkgName, isDeprecated, false, false, false, false);
+                displayPkgName, isDeprecated, false, false, false, false, false);
         return new JavadocTypeItem(delegate, startOffset);
     }
     
@@ -363,7 +363,20 @@ final class JavadocCompletionItem implements CompletionItem {
         }
 
         public boolean instantSubstitution(JTextComponent component) {
-            return delegate.instantSubstitution(component);
+            if (component != null) {
+                try {
+                    int caretOffset = component.getSelectionEnd();
+                    if (caretOffset > substitutionOffset) {
+                        String text = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
+                        if (!getInsertPrefix().toString().startsWith(text)) {
+                            return false;
+                        }
+                    }
+                }
+                catch (BadLocationException ble) {}
+            }
+            defaultAction(component);
+            return true;
         }
 
         public int getSortPriority() {

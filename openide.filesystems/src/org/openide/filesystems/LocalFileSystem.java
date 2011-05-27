@@ -57,6 +57,9 @@ import java.io.InputStream;
 import java.io.ObjectInputValidation;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
+import java.util.Random;
+import java.util.logging.Level;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -292,17 +295,36 @@ public class LocalFileSystem extends AbstractFileSystem {
         File of = getFile(oldName);
         File nf = getFile(newName);
 
-        // #7086 - (nf.exists() && !nf.equals(of)) instead of nf.exists() - fix for Win32
-        boolean existsNF = nf.exists();
-        boolean equalsOF = nf.equals(of);
-        if (Utilities.isMac()) {
-            // File.equal on mac is not case insensitive (which it should be), 
-            // so try harder
-            equalsOF = of.getCanonicalFile().equals(nf.getCanonicalFile());
-        }
-        Boolean rename = null;
-        if ((existsNF && !equalsOF) || !(rename = of.renameTo(nf))) {
-            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotRename", oldName, getDisplayName(), newName, existsNF, rename));
+        Random rndm = null;
+        for (int retry = 0;; retry++) {
+            // #7086 - (nf.exists() && !nf.equals(of)) instead of nf.exists() - fix for Win32
+            boolean existsNF = nf.exists();
+            boolean equalsOF = nf.equals(of);
+            if (Utilities.isMac()) {
+                // File.equal on mac is not case insensitive (which it should be), 
+                // so try harder
+                equalsOF = of.getCanonicalFile().equals(nf.getCanonicalFile());
+            }
+            Boolean rename = null;
+            if ((existsNF && !equalsOF) || !(rename = of.renameTo(nf))) {
+                final String msg = NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotRename", oldName, getDisplayName(), newName, existsNF, rename);
+                if (retry > 10) {
+                    throw new FSException(msg);
+                }
+                LOG.log(Level.WARNING, "Rename #{0} failed: {1}", new Object[]{retry, msg});
+                if (rndm == null) {
+                    rndm = new Random();
+                }
+                int sleep = rndm.nextInt(100) + 1;
+                LOG.log(Level.INFO, "Sleeping for {0} ms", sleep);
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                }
+                continue;
+            }
+            return;
         }
     }
 

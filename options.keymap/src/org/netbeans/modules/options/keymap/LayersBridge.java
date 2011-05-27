@@ -441,7 +441,9 @@ public class LayersBridge extends KeymapManager {
         public String getDisplayName () {
             if (name == null) {
                 name = (String) action.getValue (Action.NAME);
-                if (name == null) name = action.toString ();
+                if (name == null) {
+                    name = ""; // #185619: not intended for presentation in this dialog
+                }
                 name = name.replaceAll ("&", "").trim ();
             }
             return name;

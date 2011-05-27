@@ -62,8 +62,8 @@ public class DefaultTestRunnerNodeFactory extends TestRunnerNodeFactory {
     }
 
     @Override
-    public Node createCallstackFrameNode(String frameInfo, String dispayName) {
-        return new CallstackFrameNode(frameInfo, dispayName);
+    public Node createCallstackFrameNode(String frameInfo, String displayName) {
+        return new CallstackFrameNode(frameInfo, displayName);
     }
 
     @Override

@@ -45,8 +45,6 @@ package org.netbeans.modules.web.beans.api.model;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.openide.filesystems.FileObject;
 
 
@@ -62,24 +60,8 @@ public class ModelUnit {
         myBootPath= bootPath;
         myCompilePath = compilePath;
         mySourcePath = sourcePath;
-        ClasspathInfo classpathInfo = ClasspathInfo.create(bootPath, 
+        myClassPathInfo = ClasspathInfo.create(bootPath, 
                 compilePath, sourcePath);
-        myHelper = AnnotationModelHelper.create(classpathInfo);
-    }
-    
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals( Object obj ) {
-        if ( obj instanceof ModelUnit ){
-            ModelUnit unit = (ModelUnit) obj;
-            return myBootPath.equals( unit.myBootPath ) && myCompilePath.equals(
-                    unit.myCompilePath ) && mySourcePath.equals( mySourcePath );
-        }
-        else {
-            return false;
-        }
     }
     
     public ClassPath getBootPath() {
@@ -94,19 +76,54 @@ public class ModelUnit {
         return mySourcePath;
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
-    public int hashCode() {
+    public int hashCode() {       
         return 37*(37*myBootPath.hashCode() + myCompilePath.hashCode()) 
             +mySourcePath.hashCode();
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ModelUnit) {
+            ModelUnit unit = (ModelUnit) obj;
+            return myBootPath.equals( unit.myBootPath ) && myCompilePath.equals(
+                    unit.myCompilePath ) && mySourcePath.equals( mySourcePath );
+        } 
+        else {
+            return false;
+        }
+    }
+
     public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
             ClassPath sourcePath)
     {
         return new ModelUnit(bootPath, compilePath, sourcePath);
+    }
+    
+    public ClasspathInfo getClassPathInfo(){
+        return myClassPathInfo;
+    }
+    
+    private static boolean equals(ClassPath cp1, ClassPath cp2) {
+        if (cp1.entries().size() != cp2.entries().size()) {
+            return false;
+        }
+        for (int i = 0; i < cp1.entries().size(); i++) {
+            if (!cp1.entries().get(i).getURL().equals(
+                    cp2.entries().get(i).getURL())) 
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static int computeClassPathHash(ClassPath classPath) {
+        int hashCode = 0;
+        for (ClassPath.Entry entry : classPath.entries()) {
+            hashCode = 37*hashCode + entry.getURL().getPath().hashCode();
+        }
+        return hashCode;
     }
     
     FileObject getSourceFileObject(){
@@ -117,11 +134,7 @@ public class ModelUnit {
         return null;
     }
     
-    AnnotationModelHelper getHelper(){
-        return myHelper;
-    }
-    
-    private final AnnotationModelHelper myHelper;
+    private final ClasspathInfo myClassPathInfo;
     private final ClassPath myBootPath;
     private final ClassPath myCompilePath;
     private final ClassPath mySourcePath;

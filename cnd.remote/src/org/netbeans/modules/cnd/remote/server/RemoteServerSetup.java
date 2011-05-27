@@ -137,7 +137,7 @@ public class RemoteServerSetup {
     }
 
     private boolean copyTo(File file, String remoteFilePath) throws InterruptedException, ExecutionException {
-        return CommonTasksSupport.uploadFile(file.getAbsolutePath(), executionEnvironment, remoteFilePath, 0775, null, true).get() == 0;
+        return CommonTasksSupport.uploadFile(file.getAbsolutePath(), executionEnvironment, remoteFilePath, 0775, true).get().isOK();
     }
 
     private List<String> getBinaryUpdates() {

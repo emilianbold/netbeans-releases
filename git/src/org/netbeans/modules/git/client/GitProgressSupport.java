@@ -135,6 +135,10 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         return task;
     }
     
+    protected String getDisplayName () {
+        return displayName;
+    }
+    
     protected void setDisplayName (String displayName) {
         this.displayName = displayName;
         setProgress();
@@ -269,13 +273,17 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         public void notifyFile (File file, String relativePathToRoot) {
             getLogger().outputFile(relativePathToRoot, file, 0);
 
-            String directChildPath = getDirectChildPath(file, relativePathToRoot, roots);
+            String directChildPath = getDirectChildPath(file, relativePathToRoot);
             if (!directChildPath.isEmpty() && !directChildPath.equals(lastNotified)) {
                 setProgress(repositoryRoot.getName() + "/" + directChildPath); //NOI18N
             }
         }
 
-        private String getDirectChildPath (File file, String relativePath, File[] roots) {
+        private String getDirectChildPath (File file, String relativePath) {
+            if (roots == null || roots.length == 0) {
+                // there's no file filter
+                return relativePath;
+            }
             File directChild = null;
             String directChildPath = relativePath;
             while (directChild == null && !directChildPath.isEmpty()) {

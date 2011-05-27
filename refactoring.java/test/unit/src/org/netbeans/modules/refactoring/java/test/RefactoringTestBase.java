@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -55,6 +56,8 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
@@ -67,6 +70,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -137,9 +141,11 @@ public class RefactoringTestBase extends NbTestCase {
             assertEquals(gp.isFatal(), rp.isFatal());
             assertEquals(gp.getMessage(), rp.getMessage());
         }
+        boolean goldenHasNext = g.hasNext();
+        boolean realHasNext = r.hasNext();
 
-        assertFalse(g.hasNext());
-        assertFalse(r.hasNext());
+        assertFalse(goldenHasNext?"Expected: " + g.next().getMessage():"", goldenHasNext);
+        assertFalse(realHasNext?"Unexpected: " + r.next().getMessage():"", realHasNext);
     }
 
     static {
@@ -191,7 +197,22 @@ public class RefactoringTestBase extends NbTestCase {
                         return projectDirectory;
                     }
                     public Lookup getLookup() {
-                        return Lookup.EMPTY;
+                        final Project p = this;
+                        return Lookups.singleton(new Sources() {
+
+                            @Override
+                            public SourceGroup[] getSourceGroups(String type) {
+                                return new SourceGroup[] {GenericSources.group(p, src, "", "", null, null)};
+                            }
+
+                            @Override
+                            public void addChangeListener(ChangeListener listener) {
+                            }
+
+                            @Override
+                            public void removeChangeListener(ChangeListener listener) {
+                            }
+                        });
                     }
                 };
             }

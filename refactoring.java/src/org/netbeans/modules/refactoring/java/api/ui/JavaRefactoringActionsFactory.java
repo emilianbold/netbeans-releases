@@ -48,7 +48,9 @@ import org.netbeans.modules.refactoring.java.ui.ChangeParametersAction;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractSuperclassAction;
+import org.netbeans.modules.refactoring.java.ui.InlineAction;
 import org.netbeans.modules.refactoring.java.ui.InnerToOuterAction;
+import org.netbeans.modules.refactoring.java.ui.IntroduceParameterAction;
 import org.netbeans.modules.refactoring.java.ui.PullUpAction;
 import org.netbeans.modules.refactoring.java.ui.PushDownAction;
 import org.netbeans.modules.refactoring.java.ui.UseSuperTypeAction;
@@ -73,6 +75,14 @@ import org.openide.util.ContextAwareAction;
 public final class JavaRefactoringActionsFactory {
     
     private JavaRefactoringActionsFactory(){}
+    
+   /**
+    * Factory method for InlineAction
+    * @return an instance of InlineAction
+    */
+   public static ContextAwareAction inlineAction() {
+       return InlineAction.findObject(InlineAction.class, true);
+   }
     
    /**
      * Factory method for EncapsulateFieldsAction
@@ -130,4 +140,9 @@ public final class JavaRefactoringActionsFactory {
     public static ContextAwareAction extractInterfaceAction() {
         return ExtractInterfaceAction.findObject(ExtractInterfaceAction.class, true);
     }
+    
+    public static ContextAwareAction introduceParameterAction() {
+        return IntroduceParameterAction.findObject(IntroduceParameterAction.class, true);
+    }
+    
 }

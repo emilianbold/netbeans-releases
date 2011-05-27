@@ -98,7 +98,7 @@ public class FindFileWhileClosingProject extends RepositoryAccessTestBase {
 
             final CsmProject project = traceModel.getProject();
             project.waitParse();
-            Cancellable task = model.enqueueModelTask(new Runnable() {
+            RequestProcessor.Task task = model.enqueueModelTask(new Runnable() {
 
                 public void run() {
                     TraceModelBase.closeProject(project);
@@ -106,7 +106,7 @@ public class FindFileWhileClosingProject extends RepositoryAccessTestBase {
             }, "Closing Project " + i); //NOI18N
             for (String path : files) {
                 try {
-                    CsmFile csmFile = project.findFile(path, false);
+                    CsmFile csmFile = project.findFile(path, true, false);
                     if (verbose) {
                         System.err.printf("\tfind %s -> %s \n", path, csmFile);
                     }
@@ -115,14 +115,12 @@ public class FindFileWhileClosingProject extends RepositoryAccessTestBase {
                 }
                 assertNoExceptions();
             }
-            if (task instanceof RequestProcessor.Task) {
-                if (verbose) {
-                    System.err.printf("Waiting util close task finishes...\n");
-                }
-                ((RequestProcessor.Task) task).waitFinished();
-                if (verbose) {
-                    System.err.printf("\tClose task has finished.\n");
-                }
+            if (verbose) {
+                System.err.printf("Waiting util close task finishes...\n");
+            }
+            task.waitFinished();
+            if (verbose) {
+                System.err.printf("\tClose task has finished.\n");
             }
             assertNoExceptions();
             traceModel.resetProject();

@@ -66,7 +66,9 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -74,6 +76,7 @@ import org.openide.util.NbPreferences;
  * @author Jan Lahoda
  */
 public class HyperlinkImpl implements HyperlinkProviderExt {
+    public static final Logger LOG = Logger.getLogger(HyperlinkImpl.class.getName());
 
     private static final int TIME_VALID = 24 * 60 * 60 * 1000;
     private static final int TIME_INVALID = 60 * 1000;
@@ -127,7 +130,8 @@ public class HyperlinkImpl implements HyperlinkProviderExt {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(HyperlinkImpl.class, "WARN_Invalid_URL", ex.getMessage()));
+            LOG.log(Level.FINE, null, ex);
         }
     }
 
@@ -188,7 +192,7 @@ public class HyperlinkImpl implements HyperlinkProviderExt {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.FINE, null, ex);
         }
 
         return null;
@@ -230,7 +234,7 @@ public class HyperlinkImpl implements HyperlinkProviderExt {
                 return "";
             }
         } catch (IOException ex) {
-            Logger.getLogger(HyperlinkImpl.class.getName()).log(Level.FINE, null, ex);
+            LOG.log(Level.FINE, null, ex);
         } finally {
             if (baos != null) {
                 try {

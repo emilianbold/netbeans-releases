@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,6 +81,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -96,18 +96,19 @@ import org.openide.util.CharSequences;
  */
 public class PersistentUtils {
 
-    public static FileSystem readFileSystem(DataInput input) throws IOException {
+    public static FileSystem readFileSystem(RepositoryDataInput input) throws IOException {
         CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
         FileObject rootFileObject = CndFileUtils.urlToFileObject(rootUrl);
+        assert (rootFileObject != null) : "Restored null file object for URL " + rootUrl;
         return rootFileObject.getFileSystem();
     }
     
-    public static void writeFileSystem(FileSystem fs, DataOutput output) throws IOException {
+    public static void writeFileSystem(FileSystem fs, RepositoryDataOutput output) throws IOException {
         CharSequence rootUrl = CharSequences.create(CndFileUtils.fileObjectToUrl(fs.getRoot()));
         PersistentUtils.writeUTF(rootUrl, output);        
     }
 
-    public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, DataInput input) throws IOException {
+    public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, RepositoryDataInput input) throws IOException {
         int size = input.readInt();
         for (int i = 0; i < size; i++) {
             ErrorDirectiveImpl offs = new ErrorDirectiveImpl(input);
@@ -115,7 +116,7 @@ public class PersistentUtils {
         }
     }
 
-    public static void writeErrorDirectives(Set<ErrorDirectiveImpl> errors, DataOutput output) throws IOException {
+    public static void writeErrorDirectives(Set<ErrorDirectiveImpl> errors, RepositoryDataOutput output) throws IOException {
         int size = errors.size();
         output.writeInt(size);
         for (ErrorDirectiveImpl error : errors) {
@@ -128,7 +129,7 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support for parameters
-    public static void writeParameterList(CsmParameterList<?> params, DataOutput output) throws IOException {
+    public static void writeParameterList(CsmParameterList<?> params, RepositoryDataOutput output) throws IOException {
         if (params == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else if (params instanceof ParameterListImpl<?, ?>) {
@@ -147,7 +148,7 @@ public class PersistentUtils {
         }
     }
 
-    public static CsmParameterList<?> readParameterList(DataInput input) throws IOException {
+    public static CsmParameterList<?> readParameterList(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         CsmParameterList<?> paramList;
         switch (handler) {
@@ -175,7 +176,7 @@ public class PersistentUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // support file buffers
-    public static void writeBuffer(FileBuffer buffer, DataOutput output) throws IOException {
+    public static void writeBuffer(FileBuffer buffer, RepositoryDataOutput output) throws IOException {
         assert buffer != null;
         if (buffer instanceof AbstractFileBuffer) {
             // always write as file buffer file
@@ -186,7 +187,7 @@ public class PersistentUtils {
         }
     }
 
-    public static FileBuffer readBuffer(DataInput input) throws IOException {
+    public static FileBuffer readBuffer(RepositoryDataInput input) throws IOException {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
@@ -196,7 +197,7 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support string (arrays)
-    public static void writeStrings(CharSequence[] arr, DataOutput output) throws IOException {
+    public static void writeStrings(CharSequence[] arr, RepositoryDataOutput output) throws IOException {
         if (arr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -209,7 +210,7 @@ public class PersistentUtils {
         }
     }
 
-    public static void writeCollectionStrings(Collection<CharSequence> arr, DataOutput output) throws IOException {
+    public static void writeCollectionStrings(Collection<CharSequence> arr, RepositoryDataOutput output) throws IOException {
         if (arr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -222,7 +223,7 @@ public class PersistentUtils {
         }
     }
 
-    public static CharSequence[] readStrings(DataInput input, APTStringManager manager) throws IOException {
+    public static CharSequence[] readStrings(RepositoryDataInput input, APTStringManager manager) throws IOException {
         CharSequence[] arr = null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
@@ -234,7 +235,7 @@ public class PersistentUtils {
         return arr;
     }
 
-    public static Collection<CharSequence> readCollectionStrings(DataInput input, APTStringManager manager) throws IOException {
+    public static Collection<CharSequence> readCollectionStrings(RepositoryDataInput input, APTStringManager manager) throws IOException {
         List<CharSequence> arr = null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
@@ -249,19 +250,17 @@ public class PersistentUtils {
 
     private static final String NULL_STRING = new String(new char[]{0});
 
-    public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException {
+    public static void writeUTF(CharSequence st, RepositoryDataOutput aStream) throws IOException {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
         } else {
-            if(!CharSequences.isCompact(st)) {
-                assert CharSequences.isCompact(st);
-            }
-            aStream.writeUTF(st.toString());
+            assert CharSequences.isCompact(st);
+            aStream.writeCharSequenceUTF(st);
         }
     }
 
-    public static CharSequence readUTF(DataInput aStream, APTStringManager manager) throws IOException {
-        String s = aStream.readUTF();
+    public static CharSequence readUTF(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
+        CharSequence s = aStream.readCharSequenceUTF();
         if (s.length()==1 && s.charAt(0)==0) {
             return null;
         }
@@ -272,7 +271,7 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support CsmExpression
-    public static void writeExpression(CsmExpression expr, DataOutput output) throws IOException {
+    public static void writeExpression(CsmExpression expr, RepositoryDataOutput output) throws IOException {
         if (expr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -285,7 +284,7 @@ public class PersistentUtils {
         }
     }
 
-    public static CsmExpression readExpression(DataInput input) throws IOException {
+    public static CsmExpression readExpression(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         CsmExpression expr;
         if (handler == AbstractObjectFactory.NULL_POINTER) {
@@ -297,7 +296,7 @@ public class PersistentUtils {
         return expr;
     }
 
-    public static void writeExpressions(Collection<CsmExpression> exprs, DataOutput output) throws IOException {
+    public static void writeExpressions(Collection<CsmExpression> exprs, RepositoryDataOutput output) throws IOException {
         if (exprs == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -311,7 +310,7 @@ public class PersistentUtils {
         }
     }
 
-    public static <T extends Collection<CsmExpression>> T readExpressions(T collection, DataInput input) throws IOException {
+    public static <T extends Collection<CsmExpression>> T readExpressions(T collection, RepositoryDataInput input) throws IOException {
         int collSize = input.readInt();
         if (collSize == AbstractObjectFactory.NULL_POINTER) {
             collection = null;
@@ -326,7 +325,7 @@ public class PersistentUtils {
         return collection;
     }
 
-    public static void writeExpressionKind(CsmExpression.Kind kind, DataOutput output) throws IOException {
+    public static void writeExpressionKind(CsmExpression.Kind kind, RepositoryDataOutput output) throws IOException {
         if (kind == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -334,7 +333,7 @@ public class PersistentUtils {
         }
     }
 
-    public static CsmExpression.Kind readExpressionKind(DataInput input) throws IOException {
+    public static CsmExpression.Kind readExpressionKind(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         CsmExpression.Kind kind;
         if (handler == AbstractObjectFactory.NULL_POINTER) {
@@ -347,7 +346,7 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support types
-    public static CsmType readType(DataInput stream) throws IOException {
+    public static CsmType readType(RepositoryDataInput stream) throws IOException {
         CsmType obj;
         int handler = stream.readInt();
         switch (handler) {
@@ -381,7 +380,7 @@ public class PersistentUtils {
         return obj;
     }
 
-    public static void writeType(CsmType type, DataOutput stream) throws IOException {
+    public static void writeType(CsmType type, RepositoryDataOutput stream) throws IOException {
         if (type == null) {
             stream.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else if (type instanceof NoType) {
@@ -419,7 +418,7 @@ public class PersistentUtils {
         }        
     }
 
-    public static <T extends Collection<CsmType>> void readTypes(T collection, DataInput input) throws IOException {
+    public static <T extends Collection<CsmType>> void readTypes(T collection, RepositoryDataInput input) throws IOException {
         int collSize = input.readInt();
         assert collSize >= 0;
         for (int i = 0; i < collSize; ++i) {
@@ -429,7 +428,7 @@ public class PersistentUtils {
         }
     }
 
-    public static void writeTypes(Collection<? extends CsmType> types, DataOutput output) throws IOException {
+    public static void writeTypes(Collection<? extends CsmType> types, RepositoryDataOutput output) throws IOException {
         assert types != null;
         int collSize = types.size();
         output.writeInt(collSize);
@@ -442,7 +441,7 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support Template Descriptors
-    public static TemplateDescriptor readTemplateDescriptor(DataInput input) throws IOException {
+    public static TemplateDescriptor readTemplateDescriptor(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return null;
@@ -451,7 +450,7 @@ public class PersistentUtils {
         return new TemplateDescriptor(input);
     }
 
-    public static void writeTemplateDescriptor(TemplateDescriptor templateDescriptor, DataOutput output) throws IOException {
+    public static void writeTemplateDescriptor(TemplateDescriptor templateDescriptor, RepositoryDataOutput output) throws IOException {
         if (templateDescriptor == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -460,7 +459,7 @@ public class PersistentUtils {
         }
     }
 
-    public static SpecializationDescriptor readSpecializationDescriptor(DataInput input) throws IOException {
+    public static SpecializationDescriptor readSpecializationDescriptor(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return null;
@@ -469,7 +468,7 @@ public class PersistentUtils {
         return new SpecializationDescriptor(input);
     }
 
-    public static void writeSpecializationDescriptor(SpecializationDescriptor specializationDescriptor, DataOutput output) throws IOException {
+    public static void writeSpecializationDescriptor(SpecializationDescriptor specializationDescriptor, RepositoryDataOutput output) throws IOException {
         if (specializationDescriptor == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -478,7 +477,7 @@ public class PersistentUtils {
         }
     }
 
-    public static void writeSpecializationParameters(List<CsmSpecializationParameter> params, DataOutput output) throws IOException {
+    public static void writeSpecializationParameters(List<CsmSpecializationParameter> params, RepositoryDataOutput output) throws IOException {
         if (params == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -498,7 +497,7 @@ public class PersistentUtils {
         }
     }
 
-    public static List<CsmSpecializationParameter> readSpecializationParameters(DataInput input) throws IOException {
+    public static List<CsmSpecializationParameter> readSpecializationParameters(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return null;
@@ -509,7 +508,7 @@ public class PersistentUtils {
         return params;
     }
 
-    public static void readSpecializationParameters(List<CsmSpecializationParameter> params, DataInput input) throws IOException {
+    public static void readSpecializationParameters(List<CsmSpecializationParameter> params, RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return;
@@ -518,7 +517,7 @@ public class PersistentUtils {
         readSpecializationParametersList(params, input);
     }
 
-    private static void readSpecializationParametersList(List<CsmSpecializationParameter> params, DataInput input) throws IOException {
+    private static void readSpecializationParametersList(List<CsmSpecializationParameter> params, RepositoryDataInput input) throws IOException {
         int size = input.readInt();
         for (int i = 0; i < size; i++) {
             int type = input.readInt();
@@ -534,7 +533,7 @@ public class PersistentUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // support visibility
-    public static void writeVisibility(CsmVisibility visibility, DataOutput output) throws IOException {
+    public static void writeVisibility(CsmVisibility visibility, RepositoryDataOutput output) throws IOException {
         assert visibility != null;
         int handler = -1;
         if (visibility == CsmVisibility.PUBLIC) {
@@ -551,7 +550,7 @@ public class PersistentUtils {
         output.writeInt(handler);
     }
 
-    public static CsmVisibility readVisibility(DataInput input) throws IOException {
+    public static CsmVisibility readVisibility(RepositoryDataInput input) throws IOException {
         CsmVisibility visibility = null;
         int handler = input.readInt();
         switch (handler) {
@@ -578,7 +577,7 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // compound statements
-    public static void writeCompoundStatement(CsmCompoundStatement body, DataOutput output) throws IOException {
+    public static void writeCompoundStatement(CsmCompoundStatement body, RepositoryDataOutput output) throws IOException {
         assert body != null;
         if (body instanceof LazyCompoundStatementImpl) {
             output.writeInt(LAZY_COMPOUND_STATEMENT_IMPL);
@@ -597,7 +596,7 @@ public class PersistentUtils {
         }
     }
 
-    public static CsmCompoundStatement readCompoundStatement(DataInput input) throws IOException {
+    public static CsmCompoundStatement readCompoundStatement(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         CsmCompoundStatement body;
         switch (handler) {
@@ -647,12 +646,12 @@ public class PersistentUtils {
 //            filesHandlers.put(key, state);
 //        }
 //    }
-    public static void writePreprocState(APTPreprocHandler.State state, DataOutput output) throws IOException {
+    public static void writePreprocState(APTPreprocHandler.State state, RepositoryDataOutput output) throws IOException {
         APTPreprocHandler.State cleanedState = APTHandlersSupport.createCleanPreprocState(state);
         APTSerializeUtils.writePreprocState(cleanedState, output);
     }
 
-    public static APTPreprocHandler.State readPreprocState(FileSystem fs, DataInput input) throws IOException {
+    public static APTPreprocHandler.State readPreprocState(FileSystem fs, RepositoryDataInput input) throws IOException {
         APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(fs, input);
         assert state.isCleaned();
         return state;

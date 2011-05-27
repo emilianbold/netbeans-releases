@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,6 +61,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmMacro
@@ -188,7 +188,7 @@ public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implem
         return retValue;
     }    
 
-    public @Override void write(DataOutput output) throws IOException {
+    public @Override void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
@@ -199,7 +199,7 @@ public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implem
         PersistentUtils.writeStrings(out, output);
     }
 
-    public MacroImpl(DataInput input) throws IOException {
+    public MacroImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;

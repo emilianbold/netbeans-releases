@@ -129,13 +129,12 @@ public class CompletionTest extends J2eeTestCase {
     protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf", "jspx", "tagx"});
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
     public final static Logger LOG = Logger.getLogger(CompletionTest.class.getName());
-    
     protected FileObject testFileObj;
-    
+
     public CompletionTest() {
         super("CompletionTest");
     }
-    
+
     /** Need to be defined because of JUnit */
     public CompletionTest(String name, FileObject testFileObj) {
         super(name);
@@ -144,7 +143,7 @@ public class CompletionTest extends J2eeTestCase {
 
     @Override
     public void setUp() throws IOException {
-        if (!projectsOpened && isRegistered(Server.ANY)){
+        if (!projectsOpened) {
             log("Opening files from " + getProjectsDir().getAbsolutePath());
             for (File file : getProjectsDir().listFiles()) {
                 openProjects(file.getAbsolutePath());
@@ -158,7 +157,7 @@ public class CompletionTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CompletionTest.class);
-        addServerTests(Server.GLASSFISH_V3, conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
@@ -172,26 +171,26 @@ public class CompletionTest extends J2eeTestCase {
                 public boolean accept(FileObject fo) {
                     String ext = fo.getExt();
                     String name = fo.getName();
-                    return (name.startsWith("test") || name.startsWith("Test")) &&
-                            (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || JS_EXTS.contains(ext));
+                    return (name.startsWith("test") || name.startsWith("Test"))
+                            && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || JS_EXTS.contains(ext));
                 }
             };
             addTest(RecurrentSuiteFactory.createSuite(CompletionTest.class,
-                new CompletionTest().getProjectsDir(), filter));
+                    new CompletionTest().getProjectsDir(), filter));
         }
     }
-    
-    protected File getProjectsDir(){
+
+    protected File getProjectsDir() {
         File datadir = new CompletionTest().getDataDir();
         return new File(datadir, "CompletionTestProjects");
     }
 
-    protected void finalizeProjectsOpening(){
+    protected void finalizeProjectsOpening() {
     }
-    
+
     @Override
     public void runTest() throws Exception {
-        if (testFileObj == null){
+        if (testFileObj == null) {
             return;
         }
         String ext = testFileObj.getExt();
@@ -463,7 +462,7 @@ public class CompletionTest extends J2eeTestCase {
             // dump CC result to golden file
             Iterator items = comp.getCompletionItems().iterator();
             CompletionItem selectedItem = null;
-	    boolean startsWith = false;
+            boolean startsWith = false;
             while (items.hasNext()) {
                 TextGraphics2D g = new TextGraphics2D(comp.getSource());
                 Object next = items.next();
@@ -480,19 +479,19 @@ public class CompletionTest extends J2eeTestCase {
                 dispText = getPrefix(g.getTextUni().trim());
                 // find choice item
                 if ((selectedItem == null || !startsWith) && (dispText.startsWith(step.getChoice()))) {
-		    startsWith = true;
+                    startsWith = true;
                     selectedItem = (CompletionItem) next;
                 }
-		if ((selectedItem == null) && (dispText.contains(step.getChoice()))){
-		    selectedItem = (CompletionItem) next;	
-		} 
+                if ((selectedItem == null) && (dispText.contains(step.getChoice()))) {
+                    selectedItem = (CompletionItem) next;
+                }
                 if (printDirectly && !isJavaScript()) {
                     logIntoRef(dispText);
                 } else {
                     finalItems.add(dispText);
                 }
             }
-            if (printDirectly && isJavaScript()){
+            if (printDirectly && isJavaScript()) {
                 Collections.sort(finalItems);
                 for (String str : finalItems) {
                     logIntoRef(str);
@@ -517,7 +516,7 @@ public class CompletionTest extends J2eeTestCase {
             if (selectedItem != null) {
                 // move to separate class
                 if (!printDirectly) {
-                    if (isJavaScript()){
+                    if (isJavaScript()) {
                         Collections.sort(finalItems);
                     }
                     for (String str : finalItems) {
@@ -538,19 +537,19 @@ public class CompletionTest extends J2eeTestCase {
         return false;
     }
 
-    private void logIntoRef(String message){
+    private void logIntoRef(String message) {
         message = message.replaceAll("<\\?>", "");
         message = message.replaceAll("<\\? >", "");
-        if (message.length() > 30){
-            message = message.substring(0,30);
+        if (message.length() > 30) {
+            message = message.substring(0, 30);
         }
         ref(message);
     }
 
-    private String getPrefix(String completionText){
-        if (completionText.length() > COMPLETION_PREFIX_LENGHT){
+    private String getPrefix(String completionText) {
+        if (completionText.length() > COMPLETION_PREFIX_LENGHT) {
             return completionText.substring(0, COMPLETION_PREFIX_LENGHT);
-        }else{
+        } else {
             return completionText;
         }
     }
@@ -573,7 +572,7 @@ public class CompletionTest extends J2eeTestCase {
             try {
                 method = cls.getDeclaredMethod(name, paramTypes);
             } catch (NoSuchMethodException e) {
-            // ignore
+                // ignore
             }
         }
         return method;
@@ -581,8 +580,8 @@ public class CompletionTest extends J2eeTestCase {
 
     protected void assertInstanceOf(Class<?> expectedType, Object actual) {
         if (!expectedType.isAssignableFrom(actual.getClass())) {
-            fail("Expected type: " + expectedType.getName() + "\nbut was: " +
-                    actual.getClass().getName());
+            fail("Expected type: " + expectedType.getName() + "\nbut was: "
+                    + actual.getClass().getName());
         }
     }
 
@@ -648,19 +647,19 @@ public class CompletionTest extends J2eeTestCase {
     }
 
     static void generateGoldenFiles(JellyTestCase test) throws Exception {
-            test.getRef().flush();
-            File ref = new File(test.getWorkDir(), test.getName() + ".ref");
-            String fullClassName = test.getClass().getName();
-            String goldenFilePath = fullClassName.replace('.', '/')+"/" + test.getName();
-            File goldenFile = new File(test.getDataDir()+"/goldenfiles/" + goldenFilePath);
-            goldenFile = new File(goldenFile.getAbsolutePath().replace("build/", "")+".pass");
-            goldenFile.getParentFile().mkdirs();
-            if (!ref.renameTo(goldenFile)){
-                throw new AssertionError("Generating golden files to " + goldenFile.getAbsolutePath() + " failed");
-            }
-            assertTrue("Generating golden files to " + goldenFile.getAbsolutePath(), false);
+        test.getRef().flush();
+        File ref = new File(test.getWorkDir(), test.getName() + ".ref");
+        String fullClassName = test.getClass().getName();
+        String goldenFilePath = fullClassName.replace('.', '/') + "/" + test.getName();
+        File goldenFile = new File(test.getDataDir() + "/goldenfiles/" + goldenFilePath);
+        goldenFile = new File(goldenFile.getAbsolutePath().replace("build/", "") + ".pass");
+        goldenFile.getParentFile().mkdirs();
+        if (!ref.renameTo(goldenFile)) {
+            throw new AssertionError("Generating golden files to " + goldenFile.getAbsolutePath() + " failed");
+        }
+        assertTrue("Generating golden files to " + goldenFile.getAbsolutePath(), false);
     }
-    
+
     protected void ending() throws Exception {
         if (GENERATE_GOLDEN_FILES) {
             generateGoldenFiles(this);

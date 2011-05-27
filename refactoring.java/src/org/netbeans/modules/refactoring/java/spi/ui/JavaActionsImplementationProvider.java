@@ -105,7 +105,23 @@ public class JavaActionsImplementationProvider {
     public void doChangeParameters(Lookup lookup) {
         throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }
+    
+    /**
+     * @param lookup 
+     * @return true if provider can handle find usages
+     */
+    public boolean canIntroduceParameter(Lookup lookup) {
+        return false;
+    }
 
+    /**
+     * implementation of "invoke Change Parameters"
+     * @param lookup 
+     */
+    public void doIntroduceParameter(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
+    }
+    
     /**
      * @param lookup 
      * @return true if provider can handle Pull Up
@@ -202,4 +218,19 @@ public class JavaActionsImplementationProvider {
         throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }    
     
+    /**
+     * @param lookup 
+     * @return true if provider can handle inline
+     */
+    public boolean canInline(Lookup lookup) {
+        return false;
+    }
+
+    /**
+     * implementation of "Inline"
+     * @param lookup 
+     */
+    public void doInline(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
+    }
 }

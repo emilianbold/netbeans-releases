@@ -167,7 +167,7 @@ public class ModelUnit {
         }
     }
 
-    private void collectConfigurationFilesFromClassPath(ClassPath cp, List<FileObject> configs, List<FileObject> configRoots) {
+    private static void collectConfigurationFilesFromClassPath(ClassPath cp, List<FileObject> configs, List<FileObject> configRoots) {
         for (ClassPath.Entry entry : cp.entries()) {
             FileObject roots[];
             if (entry.isValid()) {
@@ -220,14 +220,14 @@ public class ModelUnit {
         //add all the configs from WEB-INF/faces-config.xml and all configs declared in faces config DD entry
         //we need to ensure the original ordering
         configs = Collections.synchronizedList(new LinkedList<FileObject>(Arrays.asList(objects)));
-        configRoots = Collections.synchronizedList(new LinkedList<FileObject>());
+        List<FileObject> localconfigRoots = Collections.synchronizedList(new LinkedList<FileObject>());
         if (module.getDocumentBase() != null) {
-            configRoots.add(module.getDocumentBase());
+            localconfigRoots.add(module.getDocumentBase());
         }
         //find for configs in meta-inf
-        collectConfigurationFilesFromClassPath(sourcePath, configs, configRoots);
-        collectConfigurationFilesFromClassPath(compilePath, configs, configRoots);
-        setConfigFiles(configs, configRoots);
+        collectConfigurationFilesFromClassPath(sourcePath, configs, localconfigRoots);
+        collectConfigurationFilesFromClassPath(compilePath, configs, localconfigRoots);
+        setConfigFiles(configs, localconfigRoots);
         return configs;
     }
     

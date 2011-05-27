@@ -205,7 +205,9 @@ public final class NativeSession {
 	if (state == null)
             return Catalog.get("MSG_session_paused"); // NOI18N
         
-	if (state.isRunning) {
+        if (!state.isProcess) {
+            return Catalog.get("MSG_session_exited"); // NOI18N
+        } else if (state.isRunning) {
             return Catalog.get("MSG_session_running"); // NOI18N
         } else if (!state.isRunning && !state.isCore) {
             return Catalog.get("MSG_session_paused"); // NOI18N

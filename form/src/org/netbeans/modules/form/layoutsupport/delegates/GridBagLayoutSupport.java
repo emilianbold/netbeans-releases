@@ -55,6 +55,7 @@ import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.layoutsupport.*;
@@ -62,6 +63,7 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.FormPropertyContext;
 import org.netbeans.modules.form.RADVisualContainer;
+import org.netbeans.modules.form.editors.PrimitiveTypeArrayEditor;
 import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesignerWindow;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
@@ -78,6 +80,7 @@ import org.openide.filesystems.FileObject;
 public class GridBagLayoutSupport extends AbstractLayoutSupport
 {
     private static Reference<GridBagCustomizer.Window> customizerRef;
+    private FormProperty[] layoutProperties;
 
     /** Gets the supported layout manager class - GridBagLayout.
      * @return the class supported by this delegate
@@ -120,6 +123,151 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             customizer.setObject(this);
             return customizer;   
         }
+    }
+
+    @Override
+    protected FormProperty[] getProperties() {
+        if (layoutProperties == null) {
+            FormPropertyContext context = new FormPropertyContext.Component(metaLayout);
+            ResourceBundle bundle = getBundle();
+            layoutProperties = new FormProperty[] {
+                new GBLProperty(context, "columnWidths", int[].class, // NOI18N
+                        bundle.getString("PROP_columnWidths"), // NOI18N
+                        bundle.getString("HINT_columnWidths")), // NOI18N
+                new GBLProperty(context, "rowHeights", int[].class, // NOI18N
+                        bundle.getString("PROP_rowHeights"), // NOI18N
+                        bundle.getString("HINT_rowHeights")), // NOI18N
+                new GBLProperty(context, "columnWeights", double[].class, // NOI18N
+                        bundle.getString("PROP_columnWeights"), // NOI18N
+                        bundle.getString("HINT_columnWeights")), // NOI18N
+                new GBLProperty(context, "rowWeights", double[].class, // NOI18N
+                        bundle.getString("PROP_rowWeights"), // NOI18N
+                        bundle.getString("HINT_rowWeights")) // NOI18N
+            };
+        }
+        return layoutProperties;
+    }
+
+    @Override
+    protected Node.Property getProperty(String propName) {
+        FormProperty result = null;
+        for (FormProperty property : getProperties()) {
+            if (property.getName().equals(propName)) {
+                result = property;
+                break;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected LayoutManager cloneLayoutInstance(Container container, Container containerDelegate) throws Exception {
+        GridBagLayout layout = new GridBagLayout();
+        for (FormProperty property : getProperties()) {
+            ((GBLProperty)property).update(layout);
+        }
+        return layout;
+    }
+
+    private CodeGroup layoutCode;
+    private CodeExpression layoutExpression;
+    @Override
+    protected CodeExpression createInitLayoutCode(CodeGroup layoutCode) {
+        this.layoutCode = layoutCode;
+        layoutExpression = getCodeStructure().createExpression(
+                getLayoutConstructor(),
+                CodeStructure.EMPTY_PARAMS);
+
+        return layoutExpression;
+    }
+
+    @Override
+    protected void readInitLayoutCode(CodeExpression layoutExp,
+                                      CodeGroup layoutCode) {
+        this.layoutCode = layoutCode;
+        this.layoutExpression = layoutExp;
+        Iterator iter = CodeStructure.getDefinedStatementsIterator(layoutExp);
+        while (iter.hasNext()) {
+            CodeStatement statement = (CodeStatement)iter.next();
+            for (FormProperty property : getProperties()) {
+                GBLProperty prop = (GBLProperty)property;
+                Field propField = prop.getField();
+                if (propField.equals(statement.getMetaObject())) {
+                    CodeExpression propExp = statement.getStatementParameters()[0];
+                    FormCodeSupport.readPropertyExpression(propExp, prop, false);
+                }
+            }
+        }
+        updateLayoutExpression();
+    }
+
+    void updateLayoutExpression() {
+        boolean anyPropertyModified = false;
+        layoutCode.removeAll();
+        FormProperty[] properties = getProperties();
+        for (int i=0; i<properties.length; i++) {
+            if (properties[i].isChanged()) {
+                anyPropertyModified = true;
+                layoutCode.addStatement(getPropertyStatement(i));
+            }
+        }
+        updateLayoutExpressionVariable(anyPropertyModified);
+    }
+
+    private void updateLayoutExpressionVariable(boolean variableNeeded) {
+        if (variableNeeded) {
+            CodeVariable var = layoutExpression.getVariable();
+            if (var == null) { // no variable used currently
+                var = getCodeStructure().createVariableForExpression(
+                        layoutExpression, CodeVariable.LOCAL, defaultLayoutVariableName());
+            }
+            // add variable assignment code
+            layoutCode.addStatement(0, var.getAssignment(layoutExpression));
+        } else {
+            getCodeStructure().removeExpressionFromVariable(layoutExpression);
+        }
+    }
+
+    private String defaultLayoutVariableName() {
+        LayoutSupportManager manager = (LayoutSupportManager)getLayoutContext();
+        RADVisualContainer metaCont = manager.getMetaContainer();
+        String name;
+        if (metaCont.getFormModel().getTopRADComponent() == metaCont) {
+            name = "layout"; // NOI18N
+        } else {
+            name = metaCont.getName() + "Layout"; // NOI18N
+        }
+        return name;
+    }
+
+    private Constructor getLayoutConstructor() {
+        Constructor result = null;
+        try {
+            result = GridBagLayout.class.getConstructor();
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result;
+    }
+
+    private CodeStatement[] propertyStatements;
+    private CodeStatement getPropertyStatement(int index) {
+        FormProperty[] properties = getProperties();
+        if (propertyStatements == null)
+            propertyStatements = new CodeStatement[properties.length];
+
+        CodeStatement propStatement = propertyStatements[index];
+        if (propStatement == null) {
+            CodeExpression propExp = getCodeStructure().createExpression(
+                    FormCodeSupport.createOrigin(properties[index]));
+            Field field = ((GBLProperty)properties[index]).getField();
+            propStatement = CodeStructure.createStatement(
+                layoutExpression, field, propExp);
+            propertyStatements[index] = propStatement;
+        }
+        return propStatement;
     }
 
     /** This method is called when switching layout - giving an opportunity to
@@ -1158,8 +1306,11 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         @Override
         public void setContext(FormModel formModel, FormProperty property) {
-            FileObject formFile = FormEditor.getFormDataObject(formModel).getPrimaryFile();
-            boolean isJDK6Compatible = ClassPathUtils.isJava6ProjectPlatform(formFile);
+            boolean isJDK6Compatible = true;
+            if (formModel != null) {
+                FileObject formFile = FormEditor.getFormDataObject(formModel).getPrimaryFile();
+                isJDK6Compatible = ClassPathUtils.isJava6ProjectPlatform(formFile);
+            }
 
             // Tags
             List<String> tagList = new LinkedList<String>();
@@ -1265,6 +1416,84 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         @Override
         public void updateFormVersionLevel() {
+        }
+    }
+
+    class GBLProperty extends FormProperty {
+        private Object value;
+
+        GBLProperty(FormPropertyContext context, String name, Class type, String displayName, String shortDescription) {
+            super(context, name, type, displayName, shortDescription);
+        }
+
+        @Override
+        public Object getTargetValue() {
+            return value;
+        }
+
+        @Override
+        public void setTargetValue(Object value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean supportsDefaultValue () {
+            return true;
+        }
+
+        @Override
+        public PropertyEditor getExpliciteEditor() {
+            Class type = getValueType();
+            PropertyEditor propEd = null;
+            if (type.equals(int[].class)) {
+                propEd = new IntArrayPropertyEditor();
+            } else if (type.equals(double[].class)) {
+                propEd = new DoubleArrayPropertyEditor();
+            } else {
+                assert false;
+            }
+            return propEd;
+        }
+
+        @Override
+        protected void propertyValueChanged(Object old, Object current) {
+            super.propertyValueChanged(old, current);
+            if (isChangeFiring()) {
+                updateLayoutExpression();
+            }
+        }
+
+        void update(GridBagLayout instance) {
+            try {
+                getField().set(instance, value);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        Field getField() {
+            Field field = null;
+            try {
+                field = GridBagLayout.class.getField(getName());
+            } catch (NoSuchFieldException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return field;
+        }
+
+    }
+
+    public static class IntArrayPropertyEditor extends PrimitiveTypeArrayEditor {
+        public IntArrayPropertyEditor() {
+            setValueType(int[].class);
+        }
+    }
+
+    public static class DoubleArrayPropertyEditor extends PrimitiveTypeArrayEditor {
+        public DoubleArrayPropertyEditor() {
+            setValueType(double[].class);
         }
     }
 

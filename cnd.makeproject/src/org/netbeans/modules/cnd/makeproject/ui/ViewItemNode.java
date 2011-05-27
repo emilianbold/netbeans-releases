@@ -53,7 +53,10 @@ import java.awt.image.ColorConvertOp;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -156,9 +159,6 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 
     @Override
     public void destroy() throws IOException {
-//            File file = new File(item.getAbsPath());
-//            if (file.exists())
-//                file.delete();
         super.destroy();
         folder.removeItemAction(item);
     }
@@ -252,13 +252,23 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     public Image getIcon(int type) {
         Image image = super.getIcon(type);
         if (isExcluded() && (image instanceof BufferedImage)) {
-            ColorSpace gray_space = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            ColorConvertOp convert_to_gray_op = new ColorConvertOp(gray_space, null);
-            image = convert_to_gray_op.filter((BufferedImage) image, null);
+            image = getGrayImage((BufferedImage)image);
         }
         return image;
     }
 
+    private static final Map<BufferedImage,Image> grayImageCache = new WeakHashMap<BufferedImage, Image>();
+    private static Image getGrayImage(BufferedImage image) {
+        Image gray = grayImageCache.get(image);
+        if (gray == null) {
+            ColorSpace gray_space = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            ColorConvertOp convert_to_gray_op = new ColorConvertOp(gray_space, null);
+            gray = convert_to_gray_op.filter((BufferedImage) image, null);
+            grayImageCache.put(image, gray);
+        }
+        return gray;
+    }
+    
     @Override
     public String getHtmlDisplayName() {
         if (isExcluded()) {

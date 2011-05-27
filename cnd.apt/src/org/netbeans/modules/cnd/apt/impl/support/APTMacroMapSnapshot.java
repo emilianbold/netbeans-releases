@@ -45,8 +45,6 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -54,6 +52,8 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
 
@@ -176,12 +176,12 @@ public final class APTMacroMapSnapshot {
     ////////////////////////////////////////////////////////////////////////////
     // persistence support
     
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         APTSerializeUtils.writeSnapshot(this.parent, output);
         APTSerializeUtils.writeStringToMacroMap(this.macros, output);
     }
     
-    public APTMacroMapSnapshot(DataInput input) throws IOException {
+    public APTMacroMapSnapshot(RepositoryDataInput input) throws IOException {
         this.parent = APTSerializeUtils.readSnapshot(input);
         int collSize = input.readInt();
         macros = createMacroMap(collSize);

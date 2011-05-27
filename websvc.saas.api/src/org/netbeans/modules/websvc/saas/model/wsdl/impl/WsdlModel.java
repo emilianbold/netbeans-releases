@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.saas.model.wsdl.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.xml.wsdl.model.Service;
@@ -61,8 +62,11 @@ public class WsdlModel {
      }
 
      public List<WSService> getServices(){
-         List<WSService> services = new ArrayList<WSService>();
+         if ( model.getDefinitions() == null ){
+             return Collections.emptyList();
+         }
          Collection<Service> wsdlServices = model.getDefinitions().getServices();
+         List<WSService> services = new ArrayList<WSService>( wsdlServices.size());
          for(Service wsdlService : wsdlServices){
              services.add(new WsdlService(wsdlService));
          }

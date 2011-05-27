@@ -43,13 +43,9 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
@@ -57,7 +53,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -79,31 +74,31 @@ class TypeProductionFilter extends Filter<Element> {
         return new TypeProductionFilter();
     }
     
-    void init( TypeMirror elementType , String name ,
+    void init( TypeMirror elementType , Element injectionPoint ,
             WebBeansModelImplementation model)
     {
-        myName = name;
         myImpl = model;
         myType = elementType;
-        myResult = new HashMap<Element, List<DeclaredType>>();
+        myOriginalElement = injectionPoint;
     }
     
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.Filter#filterElements(java.util.Set)
      */
+    @Override
     void filter( Set<Element> productionElements ){
         if ( filterPrimitives(productionElements ) ){
-            fillSimpleResult(productionElements);
+            //fillSimpleResult(productionElements);
             return;
         }
         
         if ( filterArray(productionElements) ){
-            fillSimpleResult(productionElements);
+            //fillSimpleResult(productionElements);
             return ;
         }
         
         TypeBindingFilter filter = TypeBindingFilter.get();
-        filter.init(getElementType(), getName(), getImplementation());
+        filter.init(getElementType(), getOriginalElement(), getImplementation());
         
         // this cycle care only about declared types.
         for ( Iterator<? extends Element> iterator = productionElements.iterator() ; 
@@ -111,11 +106,19 @@ class TypeProductionFilter extends Filter<Element> {
         {
             Element productionElement = iterator.next();
 
-            TypeElement enclosingElement = getImplementation().getHelper().
-                getCompilationController().getElementUtilities().
-                enclosingTypeElement( productionElement );
+            TypeMirror mirror = null;
+            if (productionElement.getKind() == ElementKind.FIELD) {
+                mirror = productionElement.asType();
+            }
+            else if (productionElement.getKind() == ElementKind.METHOD)
+            {
+                mirror = ((ExecutableType) productionElement.asType()).getReturnType();
+            }
+            if ( !filter.isAssignable(mirror, productionElement )){
+                iterator.remove();
+            }
             
-            List<DeclaredType> derived = getDerived( enclosingElement);
+            /*List<DeclaredType> derived = getDerived( enclosingElement);
             
             for (DeclaredType declaredType : derived) {
                 TypeMirror mirror = null;
@@ -132,7 +135,7 @@ class TypeProductionFilter extends Filter<Element> {
                                 .asMemberOf(declaredType, productionElement);
                         mirror = ((ExecutableType) mirror).getReturnType();
                     }
-                    if ( filter.isAssignable(mirror) ){
+                    if ( filter.isAssignable(mirror, productionElement )){
                         addResult( productionElement , declaredType);
                     }
                 }
@@ -140,18 +143,14 @@ class TypeProductionFilter extends Filter<Element> {
                     /*
                      * call <code>asMemberOf</code> could be a problem for
                      * productionElment and derived. In this case just skip
-                     */
+                     *
                     continue;
                 }
-            }
+            }*/
         }
     }
     
-    Map<Element, List<DeclaredType>> getResult() {
-        return myResult;
-    }
-    
-    private void addResult( Element productionElement, DeclaredType type )
+    /*private void addResult( Element productionElement, DeclaredType type )
     {
         List<DeclaredType> list = myResult.get( productionElement );
         if ( list == null ){
@@ -169,8 +168,15 @@ class TypeProductionFilter extends Filter<Element> {
             DeclaredType type = (DeclaredType)enclosingElement.asType();
             myResult.put( element , Collections.singletonList(type) );
         }
-    }
+    }*/
     
+    /*
+     * From the spec : producer or disposer method is not inherited.
+     *                 producer field is not inherited.
+     * It means no need to look at the derived classes and inherited 
+     * production there. If method is explicitly defined in the 
+     * derived class it will be in the original production list
+     * as separate element. 
     private List<DeclaredType> getDerived( TypeElement element ) 
     {
         if ( !isGeneric( element ) ){
@@ -192,7 +198,7 @@ class TypeProductionFilter extends Filter<Element> {
     private boolean isGeneric( TypeElement element ) {
         //DeclaredType type = (DeclaredType)element.asType();
         return element.getTypeParameters().size()!=0;
-    }
+    }*/
 
     private boolean filterArray( Set<? extends Element> productionElements)
     {
@@ -202,31 +208,55 @@ class TypeProductionFilter extends Filter<Element> {
                     iterator.hasNext() ; ) 
             {
                 Element productionElement = iterator.next();
-                TypeMirror productionType= null;
-                if ( productionElement.getKind() == ElementKind.FIELD){
-                    productionType = productionElement.asType();
-                }
-                else if ( productionElement.getKind() == ElementKind.METHOD){
-                    productionType = ((ExecutableElement)productionElement).
-                        getReturnType();
-                }
-                if ( productionType == null ){
-                    continue;
-                }
-                if ( productionType.getKind() != TypeKind.ARRAY ){
+                boolean hasBeanType = hasBeanType(arrayComponentType,
+                        productionElement);
+                if ( !hasBeanType ){
                     iterator.remove();
-                    continue;
-                }
-                if ( !getImplementation().getHelper().getCompilationController().
-                        getTypes().isSameType( arrayComponentType,
-                                ((ArrayType) productionType).getComponentType()))
-                {
-                      iterator.remove();              
                 }
             }
             return true;
         }
         return false;
+    }
+
+    private boolean hasBeanType( TypeMirror arrayComponentType,
+            Element productionElement )
+    {
+        Collection<TypeMirror> restrictedTypes = RestrictedTypedFilter.
+            getRestrictedTypes(productionElement, getImplementation());
+        if ( restrictedTypes == null  ){
+            TypeMirror productionType= null;
+            if ( productionElement.getKind() == ElementKind.FIELD){
+                productionType = productionElement.asType();
+            }
+            else if ( productionElement.getKind() == ElementKind.METHOD){
+                productionType = ((ExecutableElement)productionElement).
+                    getReturnType();
+            }
+            return checkArrayBeanType(productionType, arrayComponentType);
+        }
+        Types types = getImplementation().getHelper().
+            getCompilationController().getTypes();
+        for( TypeMirror restrictedType : restrictedTypes ){
+            if ( types.isSameType( restrictedType, getElementType())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkArrayBeanType(TypeMirror productionType,
+            TypeMirror arrayComponentType)
+    {
+        if ( productionType == null ){
+            return false;
+        }
+        if ( productionType.getKind() != TypeKind.ARRAY ){
+            return false;
+        }
+        return getImplementation().getHelper().getCompilationController().
+                getTypes().isSameType( arrayComponentType,
+                        ((ArrayType) productionType).getComponentType());
     }
 
     private boolean filterPrimitives( Set<? extends Element> productionElements )
@@ -270,7 +300,33 @@ class TypeProductionFilter extends Filter<Element> {
                     productionType = ((ExecutableElement)productionElement).
                         getReturnType();
                 }
-                if ( productionType!= null && 
+                 Collection<TypeMirror> restrictedTypes = 
+                     RestrictedTypedFilter.getRestrictedTypes(productionElement, 
+                        getImplementation());
+                /*
+                 *  The required type is either primitive or its wrapper.
+                 *  It means that bean type should be either the same primitive
+                 *  or wrapper. But all wrappers are final so production cannot 
+                 *  restrict some child type of wrapper to wrapper. 
+                 *  It can restrict only wrapper to wrapper parent.
+                 *  In this case the types are not assignable.    
+                 */
+                boolean isNotRestricted = true;
+                if ( restrictedTypes!= null ){
+                    isNotRestricted = false;
+                    for (TypeMirror restrictedType : restrictedTypes ){
+                        if ( types.isSameType( restrictedType, primitive )||
+                                types.isSameType( restrictedType, boxedType.asType() ) )
+                        {
+                            isNotRestricted = true;
+                            break;
+                        }
+                    }
+                }
+                if ( !isNotRestricted ){
+                    iterator.remove();
+                }
+                else if ( productionType!= null && 
                         !types.isSameType( productionType, primitive ) &&
                         !types.isSameType( productionType , boxedType.asType()))
                 {
@@ -291,14 +347,13 @@ class TypeProductionFilter extends Filter<Element> {
         return myType;
     }
     
-    private String getName(){
-        return myName;
+    private Element getOriginalElement(){
+        return myOriginalElement;
     }
 
     private WebBeansModelImplementation myImpl;
     private TypeMirror myType;
-    private Map<Element, List<DeclaredType>> myResult;
-    private String myName;
+    private Element myOriginalElement;
     
     
     private static final Set<String> WRAPPERS = new HashSet<String>();

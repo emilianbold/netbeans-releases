@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
@@ -76,10 +77,12 @@ public final class APTDefineNode extends APTMacroBaseNode
     private static final byte BEFORE_MACRO_NAME = 0;
     private static final byte AFTER_MACRO_NAME = 1;
     private static final byte IN_PARAMS = 2;
-    private static final byte IN_BODY = 3;
-    private static final byte IN_BODY_AFTER_SHARP = 4;
-    private static final byte IN_BODY_AFTER_LPAREN_AND_SHARP = 5;
-    private static final byte ERROR = 6;
+    private static final byte IN_PARAMS_AFTER_ID = 3;
+    private static final byte IN_PARAMS_AFTER_ELLIPSIS = 4;
+    private static final byte IN_BODY = 5;
+    private static final byte IN_BODY_AFTER_SHARP = 6;
+    private static final byte IN_BODY_AFTER_LPAREN_AND_SHARP = 7;
+    private static final byte ERROR = 8;
     
     /** Copy constructor */
     /**package*/APTDefineNode(APTDefineNode orig) {
@@ -96,6 +99,11 @@ public final class APTDefineNode extends APTMacroBaseNode
     /** Creates a new instance of APTDefineNode */
     public APTDefineNode(APTToken token) {
         super(token);
+    }
+
+    /** Creates a new instance of APTDefineNode for pragma once*/
+    public APTDefineNode(APTToken token, APTToken fileName) {
+        super(token, fileName);
     }
 
     @Override
@@ -132,7 +140,7 @@ public final class APTDefineNode extends APTMacroBaseNode
     public boolean isValid() {
         return stateAndHashCode != ERROR;
     }
-    
+
     @Override
     public boolean accept(APTFile curFile, APTToken token) {
         int ttype = token.getType();
@@ -145,6 +153,25 @@ public final class APTDefineNode extends APTMacroBaseNode
                     params = Collections.<APTToken>emptyList();
                 } else {
                     ((ArrayList<?>)params).trimToSize();
+                    if (bodyTokens != null && !bodyTokens.isEmpty()) {
+                        int index = params.size()-1;
+                        // check if any named variadic parameter to replace by VA_ARGS_TOKEN
+                        APTToken lastParam = params.get(index);
+                        if (lastParam.getType() == APTTokenTypes.ELLIPSIS) {
+                            assert lastParam instanceof APTBaseLanguageFilter.FilterToken : "it must be filtered ellipsis token " + lastParam;
+                            APTToken originalToken = ((APTBaseLanguageFilter.FilterToken)lastParam).getOriginalToken();
+                            assert originalToken != null;
+                            assert originalToken.getType() == APTTokenTypes.ID : "original token must be ID " + originalToken;
+                            CharSequence name = originalToken.getTextID();
+                            params.set(index, APTUtils.VA_ARGS_TOKEN);
+                            for (int i = 0; i < bodyTokens.size(); i++) {
+                                APTToken cur = bodyTokens.get(i);
+                                if (cur.getType() == APTTokenTypes.ID && cur.getTextID().equals(name)) {
+                                    bodyTokens.set(i, APTUtils.VA_ARGS_TOKEN);
+                                }
+                            }
+                        }
+                    }
                 }
             }
             if (stateAndHashCode == BEFORE_MACRO_NAME) {
@@ -181,32 +208,75 @@ public final class APTDefineNode extends APTMacroBaseNode
                     switch (token.getType()) {
                         case APTTokenTypes.ID:
                             params.add(token);
-                            // leave IN_PARAMS state
+                            stateAndHashCode = IN_PARAMS_AFTER_ID;
                             break;
                         case APTTokenTypes.RPAREN:
                             stateAndHashCode = IN_BODY;
                             break;
-                        case APTTokenTypes.ELLIPSIS:
-                            // TODO: need to support ELLIPSIS for IZ#83949
+                        case APTTokenTypes.ELLIPSIS: 
+                            // support ELLIPSIS for IZ#83949
                             params.add(APTUtils.VA_ARGS_TOKEN);
+                            stateAndHashCode = IN_PARAMS_AFTER_ELLIPSIS;
                             break;
                         default:
-                            // eat comma and comments and leave IN_PARAMS state
-                            if (!(token.getType() == APTTokenTypes.COMMA || APTUtils.isCommentToken(token.getType()))) {
-                                // error check
-                                if (DebugUtils.STANDALONE) {
-                                    System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
-                                            APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
-                                } else {
-                                    APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
-                                            new Object[] {APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()} ); // NOI18N
-                                }                                
+                            // eat comma and comments and leave state
+                            if (!APTUtils.isCommentToken(token.getType())) {
+                                logError(curFile, token);
                                 stateAndHashCode = ERROR;
                             }
                             break;
                     }
                     break;
                 }
+                case IN_PARAMS_AFTER_ELLIPSIS:
+                {
+                    switch (token.getType()) {
+                        case APTTokenTypes.RPAREN:
+                            stateAndHashCode = IN_BODY;
+                            break;
+                        default:
+                            // eat comments and leave state
+                            if (!APTUtils.isCommentToken(token.getType())) {
+                                logError(curFile, token);
+                                stateAndHashCode = ERROR;
+                            }
+                            break;
+                    }
+                    break;
+                }
+                case IN_PARAMS_AFTER_ID: 
+                {
+                    switch (token.getType()) {
+                        case APTTokenTypes.RPAREN:
+                            stateAndHashCode = IN_BODY;
+                            break;
+                        case APTTokenTypes.ELLIPSIS:
+                            //previous parameter is variadic named token
+                            // #195560 - more support for variadic variables in macro 
+                            if (params.isEmpty()) {
+                                logError(curFile, token);
+                                stateAndHashCode = ERROR;
+                            } else {
+                                int index = params.size() - 1;
+                                APTToken last = params.get(index);
+                                token = new APTBaseLanguageFilter.FilterToken(last, APTTokenTypes.ELLIPSIS);
+                                params.set(index, token);
+                                stateAndHashCode = IN_PARAMS_AFTER_ELLIPSIS;
+                            }
+                            break;
+                        case APTTokenTypes.COMMA:
+                            stateAndHashCode = IN_PARAMS;
+                            break;
+                        default:
+                            // eat comma and comments and leave state
+                            if (!APTUtils.isCommentToken(token.getType())) {
+                                logError(curFile, token);
+                                stateAndHashCode = ERROR;
+                            }
+                            break;
+                    }
+                    break;
+                }                    
                 case IN_BODY:
                 {
                     // init body list if necessary
@@ -263,6 +333,17 @@ public final class APTDefineNode extends APTMacroBaseNode
                     assert(false) : "unexpected state"; // NOI18N
             }
             return true;
+        }
+    }
+
+    private void logError(APTFile curFile, APTToken token) {
+        // error report
+        if (DebugUtils.STANDALONE) {
+            System.err.printf("%s, line %d: \"%s\" may not appear in macro parameter list\n", // NOI18N
+                    APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()); // NOI18N
+        } else {
+            APTUtils.LOG.log(Level.SEVERE, "{0} line {1}: {2} may not appear in macro parameter list", // NOI18N
+                    new Object[]{APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText()}); // NOI18N
         }
     }
     

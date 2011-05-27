@@ -83,7 +83,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         String golden = (before + after).replace('\n', ' ').replace("b.value", "Boolean.value");
         
         performFixTest("test/Test.java", before + after, before.length(), 
-            "3:4-3:5:verifier:AS1valueOf",
+            "3:6-3:13:verifier:AS1valueOf",
             "MSG_StaticAccessText",
             golden
         );
@@ -107,7 +107,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         
         
         performFixTest("test/Test.java", before + after, before.length(), 
-            "3:4-3:5:verifier:AS1valueOf",
+            "3:6-3:13:verifier:AS1valueOf",
             "MSG_StaticAccessText",
             golden
         );
@@ -143,7 +143,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         String after = "UE;";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:50-0:51:verifier:AS0TRUE"
+            "0:52-0:56:verifier:AS0TRUE"
         );
     }
     public void testOkAccessingStaticField() throws Exception {
@@ -163,7 +163,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         String after = "UE;";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:74-0:77:verifier:AS0TRUE"
+            "0:78-0:82:verifier:AS0TRUE"
         );
     }
     public void testOkToCallEqualsOnString() throws Exception {
@@ -190,7 +190,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(),
-                "2:0-2:1:verifier:AS1test"
+                "2:2-2:6:verifier:AS1test"
         );
     }
     
@@ -232,6 +232,33 @@ public class StaticAccessTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", code);
+    }
+
+    public void testInterface198646() throws Exception {
+        String code = "package test; class Test {\n" +
+            "public void run(A a) {\n" +
+            "int i = a.I|II;\n" +
+            "}\n" +
+            "}\n" +
+            "interface A {\n" +
+            "    public static final int III = 0;\n" +
+            "}";
+
+        performAnalysisTest("test/Test.java", code, "2:10-2:13:verifier:AS0III");
+    }
+
+    public void testEnum198646() throws Exception {
+        String code = "package test; class Test {\n" +
+            "public void run(A a) {\n" +
+            "int i = a.I|II;\n" +
+            "}\n" +
+            "}\n" +
+            "enum A {\n" +
+            "    A;\n" +
+            "    public static final int III = 0;\n" +
+            "}";
+
+        performAnalysisTest("test/Test.java", code, "2:10-2:13:verifier:AS0III");
     }
     
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {

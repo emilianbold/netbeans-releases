@@ -67,24 +67,6 @@ public class ScriptingSetup extends JellyTestCase {
     public void testAddTomcatServer() {
         CommonUtilities.addTomcatServer();
     }
-
-    public void testOpenRubyProject() {
-
-        try {
-            this.openDataProjects(Projects.RUBY_PROJECT);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenRailsProject() {
-
-        try {
-            this.openDataProjects(Projects.RAILS_PROJECT);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
     
     public void testOpenScriptingProject() {
 

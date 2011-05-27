@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.util.NbBundle;
 
@@ -55,33 +56,33 @@ import org.openide.util.NbBundle;
  */
 public class ConsolidationStrategyPanel extends JPanel {
     private ConsolidationStrategyWizard wizard;
-    public static final String PROJECT_LEVEL = "project"; // NOI18N
-    public static final String FOLDER_LEVEL = "folder"; // NOI18N
-    public static final String FILE_LEVEL = "file"; // NOI18N
-    private String level = FILE_LEVEL;
+    private String level = ConsolidationStrategy.FILE_LEVEL;
     
     public ConsolidationStrategyPanel(ConsolidationStrategyWizard wizard) {
         this.wizard = wizard;
         initComponents();
         addListeners();
         fileConsolidation.setSelected(true);
-        update(FILE_LEVEL);
+        update(ConsolidationStrategy.FILE_LEVEL);
     }
 
     private void addListeners(){
         fileConsolidation.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
-                update(FILE_LEVEL);
+                update(ConsolidationStrategy.FILE_LEVEL);
             }
         });
         folderConsolidation.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
-                update(FOLDER_LEVEL);
+                update(ConsolidationStrategy.FOLDER_LEVEL);
             }
         });
         projectConsolidation.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
-                update(PROJECT_LEVEL);
+                update(ConsolidationStrategy.PROJECT_LEVEL);
             }
         });
     }

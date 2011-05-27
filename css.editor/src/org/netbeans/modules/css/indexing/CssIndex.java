@@ -72,21 +72,24 @@ import org.openide.util.Exceptions;
 public class CssIndex {
 
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     public static CssIndex create(Project project) throws IOException {
         return new CssIndex(project);
     }
     private final QuerySupport querySupport;
+    private final Collection<FileObject> sourceRoots;
+    
+    private AllDependenciesMaps allDepsCache;
+    private long allDepsCache_hashCode;
 
     /** Creates a new instance of JsfIndex */
     private CssIndex(Project project) throws IOException {
         //QuerySupport now refreshes the roots indexes so it can held until the source roots are valid
-        Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
+        sourceRoots = QuerySupport.findRoots(project,
                 null /* all source roots */,
                 Collections.<String>emptyList(),
                 Collections.<String>emptyList());
-        this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
+        this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));        
     }
 
     /**
@@ -279,6 +282,25 @@ public class CssIndex {
      * @throws IOException
      */
     public AllDependenciesMaps getAllDependencies() throws IOException {
+        long freshAllDeps_hashCode = CssIndexer.getImportsHashCodeForRoots(sourceRoots);
+        if(allDepsCache != null) {
+            //verify whether the cache is still valid
+            if(allDepsCache_hashCode == freshAllDeps_hashCode) {
+                LOGGER.fine("Refreshing dependencies maps cache");
+                return allDepsCache;
+            }
+        } else {
+            LOGGER.fine("Creating dependencies maps cache");
+        }
+        
+        //not cached or invalidated
+        allDepsCache = createAllDependencies();
+        allDepsCache_hashCode = freshAllDeps_hashCode;
+        
+        return allDepsCache;
+    }
+    
+    private AllDependenciesMaps createAllDependencies() throws IOException {
         Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY));
         Map<FileObject, Collection<FileReference>> source2dests = new HashMap<FileObject, Collection<FileReference>>();
         Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<FileObject, Collection<FileReference>>();

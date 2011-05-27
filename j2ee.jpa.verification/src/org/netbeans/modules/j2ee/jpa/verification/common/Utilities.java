@@ -49,6 +49,8 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import java.util.ArrayList;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -72,6 +74,16 @@ public class Utilities {
         }
         
         return null;
+    }
+    public static List<AnnotationMirror> findAnnotations(Element element, String annotationClass){
+        ArrayList<AnnotationMirror> ret = new ArrayList<AnnotationMirror>();
+        for (AnnotationMirror ann : element.getAnnotationMirrors()){
+            if (annotationClass.equals(ann.getAnnotationType().toString())){
+                ret.add(ann);
+            }
+        }
+        
+        return ret;
     }
     
     /**

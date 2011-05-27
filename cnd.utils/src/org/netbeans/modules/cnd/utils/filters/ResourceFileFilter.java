@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.utils.filters;
 
 import org.openide.util.NbBundle;
 
-public class ResourceFileFilter extends SourceFileFilter {
+public class ResourceFileFilter extends FileAndFileObjectFilter {
 
     private static String suffixes[] = {"gif", "jpg", "png", "htm", "html", "xml", "txt", "mk", "Makefile", "makefile"}; // NOI18N
     private static ResourceFileFilter instance = null;
@@ -59,7 +59,7 @@ public class ResourceFileFilter extends SourceFileFilter {
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_RESOURCE_FILEFILTER", getSuffixesAsString()); // NOI18N
+        return NbBundle.getMessage(ResourceFileFilter.class, "FILECHOOSER_RESOURCE_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
 
     @Override
@@ -69,8 +69,7 @@ public class ResourceFileFilter extends SourceFileFilter {
             if (i > 0) {
                 ret.append(" "); // NOI18N
             }
-            if (!getSuffixes()[i].equals("Makefile") && !getSuffixes()[i].equals("makefile")) // NOI18N
-            {
+            if (!getSuffixes()[i].equals("Makefile") && !getSuffixes()[i].equals("makefile")) { // NOI18N
                 ret.append(".");  // NOI18N
             }
             ret.append(getSuffixes()[i]); // NOI18N

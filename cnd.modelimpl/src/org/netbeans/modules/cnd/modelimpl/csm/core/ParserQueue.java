@@ -374,6 +374,22 @@ public final class ParserQueue {
     /**
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
+     */
+    public void add(FileImpl file, Collection<APTPreprocHandler> ppHandlers, Position position) {
+        Collection<APTPreprocHandler.State> ppStates = new ArrayList<APTPreprocHandler.State>(ppHandlers.size());
+        if (ppHandlers == FileImpl.DUMMY_HANDLERS) {
+            ppStates = Collections.singleton(FileImpl.DUMMY_STATE);
+        } else {
+            for (APTPreprocHandler handler : ppHandlers) {
+                ppStates.add(handler.getState());
+            }
+        }
+        add(file, ppStates, position, true, FileAction.NOTHING);
+    }
+    
+    /**
+     * If file isn't yet enqueued, places it at the beginning of the queue,
+     * otherwise moves it there
      * @return true if file was added into queue
      */
     public boolean add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
@@ -770,10 +786,14 @@ public final class ParserQueue {
             }
         }
         if (fire) {
-            int cnt = getProjectFiles(project).size();
-            ProgressSupport.instance().fireProjectFilesCounted(project, cnt);
-            if (cnt == 0) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
+            ProjectData pd = getProjectData(project, true);
+            boolean noFiles;
+            synchronized (lock) {
+                noFiles = markLastProjectFileActivityIfNeeded(pd);
+            }
+            ProgressSupport.instance().fireProjectFilesCounted(project, pd.filesInQueue.size());
+            if (noFiles) {
+                handleLastProjectFile(project, pd);
             }
         }
     }
@@ -817,7 +837,7 @@ public final class ParserQueue {
     }
 
     private boolean markLastProjectFileActivityIfNeeded(ProjectData data) {
-        if (data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty()) {
+        if (data.isEmpty()) {
             data.pendingActivity++;
             return true;
         }
@@ -829,7 +849,7 @@ public final class ParserQueue {
         boolean last = false;
         synchronized (lock) {
             data.pendingActivity--;
-            if (data.isEmpty() && (data.pendingActivity == 0)) {
+            if (data.noActivity()) {
                 projectData.remove(project);
                 last = true;
             }

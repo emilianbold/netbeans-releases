@@ -105,7 +105,7 @@ public class ReadAccessTest extends NbTestCase {
             ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
             .reuseUserDir(false).enableClasspathModules(false);
             conf = conf.addTest("testInitUserDir");
-            suite.addTest(NbModuleSuite.create(conf));
+            suite.addTest(conf.suite());
         }
 
         {
@@ -114,7 +114,7 @@ public class ReadAccessTest extends NbTestCase {
             ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
             .reuseUserDir(true).enableClasspathModules(false);
             conf = conf.addTest("testSndStart");
-            suite.addTest(NbModuleSuite.create(conf));
+            suite.addTest(conf.suite());
         }
 
         {
@@ -123,7 +123,7 @@ public class ReadAccessTest extends NbTestCase {
             ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
             .reuseUserDir(true).enableClasspathModules(false);
             conf = conf.addTest("testThirdStart");
-            suite.addTest(NbModuleSuite.create(conf));
+            suite.addTest(conf.suite());
         }
 
         return suite;

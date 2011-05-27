@@ -47,6 +47,8 @@ package org.netbeans.modules.j2ee.jboss4.ide;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
@@ -56,10 +58,12 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -95,6 +99,7 @@ class JBStopRunnable implements Runnable {
         List<String> envp = new ArrayList<String>(3);
         envp.add("JAVA=" + javaHome + "/bin/java"); // NOI18N
         envp.add("JAVA_HOME=" + javaHome); // NOI18N
+        envp.add("JBOSS_HOME=" + properties.getRootDir().getAbsolutePath());    // NOI18N        
         if (Utilities.isWindows()) {
             // the shutdown script should not wait for a key press
             envp.add("NOPAUSE=true"); // NOI18N
@@ -124,8 +129,19 @@ class JBStopRunnable implements Runnable {
         }
         
         JBProperties properties = dm.getProperties();
-        StringBuilder credentialsParams = new StringBuilder(32);
-        credentialsParams.append(" -u ").append(properties.getUsername()).append(" -p ").append(properties.getPassword()); // NOI18N
+        StringBuilder additionalParams = new StringBuilder(32);
+        int jnpPort = JBPluginUtils.getJnpPortNumber(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));  
+        if (dm.getProperties().getServerVersion().compareTo(JBPluginUtils.JBOSS_6_0_0) < 0) {
+            additionalParams.append(" -s jnp://localhost:").append(jnpPort); // NOI18N
+        } else {
+            // FIXME changed for JBoss 6
+            // see http://community.jboss.org/message/546904
+            // and http://community.jboss.org/wiki/StartStopJBoss
+        }
+        
+        additionalParams.append(" -u ").append(properties.getUsername()); // NOI18N
+        additionalParams.append(" -p ").append(properties.getPassword()); // NOI18N
+        
         // Currently there is a problem stopping JBoss when Profiler agent is loaded.
         // As a workaround for now, --halt parameter has to be used for stopping the server.
 //        NbProcessDescriptor pd = (startServer.getMode() == JBStartServer.MODE.PROFILE ?
@@ -134,7 +150,8 @@ class JBStopRunnable implements Runnable {
 
         /* 2008-09-10 The usage of --halt doesn't solve the problem on Windows; it even creates another problem
                         of NB Profiler not being notified about the fact that the server was stopped */
-        NbProcessDescriptor pd = new NbProcessDescriptor(serverStopFileName, "--shutdown " + credentialsParams); // NOI18N
+        NbProcessDescriptor pd = new NbProcessDescriptor(
+                serverStopFileName, "--shutdown " + additionalParams); // NOI18N
 
         Process stoppingProcess = null;
         try {
@@ -181,10 +198,27 @@ class JBStopRunnable implements Runnable {
                 } catch (InterruptedException e) {}
             } else {
                 LOGGER.log(Level.FINER, "JBoss has been stopped, going to stop the Log Writer thread");
-                final JBLogWriter logWriter = JBLogWriter.getInstance(ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR));
-                if (logWriter != null && logWriter.isRunning()) {
-                    logWriter.waitForServerProcessFinished(10000);
-                    logWriter.stop();
+                JBOutputSupport outputSupport = JBOutputSupport.getInstance(ip, false);
+                try {
+                    if (outputSupport != null) {
+                        try {
+                            outputSupport.waitForStop(10000);
+                        } catch (TimeoutException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                        }
+                        outputSupport.stop();
+                    }
+                } catch (InterruptedException ex) {
+                    startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                            NbBundle.getMessage(JBStopRunnable.class, "MSG_StopServerInterrupted", serverName)));//NOI18N                    
+                    LOGGER.log(Level.INFO, null, ex);
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (ExecutionException ex) {
+                    startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                            NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_FAILED", serverName)));//NOI18N                    
+                    LOGGER.log(Level.INFO, null, ex);
+                    return;
                 }
 
                 startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,

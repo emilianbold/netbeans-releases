@@ -202,7 +202,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         item.groupId = "javaee";//NOI18N
         item.artifactId = "javaee-api";//NOI18N
         item.version = "5";//NOI18N
-        item.repositoryurl = "java.net1|legacy|http://download.java.net/maven/1"; //NOI18N
+        item.repositoryurl = "java.net2|default|http://download.java.net/maven/2/"; //NOI18N
         toRet.put(key, item);
 
         key = ContainerClassPathModifier.API_TRANSACTION + ":" + Profile.J2EE_13.toPropertiesString();//NOI18N
@@ -210,7 +210,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         item.groupId = "javax.transaction";//NOI18N
         item.artifactId = "jta";//NOI18N
         item.version = "1.0.1B";//NOI18N
-        item.repositoryurl = "java.net2|default|http://download.java.net/maven/2"; //NOI18N
+        item.repositoryurl = "java.net2|default|http://download.java.net/maven/2/"; //NOI18N
         item.classToCheck = "javax/transaction/UserTransaction.class"; //NOI18N
         toRet.put(key, item);
         key = ContainerClassPathModifier.API_TRANSACTION + ":" + Profile.J2EE_14.toPropertiesString();//NOI18N
@@ -219,7 +219,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         item.artifactId = "jta";//NOI18N
         item.version = "1.0.1B";//NOI18N
         item.classToCheck = "javax/transaction/UserTransaction.class"; //NOI18N
-        item.repositoryurl = "java.net2|default|http://download.java.net/maven/2"; //NOI18N
+        item.repositoryurl = "java.net2|default|http://download.java.net/maven/2/"; //NOI18N
         toRet.put(key, item);
         key = ContainerClassPathModifier.API_TRANSACTION + ":" + Profile.JAVA_EE_5.toPropertiesString();//NOI18N
         item = new Item();

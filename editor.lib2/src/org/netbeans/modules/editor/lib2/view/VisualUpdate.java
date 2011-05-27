@@ -60,6 +60,8 @@ public final class VisualUpdate<V extends EditorView> {
     private static final int TABS_CHANGED = 16;
     
     private static final int IN_CACHE = 32; // Whether line is in text layout cache or not
+
+    private static final int NEW_LINE_VIEW_CHANGED = 64; // Whether line is in text layout cache or not
     
     private final EditorBoxView<V> boxView;
 
@@ -139,6 +141,14 @@ public final class VisualUpdate<V extends EditorView> {
     
     void markInCache() {
         statusBits |= IN_CACHE;
+    }
+
+    public boolean isNewLineViewChanged() {
+        return (statusBits & NEW_LINE_VIEW_CHANGED) != 0;
+    }
+
+    void markNewLineViewChanged() {
+        statusBits |= NEW_LINE_VIEW_CHANGED;
     }
 
     /**

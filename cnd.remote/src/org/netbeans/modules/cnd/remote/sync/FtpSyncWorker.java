@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -95,6 +96,9 @@ import org.openide.util.NbBundle;
 
         @Override
         public boolean accept(File file) {
+            if (file.equals(fileData.getDataFile())) {
+                return false; // SharabilityFilter now includes nbproject/private. Exclude our storage
+            }
             boolean accepted = delegate.accept(file);
             if (accepted && ! file.isDirectory()) {
                 accepted = needsCopying(file);
@@ -231,19 +235,23 @@ import org.openide.util.NbBundle;
                 upload(file, remotePath + '/' + file.getName()); //NOI18N
             }
         } else {
-            Future<Integer> fileTask = CommonTasksSupport.uploadFile(srcFile.getAbsolutePath(), executionEnvironment, remotePath, 0700, err);
-            int rc = fileTask.get().intValue();
-            if (rc == 0) {
+            Future<UploadStatus> fileTask = CommonTasksSupport.uploadFile(srcFile.getAbsolutePath(), executionEnvironment, remotePath, 0700);
+            UploadStatus uploadStatus = fileTask.get();
+            if (uploadStatus.isOK()) {
                 filter.setState(srcFile, FileState.COPIED);
                 progressHandle.progress(srcFile.getAbsolutePath(), uploadCount++);
                 uploadSize += srcFile.length();
             } else {
+                if (err != null) {
+                    err.println(uploadStatus.getError());
+                }
                 throw new IOException("uploading " + srcFile + " to " + executionEnvironment + ':' + remotePath + // NOI18N
-                        " finished with error code " + rc); // NOI18N
+                        " finished with error code " + uploadStatus.getExitCode()); // NOI18N
             }
         }
     }
 
+    @Override
     public boolean startup(Map<String, String> env2add) {
         // Later we'll allow user to specify where to copy project files to
         String remoteRoot = RemotePathMap.getRemoteSyncRoot(executionEnvironment);

@@ -2115,9 +2115,10 @@ outer:  do {
             if (number.get() >= rp.warnParallel && warnedClasses.add(c)) {
                 final String msg = "Too many " + c.getName() + " (" + number + ") in shared RequestProcessor; create your own"; // NOI18N
                 Exception ex = null;
-                if (todo.item != null) {
+                Item itm = todo.item;
+                if (itm != null) {
                     ex = new IllegalStateException(msg);
-                    ex.setStackTrace(todo.item.getStackTrace());
+                    ex.setStackTrace(itm.getStackTrace());
                 }
                 logger().log(Level.WARNING, msg, ex);
             }
