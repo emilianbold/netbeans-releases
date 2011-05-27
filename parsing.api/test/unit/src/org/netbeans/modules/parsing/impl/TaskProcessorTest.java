@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.parsing.impl;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -53,12 +55,18 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -625,6 +633,95 @@ public class TaskProcessorTest extends NbTestCase {
         assertTrue(taskCalled.await(5000, TimeUnit.MILLISECONDS));
     }
 
+    public void testSlowCancelSampler() throws Exception {
+        //Enable sampling
+        TaskProcessor.SAMPLING_ENABLED = true;
+        //Set bigger profiling start report time outs to make the test deterministic
+        //on loaded build machenes
+        System.setProperty("org.netbeans.modules.parsing.api.taskcancel.slowness.start","3000");    //NOI18N
+        System.setProperty("org.netbeans.modules.parsing.api.taskcancel.slowness.report","3000");  //NOI18N
+        final File wd = getWorkDir();
+        FileUtil.setMIMEType("foo", "text/foo");
+        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
+        final File srcFolder = new File (wd,"src");
+        final FileObject srcRoot = FileUtil.createFolder(srcFolder);
+        final FileObject srcFile = srcRoot.createData("test.foo");  //NOI18N
+        final Source source = Source.create(srcFile);
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicInteger timeToWait = new AtomicInteger(0);
+        MockProfiler mockProfiler = new MockProfiler();
+        SelfProfile.mockProfiler = mockProfiler;
+
+        final Callable<Void> runCB = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                latch.countDown();
+                return null;
+            }
+        };
+        final Callable<Void> cancelCB = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    Thread.sleep(timeToWait.get());
+                } catch (InterruptedException ie) {}
+                return null;
+            }
+        };
+
+        //No profiling should be started when cancel is immediate
+        SlowCancelTask sct = new SlowCancelTask(runCB, cancelCB);
+        mockProfiler.expect(EnumSet.noneOf(MockProfiler.Event.class));
+        TaskProcessor.addPhaseCompletionTasks(
+                Arrays.<SchedulerTask>asList(sct),
+                SourceAccessor.getINSTANCE().getCache(source),
+                false,
+                sct.getSchedulerClass());
+        assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+        ParserManager.parse(Arrays.asList(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+            }
+        });
+        assertTrue(mockProfiler.verify(5000));
+
+        //Profiling should be started when cancel is delayed when cancel is slower
+        timeToWait.set(3500);
+        sct = new SlowCancelTask(runCB, cancelCB);
+        mockProfiler.expect(EnumSet.of(MockProfiler.Event.STARTED, MockProfiler.Event.CANCELED));
+        TaskProcessor.addPhaseCompletionTasks(
+                Arrays.<SchedulerTask>asList(sct),
+                SourceAccessor.getINSTANCE().getCache(source),
+                false,
+                sct.getSchedulerClass());
+        assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+        ParserManager.parse(Arrays.asList(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+            }
+        });
+        assertTrue(mockProfiler.verify(5000));
+
+        //Profiling should be started and report sent when cancel is very slow
+        timeToWait.set(6500);
+        sct = new SlowCancelTask(runCB, cancelCB);
+        mockProfiler.expect(EnumSet.of(MockProfiler.Event.STARTED, MockProfiler.Event.LOGGED));
+        TaskProcessor.addPhaseCompletionTasks(
+                Arrays.<SchedulerTask>asList(sct),
+                SourceAccessor.getINSTANCE().getCache(source),
+                false,
+                sct.getSchedulerClass());
+        assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+        ParserManager.parse(Arrays.asList(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+            }
+        });
+        assertTrue(mockProfiler.verify(8000));
+
+        
+    }
+
     private void runLoop(
             final @NonNull Source source,
             final boolean suspend) throws NoSuchFieldException, IllegalArgumentException,
@@ -759,5 +856,122 @@ public class TaskProcessorTest extends NbTestCase {
         public void run(ResultIterator resultIterator) throws Exception {
             runCount++;
         }
+    }
+
+    private static class SlowCancelTask extends ParserResultTask {
+
+        private final Semaphore sem = new Semaphore(0);
+        private final Callable<Void> cancelStartCallBack;
+        private final Callable<Void> runStartCallBack;
+
+        public SlowCancelTask (
+                final @NonNull Callable<Void> runStartCallBack,
+                final @NonNull Callable<Void> cancelStartCallBack) {
+            assert runStartCallBack != null;
+            assert cancelStartCallBack != null;
+            this.runStartCallBack = runStartCallBack;
+            this.cancelStartCallBack = cancelStartCallBack;
+        }
+
+        public void inc() {
+            sem.release();
+        }
+
+        public void dec() throws InterruptedException {
+            sem.acquire();
+        }
+
+        @Override
+        public void run(Result result, SchedulerEvent event) {
+            try {
+                runStartCallBack.call();
+                dec();
+            } catch (Exception ie) {}
+        }
+
+        @Override
+        public void cancel() {
+            try {
+                cancelStartCallBack.call();
+                inc();
+            } catch (Exception e) {}
+        }
+
+        @Override
+        public int getPriority() {
+            return 1;
+        }
+
+        @Override
+        public Class<? extends Scheduler> getSchedulerClass() {
+            return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+        }
+    }
+
+    private static class MockProfiler implements Runnable, ActionListener {
+
+        private enum Event {
+            STARTED,
+            CANCELED,
+            LOGGED
+        };
+
+        private final Lock lck = new ReentrantLock();
+        private final Condition cnd = lck.newCondition();
+
+        private volatile Set<Event> expectedEvents;
+
+        public void expect (final @NonNull Set<Event> expectedEvents) {
+            lck.lock();
+            try {
+                this.expectedEvents = EnumSet.copyOf(expectedEvents);
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        public boolean verify(int ms) throws InterruptedException {
+            final long st = System.currentTimeMillis();
+            lck.lock();
+            try {
+                while (!expectedEvents.isEmpty()) {
+                    if (System.currentTimeMillis()-st >= ms) {
+                        return false;
+                    }
+                    cnd.await(ms, TimeUnit.MILLISECONDS);
+                }
+            } finally {
+                lck.unlock();
+            }
+            return true;
+        }
+
+        @Override
+        public void run() {
+            handleEvent(Event.STARTED);
+        }
+
+        @Override
+        public void actionPerformed (final @NonNull ActionEvent e) {
+            final String cmd = e.getActionCommand();
+            if ("write".equals(cmd)) {  //NOI18N
+                handleEvent(Event.LOGGED);
+            } else if ("cancel".equals(cmd)) {  //NOI18N
+                handleEvent(Event.CANCELED);
+            }
+        }
+
+        private void handleEvent(final @NonNull Event event) {
+            lck.lock();
+            try {
+                expectedEvents.remove(event);                
+                if (expectedEvents.isEmpty()) {
+                    cnd.signalAll();
+                }
+            } finally {
+                lck.unlock();
+            }
+        }
+
     }
 }
