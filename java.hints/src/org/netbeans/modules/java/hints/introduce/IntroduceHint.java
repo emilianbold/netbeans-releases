@@ -125,8 +125,10 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
@@ -353,6 +355,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             HintsController.setErrors(info.getFileObject(), IntroduceHint.class.getName(), Collections.<ErrorDescription>emptyList());
         } else {
             HintsController.setErrors(info.getFileObject(), IntroduceHint.class.getName(), computeError(info, selection[0], selection[1], null, new EnumMap<IntroduceKind, String>(IntroduceKind.class), cancel));
+
+            Document doc = info.getSnapshot().getSource().getDocument(false);
+            long version = doc != null ? DocumentUtilities.getDocumentVersion(doc) : 0;
+            
+            JavaHintsPositionRefresher.introduceHintsUpdated(doc, version, selection[0], selection[1]);
         }
     }
 
@@ -403,7 +410,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return false;
     }
 
-    static List<ErrorDescription> computeError(CompilationInfo info, int start, int end, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
+    public static List<ErrorDescription> computeError(CompilationInfo info, int start, int end, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
         List<ErrorDescription> hints = new LinkedList<ErrorDescription>();
         List<Fix> fixes = new LinkedList<Fix>();
         TreePath resolved = validateSelection(info, start, end);
