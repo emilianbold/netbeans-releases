@@ -1,7 +1,7 @@
-#include <stdio.h>
+//#include <stdio.h>
 
 int foo();
 
 int main() {
-    printf("foo returned %i\n", foo());
+//    printf("foo returned %i\n", foo());
 }
