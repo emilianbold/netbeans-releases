@@ -59,6 +59,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxObjectActio
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -155,18 +157,22 @@ public final class LocalModel extends VariableModel
 
     // interface NodeActionsProvider
     public Action[] getActions (Object node) throws UnknownTypeException {
+	EngineDescriptor desp = debugger.getNDI().getEngineDescriptor();
+	boolean canDoMaxObject = desp.hasCapability(EngineCapability.MAX_OBJECT);
+	boolean canDoDy = desp.hasCapability(EngineCapability.DYNAMIC_TYPE);
+	boolean canDoIn = desp.hasCapability(EngineCapability.INHERITED_MEMBERS);
+	boolean canDoSt = desp.hasCapability(EngineCapability.STATIC_MEMBERS);
 
 	if (node == ROOT) {
 	    return new Action[] {
 		WatchModel.NEW_WATCH_ACTION,
 		new WatchModel.DeleteAllAction(),
 		null,
-		Action_INHERITED_MEMBERS,
-		Action_DYNAMIC_TYPE,
-		Action_STATIC_MEMBERS,
-		//Action_OUTPUT_FORMAT,
+		canDoIn ? Action_INHERITED_MEMBERS : null,
+		canDoDy ? Action_DYNAMIC_TYPE : null,
+		canDoSt ? Action_STATIC_MEMBERS : null,
 		null,
-		SystemAction.get(MaxObjectAction.class),
+		canDoMaxObject ? SystemAction.get(MaxObjectAction.class) : null,
 		null,
 	    };
 
