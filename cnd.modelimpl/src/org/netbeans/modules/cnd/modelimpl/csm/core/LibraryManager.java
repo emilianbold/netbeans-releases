@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,25 @@ public final class LibraryManager {
         return res;
     }
 
+    public Collection<CsmProject> getProjectsByLibrary(LibProjectImpl library) {
+        //getDependentProjects();
+        LibraryKey libraryKey = new LibraryKey(library.getFileSystem(), library.getPath().toString());
+        LibraryEntry entry = librariesEntries.get(libraryKey);
+        if (entry == null) {
+            return Collections.<CsmProject>emptyList();
+        } else {
+            Collection<CsmUID<CsmProject>> uids = entry.getDependentProjects();
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(uids.size());
+            for (CsmUID<CsmProject> uid : uids) {
+                ProjectBase project = (ProjectBase) uid.getObject();
+                if (project != null && ! project.isDisposing() && project.isValid()) {                    
+                    projects.add((ProjectBase) project);
+                }
+            }            
+            return projects;
+        }
+    }
+    
     /**
      * Returns collection uids of artificial libraries used in project
      */
@@ -512,6 +532,10 @@ public final class LibraryManager {
 
         private boolean containsProject(CsmUID<CsmProject> project) {
             return dependentProjects.containsKey(project);
+        }
+        
+        private Collection<CsmUID<CsmProject>> getDependentProjects() {
+            return dependentProjects.keySet();
         }
 
         private void addProject(CsmUID<CsmProject> project) {

@@ -1104,7 +1104,8 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public ISVNDirEntryWithLock[] getListWithLocks(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1, boolean bln) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // will not implement in commandline client
+        return new ISVNDirEntryWithLock[0];
     }
 
     @Override

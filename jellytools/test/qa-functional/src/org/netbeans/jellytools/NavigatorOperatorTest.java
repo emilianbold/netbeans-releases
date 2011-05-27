@@ -41,16 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.NavigatorOperator;
-import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jellytools.nodes.Node;
-
 
 /**
  * Test of NavigatorOperator.
@@ -64,23 +59,23 @@ public class NavigatorOperatorTest extends JellyTestCase {
     public NavigatorOperatorTest(String testName) {
         super(testName);
     }
-    
+
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
-    public static Test suite() {        
+    public static Test suite() {
         return createModuleTest(NavigatorOperatorTest.class, "testOperator");
     }
-    
+
     public void setUp() throws Exception {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
         Node lrNode = new Node(new JavaProjectsTabOperator().getJavaProjectRootNode("SampleProject"),
                 "Source Packages|sample1|SampleClass1.java");
 
         new OpenAction().perform(lrNode);
     }
-    
+
     /** Invokes and verifies the dialog. */
     public void testOperator() {
         new EditorOperator("SampleClass1.java").setVisible(true);

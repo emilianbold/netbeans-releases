@@ -44,11 +44,13 @@
 package org.netbeans.swing.etable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
+import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import org.netbeans.swing.etable.ETable.RowMapping;
@@ -68,6 +70,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     
     /** Used as a key or part of a key by the persistence mechanism. */
     private static final String PROP_HIDDEN_PREFIX = "Hidden";
+    private static final String PROP_HIDDEN_POSITION_PREFIX = "HiddenPosition";
     
     /**
      * List<ETableColumn>: holds list of sorted columns in this model.
@@ -81,6 +84,8 @@ public class ETableColumnModel extends DefaultTableColumnModel {
      * tableColumns list.
      */
     protected List<TableColumn> hiddenColumns = new ArrayList<TableColumn>();
+    
+    List<Integer> hiddenColumnsPosition = new ArrayList<Integer>();
     
     /**
      * Allows the user to customize the list of the visible columns using
@@ -128,6 +133,13 @@ public class ETableColumnModel extends DefaultTableColumnModel {
             etc.readSettings(p, i, propertyPrefix + PROP_HIDDEN_PREFIX);
             hiddenColumns.add(etc);
         }
+        hiddenColumnsPosition = new ArrayList<Integer>();
+        for (int i = 0; i < numHiddenColumns; i++) {
+            String myPrefix = propertyPrefix + PROP_HIDDEN_POSITION_PREFIX + ETableColumn.PROP_PREFIX + Integer.toString(i);
+            String posStr = p.getProperty(myPrefix);
+            int pos = Integer.parseInt(posStr);
+            hiddenColumnsPosition.add(pos);
+        }
     }
 
     /**
@@ -157,6 +169,11 @@ public class ETableColumnModel extends DefaultTableColumnModel {
                 ETableColumn etc = (ETableColumn) obj;
                 etc.writeSettings(p, i++, propertyPrefix + PROP_HIDDEN_PREFIX);
             }
+        }
+        for (i = 0; i < numHiddenColumns; i++) {
+            int pos = hiddenColumnsPosition.get(i);
+            String myPrefix = propertyPrefix + PROP_HIDDEN_POSITION_PREFIX + ETableColumn.PROP_PREFIX + Integer.toString(i);
+            p.setProperty(myPrefix, Integer.toString(pos));
         }
     }
 
@@ -242,8 +259,25 @@ public class ETableColumnModel extends DefaultTableColumnModel {
                 i++;
             }
         }
-        if (!hiddenColumns.remove(column)) {
+        if (removeHiddenColumn(column) < 0) {
             super.removeColumn(column);
+        }
+    }
+    
+    /** @return the column position of the hidden column or -1 if the column is not hidden */
+    private int removeHiddenColumn(TableColumn column) {
+        int hiddenIndex = -1;
+        for (int i = 0; i < hiddenColumns.size(); i++) {
+            if (column.equals(hiddenColumns.get(i))) {
+                hiddenIndex = i;
+                break;
+            }
+        }
+        if (hiddenIndex >= 0) {
+            hiddenColumns.remove(hiddenIndex);
+            return hiddenColumnsPosition.remove(hiddenIndex);
+        } else {
+            return -1;
         }
     }
 
@@ -256,19 +290,56 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     public void setColumnHidden(TableColumn column, boolean hidden) {
         if (hidden) {
             if (! hiddenColumns.contains(column)) {
-                if (tableColumns.contains(column)) {
+                int index = tableColumns.indexOf(column);
+                if (index >= 0) {
                     removeColumn(column);
                     hiddenColumns.add(column);
+                    for (Integer pos : hiddenColumnsPosition) {
+                        if (pos <= index) index++;
+                    }
+                    while (hiddenColumnsPosition.contains(index)) index++;
+                    hiddenColumnsPosition.add(index);
                 }
             }
         } else {
             if (! tableColumns.contains(column)) {
-                if (hiddenColumns.contains(column)) {
-                    hiddenColumns.remove(column);
-                    addColumn(column);
+                int index = removeHiddenColumn(column);
+                if (index >= 0) {
+                    for (Integer pos : hiddenColumnsPosition) {
+                        if (pos < index) index--;
+                    }
+                    index = Math.min(index, tableColumns.size());
+                    addColumn(column, index);
                 }
             }
         }
+    }
+    
+    /** Copy of addColumn(TableColumn) with an index specifying where to add the new column */
+    private void addColumn(TableColumn aColumn, int index) {
+	if (aColumn == null) {
+	    throw new IllegalArgumentException("Object is null");
+	}
+
+	tableColumns.insertElementAt(aColumn, index);
+	aColumn.addPropertyChangeListener(this);
+	//invalidateWidthCache();
+        totalColumnWidth = -1;
+
+	// Post columnAdded event notification
+	fireColumnAdded(new TableColumnModelEvent(this, 0, index));
+    }
+
+    /** Get all columns, including hidden ones. */
+    List<TableColumn> getAllColumns() {
+        List<TableColumn> columns = Collections.list(getColumns());
+        int n = hiddenColumns.size();
+        for (int i = 0; i < n; i++) {
+            int index = hiddenColumnsPosition.get(i);
+            index = Math.min(index, columns.size());
+            columns.add(index, hiddenColumns.get(i));
+        }
+        return columns;
     }
 
     /**

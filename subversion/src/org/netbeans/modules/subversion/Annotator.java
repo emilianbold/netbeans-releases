@@ -108,12 +108,13 @@ public class Annotator {
 
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
 
-    public static String ANNOTATION_REVISION    = "revision";
-    public static String ANNOTATION_STATUS      = "status";
-    public static String ANNOTATION_FOLDER      = "folder";
-    public static String ANNOTATION_MIME_TYPE   = "mime_type";
+    public static final String ANNOTATION_REVISION    = "revision";
+    public static final String ANNOTATION_STATUS      = "status";
+    public static final String ANNOTATION_LOCK        = "lock";
+    public static final String ANNOTATION_FOLDER      = "folder";
+    public static final String ANNOTATION_MIME_TYPE   = "mime_type";
 
-    public static String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
+    public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
 
     private final FileStatusCache cache;
     private MessageFormat format;
@@ -138,10 +139,10 @@ public class Annotator {
             if (!SvnUtils.isAnnotationFormatValid(string)) {
                 Subversion.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
                 string = org.openide.util.NbBundle.getMessage(Annotator.class, "Annotator.defaultFormat"); // NOI18N
-                mimeTypeFlag = string.contains("{3}");
+                mimeTypeFlag = string.contains("{4}");
             }
             format = new MessageFormat(string);
-            emptyFormat = format.format(new String[] {"", "", "", ""} , new StringBuffer(), null).toString().trim();
+            emptyFormat = format.format(new String[] {"", "", "", "", ""} , new StringBuffer(), null).toString().trim();
         }
         cache.getLabelsCache().setMimeTypeFlag(mimeTypeFlag); // mime labels enabled
     }
@@ -169,20 +170,22 @@ public class Annotator {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
+                String lockString = getLockString(info.getStatus());
+                String lockStringAnnPart = (lockString.isEmpty() ? "" : (lockString + "; "));
                 String sticky = cache.getLabelsCache().getLabelInfo(file, false).getStickyString();
                 if (status == FileInformation.STATUS_VERSIONED_UPTODATE && "".equals(sticky)) { //NOI18N
-                    textAnnotation = "";  // NOI18N
+                    textAnnotation = lockString;  // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                    textAnnotation = " [" + sticky + "]"; // NOI18N
+                    textAnnotation = " [" + lockStringAnnPart + sticky + "]"; // NOI18N
                 } else if ("".equals(sticky)) {                         //NOI18N
                     String statusText = info.getShortStatusText();
                     if(!statusText.equals("")) {
-                        textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+                        textAnnotation = " [" + lockStringAnnPart + info.getShortStatusText() + "]"; // NOI18N
                     } else {
-                        textAnnotation = "";
+                        textAnnotation = lockString;
                     }
                 } else {
-                    textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
+                    textAnnotation = " [" + info.getShortStatusText() + "; " + lockStringAnnPart + sticky + "]"; // NOI18N
                 }
             }
         } else {
@@ -241,6 +244,7 @@ public class Annotator {
         if (status != FileInformation.STATUS_VERSIONED_UPTODATE) {
             statusString = info.getShortStatusText();
         }
+        String lockString = getLockString(status);
 
         FileStatusCache.FileLabelCache.FileLabelInfo labelInfo;
         labelInfo = cache.getLabelsCache().getLabelInfo(file, mimeTypeFlag);
@@ -252,6 +256,7 @@ public class Annotator {
             revisionString,
             statusString,
             stickyString,
+            lockString,
             binaryString
         };
 
@@ -678,5 +683,15 @@ public class Annotator {
 
     private AnnotationColorProvider getAnnotationProvider() {
         return AnnotationColorProvider.getInstance();
+    }
+
+    private String getLockString (int status) {
+        String lockString = ""; //NOI18N
+        if ((status & FileInformation.STATUS_LOCKED) != 0) {
+            lockString = "K"; //NOI18N
+        } else if ((status & FileInformation.STATUS_LOCKED_REMOTELY) != 0) {
+            lockString = "O"; //NOI18N
+        }
+        return lockString;
     }
 }

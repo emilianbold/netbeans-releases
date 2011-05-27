@@ -52,7 +52,7 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.netbeans.modules.remote.spi.FileSystemProviderImplementation;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
@@ -297,16 +297,6 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
     
     @Override
-    public void addDownloadListener(FileSystemProvider.DownloadListener listener) {
-        RemoteFileSystemManager.getInstance().addDownloadListener(listener);
-    }
-
-    @Override
-    public void removeDownloadListener(FileSystemProvider.DownloadListener listener) {
-        RemoteFileSystemManager.getInstance().removeDownloadListener(listener);
-    }
-
-    @Override
     public void scheduleRefresh(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObjectBase) {
             RemoteFileObjectBase fo = (RemoteFileObjectBase) fileObject;
@@ -371,7 +361,15 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }    
     
     @Override
-    public char getFileSeparatorChar(FileSystem fs) {
+    public char getFileSeparatorChar() {
         return '/';
+    }
+
+    public void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
+        ((RemoteFileSystem) fileSystem).addFileSystemProblemListener(listener);
+    }
+
+    public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
+        ((RemoteFileSystem) fileSystem).removeFileSystemProblemListener(listener);
     }
 }

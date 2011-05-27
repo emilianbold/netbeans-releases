@@ -30,6 +30,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="restoreButton">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_Restore" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="CTL_Restore" type="code"/>
         </Property>
@@ -45,6 +48,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="fontLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_Font" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="LBL_Font" type="code"/>
         </Property>
@@ -89,6 +95,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="fontSizeLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_FontSize" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="fontSizeSpinner"/>
         </Property>
@@ -119,6 +128,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="foregroundLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_ForegroundColor" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="foregroundButton"/>
         </Property>
@@ -154,6 +166,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="backgroundLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_BackgroundColor" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="backgroundButton"/>
         </Property>
@@ -192,6 +207,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="selectionLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_SelectionBackgroundColor" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="selectionButton"/>
         </Property>
@@ -227,6 +245,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="historySizeLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_HistorySize" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="historySizeSpinner"/>
         </Property>
@@ -257,6 +278,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="tabSizeLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_TabSize" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="tabSizeSpinner"/>
         </Property>
@@ -287,6 +311,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="clickToTypeCheckBox">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_ClickToType" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="CTL_ClickToType" type="code"/>
         </Property>
@@ -302,6 +329,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="scrollOnInputCheckBox">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_ScrollOnInput" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="CTL_ScrollOnInput" type="code"/>
         </Property>
@@ -317,8 +347,11 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="scrollOnOutputCheckBox">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_ScrollOnOutput" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="CTL_SrollOnOutput" type="code"/>
+          <Connection code="CTL_ScrollOnOutput" type="code"/>
         </Property>
       </Properties>
       <Events>
@@ -332,6 +365,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="lineWrapCheckBox">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_WrapLines" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="LBL_WrapLines" type="code"/>
         </Property>
@@ -347,6 +383,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="ignoreKeymapCheckBox">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_IgnoreKeymap" type="code"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="LBL_IgnoreKeymap" type="code"/>
         </Property>
@@ -362,6 +401,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="previewLabel">
       <Properties>
+        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="MNM_Preview" type="code"/>
+        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="previewPanel"/>
         </Property>

@@ -259,7 +259,8 @@ public final class WLStartServer extends StartServer {
         if (pingPath(host, port, timeout, "/console/login/LoginForm.jsp")) {
             return true;
         }
-        return pingPath(host, port, timeout, "/consoledwp");
+        // TODO remove consoledwp when released
+        return pingPath(host, port, timeout, "/console") || pingPath(host, port, timeout, "/consoledwp");
     }
 
     private static boolean pingPath(String host, int port, int timeout, String path) {

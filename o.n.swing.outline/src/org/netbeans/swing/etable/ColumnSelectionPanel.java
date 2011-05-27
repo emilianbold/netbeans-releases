@@ -104,8 +104,7 @@ class ColumnSelectionPanel extends JPanel {
 
         ETableColumnModel etcm = (ETableColumnModel)colModel;
         this.columnModel = etcm;
-        List<TableColumn> columns = Collections.list(etcm.getColumns());
-        columns.addAll(etcm.hiddenColumns);
+        List<TableColumn> columns = etcm.getAllColumns();
         Collections.sort(columns, ETableColumnComparator.DEFAULT );
         int width = 1; // columns.size() / 10 + 1;
 
@@ -276,15 +275,20 @@ class ColumnSelectionPanel extends JPanel {
             return;
         }
         final ETableColumnModel etcm = (ETableColumnModel)columnModel;
-        List<TableColumn> columns = Collections.list(etcm.getColumns());
-        columns.addAll(etcm.hiddenColumns);
+        List<TableColumn> columns = etcm.getAllColumns();
         Collections.sort(columns, ETableColumnComparator.DEFAULT);
         Map<String,Object> displayNameToCheckBox = new HashMap<String,Object>();
         ArrayList<String> displayNames = new ArrayList<String>();
         for (Iterator<TableColumn> it = columns.iterator(); it.hasNext(); ) {
             final ETableColumn etc = (ETableColumn)it.next();
             JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
-            String dName = table.transformValue (etc).toString ();
+            Object transformed = table.transformValue (etc);
+            String dName;
+            if (transformed == etc || transformed == null) {
+                dName = etc.getHeaderValue ().toString ();
+            } else {
+                dName = transformed.toString ();
+            }
             checkBox.setText(dName);
             checkBox = (JCheckBoxMenuItem) table.transformValue (checkBox);
             checkBox.setSelected(! etcm.isColumnHidden(etc));
@@ -389,8 +393,7 @@ class ColumnSelectionPanel extends JPanel {
             return;
         }
         final ETableColumnModel etcm = (ETableColumnModel)columnModel;
-        List<TableColumn> columns = Collections.list(etcm.getColumns());
-        columns.addAll(etcm.hiddenColumns);
+        List<TableColumn> columns = etcm.getAllColumns();
         Collections.sort(columns, ETableColumnComparator.DEFAULT);
         Map<String, ETableColumn> nameToColumn = new HashMap<String, ETableColumn>();
         for (Iterator<TableColumn> it = columns.iterator(); it.hasNext(); ) {
@@ -418,9 +421,11 @@ class ColumnSelectionPanel extends JPanel {
             return new String[0];
         }
         final ETableColumnModel etcm = (ETableColumnModel)columnModel;
-        List<TableColumn> columns = Collections.list(etcm.getColumns());
-        if (!visibleOnly) {
-            columns.addAll(etcm.hiddenColumns);
+        List<TableColumn> columns;
+        if (visibleOnly) {
+            columns = Collections.list(etcm.getColumns());
+        } else {
+            columns = etcm.getAllColumns();
         }
         Collections.sort(columns, ETableColumnComparator.DEFAULT);
         ArrayList<String> displayNames = new ArrayList<String>();

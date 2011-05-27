@@ -68,4 +68,27 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
         performTest("template_static_calc.cpp", 17, 7, "template_static_calc.cpp", 12, 5);
     }
     
+    public void testBug172419() throws Exception {
+        // Bug 172419 - Boost metaprogramming usage problem
+        performTest("bug172419.cpp", 53, 9, "bug172419.cpp", 42, 5);
+        performTest("bug172419.cpp", 59, 10, "bug172419.cpp", 42, 5);
+    }    
+
+    public void testBug172419_2() throws Exception {
+        // Bug 172419 - Boost metaprogramming usage problem
+        performTest("bug172419_2.cpp", 312, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 322, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 325, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 331, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 337, 13, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 344, 13, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 352, 13, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 355, 13, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 358, 13, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 361, 13, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 364, 13, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 367, 13, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 370, 13, "bug172419_2.cpp", 260, 5);
+    }    
+    
 }
