@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -72,8 +73,6 @@ public interface FileSystemProviderImplementation {
     ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem);
     boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException;
     boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException;
-    void addDownloadListener(FileSystemProvider.DownloadListener listener);
-    void removeDownloadListener(FileSystemProvider.DownloadListener listener);
     FileObject getCanonicalFileObject(FileObject fileObject) throws IOException;
     String getCanonicalPath(FileObject fileObject) throws IOException;
     String getCanonicalPath(FileSystem fs, String absPath) throws IOException;
@@ -88,4 +87,6 @@ public interface FileSystemProviderImplementation {
     public void removeFileChangeListener(FileChangeListener listener);
     public void addFileChangeListener(FileChangeListener listener, ExecutionEnvironment env, String path);
     public char getFileSeparatorChar(FileSystem fs);
+    void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
+    void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
 }

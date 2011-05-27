@@ -76,6 +76,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -115,7 +116,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
     private AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
-
+    private final List<FileSystemProblemListener> problemListeners =
+            new ArrayList<FileSystemProblemListener>();
+    
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
@@ -275,6 +278,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     public void addPendingFile(RemoteFileObjectBase fo) {
         remoteFileSupport.addPendingFile(fo);
+        fireProblemListeners(fo.getPath());
     }
 
     @Override
@@ -463,6 +467,35 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
+    public void addFileSystemProblemListener(FileSystemProblemListener listener) {
+        synchronized (problemListeners) {
+            problemListeners.add(listener);
+        }
+    }
+
+    public void removeFileSystemProblemListener(FileSystemProblemListener listener) {
+        synchronized (problemListeners) {
+            problemListeners.remove(listener);
+        }
+    }
+
+    /**
+     * @param path if null, this means recover
+     */
+    private void fireProblemListeners(String path) {
+        List<FileSystemProblemListener> listenersCopy;
+        synchronized (problemListeners) {
+            listenersCopy = new ArrayList<FileSystemProblemListener>(problemListeners);
+        }
+        for (FileSystemProblemListener l : listenersCopy) {
+            if (path == null) {
+                l.recovered(this);
+            } else {
+                l.problemOccurred(this, path);
+            }
+        }
+    }
+    
     private static class RootFileObject extends RemoteDirectory {
 
         private RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
@@ -521,12 +554,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
         // NB: it is always called in a specially created thread
         private void onConnect() throws InterruptedException, ConnectException, InterruptedIOException, IOException, ExecutionException {
-            RemoteFileSystemManager.getInstance().fireDownloadListeners(execEnv);
+            fireProblemListeners(null);
         }
 
         public void addPendingFile(RemoteFileObjectBase fo) {
             RemoteLogger.getInstance().log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, fo.getPath()}); //NOI18N
             ConnectionNotifier.addTask(execEnv, this);
         }
-    }    
+    }
 }
