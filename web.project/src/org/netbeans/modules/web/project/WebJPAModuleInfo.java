@@ -86,13 +86,11 @@ class WebJPAModuleInfo implements JPAModuleInfo{
         if (platform == null){
             return null;
         }
-        JpaSupport support = platform.getLookup().lookup(JpaSupport.class);
-        if (support != null) {
-            JpaProvider provider = support.getDefaultProvider();
-            if (provider != null) {
-                return (Persistence.VERSION_2_0.equals(version) && provider.isJpa2Supported())
-                        || (Persistence.VERSION_1_0.equals(version) && provider.isJpa1Supported());
-            }
+        JpaSupport support = JpaSupport.getInstance(platform);
+        JpaProvider provider = support.getDefaultProvider();
+        if (provider != null) {
+            return (Persistence.VERSION_2_0.equals(version) && provider.isJpa2Supported())
+                    || (Persistence.VERSION_1_0.equals(version) && provider.isJpa1Supported());
         }
         return null;
     }

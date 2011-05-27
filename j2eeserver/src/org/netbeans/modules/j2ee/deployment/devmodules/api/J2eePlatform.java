@@ -737,8 +737,7 @@ public final class J2eePlatform implements Lookup.Provider {
      * @since 1.44
      */
     public Lookup getLookup() {
-        return LookupProviderSupport.createCompositeLookup(
-                new ProxyLookup(Lookups.fixed(this), impl.getLookup()), "J2EE/Platform/Lookup"); // NOI18N
+        return impl.getLookup();
     }
 
     @Override

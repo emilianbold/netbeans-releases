@@ -90,7 +90,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.specs.support.spi.JpaProviderFactory;
-import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportFactory;
 import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportImplementation;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
@@ -762,8 +761,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()),
-                    JpaSupportFactory.createJpaSupport(new JpaSupportImpl(this)));
+            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()), new JpaSupportImpl(this));
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
     }

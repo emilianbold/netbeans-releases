@@ -167,7 +167,7 @@ public final class J2eeProjectCapabilities {
         if (!profiles.contains(Profile.JAVA_EE_5) && !profiles.contains(Profile.JAVA_EE_6_FULL)) {
             return false;
         }
-        JpaSupport support = platform.getLookup().lookup(JpaSupport.class);
+        JpaSupport support = JpaSupport.getInstance(platform);
         return support != null && support.getDefaultProvider() != null;
     }
 

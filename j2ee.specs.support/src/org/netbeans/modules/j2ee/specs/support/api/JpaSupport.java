@@ -42,8 +42,11 @@
 package org.netbeans.modules.j2ee.specs.support.api;
 
 import java.util.Set;
-import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportFactory;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.specs.support.bridge.BridgingJpaSupportImpl;
 import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportImplementation;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -51,20 +54,20 @@ import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportImplementation;
  */
 public final class JpaSupport {
     
-    static {
-        JpaSupportFactory.Accessor.setDefault(new JpaSupportFactory.Accessor() {
-
-            @Override
-            public JpaSupport createJpaSupport(JpaSupportImplementation impl) {
-                return new JpaSupport(impl);
-            }
-        });
-    }
-    
     private final JpaSupportImplementation impl;
 
     private JpaSupport(JpaSupportImplementation impl) {
         this.impl = impl;
+    }
+    
+    @NonNull
+    public static JpaSupport getInstance(@NonNull J2eePlatform platform) {
+        Parameters.notNull("platform", platform);
+        JpaSupportImplementation impl = platform.getLookup().lookup(JpaSupportImplementation.class);
+        if (impl != null) {
+            return new JpaSupport(impl);
+        }
+        return new JpaSupport(new BridgingJpaSupportImpl(platform));
     }
     
     public Set<JpaProvider> getProviders() {
