@@ -59,6 +59,7 @@ import java.awt.event.MouseEvent;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -78,6 +79,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
@@ -131,6 +133,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -1241,6 +1244,33 @@ public class OutlineView extends JScrollPane {
             super(mdl);
             this.rowModel = rowModel;
             setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "CTL_ColumnsSelector")); //NOI18N
+            
+            // fix for #198694
+            // default action map for JTable defines these shortcuts
+            // but we use our own mechanism for handling them
+            // following lines disable default L&F handling (if it is
+            // defined on Ctrl-c, Ctrl-v and Ctrl-x)
+            removeDefaultCutCopyPaste(getInputMap(WHEN_FOCUSED));
+            removeDefaultCutCopyPaste(getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT));
+        }
+        
+        private void removeDefaultCutCopyPaste(InputMap map) {
+            map.put(KeyStroke.getKeyStroke("control C"), "none"); // NOI18N
+            map.put(KeyStroke.getKeyStroke("control V"), "none"); // NOI18N
+            map.put(KeyStroke.getKeyStroke("control X"), "none"); // NOI18N
+            map.put(KeyStroke.getKeyStroke("COPY"), "none"); // NOI18N
+            map.put(KeyStroke.getKeyStroke("PASTE"), "none"); // NOI18N
+            map.put(KeyStroke.getKeyStroke("CUT"), "none"); // NOI18N
+
+            if (Utilities.isMac()) {
+                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.META_MASK), "none"); // NOI18N
+                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.META_MASK), "none"); // NOI18N
+                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.META_MASK), "none"); // NOI18N
+            } else {
+                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK), "none"); // NOI18N
+                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK), "none"); // NOI18N
+                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK), "none"); // NOI18N
+            }
         }
 
         PropertiesRowModel getRowModel() {

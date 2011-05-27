@@ -76,7 +76,7 @@ import javax.swing.table.TableModel;
 public class ETableColumn extends TableColumn implements Comparable<ETableColumn> {
     
     /** Used as a key or part of a key by the persistence mechanism. */
-    private static final String PROP_PREFIX = "ETableColumn-";
+            static final String PROP_PREFIX = "ETableColumn-";
     
     /** Used as a key or part of a key by the persistence mechanism. */
     private static final String PROP_WIDTH = "Width";
