@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -200,6 +200,7 @@ public final class SQLIdentifiers {
             return false;
         }
         
+        @Override
         public final String quoteIfNeeded(String identifier) {
             Parameters.notNull("identifier", identifier);
 
@@ -210,6 +211,7 @@ public final class SQLIdentifiers {
             return identifier;
         }
 
+        @Override
         public final String quoteAlways(String identifier) {
             Parameters.notNull("identifier", identifier);
 
