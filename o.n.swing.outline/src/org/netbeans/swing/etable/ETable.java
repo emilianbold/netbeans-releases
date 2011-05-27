@@ -651,6 +651,7 @@ public class ETable extends JTable {
             if (colModel instanceof ETableColumnModel) {
                 ETableColumnModel etcm = (ETableColumnModel)colModel;
                 etcm.hiddenColumns = new ArrayList<TableColumn>();
+                etcm.hiddenColumnsPosition = new ArrayList<Integer>();
                 etcm.clearSortedColumns();
             }
 
