@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -174,10 +175,32 @@ public class VariableProvider {
                 if(CsmKindUtilities.isInstantiation(decl)) {
                     type = checkTemplateType(type, (Instantiation)decl);
                 }
+                for (CsmTemplateParameter csmTemplateParameter : mapping.keySet()) {
+                    type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
+                }
 
+                if (CsmKindUtilities.isTemplateParameterType(type)) {
+                    CsmSpecializationParameter instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
+                    int iteration = 15;
+                    while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
+                            CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
+                        CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
+                        if (nextInstantiatedType != null) {
+                            instantiatedType = nextInstantiatedType;
+                        } else {
+                            break;
+                        }
+                        iteration--;
+                    }
+                    if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
+                        type = ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
+                    }
+                }
+                
                 if(CsmKindUtilities.isInstantiation(decl)) {
                     type = Instantiation.createType(type, (Instantiation)decl);
                 }
+                
                 CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
                 if (CsmKindUtilities.isTemplate(originalClassifier)) {
                     CsmObject instantiate = InstantiationProviderImpl.getDefault().instantiate((CsmTemplate) originalClassifier, Collections.<CsmSpecializationParameter>emptyList(), mapping, decl.getContainingFile(), decl.getStartOffset());
