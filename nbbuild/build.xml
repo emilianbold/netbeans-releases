@@ -843,7 +843,7 @@ BASEDIR=${pkg.svr4.basedir}
 PKGINST=${pkg.svr4.pkginst}</echo>
   </target>
     
-    <target name="-testuserdir-delete-init" depends="init">
+    <target name="-testuserdir-delete-init" depends="-load-build-properties">
       <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
       <available property="app.running" file="${test.user.dir.lock}"/>
     </target>

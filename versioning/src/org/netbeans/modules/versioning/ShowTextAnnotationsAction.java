@@ -67,6 +67,7 @@ public class ShowTextAnnotationsAction extends SystemAction implements DynamicMe
     
     public ShowTextAnnotationsAction() {
         addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (Action.ACCELERATOR_KEY.equals(evt.getPropertyName()) ) {
                     menuItems = null;
@@ -76,19 +77,21 @@ public class ShowTextAnnotationsAction extends SystemAction implements DynamicMe
         });
     }
 
+    @Override
     public JComponent[] getMenuPresenters() {
         createItems();
         updateState();
         return menuItems;
     }
 
+    @Override
     public JComponent[] synchMenuPresenters(JComponent[] items) {
         updateState();
         return menuItems;
     }
     
     private void updateState() {
-        boolean tav = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
+        boolean tav = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, true);
         menuItems[0].setSelected(tav);
     }
     
@@ -101,18 +104,22 @@ public class ShowTextAnnotationsAction extends SystemAction implements DynamicMe
         }
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(ShowTextAnnotationsAction.class, "CTL_MenuItem_ShowTextAnnotations");
     }
 
+    @Override
     public boolean isEnabled() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ShowTextAnnotationsAction.class);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         boolean tav = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
         VersioningSupport.getPreferences().putBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, !tav); 

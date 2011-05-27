@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.classpath;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -52,6 +53,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -162,9 +164,10 @@ public class ClassPathProviderImplTest extends NbTestCase {
         FileObject jar = TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
         EndorsedClassPathImpl.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertRoots(cp, jar);
+        String sha1 = RepositoryUtil.calculateSHA1Checksum(FileUtil.toFile(jar));
+        assertRoots(cp, FileUtil.toFileObject(FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), sha1 + ".jar"))));
         pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertTrue(bcp.toString(), bcp.toString().contains("override.jar"));
+        assertTrue(bcp.toString(), bcp.toString().contains(sha1 + ".jar"));
         d.getFileObject("target").delete();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertRoots(cp);
