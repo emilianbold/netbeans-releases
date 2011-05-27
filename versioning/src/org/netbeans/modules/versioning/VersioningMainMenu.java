@@ -149,8 +149,16 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
     }
 
     private void constructMenu(JMenu menu, VersioningSystem system, VCSContext ctx) {
-        if (system.getVCSAnnotator() != null) {
-            List<JComponent> systemItems = actionsToItems(system.getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
+        Action[] actions = null;
+        if(system instanceof DelegatingVCS) {
+            actions = ((DelegatingVCS)system).getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
+        } else {
+            if (system.getVCSAnnotator() != null) {
+                actions = system.getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
+            }
+        }
+        if(actions != null && actions.length > 0) {
+            List<JComponent> systemItems = actionsToItems(actions);
             for (JComponent systemItem : systemItems) {
                 menu.add(systemItem);
             }

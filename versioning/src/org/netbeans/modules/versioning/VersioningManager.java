@@ -50,6 +50,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
@@ -232,8 +233,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
             // inline loadVersioningSystems(systems);
             versioningSystems.addAll(systems);
-            Collections.sort(versioningSystems, new ByPriorityComparator());
-            Collections.reverse(versioningSystems); // systems with higher priority should be at the end of the list, see getOwner logic
             for (VersioningSystem system : versioningSystems) {
                 if (localHistory == null && Utils.isLocalHistory(system)) {
                     localHistory = system;
@@ -257,7 +256,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         DiffSidebarManager.getInstance().refreshSidebars(files);
     }
     
-    private void flushFileOwnerCache() {
+    void flushFileOwnerCache() {
         synchronized(folderOwners) {
             folderOwners.clear();
         }
@@ -265,6 +264,24 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             fileOwners.clear();
         }
         
+    }
+
+    public void flushNullOwners() {
+        synchronized(folderOwners) {
+            flushNullOwners(folderOwners);
+        }
+        synchronized(fileOwners) {
+            flushNullOwners(fileOwners);
+        }
+    }
+    
+    private void flushNullOwners(Map<File, VersioningSystem> map) {
+        Iterator<File> it = map.keySet().iterator();
+        while(it.hasNext()) {
+            if(map.get(it.next()).equals(NULL_OWNER)) {
+                it.remove();
+            }
+        }
     }
 
     VersioningSystem[] getVersioningSystems() {
@@ -346,7 +363,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 return null;
             }
             LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), file });
-            return owner;
+            return (owner instanceof DelegatingVCS) ? ((DelegatingVCS) owner).getDelegate() : owner;
         }
 
         File folder = file;
@@ -376,7 +393,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 return null;
             }            
             LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), folder });                         
-            return owner;
+            return (owner instanceof DelegatingVCS) ? ((DelegatingVCS) owner).getDelegate() : owner;
         }        
         
         // no owner known yet - lets ask all registered VersioningSystem-s
@@ -413,7 +430,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             fileOwners.put(file, owner != null ? owner : NULL_OWNER);            
         }
         LOG.log(Level.FINE, "owner = {0}", new Object[] { owner != null ? owner.getClass().getName() : null }) ;
-        return owner;
+        return (owner instanceof DelegatingVCS) ? ((DelegatingVCS) owner).getDelegate() : owner;
     }
     
     /**
@@ -504,17 +521,29 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
-            if(evt.getSource() == localHistory) {
-                synchronized(localHistoryFiles) {
-                    localHistoryFiles.clear();
-                }
+            if(evt.getSource() instanceof VersioningSystem) {
+                versionedRootsChanged((VersioningSystem) evt.getSource());
             } else {
-                flushFileOwnerCache();
-                refreshDiffSidebars(null);
+                versionedRootsChanged(null);
             }
         }
     }
 
+    public void versionedRootsChanged() {
+        versionedRootsChanged(null);
+    }
+    
+    public void versionedRootsChanged(VersioningSystem owner) {
+        if(owner == localHistory) {
+            synchronized(localHistoryFiles) {
+                localHistoryFiles.clear();
+            }
+        } else {
+            flushFileOwnerCache();
+            refreshDiffSidebars(null);
+        }
+    }
+    
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         VersioningAnnotationProvider.instance.refreshAnnotations(null);
@@ -550,16 +579,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         } finally {
             LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
-        }
-    }
-
-    /**
-     * Sorts versioning systems according to their priority. Systems with lower value (higher priority) will be stated before those with higher value (lower priority) in the given list.
-     */
-    private static final class ByPriorityComparator implements Comparator<VersioningSystem> {
-        @Override
-        public int compare(VersioningSystem o1, VersioningSystem o2) {
-            return Utils.getPriority(o1).compareTo(Utils.getPriority(o2));
         }
     }
 }

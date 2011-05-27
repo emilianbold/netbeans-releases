@@ -115,7 +115,7 @@ public class Utils {
                 }
             }
         }
-        return Accessor.VCSContextAccessor.createContextForFiles(roots, files);
+        return Accessor.IMPL.createContextForFiles(roots, files);
     }
     
     /**

@@ -59,4 +59,8 @@ final class AccessorImpl extends Accessor {
     public VCSContext createContextForFiles(Set<File> files, Set<? extends FileObject> originalFiles) {
         return VCSContext.forFiles(files, originalFiles);
     }
+    
+    public void moveChangeListeners(VersioningSystem from, VersioningSystem to) {
+        from.moveChangeListeners(to);
+    }
 }
