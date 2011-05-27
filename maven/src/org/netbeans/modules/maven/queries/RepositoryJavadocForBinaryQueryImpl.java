@@ -94,17 +94,15 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
             // null for directories.
             return null;
         }
+        //hack for javaee6 jar docs which we ship with netbeans and which are not in any maven repository
+        if (binRoot.getPath().endsWith("/javax/javaee-api/6.0/javaee-api-6.0.jar")
+         || binRoot.getPath().endsWith("/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar")) { //NOI18N
+            return new Javaee6Result();
+        }
         FileObject jarFO = URLMapper.findFileObject(binRoot);
         if (jarFO != null) {
             File jarFile = FileUtil.toFile(jarFO);
             if (jarFile != null) {
-                //hack for javaee6 jar docs which we ship with netbeans and which are not in any maven repository
-                //once we have the final bits for 6, we can chnage the condiotion to endsWith.
-                if (jarFile.getPath().contains("javax/javaee-api/6") ||
-                    jarFile.getPath().contains("javax/javaee-web-api/6")) { //NOI18N
-                    return new Javaee6Result();
-                }
-
 //                String name = jarFile.getName();
                 File parent = jarFile.getParentFile();
                 if (parent != null) {
@@ -221,7 +219,7 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         }
         public URL[] getRoots() {
                 try {
-                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", null, false); // NOI18N
+                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", "org.netbeans.modules.j2ee.platform", false); // NOI18N
                     if (j2eeDoc != null) {
                         URL url = FileUtil.getArchiveRoot(j2eeDoc.toURI().toURL());
                         url = new URL(url + "docs/api/"); //NOI18N
