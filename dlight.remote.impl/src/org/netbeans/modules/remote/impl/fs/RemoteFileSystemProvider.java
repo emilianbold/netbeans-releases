@@ -361,7 +361,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }    
     
     @Override
-    public char getFileSeparatorChar(FileSystem fs) {
+    public char getFileSeparatorChar() {
         return '/';
     }
 

@@ -334,7 +334,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
-    public char getFileSeparatorChar(FileSystem fs) {
+    public char getFileSeparatorChar() {
         return File.separatorChar;
     }
 
