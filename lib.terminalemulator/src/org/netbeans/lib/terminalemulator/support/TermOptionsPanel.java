@@ -127,10 +127,25 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     static final String LBL_TabSize = Catalog.get("LBL_TabSize");	// NOI18N
     static final String CTL_ClickToType = Catalog.get("CTL_ClickToType");	// NOI18N
     static final String CTL_ScrollOnInput = Catalog.get("CTL_ScrollOnInput");	// NOI18N
-    static final String CTL_SrollOnOutput = Catalog.get("CTL_SrollOnOutput");	// NOI18N
+    static final String CTL_ScrollOnOutput = Catalog.get("CTL_ScrollOnOutput");	// NOI18N
     static final String LBL_WrapLines = Catalog.get("LBL_WrapLines");	// NOI18N
     static final String LBL_Preview = Catalog.get("LBL_Preview");	// NOI18N
     static final String LBL_IgnoreKeymap = Catalog.get("LBL_IgnoreKeymap");	// NOI18N
+    
+    private static final int MNM_Restore = Catalog.mnemonic("MNM_Restore"); //NOI18N
+    private static final int MNM_Font = Catalog.mnemonic("MNM_Font"); //NOI18N
+    private static final int MNM_FontSize = Catalog.mnemonic("MNM_FontSize"); //NOI18N
+    private static final int MNM_ForegroundColor = Catalog.mnemonic("MNM_ForegroundColor"); //NOI18N
+    private static final int MNM_BackgroundColor = Catalog.mnemonic("MNM_BackgroundColor"); //NOI18N
+    private static final int MNM_SelectionBackgroundColor = Catalog.mnemonic("MNM_SelectionBackgroundColor"); //NOI18N
+    private static final int MNM_HistorySize = Catalog.mnemonic("MNM_HistorySize"); //NOI18N
+    private static final int MNM_TabSize = Catalog.mnemonic("MNM_TabSize"); //NOI18N
+    private static final int MNM_ClickToType = Catalog.mnemonic("MNM_ClickToType"); //NOI18N
+    private static final int MNM_ScrollOnInput = Catalog.mnemonic("MNM_ScrollOnInput"); //NOI18N
+    private static final int MNM_ScrollOnOutput = Catalog.mnemonic("MNM_ScrollOnOutput"); //NOI18N
+    private static final int MNM_WrapLines = Catalog.mnemonic("MNM_WrapLines"); //NOI18N
+    private static final int MNM_IgnoreKeymap = Catalog.mnemonic("MNM_IgnoreKeymap"); //NOI18N
+    private static final int MNM_Preview = Catalog.mnemonic("MNM_Preview"); //NOI18N
 
     /** Creates new form TermOptionsPanel */
     public TermOptionsPanel() {
@@ -319,6 +334,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(descriptionLabel, gridBagConstraints);
 
+        restoreButton.setMnemonic(MNM_Restore);
         restoreButton.setText(CTL_Restore);
         restoreButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,6 +348,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(restoreButton, gridBagConstraints);
 
+        fontLabel.setDisplayedMnemonic(MNM_Font);
         fontLabel.setText(LBL_Font);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -364,6 +381,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(fontButton, gridBagConstraints);
 
+        fontSizeLabel.setDisplayedMnemonic(MNM_FontSize);
         fontSizeLabel.setLabelFor(fontSizeSpinner);
         fontSizeLabel.setText(LBL_FontSize);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -385,6 +403,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(fontSizeSpinner, gridBagConstraints);
 
+        foregroundLabel.setDisplayedMnemonic(MNM_ForegroundColor);
         foregroundLabel.setLabelFor(foregroundButton);
         foregroundLabel.setText(LBL_ForegroundColor);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -401,6 +420,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(foregroundButton, gridBagConstraints);
 
+        backgroundLabel.setDisplayedMnemonic(MNM_BackgroundColor);
         backgroundLabel.setLabelFor(backgroundButton);
         backgroundLabel.setText(LBL_BackgroundColor);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -423,6 +443,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(backgroundButton, gridBagConstraints);
 
+        selectionLabel.setDisplayedMnemonic(MNM_SelectionBackgroundColor);
         selectionLabel.setLabelFor(selectionButton);
         selectionLabel.setText(LBL_SelectionBackgroundColor);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -440,6 +461,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(selectionButton, gridBagConstraints);
 
+        historySizeLabel.setDisplayedMnemonic(MNM_HistorySize);
         historySizeLabel.setLabelFor(historySizeSpinner);
         historySizeLabel.setText(LBL_HistorySize);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -461,6 +483,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(historySizeSpinner, gridBagConstraints);
 
+        tabSizeLabel.setDisplayedMnemonic(MNM_TabSize);
         tabSizeLabel.setLabelFor(tabSizeSpinner);
         tabSizeLabel.setText(LBL_TabSize);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -482,6 +505,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(tabSizeSpinner, gridBagConstraints);
 
+        clickToTypeCheckBox.setMnemonic(MNM_ClickToType);
         clickToTypeCheckBox.setText(CTL_ClickToType);
         clickToTypeCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -495,6 +519,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(clickToTypeCheckBox, gridBagConstraints);
 
+        scrollOnInputCheckBox.setMnemonic(MNM_ScrollOnInput);
         scrollOnInputCheckBox.setText(CTL_ScrollOnInput);
         scrollOnInputCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -508,7 +533,8 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(scrollOnInputCheckBox, gridBagConstraints);
 
-        scrollOnOutputCheckBox.setText(CTL_SrollOnOutput);
+        scrollOnOutputCheckBox.setMnemonic(MNM_ScrollOnOutput);
+        scrollOnOutputCheckBox.setText(CTL_ScrollOnOutput);
         scrollOnOutputCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scrollOnOutputActionPerformed(evt);
@@ -521,6 +547,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(scrollOnOutputCheckBox, gridBagConstraints);
 
+        lineWrapCheckBox.setMnemonic(MNM_WrapLines);
         lineWrapCheckBox.setText(LBL_WrapLines);
         lineWrapCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -534,6 +561,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(lineWrapCheckBox, gridBagConstraints);
 
+        ignoreKeymapCheckBox.setMnemonic(MNM_IgnoreKeymap);
         ignoreKeymapCheckBox.setText(LBL_IgnoreKeymap);
         ignoreKeymapCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -547,6 +575,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(ignoreKeymapCheckBox, gridBagConstraints);
 
+        previewLabel.setDisplayedMnemonic(MNM_Preview);
         previewLabel.setLabelFor(previewPanel);
         previewLabel.setText(LBL_Preview);
         add(previewLabel, new java.awt.GridBagConstraints());
