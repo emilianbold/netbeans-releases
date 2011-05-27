@@ -57,7 +57,7 @@ import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
-import org.netbeans.lib.profiler.ui.cpu.LiveResultsWindowContributor;
+import org.netbeans.lib.profiler.ui.LiveResultsWindowContributor;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponentGroup;
@@ -68,7 +68,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ServiceProvider(service = LiveResultsWindowContributor.class)
+@ServiceProvider(service = org.netbeans.lib.profiler.ui.LiveResultsWindowContributor.class)
 public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
 
     private static final Logger LOGGER = Logger.getLogger(DrilldownContributor.class.getName());
