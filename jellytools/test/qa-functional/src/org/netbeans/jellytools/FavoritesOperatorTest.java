@@ -44,49 +44,33 @@
 package org.netbeans.jellytools;
 
 import java.io.IOException;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
+import junit.framework.Test;
 
 /** Test FavoritesOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class FavoritesOperatorTest extends JellyTestCase {
+
+    private static FavoritesOperator favoritesOper;
 
     public FavoritesOperatorTest(java.lang.String testName) {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+    public static Test suite() {
+        return createModuleTest(FavoritesOperatorTest.class,
+                "testInvoke",
+                "testTree",
+                "testVerify");
     }
 
-    public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // suites have to be in particular order
-        suite.addTest(new FavoritesOperatorTest("testInvoke"));
-        suite.addTest(new FavoritesOperatorTest("testTree"));
-        suite.addTest(new FavoritesOperatorTest("testVerify"));
-        return suite;
-         */
-        return (NbTest) NbModuleSuite.create(
-        NbModuleSuite.createConfiguration(FavoritesOperatorTest.class).
-                addTest("testInvoke").
-                addTest("testTree").
-                addTest("testVerify").
-                enableModules(".*").clusters(".*"));
-    }
-    
     /** Print out test name. */
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
-        openDataProjects("SampleProject");
+        System.out.println("### " + getName() + " ###");
     }
-    
-    private static FavoritesOperator favoritesOper;
-    
+
     /**
      * Test of invoke method.
      */
@@ -95,16 +79,16 @@ public class FavoritesOperatorTest extends JellyTestCase {
         favoritesOper = FavoritesOperator.invoke();
     }
 
-
     /**
      * Test of tree method.
-     */   
+     */
     public void testTree() {
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
-        // has to make tab visible
+        // open another tab
+        RuntimeTabOperator.invoke();
+        // has to make favorites tab visible
         favoritesOper.tree();
-    }    
-    
+    }
+
     /**
      * Test of verify method.
      */
