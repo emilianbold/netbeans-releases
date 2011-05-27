@@ -2352,25 +2352,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	    stackEnabler.setRegistered(true);
     }
 
-    public void copyStack() {
-        if (guiStackFrames == null)
-	    return;
-        StringBuilder frameStr = new StringBuilder(guiStackFrames.length);
-        for (int fx = 0; fx < guiStackFrames.length; fx++) {
-	    frameStr.append(guiStackFrames[fx].getLocationName());
-	    frameStr.append('\n');
-	}
-	Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
-        if (clipboard == null) {
-            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        }
-        Transferable transferableText =
-                new StringSelection(frameStr.toString());
-        clipboard.setContents(
-                transferableText,
-                null);
-    }
-    
     public Frame getCurrentFrame() {
         if (guiStackFrames == null) {
             return null;
