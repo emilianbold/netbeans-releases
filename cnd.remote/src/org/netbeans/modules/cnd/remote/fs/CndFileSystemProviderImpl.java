@@ -300,16 +300,16 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
         synchronized (adapters) {
             for (Iterator<WeakReference<ProblemListenerAdapter>> it = adapters.iterator(); it.hasNext(); ) {
                 ProblemListenerAdapter adapter = it.next().get();
-                if (adapter.delegate == listener) {
+                if (adapter == null) {
+                    it.remove();
+                } else if (adapter.delegate == listener) {
                     FileSystemProvider.removeFileSystemProblemListener(adapter, fileSystem);
                     it.remove();
-                } else if (adapter == null) {
-                    it.remove();
-                }
+                }                
             }
         }
     }
-    
+
     private static class ProblemListenerAdapter implements FileSystemProblemListener {
         
         private final CndFileSystemProblemListener delegate;
