@@ -127,6 +127,18 @@ public class RemoteLogger {
         assertNonUiThread("Should not be called from UI thread"); //NOI18N
     }
 
+    public static void log(Level level, String message, Object arg1) {
+        if (instance.isLoggable(level)) {
+            instance.log(level, message, arg1);
+        }
+    }
+    
+    public static void log(Level level, String message, Object arg1, Object arg2) {
+        if (instance.isLoggable(level)) {
+            instance.log(level, message, new Object[] { arg1, arg2 });
+        }
+    }
+
     public static void finest(Exception exception) {
         instance.log(Level.FINEST, "FYI:", exception);
     }
