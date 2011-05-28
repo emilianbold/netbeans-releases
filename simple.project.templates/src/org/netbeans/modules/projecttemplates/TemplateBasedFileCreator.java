@@ -70,11 +70,19 @@ class TemplateBasedFileCreator extends FileCreator {
         String fileName = this.name;
         if (fileName == null) {
             int ix = folder.lastIndexOf('/');
-            fileName = folder.substring(ix + 1);
-            folder = folder.substring(0, ix);
+            if (ix > 0) {
+                fileName = folder.substring(ix + 1);
+                folder = folder.substring(0, ix);
+            } else {
+                fileName = folder;
+                folder = null;
+            }
         }
         DataObject ob = DataObject.find(template);
-        FileObject destFolder = FileUtil.createFolder(project, folder);
+        FileObject destFolder = project;
+        if (folder != null) {
+            destFolder = FileUtil.createFolder(project, folder);
+        }
         DataFolder destFld = DataFolder.findFolder(destFolder);
         //Manifest module seems not to support fremarker templates :-(
         boolean performManualSubstitutions = fileName.endsWith(".MF");
