@@ -76,6 +76,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.javacard.project.deps.ui.DependenciesNode;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.actions.Single;
+import org.netbeans.validation.api.Problems;
+import org.netbeans.validation.api.builtin.Validators;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.NewTemplateAction;
@@ -278,6 +280,18 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
                     "NEW_FILE_ACTION", tpl.getName())); //NOI18
             if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(line))) {
                 String filename = line.getInputText();
+                Problems problems = new Problems();
+                Validators.REQUIRE_VALID_FILENAME.validate(problems, 
+                        NbBundle.getMessage(JCProjectSourceNodeFactory.class, 
+                        "FILENAME"), filename);
+                if (problems.hasFatal()) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(
+                            problems.getLeadProblem().getMessage(), 
+                            NotifyDescriptor.WARNING_MESSAGE);
+
+                    DialogDisplayer.getDefault().notify(nd);
+                    return;
+                }
                 try {
                     DataObject ob = tpl.createFromTemplate(target, filename);
                     EditCookie ec = ob.getLookup().lookup(EditCookie.class);

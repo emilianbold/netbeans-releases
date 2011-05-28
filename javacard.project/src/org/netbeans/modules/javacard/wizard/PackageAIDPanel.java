@@ -89,7 +89,9 @@ public class PackageAIDPanel extends javax.swing.JPanel implements ChangeListene
 
     public void write (WizardDescriptor wiz) {
         AID aid = aIDPanel1.getAID();
-        wiz.putProperty(ProjectWizardKeys.WIZARD_PROP_CLASSIC_PACKAGE_AID, aid.toString());
+        if (aid != null) { //#189906
+            wiz.putProperty(ProjectWizardKeys.WIZARD_PROP_CLASSIC_PACKAGE_AID, aid.toString());
+        }
     }
 
     public AID getAID() {

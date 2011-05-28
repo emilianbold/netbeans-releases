@@ -76,6 +76,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.javacard.kit</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
+                <friend>org.netbeans.modules.nodejs</friend>
                 <package>org.netbeans.modules.projecttemplates</package>
             </friend-packages>
         </data>
