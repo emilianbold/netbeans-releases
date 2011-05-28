@@ -234,7 +234,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                             try {
                                 rc = Integer.parseInt(m.group(1));
                             } catch (NumberFormatException nfe) {
-                                nfe.printStackTrace();
+                                nfe.printStackTrace(System.err);
                             }
                         }
                         build_rc.set(rc);

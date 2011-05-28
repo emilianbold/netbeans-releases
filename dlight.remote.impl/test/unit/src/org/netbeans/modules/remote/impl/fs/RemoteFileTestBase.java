@@ -51,13 +51,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
@@ -67,6 +68,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -147,6 +149,8 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     protected String sharedLibExt;
 
+    private Level oldLevel = null;
+    
     public RemoteFileTestBase(String testName) {
         super(testName);
         fs = null;
@@ -162,6 +166,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        setLoggers(true);
         if (execEnv == null) {
             return;
         }
@@ -179,6 +184,29 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             sharedLibExt = ".dylib";
         } else {
             sharedLibExt = ".so";
+        }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        setLoggers(false);
+    }
+   
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
+    private void setLoggers(boolean setup) {
+        final Logger logger = Logger.getLogger("remote.support.logger");
+        if (setup) {
+            logger.addHandler(new TestLogHandler(logger));
+            if (NativeExecutionTestSupport.getBoolean("remote", "logging.finest")
+                 || NativeExecutionTestSupport.getBoolean("remote", getClass().getName() + ".logging.finest")) {
+                oldLevel = logger.getLevel();
+                logger.setLevel(Level.FINEST);
+            }
+        } else {
+            if (oldLevel != null) {
+                logger.setLevel(oldLevel);
+            }
         }
     }
 
