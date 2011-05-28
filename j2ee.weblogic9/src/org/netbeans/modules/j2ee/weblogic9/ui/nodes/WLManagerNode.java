@@ -80,7 +80,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     private static final String DOMAIN_ROOT = "domainRoot"; // NOI18N
     private static final String DEBUGGER_PORT = "debuggerPort"; // NOI18N
     private static final String ADMIN_URL = "/console/login/LoginForm.jsp"; //NOI18N
-    private static final String ADMIN_URL_11_WEB = "/consoledwp#domain"; //NOI18N
+    private static final String ADMIN_URL_11_WEB = "/console"; //NOI18N
     
     /**
      * Path to the node's icon that should reside in the class path
