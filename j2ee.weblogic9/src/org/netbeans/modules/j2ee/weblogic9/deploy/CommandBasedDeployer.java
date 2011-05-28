@@ -103,7 +103,6 @@ import org.xml.sax.SAXException;
  *
  * @author Petr Hejl
  */
-// FIXME refactor exceution to some common method
 public final class CommandBasedDeployer {
 
     private static final Logger LOGGER = Logger.getLogger(CommandBasedDeployer.class.getName());

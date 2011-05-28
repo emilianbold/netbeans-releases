@@ -80,10 +80,7 @@ public class ShowAdminToolAction extends CookieAction {
             }
         }
     }
-    
-    
-    
-    
+
     public String getName() {
         return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
     }
