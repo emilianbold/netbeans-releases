@@ -43,12 +43,13 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.jsp;
 
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import org.openide.filesystems.FileObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
@@ -110,7 +111,7 @@ public class JSPFolderNode extends ContainerNode {
 
     /** Creates a new instance of JSPFolderNode */
     public JSPFolderNode(FileObject folder, ContainerNode parent) {
-        super(folder.getName(), Utils.JSP_FOLDER_ICON, parent);
+        super(folder.getName(), Icons.getIcon(JavaEEIcons.JSP_FOLDER), parent);
         parentFolder = folder;
     }
 

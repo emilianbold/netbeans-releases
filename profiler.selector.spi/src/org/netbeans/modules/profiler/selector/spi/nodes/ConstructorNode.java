@@ -45,6 +45,8 @@ package org.netbeans.modules.profiler.selector.spi.nodes;
 
 import java.util.Set;
 import javax.swing.Icon;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.LanguageIcons;
 
 /**
  *
@@ -76,13 +78,13 @@ abstract public class ConstructorNode extends SelectorNode {
         Icon icon;
 
         if (getModifiers().contains(Modifier.PUBLIC.name())) {
-            icon = IconResource.CONSTRUCTOR_PUBLIC_ICON;
+            icon = Icons.getIcon(LanguageIcons.CONSTRUCTOR_PUBLIC);
         } else if (getModifiers().contains(Modifier.PROTECTED.name())) {
-            icon = IconResource.CONSTRUCTOR_PROTECTED_ICON;
+            icon = Icons.getIcon(LanguageIcons.CONSTRUCTOR_PROTECTED);
         } else if (getModifiers().contains(Modifier.PRIVATE.name())) {
-            icon = IconResource.CONSTRUCTOR_PRIVATE_ICON;
+            icon = Icons.getIcon(LanguageIcons.CONSTRUCTOR_PRIVATE);
         } else {
-            icon = IconResource.CONSTRUCTOR_PACKAGE_ICON;
+            icon = Icons.getIcon(LanguageIcons.CONSTRUCTOR_PACKAGE);
         }
 
         return icon;
