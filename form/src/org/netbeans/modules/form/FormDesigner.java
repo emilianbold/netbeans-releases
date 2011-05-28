@@ -1769,6 +1769,7 @@ public class FormDesigner {
             active = true;
             setSelectedDesigner(this, true);
             ComponentInspector.getInstance().attachActions();
+            getToolBar().putClientProperty("isActive", Boolean.TRUE); // for JDev // NOI18N
         }
         if (formModel != null && (textEditLayer == null || !textEditLayer.isVisible())) {
             handleLayer.requestFocus();
@@ -1781,6 +1782,7 @@ public class FormDesigner {
             textEditLayer.finishEditing(false);
         }
         resetConnection();
+        getToolBar().putClientProperty("isActive", Boolean.FALSE); // for JDev // NOI18N
     }
 
     public void requestActive() {

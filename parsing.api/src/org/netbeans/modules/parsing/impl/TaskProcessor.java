@@ -98,6 +98,7 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -147,6 +148,12 @@ public class TaskProcessor {
     private static final Pattern includedTasks;
     //Already logged warninig about running in AWT
     private static final Set<StackTraceElement> warnedAboutRunInEQ = new HashSet<StackTraceElement>();
+
+    /*test*/ static volatile boolean SAMPLING_ENABLED = false;     //Diabled until statistics server will be extended by slowcancel
+    private static final int DEFAULT_START_SAMPLING_AFTER = 500;
+    private static final Sampler sampler = new Sampler();
+    private static final RequestProcessor SAMPLING_RP = new RequestProcessor(TaskProcessor.class.getName()+"-sampling");    //NOI18N
+    private static final RequestProcessor.Task SAMPLING_TASK = SAMPLING_RP.create(sampler);
     
     static {
         Executors.newSingleThreadExecutor(factory).submit (new CompilationJob());
@@ -605,14 +612,21 @@ public class TaskProcessor {
         parser.cancel(cancelReason,event);
     }
 
-    /*test*/ static <T extends Parser.Result> void callParserResultTask (
+    /*test*/ static <T extends Parser.Result> long callParserResultTask (
             final @NonNull ParserResultTask<T> task,
             final @NullAllowed T result,
             final @NullAllowed SchedulerEvent event) {
             assert task != null;
             assert !Thread.holdsLock(INTERNAL_LOCK);
             assert parserLock.isHeldByCurrentThread();
-            task.run(result, event);
+            sampler.enableSampling();
+            try {
+                task.run(result, event);
+            } finally {
+                final long now = System.currentTimeMillis();
+                final long cancelTime = sampler.disableSampling();
+                return cancelTime == 0 ? 0 : now - cancelTime;
+            }
     }
 
     static List<Embedding> callEmbeddingProvider(
@@ -779,26 +793,32 @@ public class TaskProcessor {
                                                                 if (shouldCall) {
                                                                     try {
                                                                         final long startTime = System.currentTimeMillis();
+                                                                        long cancelTime = 0;
                                                                         if (r.task instanceof ParserResultTask) {
                                                                             LOGGER.log(Level.FINE, "Running Task: {0}", r);
                                                                             ParserResultTask parserResultTask = (ParserResultTask) r.task;
                                                                             SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE ().getSchedulerEvent (source, parserResultTask.getSchedulerClass ());
-                                                                            callParserResultTask(parserResultTask,currentResult, schedulerEvent);
-                                                                        }
-                                                                        else {
+                                                                            cancelTime = callParserResultTask(parserResultTask,currentResult, schedulerEvent);
+                                                                        } else {
                                                                             assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
                                                                         }
-                                                                        final long endTime = System.currentTimeMillis();
                                                                         if (LOGGER.isLoggable(Level.FINEST)) {
-                                                                            LOGGER.finest(String.format("Executed task: %s in %d ms.",  //NOI18N
-                                                                                r.task.getClass().toString(), (endTime-startTime)));
+                                                                            LOGGER.log(
+                                                                                Level.FINEST,
+                                                                                "Executed task: {0} in {1} ms.",  //NOI18N
+                                                                                new Object[] {
+                                                                                    r.task.getClass(),
+                                                                                    System.currentTimeMillis()-startTime
+                                                                            });
                                                                         }
-                                                                        if (LOGGER.isLoggable(Level.FINER)) {
-                                                                            final long cancelTime = currentRequest.getCancelTime();
-                                                                            if (cancelTime >= startTime && (endTime - cancelTime) > SLOW_CANCEL_LIMIT) {
-                                                                                LOGGER.finer(String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
-                                                                                    r.task.getClass().toString(), (endTime-cancelTime)));
-                                                                            }
+                                                                        if (cancelTime > SLOW_CANCEL_LIMIT) {
+                                                                            LOGGER.log (
+                                                                                Level.INFO,
+                                                                                "Task: {0} ignored cancel for {1} ms.",  //NOI18N
+                                                                                new Object[] {
+                                                                                    r.task.getClass(),
+                                                                                    cancelTime
+                                                                                });
                                                                         }
                                                                     } catch (Exception re) {
                                                                         Exceptions.printStackTrace (re);
@@ -1076,15 +1096,13 @@ public class TaskProcessor {
     //@ThreadSafe
     private static final class CurrentRequestReference {                        
 
-        //GuardedBy("CRR_LOCK")
+        //@GuardedBy("CRR_LOCK")
         private Request reference;
-        //GuardedBy("CRR_LOCK")
+        //@GuardedBy("CRR_LOCK")
         private Request canceledReference;
-        //GuardedBy("CRR_LOCK")
-        private Parser activeParser;
-        //GuardedBy("CRR_LOCK")
-        private long cancelTime;
-        //GuardedBy("CRR_LOCK")
+        //@GuardedBy("CRR_LOCK")
+        private Parser activeParser;       
+        //@GuardedBy("CRR_LOCK")
         private boolean canceled;
         /**
          * Threading: The CurrentRequestReference has it's own private lock
@@ -1105,7 +1123,6 @@ public class TaskProcessor {
                 }
                 result = this.canceled;
                 canceled = false;
-                this.cancelTime = 0;
                 this.activeParser = null;
                 this.reference = reference;
             }
@@ -1135,8 +1152,8 @@ public class TaskProcessor {
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;
-                        this.cancelTime = System.currentTimeMillis();
                         parser = activeParser;
+                        sampler.schedule();
                     } else if (canceledReference == null && cancelStrategy.getRequestToCancel()!=null) {
                         request = cancelStrategy.getRequestToCancel();
                         this.canceledReference = request;
@@ -1177,13 +1194,7 @@ public class TaskProcessor {
                 }
             }
             return request;
-        }
-                                                                                
-        long getCancelTime () {
-            synchronized (CRR_LOCK) {
-                return this.cancelTime;
-            }
-        }
+        }                                                                                        
         
         void cancelCompleted (final Request request) {
             if (request != null) {
@@ -1193,7 +1204,7 @@ public class TaskProcessor {
                     CRR_LOCK.notify();
                 }
             }
-        }
+        }                
     }
 
     final static class ScanSync implements Future<Void> {
@@ -1343,5 +1354,58 @@ public class TaskProcessor {
                 }
             }
         }                
+    }
+
+    private static class Sampler implements Runnable {
+
+        //GuardedBy("this")
+        private boolean samplingEnabled;
+        //@GuardedBy("this")
+        private SelfProfile profiler;
+        //@GuardedBy("this")
+        private long cancelTime;
+
+
+
+        synchronized void schedule() {
+            this.cancelTime = System.currentTimeMillis();
+            if (samplingEnabled) {
+                SAMPLING_TASK.schedule(
+                    Integer.getInteger("org.netbeans.modules.parsing.api.taskcancel.slowness.start",    // NOI18N
+                    DEFAULT_START_SAMPLING_AFTER));
+            }
+        }
+
+
+        synchronized void enableSampling() {
+            this.cancelTime = 0L;
+            boolean ae = false;
+            assert ae = true;
+            if (ae && SAMPLING_ENABLED) {
+                samplingEnabled = true;
+            }
+        }
+
+        synchronized long disableSampling() {
+            try {
+                samplingEnabled = false;
+                SAMPLING_TASK.cancel();
+            } finally {
+                if (profiler != null) {
+                    profiler.stop();
+                    profiler = null;
+                }
+            }
+            return cancelTime;
+        }
+
+        @Override
+        public synchronized void run() {            
+            if (!samplingEnabled) {
+                return;
+            }
+            assert profiler == null;
+            profiler = new SelfProfile(System.currentTimeMillis());
+        }
     }
 }
