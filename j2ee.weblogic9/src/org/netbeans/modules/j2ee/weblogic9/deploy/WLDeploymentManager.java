@@ -425,6 +425,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        if (isWebProfile()) {
+            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
+            return wpDeployer.getAvailableModules(moduleType, target);
+        }
+        
         try {
             return executeAction(new Action<TargetModuleID[]>() {
                 @Override
@@ -454,6 +459,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        if (isWebProfile()) {
+            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
+            return wpDeployer.getNonRunningModules(moduleType, target);
+        }
+
         try {
             return executeAction(new Action<TargetModuleID[]>() {
                 @Override
@@ -483,6 +493,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        if (isWebProfile()) {
+            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
+            return wpDeployer.getRunningModules(moduleType, target);
+        }
+        
         try {
             return executeAction(new Action<TargetModuleID[]>() {
                 @Override
