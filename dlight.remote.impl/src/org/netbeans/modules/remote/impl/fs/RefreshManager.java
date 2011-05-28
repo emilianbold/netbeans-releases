@@ -92,7 +92,7 @@ public class RefreshManager {
                    set.remove(fo);
                 }
                 try {
-                    fo.refreshImpl(false);
+                    fo.refreshImpl(false, null);
                 } catch (ConnectException ex) {
                     clear();
                     break;

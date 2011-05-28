@@ -49,9 +49,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileAttributeEvent;
@@ -195,7 +197,11 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
     }
 
-    private void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    @Override
+    protected final void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        if (antiLoop == null) {
+            antiLoop = new LinkedHashSet<String>();
+        }
         if (antiLoop.contains(getPath())) {
             return;
         } else {
@@ -203,20 +209,12 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            if (delegate instanceof RemoteLinkBase) {
-                ((RemoteLinkBase) delegate).refreshImpl(recursive, antiLoop);
-            } else {
-                delegate.refresh(recursive);
-            }
-                    
+            delegate.refreshImpl(recursive, antiLoop);
+        } else {
+            RemoteLogger.log(Level.FINEST, "Null delegate for link {0}", this); //NOI18N
         }
     }
     
-    @Override
-    protected final void refreshImpl(boolean recursive) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        refreshImpl(recursive, new HashSet<String>());
-    }
-
     @Override
     protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {

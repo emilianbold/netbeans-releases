@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -334,13 +335,13 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
     }
 
-    protected void refreshImpl(boolean recursive) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
     }
 
     @Override
     public void refresh(boolean expected) {
         try {
-            refreshImpl(true);
+            refreshImpl(true, null);
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
