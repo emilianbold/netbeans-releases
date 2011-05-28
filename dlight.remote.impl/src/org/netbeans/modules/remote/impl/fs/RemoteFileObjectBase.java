@@ -106,7 +106,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         return (flags & mask) == mask;
     }
     
-    protected void setFlag(byte mask, boolean value) {
+    protected final void setFlag(byte mask, boolean value) {
         if (value) {
             flags |= mask;
         } else {
