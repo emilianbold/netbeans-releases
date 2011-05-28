@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -200,7 +199,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     @Override
     protected final void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
-            antiLoop = new LinkedHashSet<String>();
+            antiLoop = new HashSet<String>();
         }
         if (antiLoop.contains(getPath())) {
             return;
