@@ -1214,11 +1214,18 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl(boolean recursive) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        if (antiLoop != null) {
+            if (antiLoop.contains(getPath())) {
+                return;
+            } else {
+                antiLoop.add(getPath());
+            }
+        }
         DirectoryStorage refreshedStorage = refreshDirectoryStorage(null);
         if (recursive) {
             for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
-                child.refreshImpl(true);
+                child.refreshImpl(true, antiLoop);
             }
         }
     }
