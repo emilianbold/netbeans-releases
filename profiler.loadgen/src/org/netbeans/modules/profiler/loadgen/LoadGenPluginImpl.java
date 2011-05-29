@@ -22,7 +22,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.loadgenerator.api.EngineManagerException;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
-import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstanceListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
