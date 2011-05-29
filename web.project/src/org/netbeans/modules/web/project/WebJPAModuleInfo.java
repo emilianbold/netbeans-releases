@@ -47,8 +47,11 @@ package org.netbeans.modules.web.project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo.ModuleType;
+import org.netbeans.modules.j2ee.specs.support.api.JpaProvider;
+import org.netbeans.modules.j2ee.specs.support.api.JpaSupport;
 
 /**
  * An implementation of the <code>JPAModuleInfo</code>
@@ -83,6 +86,12 @@ class WebJPAModuleInfo implements JPAModuleInfo{
         if (platform == null){
             return null;
         }
-        return platform.isToolSupported(JPAModuleInfo.JPACHECKSUPPORTED) ? platform.isToolSupported(JPAModuleInfo.JPAVERSIONPREFIX+version) : null;//NOI18N
+        JpaSupport support = JpaSupport.getInstance(platform);
+        JpaProvider provider = support.getDefaultProvider();
+        if (provider != null) {
+            return (Persistence.VERSION_2_0.equals(version) && provider.isJpa2Supported())
+                    || (Persistence.VERSION_1_0.equals(version) && provider.isJpa1Supported());
+        }
+        return null;
     }
 }
