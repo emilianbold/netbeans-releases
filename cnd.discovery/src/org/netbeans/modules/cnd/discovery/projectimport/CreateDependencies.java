@@ -56,6 +56,11 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
@@ -243,6 +248,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         }
                     }
                     ImportExecutable.switchModel(true, lastSelectedProject);
+                    onProjectParsingFinished(lastSelectedProject);
                 } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 } finally {
@@ -250,6 +256,26 @@ public class CreateDependencies implements PropertyChangeListener {
                 }
             }
         });
+    }
+    private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
+
+    private void onProjectParsingFinished(final Project makeProject) {
+        if (makeProject != null) {
+            final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            CsmProgressListener listener = new CsmProgressAdapter() {
+
+                @Override
+                public void projectParsingFinished(CsmProject project) {
+                    if (project.getPlatformProject().equals(np)) {
+                        CsmListeners.getDefault().removeProgressListener(this);
+                        listeners.remove(this);
+                        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
+                    }
+                }
+            };
+            listeners.add(listener);
+            CsmListeners.getDefault().addProgressListener(listener);
+        }
     }
     
     private static Project createProject(String executablePath, String arguments, String dir, String envText) throws IOException {
