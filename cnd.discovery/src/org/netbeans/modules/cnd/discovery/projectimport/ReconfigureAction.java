@@ -121,10 +121,12 @@ public class ReconfigureAction extends NodeAction {
         return presenter;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         Project p = getProject(activatedNodes);
         if (p == null) {
@@ -153,6 +155,7 @@ public class ReconfigureAction extends NodeAction {
         return true;
     }
 
+    @Override
     public void performAction(final Node[] activatedNodes) {
         running = true;
         Project p = getProject(activatedNodes);
@@ -184,6 +187,7 @@ public class ReconfigureAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == runButton) {
+            reconfigurator.setConfigureCodeAssistance(true);
             reconfigurator.reconfigure(panel.getCFlags(), panel.getCppFlags(), panel.getLinkerFlags(), panel.getOtherOptions(), false, null);
         }
         running = false;
