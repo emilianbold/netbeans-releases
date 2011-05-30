@@ -46,7 +46,9 @@ package org.netbeans.modules.j2ee.common.method;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.openide.util.Parameters;
@@ -244,9 +246,9 @@ public final class MethodModel {
     public static final class Annotation {
 
         private final String type;
-        private final List<? extends ExpressionTree> arguments;
+        private final Map<String, Object> arguments;
 
-        private Annotation(String type, List<? extends ExpressionTree> arguments) {
+        private Annotation(String type, Map<String, Object> arguments) {
             this.type = type;
             this.arguments = arguments;
         }
@@ -269,16 +271,17 @@ public final class MethodModel {
          * Creates new instance of a model of {@code Annotation}
          *
          * @param type name of annotation type, fully qualified name must be used
-         * @param arguments {@code List} of annotation arguments, for generation them see {@code GenerationUtils} class
+         * @param arguments {@code Map<String, String>} of annotation arguments, key of the map determines
+         * argument name and the maps value implies argument value
          * @throws {@code NullPointerException} if any of the parameters is {@code null}
          * @throws {@code IllegalArgumentException} if the parameter type is not fully qualified
          * name of valid annotation
          * @return immutable model of {@code Annotation}
          */
-        public static Annotation create(String type, List<? extends ExpressionTree> arguments) {
+        public static Annotation create(String type, Map<String, String> arguments) {
             Parameters.notNull("type", type);    //NOI18N
             Parameters.notNull("arguments", arguments); //NOI18N
-            return new MethodModel.Annotation(type, arguments);
+            return new MethodModel.Annotation(type, new HashMap<String, Object>(arguments));
         }
 
         // <editor-fold defaultstate="collapsed" desc="Annotation's getters">
@@ -287,13 +290,13 @@ public final class MethodModel {
             return type;
         }
 
-        public List<? extends ExpressionTree> getArguments() {
+        public Map<String, Object> getArguments() {
             return arguments;
         }
 
         // </editor-fold>
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="MethodModel's getters">
     
     /**

@@ -43,10 +43,12 @@
  */
 package org.netbeans.modules.versioning;
 
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
 import java.util.*;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -56,7 +58,8 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class Accessor {
     
-    public static Accessor VCSContextAccessor;
+    public static Accessor IMPL;
+    public static Accessor VersioningSystemAccessor;
     
     static {
         // invokes static initializer of VCSContext.class
@@ -70,4 +73,6 @@ public abstract class Accessor {
     }
     
     public abstract VCSContext createContextForFiles(Set<File> files, Set<? extends FileObject> originalFiles);
+    
+    public abstract void moveChangeListeners(VersioningSystem from, VersioningSystem to);
 }

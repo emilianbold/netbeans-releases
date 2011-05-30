@@ -99,7 +99,7 @@ public final class VCSContext {
     private FileFilter      fileFilterCached;
 
     static {
-        Accessor.VCSContextAccessor = new AccessorImpl();
+        Accessor.IMPL = new AccessorImpl();
     }
     
     /**

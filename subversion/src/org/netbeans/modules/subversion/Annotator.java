@@ -53,8 +53,6 @@ import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.ui.project.ImportAction;
-import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -83,7 +81,10 @@ import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
 import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.subversion.ui.export.ExportAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -411,8 +412,13 @@ public class Annotator {
     public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         List<Action> actions = new ArrayList<Action>(20);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            actions.add(SystemAction.get(CheckoutAction.class));
-            actions.add(SystemAction.get(ImportAction.class));
+            Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance").getAttribute("instanceCreate");
+            if(a != null) actions.add(a);
+            a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+            if(a instanceof ContextAwareAction) {
+                a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+            }            
+            if(a != null) actions.add(a);
             actions.add(SystemAction.get(RelocateAction.class));
             actions.add(null);
             actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
@@ -447,7 +453,11 @@ public class Annotator {
             Lookup context = ctx.getElements();
             boolean noneVersioned = isNothingVersioned(files);
             if (noneVersioned) {
-                actions.add(SystemActionBridge.createAction(SystemAction.get(ImportAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Import"), context));
+                Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+                if(a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                }            
+                if(a != null) actions.add(a);
             } else {
                 Node[] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
                 boolean onlyFolders = onlyFolders(files);
