@@ -140,6 +140,8 @@ public final class ELTypeUtilities {
                 @Override
                 public void stateChanged(ChangeEvent ce) {
                     //classpath invalidated
+                    cpi.removeChangeListener(this);
+                    
                     classpathInfo2JavaSourceMap.remove(cpi);
                     
                     //remove all file2cpi entries which points to the invalidated classpathinfo

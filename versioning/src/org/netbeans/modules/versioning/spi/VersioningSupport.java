@@ -48,6 +48,8 @@ import org.netbeans.modules.versioning.FlatFolder;
 import org.openide.util.NbPreferences;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.prefs.Preferences;
 
 /**
@@ -107,5 +109,14 @@ public final class VersioningSupport {
      */
     public static File getFlat(String path) {
         return new FlatFolder(path);
+    }
+    
+    /**
+     * Helper method to signal that a versioning system started to manage some previously unversioned files 
+     * (those files were imported into repository).
+     * see
+     */
+    public static void versionedRootsChanged() {
+        VersioningManager.getInstance().versionedRootsChanged();
     }
 }

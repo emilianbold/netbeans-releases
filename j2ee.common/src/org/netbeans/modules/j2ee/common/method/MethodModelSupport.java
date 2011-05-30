@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.common.method;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
+import java.util.Map;
 import javax.lang.model.type.ArrayType;
 import org.netbeans.api.java.source.CompilationController;
 import com.sun.source.tree.ExpressionTree;
@@ -236,7 +237,13 @@ public final class MethodModelSupport {
                 if (annotation.getArguments() == null) { 
                     annotationTree = genUtils.createAnnotation(annotation.getType());
                 } else {
-                    annotationTree = genUtils.createAnnotation(annotation.getType(), annotation.getArguments());
+                    List<ExpressionTree> annotationArgs = new ArrayList<ExpressionTree>();
+                    Iterator it = annotation.getArguments().entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry pairs = (Map.Entry)it.next();
+                        annotationArgs.add(genUtils.createAnnotationArgument((String) pairs.getKey(),pairs.getValue()));
+                    }
+                    annotationTree = genUtils.createAnnotation(annotation.getType(), annotationArgs);
                 }
                 annotationList.add(annotationTree);
             }
