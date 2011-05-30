@@ -625,6 +625,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        if (isWebProfile()) {
+            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
+            return wpDeployer.redeploy(targetModuleID);
+        }
+        
         try {
             return executeAction(new Action<ProgressObject>() {
                 @Override
