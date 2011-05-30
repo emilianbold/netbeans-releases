@@ -56,6 +56,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -78,12 +80,14 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     private final ChangeListener listener;
     private final Project project;
     private ComboBoxModel projectsList;
+    private final TimerOptions timerOptions;
 
 
     /** Creates new form SingleEJBWizardPanel */
-    public SessionEJBWizardPanel(Project project, ChangeListener changeListener) {
+    public SessionEJBWizardPanel(Project project, ChangeListener changeListener, TimerOptions timerOptions) {
         this.listener = changeListener;
         this.project = project;
+        this.timerOptions = timerOptions;
         initComponents();
 
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
@@ -93,7 +97,19 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                 remoteCheckBox.setVisible(false);
                 remoteCheckBox.setEnabled(false);
             }
+            // enable Schedule section if Timer Session EJB, disable otherwise
+            if (this.timerOptions == null) {
+                schedulePanel.setVisible(false);
+                schedulePanel.setEnabled(false);
+            }  else {
+                statefulButton.setEnabled(false);
+                statefulButton.setVisible(false);
+            }
         } else {
+            // hide whole Schedule section
+            schedulePanel.setVisible(false);
+            schedulePanel.setEnabled(false);
+            // hide singleton radio button
             singletonButton.setVisible(false);
             singletonButton.setEnabled(false);
             localCheckBox.setSelected(true);
@@ -115,6 +131,17 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
                 updateInProjectCombo(remoteCheckBox.isSelected());
+            }
+        });
+        scheduleTextArea.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                listener.stateChanged(null);
+            }
+            public void removeUpdate(DocumentEvent e) {
+                listener.stateChanged(null);
+            }
+            public void changedUpdate(DocumentEvent e) {
+                listener.stateChanged(null);
             }
         });
         updateInProjectCombo(false);
@@ -191,6 +218,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         sessionStateButtons = new javax.swing.ButtonGroup();
+        jInternalFrame1 = new javax.swing.JInternalFrame();
         sessionTypeLabel = new javax.swing.JLabel();
         statelessButton = new javax.swing.JRadioButton();
         statefulButton = new javax.swing.JRadioButton();
@@ -199,6 +227,23 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         localCheckBox = new javax.swing.JCheckBox();
         singletonButton = new javax.swing.JRadioButton();
         inProjectCombo = new javax.swing.JComboBox();
+        schedulePanel = new javax.swing.JPanel();
+        scheduleLabel = new javax.swing.JLabel();
+        scheduleScrollPane = new javax.swing.JScrollPane();
+        scheduleTextArea = new javax.swing.JTextArea();
+
+        jInternalFrame1.setVisible(true);
+
+        org.jdesktop.layout.GroupLayout jInternalFrame1Layout = new org.jdesktop.layout.GroupLayout(jInternalFrame1.getContentPane());
+        jInternalFrame1.getContentPane().setLayout(jInternalFrame1Layout);
+        jInternalFrame1Layout.setHorizontalGroup(
+            jInternalFrame1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 0, Short.MAX_VALUE)
+        );
+        jInternalFrame1Layout.setVerticalGroup(
+            jInternalFrame1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 0, Short.MAX_VALUE)
+        );
 
         org.openide.awt.Mnemonics.setLocalizedText(sessionTypeLabel, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_SessionType")); // NOI18N
 
@@ -223,34 +268,67 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         singletonButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Singleton").charAt(0));
         singletonButton.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Singleton")); // NOI18N
 
+        scheduleLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Schedule").charAt(0));
+        scheduleLabel.setLabelFor(scheduleTextArea);
+        scheduleLabel.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Schedule")); // NOI18N
+        scheduleLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        scheduleTextArea.setColumns(20);
+        scheduleTextArea.setLineWrap(true);
+        scheduleTextArea.setRows(4);
+        scheduleTextArea.setText("minute=\"*\", second=\"0\", dayOfMonth=\"*\", month=\"*\", year=\"*\", hour=\"9-17\", dayOfWeek=\"Mon-Fri\""); // NOI18N
+        scheduleTextArea.setWrapStyleWord(true);
+        scheduleTextArea.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
+        scheduleScrollPane.setViewportView(scheduleTextArea);
+        scheduleTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Schedule")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout schedulePanelLayout = new org.jdesktop.layout.GroupLayout(schedulePanel);
+        schedulePanel.setLayout(schedulePanelLayout);
+        schedulePanelLayout.setHorizontalGroup(
+            schedulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(schedulePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(schedulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(scheduleScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                    .add(schedulePanelLayout.createSequentialGroup()
+                        .add(scheduleLabel)
+                        .addContainerGap(206, Short.MAX_VALUE))))
+        );
+        schedulePanelLayout.setVerticalGroup(
+            schedulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(schedulePanelLayout.createSequentialGroup()
+                .add(scheduleLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(scheduleScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        scheduleLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Schedule")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(sessionTypeLabel)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(statelessButton))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(statefulButton))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(singletonButton))
+            .add(interfaceLabel)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sessionTypeLabel)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(statelessButton))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(statefulButton))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(singletonButton))
-                    .add(interfaceLabel)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(remoteCheckBox)
-                                .add(6, 6, 6)
-                                .add(inProjectCombo, 0, 129, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(localCheckBox)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 152, Short.MAX_VALUE)))))
+                    .add(remoteCheckBox)
+                    .add(localCheckBox))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(inProjectCombo, 0, 234, Short.MAX_VALUE)
                 .addContainerGap())
+            .add(schedulePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -264,12 +342,15 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                 .add(singletonButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(interfaceLabel)
-                .add(0, 0, 0)
-                .add(localCheckBox)
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(remoteCheckBox)
-                    .add(inProjectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(localCheckBox)
+                        .add(2, 2, 2)
+                        .add(remoteCheckBox))
+                    .add(inProjectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(schedulePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle"); // NOI18N
@@ -287,8 +368,13 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox inProjectCombo;
     private javax.swing.JLabel interfaceLabel;
+    private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JCheckBox localCheckBox;
     private javax.swing.JCheckBox remoteCheckBox;
+    private javax.swing.JLabel scheduleLabel;
+    private javax.swing.JPanel schedulePanel;
+    private javax.swing.JScrollPane scheduleScrollPane;
+    private javax.swing.JTextArea scheduleTextArea;
     private javax.swing.ButtonGroup sessionStateButtons;
     private javax.swing.JLabel sessionTypeLabel;
     private javax.swing.JRadioButton singletonButton;
@@ -316,6 +402,19 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         return localCheckBox.isSelected();
     }
 
+    public TimerOptions getTimerOptions() {
+        if (timerOptions == null) {
+            return null;
+        } else {
+            timerOptions.setTimerOptions(scheduleTextArea.getText());            
+            return timerOptions;
+        }
+    }
+    
+    public String getTimerOptionsError() {
+        return TimerOptions.validate(scheduleTextArea.getText());
+    }
+    
     public Project getRemoteInterfaceProject() {
         if (projectsList == null) {
             return null;

@@ -65,6 +65,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     private SessionEJBWizardPanel wizardPanel;
     private final EJBNameOptions ejbNames;
     private final Project project;
+    private final TimerOptions timerOptions;
     //TODO: RETOUCHE
 //    private boolean isWaitingForScan = false;
     
@@ -72,8 +73,9 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
 
     private WizardDescriptor wizardDescriptor;
 
-    public SessionEJBWizardDescriptor(Project project) {
+    public SessionEJBWizardDescriptor(Project project, TimerOptions timerOptions) {
         this.ejbNames = new EJBNameOptions();
+        this.timerOptions = timerOptions;
         this.project = project;
     }
     
@@ -83,7 +85,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     
     public java.awt.Component getComponent() {
         if (wizardPanel == null) {
-            wizardPanel = new SessionEJBWizardPanel(project, this);
+            wizardPanel = new SessionEJBWizardPanel(project, this, timerOptions);
             // add listener to events which could cause valid status to change
         }
         return wizardPanel;
@@ -141,6 +143,13 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(SessionEJBWizardDescriptor.class, "ERR_CyclicDependency"));
             return false;
         }
+        
+        // check Schedule section if valid
+        String timerOptionsError = wizardPanel.getTimerOptionsError();
+        if (timerOptionsError != null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, timerOptionsError);
+            return false;
+        }
 
         //TODO: RETOUCHE waitScanFinished
 //        if (JavaMetamodel.getManager().isScanInProgress()) {
@@ -190,6 +199,10 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
 
     public String getSessionType() {
         return wizardPanel.getSessionType();
+    }
+
+    public TimerOptions getTimerOptions() {
+        return wizardPanel.getTimerOptions();
     }
     
     public boolean isFinishPanel() {
