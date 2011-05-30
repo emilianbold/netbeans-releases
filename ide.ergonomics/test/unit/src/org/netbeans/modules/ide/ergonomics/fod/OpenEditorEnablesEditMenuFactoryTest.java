@@ -47,6 +47,7 @@ import javax.swing.JEditorPane;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.StyledDocument;
 import junit.framework.Test;
 import org.netbeans.api.actions.Openable;
@@ -67,12 +68,14 @@ import org.openide.windows.WindowManager;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class OpenEditorEnablesEditMenuFactoryTest extends NbTestCase {
+    private static final Logger LOG = Logger.getLogger(OpenEditorEnablesEditMenuFactoryTest.class.getName());
 
     public OpenEditorEnablesEditMenuFactoryTest(String name) {
         super(name);
     }
 
     public static Test suite() {
+        LOG.fine("Creating suite");
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().addTest(OpenEditorEnablesEditMenuFactoryTest.class).
             gui(true).
