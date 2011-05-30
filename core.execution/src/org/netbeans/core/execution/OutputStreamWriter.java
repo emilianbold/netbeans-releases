@@ -112,9 +112,13 @@ final class OutputStreamWriter extends Writer {
      * @exception  IOException  If an I/O error occurs
      */
     public void write(String str, int off, int len) throws IOException {
-        char[] chars = new char[len];
-        str.getChars(off, off + len, chars, 0);
-        out.print(chars);
+        if (off == 0 && len == str.length()) {
+            out.print(str);
+        } else {
+            char[] chars = new char[len];
+            str.getChars(off, off + len, chars, 0);
+            out.print(chars);
+        }
     }
 
     /**
