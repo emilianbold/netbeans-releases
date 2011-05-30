@@ -260,6 +260,7 @@ public final class WebProfileDeployer extends AbstractDeployer {
                                             "com.bea:ServerRuntime=" + target.getName() + ",Name=" + name + ",Type=ApplicationRuntime"); // NOI18N
                                     ObjectName[] componentRuntimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
                                     for (ObjectName n: componentRuntimes) {
+                                        // ModuleURI returns just "web"
                                         String root = (String) connection.getAttribute(n, "ContextRoot"); // NOI18N
                                         if (root != null) {
                                             module.setContextURL(
