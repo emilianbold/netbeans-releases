@@ -64,6 +64,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -1813,6 +1814,80 @@ public class RepositoryUpdaterTest extends NbTestCase {
         globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
         assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
         assertTrue(h.wasCanceled());
+    }
+
+    public void testPerfLogger() throws Exception {
+        final File workdDir  =  getWorkDir();
+        final File root = new File (workdDir,"loggerTest");             //NOI18N
+        final FileObject rootFo = FileUtil.createFolder(root);
+        FileUtil.createData(rootFo, "a.foo");   //NOI18N
+        FileUtil.createData(rootFo, "a.emb");   //NOI18N
+        final ClassPath cp = ClassPathSupport.createClassPath(rootFo);
+        class PerfLoghandler extends Handler {
+
+            class R {
+                private final Queue<String> toExpect;
+                private final Map<String,Object[]> values;
+
+                private R(final String... toExpect) {
+                    this.toExpect = new LinkedList<String>(Arrays.asList(toExpect));
+                    this.values = new HashMap<String, Object[]>();
+                }
+
+                Object[] getParams(String expectedKey) {
+                    return values.get(expectedKey);
+                }                
+            }
+            
+            private R r;
+
+            public synchronized void expect(final String... expect) {
+                r = new R(expect);
+            }
+
+            public synchronized R await(long timeOut) throws InterruptedException {
+                final long st = System.currentTimeMillis();
+                while (!r.toExpect.isEmpty()) {
+                    if (System.currentTimeMillis()-st > timeOut) {
+                        return null;
+                    }
+                    wait(timeOut);
+                }
+                return r;
+            }
+
+
+            @Override
+            public synchronized void publish(LogRecord record) {
+                if (record.getMessage() != null && record.getMessage().startsWith(r.toExpect.peek())) {
+                    r.values.put(r.toExpect.peek(),record.getParameters());
+                    r.toExpect.poll();
+                }
+                if (r.toExpect.isEmpty()) {
+                    notifyAll();
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        }
+        final PerfLoghandler h = new PerfLoghandler();
+        final Logger perfLogger = Logger.getLogger(RepositoryUpdater.class.getName() + ".perf");    //NOI18N
+        perfLogger.addHandler(h);
+        perfLogger.setLevel(Level.FINE);
+        h.expect("reportScanOfFile:","reportIndexerStatistics:");   //NOI18N
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+        final PerfLoghandler.R r = h.await(5000);
+        assertNotNull(r);
+        assertEquals(rootFo.getURL(), r.getParams("reportScanOfFile:")[0]);     //NOI18N
+        final Map<String,int[]> istat = (Map<String,int[]>)r.getParams("reportIndexerStatistics:")[0];  //NOI18N
+        assertEquals(1,istat.get("emb")[0]);    //NOI18N
+        assertEquals(1,istat.get("foo")[0]);    //NOI18N
     }
 
 

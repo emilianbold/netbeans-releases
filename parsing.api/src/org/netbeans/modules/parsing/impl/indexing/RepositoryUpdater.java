@@ -889,9 +889,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
+    private static final Logger PERF_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".perf"); //NOI18N
     private static final Logger SFEC_LOGGER = Logger.getLogger("org.netbeans.ui.ScanForExternalChanges"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("RepositoryUpdater.delay"); //NOI18N
-    private static final boolean PERF_TEST = getSystemBoolean("perf.refactoring.test", false); //NOI18N
     private static final boolean notInterruptible = getSystemBoolean("netbeans.indexing.notInterruptible", false); //NOI18N
     private static final boolean useRecursiveListeners = getSystemBoolean("netbeans.indexing.recursiveListeners", true); //NOI18N
     private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
@@ -937,7 +937,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     });
 
     private RepositoryUpdater () {
-        LOGGER.log(Level.FINE, "perf.refactoring.test={0}", PERF_TEST); //NOI18N
         LOGGER.log(Level.FINE, "netbeans.indexing.notInterruptible={0}", notInterruptible); //NOI18N
         LOGGER.log(Level.FINE, "netbeans.indexing.recursiveListeners={0}", useRecursiveListeners); //NOI18N
         LOGGER.log(Level.FINE, "FILE_LOCKS_DELAY={0}", FILE_LOCKS_DELAY); //NOI18N
@@ -1618,9 +1617,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final String progressTitle;
         private ProgressHandle progressHandle = null;
         private int progress = -1;
-
-//        private int allLanguagesParsersCount = -1;
-//        private int allLanguagesTasksCount = -1;
+        //Indexer statistics <IndexerName,{InvocationCount,CumulativeTime}>
+        private Map<String,int[]> indexerStatistics;
 
         protected Work(boolean followUpJob, boolean checkEditor, boolean supportsProgress, boolean steady) {
             this(
@@ -1867,6 +1865,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             tm1 = System.currentTimeMillis();
                             SPIAccessor.getInstance().index(indexer, indexables, value.second);
                             tm2 = System.currentTimeMillis();
+                            logIndexerTime(factory.getIndexerName(), (int)(tm2-tm1));
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t) {
@@ -2049,7 +2048,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
                     }
                     try {
+                        long st = System.currentTimeMillis();
                         SPIAccessor.getInstance().index(indexer, ctx);
+                        long et = System.currentTimeMillis();
+                        logIndexerTime(f.getIndexerName(), (int)(et-st));
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (Throwable t) {
@@ -2133,7 +2135,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                             final EmbeddingIndexer indexer = indexerFactory.createIndexer(dirty, pr.getSnapshot());
                                             if (indexer != null) {
                                                 try {
+                                                    long st = System.currentTimeMillis();
                                                     SPIAccessor.getInstance().index(indexer, dirty, pr, value.second);
+                                                    long et = System.currentTimeMillis();
+                                                    logIndexerTime(indexerName, (int)(et-st));
                                                 } catch (ThreadDeath td) {
                                                     throw td;
                                                 } catch (Throwable t) {
@@ -2226,9 +2231,35 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return cancelRequest;
         }
 
+        protected final void logIndexerTime(
+                final @NonNull String indexerName,
+                final int time) {
+            if (indexerStatistics == null) {
+                return;
+            }
+            int[] itime = indexerStatistics.get(indexerName);
+            if ( itime == null) {
+                itime = new int[] {0,0};
+                indexerStatistics.put(indexerName, itime);
+            }
+            itime[0]++;
+            itime[1]+=time;
+        }
+
         public final void doTheWork() {
             try {
-                finished.compareAndSet(false, getDone());
+                if (PERF_LOGGER.isLoggable(Level.FINE)) {
+                    indexerStatistics = new HashMap<String, int[]>();
+                }
+                try {
+                    finished.compareAndSet(false, getDone());
+                } finally {
+                    if (indexerStatistics != null) {
+                        Map<String,int[]> stats = indexerStatistics;
+                        indexerStatistics = null;
+                        reportIndexerStatistics(stats);
+                    }
+                }
             } catch (Throwable t) {
                 LOGGER.log(Level.WARNING, null, t);
                 
@@ -2324,6 +2355,15 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 assert support != null;
                 support.resetState(true, -1, -1);
             }
+        }
+
+        private void reportIndexerStatistics(final @NonNull Map<String,int[]> stats) {
+            PERF_LOGGER.log(
+                Level.FINE,
+                "reportIndexerStatistics: {0}",    //NOI18N
+                new Object[] {
+                    stats
+                });
         }
 
     } // End of Work class
@@ -2601,7 +2641,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                         LOGGER.fine("Reindexing " + root + " using " + indexer + "; mimeTypes=" + sb.toString()); //NOI18N
                                     }
                                     try {
+                                        long st = System.currentTimeMillis();
                                         SPIAccessor.getInstance().index(indexer, indexables, ctx);
+                                        long et = System.currentTimeMillis();
+                                        logIndexerTime(factory.getIndexerName(), (int)(et-st));
                                     } catch (ThreadDeath td) {
                                         throw td;
                                     } catch (Throwable t) {
@@ -3413,9 +3456,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (scannedRootsCnt != null) {
                     scannedRootsCnt[0]++;
                 }
-                if (PERF_TEST) {
-                    reportRootScan(root, time);
-                }
+                reportRootScan(root, time);
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("Indexing of: %s took: %d ms", root.toExternalForm(), time)); //NOI18N
                 }
@@ -3476,9 +3517,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     totalOutOfDateFiles += outOfDateFiles[0];
                     totalDeletedFiles += deletedFiles[0];
                     totalRecursiveListenersTime += recursiveListenersTime[0];
-                    if (PERF_TEST) {
-                        reportRootScan(source, time);
-                    }
+                    reportRootScan(source, time);
                     if (LOGGER.isLoggable(Level.INFO)) {
                         LOGGER.info(String.format("Indexing of: %s took: %d ms (New or modified files: %d, Deleted files: %d) [Adding listeners took: %d ms]", //NOI18N
                                 source.toExternalForm(), time, outOfDateFiles[0], deletedFiles[0], recursiveListenersTime[0]));
@@ -3584,12 +3623,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
         
         private static void reportRootScan(URL root, long duration) {
-            try {
-                Class<?> c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
-                java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
-                m.invoke(c.newInstance(), new Object[] {root.toExternalForm(), new Long(duration)});
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, null, e);
+            if (PERF_LOGGER.isLoggable(Level.FINE)) {
+                PERF_LOGGER.log (
+                    Level.FINE,
+                    "reportScanOfFile: {0} {1}", //NOI18N
+                    new Object[] {
+                        root,
+                        duration
+                    });
             }
         }
     } // End of AbstractRootsWork class
