@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -67,6 +68,7 @@ import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.versioning.util.RootsToFile;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -111,7 +113,6 @@ public class Mercurial {
     private static final String MERCURIAL_SUPPORTED_VERSION_100 = "1.0"; // NOI18N
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private final MercurialVCS mvcs;
     private RootsToFile rootsToFile;
 
     public static synchronized Mercurial getInstance() {
@@ -140,18 +141,15 @@ public class Mercurial {
     private RequestProcessor parallelRP;
 
     private Mercurial() {
-        mvcs = org.openide.util.Lookup.getDefault().lookup(MercurialVCS.class);
     }
 
 
     private void init() {
         setDefaultPath();
-        fileStatusCache = new FileStatusCache();
-        mercurialAnnotator = new MercurialAnnotator();
-        mercurialInterceptor = new MercurialInterceptor();
-        fileStatusCache.addPropertyChangeListener(mvcs);
-        mercurialAnnotator.addPropertyChangeListener(mvcs);
-        addPropertyChangeListener(mvcs);
+        fileStatusCache = new FileStatusCache(this);
+        mercurialAnnotator = new MercurialAnnotator(fileStatusCache);
+        mercurialInterceptor = new MercurialInterceptor(this, fileStatusCache);
+        
         int statisticsFrequency;
         String s = System.getProperty("mercurial.root.stat.frequency", "0"); //NOI18N
         try {
@@ -167,10 +165,16 @@ public class Mercurial {
 
             @Override
             public File getTopmostManagedAncestor (File file) {
-                return mvcs.getTopmostManagedAncestor(file);
+                return Mercurial.this.getTopmostManagedAncestor(file);
             }
         }, Logger.getLogger("org.netbeans.modules.mercurial.RootsToFile"), statisticsFrequency); //NOI18N
         asyncInit(); // Does the Hg check but postpones querying user until menu is activated
+    }
+
+    void attachListeners(MercurialVCS mvcs) {
+        fileStatusCache.addPropertyChangeListener(mvcs);
+        mercurialAnnotator.addPropertyChangeListener(mvcs);
+        addPropertyChangeListener(mvcs);
     }
 
     private void setDefaultPath() {
@@ -368,7 +372,6 @@ public class Mercurial {
     }
 
     public void versionedFilesChanged() {
-        rootsToFile.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 
@@ -493,5 +496,78 @@ public class Mercurial {
      */
     public String getVersion () {
         return version;
+    }
+
+    private Set<File> knownRoots = Collections.synchronizedSet(new HashSet<File>());
+    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
+    File getTopmostManagedAncestor(File file) {
+        long t = System.currentTimeMillis();
+        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            Mercurial.LOG.fine(" cached as unversioned");
+            return null;
+        }
+        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        File parent = getKnownParent(file);
+        if(parent != null) {
+            Mercurial.LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent " + parent);
+            return parent;
+        }
+
+        if (HgUtils.isPartOfMercurialMetadata(file)) {
+            for (;file != null; file = file.getParentFile()) {
+                if (HgUtils.isAdministrative(file)) {
+                    file = file.getParentFile();
+                    break;
+                }
+            }
+        }
+        Set<File> done = new HashSet<File>();
+        File topmost = null;
+        for (;file != null; file = file.getParentFile()) {
+            if(unversionedParents.contains(file)) {
+                Mercurial.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                break;
+            }
+            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (HgUtils.hgExistsFor(file)){
+                Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
+                done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
+                topmost =  file;
+            } else {
+                Mercurial.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                if(file.exists()) { // could be created later ...
+                    done.add(file);
+                }
+            }
+        }
+        if(done.size() > 0) {
+            Mercurial.LOG.log(Level.FINE, " storing unversioned");
+            unversionedParents.addAll(done);
+        }
+        if(Mercurial.LOG.isLoggable(Level.FINE)) {
+            Mercurial.LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });
+        }
+        if(topmost != null) {
+            knownRoots.add(topmost);
+        }
+
+        return topmost;
+    }
+    
+   private File getKnownParent(File file) {
+        File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
+        File knownParent = null;
+        for (File r : roots) {
+            if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+                knownParent = r;
+            }
+        }
+        return knownParent;
+    }
+
+    public void clearAncestorCaches() {
+        unversionedParents.clear();
+        rootsToFile.clear();
     }
 }

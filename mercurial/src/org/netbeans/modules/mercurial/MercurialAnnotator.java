@@ -48,8 +48,6 @@ import org.netbeans.modules.mercurial.ui.menu.MergeMenu;
 import org.netbeans.modules.mercurial.ui.menu.ShareMenu;
 import org.netbeans.modules.mercurial.ui.menu.RecoverMenu;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
-import org.netbeans.modules.mercurial.ui.clone.CloneExternalAction;
-import org.netbeans.modules.mercurial.ui.create.CreateAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -84,9 +82,12 @@ import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Responsible for coloring file labels and file icons in the IDE and providing IDE with menu items.
@@ -137,8 +138,8 @@ public class MercurialAnnotator extends VCSAnnotator {
     private static final String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
 
-    public MercurialAnnotator() {
-        cache = Mercurial.getInstance().getFileStatusCache();
+    MercurialAnnotator(FileStatusCache cache) {
+        this.cache = cache;
         initDefaults();
     }
     
@@ -307,7 +308,11 @@ public class MercurialAnnotator extends VCSAnnotator {
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            actions.add(SystemAction.get(CreateAction.class));
+            Action a = (Action) FileUtil.getConfigFile("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance").getAttribute("instanceCreate");
+            if(a instanceof ContextAwareAction) {
+                a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+            }            
+            if(a != null) actions.add(a);
             actions.add(null);
             actions.add(SystemAction.get(StatusAction.class));
             actions.add(SystemAction.get(DiffAction.class));
@@ -321,7 +326,9 @@ public class MercurialAnnotator extends VCSAnnotator {
             if (!noneVersioned) {
                 actions.add(SystemAction.get(CloneAction.class));
             }
-            actions.add(SystemAction.get(CloneExternalAction.class));
+            a = (Action) FileUtil.getConfigFile("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance").getAttribute("instanceCreate");
+            if(a != null) actions.add(a);
+
             actions.add(SystemAction.get(FetchAction.class));
             actions.add(new ShareMenu());
             actions.add(new MergeMenu(false));
@@ -348,7 +355,11 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CreateAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Create"), context)); //NOI18N
+                Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+                if(a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                }            
+                if(a != null) actions.add(a);
             }else{
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context)); //NOI18N
