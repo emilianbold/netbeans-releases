@@ -254,20 +254,17 @@ public final class WebProfileDeployer extends AbstractDeployer {
                                         new Object[] {target.getName()}, new String[] {"java.lang.String"}); // NOI18N
 
                                 WLTargetModuleID module = new WLTargetModuleID(target, name);
-
-                                if ("STATE_ACTIVE".equals(state)) { // NOI18N
-                                    ObjectName appRuntime = new ObjectName(
-                                            "com.bea:ServerRuntime=" + target.getName() + ",Name=" + name + ",Type=ApplicationRuntime"); // NOI18N
-                                    ObjectName[] componentRuntimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
-                                    for (ObjectName n: componentRuntimes) {
-                                        // ModuleURI returns just "web"
-                                        String root = (String) connection.getAttribute(n, "ContextRoot"); // NOI18N
-                                        if (root != null) {
-                                            module.setContextURL(
-                                                    "http://" + getDeploymentManager().getHost() // NOI18N
-                                                    + ":" + getDeploymentManager().getPort() + root); // NOI18N
-                                            break;
-                                        }
+                                ObjectName appRuntime = new ObjectName(
+                                        "com.bea:ServerRuntime=" + target.getName() + ",Name=" + name + ",Type=ApplicationRuntime"); // NOI18N
+                                ObjectName[] componentRuntimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
+                                for (ObjectName n: componentRuntimes) {
+                                    // ModuleURI returns just "web"
+                                    String root = (String) connection.getAttribute(n, "ContextRoot"); // NOI18N
+                                    if (root != null) {
+                                        module.setContextURL(
+                                                "http://" + getDeploymentManager().getHost() // NOI18N
+                                                + ":" + getDeploymentManager().getPort() + root); // NOI18N
+                                        break;
                                     }
                                 }
                                 result.put(module, state);
