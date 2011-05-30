@@ -152,7 +152,7 @@ public class StatusAction  extends ContextAction {
                         if (entries != null) {
                             for (ISVNDirEntryWithLock entry : entries) {
                                 if (entry.getLock() != null) {
-                                    locks.put(new File(root, entry.getDirEntry().getPath().replace("/", File.separator)), entry.getLock()); //NOI18N
+                                    locks.put(root.isFile() ? root : new File(root, entry.getDirEntry().getPath().replace("/", File.separator)), entry.getLock()); //NOI18N
                                 }
                             }
                         }

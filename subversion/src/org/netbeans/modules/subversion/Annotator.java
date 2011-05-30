@@ -80,6 +80,8 @@ import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
 import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.subversion.ui.export.ExportAction;
+import org.netbeans.modules.subversion.ui.lock.LockAction;
+import org.netbeans.modules.subversion.ui.lock.UnlockAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
@@ -443,6 +445,14 @@ public class Annotator {
             actions.add(SystemAction.get(RevertModificationsAction.class));
             actions.add(SystemAction.get(ResolveConflictsAction.class));
             actions.add(SystemAction.get(IgnoreAction.class));
+            SystemAction lockAction = SystemAction.get(LockAction.class);
+            if (lockAction.isEnabled()) {
+                actions.add(lockAction);
+            }
+            SystemAction unlockAction = SystemAction.get(UnlockAction.class);
+            if ((unlockAction = SystemAction.get(UnlockAction.class)).isEnabled()) {
+                actions.add(unlockAction);
+            }
             actions.add(null);
             actions.add(SystemAction.get(CleanupAction.class));
             actions.add(SystemAction.get(VersioningInfoAction.class));
@@ -495,6 +505,16 @@ public class Annotator {
                         ((ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class)).getActionStatus(nodes) == ExcludeFromCommitAction.INCLUDING
                         ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
                         : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
+                }
+                if (!onlyFolders) {
+                    SystemActionBridge lockAction = SystemActionBridge.createAction(SystemAction.get(LockAction.class), loc.getString("CTL_PopupMenuItem_Lock"), context);
+                    if (lockAction.isEnabled()) {
+                        actions.add(lockAction);
+                    }
+                    SystemActionBridge unlockAction = SystemActionBridge.createAction(SystemAction.get(UnlockAction.class), loc.getString("CTL_PopupMenuItem_Unlock"), context);
+                    if (unlockAction.isEnabled()) {
+                        actions.add(unlockAction);
+                    }
                 }
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(
