@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -63,6 +63,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.modules.progress.spi.InternalHandle;
 
@@ -123,7 +124,17 @@ public class PopupPane extends JScrollPane {
 //        });
     }
     
-    public void addListComponent(ListComponent lst) {
+    public void addListComponent(final ListComponent lst) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    addListComponent(lst);
+                }
+            });
+            return;
+        }
+        
         listComponents.add(lst);
         if (view.getComponentCount() > 0) {
             JComponent previous = (JComponent)view.getComponent(view.getComponentCount() - 1);
@@ -138,7 +149,17 @@ public class PopupPane extends JScrollPane {
         }
     }
     
-    public void removeListComponent(InternalHandle handle) {
+    public void removeListComponent(final InternalHandle handle) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    removeListComponent(handle);
+                }
+            });
+            return;
+        }
+        
         Iterator it = listComponents.iterator();
         while (it.hasNext()) {
             ListComponent comp = (ListComponent)it.next();
@@ -168,7 +189,17 @@ public class PopupPane extends JScrollPane {
      * bold font is now used not only for explicitly selected items, but for any 
      * change in currently selected task.
      */
-    public void updateBoldFont(InternalHandle handle) {
+    public void updateBoldFont(final InternalHandle handle) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateBoldFont(handle);
+                }
+            });
+            return;
+        }
+        
         Iterator it = listComponents.iterator();
         while (it.hasNext()) {
             ListComponent comp = (ListComponent)it.next();
