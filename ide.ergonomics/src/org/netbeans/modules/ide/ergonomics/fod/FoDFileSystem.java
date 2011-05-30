@@ -44,7 +44,10 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -121,6 +124,7 @@ implements Runnable, ChangeListener, LookupListener {
         refresh.waitFinished();
     }
 
+    @Override
     public void run() {
         boolean empty = true;
         LOG.fine("collecting layers"); // NOI18N
@@ -165,10 +169,14 @@ implements Runnable, ChangeListener, LookupListener {
     }
 
     public FeatureInfo whichProvides(FileObject template) {
-        String path = template.getPath();
+        Set<URL> layers = new HashSet<URL>();
+        Object obj = template.getAttribute("layers");
+        if (obj instanceof URL[]) {
+            layers.addAll(Arrays.asList((URL[])obj));
+        }
+        
         for (FeatureInfo info : FeatureManager.features()) {
-            FileSystem fs = info.getXMLFileSystem();
-            if (fs.findResource(path) != null) {
+            if (layers.contains(info.getLayerURL())) {
                 return info;
             }
         }
@@ -176,12 +184,9 @@ implements Runnable, ChangeListener, LookupListener {
     }
     
     public URL getDelegateFileSystem(FileObject template) {
-        String path = template.getPath();
-        for (FeatureInfo info : FeatureManager.features()) {
-            FileSystem fs = info.getXMLFileSystem();
-            if (fs.findResource(path) != null) {
-                return info.getLayerURL();
-            }
+        Object obj = template.getAttribute("layers");
+        if (obj instanceof URL[]) {
+            return ((URL[])obj)[0];
         }
         return null;
     }
