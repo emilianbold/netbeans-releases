@@ -242,7 +242,7 @@ public class Flow {
                 case IDENTIFIER:
                     break;
                 default:
-                    throw new IllegalStateException(node.getVariable().getKind().name());
+                    //#198975: ignore
             }
 
             scan(node.getExpression(), p);
