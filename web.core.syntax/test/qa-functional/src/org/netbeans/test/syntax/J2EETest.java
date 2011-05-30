@@ -52,58 +52,97 @@ import org.openide.filesystems.FileObject;
 import junit.framework.Test;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 
 /** 
  *
  * @author ms113234
  */
 public class J2EETest extends CompletionTest {
-    
+
     /** Creates a new instance of CompletionTesJ2EE */
     public J2EETest(String name, FileObject testFileObj) {
         super(name, testFileObj);
     }
-    
+
     public static Test suite() {
-        // find folder with test projects and define file objects filter
-        File datadir = new J2EETest(null, null).getDataDir();
-        File projectsDir = new File(datadir, "J2EECompletionTestProjects");
-        FileObjectFilter filter = new FileObjectFilter() {
+//        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(J2EETest.class);
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
+    }
 
-            public boolean accept(FileObject fo) {
-                String ext = fo.getExt();
-                String name = fo.getName();
-                return (name.startsWith("test") || name.startsWith("Test")) && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || ext.equals("java"));
+    public static final class SuiteCreator extends NbTestSuite {
+
+        public SuiteCreator() {
+            super();
+            File datadir = new J2EETest(null, null).getDataDir();
+            File projectsDir = new File(datadir, "J2EECompletionTestProjects");
+            FileObjectFilter filter = new FileObjectFilter() {
+
+                public boolean accept(FileObject fo) {
+                    String ext = fo.getExt();
+                    String name = fo.getName();
+                    return (name.startsWith("test") || name.startsWith("Test")) && (XML_EXTS.contains(ext) || JSP_EXTS.contains(ext) || ext.equals("java"));
+                }
+            };
+
+            int time = 0;
+            while ((ConnectionManager.getDefault().getConnections().length == 0) && (time <= 12)) {
+                time++;
+                try {
+                    Thread.sleep(5000);
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
+                }
             }
-        };
-         
-        //DB Connecting - this must start with clear userdir, because it expect sample connection as the first one
-        int time = 0;
-        while ((ConnectionManager.getDefault().getConnections().length == 0) && (time <= 12)) {
-         time++;
-            try {
-             Thread.sleep(5000);
-            } catch (Exception e) {
-             e.printStackTrace(System.err);
-         }
+            if (time > 12) {
+                System.err.println("IMPOSSIBLE TO CONNECT THE DATABASE");
+            } else {
+                final DatabaseConnection dbconn = ConnectionManager.getDefault().getConnections()[0];
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        public void run() {
+                            ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                        }
+                    });
+                } catch (InterruptedException e) {
+                } catch (InvocationTargetException e) {
+                }
+            }
+            addTest(RecurrentSuiteFactory.createSuite(J2EETest.class, projectsDir, filter));
         }
-        if (time > 12) {
-            System.err.println("IMPOSSIBLE TO CONNECT THE DATABASE");
+    }
+
+    @Override
+    protected File getProjectsDir() {
+        File datadir = new CompletionTest().getDataDir();
+        return new File(datadir, "J2EECompletionTestProjects");
+    }
+
+    @Override
+    public void runTest() throws Exception {
+        if (testFileObj == null) {
+            return;
+        }
+
+        String ext = testFileObj.getExt();
+        if (JSP_EXTS.contains(ext)) {
+            test(testFileObj, "<%--CC", "--%>");
+        } else if (XML_EXTS.contains(ext)) {
+            test(testFileObj, "<!--CC", "-->", false);
+        } else if (JS_EXTS.contains(ext) || ext.equals("java")) {
+            test(testFileObj, "/**CC", "*/");
         } else {
-            final DatabaseConnection dbconn = ConnectionManager.getDefault().getConnections()[0];
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-
-                    public void run() {
-                        ConnectionManager.getDefault().showConnectionDialog(dbconn);
-                    }
-                });
-            } catch (InterruptedException e) {
-            } catch (InvocationTargetException e) {
-            }
+            throw new JemmyException("File extension of: " + testFileObj.getNameExt() + " is unsupported.");
         }
-        
-        return RecurrentSuiteFactory.createSuite(J2EETest.class,
-                projectsDir, filter);
+    }
+
+    private void test(FileObject fileObj, String stepStart, String stepEnd) throws Exception {
+        test(fileObj, stepStart, stepEnd, true);
     }
 }
