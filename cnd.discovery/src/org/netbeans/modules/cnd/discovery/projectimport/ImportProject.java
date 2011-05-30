@@ -459,7 +459,7 @@ public class ImportProject implements PropertyChangeListener {
 //            Exceptions.printStackTrace(ex);
 //        }
 //    }
-    private File createTempFile(String prefix) {
+    static File createTempFile(String prefix) {
         try {
             File file = File.createTempFile(prefix, ".log"); // NOI18N
             file.deleteOnExit();
@@ -1361,11 +1361,11 @@ public class ImportProject implements PropertyChangeListener {
         Project, Configure, MakeClean, Make, DiscoveryDwarf, DiscoveryLog, FixMacros, DiscoveryModel, FixExcluded
     }
 
-    private static final class RfsListenerImpl implements RfsListener {
+    static final class RfsListenerImpl implements RfsListener {
         private final Map<String, File> storage = new HashMap<String, File>();
         private final ExecutionEnvironment execEnv;
 
-        private RfsListenerImpl(ExecutionEnvironment execEnv) {
+        RfsListenerImpl(ExecutionEnvironment execEnv) {
             this.execEnv = execEnv;
         }
 
@@ -1375,7 +1375,7 @@ public class ImportProject implements PropertyChangeListener {
                 storage.put(remotePath, localFile);
             }
         }
-        private void download() {
+        void download() {
             Map<String, File> copy = new HashMap<String, File>(storage);
             for(Map.Entry<String, File> entry : copy.entrySet()) {
                 downloadImpl(entry.getKey(),entry.getValue());
