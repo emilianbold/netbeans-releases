@@ -166,6 +166,9 @@ public class ConvertAnonymousToInner extends AbstractHint {
     public List<ErrorDescription> run(CompilationInfo compilationInfo, TreePath treePath) {
         int pos = CaretAwareJavaSourceTaskFactory.getLastPosition(compilationInfo.getFileObject());
         int[] selection = SelectionAwareJavaSourceTaskFactory.getLastSelection(compilationInfo.getFileObject());
+
+        if (selection == null) return null;
+        
         Fix f = computeFix(compilationInfo, selection[0], selection[1], true);
         
         if (f == null)
