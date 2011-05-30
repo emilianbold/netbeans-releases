@@ -101,27 +101,21 @@ import org.xml.sax.SAXException;
  *
  * @author Petr Hejl
  */
-public final class CommandBasedDeployer {
+public final class CommandBasedDeployer extends AbstractDeployer {
 
     private static final Logger LOGGER = Logger.getLogger(CommandBasedDeployer.class.getName());
 
-    private static RequestProcessor DEPLOYMENT_RP = new RequestProcessor("Weblogic Deployment", 1); // NOI18N
-
     private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
 
-    private static final int TIMEOUT = 300000;
-
-    private static final boolean SHOW_CONSOLE = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");
-
-    private final WLDeploymentManager deploymentManager;
+    private static final boolean SHOW_CONSOLE = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");;
 
     public CommandBasedDeployer(WLDeploymentManager deploymentManager) {
-        this.deploymentManager = deploymentManager;
+        super(deploymentManager);
     }
 
     public ProgressObject directoryDeploy(final Target target, String name,
             File file, String host, String port, J2eeModule.Type type) {
-        if (deploymentManager.isWebProfile()) {
+        if (getDeploymentManager().isWebProfile()) {
             // FIXME DWP nostage not supported
             return deploy(createModuleId(target, file, host, port, name, type),
                     file, "-name", name, "-source"); // NOI18N
@@ -173,7 +167,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed",
                                         lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -241,7 +235,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed",
                                         lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
                             break;
                         } else {
                             waitForUrlReady(module, progress);
@@ -310,7 +304,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed",
                                         lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -382,7 +376,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.START, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Datasource_Failed",
                                         lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -446,7 +440,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed",
                                         lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
                             break;
                         } else {
                             continue;
@@ -497,10 +491,10 @@ public final class CommandBasedDeployer {
 
             @Override
             public void run() {
-                int length = deploymentManager.isRemote() ? parameters.length + 2 : parameters.length + 1;
+                int length = getDeploymentManager().isRemote() ? parameters.length + 2 : parameters.length + 1;
                 String[] execParams = new String[length];
                 execParams[execParams.length - 1] = file.getAbsolutePath();
-                if (deploymentManager.isRemote()) {
+                if (getDeploymentManager().isRemote()) {
                     execParams[execParams.length - 2] = "-upload"; // NOI18N
                 }
                 if (parameters.length > 0) {
@@ -517,7 +511,7 @@ public final class CommandBasedDeployer {
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                 NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed",
                                     lineProcessor.getLastLine())));
-                        FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
+                        FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
                     } else {
                         //waitForUrlReady(factory, moduleId, progress);
                         progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
@@ -582,7 +576,7 @@ public final class CommandBasedDeployer {
                                     ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                     NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed",
                                         lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(deploymentManager, lineProcessor.getLastLine());
+                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
                             break;
                         } else {
                             //waitForUrlReady(factory, moduleId, progress);
@@ -625,7 +619,7 @@ public final class CommandBasedDeployer {
     private ExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
-        InstanceProperties ip = deploymentManager.getInstanceProperties();
+        InstanceProperties ip = getDeploymentManager().getInstanceProperties();
         String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
         String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
 
@@ -639,8 +633,8 @@ public final class CommandBasedDeployer {
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
                 .redirectErrorStream(true);
         // NB supports only JDK6+ while WL 9, only JDK 5
-        if (deploymentManager.getDomainVersion() == null
-                || !deploymentManager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
+        if (getDeploymentManager().getDomainVersion() == null
+                || !getDeploymentManager().getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
             builder= builder.addArgument("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
         }
         builder = builder.addArgument("-cp") // NOI18N
@@ -674,7 +668,7 @@ public final class CommandBasedDeployer {
     }
 
     private String getClassPath() {
-        File weblogicJar = WLPluginProperties.getWeblogicJar(deploymentManager);
+        File weblogicJar = WLPluginProperties.getWeblogicJar(getDeploymentManager());
         if (weblogicJar != null && weblogicJar.isFile() && weblogicJar.exists()) {
             return weblogicJar.getAbsolutePath();
         }
