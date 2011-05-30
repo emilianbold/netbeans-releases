@@ -242,7 +242,7 @@ public class Flow {
                 case IDENTIFIER:
                     break;
                 default:
-                    throw new IllegalStateException(node.getVariable().getKind().name());
+                    //#198975: ignore
             }
 
             scan(node.getExpression(), p);
@@ -623,6 +623,50 @@ public class Flow {
             return null;
         }
 
+        public Boolean visitSwitch(SwitchTree node, Void p) {
+            scan(node.getExpression(), null);
+
+            Map<VariableElement, State> origVariable2State = new HashMap<VariableElement, State>(variable2State);
+
+            variable2State = new HashMap<VariableElement, State>();
+
+            boolean exhaustive = false;
+
+            for (CaseTree ct : node.getCases()) {
+                variable2State = mergeOr(variable2State, origVariable2State);
+
+                if (ct.getExpression() == null) {
+                    exhaustive = true;
+                }
+
+                scan(ct, null);
+            }
+
+            if (!exhaustive) {
+                variable2State = mergeOr(variable2State, origVariable2State);
+            }
+            
+            return null;
+        }
+
+        public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+            scan(node.getExpression(), null);
+
+            Map<VariableElement, State> beforeLoop = variable2State;
+
+            variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
+
+            scan(node.getStatement(), null);
+
+            beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
+
+            scan(node.getStatement(), null);
+
+            variable2State = mergeOr(beforeLoop, variable2State);
+
+            return null;
+        }
+
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {
             Collection<Map<VariableElement, State>> r = resumeAfter.get(target);
 
@@ -631,11 +675,6 @@ public class Flow {
             }
 
             r.add(new HashMap<VariableElement, State>(state));
-        }
-
-        public Boolean visitSwitch(SwitchTree node, Void p) {
-            super.visitSwitch(node, p);
-            return null;
         }
 
         public Boolean visitWildcard(WildcardTree node, Void p) {
@@ -730,11 +769,6 @@ public class Flow {
 
         public Boolean visitErroneous(ErroneousTree node, Void p) {
             super.visitErroneous(node, p);
-            return null;
-        }
-
-        public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-            super.visitEnhancedForLoop(node, p);
             return null;
         }
 
