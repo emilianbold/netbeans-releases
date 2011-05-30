@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,76 +41,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.versioning;
 
-package org.netbeans.modules.subversion.ui.status;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
+import org.openide.util.test.MockLookup;
 
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
-
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.subversion.Subversion;
-
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
-
-/**
- * Open the Subversion view. It focuses recently opened
- * view unless it's not initialized yet. For uninitialized
- * view it behaves like StatusProjectsAction without
- * on-open refresh.
- *
- * @author Petr Kuzel
- */
-@ActionID(id = "org.netbeans.modules.subversion.ui.status.OpenVersioningAction", category = "Subversion")
-@ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
-@ActionReferences({
-   @ActionReference(path="Menu/Window/Versioning", position=200),
-   @ActionReference(path="OptionsDialog/Actions/Subversion")
-})
-public class OpenVersioningAction extends ShowAllChangesAction {
+public class GetAnnotatedOwnerTest extends GetOwnerTest {
     
-    public static final String ICON_BASE = "org/netbeans/modules/subversion/resources/icons/versioning-view.png";
-    
-    public OpenVersioningAction() {
-        putValue("noIconInMenu", Boolean.FALSE); // NOI18N
+    public GetAnnotatedOwnerTest(String testName) {
+        super(testName);
     }
 
-    public String getName() {
-        return NbBundle.getMessage(OpenVersioningAction.class, "CTL_MenuItem_OpenVersioning"); // NOI18N
-    }
-
-    /**
-     * Window/Versioning should be always enabled.
-     * 
-     * @return true
-     */ 
-    public boolean isEnabled() {
-        return true;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setLayersAndInstances();
     }
     
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(OpenVersioningAction.class);
+    protected File getVersionedFolder() {
+        if (versionedFolder == null) {
+            versionedFolder = new File(dataRootDir, "workdir/root-" + TestAnnotatedVCS.VERSIONED_FOLDER_SUFFIX);
+            versionedFolder.mkdirs();
+            new File(versionedFolder, TestAnnotatedVCS.TEST_VCS_METADATA).mkdirs();
+        }
+        return versionedFolder;
+    }
+    
+    @Override
+    protected Class getVCS() {
+        return TestAnnotatedVCS.class;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void testVCSSystemDoesntAwakeOnUnrelatedGetOwner() throws IOException {
         
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
-                
-        SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
-        if (stc.hasContext() == false) {
-            super.actionPerformed(e);
-        } else {
-            stc.open();
-            stc.requestActive();
-        }
+        assertNull(TestAnnotatedVCS.INSTANCE);
+        
+        File f = new File(getUnversionedFolder(), "sleepingfile");
+        f.createNewFile();
+        
+        assertNull(TestAnnotatedVCS.INSTANCE);
+        
+        VersioningSystem owner = VersioningManager.getInstance().getOwner(f);
+        assertNull(owner);
+        
+        assertNull(TestAnnotatedVCS.INSTANCE);
     }
-
-    protected boolean shouldPostRefresh() {
-        return false;
-    }
+    
 }
