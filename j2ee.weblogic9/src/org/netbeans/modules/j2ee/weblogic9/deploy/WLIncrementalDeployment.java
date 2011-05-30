@@ -177,10 +177,6 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
     @Override
     public boolean isDeployOnSaveSupported() {
-        if (dm.isWebProfile()) {
-            // at least for now, reevaluate later
-            return false;
-        }
         return true;
     }
 
@@ -314,6 +310,9 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
                 @Override
                 public String getPath() {
+                    if (dm.isWebProfile()) {
+                        return ""; // NOI18N
+                    }
                     return "/jndi/weblogic.management.mbeanservers.runtime"; // NOI18N
                 }
             });
