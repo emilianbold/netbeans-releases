@@ -49,8 +49,15 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
 import java.io.File;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.*;
-import org.netbeans.spi.queries.VisibilityQueryImplementation2;
+import org.netbeans.modules.versioning.Accessor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
 /**
  * Base class for a versioning system that integrates into IDE.
@@ -60,7 +67,11 @@ import org.netbeans.spi.queries.VisibilityQueryImplementation2;
  * - file system handler
  * - diff provider
  * 
- * Versioning system registration is done via {@link org.openide.util.lookup.ServiceProvider}.  
+ * Versioning system registration can be done in one of the following ways:
+ * <ul>
+ *  <li>via {@link org.openide.util.lookup.ServiceProvider}.</li>  
+ *  <li>via {@link org.netbeans.modules.versioning.spi.VersioningSystem#Registration}. (recommended) </li> 
+ * </ul>
  *
  * @author Maros Sandor
  */
@@ -97,6 +108,10 @@ public abstract class VersioningSystem {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private final Map<String, Object> properties = Collections.synchronizedMap(new HashMap<String, Object>());
+    
+    static {
+        Accessor.IMPL = new AccessorImpl();
+    }    
     
     /**
      * Protected constructor, does nothing.   
@@ -199,7 +214,9 @@ public abstract class VersioningSystem {
      * @param listener a PropertyChangeListener 
      */ 
     public final void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
+        synchronized(support) {
+            support.addPropertyChangeListener(listener);
+        }
     }
 
     /**
@@ -208,7 +225,9 @@ public abstract class VersioningSystem {
      * @param listener a PropertyChangeListener 
      */ 
     public final void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
+        synchronized(support) {
+            support.removePropertyChangeListener(listener);
+        }
     }
 
     /**
@@ -246,5 +265,154 @@ public abstract class VersioningSystem {
      */ 
     protected final void fireStatusChanged(File file) {
         fireStatusChanged(Collections.singleton(file));
+    }
+
+    /**
+     * Backdoor for DelegatingVCS
+     * 
+     * @return 
+     */
+    void moveChangeListeners(VersioningSystem system) {
+        synchronized(support) {
+            PropertyChangeListener[] listeners = support.getPropertyChangeListeners();
+            for (PropertyChangeListener l : listeners) {
+                system.addPropertyChangeListener(l);
+                this.removePropertyChangeListener(l);
+            }
+        }
+    }    
+    
+    /**
+     * <p>
+     * Register a VersioningSystem in the IDE.<br> 
+     * </p>
+     * <p>
+     * If possible, prefer the annotation prior to a {@link org.openide.util.lookup.ServiceProvider} 
+     * registration because of a better overall VCS performance. All necessary
+     * information will be available to the VCS infrastructure to create 
+     * menu items and handle file visibility without having to activate the particular 
+     * VCS System until an explicit user action or relevant file event occurs.
+     * </p>
+     * See also {@link org.netbeans.modules.versioning.spi.VersioningSystem}.
+     * 
+     * @author Tomas Stupka
+     * @since 1.19
+     * @see org.netbeans.modules.versioning.spi.VersioningSystem
+     * @see org.openide.util.lookup.ServiceProvider
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    public @interface Registration {
+        
+        /**
+         * <p>
+         * Short name of the versioning system, it will be used as popup menu label, label in tooltips, etc. 
+         * </p>
+         * <p>
+         * Examples: CVS, Subversion, Mercurial, Teamware, SourceSafe, VSS, Clearcase, Local History.
+         * </p>
+         * <p>
+         * Corresponds with the property value {@link org.netbeans.modules.versioning.spi.VersioningSystem#PROP_DISPLAY_NAME} 
+         * when used together with {@link org.netbeans.modules.versioning.spi.VersioningSystem}.
+         * </p>
+         * @see org.netbeans.modules.versioning.spi.VersioningSystem#PROP_DISPLAY_NAME
+         */
+        public String displayName();
+        
+        /**
+         * <p>
+         * Short name of the versioning system, it will be used as menu label and it should define a mnemonic key.
+         * </p>
+         * <p>
+         * Examples: &CVS, &Subversion, &Mercurial, &Teamware, &SourceSafe, &VSS, &Clearcase, Local &History.
+         * </p>
+         * <p>
+         * Corresponds with the property value {@link org.netbeans.modules.versioning.spi.VersioningSystem#PROP_MENU_LABEL}.
+         * <p>
+         * @see org.netbeans.modules.versioning.spi.VersioningSystem#PROP_MENU_LABEL
+         */
+        public String menuLabel();
+        
+        /**
+         * The VCS Systems metadata folder names. The provided values are used to determine:
+         * 
+         * <ul>
+         *   <li> file visibility via VisibilityQuery - whatever folder with a name provided at this place will be hidden in the IDE </li>
+         *   <li> file ownership - the VCS infrastructure tests first
+         *        if there is a folder with the provided name next to the given file or under
+         *        one of its ancestors and only then delegates the <code>getTopmostManagedAncestor</code> 
+         *        call to the actual Versioning System. With other words - a particular VCS system is queried
+         *        about a files ownership only if it lies next to or under a folder containing a VCS metadata folder.</li>
+         * </ul>
+         * Examples:
+         * <ul>
+         *  <li>{"CVS"}</li>
+         *  <li>{".svn", "_svn"}</li>
+         *  <li>{".hg"}</li>
+         *  <li>{".git"}</li>
+         * <ul>
+         * @see #getTopmostManagedAncestor(java.io.File) 
+         */
+        public String[] metadataFolderNames();
+        
+        /**
+         * <p>
+         * Determines the path under which this VCS Systems actions are registered. 
+         * The two following subpaths are then derived from it:
+         * 
+         * <ul>
+         * <li>Actions/Global - contains all global (contextless) actions for the Versioning System - e.g. Subversion Checkout</li> 
+         * <li>Actions/Unversioned - contains actions which should be available for an unversioned project - e.g. Subversion Import</li>
+         * </ul>
+         * returning "Subversion" would make the VCS infrastructure to look for actions under the {@link ActionReference} 
+         * paths <code>"Versioning/Subversion/Actions/Unversioned"</code> and <code>"Versioning/Subversion/Actions/Global"</code>.
+         * </p>
+         * <p>
+         * You can also make use of the {@link ActionRegistration#menuText} and {@link ActionRegistration#popupText} 
+         * attributes, in case you need a different text in the Main Menu item and a projects popup menu item.
+         * Also note that this has no direct relevance to {@link ActionID#category}.
+         * </p>
+         * <p>
+         * Example: <br>
+         * <p>
+         * Register a <code>VersioningSystem</code> with the <code>actionCategory</code> "Subversion".
+         * </p>
+         * <p>
+         * <code> <pre>
+         * <samp>@</samp>VersioningSystem.Registration(actionsCategory="<b>Subversion</b>")
+         * public class SubversionVCS extends VersioningSystem {
+         *    ...
+         * }
+         * </code></pre></p>
+         * 
+         * <p>
+         * Register the <code>ImportAction</code> under the <code>ActionReference</code> path 
+         * <code>"Versioning/Subversion/Actions/Unversioned"</code> and set <br> 
+         * <code>ActionRegistration.popupText</code> to <code>"Import into &Subversion Repository..."</code> and<br> 
+         * <code>ActionRegistration.menuText</code> to <code>"I&mport into Repository..."</code>.
+         * <br></p>
+         * 
+         * <p><code> <pre>
+         * <samp>@</samp>ActionID(id = "org.netbeans.modules.subversion.ui.project.ImportAction", category = "Subversion")
+         * <samp>@</samp>ActionRegistration(displayName = "Import into Repository...", popupText="Import into &Subversion Repository...", menuText="I&mport into Repository...")
+         * <samp>@</samp>ActionReferences({ <samp>@</samp>ActionReference(path="<b>Versioning/Subversion/Actions/Unversioned</b>", position=1) })
+         * public final class ImportAction implements ActionListener {
+         *   ...
+         * }
+         * </code></pre></p>
+         * <p>
+         * The Main Menu for an unversioned project then will be:<br>
+         * <code>Main Menu > Team > Subversion > Import into <u>R</u>epository...</code>
+         * </p>
+         * <p>
+         * The Popup Menu for an unversioned project then will be:<br>
+         * <code>Popup Menu > Versioning > Import into <u>S</u>ubversion Repository...</code>
+         * </p>
+         * 
+         * @see org.openide.awt.ActionID
+         * @see org.openide.awt.ActionRegistration
+         * @see org.openide.awt.ActionReference
+         */
+        public String actionsCategory();
     }
 }

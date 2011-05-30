@@ -62,28 +62,36 @@ import java.util.prefs.PreferenceChangeListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  * @author Maros Sandor
+ * 
+ * Warning:
+ * $FOLDER_NAME:getenv:$VARIABLE:null|notnull - private contract with Versioning to determine 
+ * the metadata folder name based on 
+ * System.getenv($VARIABLE) == null or System.getenv($VARIABLE) != null respectively.
+ * see also arch.xml in versioning.
  */
-@ServiceProviders({@ServiceProvider(service=VersioningSystem.class), @ServiceProvider(service=SubversionVCS.class)})
+@VersioningSystem.Registration(
+    displayName="#CTL_Subversion_DisplayName", 
+    menuLabel="#CTL_Subversion_MainMenu", 
+    metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"}, 
+    actionsCategory="Subversion"
+)
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
-    
-    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
-    private final static String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
-    private final static Integer priority = Utils.getPriority("subversion"); //NOI18N
     
     private SubversionVisibilityQuery visibilityQuery;
     public SubversionVCS() {
-        putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName"));
+        putProperty(PROP_DISPLAY_NAME, getDisplayName());
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
-        putProperty(PROP_PRIORITY, priority);
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        Subversion.getInstance().attachListeners(this);
     }
 
+    public static String getDisplayName() {
+        return NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName");
+    }
+    
     /**
      * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
      * parent of the file that is still versioned.
@@ -93,53 +101,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
      */
     @Override
     public File getTopmostManagedAncestor(File file) {
-        Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
-        if(unversionedParents.contains(file)) {
-            Subversion.LOG.fine(" cached as unversioned");
-            return null;
-        }
-        File metadataRoot = null;
-        if (SvnUtils.isPartOfSubversionMetadata(file)) {
-            Subversion.LOG.fine(" part of metaddata");
-            for (;file != null; file = file.getParentFile()) {
-                if (SvnUtils.isAdministrative(file)) {
-                    Subversion.LOG.log(Level.FINE, " will use parent {0}", new Object[] { file });
-                    metadataRoot = file;
-                    file = file.getParentFile();
-                    break;
-                }
-            }
-        }
-        File topmost = null;
-        Set<File> done = new HashSet<File>();
-        for (; file != null; file = file.getParentFile()) {
-            if(unversionedParents.contains(file)) {
-                Subversion.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
-                break;
-            }
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (SvnUtils.hasMetadata(file)) {
-                Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
-                topmost = file;
-                done.clear();
-            } else {
-                Subversion.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
-                if(file.exists()) { // could be created later ...
-                    done.add(file);
-                }
-            }
-        }
-        if(done.size() > 0) {
-            Subversion.LOG.log(Level.FINE, " storing unversioned");
-            unversionedParents.addAll(done);
-        }
-        if (topmost == null && metadataRoot != null) {
-            // .svn is considered managed, too, see #159453
-            Subversion.LOG.log(Level.FINE, "setting metadata root as managed parent {0}", new Object[] { metadataRoot });
-            topmost = metadataRoot;
-        }
-        Subversion.LOG.log(Level.FINE, "returning managed parent {0}", new Object[] { topmost });
-        return topmost;
+        return Subversion.getInstance().getTopmostManagedAncestor(file);
     }
 
     @Override
@@ -228,7 +190,6 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
             fireStatusChanged((Set<File>) evt.getNewValue());
         } else if (evt.getPropertyName().equals(Subversion.PROP_VERSIONED_FILES_CHANGED)) {
             Subversion.LOG.fine("cleaning unversioned parents cache");
-            unversionedParents.clear();
             fireVersionedFilesChanged();
         }
     }

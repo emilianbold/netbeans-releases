@@ -92,7 +92,14 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
 
     @Override
     public boolean isVisible(File file) {
-
+        VersioningSystem[] systems = VersioningManager.getInstance().getVersioningSystems();
+        for (VersioningSystem versioningSystem : systems) {
+            if(versioningSystem instanceof DelegatingVCS) {
+                if(((DelegatingVCS)versioningSystem).isMetadataFile(file)) {
+                    return false;
+                }
+            }
+        }
         if(isHiddenMetadata(file)) {
             return false;
         }
@@ -148,21 +155,6 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         }
     }
 
-    private static final String SVN_ADMIN_DIR;
-    private static final Pattern svnmetadataPattern;
-    static {
-        if (Utilities.isWindows()) {
-            String env = System.getenv("SVN_ASP_DOT_NET_HACK");
-            if (env != null) {
-                SVN_ADMIN_DIR = "_svn";
-            } else {
-                SVN_ADMIN_DIR = "\\.svn";
-            }
-        } else {
-            SVN_ADMIN_DIR = "\\.svn";
-        }
-        svnmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR + "(\\" + File.separatorChar + ".*|$)");
-    }
     private static final Pattern hgmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)hg(\\" + File.separatorChar + ".*|$)"); // NOI18N
     private static final Pattern cvsmetadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");    
     private static final Pattern gitmetadatapattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)git(\\" + File.separatorChar + ".*|$)"); // NOI18N
@@ -170,8 +162,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     // temporary hack to fix issue #195985
     // should be replaced by a change in VCSVisibilityQuery
     private boolean isHiddenMetadata(File file) {
-        return svnmetadataPattern.matcher(file.getAbsolutePath()).matches() ||
-               hgmetadataPattern.matcher(file.getAbsolutePath()).matches()  ||
+        return hgmetadataPattern.matcher(file.getAbsolutePath()).matches()  ||
                cvsmetadataPattern.matcher(file.getAbsolutePath()).matches() ||
                gitmetadatapattern.matcher(file.getAbsolutePath()).matches();
     }
