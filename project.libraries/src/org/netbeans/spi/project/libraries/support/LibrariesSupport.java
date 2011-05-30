@@ -48,6 +48,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
@@ -105,7 +106,8 @@ public final class LibrariesSupport {
      * @return uri
      * @since org.netbeans.modules.project.libraries/1 1.18
      */
-    public static URI convertFilePathToURI(String path) {
+    public static URI convertFilePathToURI(final @NonNull String path) {
+        Parameters.notNull("path", path);   //NOI18N
         try {
             File f = new File(path);
             if (f.isAbsolute()) {
