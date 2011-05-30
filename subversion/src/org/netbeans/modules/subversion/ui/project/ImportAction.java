@@ -91,7 +91,7 @@ public final class ImportAction implements ActionListener {
         this.ctx = ctx;
     }
 
-    protected boolean isEnabled() {
+    private boolean isEnabled() {
         
         Set<File> roots = ctx.getRootFiles();
         if (roots.size() == 1) {
