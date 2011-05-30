@@ -1419,7 +1419,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                             Resolver resolver = ResolverFactory.createResolver(this);
                             try {
                                 if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                                    Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
+                                    Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = instantiation.getMapping();
                                     if(isTemplateParameterTypeBased()) {
 //                                        mapping.remove(getResolvedTemplateParameter());
                                     }
@@ -1431,7 +1431,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                                 ResolverFactory.releaseResolver(resolver);
                             }
                         } else {
-                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), TemplateUtils.gatherMapping(instantiation), getContainingFile(), getStartOffset());
+                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), instantiation.getMapping(), getContainingFile(), getStartOffset());
                         }
                         if (CsmKindUtilities.isClassifier(obj)) {
                             resolved = (CsmClassifier) obj;
