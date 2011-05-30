@@ -327,6 +327,36 @@ public class FlowTest extends NbTestCase {
                     "4");
     }
 
+    public void testSwitch3() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(int p) {\n" +
+                    "        int ii = 0;\n" +
+                    "        switch (p) {\n" +
+                    "            case 0: ii = 1; break;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1");
+    }
+
+    public void testSwitch4() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(String str) {\n" +
+                    "        final int mm = 1;\n" +
+                    "        int b = 0;\n" +
+                    "        switch (str.length()) {\n" +
+                    "            case 0: break;\n" +
+                    "            case 1: b |= m`m; break;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1");
+    }
+
     public void testForUpdate() throws Exception {
         performTest("package test;\n" +
                     "public class Test {\n" +
@@ -338,6 +368,21 @@ public class FlowTest extends NbTestCase {
                     "}\n",
                     "0",
                     "ii + 1");
+    }
+
+    public void testForEach() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(String... args) {\n" +
+                    "        boolean ff = true;\n" +
+                    "        for (String a : args) {\n" +
+                    "            if (!f`f) System.err.println(1);\n" +
+                    "            ff = false;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "true",
+                    "false");
     }
 
     public void testAnonymous() throws Exception {
