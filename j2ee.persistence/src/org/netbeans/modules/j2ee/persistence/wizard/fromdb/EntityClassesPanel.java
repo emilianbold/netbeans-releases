@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
@@ -64,8 +65,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -218,7 +224,29 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
 
         updatePersistenceUnitButton(true);
+        Sources sources=ProjectUtils.getSources(project);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup firstGroup=groups[0];
+        FileObject fo=firstGroup.getRootFolder();
+        ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
+        JavaSource javaSource = JavaSource.create(classpathInfo);
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
 
+                @Override
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement jc = controller.getElements().getTypeElement("javax.xml.bind.annotation.XmlTransient"); //NOI18N
+                    if(jc == null){
+                        generateJAXBCheckBox.setSelected(false);
+                        generateJAXBCheckBox.setEnabled(false);
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            //no need to throw exception as it just will not disable option possibly unsupported, it's not severe
+            LOGGER.log(Level.FINE, "Fail to check if jaxb is supported");//NOI18N
+        }
     }
 
     public void update(TableClosure tableClosure, String tableSourceName) {
@@ -306,10 +334,13 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             boolean showWarning = !cmp
                     && !ProviderUtil.persistenceExists(project);
 
+            boolean isContainerManaged = Util.isContainerManaged(project);
+            boolean canCreate = isContainerManaged || (ConnectionManager.getDefault().getConnections().length>0);//TODO  unhandled case if there is pu creation panel after this one, isn't the case for 7.0
+
             if(initial){
-                createPUCheckbox.setVisible(showWarning);
-                createPUCheckbox.setSelected(showWarning);
-                createPUCheckbox.setEnabled(!puRequired);
+                createPUCheckbox.setVisible(showWarning && canCreate);
+                createPUCheckbox.setSelected(showWarning && canCreate);
+                createPUCheckbox.setEnabled(!puRequired && canCreate);
             }
 
 
@@ -327,8 +358,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 String sourceLevel = SourceLevelChecker.getSourceLevel(project);
                 if(sourceLevel !=null ){
                     if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6)){
-                        ArrayList<Provider> providers = Util.getProviders(project);
-                        if(providers!=null && providers.size()>0 && Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(providers.get(0)))){
+                        Provider provider = Util.getPreferredProvider(project);
+                        if(provider!=null && Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))){
                             if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
                                 warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                             } else {
@@ -416,6 +447,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(classNamesLabel, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_ClassNames")); // NOI18N
 
+        classNamesScrollPane.setMinimumSize(new java.awt.Dimension(23, 80));
         classNamesScrollPane.setViewportView(classNamesTable);
 
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_Project")); // NOI18N
@@ -459,7 +491,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         spacerPanelLayout.setHorizontalGroup(
             spacerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, spacerPanelLayout.createSequentialGroup()
-                .addContainerGap(382, Short.MAX_VALUE)
+                .addContainerGap(404, Short.MAX_VALUE)
                 .add(tableActionsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         spacerPanelLayout.setVerticalGroup(
@@ -500,14 +532,11 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                     .add(packageLabel))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(spacerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
-                    .add(packageComboBox, 0, 406, Short.MAX_VALUE)
-                    .add(locationComboBox, 0, 406, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-                .addContainerGap())
+                    .add(spacerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+                    .add(packageComboBox, 0, 428, Short.MAX_VALUE)
+                    .add(locationComboBox, 0, 428, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)))
             .add(layout.createSequentialGroup()
                 .add(generateJAXBCheckBox)
                 .addContainerGap())
@@ -520,6 +549,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(cmpFieldsInInterfaceCheckBox)
                 .addContainerGap())
+            .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -528,7 +558,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(11, 11, 11)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classNamesLabel)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE))
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(spacerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -551,8 +581,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(cmpFieldsInInterfaceCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createPUCheckbox)
-                .add(33, 33, 33)
-                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

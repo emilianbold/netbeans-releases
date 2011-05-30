@@ -47,6 +47,7 @@ import java.awt.Color;
 
 import java.beans.BeanInfo;
 import org.netbeans.modules.xml.api.model.*;
+import org.netbeans.spi.editor.completion.CompletionTask;
 
 
 /**
@@ -65,9 +66,12 @@ import org.netbeans.modules.xml.api.model.*;
 class ValueResultItem extends XMLResultItem {
 
     private final String replacementText;
+    
+    private final GrammarResult res;
 
     public ValueResultItem(int position, GrammarResult res) {
         super(position, res.getDisplayName(), res.getDisplayName());
+        this.res = res;
         foreground = Color.magenta;
         selectionForeground = Color.magenta.darker();
         replacementText = res.getNodeValue();
@@ -82,4 +86,8 @@ class ValueResultItem extends XMLResultItem {
     @Override
     Color getPaintColor() { return Color.blue; }
 
+    @Override
+    public CompletionTask createDocumentationTask() {
+        return doCreateDocumentationTask(res);
+    }
 }

@@ -68,8 +68,9 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
     private final boolean checkInterfaces;
     private final Collection<MethodModel> existingMethods;
     private final Set<String> existingMethodsNames; // just for faster validation, if such name exists, more detailed validation follows
+    private final String prefix;
     
-    public ValidatingPropertyChangeListener(MethodCustomizerPanel panel, NotifyDescriptor notifyDescriptor, Collection<MethodModel> existingMethods) {
+    public ValidatingPropertyChangeListener(MethodCustomizerPanel panel, NotifyDescriptor notifyDescriptor, Collection<MethodModel> existingMethods, String prefix) {
         this.panel = panel;
         this.notifyDescriptor = notifyDescriptor;
         statusLine = notifyDescriptor.createNotificationLineSupport();
@@ -79,6 +80,7 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
         for (MethodModel methodModel : existingMethods) {
             existingMethodsNames.add(methodModel.getName());
         }
+        this.prefix = prefix;
     }
     
     public void propertyChange(PropertyChangeEvent event) {
@@ -95,6 +97,13 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
         if (!Utilities.isJavaIdentifier(name)) {
             statusLine.setErrorMessage(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_nameNonJavaIdentifier"));  // NOI18N
             return false;
+        }
+        // valid method name prefix
+        if (prefix != null) {
+            if (!name.startsWith(prefix)) {
+                statusLine.setErrorMessage(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_wrongMethodPrefix", prefix));  // NOI18N
+                return false;
+            }
         }
         // return type
         String returnType = panel.getReturnType();

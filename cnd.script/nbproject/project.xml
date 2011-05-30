@@ -197,6 +197,16 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.remote</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.dlight.remote.impl</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -231,6 +241,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.severity1.makefilemodule</friend>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.embedded.deployment.make</friend>
                 <friend>org.netbeans.modules.cnd.spellchecker.bindings</friend>
                 <package>org.netbeans.modules.cnd.api.makefile</package>

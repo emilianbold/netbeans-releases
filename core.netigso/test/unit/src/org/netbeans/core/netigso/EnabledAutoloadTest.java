@@ -67,12 +67,12 @@ public class EnabledAutoloadTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
+        return
             NbModuleSuite.emptyConfiguration().addTest(
                 EnabledAutoloadTest.class
             ).honorAutoloadEager(true).clusters("platform.*").failOnException(Level.WARNING)/*.failOnMessage(Level.WARNING)*/
             .gui(false)
-        );
+        .suite();
     }
 
     @Override

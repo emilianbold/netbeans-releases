@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Inst
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.openide.filesystems.FileSystem;
 
 
 /**
@@ -152,7 +153,7 @@ public abstract class NativeBreakpoint
 	ghostBuster = ! ghostBuster;
     }
 
-    private final BreakpointType breakpointType;
+    private final NativeBreakpointType breakpointType;
     private ModelListener updater;
 
     // Keep track of calls to dispose() and do side-effects only once.
@@ -211,7 +212,7 @@ public abstract class NativeBreakpoint
 	return (flags & SUBBREAKPOINT) == SUBBREAKPOINT;
     }
 
-    protected NativeBreakpoint(BreakpointType breakpointType, int flags) {
+    protected NativeBreakpoint(NativeBreakpointType breakpointType, int flags) {
 	this.breakpointType = breakpointType;
 	this.flags = flags;
 
@@ -239,7 +240,7 @@ public abstract class NativeBreakpoint
 	return DebuggerManager.get();
     } 
 
-    private static NativeDebugger currentDebugger() {
+    protected static NativeDebugger currentDebugger() {
 	return manager().currentNativeDebugger();
     }
 
@@ -345,7 +346,7 @@ public abstract class NativeBreakpoint
     }
 
 
-    public final BreakpointType getBreakpointType() {
+    public final NativeBreakpointType getBreakpointType() {
 	return breakpointType;
     } 
 
@@ -1805,8 +1806,9 @@ public abstract class NativeBreakpoint
     public void addAnnotation(String filename, int line, long addr) {
 	Line l = null;
 
-	if (line != 0)
-	    l = EditorBridge.getLine(filename, line);
+	if (line != 0) {
+	    l = EditorBridge.getLine(filename, line, currentDebugger());
+        }
 	//if (l != null)
 	addAnnotation(l, addr);
     }
@@ -1814,7 +1816,7 @@ public abstract class NativeBreakpoint
     /**
      * Register a new annotation with this bpt.
      */
-    public void addAnnotation(Line l, long addr ) {
+    public void addAnnotation(Line l, long addr) {
 	assert ! isMidlevel() : "cannot add annotations to midlevel bpts";
 
 	DebuggerAnnotation.Listener listener =
@@ -1829,7 +1831,8 @@ public abstract class NativeBreakpoint
 				   getAnnotationType(),
 				   l,
 				   addr,
-				   true);
+				   true,
+                                   this);
 
 	/* OLD
 	6678347
@@ -1896,14 +1899,6 @@ public abstract class NativeBreakpoint
 
     public void seedToplevelAnnotations() {
 	assert this.isToplevel();
-
-	if (DebuggerManager.isPerTargetBpts())
-	    return;
-
-	if (this instanceof LineBreakpoint) {
-	    LineBreakpoint lb = (LineBreakpoint) this;
-	    lb.addAnnotation(lb.getFileName(), lb.getLineNumber(), 0);
-	}
     }
 
 
@@ -2726,8 +2721,7 @@ public abstract class NativeBreakpoint
      */
 
     public NativeBreakpoint makeEditableCopy() {
-	NativeBreakpoint editable =
-	    ((NativeBreakpointType)breakpointType).newInstance(this.flags);
+	NativeBreakpoint editable = breakpointType.newInstance(this.flags);
 
 	editable.debugger = this.debugger;
 	editable.original = this;
@@ -2750,8 +2744,7 @@ public abstract class NativeBreakpoint
 	assert this.isSubBreakpoint();
 
 	final int flags = NativeBreakpoint.TOPLEVEL;
-	NativeBreakpoint toplevel =
-	    ((NativeBreakpointType)breakpointType).newInstance(flags);
+	NativeBreakpoint toplevel = breakpointType.newInstance(flags);
 
 	toplevel.original = null;
 	// updater will be set when we add this to a BreakpointBag
@@ -2777,8 +2770,7 @@ public abstract class NativeBreakpoint
 	assert this.isToplevel();
 
 	final int flags = NativeBreakpoint.SUBBREAKPOINT;
-	NativeBreakpoint subbpt =
-	    ((NativeBreakpointType)breakpointType).newInstance(flags);
+	NativeBreakpoint subbpt = breakpointType.newInstance(flags);
 
 	subbpt.original = null;
 	// updater will be set when we add this to a BreakpointBag
@@ -2800,7 +2792,7 @@ public abstract class NativeBreakpoint
 
 	NativeBreakpoint midbpt;
 	final int flags = NativeBreakpoint.MIDBREAKPOINT;
-	midbpt = ((NativeBreakpointType)breakpointType).newInstance(flags);
+	midbpt = breakpointType.newInstance(flags);
 
 	midbpt.original = null;
 	// updater will be set when we add this to a BreakpointBag
@@ -3040,13 +3032,14 @@ public abstract class NativeBreakpoint
      * Used for toggling.
      */
     public static NativeBreakpoint newLineBreakpoint(String fileName,
-						   int lineNo) {
+						     int lineNo,
+                                                     FileSystem fs) {
 	NativeBreakpoint bpt =
 	    newBreakpointOfType(LineBreakpointType.class);
 	if (bpt == null)
 	    return null;
 	LineBreakpoint lb = (LineBreakpoint) bpt;
-	lb.setFileAndLine(fileName, lineNo);
+	lb.setFileAndLine(fileName, lineNo, fs);
 	return lb;
     }
 

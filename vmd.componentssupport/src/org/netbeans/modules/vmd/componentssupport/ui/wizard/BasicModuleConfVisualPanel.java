@@ -54,6 +54,8 @@ import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.vmd.componentssupport.ui.wizard.Bundle.*;
 
 /**
  *
@@ -70,8 +72,6 @@ final class BasicModuleConfVisualPanel extends JPanel {
     
     private static final String MSG_INVALID_CNB 
                                               = "MSG_InvalidCNB";          // NOI18N 
-    private static final String MSG_INVALID_NBORG_CNB 
-                                 = "BasicConfVisualPanel_err_wrong_nborg_name"; // NOI18N 
     private static final String ACS_LAYER_VALUE 
                                               = "ACS_CTL_LayerValue";      // NOI18N 
     private static final String ACS_DISPLAY_NAME_VALUE 
@@ -145,7 +145,8 @@ final class BasicModuleConfVisualPanel extends JPanel {
         layerValue.getAccessibleContext().setAccessibleName(
                 getMessage(ACS_LAYER_VALUE));
     }
-    
+
+    @Messages("BasicModuleConfVisualPanel_no_netbeans_org=This wizard is not supported for making modules inside the netbeans.org source tree.")
     private boolean checkCodeNameBase() {
         String dotName = getCodeNameBaseValue();
         if (!UIUtils.isValidJavaFQN(dotName)) {
@@ -153,29 +154,12 @@ final class BasicModuleConfVisualPanel extends JPanel {
             return false;
         }
         if (BaseHelper.isNetBeansOrg(mySettings)) {
-            // Ensure that official naming conventions are respected.
-            String cnbShort = abbreviateCNB(dotName);
-            String name = (String)mySettings.getProperty( 
-                    CustomComponentWizardIterator.PROJECT_NAME);
-            if (!name.equals(cnbShort)) {
-                setError(getMessage(MSG_INVALID_NBORG_CNB, cnbShort));
-                return false;
-            }
+            setError(BasicModuleConfVisualPanel_no_netbeans_org());
+            return false;
         }
         return true;
     }
     
-    // copied from org.netbeans.modules.apisupport.project.universe.ModuleList
-    private static String abbreviateCNB(String cnb) {
-        return cnb.replaceFirst("^org\\.netbeans\\.modules\\.", ""). // NOI18N
-                   replaceFirst("^org\\.netbeans\\.(libs|lib|api|spi|core)\\.", "$1."). // NOI18N
-                   replaceFirst("^org\\.netbeans\\.", "o.n."). // NOI18N
-                   replaceFirst("^org\\.openide\\.", "openide."). // NOI18N
-                   replaceFirst("^org\\.", "o."). // NOI18N
-                   replaceFirst("^com\\.sun\\.", "c.s."). // NOI18N
-                   replaceFirst("^com\\.", "c."); // NOI18N
-    }
-
     private void updateValuesOnCNBUpdate(){
         String dotName = getCodeNameBaseValue();
         // update layer and bundle from the cnb

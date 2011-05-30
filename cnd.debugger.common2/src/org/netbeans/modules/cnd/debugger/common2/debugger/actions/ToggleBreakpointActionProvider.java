@@ -50,7 +50,8 @@ import java.util.Collections;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyUtils;
+import org.openide.filesystems.FileObject;
 
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -66,12 +67,14 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointBag;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.debugger.ActionsProvider.Registration;
+import org.openide.filesystems.FileStateInvalidException;
 
 
 /*
@@ -123,7 +126,8 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 
     /* interface ActionsProvider */
     public void doAction(Object action) {
-        String fileName = EditorContextBridge.getCurrentFilePath();
+        FileObject currentFileObject = EditorContextBridge.getCurrentFileObject();
+        String fileName = currentFileObject.getPath();
         if (fileName.trim().equals("")) {
             return;
         }
@@ -138,14 +142,16 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 	if (!checkTarget())
 	    return;
         
-        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
         String currentURL = EditorContextBridge.getCurrentURL();
         String address = null;
         NativeBreakpoint bpt = null;
         BreakpointBag bb = DebuggerManager.get().breakpointBag();
         NativeDebugger debugger = getDebugger();
-        if (disProvider != null && disProvider.isDis(currentURL)) {
-            address = disProvider.getLineAddress(lineNo);
+        if (Disassembly.isDisasm(currentURL)) {
+            address = DisassemblyUtils.getLineAddress(lineNo);
+            if (address == null) {
+                return;
+            }
             for (NativeBreakpoint breakpoint : bb.getBreakpoints()) {
                 if (breakpoint instanceof InstructionBreakpoint) {
                     if (address.equals(((InstructionBreakpoint)breakpoint).getAddress())) {
@@ -168,7 +174,11 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
         else if (address != null) {
             bpt = NativeBreakpoint.newInstructionBreakpoint(address);
         } else {
-            bpt = NativeBreakpoint.newLineBreakpoint(fileName, lineNo);
+            try {
+                bpt = NativeBreakpoint.newLineBreakpoint(fileName, lineNo, currentFileObject.getFileSystem());
+            } catch (FileStateInvalidException ex) {
+                // just do not create
+            }
         }
             
         // toggle on

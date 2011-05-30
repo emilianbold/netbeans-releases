@@ -50,7 +50,8 @@ import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author Dongmei Cao
@@ -75,32 +76,44 @@ public class JavaPackageRenameTransaction extends RenameTransaction {
             OutputStream outs = null;
             try {
                 InputStream is = mappingFileObject.getInputStream();
-                HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-
-                // Change the package attribute <hibernate-mapping> tag
-                String pkgName = hbMapping.getAttributeValue("Package"); //NOI18N
-                if (pkgName != null && pkgName.equals(origName)) {
-                    hbMapping.setAttributeValue("Package", newName);
+                HibernateMapping hbMapping = null;
+                try {
+                    hbMapping = HibernateMapping.createGraph(is);
+                } catch (RuntimeException ex) {
+                    //failed to create graph, corrupted mapping file
+                    Logger.getLogger(JavaPackageRenameTransaction.class.getName()).log(Level.WARNING, "Failed to refactor in {0}, verify if xml document is well formed", mappingFileObject.getPath());//NOI18N
                 }
-                
-                 // The class attribute of <import>s
-                renamer.refactoringImports(hbMapping);
-                
-                // Change all the occurrences in <class> elements
-                renamer.refactoringMyClasses(hbMapping.getMyClass());
-                
-                // Change all the occurrences in <subclass> elements
-                renamer.refactoringSubclasses(hbMapping.getSubclass());
-                
-                // Change all the occurrences in <joined-subclass> elements
-                renamer.refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
-                
-                // Change all the occurrences in <union-subclass> elements
-                renamer.refactoringUnionSubclasses(hbMapping.getUnionSubclass());
+                if(hbMapping !=null ) {
+                    HibernateRefactoringUtil.ChangeTracker rewriteTrack = new HibernateRefactoringUtil.ChangeTracker();
+                    hbMapping.addPropertyChangeListener(rewriteTrack);
 
-                outs = mappingFileObject.getOutputStream();
-                hbMapping.write(outs);
-                
+                    // Change the package attribute <hibernate-mapping> tag
+                    String pkgName = hbMapping.getAttributeValue("Package"); //NOI18N
+                    if (pkgName != null && pkgName.equals(origName)) {
+                        hbMapping.setAttributeValue("Package", newName);
+                    }
+
+                     // The class attribute of <import>s
+                    renamer.refactoringImports(hbMapping);
+
+                    // Change all the occurrences in <class> elements
+                    renamer.refactoringMyClasses(hbMapping.getMyClass());
+
+                    // Change all the occurrences in <subclass> elements
+                    renamer.refactoringSubclasses(hbMapping.getSubclass());
+
+                    // Change all the occurrences in <joined-subclass> elements
+                    renamer.refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
+
+                    // Change all the occurrences in <union-subclass> elements
+                    renamer.refactoringUnionSubclasses(hbMapping.getUnionSubclass());
+
+                    if(rewriteTrack.isChanged()){
+                        outs = mappingFileObject.getOutputStream();
+                        hbMapping.write(outs);
+                    }
+                    hbMapping.removePropertyChangeListener(rewriteTrack);
+                }
             } catch (FileAlreadyLockedException ex) {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } catch (IOException ex) {

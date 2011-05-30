@@ -65,7 +65,7 @@ import org.openide.util.lookup.Lookups;
 @OptionsPanelController.TopLevelRegistration(
     id="FontsAndColors",
     categoryName="#CTL_Font_And_Color_Options",
-    iconBase="org/netbeans/modules/options/resources/colors.png",
+    iconBase="org/netbeans/modules/options/colors/colors.png",
     keywords="#KW_FontsAndColorsOptions",
     keywordsCategory="FontsAndColors",
     position=400

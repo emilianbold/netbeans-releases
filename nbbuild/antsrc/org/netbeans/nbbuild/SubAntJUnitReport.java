@@ -56,6 +56,7 @@ import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Ant;
+import org.apache.tools.ant.taskdefs.Property;
 import org.apache.tools.ant.types.Path;
 
 /**
@@ -72,9 +73,37 @@ public class SubAntJUnitReport extends Task {
         this.buildPath = buildPath;
     }
 
+    private Ant ant;
+    public @Override void init() {
+        if (ant == null) {
+            ant = new Ant(this);
+            ant.init();
+        }
+    }
+
     private String targetToRun;
     public void setTarget(String target) {
+        init();
+        ant.setTarget(target);
         this.targetToRun = target;
+    }
+
+    /** @see Ant#createProperty */
+    public Property createProperty() {
+        init();
+        return ant.createProperty();
+    }
+
+    /** @see Ant#setInheritAll */
+    public void setInheritAll(boolean inheritAll) {
+        init();
+        ant.setInheritAll(inheritAll);
+    }
+
+    /** @see Ant#setInheritRefs */
+    public void setInheritRefs(boolean inheritRefs) {
+        init();
+        ant.setInheritRefs(inheritRefs);
     }
 
     private boolean failOnError;
@@ -92,9 +121,6 @@ public class SubAntJUnitReport extends Task {
         for (String path : buildPath.list()) {
             log("Entering: " + path);
             File dir = new File(path);
-            Ant ant = new Ant(this);
-            ant.init();
-            ant.setTarget(targetToRun);
             ant.setDir(dir); // XXX Ant 1.8.0 (Ant #30569): ant.setUseNativeBasedir(true);
             final StringBuilder errors = new StringBuilder();
             BuildListener listener = new BuildListener() {

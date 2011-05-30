@@ -1,5 +1,0 @@
-Code completion result for source line:
-Fcntl::O_A|
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-CONSTANT   O_ACCMODE                                  null
-CONSTANT   O_APPEND                                   null

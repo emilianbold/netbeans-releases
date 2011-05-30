@@ -54,6 +54,7 @@ public class DebuggerOptions {
     Boolean debugForFirstPageOnly;
     Boolean debuggerStoppedAtTheFirstLine;
     String phpInterpreter;
+    String projectEncoding;
     List<Pair<String, String>> pathMapping;
     Pair<String, Integer> debugProxy;
 
@@ -91,6 +92,10 @@ public class DebuggerOptions {
     public String getPhpInterpreter() {
         return (phpInterpreter != null) ? phpInterpreter :
             getGlobalInstance().getPhpInterpreter();
+    }
+    
+    public String getProjectEncoding() {
+        return projectEncoding;
     }
 
     private static class DefaultGlobal extends DebuggerOptions {

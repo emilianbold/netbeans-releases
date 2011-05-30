@@ -44,6 +44,9 @@ package org.netbeans.modules.php.project.connections.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout.Alignment;
@@ -62,6 +65,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,9 +105,27 @@ public final class NewRemoteConnectionPanel extends JPanel {
     public String getConnectionName() {
         return connectionNameTextField.getText().trim();
     }
+    
+    public String getOldConfigName() {
+        // Backwards compatibility with new getConfigName - #190930
+        return getConnectionName().replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+    }
 
     public String getConfigName() {
-        return getConnectionName().replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("MD5"); // NOI18N
+        } catch (NoSuchAlgorithmException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        md.update(getConnectionName().getBytes());
+        byte[] digest = md.digest();
+        BigInteger hash = new BigInteger(1, digest);
+        String hashWord = hash.toString(16);
+        String postfix = hashWord.substring(hashWord.length() - 6, hashWord.length());
+        
+        return getOldConfigName() + "-" + postfix; // NOI18N
     }
 
     public String getConnectionType() {
@@ -113,6 +135,7 @@ public final class NewRemoteConnectionPanel extends JPanel {
     void validateFields() {
         String name = getConnectionName();
         String config = getConfigName();
+        String oldConfig = getOldConfigName();
         String type = getConnectionType();
 
         String err = null;
@@ -120,8 +143,8 @@ public final class NewRemoteConnectionPanel extends JPanel {
             err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_EmptyConnectionName");
         } else if (type.length() == 0) {
             err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_EmptyConnectionType");
-        } else if (configManager.exists(config)) {
-            err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_ConnectionExists", config);
+        } else if (configManager.exists(config) || configManager.exists(oldConfig)) {
+            err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_ConnectionExists", name);
         }
         setError(err);
     }

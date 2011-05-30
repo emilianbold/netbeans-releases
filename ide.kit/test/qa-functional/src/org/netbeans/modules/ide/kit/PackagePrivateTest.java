@@ -57,11 +57,11 @@ public final class PackagePrivateTest extends NbTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(
+        return
             NbModuleSuite.createConfiguration(PackagePrivateTest.class)
             .gui(false)
             .clusters(".*")
-        );
+        .suite();
     }
     
     public void testCheckversion() {

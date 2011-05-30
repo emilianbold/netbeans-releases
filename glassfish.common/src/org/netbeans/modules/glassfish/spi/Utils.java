@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -226,9 +226,9 @@ public class Utils {
     public static String getHttpListenerProtocol(String hostname, int port) {
         String retVal = "http";
         try {
-            if (isSecurePort(hostname, port)) {
-                retVal = "https";
-            }
+                    if (isSecurePort(hostname, port)) {
+                        retVal = "https";
+                    }
         } catch (ConnectException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, null, ex);
         } catch (SocketException ex) {
@@ -241,7 +241,7 @@ public class Utils {
         return retVal;
     }
 
-    private static final int PORT_CHECK_TIMEOUT = 4000; // Port check timeout in ms
+    private static final int PORT_CHECK_TIMEOUT = 2000; // Port check timeout in ms
 
     /**
      * Determine whether an http listener is secure or not..
@@ -264,7 +264,7 @@ public class Utils {
         return isSecurePort(hostname,port, 0);
     }
 
-    private static boolean isSecurePort(String hostname, int port, int depth)
+    private static boolean isSecurePort(String hostname, int port, int depth) 
             throws IOException, ConnectException, SocketTimeoutException {
         // Open the socket with a short timeout for connects and reads.
         Socket socket = new Socket();
@@ -277,13 +277,14 @@ public class Utils {
                 String localhost = socksNonProxyHosts.length() > 0 ? "|localhost" : "localhost";
                 System.setProperty("socksNonProxyHosts",  socksNonProxyHosts + localhost);
                 if (depth < 1) {
+                    socket.close();
                     return isSecurePort(hostname,port,1);
                 } else {
-
-                ConnectException ce = new ConnectException();
-                ce.initCause(ex);
-                throw ce; //status unknow at this point
-                //next call, we'll be ok and it will really detect if we are secure or not
+                    socket.close();
+                    ConnectException ce = new ConnectException();
+                    ce.initCause(ex);
+                    throw ce; //status unknow at this point
+                    //next call, we'll be ok and it will really detect if we are secure or not
                 }
             }
         }
@@ -297,8 +298,6 @@ public class Utils {
         byte[] input = new byte[8192];
         istream.read(input);
 
-        // Close the socket
-        socket.close();
 
         // Determine protocol from result
         // Can't read https response w/ OpenSSL (or equiv), so use as
@@ -307,6 +306,8 @@ public class Utils {
         boolean isSecure = true;
         if (response.length() == 0) {
             //isSecure = false;
+            // Close the socket
+            socket.close();
             throw new ConnectException();
         } else if (response.startsWith("http/1.1 302 moved temporarily")) {
             // 3.1 has started to use redirects... but 3.0 is still using the older strategies...
@@ -330,6 +331,8 @@ public class Utils {
         } else if (response.indexOf("connection: ") != -1) {
             isSecure = false;
         }
+        // Close the socket
+        socket.close();
         return isSecure;
     }
 

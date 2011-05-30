@@ -10,31 +10,35 @@
 # Environment
 MKDIR=mkdir
 CP=cp
+GREP=grep
+NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
 CC=gcc
 CCC=g++
 CXX=g++
-FC=
+FC=gfortran
 AS=gas
 
 # Macros
 CND_PLATFORM=GNU-Solaris-x86
 CND_CONF=Solaris_x86
 CND_DISTDIR=dist
+CND_BUILDDIR=build
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
+OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/src/loop.o \
 	${OBJECTDIR}/src/pty_fork.o \
 	${OBJECTDIR}/src/pty.o \
-	${OBJECTDIR}/src/error.o
+	${OBJECTDIR}/src/error.o \
+	${OBJECTDIR}/src/loop.o
+
 
 # C Compiler Flags
 CFLAGS=-m32 --std=c99
@@ -54,39 +58,39 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-Solaris_x86.mk dist/Solaris_x86/GNU-Solaris-x86/ptysupport
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport
 
-dist/Solaris_x86/GNU-Solaris-x86/ptysupport: ${OBJECTFILES}
-	${MKDIR} -p dist/Solaris_x86/GNU-Solaris-x86
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport ${OBJECTFILES} ${LDLIBSOPTIONS} 
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport: ${OBJECTFILES}
+	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/src/loop.o: nbproject/Makefile-${CND_CONF}.mk src/loop.c 
+${OBJECTDIR}/src/pty_fork.o: src/pty_fork.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/loop.o src/loop.c
+	$(COMPILE.c) -O2 -s -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/pty_fork.o src/pty_fork.c
 
-${OBJECTDIR}/src/pty_fork.o: nbproject/Makefile-${CND_CONF}.mk src/pty_fork.c 
+${OBJECTDIR}/src/pty.o: src/pty.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/pty_fork.o src/pty_fork.c
+	$(COMPILE.c) -O2 -s -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/pty.o src/pty.c
 
-${OBJECTDIR}/src/pty.o: nbproject/Makefile-${CND_CONF}.mk src/pty.c 
+${OBJECTDIR}/src/error.o: src/error.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/pty.o src/pty.c
+	$(COMPILE.c) -O2 -s -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/error.o src/error.c
 
-${OBJECTDIR}/src/error.o: nbproject/Makefile-${CND_CONF}.mk src/error.c 
+${OBJECTDIR}/src/loop.o: src/loop.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
-	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/error.o src/error.c
+	$(COMPILE.c) -O2 -s -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/loop.o src/loop.c
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
-	${RM} -r build/Solaris_x86
-	${RM} dist/Solaris_x86/GNU-Solaris-x86/ptysupport
+	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ptysupport
 
 # Subprojects
 .clean-subprojects:

@@ -50,9 +50,9 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Common ancestor for all ... statements
@@ -67,9 +67,15 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
     }
 
     public static CompoundStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        return new CompoundStatementImpl(ast, file, scope);
+        CompoundStatementImpl stmt = new CompoundStatementImpl(ast, file, scope);
+        stmt.init(ast);
+        return stmt;
     }
 
+    private void init(AST ast) {
+        renderStatements(ast);
+    }
+    
     @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.COMPOUND;
@@ -77,9 +83,6 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
 
     @Override
     public final List<CsmStatement> getStatements() {
-        if (statements == null) {
-            renderStatements(getStartRenderingAst());
-        }
         return statements;
     }
 
@@ -91,11 +94,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         }
     }
 
-    protected AST getStartRenderingAst() {
-        return getAst();
-    }
-
-    private void renderStatements(AST ast) {
+    protected void renderStatements(AST ast) {
         // to prevent re-rendering recursions initialize with empty list
         // and replace with real content at the end
         // we do not use extra sync here, because it's ok in case of real 
@@ -122,11 +121,11 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
-    public CompoundStatementImpl(DataInput input) throws IOException {
+    public CompoundStatementImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.statements = null;
     }

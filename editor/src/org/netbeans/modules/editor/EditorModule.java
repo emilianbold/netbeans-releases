@@ -47,6 +47,7 @@ package org.netbeans.modules.editor;
 import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -55,12 +56,15 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.rtf.RTFEditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -71,14 +75,23 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataLoaderPool;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.OperationEvent;
+import org.openide.loaders.OperationEvent.Copy;
+import org.openide.loaders.OperationEvent.Move;
+import org.openide.loaders.OperationEvent.Rename;
+import org.openide.loaders.OperationListener;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -327,6 +340,18 @@ public class EditorModule extends ModuleInstall {
                 }
             });
          }
+         
+        DataLoaderPool.getDefault().addOperationListener(new OperationListener() {
+            @Override public void operationPostCreate(OperationEvent ev) {}
+            @Override public void operationCopy(Copy ev) {}
+            @Override public void operationMove(Move ev) {}
+            @Override public void operationDelete(OperationEvent ev) {}
+            @Override public void operationRename(Rename ev) {}
+            @Override public void operationCreateShadow(Copy ev) {}
+            @Override public void operationCreateFromTemplate(Copy ev) {
+                reformat(ev.getObject());
+            }
+        });
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
@@ -624,6 +649,47 @@ public class EditorModule extends ModuleInstall {
             LOG.log(Level.WARNING, "Wrong JDK editor kit class for " + mimeType + //NOI18N
                 ". Expecting: " + expectedKitClass + //NOI18N
                 ", but was: " + kitClass); //NOI18N
+        }
+    }
+    
+    private void reformat(DataObject file) {
+        try {
+            EditorCookie ec = file.getLookup().lookup(EditorCookie.class);
+
+            if (ec == null) return;
+            
+            final StyledDocument doc = ec.openDocument();
+            final Reformat reformat = Reformat.get(doc);
+            
+            reformat.lock();
+            
+            try {
+                NbDocument.runAtomicAsUser(doc, new Runnable() {
+
+                    @Override
+                    public void run() {
+                        doc.putProperty("code-template-insert-handler", true);
+                        try {
+                            EditorPackageAccessor.get().ActionFactory_reformat(reformat, doc, 0, doc.getLength(), new AtomicBoolean());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            doc.putProperty("code-template-insert-handler", null);
+                        }
+                    }
+                });
+                
+            } finally {
+                reformat.unlock();
+                ec.saveDocument();
+            }
+            
+            //clear the undo queue:
+            ec.close();
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }

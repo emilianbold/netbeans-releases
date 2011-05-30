@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.junit;
 
+import java.util.logging.Level;
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -59,6 +59,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,6 +95,7 @@ import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -106,8 +108,11 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.junit.Bundle.*;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
@@ -1071,7 +1076,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                     } else if (askUserLastWasJUnit4NowSource14(sourceLevel)) {
                         junitVer = JUnitVersion.JUNIT3;
                         if (storeSettings) {
-                            storeProjectSettingsJUnitVer(project);
+                            return storeProjectSettingsJUnitVer(project);
                         }
                         return true;
                     }
@@ -1087,7 +1092,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             switch (junitVer) {
                 case JUNIT3:
                     if (storeSettings) {
-                        storeProjectSettingsJUnitVer(project);
+                        return storeProjectSettingsJUnitVer(project);
                     }
                     return true;
                 case JUNIT4:
@@ -1095,7 +1100,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                     if ((sourceLevel != null)
                             && (sourceLevel.compareTo("1.5")) >= 0) {   //NOI18N
                         if (storeSettings) {
-                            storeProjectSettingsJUnitVer(project);
+                            return storeProjectSettingsJUnitVer(project);
                         }
                         return true;
                     } else if (sourceLevel == null) {
@@ -1103,13 +1108,13 @@ public final class DefaultPlugin extends JUnitPlugin {
                             = "MSG_select_junit_version_srclvl_unknown";//NOI18N
                         junitVer = askUserWhichJUnitToUse(msgKey, true, true);
                         if ((junitVer != null) && storeSettings) {
-                            storeProjectSettingsJUnitVer(project);
+                            return storeProjectSettingsJUnitVer(project);
                         }
                         return (junitVer != null);
                     } else if (informUserOnlyJUnit3Applicable(sourceLevel)) {
                         junitVer = JUnitVersion.JUNIT3;
                         if (storeSettings) {
-                            storeProjectSettingsJUnitVer(project);
+                            return storeProjectSettingsJUnitVer(project);
                         }
                         return true;
                     }
@@ -1137,7 +1142,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                           offerJUnit4,
                                           showSourceLevelReqs);
         if ((junitVer != null) && storeSettings) {
-            storeProjectSettingsJUnitVer(project);
+            return storeProjectSettingsJUnitVer(project);
         }
         return (junitVer != null);
     }
@@ -1413,7 +1418,35 @@ public final class DefaultPlugin extends JUnitPlugin {
      * @param  project  project whose configuration file is to be checked
      * @see  #junitVer
      */
-    private void storeProjectSettingsJUnitVer(final Project project) {
+    @Messages({
+        "junitlib_confirm_title=Create Tests",
+        "junitlib_confirm_text=<html><p>To create JUnit tests, the IDE needs to download and install the JUnit library.</p><p>Do you want to proceed?<p>",
+        "junitlib_confirm_accept=Download and Install JUnit"
+    })
+    private boolean storeProjectSettingsJUnitVer(final Project project) {
+        if (LibraryManager.getDefault().getLibrary("junit_4") == null) {
+            for (LibraryDefiner definer : Lookup.getDefault().lookupAll(LibraryDefiner.class)) {
+                Callable<Library> download = definer.missingLibrary("junit_4");
+                if (download != null) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(junitlib_confirm_text(), junitlib_confirm_title());
+                    JButton accept = new JButton(junitlib_confirm_accept());
+                    accept.setDefaultCapable(true);
+                    nd.setOptions(new Object[] {accept, NotifyDescriptor.CANCEL_OPTION});
+                    if (DialogDisplayer.getDefault().notify(nd) == accept) {
+                        try {
+                            download.call();
+                        } catch (Exception x) {
+                            LOG_JUNIT_VER.log(Level.INFO, null, x);
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                    break;
+                }
+            }
+        }
+
         assert junitVer != null;
 
         if (LOG_JUNIT_VER.isLoggable(FINER)) {
@@ -1505,14 +1538,14 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
         }
         if ((libraryToAdd == null) && (librariesToRemove == null)) {
-            return;
+            return true;
         }
 
         final List<FileObject> projectArtifacts = getProjectTestArtifacts(project);
         if (projectArtifacts.isEmpty()) {
             displayMessage("MSG_cannot_set_junit_ver",                  //NOI18N
                            WARNING_MESSAGE);
-            return;
+            return /*???*/true;
         }
 
         final Library[] libsToAdd, libsToRemove;
@@ -1567,6 +1600,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         }
         ProjectManager.mutex().writeAccess(
                 new LibrarySetModifier());
+        return true;
     }
 
     /**

@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package multi.stateful.ejbs;
 
 import javax.ejb.CreateException;
@@ -10,10 +9,9 @@ import javax.ejb.EJBLocalHome;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 public interface MLRSSLocalHome extends EJBLocalHome {
     
-    multi.stateful.ejbs.MLRSSLocal create()  throws CreateException;
-
+    multi.stateful.ejbs.MLRSSLocal create() throws CreateException;
 }

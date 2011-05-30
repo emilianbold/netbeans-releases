@@ -144,8 +144,8 @@ public class DocumentUtil {
         return new DocumentConvertor();
     }
     
-    static Convertor<Pair<String,String>,Query> queryClassWithEncConvertor() {
-        return new QueryClassesWithEncConvertor();
+    static Convertor<Pair<String,String>,Query> queryClassWithEncConvertor(final boolean fileBased) {
+        return new QueryClassesWithEncConvertor(fileBased);
     }
     
     static Convertor<Pair<String,String>,Query> queryClassConvertor() {
@@ -519,34 +519,66 @@ public class DocumentUtil {
     }
     
     private static class QueryClassesWithEncConvertor implements Convertor<Pair<String,String>,Query> {
+
+        private final boolean fileBased;
+
+        private QueryClassesWithEncConvertor(final boolean fileBased) {
+            this.fileBased = fileBased;
+        }
+
         @Override
         public Query convert(Pair<String, String> p) {
-            return createClassWithEnclosedQuery(p);
+            final String resourceName = p.first;
+            final String sourceName = p.second;
+            return fileBased ? createClassesInFileQuery(resourceName,sourceName) : createClassWithEnclosedQuery(resourceName, sourceName);
         }
         
-        private static Query createClassWithEnclosedQuery (final Pair<String,String> binaryNameSourceNamePair) {
-            final String resourceName = binaryNameSourceNamePair.first;
-            final String sourceName = binaryNameSourceNamePair.second;
-            int index = resourceName.lastIndexOf(DocumentUtil.PKG_SEPARATOR);
-            String pkgName, sName;
-            if (index < 0) {
-                pkgName = "";   // NOI18N
-                sName = resourceName;
-            }
-            else {
-                pkgName = resourceName.substring(0,index);
-                sName = resourceName.substring(index+1);
-            }
-            BooleanQuery query = new BooleanQuery ();
-            BooleanQuery subQuery = new BooleanQuery();
-            subQuery.add (new WildcardQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + DocumentUtil.WILDCARD)),Occur.SHOULD);
-            subQuery.add (new PrefixQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + '$')),Occur.SHOULD);
-            query.add (new TermQuery (new Term (DocumentUtil.FIELD_PACKAGE_NAME, pkgName)),Occur.MUST);
-            query.add (subQuery,Occur.MUST);
+        private static Query createClassWithEnclosedQuery (final String resourceName, final String sourceName) {            
+            final BooleanQuery query = createFQNQuery(resourceName);
             if (sourceName != null) {
                 query.add (new TermQuery(new Term (DocumentUtil.FIELD_SOURCE,sourceName)), Occur.MUST);
             }
             return query;
+        }
+
+        private static Query createClassesInFileQuery (final String resourceName, final String sourceName) {
+            if (sourceName != null) {
+                final BooleanQuery result = new BooleanQuery();
+                result.add(createFQNQuery(FileObjects.convertFolder2Package(FileObjects.stripExtension(sourceName))), Occur.SHOULD);
+                result.add(new TermQuery(new Term (DocumentUtil.FIELD_SOURCE,sourceName)),Occur.SHOULD);
+                return result;
+            } else {
+                final BooleanQuery result = new BooleanQuery();
+                result.add(createFQNQuery(resourceName), Occur.SHOULD);
+                result.add(new TermQuery(new Term (
+                        DocumentUtil.FIELD_SOURCE,
+                        new StringBuilder(FileObjects.convertPackage2Folder(resourceName)).append('.').append(FileObjects.JAVA).toString())),
+                        Occur.SHOULD);
+                return result;
+            }
+        }
+
+        private static BooleanQuery createFQNQuery(final String resourceName) {
+            String pkgName;
+            String sName;
+            int index = resourceName.lastIndexOf(DocumentUtil.PKG_SEPARATOR);
+            if (index < 0) {
+                pkgName = "";       //NOI18N
+                sName = resourceName;
+            } else {
+                pkgName = resourceName.substring(0, index);
+                sName = resourceName.substring(index+1);
+            }
+            final BooleanQuery snQuery = new BooleanQuery();
+            snQuery.add (new WildcardQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + DocumentUtil.WILDCARD)),Occur.SHOULD);
+            snQuery.add (new PrefixQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + '$')),Occur.SHOULD);   //NOI18N
+            if (pkgName.length() == 0) {
+                return snQuery;
+            }
+            final BooleanQuery fqnQuery = new BooleanQuery();
+            fqnQuery.add(new TermQuery(new Term(DocumentUtil.FIELD_PACKAGE_NAME,pkgName)), Occur.MUST);
+            fqnQuery.add(snQuery, Occur.MUST);
+            return fqnQuery;
         }
         
     }

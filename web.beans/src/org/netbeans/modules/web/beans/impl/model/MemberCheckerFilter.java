@@ -56,6 +56,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.impl.model.AnnotationObjectProvider.SpecializeVisitor;
 
 
 /**
@@ -112,39 +113,24 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         return myClass;
     }
     
-    static Element getSpecialized( Element productionElement,
+    static Element getSpecialized( ExecutableElement productionElement,
             WebBeansModelImplementation model , String annotationName )
     {
         return getSpecialized(productionElement, model.getHelper(), annotationName);
     }
     
-    static Element getSpecialized( Element productionElement,
-            AnnotationModelHelper helper  , String annotationName )
+    static void visitSpecializes( ExecutableElement method,
+            AnnotationModelHelper helper  , SpecializeVisitor visitor )
     {
-        if ( !( productionElement instanceof ExecutableElement )){
-            return null;
-        }
-        ExecutableElement current = (ExecutableElement)productionElement;
+        ExecutableElement current = method;
         while ( true ){
             ExecutableElement overridenElement = helper.getCompilationController().
                 getElementUtilities().getOverriddenMethod( current);
             if ( overridenElement != null && AnnotationObjectProvider.hasSpecializes(
                     current, helper))
             {
-                if ( FieldInjectionPointLogic.DEFAULT_QUALIFIER_ANNOTATION.
-                        equals( annotationName))
-                {
-                    if ( AnnotationObjectProvider.checkSpecializedDefault(
-                            overridenElement, helper))
-                    {
-                        return overridenElement;
-                    }
-                }
-                else if ( AnnotationObjectProvider.
-                        hasAnnotation( overridenElement, annotationName, 
-                                helper))
-                {
-                    return overridenElement;
+                if ( visitor.visit(overridenElement)){
+                    return;
                 }
                 current = overridenElement;
             }
@@ -152,7 +138,43 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
                 break;
             }
         }
-        return null;
+    }
+    
+    static Element getSpecialized( ExecutableElement productionElement,
+            final AnnotationModelHelper helper  , final String annotationName )
+    {
+        final Element result[] = new Element[1];
+        SpecializeVisitor visitor = new SpecializeVisitor() {
+            
+            @Override
+            public boolean visit( ExecutableElement overridenElement ) {
+                if ( FieldInjectionPointLogic.DEFAULT_QUALIFIER_ANNOTATION.
+                        equals( annotationName))
+                {
+                    if ( AnnotationObjectProvider.checkSpecializedDefault(
+                            overridenElement, helper))
+                    {
+                        result[0] = overridenElement;
+                        return true;
+                    }
+                }
+                else if ( AnnotationObjectProvider.
+                        hasAnnotation( overridenElement, annotationName, 
+                                helper))
+                {
+                    result[0] = overridenElement;
+                    return true;
+                }
+                return false;
+            }
+            
+            @Override
+            public boolean visit( TypeElement superElement ) {
+                return false;
+            }
+        };
+        visitSpecializes( productionElement , helper, visitor);
+        return result[0];
     }
     
     private void checkMember( ExecutableElement exec, AnnotationValue value,
@@ -182,7 +204,7 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
                     }
                 }
                 else if ( element instanceof ExecutableElement){
-                    Element specialized = getSpecialized(element, 
+                    Element specialized = getSpecialized((ExecutableElement)element, 
                             getImplementation(), annotationName );
                     if ( specialized != null ){
                         checkMember(exec, value, specialized, iterator, 

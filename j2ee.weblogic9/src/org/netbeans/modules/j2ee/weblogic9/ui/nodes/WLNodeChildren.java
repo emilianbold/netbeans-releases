@@ -54,19 +54,22 @@ import org.openide.nodes.Children.Keys;
  */
 class WLNodeChildren<T> extends Keys<T> {
 
-    WLNodeChildren()
-    {
+    WLNodeChildren() {
+        super();
     }
 
+    @Override
     protected void addNotify() {
     }
     
+    @Override
     protected void removeNotify() {
     }
     
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof AbstractNode){
-            return new Node[]{(AbstractNode)key};
+    @Override
+    protected org.openide.nodes.Node[] createNodes(T key) {
+        if (key instanceof AbstractNode) {
+            return new Node[] {(AbstractNode) key};
         }
         
         return null;

@@ -75,4 +75,9 @@ public class FunctionBreakpointType extends NativeBreakpointType {
 	else
 	    return new FunctionBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Function"; //NOI18N
+    }
 }

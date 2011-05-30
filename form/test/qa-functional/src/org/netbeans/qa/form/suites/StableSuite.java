@@ -44,6 +44,7 @@ package org.netbeans.qa.form.suites;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.qa.form.OpenTempl_defaultPackTest;
 import org.netbeans.qa.form.actions.actionsTest;
 import org.netbeans.qa.form.beans.AddAndRemoveBeansTest;

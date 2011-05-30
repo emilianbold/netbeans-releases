@@ -419,11 +419,38 @@ public final class ModuleUpdater extends Thread {
                                     destFile.getParentFile ().mkdirs ();
                                 }
                                 
-                                bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
+                                long crc;
+                                if (pathTo.endsWith(".external")) {
+                                    File downloaded = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".external")));
+                                    final InputStream spec = jarFile.getInputStream(entry);
+                                    pathTo = pathTo.substring(0, pathTo.length() - ".external".length());
+                                    long expectedCRC = externalDownload(spec, nbm);
+                                    File external = new File(nbm + "." + Long.toHexString(expectedCRC));
+                                    InputStream is = new FileInputStream(external);
+                                    try {
+                                        spec.close();
+                                        FileOutputStream os = new FileOutputStream(downloaded);
+                                        try {
+                                            bytesRead = copyStreams(is, os, -1);
+                                        } finally {
+                                            os.close();
+                                        }
+                                    } finally {
+                                        external.delete();
+                                        is.close();
+                                    }
+                                    crc = UpdateTracking.getFileCRC(downloaded);
+                                    if (crc != expectedCRC) {
+                                        downloaded.delete();
+                                        throw new IOException("Wrong CRC for " + downloaded);
+                                    }
+                                } else {
+                                    bytesRead = copyStreams( jarFile.getInputStream( entry ), context.createOS( destFile ), bytesRead );
+                                    crc = entry.getCrc();
+                                }
                                 if(executableFiles.contains(pathTo)) {
                                     filesToChmod.add(destFile);
                                 }
-                                long crc = entry.getCrc();
                                 if(pathTo.endsWith(".jar.pack.gz") &&
                                         jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
                                      //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
@@ -884,6 +911,19 @@ public final class ModuleUpdater extends Thread {
          params.copyInto(ret);
          return ret;
      }
+
+    private long externalDownload(InputStream spec, File nbm) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(spec));
+        for (;;) {
+            String line = br.readLine();
+            if (line == null) {
+                throw new IOException("No CRC in the .external file!");
+            }
+            if (line.startsWith("CRC:")) {
+                return Long.parseLong(line.substring(4).trim());
+            }
+        }
+    }
 
 
     

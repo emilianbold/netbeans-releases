@@ -51,8 +51,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
@@ -68,16 +70,16 @@ import org.openide.util.NbBundle;
 /**
  * @author Vladimir Kvashin
  */
-/*package*/ abstract class BaseAnnotation extends Annotation {
+public abstract class BaseAnnotation extends Annotation {
 
-    /*package*/ enum AnnotationType {
+    public enum AnnotationType {
         IS_OVERRIDDEN,
         OVERRIDES,
         OVERRIDEN_COMBINED,
         IS_SPECIALIZED,
         SPECIALIZES,
-        TEMPLATE_COMBINED,
-        COMBINED
+        EXTENDED_IS_SPECIALIZED,
+        EXTENDED_SPECIALIZES
     }
 
     /*package*/ static final Logger LOGGER = Logger.getLogger("cnd.overrides.annotations.logger"); // NOI18N
@@ -97,7 +99,7 @@ import org.openide.util.NbBundle;
             Collection<? extends CsmOffsetableDeclaration> templateSpecializations) {
         assert decl != null;
         this.document = document;
-        this.pos = new DeclarationPosition(decl);
+        this.pos = getPosition(document, decl.getStartOffset());
         if (baseTemplates.isEmpty() && templateSpecializations.isEmpty()) {
             // overrides only 
             if (baseDecls.isEmpty()) {
@@ -114,11 +116,17 @@ import org.openide.util.NbBundle;
             } else if (templateSpecializations.isEmpty()) {
                 type = AnnotationType.SPECIALIZES;
             } else {
-                type = AnnotationType.TEMPLATE_COMBINED;
+                type = AnnotationType.SPECIALIZES;
             }
         } else {
             assert !baseTemplates.isEmpty() || !templateSpecializations.isEmpty() || !descDecls.isEmpty() || !baseDecls.isEmpty() : "all are empty?";
-            type = AnnotationType.COMBINED;
+            if (baseTemplates.isEmpty()) {
+                type = AnnotationType.EXTENDED_IS_SPECIALIZED;
+            } else if (templateSpecializations.isEmpty()) {
+                type = AnnotationType.EXTENDED_SPECIALIZES;
+            } else {
+                type = AnnotationType.EXTENDED_SPECIALIZES;
+            }
         }
         baseUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseDecls.size());
         for (CsmOffsetableDeclaration d : baseDecls) {
@@ -154,9 +162,11 @@ import org.openide.util.NbBundle;
             case IS_SPECIALIZED:
                 return "org-netbeans-modules-cnd-navigation-is_specialized"; // NOI18N
             case OVERRIDEN_COMBINED:
-            case TEMPLATE_COMBINED:
-            case COMBINED:
                 return "org-netbeans-modules-editor-annotations-override-is-overridden-combined"; //NOI18N
+            case EXTENDED_SPECIALIZES:
+                return "org-netbeans-modules-cnd-navigation-extended_specializes"; // NOI18N
+            case EXTENDED_IS_SPECIALIZED:
+                return "org-netbeans-modules-cnd-navigation-extended_is_specialized"; // NOI18N
             default:
                 throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
         }
@@ -200,9 +210,10 @@ import org.openide.util.NbBundle;
     }
     
     public void attach() {
-        if(pos.getOffset() != -1) {
-            NbDocument.addAnnotation(document, pos, -1, this);
+        if(pos.getOffset() == -1 || pos.getOffset() >= document.getEndPosition().getOffset()) {
+            return;
         }
+         NbDocument.addAnnotation(document, pos, -1, this);
     }
     
     public void detachImpl() {
@@ -218,6 +229,33 @@ import org.openide.util.NbBundle;
         return pos;
     }
 
+    private static Position getPosition(final StyledDocument doc, final int offset) {
+        class Impl implements Runnable {
+
+            private Position pos;
+
+            @Override
+            public void run() {
+                if (offset < 0 || offset >= doc.getLength()) {
+                    return;
+                }
+
+                try {
+                    pos = doc.createPosition(offset - NbDocument.findLineColumn(doc, offset));
+                } catch (BadLocationException ex) {
+                    //should not happen?
+                    Logger.getLogger(BaseAnnotation.class.getName()).log(Level.FINE, null, ex);
+                }
+            }
+        }
+
+        Impl i = new Impl();
+
+        doc.render(i);
+
+        return i.pos;
+    }
+    
     protected abstract CharSequence debugTypeString();
 
     /** for test/debugging purposes */

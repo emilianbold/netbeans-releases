@@ -54,6 +54,7 @@ public final class GizmoServiceInfo {
         GizmoServiceInfoAccessor.setDefault(new GizmoServiceInfoAccessorImpl());
     }
     public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
+    public static final String GIZMO_PROJECT_HOST =  "GizmoProjectHost";//NOI18N
     public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
     /** Session executable ID (path + time stamp) */
     public static final String GIZMO_PROJECT_EXECUTABLE_ID = "GizmoProjectExecutableID";//NOI18N

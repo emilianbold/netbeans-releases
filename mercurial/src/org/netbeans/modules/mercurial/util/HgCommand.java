@@ -60,6 +60,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -97,6 +98,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NetworkSettings;
 import org.openide.util.Utilities;
 
 /**
@@ -333,7 +335,7 @@ public class HgCommand {
 
     private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
     private static final String ENV_HGENCODING = "HGENCODING"; //NOI18N
-    private static final String ENCODING = getEncoding();
+    public static final String ENCODING = getEncoding();
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
@@ -381,7 +383,7 @@ public class HgCommand {
 
     private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
     static {
-        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(16);
+        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(17);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ANNOTATE_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_CAT_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_EXPORT_CMD);
@@ -391,6 +393,7 @@ public class HgCommand {
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_LOG_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUTGOING_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PARENT_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PUSH_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_RESOLVE_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_STATUS_CMD);
@@ -400,7 +403,9 @@ public class HgCommand {
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VIEW_CMD);
     }
     private static final String HG_FLAG_TOPO = "--topo"; //NOI18N
-
+    
+    private static final String CMD_EXE = "cmd.exe"; //NOI18N
+    
     /**
      * Merge working directory with the head revision
      * Merge the contents of the current working directory and the
@@ -879,26 +884,27 @@ public class HgCommand {
 
     private static String getGlobalProxyIfNeeded(String defaultPath, boolean bOutputDetails, OutputLogger logger){
         String proxy = null;
-        if(defaultPath != null &&
-                (defaultPath.startsWith("http:") || defaultPath.startsWith("https:"))){ // NOI18N
-            HgProxySettings ps = new HgProxySettings();
-            if (ps.isManualSetProxy()) {
-                if ((defaultPath.startsWith("http:") && !ps.getHttpHost().equals(""))||
-                    (defaultPath.startsWith("https:") && !ps.getHttpHost().equals("") && ps.getHttpsHost().equals(""))) { // NOI18N
-                    proxy = ps.getHttpHost();
-                    if (proxy != null && !proxy.equals("")) {
-                        proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()) : ""; // NOI18N
-                    } else {
-                        proxy = null;
-                    }
-                } else if (defaultPath.startsWith("https:") && !ps.getHttpsHost().equals("")) { // NOI18N
-                    proxy = ps.getHttpsHost();
-                    if (proxy != null && !proxy.equals("")) {
-                        proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()) : ""; // NOI18N
-                    } else {
-                        proxy = null;
-                    }
-                }
+        if( defaultPath != null &&
+           (defaultPath.startsWith("http:") ||                                  // NOI18N
+            defaultPath.startsWith("https:")))                                  // NOI18N
+        { 
+        
+            URI uri = null;
+            try {
+                uri = new URI(defaultPath);
+            } catch (URISyntaxException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+        
+            String proxyHost = NetworkSettings.getProxyHost(uri);
+
+            // check DIRECT connection
+            if(proxyHost != null && proxyHost.length() > 0) {
+                proxy = proxyHost;
+                String proxyPort = NetworkSettings.getProxyPort(uri);
+                assert proxyPort != null;
+
+                proxy += !proxyPort.equals("") ? ":" + proxyPort : ""; // NOI18N
             }
         }
         if(proxy != null && bOutputDetails){
@@ -2851,8 +2857,8 @@ public class HgCommand {
         }
         logCommand(command);
         File outputStyleFile = null;
-        File repository = null;
         final String hgCommand = getHgCommandName(command); // command name
+        final File repository = getRepositoryFromCommand(command, hgCommand);
         try {
             try {
                 outputStyleFile = createOutputStyleFile(command);
@@ -2868,28 +2874,37 @@ public class HgCommand {
                     envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
                 }
             }
-            if (isGuardedCommand(hgCommand) && (repository = getRepositoryFromCommand(command, hgCommand)) != null) {
-                // indexing is supposed to be disabled for the time the command is running
-                return runWithoutIndexing(new Callable<List<String>>() {
+            try {
+                Callable<List<String>> callable = new Callable<List<String>>() {
                     @Override
-                    public List<String> call() throws Exception {
-                        return exec(command, pb);
+                    public List<String> call () throws HgException {
+                        if (isGuardedCommand(hgCommand) && repository != null) {
+                            // indexing is supposed to be disabled for the time the command is running
+                            return runWithoutIndexing(new Callable<List<String>>() {
+                                @Override
+                                public List<String> call() throws Exception {
+                                    return exec(commandLine, pb);
+                                }
+                            }, Collections.singletonList(repository), hgCommand);
+                        } else {
+                            return exec(commandLine, pb);
+                        }
                     }
-                }, Collections.singletonList(repository), hgCommand);
-            } else {
-                return exec(commandLine, pb);
+                };
+                if (modifiesRepository(hgCommand) && repository != null) {
+                    return Mercurial.getInstance().runWithoutExternalEvents(repository, callable);
+                } else {
+                    return callable.call();
+                }
+            } catch (HgException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                Mercurial.LOG.log(Level.WARNING, null, ex);
+                return null;
             }
         } finally{
             if (outputStyleFile != null) {
                 outputStyleFile.delete();
-            }
-            if (modifiesRepository(hgCommand)) {
-                if (repository == null) {
-                    repository = getRepositoryFromCommand(command, hgCommand);
-                }
-                if (repository != null) {
-                    Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
-                }
             }
         }
     }
@@ -3129,7 +3144,27 @@ public class HgCommand {
             first = false;
         }
         assert !result.isEmpty();
+        modifyArguments(result);
         return result;
+    }
+    
+    private static void modifyArguments (List<String> result) {
+        if (CMD_EXE.equals(result.get(0))) {
+            // it seems that when running a command in a win cmd.exe, the command needs to be passed as a single parameter
+            // and all spaces in it's arguments need to be enclosed in double-quotes
+            StringBuilder commandArg = new StringBuilder();
+            int pos = 0;
+            for (ListIterator<String> it = result.listIterator(); it.hasNext(); ++pos) {
+                String arg = it.next();
+                if (pos >= 2) {
+                    it.remove();
+                    commandArg.append(arg.replace(" ", "\" \"")).append(' '); //NOI18N
+                }
+            }
+            assert result.size() == 2;
+            int len = commandArg.length();
+            result.add((len == 0 ? commandArg : commandArg.delete(len - 1, len)).toString());
+        }
     }
 
     /**
@@ -3190,7 +3225,7 @@ public class HgCommand {
         if (Utilities.isWindows() && !launcherPath.endsWith(HG_WINDOWS_EXE)) {
             /* handle .bat and .cmd files: */
             result = new ArrayList<String>(3);
-            result.add("cmd.exe");                                      //NOI18N
+            result.add(CMD_EXE);
             result.add("/C");                                           //NOI18N
             result.add(launcherPath);
             return result;
@@ -3440,7 +3475,7 @@ public class HgCommand {
             return;
         }
 
-        List<String> command = new ArrayList<String>();
+        final List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_RESOLVE_CMD);
@@ -3450,9 +3485,17 @@ public class HgCommand {
         command.add(FileUtil.normalizeFile(file).getAbsolutePath());
         List<String> list;
         try {
-            list = exec(command);
-        } finally {
-            Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
+            list = Mercurial.getInstance().runWithoutExternalEvents(repository, new Callable<List<String>>() {
+                @Override
+                public List<String> call () throws Exception {
+                    return exec(command);
+                }
+            });
+        } catch (HgException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            Mercurial.LOG.log(Level.WARNING, null, ex);
+            return;
         }
 
         if (!list.isEmpty()) {

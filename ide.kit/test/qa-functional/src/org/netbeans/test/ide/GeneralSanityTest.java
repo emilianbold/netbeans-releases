@@ -66,7 +66,7 @@ public class GeneralSanityTest extends NbTestCase {
         System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000");
         NbTestSuite s = new NbTestSuite();
         s.addTest(new GeneralSanityTest("testInitBlacklistedClassesHandler"));
-        s.addTest(NbModuleSuite.create(
+        s.addTest(
             NbModuleSuite.createConfiguration(
                 GeneralSanityTest.class
             ).gui(true).clusters(".*").enableModules(".*").
@@ -76,7 +76,7 @@ public class GeneralSanityTest extends NbTestCase {
                 "testNoWrites",
                 "testBlacklistedClassesHandler"
             )
-        ));
+        .suite());
         return s;
     }
 

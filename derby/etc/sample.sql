@@ -1,5 +1,5 @@
 -- Script to create the Java DB sample database. Run in the db/external directory using:
--- 
+--
 -- java -cp $DERBY_HOME/lib/derbytools.jar:$DERBY_HOME/lib/derby.jar org.apache.derby.tools.ij ../derby/etc/sample.sql
 
 connect 'jdbc:derby:sample;create=true';
@@ -35,56 +35,56 @@ CREATE TABLE CUSTOMER (
 
 INSERT INTO CUSTOMER
 values(
-1,'N','33015','JumboCom','111 E. Las Olas Blvd','Suite 51','Fort Lauderdale','FL','305-777-4632','305-777-4635','jumbocom@gmail.com',100000
+1,'N','95117','Jumbo Eagle Corp','111 E. Las Olivas Blvd','Suite 51','Fort Lauderdale','FL','305-555-0188','305-555-0189','jumboeagle@example.com',100000
 );
 INSERT INTO CUSTOMER
 values(
 
-2,'M','33055','Livermore Enterprises','9754 Main Street','P.O. Box 567','Miami','FL','305-456-8888','305-456-8889','www.tsoftt.com',50000
+2,'M','95035','New Enterprises','9754 Main Street','P.O. Box 567','Miami','FL','305-555-0148','305-555-0149','www.new.example.com',50000
 );
 INSERT INTO CUSTOMER
 values(
-25,'M','75200','Oak Computers','8989 Qume Drive','Suite 9897','Houston','TX','214-999-1234','214-999-5432','www.oakc.com',25000
+25,'M','85638','Wren Computers','8989 Red Albatross Drive','Suite 9897','Houston','TX','214-555-0133','214-555-0134','www.wrencomp.example.com',25000
 );
 INSERT INTO CUSTOMER
 values(
-3,'L','12347','Nano Apple','8585 Murray Drive','P.O. Box 456','Alanta','GA','555-275-9900','555-275-9911','www.nanoapple.net',90000
+3,'L','12347','Small Bill Company','8585 South Upper Murray Drive','P.O. Box 456','Alanta','GA','555-555-0175','555-555-0176','www.smallbill.example.com',90000
 );
 INSERT INTO CUSTOMER
 values(
-36,'H','94401','HostProCom','65653 El Camino','Suite 2323','San Mateo','CA','650-456-8876','650-456-1120','www.hostprocom.net',65000
+36,'H','94401','Bob Hosting Corp.','65653 Lake Road','Suite 2323','San Mateo','CA','650-555-0160','650-555-0161','www.bobhostcorp.example.com',65000
 );
 INSERT INTO CUSTOMER
 values(
-106,'L','95035','CentralComp','829 Flex Drive','Suite 853','San Jose','CA','408-987-1256','408-987-1277','www.centralcomp.com',26500
+106,'L','95035','Early CentralComp','829 E Flex Drive','Suite 853','San Jose','CA','408-555-0157','408-555-0150','www.centralcomp.example.com',26500
 );
 INSERT INTO CUSTOMER
 values(
-149,'L','95117','Golden Valley Computers','4381 Kelly Ave','Suite 77','Santa Clara','CA','408-432-6868','408-432-6899','www.gvc.net',70000
+149,'L','95117','John Valley Computers','4381 Kelly Valley Ave','Suite 77','Santa Clara','CA','408-555-0169','408-555-0167','www.johnvalley.example.com',70000
 );
 INSERT INTO CUSTOMER
 values(
-863,'N','94401','Top Network Systems','456 4th Street','Suite 45','Redwood City','CA','650-345-5656','650-345-4433','www.hpsys.net',25000
+863,'N','94401','Big Network Systems','456 444th Street','Suite 45','Redwood City','CA','650-555-0181','650-555-0180','www.bignet.example.com',25000
 );
 INSERT INTO CUSTOMER
 values(
-777,'L','48128','West Valley Inc.','88 North Drive','Building C','Dearborn','MI','313-563-9900','313-563-9911','www.westv.com',100000
+777,'L','48128','West Valley Inc.','88 Northsouth Drive','Building C','Dearborn','MI','313-555-0172','313-555-0171','www.westv.example.com',100000
 );
 INSERT INTO CUSTOMER
 values(
-753,'H','48128','Ford Motor Co','2267 Michigan Ave','Building 21','Dearborn','MI','313-787-2100','313-787-3100','www.parts@ford.com',5000000
+753,'H','48128','Zed Motor Co','2267 NE Michigan Ave','Building 21','Dearborn','MI','313-555-0151','313-555-0152','www.parts@ford.example.com',5000000
 );
 INSERT INTO CUSTOMER
 values(
-722,'N','48124','Big Car Parts','52963 Outer Dr','Suite 35','Detroit','MI','313-788-7682','313-788-7600','www.sparts.com',50000
+722,'N','48124','Big Car Parts','52963 Notouter Dr','Suite 35','Detroit','MI','313-555-0144','313-555-0145','www.bparts.example.com',50000
 );
 INSERT INTO CUSTOMER
 values(
-409,'L','10095','New Media Productions','4400 22nd Street','Suite 562','New York','NY','212-222-5656','212-222-5600','www.nymedia.com',10000
+409,'L','10095','Old Media Productions','4400 527th Street','Suite 562','New York','NY','212-555-0110','212-555-0111','www.oldmedia.example.com',10000
 );
 INSERT INTO CUSTOMER
 values(
-410,'M','10096','Yankee Computer Repair','9653 33rd Ave','Floor 4','New York','NY','212-535-7000','212-535-7100','www.nycomp@repair.com',25000
+410,'M','10096','Yankee Computer Repair Ltd','9653 211th Ave','Floor 4','New York','NY','212-555-0191','212-555-0197','www.nycompltd@repair.example.com',25000
 );
 
 
@@ -131,40 +131,40 @@ CREATE TABLE MANUFACTURER (
 
 
 INSERT INTO MANUFACTURER (
-MANUFACTURER_ID, "NAME", ADDRESSLINE1, ADDRESSLINE2, CITY, "STATE", ZIP, PHONE, FAX, EMAIL, 
+MANUFACTURER_ID, "NAME", ADDRESSLINE1, ADDRESSLINE2, CITY, "STATE", ZIP, PHONE, FAX, EMAIL,
 REP )
 VALUES
 
-(19985678,'Google','7654 1st Street','Suite 100','Mountain View','CA','94043','650-456-6688','408-456-9900','www.google@gmail.com','John Snow'),
-(19986982,'Sun MicroSystems','4000 Network Circle','Building 14','Santa Clara','CA','95051','408-972-4456','408-972-4499','www.msft@cnet.com','Brian Washington'),
-(19974892,'Acer','20959 Bascom Ave','Building 3','San Jose','CA','95128','408-293-9123','408-293-0070','www.acer@tech.com','Matt Williams'),
-(19986196,'Matrox','250 Marin Blvd','Suite C','Novato','CA','94949','415-883-9832','415-883-9811','www.mat@comp.net','Brad Bonds'),
-(19978451,'3Com','399 San Pablo Ave','Building 600','El Cerrito','CA','94530','510-528-7777','510-528-7766','www.3com@aol.com','Lefty Groff'),
-(19982461,'CBX Cables','9988 Main Street','Suite 100','Indianapolis','IN','46290','800-987-3434','800-987-1111','www.cbx@cbl.com','Henry Adams'),
-(19984899,'Sony','5109 Union Street','Building 8A','San Francisco','CA','94123','415-885-9090','415-885-9099','www.sales@sony.com','Laura Chinn'),
-(19965794,'Getaway','975 El Camino Real','Suite 55','Santa Clara','CA','95051','408-261-9826','408-261-9895','www.computer@gate.com','Hans Frisby'),
-(19955656,'SoftClip','95 Eastway Drive','Building 1','Boston','MA','02100','617-998-5656','617-998-9988','www.soft@clip.com','Rhonda Nelson'),
-(19989719,'Toshiba','1000 Van Nuys Blvd','Suite 33','Van Nuys','CA','91405','800-997-0065','800-997-0099','www.tsales@toshiba.com','Charlotte Wise'),
-(19977775,'Sams Publishing','944 West 103rd Street','Suite 25','Reading','MA','01867','617-212-1643','617-212-1600','www.books@sams.com','Paul Schaffer'),
-(19948494,'Computer Cables & More','5632 Michigam Ave',' ','Dearborn','MI','48127','313-555-6654','313-555-6600','www.cbl.more.net','Sam Frank'),
-(19971233,'BMC','5960 Inglewood drive','Building R5','Pleasanton','CA','94588','408-321-8800','408-321-8811','www.paul@bmc.com','Paul Cruz'),
-(19980198,'Rico Enterprises','76342 26th Ave','Suite 450','New York','NY','10044','212-766-7531','212-766-7500','www.rico@aol.com','Fred Lewis'),
-(19960022,'Dobs Computer Products','6593 Garcia Way','Floor 2','Albuqerque','NM','87119','505-999-2121','505-999-2100','www.dobs@aol.com','Tom Goglia'),
-(19986542,'Zetsoft','795 Stone Road','Suite 4','Tombstone','AZ','85638','602-545-9823','602-545-9800','www.zetasoft.com','Hugh Klein'),
-(19977346,'Hitachi','284 Smith Road','Suite 7','San Mateo','CA','94403','650-765-7878','650-329-8494','www.smith.com','Frank Smith'),
-(19977347,'World Savings','56 Broadway','Floor 12','Oakland','CA','98123','510-683-9725','510-683-9510','www.wsl.com','Tom Brown'),
-(19977348,'Wells Fargo','235 Market St.','Suite 666','San Francisco','CA','94567','415-876-4747','415-876-9000','www.wfb.com','John Adams'),
-(19963322,'Bank Of America','236 Market St.','Suite 666','San Francisco','CA','94567','415-875-4746','415-875-8000','www.boa.com','John White'),
-(19963323,'Google','7655 2st Street','Suite 200','Mountain View','CA','94043','408-456-6677','408-456-9972','www.google@gmail.com','John Green'),
-(19963324,'Google','7654 1st Street','Suite 100','Mountain View','CA','94043','408-456-6688','408-456-9900','www.google@gmail.com','Fred Stanford'),
-(19963325,'Google','7654 1st Street','Suite 150','Mountain View','CA','94043','408-456-6688','408-456-9900','www.google@gmail.com','7 of 9'),
-(19985590,'Sun MicroSystems','4000 Network Circle','Building 14','Santa Clara','CA','95051','206-972-4456','206-972-4499','ann.best@sun.com','Sun Soft'),
-(19955564,'Sun MicroSystems','4000 Network Circle','Building 15','Santa Clara','CA','95051','206-972-4457','206-972-4499','insider@cnet.com','Cest commentquonfreine'),
-(19955565,'Sun MicroSystems','4000 Network Circle','Building 16','Santa Clara','CA','95051','206-972-4458','206-972-4499','outsidert@cnet.com','Wanabe There'),
-(19984681,'Sun MicroSystems','4000 Network Circle','Building 17','Santa Clara','CA','95051','206-972-4459','206-972-4399','app.send@sun.com','Cesar Palace'),
-(19984682,'Sun MicroSystems','4000 Network Circle','Building 18','Santa Clara','CA','95051','206-972-4451','206-972-4599','j2ee@sun.com','Waren Julius'),
-(19941212,'Sun MicroSystems','4000 Network Circle','Building 19','Santa Clara','CA','95051','206-972-4452','206-972-4699','javaee5@sun.com','bill snider'),
-(19987296,'Sun MicroSystems','4000 Network Circle','Building 20','Santa Clara','CA','95051','206-972-4453','206-972-4799','gerard@cnet.com','gerard dekerantarec')
+(19985678,'Happy End Searching','5 81st Street','Suite 100','Mountain View','CA','94043','650-555-0102','408-555-0103','happysearching@example.com','John Snow'),
+(19986982,'Smith Bird Watching','4000 Finch Circle','Building 14','Santa Clara','CA','95051','650-555-0111','408-555-0112','www.sbw@example.com','Brian Washington'),
+(19974892,'Wilson Fish Co','20959 Whalers Ave','Building 3','San Jose','OH','95128','650-555-0133','408-555-0133','www.wilsonfish@example.com','Matthew Williams'),
+(19986196,'James Deli','250 Marinade Blvd','Suite C','Novato','IL','94949','650-555-0144','408-555-0145','www.jdeli@example.net','Phil Jones'),
+(19978451,'All Sushi','399 San Pablo Ave','Building 600','Cleveland','CA','94530','650-555-0140','408-555-0143','www.allsushi@example.com','Teresa Ho'),
+(19982461,'Soft Cables','9988 Main Upper Street','Suite 100','Indianapolis','IA','46290','650-555-0151','408-555-0152','www.cbales@example.com','Henry Adams'),
+(19984899,'Mike Recording Industries','5109 Union Street Road','Building 8A','San Alfred','CA','94123','415-555-0166','415-555-0165','www.mikerecording@example.com','Mike Black'),
+(19965794,'Easy Reach Telephones','975 El Camino Circle','Suite 4055','Santa Clara','VA','95051','408-555-0167','408-555-0168','www.easyreach@example.com','Walter James'),
+(19955656,'Soft Circle Opticians','95 Eastway Clearview Drive','Building 1','Boston','MA','02100','617-555-0171','617-555-0172','www.softcircle@example.com','Alfred Nelson'),
+(19989719,'Fast Boards','1000 Van Nuys Lane','Suite 904537','Van Nuys','VT','91405','800-555-0173','800-555-0174','www.fboards@example.com','Julie Board'),
+(19977775,'Sams Photo Center','9447 West 13th Street','Suite 25','Reading','MN','01867','617-555-0177','617-555-0178','www.photctr@example.com','Laurie Brown'),
+(19948494,'Computer Support Center','5632 Michigam Ave',' ','Dearborn','RI','48127','313-555-0181','313-555-0182','www.comsup.example.net','Sam Wright'),
+(19971233,'Bills Bank and Sons','5960 Inglewood Pkwy','Building C5','Pleasantville','WI','94588','408-555-0183','408-555-0184','www.billbank@example.com','Frank Smith'),
+(19980198,'Pleasant Enterprises','76342 865th Ave','Suite 450','New York','NY','10044','212-555-0184','212-555-0185','www.pleasant@example.com','Louis Lewis'),
+(19960022,'Super Computer Products','63 Garcia Rock Way','Floor 22','Albuqerque','NM','87119','505-555-0193','505-555-0193','www.supercomputer@example.com','Tom Cross'),
+(19986542,'Florenc Bakery','795 Stone Flour Road','Suite 4','Tombstone','DE','85638','602-555-0182','602-555-0188','florenc.example.com','Jeff Green'),
+(19977346,'Upper Cargo Lift Services','2845 Smith Under Road','Suite 7','San Mateo','GA','94403','650-555-0171','650-555-0172','uppercargo.example.com','Frank Peters'),
+(19977347,'Super Savings Pharmacy','56 Broadway Lane','Floor 123','Oakland','NH','98123','510-555-0173','510-555-0173','superpharmace.example.com','Tom Brown'),
+(19977348,'Early Posting Corp','235 E Market St.','Suite 1','San David','CA','94567','415-555-0138','415-555-0139','superposting.example.com','John Adams'),
+(19963322,'Pauls Dairy','236 Hill Street Lane','Suite 6','Orlando','CA','94567','415-555-0140','415-555-0141','paulsdairy.example.com','John White'),
+(19963323,'Joseph Ironworks','7655 382nd Street','Suite 200','Mountainside','TX','94043','408-555-0122','408-555-0128','joseph.ironworks@example.com','John Green'),
+(19963324,'Nails and Screws','7654 First Avenue','Suite 1005','Ypsilanti','MI','94043','302-555-0191','302-555-0193','nails.screws@example.com','Fred Stanford'),
+(19963325,'Main Beauty Hair Salon','44 Overload Street','Building 150','Chicago','WA','94043','211-555-0182','211-555-0183','mainbeauty@example.com','7 of 9'),
+(19985590,'Birders United','4000 Cormorant Circle','Building 14','Burlington','OR','95051','206-555-0178','206-555-0179','ann.jones@example.com','Ann Jones'),
+(19955564,'Birders United','4000 Cormorant Circle','Building 15','Burlington','OR','95051','206-555-0179','206-555-0179','phil@example.com','Phil Waters'),
+(19955565,'Birders United','4000 Cormorant Circle','Building 16','Burlington','OR','95051','206-555-0180','206-555-0179','birders@example.com','Birders'),
+(19984681,'Birders United','4000 Cormorant Circle','Building 17','Burlington','OR','95051','206-555-0181','206-555-0179','returnpalace@example.com','Nick Phillips'),
+(19984682,'Birders United','4000 Cormorant Circle','Building 18','Burlington','OR','95051','206-555-0182','206-555-0179','brian@example.com','Brian Brown'),
+(19941212,'Birders United','4000 Cormorant Circle','Building 19','Burlington','OR','95051','206-555-0183','206-555-0179','bill@example.com','Bill Snider'),
+(19987296,'Birders United','4000 Cormorant Circle','Building 20','Burlington','OR','95051','206-555-0184','206-555-0179','gerard@example.com','Jerry Young')
 ;
 
 
@@ -215,7 +215,7 @@ CREATE TABLE PURCHASE_ORDER (
 
 
 INSERT INTO PURCHASE_ORDER (
-ORDER_NUM, CUSTOMER_ID,  PRODUCT_ID, QUANTITY, SHIPPING_COST, 
+ORDER_NUM, CUSTOMER_ID,  PRODUCT_ID, QUANTITY, SHIPPING_COST,
 SALES_DATE, SHIPPING_DATE,  FREIGHT_COMPANY )
 VALUES
 
@@ -276,7 +276,7 @@ CREATE TABLE PRODUCT (
 
 
 INSERT INTO PRODUCT (
-PRODUCT_ID, MANUFACTURER_ID, PRODUCT_CODE, PURCHASE_COST, QUANTITY_ON_HAND, MARKUP, 
+PRODUCT_ID, MANUFACTURER_ID, PRODUCT_CODE, PURCHASE_COST, QUANTITY_ON_HAND, MARKUP,
 AVAILABLE, DESCRIPTION )
 VALUES
 
@@ -313,33 +313,33 @@ VALUES
 ;
 
 
-ALTER TABLE PRODUCT ADD CONSTRAINT FOREIGNKEY_MANUFACTURER_ID FOREIGN KEY ( 
+ALTER TABLE PRODUCT ADD CONSTRAINT FOREIGNKEY_MANUFACTURER_ID FOREIGN KEY (
 MANUFACTURER_ID )
-        REFERENCES MANUFACTURER ( MANUFACTURER_ID ) ON UPDATE no action ON DELETE 
+        REFERENCES MANUFACTURER ( MANUFACTURER_ID ) ON UPDATE no action ON DELETE
 no action;
 
-ALTER TABLE PRODUCT ADD CONSTRAINT FOREIGNKEY_PRODUCT_CODE FOREIGN KEY ( 
+ALTER TABLE PRODUCT ADD CONSTRAINT FOREIGNKEY_PRODUCT_CODE FOREIGN KEY (
 PRODUCT_CODE )
-        REFERENCES PRODUCT_CODE ( PROD_CODE ) ON UPDATE no action ON 
+        REFERENCES PRODUCT_CODE ( PROD_CODE ) ON UPDATE no action ON
 DELETE no action;
 
-ALTER TABLE CUSTOMER ADD CONSTRAINT FOREIGNKEY_DISCOUNT_CODE FOREIGN KEY 
+ALTER TABLE CUSTOMER ADD CONSTRAINT FOREIGNKEY_DISCOUNT_CODE FOREIGN KEY
 ( DISCOUNT_CODE )
-        REFERENCES DISCOUNT_CODE ( DISCOUNT_CODE ) ON UPDATE no action 
+        REFERENCES DISCOUNT_CODE ( DISCOUNT_CODE ) ON UPDATE no action
 ON DELETE no action;
 
 ALTER TABLE CUSTOMER ADD CONSTRAINT FOREIGNKEY_ZIP FOREIGN KEY ( ZIP )
-        REFERENCES MICRO_MARKET ( ZIP_CODE ) ON UPDATE no action ON 
+        REFERENCES MICRO_MARKET ( ZIP_CODE ) ON UPDATE no action ON
 DELETE no action;
 
-ALTER TABLE PURCHASE_ORDER ADD CONSTRAINT FOREIGNKEY_CUSTOMER_ID FOREIGN KEY ( 
+ALTER TABLE PURCHASE_ORDER ADD CONSTRAINT FOREIGNKEY_CUSTOMER_ID FOREIGN KEY (
 CUSTOMER_ID )
-        REFERENCES CUSTOMER ( CUSTOMER_ID ) ON UPDATE no action ON 
+        REFERENCES CUSTOMER ( CUSTOMER_ID ) ON UPDATE no action ON
 DELETE no action;
 
-ALTER TABLE PURCHASE_ORDER ADD CONSTRAINT FOREIGNKEY_PRODUCT_ID FOREIGN KEY ( 
+ALTER TABLE PURCHASE_ORDER ADD CONSTRAINT FOREIGNKEY_PRODUCT_ID FOREIGN KEY (
 PRODUCT_ID )
-        REFERENCES PRODUCT ( PRODUCT_ID ) ON UPDATE no action ON DELETE 
+        REFERENCES PRODUCT ( PRODUCT_ID ) ON UPDATE no action ON DELETE
 no action;
 
 disconnect;

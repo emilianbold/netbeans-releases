@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>7.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -257,7 +257,8 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.2</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>2.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -424,6 +425,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.java.editor</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

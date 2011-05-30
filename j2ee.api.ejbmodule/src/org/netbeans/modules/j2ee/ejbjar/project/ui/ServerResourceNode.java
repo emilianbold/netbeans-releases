@@ -68,6 +68,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
@@ -96,11 +97,11 @@ public class ServerResourceNode extends FilterNode {
     private FileChangeListener projectDirectoryListener;
     
     /** Creates a new instance of ServerResourceNode */
-    public ServerResourceNode(Project project) throws DataObjectNotFoundException {
+    public ServerResourceNode(Project project) throws DataObjectNotFoundException, FileStateInvalidException {
         this(getSetupDataFolder(project), project);
     }
     
-    private ServerResourceNode(DataFolder folderDo, Project project) throws DataObjectNotFoundException {
+    private ServerResourceNode(DataFolder folderDo, Project project) throws DataObjectNotFoundException, FileStateInvalidException {
         super(getDataFolderNode(folderDo, project), getDataFolderNodeChildren(folderDo), Lookups.singleton(DataFolder.find(project.getProjectDirectory())));
         projectDirectoryListener = new ProjectDirectoryListener();
         if (LOG) {

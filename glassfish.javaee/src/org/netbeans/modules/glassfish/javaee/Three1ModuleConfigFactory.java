@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -52,16 +52,18 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
  * @author vbk
  */
 public class Three1ModuleConfigFactory implements ModuleConfigurationFactory {
+    private final Hk2DeploymentManager hk2Dm;
     
     /** Creates a new instance of Hk2ModuleConfigFactory */
-    public Three1ModuleConfigFactory() {
+    public Three1ModuleConfigFactory(Hk2DeploymentManager hk2Dm) {
+        this.hk2Dm = hk2Dm;
     }
     
     @Override
     public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
-            retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module));
+            retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module), hk2Dm);
         } catch (ConfigurationException ce) {
             throw ce;
         } catch (Exception ex) {

@@ -80,25 +80,11 @@ public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_PREPARE=2000;            
     }
-    
-    public void test_SaveRuby_File() {
-        testProject = Projects.RUBY_PROJECT;
-        pathName = "Source Files"+"|";
-        docName = "ruby20kb.rb";
-        doMeasurement();
-    }
 
     public void test_SavePHP_File() {
         testProject = Projects.PHP_PROJECT;
         pathName = "Source Files"+"|";
         docName = "php20kb.php";
-        doMeasurement();
-    }
-
-    public void test_SaveRHTML_File() {
-        testProject = Projects.RAILS_PROJECT;
-        pathName = "Views"+"|";
-        docName = "rhtml20kb.rhtml";        
         doMeasurement();
     }
     public void test_SaveJS_File() {
@@ -117,12 +103,6 @@ public class SaveModifiedScriptingFiles extends org.netbeans.modules.performance
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "web"+"|";
         docName = "css20kb.css";        
-        doMeasurement();
-    }
-    public void test_SaveYML_File() {
-        testProject = Projects.RAILS_PROJECT;
-        pathName = "Configuration"+"|";
-        docName = "yaml20kb.yml";        
         doMeasurement();
     }
     public void test_SaveBAT_File() {

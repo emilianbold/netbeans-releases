@@ -777,7 +777,9 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         @Override
         public void close() throws IOException {
             super.close();
-            NbPreferences.forModule(RSSFeed.class).put(path, modTime);
+            if (modTime != null) {
+                NbPreferences.forModule(RSSFeed.class).put(path, modTime);
+            }
             os.close();
         }
 

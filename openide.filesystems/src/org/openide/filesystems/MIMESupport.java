@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,7 +97,7 @@ final class MIMESupport extends Object {
     private static final Object lock = new Object();
     
     /** for logging and test interaction */
-    private static Logger ERR = Logger.getLogger(MIMESupport.class.getName());
+    private static final Logger ERR = Logger.getLogger(MIMESupport.class.getName());
 
     private MIMESupport() {
     }
@@ -138,7 +139,7 @@ final class MIMESupport extends Object {
         } finally {
             synchronized (lock) {
                 if (lastCfo != CLEARED) {
-                    lastCfo = new WeakReference<CachedFileObject>(cfo);
+                    lastCfo = new SoftReference<CachedFileObject>(cfo);
                 } else if (cfo != lastCfo.get()) {
                     cfo.clear();
                 }

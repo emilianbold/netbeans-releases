@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.27
+#Version 2.30.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -643,7 +643,7 @@ CLSS public abstract org.netbeans.spi.debugger.jpda.EditorContext
 cons public init()
 fld public final static java.lang.String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint"
 fld public final static java.lang.String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite"
-fld public final static java.lang.String CLASS_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint"
+fld public final static java.lang.String CLASS_BREAKPOINT_ANNOTATION_TYPE = "ClassBreakpoint"
 fld public final static java.lang.String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "CondBreakpoint"
 fld public final static java.lang.String CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE = "CurrentExpressionLine"
 fld public final static java.lang.String CURRENT_EXPRESSION_SECONDARY_LINE_ANNOTATION_TYPE = "CurrentExpression"
@@ -651,12 +651,12 @@ fld public final static java.lang.String CURRENT_LAST_OPERATION_ANNOTATION_TYPE 
 fld public final static java.lang.String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC"
 fld public final static java.lang.String CURRENT_OUT_OPERATION_ANNOTATION_TYPE = "StepOutOperation"
 fld public final static java.lang.String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint"
-fld public final static java.lang.String DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint"
+fld public final static java.lang.String DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE = "DisabledClassBreakpoint"
 fld public final static java.lang.String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint"
-fld public final static java.lang.String DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint"
-fld public final static java.lang.String DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint"
-fld public final static java.lang.String FIELD_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint"
-fld public final static java.lang.String METHOD_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint"
+fld public final static java.lang.String DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE = "DisabledFieldBreakpoint"
+fld public final static java.lang.String DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE = "DisabledMethodBreakpoint"
+fld public final static java.lang.String FIELD_BREAKPOINT_ANNOTATION_TYPE = "FieldBreakpoint"
+fld public final static java.lang.String METHOD_BREAKPOINT_ANNOTATION_TYPE = "MethodBreakpoint"
 fld public final static java.lang.String OTHER_THREAD_ANNOTATION_TYPE = "OtherThread"
 fld public final static java.lang.String PROP_LINE_NUMBER = "lineNumber"
 innr public abstract interface static !annotation Registration
@@ -729,7 +729,7 @@ meth public org.netbeans.spi.debugger.jpda.EditorContext$Position getMethodStart
 meth public org.netbeans.spi.debugger.jpda.EditorContext$Position getStartPosition()
 meth public void setReturnValue(org.netbeans.api.debugger.jpda.Variable)
 supr java.lang.Object
-hfds bytecodeIndex,endPosition,methodClassType,methodEndPosition,methodName,methodStartPosition,nextOperations,returnValue,startPosition
+hfds bytecodeIndex,endPosition,methodClassType,methodDescriptor,methodEndPosition,methodName,methodStartPosition,nextOperations,returnValue,startPosition
 
 CLSS public final static org.netbeans.spi.debugger.jpda.EditorContext$Position
  outer org.netbeans.spi.debugger.jpda.EditorContext

@@ -96,6 +96,7 @@ public final class TermOptions {
 	scrollOnInput = true;
 	scrollOnOutput = true;
 	lineWrap = true;
+        ignoreKeymap = false;
     }
 
     public synchronized static TermOptions getDefault(Preferences prefs) {
@@ -122,6 +123,7 @@ public final class TermOptions {
 	copy.scrollOnInput = this.scrollOnInput;
 	copy.scrollOnOutput = this.scrollOnOutput;
 	copy.lineWrap = this.lineWrap;
+        copy.ignoreKeymap = this.ignoreKeymap;
 	return copy;
     }
 
@@ -140,6 +142,7 @@ public final class TermOptions {
 	this.scrollOnInput = that.scrollOnInput;
 	this.scrollOnOutput = that.scrollOnOutput;
 	this.lineWrap = that.lineWrap;
+        this.ignoreKeymap = that.ignoreKeymap;
 	this.dirty = false;
 	pcs.firePropertyChange(null, null, null);
     }
@@ -183,6 +186,9 @@ public final class TermOptions {
 					  scrollOnOutput);
 	lineWrap = prefs.getBoolean(PREFIX + PROP_LINE_WRAP,
 				    lineWrap);
+        
+        ignoreKeymap = prefs.getBoolean(PREFIX + PROP_IGNORE_KEYMAP,
+				    ignoreKeymap);
 
 	font = new Font(fontFamily, fontStyle, fontSize);
 
@@ -209,6 +215,7 @@ public final class TermOptions {
 	prefs.putBoolean(PREFIX + PROP_SCROLL_ON_INPUT, scrollOnInput);
 	prefs.putBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutput);
 	prefs.putBoolean(PREFIX + PROP_LINE_WRAP, lineWrap);
+        prefs.putBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymap);
     }
 
 
@@ -409,6 +416,22 @@ public final class TermOptions {
     } 
     public void setLineWrap(boolean lineWrap) {
 	this.lineWrap = lineWrap;
+	dirty = true;
+	pcs.firePropertyChange(null, null, null);
+    } 
+    
+    /*
+     * Ignore keymap property.
+     */
+    public static final String PROP_IGNORE_KEYMAP = "ignoreKeymap"; // NOI18N
+
+    private boolean ignoreKeymap;
+
+    public boolean getIgnoreKeymap() {
+	return ignoreKeymap;
+    } 
+    public void setIgnoreKeymap(boolean ignoreKeymap) {
+	this.ignoreKeymap = ignoreKeymap;
 	dirty = true;
 	pcs.firePropertyChange(null, null, null);
     } 

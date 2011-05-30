@@ -138,6 +138,12 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
                 onPrevInnerView();
             }
         });
+        
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            setBackground(color);
+            jPanel2.setBackground(color);
+        }                
     }
 
     private void onPrevInnerView() {

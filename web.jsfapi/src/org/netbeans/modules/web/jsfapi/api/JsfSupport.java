@@ -46,6 +46,7 @@ import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -66,4 +67,5 @@ public interface JsfSupport {
      */
     public Map<String, ? extends Library> getLibraries();
     
+    public Lookup getLookup();
 }

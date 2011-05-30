@@ -76,6 +76,9 @@ public interface DiscoveryDescriptor {
     String getBuildLog();
     void setBuildLog(String logFile);
 
+    String getExecLog();
+    void setExecLog(String logFile);
+
     String getLevel();
     void setLevel(String level);
 
@@ -90,6 +93,9 @@ public interface DiscoveryDescriptor {
     
     boolean isSimpleMode();
     void setSimpleMode(boolean simple);
+
+    boolean isIncrementalMode();
+    void setIncrementalMode(boolean incremental);
 
     String getCompilerName();
     void setCompilerName(String compiler);

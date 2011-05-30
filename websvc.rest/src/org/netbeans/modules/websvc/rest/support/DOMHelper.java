@@ -163,6 +163,22 @@ public class DOMHelper {
         }
         return null;
     }
+    
+    public Element findElement( String tag, String attrName , String attrValue ){
+        if (document != null) {
+            NodeList elements = document.getElementsByTagName(tag);
+            for (int i=0; i<elements.getLength() ; i++) {
+                Node item = elements.item(i);
+                if ( item instanceof Element ){
+                    String attribute = ((Element)item).getAttribute(attrName);
+                    if ( attrValue.equals(attribute)){
+                        return (Element)item;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     public void appendChild(Element child) {
         if (document != null) {

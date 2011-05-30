@@ -48,6 +48,7 @@ import java.awt.Color;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.xml.api.model.*;
+import org.netbeans.spi.editor.completion.CompletionTask;
 
 /**
  * It represents attribute name (or namespace prefix).
@@ -59,9 +60,12 @@ class AttributeResultItem extends XMLResultItem {
 
     // we are requested to avoid appending extra data
     private boolean inline = false;
+    
+    private final GrammarResult res;
 
     public AttributeResultItem(int position, GrammarResult res, boolean inline){
         super(position, res.getNodeName());
+        this.res = res;
         selectionForeground = foreground = Color.green.darker().darker();        
         this.inline = inline;
     }
@@ -78,4 +82,9 @@ class AttributeResultItem extends XMLResultItem {
     }
     
     Color getPaintColor() { return Color.blue; }
+
+    @Override
+    public CompletionTask createDocumentationTask() {
+        return doCreateDocumentationTask(res);
+    }
 }

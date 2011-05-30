@@ -54,13 +54,13 @@ import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.WeakListeners;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 
 public class CMRFieldNode extends AbstractNode implements PropertyChangeListener, OpenCookie {
@@ -100,9 +100,9 @@ public class CMRFieldNode extends AbstractNode implements PropertyChangeListener
         fireDisplayNameChange(null,null);
     }
     
-    public OpenCookie getCookie(Class<OpenCookie> type) {
+    public @Override <T extends Node.Cookie> T getCookie(Class<T> type) {
         if(OpenCookie.class.equals(type)) {
-            return this;
+            return type.cast(this);
         }
         return super.getCookie(type);
     }

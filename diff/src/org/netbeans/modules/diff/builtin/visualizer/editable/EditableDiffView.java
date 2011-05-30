@@ -869,6 +869,17 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         
         jSplitPane1.setLeftComponent(filePanel1);
         jSplitPane1.setRightComponent(filePanel2);        
+        
+        // aqua background workaround
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N 
+            jSplitPane1.setBackground(color);
+            filePanel1.setBackground(color); 
+            filePanel2.setBackground(color); 
+            view.setBackground(color); 
+            view.setOpaque(true);
+        }   
+    
     }
 
     WeakHashMap<JEditorPane, FoldHierarchyListener> hieararchyListeners = new WeakHashMap<JEditorPane, FoldHierarchyListener>(2);

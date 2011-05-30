@@ -143,6 +143,9 @@ public class FileModelFactory {
                 continue;
             }
             String classname = n.getLookup().lookup(String.class);
+            if (classname == null) { //#189913 - can be a wait node
+                continue;
+            }
             AID aid = (AID) n.getValue (APPLET_AID);
             DeploymentXmlAppletEntry entry = (DeploymentXmlAppletEntry)
                     n.getValue(DEPLOYMENT_ENTRY);
@@ -167,6 +170,9 @@ public class FileModelFactory {
     public static void writeTo(DeploymentXmlModel mdl, Node[] nodes) {
         for (Node n : nodes) {
             String classname = n.getLookup().lookup(String.class);
+            if (classname == null) {
+                continue; //#189911 - can be a wait node
+            }
             DeploymentXmlAppletEntry byAid = null;
             DeploymentXmlAppletEntry byClassName = null;
             DeploymentXmlAppletEntry byDisplayName = null;

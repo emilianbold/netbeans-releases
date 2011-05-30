@@ -44,10 +44,8 @@ package org.netbeans.modules.web.jsfapi.spi;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.openide.filesystems.FileObject;
@@ -62,10 +60,6 @@ import org.openide.util.Lookup;
 public abstract class JsfSupportProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JsfSupportProvider.class.getName());
-
-    public static JsfSupport get(Document document) {
-        return get(DataLoadersBridge.getDefault().getFileObject(document));
-    }
 
     public static JsfSupport get(Source source) {
         FileObject fo = source.getFileObject();

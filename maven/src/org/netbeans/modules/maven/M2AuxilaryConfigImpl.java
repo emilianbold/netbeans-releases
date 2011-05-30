@@ -98,10 +98,6 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 try {
                     project.getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
                         public @Override void run() throws IOException {
-                            FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
-                            if (config == null) {
-                                config = project.getProjectDirectory().createData(CONFIG_FILE_NAME);
-                            }
                             Document doc;
                             synchronized (M2AuxilaryConfigImpl.this) {
                                 doc = scheduledDocument;
@@ -110,11 +106,19 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                                 }
                                 scheduledDocument = null;
                             }
-                            OutputStream out = config.getOutputStream();
-                            try {
-                                XMLUtil.write(doc, out, "UTF-8"); //NOI18N
-                            } finally {
-                                out.close();
+                            FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+                            if (doc.getDocumentElement().getElementsByTagName("*").getLength() > 0) {
+                                if (config == null) {
+                                    config = project.getProjectDirectory().createData(CONFIG_FILE_NAME);
+                                }
+                                OutputStream out = config.getOutputStream();
+                                try {
+                                    XMLUtil.write(doc, out, "UTF-8"); //NOI18N
+                                } finally {
+                                    out.close();
+                                }
+                            } else if (config != null) {
+                                config.delete();
                             }
                         }
                     });

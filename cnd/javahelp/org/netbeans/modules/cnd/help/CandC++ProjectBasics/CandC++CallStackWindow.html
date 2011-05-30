@@ -1,7 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
+Copyright &copy; 2007, 2011 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -27,12 +26,21 @@ If you open the window when no debugging session is running, the window
 stays open until you close it.
 </p>
 <p>
-The information given for each call includes the name of the function, 
-followed by the filename and line number of the function's currently
-executing statement. If you double-click the function, the editor
+By default, the window shows the name of the function for each call.
+To display additional information, including the frame number, 
+optimization, program counter, 
+and the filename and line number of the function's currently
+executing statement, click the 
+Change Visible Columns button 
+<img src="../images/visibleColumns.png" alt="Change Visible Columns button">&nbsp;
+and select columns in the Change Visible Columns dialog box. 
+</p>
+<p>
+If you double-click the function, the editor
 jumps to the function in your source code.
 </p>
-The initial function, <tt>main()</tt> for C and C++ programs, is at the
+<p>
+The initial function is at the
 bottom of the Call Stack window. The function that was executing when the
 program stopped is at the top of the window. This function is known 
 as the stopped-in function.
@@ -55,12 +63,45 @@ the icon. The right column describes the icon.">
 <th scope="col" align="left">Description</th>
 </tr>
 <tr align="center">
-<td><img src="../images/CurrentFrame.gif"></td>
+<td><img src="../images/CurrentFrame.gif" alt="Current frame icon"></td>
 <td>The current call on the call stack</td>
 </tr>
 <tr align="center">
-<td><img src="../images/CallStack.gif"></td>
+<td><img src="../images/CallStack.gif" alt="Non-current frame icon"></td>
 <td>A call other than the current call</td>
+</tr>
+</table>
+<h3>Actions</h3>
+<p>The pop-up menu in the Call Stack window includes the following items.
+</p>
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column shows  
+the icon. The right column describes the icon.">
+<tr valign="top">
+<th scope="col" align="left">Menu Item</th>
+<th scope="col" align="left">Description</th>
+</tr>
+<tr valign="top">
+<td>Make Current</td>
+<td>Makes the selected frame the current frame.</td>
+</tr>
+<tr valign="top">
+<td>Pop Topmost Call</td>
+<td>All of the calls above the selected call are removed from the call stack.</td>
+</tr>
+<tr valign="top">
+<td>Pop to Here</td>
+<td>Frames are removed from the stack. Program execution resumes at the beginning 
+of the line in the new current frame.
+</td>
+</tr>
+<tr valign="top">
+<td>Set Max Frames</td>
+<td>Lets you set the maximum number of frames that will be removed from the stack. 
+The default number is 40.</td>
+</tr>
+<tr valign="top">
+<td>Verbose</td>
+<td>Governs the printing of arguments and information when popping frames from the stack.</td>
 </tr>
 </table>
 <table summary="related topics">

@@ -45,19 +45,18 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
-import java.io.DataInput;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import java.util.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -68,9 +67,13 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
@@ -90,13 +93,14 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private final byte arrayDepth;
     private byte flags;
     private CharSequence classifierText;
-    private int parseCount;
+    private volatile CachePair lastCache = EMPTY_CACHE_PAIR;
 
     final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
 
     // FIX for lazy resolver calls
     private CharSequence[] qname = null;
     private CsmUID<CsmClassifier> classifierUID;
+    private CsmObject owner;
 
     // package-local - for facory only
     TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
@@ -258,7 +262,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 default:
                     last = token;
             }
-        }
+        }        
         return null;
     }
 
@@ -376,33 +380,48 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     @Override
     public CharSequence getText() {
 	// TODO: resolve typedefs
-	return decorateText(getClassifierText().toString() + getInstantiationText(this), this, false, null).toString();
+        CharSequence instantiationText = getInstantiationText(this);
+        if (instantiationText.length() == 0) {
+            return decorateText(getClassifierText(), this, false, null);
+        } else {
+            return decorateText(getClassifierText().toString() + instantiationText, this, false, null);
+        }
     }
 
-    protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
-        return decorateText(getClassifierText().toString()  + getInstantiationText(this), this, canonical, variableNameToInsert);
+    protected CharSequence getText(boolean canonical, CharSequence variableNameToInsert) {
+        CharSequence instantiationText = getInstantiationText(this);
+        if (instantiationText.length() == 0) {
+            return decorateText(getClassifierText(), this, canonical, variableNameToInsert);
+        } else {
+            return decorateText(getClassifierText().toString()  + instantiationText, this, canonical, variableNameToInsert);
+        }
     }
 
-    public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
-	StringBuilder sb = new StringBuilder();
-	if( decorator.isConst() ) {
-	    sb.append("const "); // NOI18N
-	}
-	sb.append(classifierText);
-	for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
-	    sb.append('*');
-	}
-	if( decorator.isReference() ) {
-	    sb.append('&');
-	}
-	for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
-	    sb.append(canonical ? "*" : "[]"); // NOI18N
-	}
-	if( variableNameToInsert != null ) {
-	    sb.append(' ');
-	    sb.append(variableNameToInsert);
-	}
-	return sb;
+    public CharSequence decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
+        if (decorator.isConst() || decorator.getPointerDepth() > 0 || 
+            decorator.isReference() || decorator.getArrayDepth() > 0 ||
+            variableNameToInsert != null) {
+            StringBuilder sb = new StringBuilder();
+            if( decorator.isConst() ) {
+                sb.append("const "); // NOI18N
+            }
+            sb.append(classifierText);
+            for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
+                sb.append('*');
+            }
+            if( decorator.isReference() ) {
+                sb.append('&');
+            }
+            for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
+                sb.append(canonical ? "*" : "[]"); // NOI18N
+            }
+            if( variableNameToInsert != null ) {
+                sb.append(' ');
+                sb.append(variableNameToInsert);
+            }
+            return sb;
+        }
+        return classifierText;
     }
 
     final CharSequence initClassifierText(AST node) {
@@ -444,8 +463,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
 
     public static CharSequence getInstantiationText(CsmType type) {
-        StringBuilder sb = new StringBuilder();
         if (!type.getInstantiationParams().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
             sb.append('<');
             boolean first = true;
             for (CsmSpecializationParameter param : type.getInstantiationParams()) {
@@ -457,8 +476,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 sb.append(param.getText());
             }
             TemplateUtils.addGREATERTHAN(sb);
+            return sb;
         }
-	return sb;
+	return CharSequences.empty();
     }
 
     @Override
@@ -482,10 +502,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     public CsmClassifier getClassifier() {
         CsmClassifier classifier = _getClassifier();
         boolean needToRender = true;
-        Resolver parent = ResolverFactory.getCurrentResolver();
         if (CsmBaseUtilities.isValid(classifier)) {
             // skip
             needToRender = false;
+            Resolver parent = ResolverFactory.getCurrentResolver();
             if (!isTypeWithClassifier() && (qname != null) && (parent != null) && !CsmKindUtilities.isBuiltIn(classifier)) {
                 // check visibility of classifier
                 if (ForwardClass.isForwardClass(classifier) || !CsmIncludeResolver.getDefault().isObjectVisible(parent.getStartFile(), classifier)) {
@@ -495,9 +515,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
         }
         if (needToRender) {
-            int newParseCount = FileImpl.getParseCount();
-            if (classifier != null) {
-                if (newParseCount == parseCount) {
+            CachePair newCachePair = new CachePair(FileImpl.getParseCount(), ResolverFactory.getCurrentStartFile(this));
+            if (classifier != null) {                
+                if (newCachePair.equals(lastCache)) {
                     return classifier;
                 }
             }
@@ -510,9 +530,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
             synchronized (this) {
                 _setClassifier(classifier);
-                parseCount = newParseCount;
+                lastCache = newCachePair;
             }
             classifier = _getClassifier();
+            putTypeOwner();
         }
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
@@ -538,6 +559,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return classifier;
     }
 
+    void setOwner(CsmObject owner) {
+        this.owner = owner;
+    }
+
+    protected void putTypeOwner() {
+        if (owner != null) {
+            if (UIDProviderIml.isPersistable(UIDs.get(owner))) {
+                RepositoryUtils.put(owner);
+            }
+        }
+    }
+    
     protected CsmClassifier renderClassifier(CharSequence[] qname) {
         CsmClassifier result = null;
         Resolver resolver = ResolverFactory.createResolver(this);
@@ -631,7 +664,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                             if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
                                     || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                     || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
-                                CsmType type = AstRenderer.renderType(namePart, getContainingFile());
+                                CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true);
                                 instantiationParams.add(new TypeBasedSpecializationParameterImpl(type));
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
@@ -704,20 +737,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return "TYPE " + getText()  + getOffsetString(); // NOI18N
     }
 
-    //package-local
-    /**
-     * Return display text for a variable of this type
-     * (we actually need this for function pointers, where simple typeName+' '+variableName does not work.
-     */
-    String getVariableDisplayName(String variableName) {
-	return decorateText(getClassifierText(), this, false, variableName).toString();
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         output.writeByte(pointerDepth);
         output.writeByte(arrayDepth);
@@ -727,10 +751,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
         PersistentUtils.writeStrings(qname, output);
         PersistentUtils.writeSpecializationParameters(instantiationParams, output);
-        UIDObjectFactory.getDefaultFactory().writeUID(classifierUID, output);
+        
+        CsmUID<?> uid = this.classifierUID;
+        if(!UIDProviderIml.isPersistable(uid)) {
+            uid = null;
+        }
+        UIDObjectFactory.getDefaultFactory().writeUID(uid, output);
     }
 
-    public TypeImpl(DataInput input) throws IOException {
+    public TypeImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.pointerDepth = input.readByte();
         this.arrayDepth= input.readByte();
@@ -743,4 +772,47 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         instantiationParams.trimToSize();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
+    
+    private final static CachePair EMPTY_CACHE_PAIR = new CachePair(-1, null);
+    
+    private static final class CachePair {
+        private final int parseCount;
+        private final CsmUID<CsmFile> fileUID;
+
+        public CachePair(int parseCount, CsmUID<CsmFile> fileUID) {
+            this.parseCount = parseCount;
+            this.fileUID = fileUID;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CachePair other = (CachePair) obj;
+            if (this.parseCount != other.parseCount) {
+                return false;
+            }
+            if (this.fileUID != other.fileUID && (this.fileUID == null || !this.fileUID.equals(other.fileUID))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 37 * hash + this.parseCount;
+            hash = 37 * hash + (this.fileUID != null ? this.fileUID.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "CachePair{" + "parseCount=" + parseCount + ", fileUID=" + fileUID + '}'; // NOI18N
+        }
+    }    
 }

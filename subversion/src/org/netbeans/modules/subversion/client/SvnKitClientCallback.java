@@ -44,6 +44,7 @@
 package org.netbeans.modules.subversion.client;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -57,6 +58,7 @@ public class SvnKitClientCallback extends SvnClientCallback {
     private boolean promptedUser;
     private boolean promptedSSH;
     private boolean promptedSSL;
+    private static final Logger LOG = Logger.getLogger("versioning.subversion.passwordCallback.svnkit"); //NOI18N
     
     /** Creates a new instance of SvnClientCallback */
     public SvnKitClientCallback (SVNUrl url, int handledExceptions) {
@@ -65,38 +67,47 @@ public class SvnKitClientCallback extends SvnClientCallback {
 
     @Override
     public boolean askYesNo(String realm, String question, boolean yesIsDefault) {
-        Subversion.LOG.log(Level.FINE,
-                "SvnKitClientCallback.askYesNo(): realm [{0}] question [{1}] yesIsDefault[{2}]",
+        LOG.log(Level.FINE, "askYesNo(): realm [{0}] question [{1}] yesIsDefault[{2}]",
                 new Object[]{realm, question, yesIsDefault});
         return true; 
     }
 
     @Override
-    public boolean prompt(String realm, String username, boolean maySave) {        
+    public boolean prompt(String realm, String username, boolean maySave) {     
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "prompt for {0}, {1}", new Object[] { realm, username }); //NOI18N
+        }
         return prompted = !prompted;
     }
 
     @Override
     public String askQuestion(String realm, String question, boolean showAnswer, boolean maySave) {
-        Subversion.LOG.log(Level.FINE,
-                "SvnKitClientCallback.askQuestion(): realm [{0}] question [{1}] showAnswer[{2}] maySave[{3}]",
+        LOG.log(Level.FINE, "askQuestion(): realm [{0}] question [{1}] showAnswer[{2}] maySave[{3}]",
                 new Object[]{realm, question, showAnswer, maySave});
         return null;
     }
 
     @Override
     public boolean promptSSH(String realm, String username, int sshPort, boolean maySave) {
-        setSSHPort(sshPort);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "promptSSH for {0}, {1} [{2}]", new Object[] { realm, username, sshPort }); //NOI18N
+        }
         return promptedSSH = !promptedSSH;
     }
 
     @Override
     public boolean promptSSL(String realm, boolean maySave) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "promptSSL for {0}", realm); //NOI18N
+        }
         return promptedSSL = !promptedSSL;
     }
 
     @Override
     public boolean promptUser(String realm, String username, boolean maySave) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "promptUser for {0}, {1}", new Object[] { realm, username }); //NOI18N
+        }
         return promptedUser = !promptedUser;
     }
 

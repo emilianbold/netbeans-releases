@@ -93,7 +93,7 @@ public class RemoteServerListUI extends ServerListUIEx {
 
     @Override    
     protected JComponent getServerListComponentImpl(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager, selectedEnv, false);
+        EditServerListDialog dlg = new EditServerListDialog(cacheManager, selectedEnv, true);
         return dlg;
     }
 

@@ -79,7 +79,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -87,10 +86,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.basic.BasicTreeUI;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.hooks.SvnHookContext;
@@ -516,6 +513,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 tabbedPane.addTab(file.getName(), panel);
             }
             tabbedPane.setSelectedComponent(panel);
+            panel.requestActive();
         }
         revalidate();
         repaint();

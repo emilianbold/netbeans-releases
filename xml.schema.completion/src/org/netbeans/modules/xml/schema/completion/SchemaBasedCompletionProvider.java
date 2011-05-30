@@ -71,6 +71,9 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         BaseDocument doc = Utilities.getDocument(component);
+	if ( typedText ==null || typedText.trim().length() ==0 ){
+            return 0;
+        }
         if(doc == null)
             return 0;
         XMLSyntaxSupport support = ((XMLSyntaxSupport)doc.getSyntaxSupport());

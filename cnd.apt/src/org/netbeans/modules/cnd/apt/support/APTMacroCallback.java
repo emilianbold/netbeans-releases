@@ -61,7 +61,7 @@ public interface APTMacroCallback {
 
     /**
      * remember in stack currently expanded macro 
-     * used to prevent recurse in macro expandings
+     * used to prevent recurse in macro expanding
      * @return false if macro already in expanding state
      */   
     public boolean pushExpanding(APTToken token);
@@ -75,4 +75,8 @@ public interface APTMacroCallback {
      * check if macro is already somewhere in macro expanding stack
      */    
     public boolean isExpanding(APTToken token);
+
+    public boolean pushPPDefined();
+
+    public boolean popPPDefined();
 }

@@ -49,18 +49,17 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -128,9 +127,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
         Object od = doc.getProperty(Document.StreamDescriptionProperty);
         
         if (od instanceof DataObject) {
-            currentFolds = new HashMap<FoldInfo, Fold>();
-            task = JavaElementFoldTask.getTask(((DataObject)od).getPrimaryFile());
-            task.setJavaElementFoldManager(JavaElementFoldManager.this);
+            FileObject file = ((DataObject)od).getPrimaryFile();
+
+            currentFolds = new ArrayList<FoldInfo>();
+            task = JavaElementFoldTask.getTask(file);
+            task.setJavaElementFoldManager(JavaElementFoldManager.this, file);
         }
     }
     
@@ -162,7 +163,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
 
     public synchronized void release() {
         if (task != null)
-            task.setJavaElementFoldManager(null);
+            task.setJavaElementFoldManager(null, null);
         
         task         = null;
         file         = null;
@@ -195,8 +196,12 @@ public class JavaElementFoldManager extends JavaFoldManager {
         
         private Reference<JavaElementFoldManager> manager;
 
-        synchronized void setJavaElementFoldManager(JavaElementFoldManager manager) {
+        synchronized void setJavaElementFoldManager(JavaElementFoldManager manager, FileObject file) {
             this.manager = new WeakReference<JavaElementFoldManager>(manager);
+
+            if (file != null) {
+                JavaElementFoldManagerTaskFactory.doRefresh(file);
+            }
         }
         
         public void run(final CompilationInfo info) {
@@ -230,7 +235,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
             
             if (v.stopped || isCancelled())
                 return ;
-            
+
+            Collections.sort(v.folds);
             SwingUtilities.invokeLater(jefm.new CommitFolds(v.folds));
             
             long endTime = System.currentTimeMillis();
@@ -268,66 +274,82 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 try {
                     if (currentFolds == null)
                         return ;
-                    
-                    Map<FoldInfo, Fold> added   = new TreeMap<FoldInfo, Fold>();
-                    List<FoldInfo>      removed = new ArrayList<FoldInfo>(currentFolds.keySet());
-                    
-                    for (FoldInfo i : infos) {
-                        if (currentFolds.containsKey(i)) {
-                            removed.remove(i);
-                            continue ;
-                        }
-                        
-                        int start = i.start.getOffset();
-                        int end   = i.end.getOffset();
 
-                        // XXX: In some situations infos contains duplicate folds and we don't
-                        // want to add the same multiple times. The situation that I came across
-                        // was with having an empty enum subclass with javadoc. The javadoc fold
-                        // was added twice - once from visitClass and second time from visitMethod
-                        // for the <init> node, which for some reason has the same offset as the
-                        // the enum inner class.
-                        
-                        if (end > start &&
-                            (end - start) > (i.template.getStartGuardedLength() + i.template.getEndGuardedLength()) &&
-                            !added.containsKey(i))
-                        {
-                            Fold f    = operation.addToHierarchy(i.template.getType(),
-                                                                 i.template.getDescription(),
-                                                                 i.collapseByDefault,
-                                                                 start,
-                                                                 end,
-                                                                 i.template.getStartGuardedLength(),
-                                                                 i.template.getEndGuardedLength(),
-                                                                 i,
-                                                                 tr);
-                            
-                            added.put(i, f);
-                            
-                            if (i.template == IMPORTS_FOLD_TEMPLATE) {
-                                importsFold = f;
+                    List<FoldInfo> updatedFolds = new ArrayList<FoldInfo>(infos.size());
+                    Iterator<FoldInfo> itExisting = currentFolds.iterator();
+                    Iterator<FoldInfo> itNew = infos.iterator();
+                    FoldInfo currentExisting = itExisting.hasNext() ? itExisting.next() : null;
+                    FoldInfo currentNew = itNew.hasNext() ? itNew.next() : null;
+
+                    while (currentExisting != null || currentNew != null) {
+                        int order = currentExisting != null && currentNew != null ? currentExisting.compareTo(currentNew) : currentExisting != null ? -1 : 1;
+
+                        if (order < 0) {
+                            //fold removed:
+                            operation.removeFromHierarchy(currentExisting.fold, tr);
+
+                            if (importsFold == currentExisting.fold) {
+                                importsFold = null;
                             }
-                            if (i.template == INITIAL_COMMENT_FOLD_TEMPLATE) {
-                                initialCommentFold = f;
+
+                            if (initialCommentFold == currentExisting.fold) {
+                                initialCommentFold = null;
                             }
+                            
+                            currentExisting = itExisting.hasNext() ? itExisting.next() : null;
+                        } else {
+                            //added or remains:
+                            if (order > 0) {
+                                //added:
+                                int start = currentNew.start.getOffset();
+                                int end   = currentNew.end.getOffset();
+
+                                if (end > start &&
+                                        (end - start) > (currentNew.template.getStartGuardedLength() + currentNew.template.getEndGuardedLength())) {
+                                    Fold f = operation.addToHierarchy(currentNew.template.getType(),
+                                            currentNew.template.getDescription(),
+                                            currentNew.collapseByDefault,
+                                            start,
+                                            end,
+                                            currentNew.template.getStartGuardedLength(),
+                                            currentNew.template.getEndGuardedLength(),
+                                            currentNew,
+                                            tr);
+
+                                    currentNew.fold = f;
+
+                                    if (currentNew.template == IMPORTS_FOLD_TEMPLATE) {
+                                        importsFold = f;
+                                    }
+                                    
+                                    if (currentNew.template == INITIAL_COMMENT_FOLD_TEMPLATE) {
+                                        initialCommentFold = f;
+                                    }
+
+                                    updatedFolds.add(currentNew);
+                                }
+                            } else {
+                                updatedFolds.add(currentExisting);
+                                currentExisting = itExisting.hasNext() ? itExisting.next() : null;
+                            }
+
+                            FoldInfo newNew = itNew.hasNext() ? itNew.next() : null;
+
+                            // XXX: In some situations infos contains duplicate folds and we don't
+                            // want to add the same multiple times. The situation that I came across
+                            // was with having an empty enum subclass with javadoc. The javadoc fold
+                            // was added twice - once from visitClass and second time from visitMethod
+                            // for the <init> node, which for some reason has the same offset as the
+                            // the enum inner class.
+                            while (newNew != null && currentNew.compareTo(newNew) == 0) {
+                                newNew = itNew.hasNext() ? itNew.next() : null;
+                            }
+
+                            currentNew = newNew;
                         }
                     }
                     
-                    for (FoldInfo i : removed) {
-                        Fold f = currentFolds.remove(i);
-                        
-                        operation.removeFromHierarchy(f, tr);
-                        
-                        if (importsFold == f ) {
-                            importsFold = null;
-                        }
-                        
-                        if (initialCommentFold == f) {
-                            initialCommentFold = null;
-                        }
-                    }
-                    
-                    currentFolds.putAll(added);
+                    currentFolds = updatedFolds;
                 } catch (BadLocationException e) {
                     Exceptions.printStackTrace(e);
                 } finally {
@@ -343,8 +365,9 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     new Object[] {file, endTime - startTime});
         }
     }
-    
-    private Map<FoldInfo, Fold> currentFolds;
+
+    //@GuardedBy(FoldOperation.openTransaction())
+    private List<FoldInfo> currentFolds; //in natural order
     private Fold initialCommentFold;
     private Fold importsFold;
     
@@ -537,29 +560,18 @@ public class JavaElementFoldManager extends JavaFoldManager {
     
     protected static final class FoldInfo implements Comparable {
         
-        private Position start;
-        private Position end;
-        private FoldTemplate template;
-        private boolean collapseByDefault;
+        private final Position start;
+        private final Position end;
+        private final FoldTemplate template;
+        private final boolean collapseByDefault;
+        //@GUardedBy(FoldOperation.openTransaction())
+        private Fold fold;
         
         public FoldInfo(Document doc, int start, int end, FoldTemplate template, boolean collapseByDefault) throws BadLocationException {
             this.start = doc.createPosition(start);
             this.end   = doc.createPosition(end);
             this.template = template;
             this.collapseByDefault = collapseByDefault;
-        }
-        
-        @Override
-        public int hashCode() {
-            return 1;
-        }
-        
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof FoldInfo))
-                return false;
-            
-            return compareTo(o) == 0;
         }
         
         public int compareTo(Object o) {
@@ -580,10 +592,15 @@ public class JavaElementFoldManager extends JavaFoldManager {
             if (end.getOffset() > remote.end.getOffset()) {
                 return 1;
             }
-            
-            return 0;
+
+            //XXX: abusing the length of the fold description to implement ordering (the exact order does not matter in this case):
+            return template.getDescription().length() - remote.template.getDescription().length();
         }
-        
+
+        @Override
+        public String toString() {
+            return "FoldInfo[" + start.getOffset() + ", " + end.getOffset() + ", " + template.getDescription() + "]";
+        }
     }
     
 }

@@ -81,4 +81,9 @@ public interface ProjectProxy {
      * Returns path to working folder
      */
     String getWorkingFolder();
+    
+    /**
+     * Returns true if discovered properties are merged with project properties
+     */
+    boolean mergeProjectProperties();
 }

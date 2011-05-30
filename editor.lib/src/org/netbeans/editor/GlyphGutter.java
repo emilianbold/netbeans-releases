@@ -88,6 +88,8 @@ import org.netbeans.modules.editor.lib.ColoringMap;
 import org.openide.ErrorManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 /** GlyphGutter is component for displaying line numbers and annotation
@@ -159,7 +161,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
 
     /* These two variables are used for caching of count of line annos 
      * on the line over which is the mouse caret. Just for sake of optimalization. */
-    private int cachedCountOfAnnos = -1;
+    private volatile int cachedCountOfAnnos = -1;
     private int cachedCountOfAnnosForLine = -1;
 
     /** Property change listener on AnnotationTypes changes */
@@ -546,8 +548,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                     int clipEndY = clip.y + clip.height;
                     for (int i = startViewIndex; i < rootViewCount; i++){
                         View view = rootView.getView(i);                
-                        Rectangle rec = textUI.modelToView(component, view.getStartOffset());
-                        int y = (rec == null) ? 0 : rec.y;
+                        int y = textUI.getYFromPos(view.getStartOffset());
                         if (y >= clipEndY) {
                             break;
                         }
@@ -566,10 +567,32 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         }
     }
 
+    private Rectangle toRepaint = null;
+    private final Object toRepaintLock = new Object();
+    private static final int REPAINT_TASK_DELAY = 50;
+    private final Task repaintTask = new RequestProcessor(GlyphGutter.class.getName(), 1, false, false).create(new Runnable() {
+        @Override public void run() {
+            Rectangle repaint;
+            
+            synchronized (toRepaintLock) {
+                repaint = toRepaint;
+                toRepaint = null;
+            }
+            
+            if (repaint != null) {
+                doRepaint(repaint);
+            }
+        }
+    });
+    
+    private void doRepaint(Rectangle r) {
+        repaint(r);
+        checkSize();
+    }
+    
     /** Data for the line has changed and the line must be redraw. */
     public @Override void changedLine(int line) {
-        
-        if (!init || editorUI == null)
+        if (!init || editorUI == null) //TODO: editorUI neither volatile nor final and accessed unsynchronized from different threads
             return;
 
         // reset cache if there was some change
@@ -589,10 +612,19 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 Element lineElem = rootElem.getElement(line);
                 if (lineElem == null) return;
                 int lineOffset = lineElem.getStartOffset();
-                Rectangle mtvRect = textUI.modelToView(component, lineOffset);
-                if (mtvRect == null) return;
-                repaint(0, mtvRect.y, (int)getSize().getWidth(), 3*editorUI.getLineHeight());
-                checkSize();
+                int y = textUI.getYFromPos(lineOffset);
+                Rectangle r = new Rectangle(0, y, (int)getSize().getWidth(), 3*editorUI.getLineHeight());
+                
+                //ensuring that the actual repaint will happen in the AWT thread, to prevent deadlocks inside repaint(...)
+                //coalesce the events, so that the AWT thread is not hogged by these requests:
+                if (SwingUtilities.isEventDispatchThread()) {
+                    doRepaint(r);
+                } else {
+                    synchronized (toRepaintLock) {
+                        toRepaint = toRepaint != null ? toRepaint.union(r) : r;
+                        repaintTask.schedule(REPAINT_TASK_DELAY);
+                    }
+                }
             }catch(BadLocationException ble){
                 ErrorManager.getDefault().notify(ble);
             }

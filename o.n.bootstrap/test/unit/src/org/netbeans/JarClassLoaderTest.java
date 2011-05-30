@@ -102,9 +102,71 @@ public class JarClassLoaderTest extends NbTestCase {
     }
 
 
+    public void testKnowsWhichJarsHaveDefaultPackage() throws Exception {
+        final File nothing = new File(getWorkDir(), "nothing.jar");
+        TestFileUtils.writeZipFile(nothing, "package/resource.txt:content");
+        final File a1 = new File(getWorkDir(), "a1.jar");
+        TestFileUtils.writeZipFile(a1, "A.txt:A", "package/resourceA.txt:content");
+        final File a2 = new File(getWorkDir(), "a2.jar");
+        TestFileUtils.writeZipFile(a2, "A.txt:A2", "package/resourceA2.txt:content");
+        final File b = new File(getWorkDir(), "b.jar");
+        TestFileUtils.writeZipFile(b, "B.txt:B", "package/resourceB.txt:content");
+        
+        
+        class CntJCL extends JarClassLoader {
+            int queried;
+
+            public CntJCL(List<File> files, ClassLoader[] parents) {
+                super(files, parents);
+            }
+
+            @Override
+            public URL findResource(String name) {
+                queried++;
+                return super.findResource(name);
+            }
+
+            @Override
+            public Enumeration<URL> findResources(String name) {
+                queried++;
+                return super.findResources(name);
+            }
+            
+        }
+        final CntJCL[] arr = new CntJCL[] {
+            new CntJCL(Collections.singletonList(nothing), new ClassLoader[0]),
+            new CntJCL(Collections.singletonList(a1), new ClassLoader[0]),
+            new CntJCL(Collections.singletonList(a2), new ClassLoader[0]),
+            new CntJCL(Collections.singletonList(b), new ClassLoader[0]),
+        };
+        
+        ProxyClassLoader pcl = new ProxyClassLoader(arr, true);
+        
+        assertURLsContent(pcl.getResources("A.txt"), "A", "A2");
+        
+        assertEquals("No query to nothing.jar", 0, arr[0].queried);
+        assertEquals("One query to a1.jar", 1, arr[1].queried);
+        assertEquals("One query to a2.jar", 1, arr[2].queried);
+        assertEquals("No query to b.jar", 0, arr[3].queried);
+        
+        assertURLsContent(pcl.getResources("B.txt"), "B");
+        
+        assertEquals("No query to nothing.jar", 0, arr[0].queried);
+        assertEquals("Still One query to a1.jar", 1, arr[1].queried);
+        assertEquals("Still One query to a2.jar", 1, arr[2].queried);
+        assertEquals("One query to b.jar now", 1, arr[3].queried);
+        
+    }
+    public void testCanLoadFromDefaultPackageCachedOldFormat() throws Exception {
+        doCanLoadCached("META-INF,/MANIFEST.MF,package");
+    }
     public void testCanLoadFromDefaultPackageCached() throws Exception {
+        doCanLoadCached("META-INF,/MANIFEST.MF,package,default/resource.txt");
+    }
+    
+    private void doCanLoadCached(String covPkg) throws Exception {
         final File jar = new File(getWorkDir(), "default-package-resource-cached.jar");
-        TestFileUtils.writeZipFile(jar, "resource.txt:content", "package/resource.txt:content", "META-INF/MANIFEST.MF:Covered-Packages: META-INF,/MANIFEST.MF,package,\n");
+        TestFileUtils.writeZipFile(jar, "resource.txt:content", "package/resource.txt:content", "META-INF/MANIFEST.MF:Covered-Packages: " + covPkg + ",\n");
 
         Module fake = new Module(null, null, null, null) {
 	    public List<File> getAllJars() {throw new UnsupportedOperationException();}

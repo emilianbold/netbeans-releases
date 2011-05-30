@@ -64,32 +64,32 @@ import org.netbeans.api.project.Project;
  */
 public final class Ejb extends AbstractJ2eeFile {
 
-    static final String IMPL = "Bean";
-    static final String INTF = "Business";
     static final String HOME = "Home";
     static final String LOCAL = "Local";
     static final String REMOTE = "Remote";
     private boolean isLocal;
     private boolean isRemote;
-    //private boolean isStateles;
     private String beanImpl;
+    private File remoteJavaProjectDir;
     
     /** Creates a new instance of Ejb */
-    public Ejb(String fqName, Project p, boolean local, boolean remote) {
+    public Ejb(String fqName, Project p, File remoteJavaProjectDir, boolean local, boolean remote) {
         super(fqName, p);
+        this.remoteJavaProjectDir = remoteJavaProjectDir;
         isLocal = local;
         isRemote = remote;
-        beanImpl = name + IMPL;
+        beanImpl = name;
     }
     
-    public Ejb(String fqName, Project p, boolean local,
-            boolean remote, String srcRoot) {
+    public Ejb(String fqName, Project p, File remoteJavaProjectDir, boolean local, boolean remote, String srcRoot) {
         super(fqName, p, srcRoot);
+        this.remoteJavaProjectDir = remoteJavaProjectDir;
         isLocal = local;
         isRemote = remote;
-        beanImpl = name + IMPL;
+        beanImpl = name;
     }
     
+    @Override
     public String[] checkExistingFiles() {
         List<String> l = new ArrayList<String>();
         if (!implClassExists()) {
@@ -99,9 +99,6 @@ public final class Ejb extends AbstractJ2eeFile {
             if (!localIntfExists()) {
                 l.add(MESSAGE.replaceAll("\\$0", "Local interface class"));
             }
-//            if (!localBusIntfExists()) {
-//                l.add(MESSAGE.replaceAll("\\$0", "Local business interface class"));
-//            }
             if (!localHomeIntfExists()) {
                 l.add(MESSAGE.replaceAll("\\$0", "Local home interface class"));
             }
@@ -110,9 +107,6 @@ public final class Ejb extends AbstractJ2eeFile {
             if (!remoteIntfExists()) {
                 l.add(MESSAGE.replaceAll("\\$0", "Remote interface class"));
             }
-//            if (!remoteBusIntfExists()) {
-//                l.add(MESSAGE.replaceAll("\\$0", "Remote business interface class"));
-//            }
             if (!remoteHomeIntfExists()) {
                 l.add(MESSAGE.replaceAll("\\$0", "Remote home interface class"));
             }
@@ -133,12 +127,6 @@ public final class Ejb extends AbstractJ2eeFile {
         return srcFileExist(res);
     }
     
-    private boolean localBusIntfExists() {
-        String res = pkgName.replace('.', File.separatorChar) + name + LOCAL + INTF + ".java";
-        //System.err.println("intf: " + res);
-        return srcFileExist(res);
-    }
-    
     private boolean localHomeIntfExists() {
         String res = pkgName.replace('.', File.separatorChar) + name + LOCAL + HOME + ".java";
         //System.err.println("intf: " + res);
@@ -148,18 +136,26 @@ public final class Ejb extends AbstractJ2eeFile {
     private boolean remoteIntfExists() {
         String res = pkgName.replace('.', File.separatorChar) + name + REMOTE + ".java";
         //System.err.println("intf: " + res);
-        return srcFileExist(res);
-    }
-    
-    private boolean remoteBusIntfExists() {
-        String res = pkgName.replace('.', File.separatorChar) + name + REMOTE + INTF + ".java";
-        //System.err.println("intf: " + res);
-        return srcFileExist(res);
+        return srcFileExistInJavaProject(res) || srcFileExist(res);
     }
     
     private boolean remoteHomeIntfExists() {
         String res = pkgName.replace('.', File.separatorChar) + name + REMOTE + HOME + ".java";
         //System.err.println("intf: " + res);
-        return srcFileExist(res);
+        return srcFileExistInJavaProject(res) || srcFileExist(res);
+    }
+    
+    /** Checks remote sources created in JavaProject next to main project. */
+    protected boolean srcFileExistInJavaProject(String name) {
+        boolean retVal = false;
+        File f = new File(remoteJavaProjectDir, srcRoot.replace("java", "").replace("beans", ""));
+        try {
+            File ff = new File(f, name);
+            //System.err.println(ff.getAbsolutePath());
+            //System.err.println("srcEx: " + ff.exists());
+            retVal = ff.exists();
+        } catch (Exception e) {
+        }
+        return retVal;
     }
 }

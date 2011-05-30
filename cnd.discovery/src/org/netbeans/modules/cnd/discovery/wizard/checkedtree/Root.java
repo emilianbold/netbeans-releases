@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -59,13 +60,15 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
  */
 public class Root implements AbstractRoot {
     private Map<String,AbstractRoot> children = new HashMap<String,AbstractRoot>();
-    private String name;
-    private String folder;
+    private final String name;
+    private final String folder;
+    private final FileSystem fileStystem;
     private List<String> files;
     
-    public Root(String name, String folder){
+    public Root(String name, String folder, FileSystem fileStystem){
         this.name = name;
         this.folder = folder;
+        this.fileStystem = fileStystem;
     }
     
     @Override
@@ -80,7 +83,7 @@ public class Root implements AbstractRoot {
 
     @Override
     public String getFolder(){
-        return CndFileUtils.normalizeFile(new File(folder)).getAbsolutePath();
+        return CndFileUtils.normalizeAbsolutePath(fileStystem, folder);
     }
     
     private Root getChild(String child){
@@ -115,7 +118,7 @@ public class Root implements AbstractRoot {
             if (st.hasMoreTokens()) {
                 Root found = current.getChild(segment);
                 if (found == null) {
-                    found = new Root(segment, path.toString());
+                    found = new Root(segment, path.toString(), fileStystem);
                     current.children.put(segment, found);
                 }
                 current = found;

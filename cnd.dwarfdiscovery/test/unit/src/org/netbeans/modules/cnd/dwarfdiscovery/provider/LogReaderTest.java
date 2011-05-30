@@ -60,31 +60,35 @@ import org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader.CommandLineSou
 public class LogReaderTest extends TestCase {
 
     public void testWrongLibtoolCompilerInvocation() {
-        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc");
+        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
     }
 
     public void testLibtoolCCompilerInvocation() {
-        testCompilerInvocation(ItemProperties.LanguageKind.C, "/bin/sh ./libtool --mode=compile /export/home/gcc/gccobj/gcc/xgcc -shared-libgcc -B/export/home/gcc/gccobj/gcc/ ../../../libjava/gnu/gcj/natCore.c");
+        testCompilerInvocation(ItemProperties.LanguageKind.C, "/bin/sh ./libtool --mode=compile /export/home/gcc/gccobj/gcc/xgcc -shared-libgcc -B/export/home/gcc/gccobj/gcc/ ../../../libjava/gnu/gcj/natCore.c", 1);
     }
 
     public void testLibtoolCppCompilerInvocation() {
-        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "./libtool --tag=CXX --mode=compile /usr/bin/g++ -shared -B/usr/lib/gcc/ filename.cc");
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "./libtool --tag=CXX --mode=compile /usr/bin/g++ -shared -B/usr/lib/gcc/ filename.cc", 1);
     }
 
     public void testCppCompilerInvocation() {
-        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.C");
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.C", 1);
     }
 
     public void testCppCompilerInvocation2() {
-        testCompilerInvocation(ItemProperties.LanguageKind.C, "/grid/common/pkgs/gcc/v4.4.0/bin/g++ -c -x c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.C");
+        testCompilerInvocation(ItemProperties.LanguageKind.C, "/grid/common/pkgs/gcc/v4.4.0/bin/g++ -c -x c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.C", 1);
     }
 
     public void testCppCompilerInvocation3() {
-        testCompilerInvocation(ItemProperties.LanguageKind.C, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.c");
+        testCompilerInvocation(ItemProperties.LanguageKind.C, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.c", 1);
     }
 
     public void testCppCompilerInvocation4() {
-        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -x c++ -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.c");
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -x c++ -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.c", 1);
+    }
+
+    public void testMultySources() {
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "c++ -g3 -gdwarf-2 -o container_1 container_1a.cc container_1b.cc", 2);
     }
 
     /**
@@ -663,7 +667,7 @@ public class LogReaderTest extends TestCase {
         line = LogReader.trimBackApostropheCalls(line, null);
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         String[] cmds = pattern.split(line);
-        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros,null, null);
+        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros,null, null).get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
@@ -721,7 +725,7 @@ public class LogReaderTest extends TestCase {
         assertFalse(sb.toString(), true);
     }
 
-    private void testCompilerInvocation(ItemProperties.LanguageKind ct, String line) {
+    private void testCompilerInvocation(ItemProperties.LanguageKind ct, String line, int size) {
         LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
         if (ct == ItemProperties.LanguageKind.Unknown) {
             assertEquals(li.getLanguage(), ct);
@@ -730,10 +734,11 @@ public class LogReaderTest extends TestCase {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        String what = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
-        assertNotNull(what);
-        CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros);
-
-        assertEquals(cs.getLanguageKind(), ct);
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
+        assertTrue(sourcesList.size() == size);
+        for(String what :sourcesList) {
+            CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros);
+            assertEquals(cs.getLanguageKind(), ct);
+        }
     }
 }

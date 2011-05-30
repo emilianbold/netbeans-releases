@@ -94,7 +94,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
-        if (!Utilities.isJavaIdentifier(refactoring.getNewName())) {
+        if (!Utilities.isJavaIdentifier(refactoring.getNewName()) && !"package-info.java".equals(refactoring.getNewName())) { //NOI18N
             String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidIdentifier")).format(
                 new Object[] {refactoring.getNewName()}
             );

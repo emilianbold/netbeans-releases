@@ -144,7 +144,7 @@ public final class DataTableMetadata {
      * @return column names
      */
     public List<String> getColumnNames() {
-        return columnNames;
+        return columnNames == null ? null : Collections.unmodifiableList(columnNames);
     }
 
     /**
@@ -152,7 +152,7 @@ public final class DataTableMetadata {
      * @return source tables this table is based on the top of, <code>null</code> if no such tables
      */
     public List<DataTableMetadata> getSourceTables() {
-        return sourceTables;
+        return sourceTables == null ? null : Collections.unmodifiableList(sourceTables);
     }
 
     /**
@@ -168,7 +168,7 @@ public final class DataTableMetadata {
      * @return columns list
      */
     public List<Column> getColumns() {
-        return columns;
+        return Collections.unmodifiableList(columns);
     }
 
     /**
@@ -176,7 +176,7 @@ public final class DataTableMetadata {
      * @return indexed columns list, never <code>null</code>
      */
     public List<Column> getIndexedColumns() {
-        return indexedColumns;
+        return Collections.unmodifiableList(indexedColumns);
     }
 
     /**
@@ -195,6 +195,15 @@ public final class DataTableMetadata {
     public Column getColumnByName(String columnName) {
         for (Column c : columns) {
             if (c.getColumnName().equals(columnName)) {
+                return c;
+            }
+        }
+        
+        // TODO: Fixme.
+        // This is a fall-back to overcome CR7022064
+        //
+        for (Column c : columns) {
+            if (c.getColumnUName().equals(columnName)) {
                 return c;
             }
         }
@@ -253,7 +262,7 @@ public final class DataTableMetadata {
     public static final class Column {
 
         final String name;
-        final Class columnClass;
+        final Class<?> columnClass;
         final String shortUName;
         final String longUName;
         final String expression;
@@ -263,7 +272,7 @@ public final class DataTableMetadata {
          * @param name column name
          * @param columnClass class of this column
          */
-        public Column(String name, Class columnClass) {
+        public Column(String name, Class<?> columnClass) {
             this(name, columnClass, name, null);
         }
 
@@ -272,9 +281,9 @@ public final class DataTableMetadata {
          * @param name column name
          * @param columnClass column class
          * @param shortName displayed name
-         * @param expression expression which is used to calculate column value, for examle there can be "column2*column3"
+         * @param expression expression which is used to calculate column value, for example there can be "column2*column3"
          */
-        public Column(String name, Class columnClass, String shortName, String expression) {
+        public Column(String name, Class<?> columnClass, String shortName, String expression) {
             this(name, columnClass, shortName, shortName, expression);
 
         }
@@ -287,7 +296,7 @@ public final class DataTableMetadata {
          * @param longName long  name, can be used as a tooltip
          * @param expression expression which is used to calculate column value, for examle there can be "column2*column3"
          */
-        public Column(String name, Class columnClass, String shortName, String longName, String expression) {
+        public Column(String name, Class<?> columnClass, String shortName, String longName, String expression) {
             this.name = name;
             this.columnClass = columnClass;
             this.shortUName = shortName;

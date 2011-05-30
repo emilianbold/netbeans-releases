@@ -115,9 +115,6 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-form-actions-EditFormAction.instance"/>
             -->
         </folder>
-        <folder name="Window">
-            <file name="org-netbeans-modules-form-actions-InspectorAction.instance"/>
-        </folder>
     </folder>
 
     <folder name="UI">
@@ -131,20 +128,25 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Menu">
-        <folder name="Window">
-            <folder name="Navigator">
-                <file name="InspectorAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-form-actions-InspectorAction.instance"/>
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
-        </folder>
         <folder name="Tools">
             <folder name="PaletteManager">
                 <file name="org-netbeans-modules-form-actions-InstallBeanAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-InstallBeanAction.instance"/>
                     <attr name="position" intvalue="100"/>
                 </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-form">
+                    <file name="org-netbeans-modules-form-ComponentInspector.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.form.ComponentInspector"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.form.ComponentInspector.getInstance"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -702,23 +704,8 @@ made subject to such option by the copyright holder.
 
     <!-- default workspaces, frames and their layout defined by core -->
     <folder name="Windows2">
-        <folder name="Modes">
-            <folder name="navigator">
-                <file name="ComponentInspector.wstcref" url="windowmanager/inspector/ComponentInspector.wstcref">
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
-        </folder>
-
-        <folder name="Components">
-            <file name="ComponentInspector.settings" url="components/ComponentInspector.settings"/>
-        </folder>
-
         <folder name="Groups">
             <file name="form.wsgrp" url="groups/form.wsgrp"/>
-            <folder name="form">
-                <file name="ComponentInspector.wstcgrp" url="groups/form/ComponentInspector.wstcgrp"/>
-            </folder>
         </folder>
 
     </folder>

@@ -88,7 +88,7 @@ public class OldLanguageRule extends JsErrorRule {
     }
 
     @Override
-    public void run(JsRuleContext context, Error error, List<Hint> result) {
+    public void run(RuleContext context, Error error, List<Hint> result) {
         int astOffset = error.getStartPosition();
         JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         int offset = LexUtilities.getLexerOffset(info, astOffset);
@@ -168,9 +168,9 @@ public class OldLanguageRule extends JsErrorRule {
 
     private static class ChangeLanguageFix implements HintFix {
 
-        private JsRuleContext context;
+        private RuleContext context;
 
-        public ChangeLanguageFix(JsRuleContext context) {
+        public ChangeLanguageFix(RuleContext context) {
             this.context = context;
         }
 

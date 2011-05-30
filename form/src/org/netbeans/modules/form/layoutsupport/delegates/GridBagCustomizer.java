@@ -590,7 +590,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                         size = comp.getPreferredSize();
                     }
                     else {
-                        if (designer.isOpened()) {
+                        if (comp.isShowing()) {
                             size = comp.getSize();
                             if (size.width > 4096) // [hack for issue 32311]
                                 size.width = comp.getPreferredSize().width;

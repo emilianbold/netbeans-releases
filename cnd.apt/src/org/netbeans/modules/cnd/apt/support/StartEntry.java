@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -87,16 +87,16 @@ public final class StartEntry implements Persistent, SelfPersistent{
     }
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         assert output != null;
-        output.writeUTF(startFile.toString());
+        output.writeCharSequenceUTF(startFile);
         KeyFactory.getDefaultFactory().writeKey(startFileProject, output);
     }
     
-    public StartEntry(FileSystem fs, DataInput input) throws IOException {
+    public StartEntry(FileSystem fs, RepositoryDataInput input) throws IOException {
         assert input != null;
         fileSystem = fs;
-        startFile = FilePathCache.getManager().getString(input.readUTF());
+        startFile = FilePathCache.getManager().getString(input.readCharSequenceUTF());
         startFileProject = KeyFactory.getDefaultFactory().readKey(input);
     }
 

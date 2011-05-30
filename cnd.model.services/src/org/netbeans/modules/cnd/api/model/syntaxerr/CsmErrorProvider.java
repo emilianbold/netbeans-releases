@@ -65,6 +65,7 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Kvashin
  */
 public abstract class CsmErrorProvider implements NamedEntity {
+    private static final boolean TRACE_TASKS = false;
 
     //
     // Interface part
@@ -107,6 +108,10 @@ public abstract class CsmErrorProvider implements NamedEntity {
     public boolean isEnabledByDefault() {
         return true;
     }
+
+    public boolean hasHintControlPanel() {
+        return false;
+    }
     
     protected abstract void doGetErrors(Request request, Response response);
 
@@ -116,6 +121,12 @@ public abstract class CsmErrorProvider implements NamedEntity {
         return CndUtils.isReleaseMode() && (file != null) && file.isHeaderFile() && 
                 (file.getProject() != null) && file.getProject().isArtificial();
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+    
     //
     // Implementation part
     //
@@ -183,6 +194,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
                         if (!request.isCancelled()){
                             try {
                                 provider.getErrors(request, response);
+                                if (TRACE_TASKS) {System.err.println("finish "+provider);} //NOI18N
                             } catch (AssertionError ex) {
                                 ex.printStackTrace();
                             } catch (Exception ex) {
@@ -196,6 +208,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
             for (RequestProcessor.Task task : tasks) {
                 task.waitFinished();
             }
+            if (TRACE_TASKS) {System.err.println("finish all  providers");} //NOI18N
         }
 
         @Override

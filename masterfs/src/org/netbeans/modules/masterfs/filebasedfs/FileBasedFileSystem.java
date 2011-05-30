@@ -54,6 +54,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
@@ -63,6 +65,7 @@ import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -72,6 +75,7 @@ import org.openide.util.actions.SystemAction;
  * @author Radek Matous
  */
 public final class FileBasedFileSystem extends FileSystem {
+    private static final Logger LOG = Logger.getLogger(FileBasedFileSystem.class.getName());
     private static FileBasedFileSystem INSTANCE = new FileBasedFileSystem();
     transient private RootObj<? extends FileObject> root;
     transient private final StatusImpl status = new StatusImpl();
@@ -200,13 +204,12 @@ public final class FileBasedFileSystem extends FileSystem {
             }
         }  else {
             name = (name.startsWith("/")) ? name : ("/"+name);    
-        }             
-        if (name.contains("..")) {
-            if (("/" + name + "/").contains("/../")) {
-                return null;
-            }
+        }               
+        File f = new File(name);
+        if (name.contains("..") || name.contains("./") || name.contains("/.")) { // NOI18N
+            f = FileUtil.normalizeFile(f);
         }
-        return getFileObject(new File(name));
+        return getFileObject(f);
     }
 
     @Override

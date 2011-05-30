@@ -47,17 +47,17 @@ package org.netbeans.modules.cnd.utils.filters;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.FileFilterFactory.AbstractFileAndFileObjectFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class AllLibraryFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class AllLibraryFileFilter extends AbstractFileAndFileObjectFilter {
 
     private static AllLibraryFileFilter instance = null;
 
-    private List<FileFilterFactory.FileAndFileObjectFilter> filters = new ArrayList<FileFilterFactory.FileAndFileObjectFilter>();
+    private List<AbstractFileAndFileObjectFilter> filters = new ArrayList<AbstractFileAndFileObjectFilter>();
 
     public static AllLibraryFileFilter getInstance() {
         if (instance == null) {
@@ -79,32 +79,31 @@ public class AllLibraryFileFilter extends FileFilterFactory.FileAndFileObjectFil
 
     @Override
     public String getDescription() {
-        return getString("ALL_LIB_FILTER"); // NOI18N
+        return NbBundle.getMessage(AllLibraryFileFilter.class, "ALL_LIB_FILTER"); // NOI18N
     }
 
     @Override
     public boolean accept(File f) {
-        for(FileFilterFactory.FileAndFileObjectFilter filter: filters) {
-            if (filter.accept(f)) return true;
+        for(AbstractFileAndFileObjectFilter filter: filters) {
+            if (filter.accept(f)) {
+                return true;
+            }
         }
         return false;
     }
 
     @Override
     public boolean accept(FileObject fileObject) {
-        for(FileFilterFactory.FileAndFileObjectFilter filter: filters) {
-            if (filter.accept(fileObject)) return true;
+        for(AbstractFileAndFileObjectFilter filter: filters) {
+            if (filter.accept(fileObject)) {
+                return true;
+            }
         }
         return false;
     }
 
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ElfDynamicLibraryFileFilter.class);
-	}
-	return bundle.getString(s);
+    @Override
+    public String getSuffixesAsString() {
+        return "";
     }
-
 }

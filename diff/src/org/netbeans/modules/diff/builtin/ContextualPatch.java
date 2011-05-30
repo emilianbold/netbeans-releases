@@ -616,10 +616,19 @@ public final class ContextualPatch {
         // first seen in mercurial diffs: base and modified paths are different: base starts with "a/" and modified starts with "b/"
         if (base.startsWith("a/") && modified.startsWith("b/")) {
             base = base.substring(2);
+        } else if (base.startsWith("/dev/null") && modified.startsWith("b/")) {
+            modified = modified.substring(2);
+        } else if (base.startsWith("a/") && modified.startsWith("/dev/null")) {
+            base = base.substring(2);
         }
-        int pathEndIdx = base.indexOf('\t');
-        if (pathEndIdx == -1) pathEndIdx = base.length();
-        patch.targetPath = base.substring(0, pathEndIdx).trim();
+        
+        // base /dev/null => new file
+        // modified /dev/null => deleted file
+        String target = base.startsWith("/dev/null") ? modified : base;
+                
+        int pathEndIdx = target.indexOf('\t');
+        if (pathEndIdx == -1) pathEndIdx = target.length();
+        patch.targetPath = target.substring(0, pathEndIdx).trim();
     }
 
     private void parseRange(Hunk hunk, String range) throws PatchException {

@@ -107,7 +107,7 @@ PARSER_END(CssParser)
 }
 
 <DEFAULT> TOKEN : {
-    < GENERATED: "@@@" >
+    < GENERATED: "@@@" > #defined in org.netbeans.modules.web.common.api.Constants.LANGUAGE_SNIPPET_SEPARATOR
 }
 
 <DEFAULT> TOKEN :

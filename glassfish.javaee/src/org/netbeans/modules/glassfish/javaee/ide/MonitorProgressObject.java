@@ -213,7 +213,7 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
                     moduleId.getModuleID(), null, moduleId.getLocation(), true);
             // build the tree of submodule
             String query = getNameToQuery(moduleId.getModuleID());
-            GetPropertyCommand gpc = new GetPropertyCommand("applications.application." + query + ".*");
+            GetPropertyCommand gpc = new GetPropertyCommand("applications.application." + query);
             Future<OperationState> result =
                     dm.getCommonServerSupport().execute(gpc);
             if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
@@ -251,17 +251,21 @@ public class MonitorProgressObject implements ProgressObject, OperationStateList
 
     private String getNameToQuery(String name) {
         if (name.indexOf('.') == -1) {
-            return name;
+            return name+".*";
         }
         StringTokenizer st = new StringTokenizer(name, ".");
         String newName = "";
+        int segment = 0;
+        int nameSegment = 0;
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
+            segment++;
             if (token.length() > newName.length()) {
                 newName = token;
+                nameSegment = segment;
             }
         }
-        return newName;
+        return (nameSegment > 1 ? "*."+newName : newName)+".*";
     }
 
     private String determineContextRoot(Hk2TargetModuleID root, String moduleName) {

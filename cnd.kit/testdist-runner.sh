@@ -61,6 +61,7 @@ ${ANT:-ant} -f "${WORKSPACE}/all-tests.xml" \
 -Dtest.dist.timeout=1000000 \
 -Dtest.run.args="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx512m \
 -Dnetbeans.keyring.no.master=true \
+-Dorg.netbeans.modules.masterfs.watcher.disable=true \
 -Djava.io.tmpdir=/var/tmp/hudson${EXECUTOR_NUMBER} \
 -Dcnd.remote.sync.root.postfix=hudson${EXECUTOR_NUMBER} \
 -Dignore.random.failures=${STABLE_ONLY} \

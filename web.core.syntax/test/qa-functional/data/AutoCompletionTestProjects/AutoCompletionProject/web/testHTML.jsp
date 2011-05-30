@@ -17,7 +17,7 @@
 
 <%-- completion for HTML entities --%>
 <%--CC
-&q|
+&quo|
 ...
 &quot;
 --%>

@@ -6,6 +6,9 @@
 
 package org.netbeans.modules.localhistory.ui.view;
 
+import java.awt.Color;
+import javax.swing.UIManager;
+
 /**
  *
  * @author  tomas
@@ -15,6 +18,12 @@ public class DiffPanel extends javax.swing.JPanel {
     /** Creates new form DiffPanel */
     public DiffPanel() {
         initComponents();
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            jToolBar1.setBackground(color);
+            jPanel1.setBackground(color);
+            jPanel4.setBackground(color);
+        }
     }
     
     /** This method is called from within the constructor to

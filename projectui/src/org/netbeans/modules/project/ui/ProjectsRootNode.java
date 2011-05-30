@@ -52,7 +52,6 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -209,15 +208,18 @@ public class ProjectsRootNode extends AbstractNode {
     static void checkNoLazyNode() {
         synchronized(all){
             for (ProjectsRootNode root : all) {
-                for (Node n : root.getChildren().getNodes()) {
-                    if (n instanceof BadgingNode) {
-                        ((BadgingNode)n).replaceProject(null);
-                    }
+                checkNoLazyNode(root.getChildren());
+            }
+        }
+    }
+    static void checkNoLazyNode(Children children) {
+        for (Node n : children.getNodes()) {
+            if (n instanceof BadgingNode) {
+                ((BadgingNode)n).replaceProject(null);
+            }
 
-                    if (n.getLookup().lookup(LazyProject.class) != null) {
-                        OpenProjectList.LOGGER.warning("LazyProjects remain visible");
-                    }
-                }
+            if (n.getLookup().lookup(LazyProject.class) != null) {
+                OpenProjectList.LOGGER.warning("LazyProjects remain visible");
             }
         }
     }
@@ -444,8 +446,6 @@ public class ProjectsRootNode extends AbstractNode {
     }
 
     static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
-
-        private static String badgedNamePattern = NbBundle.getMessage(ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern");
         private final Object privateLock = new Object();
         private Set<FileObject> files;
         private Map<FileSystem,FileStatusListener> fileSystemListeners;
@@ -461,30 +461,39 @@ public class ProjectsRootNode extends AbstractNode {
         private static final int DELAY = 50;
         private final FileChangeListener newSubDirListener = new FileChangeAdapter() {
             public @Override void fileDataCreated(FileEvent fe) {
-                if (Boolean.getBoolean("test.nodelay")) { //for tests only
-                    setProjectFiles();
-                    return ;
-                }
-                fsRefreshTask.schedule(DELAY);
+                setProjectFilesAsynch();
             }
             public @Override void fileFolderCreated(FileEvent fe) {
-                if (Boolean.getBoolean("test.nodelay")) { //for tests only
-                    setProjectFiles();
-                    return ;
-                }
-                fsRefreshTask.schedule(DELAY);
+                setProjectFilesAsynch();
             }
         };
+        private void setProjectFilesAsynch() {
+            if (Boolean.getBoolean("test.nodelay")) { //for tests only
+                setProjectFiles();
+                return;
+            }
+            fsRefreshTask.schedule(DELAY);
+        }
         private final RequestProcessor.Task fsRefreshTask = Hacks.RP.create(new Runnable() {
             public void run() {
                 setProjectFiles();
             }
         });
         private final Lookup.Result<ProjectIconAnnotator> result = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
-        class AnnotationListener implements LookupListener, ChangeListener {
+        
+        static class AnnotationListener implements LookupListener, ChangeListener {
             private final Set<ProjectIconAnnotator> annotators = new WeakSet<ProjectIconAnnotator>();
+            private final Reference<BadgingNode> node;
+            
+            public AnnotationListener(BadgingNode node) {
+                this.node = new WeakReference<BadgingNode>(node);
+            }
             void init() {
-                for (ProjectIconAnnotator annotator : result.allInstances()) {
+                BadgingNode n = node.get();
+                if (n == null) {
+                    return;
+                }
+                for (ProjectIconAnnotator annotator : n.result.allInstances()) {
                     if (annotators.add(annotator)) {
                         annotator.addChangeListener(WeakListeners.change(this, annotator));
                     }
@@ -495,8 +504,12 @@ public class ProjectsRootNode extends AbstractNode {
                 stateChanged(null);
             }
             public @Override void stateChanged(ChangeEvent e) {
-                fireIconChange();
-                fireOpenedIconChange();
+                BadgingNode n = node.get();
+                if (n == null) {
+                    return;
+                }
+                n.fireIconChange();
+                n.fireOpenedIconChange();
             }
         }
 
@@ -507,9 +520,9 @@ public class ProjectsRootNode extends AbstractNode {
             this.logicalView = logicalView;
             OpenProjectList.log(Level.FINER, "BadgingNode init {0}", toStringForLog()); // NOI18N
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
-            setProjectFiles();
+            setProjectFilesAsynch();
             OpenProjectList.log(Level.FINER, "BadgingNode finished {0}", toStringForLog()); // NOI18N
-            AnnotationListener annotationListener = new AnnotationListener();
+            AnnotationListener annotationListener = new AnnotationListener(this);
             annotationListener.init();
             result.addLookupListener(annotationListener);
         }
@@ -566,14 +579,9 @@ public class ProjectsRootNode extends AbstractNode {
                         ch.refresh(newProj);
                         OpenProjectList.log(Level.FINER, "refreshed for {0}", newProj);
                         return;
-                    }
-                    for (Node one : arr) {
-                        if (PhysicalView.isProjectDirNode(one)) {
-                            n = one;
-                            break;
-                        }
-                    }
-                    if (n == null) {
+                    } else if (arr.length == 1) {
+                        n = arr[0];
+                    } else {
                         OpenProjectList.log(Level.WARNING, "newProject yields null node: " + newProj);
                         n = Node.EMPTY;
                     }
@@ -595,7 +603,7 @@ public class ProjectsRootNode extends AbstractNode {
                     bl.setMyLookups(n.getLookup());
                 }
                 OpenProjectList.log(Level.FINER, "done {0}", toStringForLog());
-                setProjectFiles();
+                setProjectFilesAsynch();
             } else {
                 FileObject newDir;
                 if (newProj != null) {
@@ -730,7 +738,7 @@ public class ProjectsRootNode extends AbstractNode {
                     LOG.log(Level.INFO, null, e);
                 }
             }
-            return isMain() ? MessageFormat.format( badgedNamePattern, new Object[] { original } ) : original;
+            return original;
         }
 
         /** Get display name used for logging as original display name can cause deadlock issue #160512 */
@@ -820,7 +828,7 @@ public class ProjectsRootNode extends AbstractNode {
                 replaceProject((Project)e.getNewValue());
             }
             if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
-                setProjectFiles();
+                setProjectFilesAsynch();
             }
         }
 

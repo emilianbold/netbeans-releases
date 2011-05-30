@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -179,8 +179,6 @@ public class ConnectAction extends BaseAction {
             final DatabaseConnector connector = dbcon.getConnector();
 
             String user = dbcon.getUser();
-            String pwd = dbcon.getPassword();
-           
             boolean remember = dbcon.rememberPassword();
 
             dbcon.addExceptionListener(excListener);
@@ -287,7 +285,7 @@ public class ConnectAction extends BaseAction {
                     progress = ProgressHandleFactory.createHandle("handle");
                     JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
                     progressComponent.setPreferredSize(new Dimension(350, 20));
-                    ConnectProgressDialog panel = new ConnectProgressDialog(progressComponent);
+                    ConnectProgressDialog panel = new ConnectProgressDialog(progressComponent, null);
                     panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectAction.class, "ACS_ConnectingDialogTextA11yDesc"));
                     descriptor = new DialogDescriptor(panel, NbBundle.getMessage (ConnectAction.class, "ConnectingDialogTitle"), true, new Object[] { DialogDescriptor.CANCEL_OPTION },
                             DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);

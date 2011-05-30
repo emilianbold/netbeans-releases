@@ -45,9 +45,9 @@
 
 package org.netbeans.modules.cnd.repository.support;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
@@ -56,9 +56,9 @@ import java.io.IOException;
 public abstract class AbstractObjectFactory {
 
     protected abstract int getHandler(Object object);
-    protected abstract SelfPersistent createObject(int handler, DataInput stream) throws IOException;
+    protected abstract SelfPersistent createObject(int handler, RepositoryDataInput stream) throws IOException;
     
-    protected final void writeSelfPersistent(SelfPersistent object, DataOutput output) throws IOException
+    protected final void writeSelfPersistent(SelfPersistent object, RepositoryDataOutput output) throws IOException
     {
         if (object == null) {
             output.writeShort(NULL_POINTER);
@@ -70,7 +70,7 @@ public abstract class AbstractObjectFactory {
         }
     }
     
-    protected final SelfPersistent readSelfPersistent(DataInput input) throws IOException
+    protected final SelfPersistent readSelfPersistent(RepositoryDataInput input) throws IOException
     {
         int handler = input.readShort();
         SelfPersistent object = null;

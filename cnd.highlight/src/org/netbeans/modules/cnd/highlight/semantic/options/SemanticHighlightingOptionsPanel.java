@@ -163,8 +163,10 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         for (SemanticEntity se : SemanticEntitiesProvider.instance().get()) {
             addEntity(se);
         }
-        for (NamedEntity ee : Lookup.getDefault().lookupResult(CsmErrorProvider.class).allInstances()) {
-            addEntity(ee);
+        for (CsmErrorProvider ee : Lookup.getDefault().lookupResult(CsmErrorProvider.class).allInstances()) {
+            if (!ee.hasHintControlPanel()) {
+                addEntity(ee);
+            }
         }
 
         addEntity(new NamedEntity(){

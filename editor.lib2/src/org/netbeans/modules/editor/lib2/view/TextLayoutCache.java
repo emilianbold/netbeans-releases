@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.lib2.view;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 
@@ -134,6 +135,27 @@ public final class TextLayoutCache {
         if (entry != null) {
             removeChainEntry(entry);
         }
+    }
+    
+    synchronized String findIntegrityError() {
+        int cnt = 0;
+        HashSet<Entry> entries = new HashSet<Entry>(paragraph2entry.values());
+        Entry entry = head;
+        while (entry != null) {
+            if (!entries.contains(entry)) {
+                return "TextLayoutCache: Chain entry[" + cnt + "] not contained in map: " + // NOI18N 
+                        entry.paragraphView + ", parent=" + entry.paragraphView.getParent(); // NOI18N
+            }
+            if (entry.paragraphView.getParent() == null) {
+                return "TextLayoutCache: Null parent for " + entry.paragraphView; // NOI18N
+            }
+            entry = entry.next;
+            cnt++;
+        }
+        if (cnt != entries.size()) {
+            return "TextLayoutCache: cnt=" + cnt + " != entryCount=" + entries.size(); // NOI18N
+        }
+        return null;
     }
 
     private void addChainEntryFirst(Entry entry) {

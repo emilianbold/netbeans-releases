@@ -227,7 +227,7 @@ public class GridDesigner extends JPanel {
      */
     private JComponent initLeftColumn() {
         sheet = new PropertySheet();
-        sheet.setPreferredSize(new Dimension(300, 500));
+        sheet.setPreferredSize(new Dimension(310, 500));
         JPanel leftPanel;
         if (customizer == null) {
             leftPanel = sheet;
@@ -247,7 +247,7 @@ public class GridDesigner extends JPanel {
      */
     private JToggleButton initPaddingButton() {
         JToggleButton button = new JToggleButton();
-        ImageIcon image = ImageUtilities.loadImageIcon("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/pad_empty.png", false); // NOI18N
+        ImageIcon image = ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/pad_empty.png", false); // NOI18N
         button.setIcon(image);
         button.setFocusPainted(false);
         button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.padEmptyCells")); // NOI18N

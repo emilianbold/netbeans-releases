@@ -46,19 +46,26 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -71,6 +78,9 @@ public class FolderArchive implements Archive {
     
     final File root;
     final Charset encoding;
+    
+    private final AtomicBoolean sourceRootInitialized = new AtomicBoolean();
+    private volatile URL sourceRoot;
 
     /** Creates a new instance of FolderArchive */
     public FolderArchive (final File root) {
@@ -90,6 +100,7 @@ public class FolderArchive implements Archive {
         }
     }
     
+    @Override
     public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException {
         assert folderName != null;
         if (folderName.length()>0) {
@@ -121,6 +132,7 @@ public class FolderArchive implements Archive {
         return Collections.<JavaFileObject>emptyList();
     }
 
+    @Override
     public JavaFileObject create (String relativePath, final JavaFileFilterImplementation filter) throws UnsupportedOperationException {
         if (File.separatorChar != '/') {    //NOI18N
             relativePath = relativePath.replace('/', File.separatorChar);
@@ -129,12 +141,38 @@ public class FolderArchive implements Archive {
         return FileObjects.fileFileObject(file, root, filter, encoding);
     }
 
+    @Override
     public void clear () {
     }
 
     @Override
-    public JavaFileObject getFile(String name) {
-        final File file = new File (this.root, name.replace('/', File.separatorChar));      //NOI18N
-        return file.exists() ? FileObjects.fileFileObject(file,this.root,null,encoding) : null ;
+    public JavaFileObject getFile(final @NonNull String name) {
+        final String path = name.replace('/', File.separatorChar);        //NOI18N
+        File file = new File (this.root, path);
+        if (file.exists()) {
+            return FileObjects.fileFileObject(file,this.root,null,encoding);
+        }
+        try {
+            final URL srcRoot = getBaseSourceRoot(this.root.toURI().toURL());
+            if (srcRoot != null) {
+                final File folder = new File(srcRoot.toURI());
+                file = new File (folder,path);
+                if (file.exists()) {
+                    return FileObjects.fileFileObject(file,folder,null,encoding);
+                }
+            }
+        } catch (MalformedURLException e) {
+            Exceptions.printStackTrace(e);
+        } catch (URISyntaxException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
+    }
+
+    private URL getBaseSourceRoot(final URL binRoot) {
+        if (!sourceRootInitialized.getAndSet(true)) {
+            sourceRoot = JavaIndex.getSourceRootForClassFolder(binRoot);
+        }
+        return sourceRoot;
     }
 }

@@ -585,16 +585,24 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             private int line = startLine;
             private int last = (-1);
             private int unchagedLoops = 0;
+            private boolean stop = false;
             @Override public boolean hasNext() {
+                if (stop) return false;
                 if (remaining.isEmpty()) {
                     if ((line = annotations.getNextLineWithAnnotation(line)) <= endLine && line != (-1)) {
                         if (last == line) {
                             unchagedLoops++;
                             if (unchagedLoops >= 100) {
                                 LOG.log(Level.WARNING, "Please add the following info to https://netbeans.org/bugzilla/show_bug.cgi?id=188843 : Possible infinite loop in getMainMarkForBlockAnnotations, debug data: {0}, unchaged loops: {1}", new Object[]{annotations.toString(), unchagedLoops});
+                                stop = true;
                                 return false;
                             }
                         } else {
+                            if (line < last) {
+                                LOG.log(Level.WARNING, "Please add the following info to https://netbeans.org/bugzilla/show_bug.cgi?id=188843 : line < last: {0} < {1}", new Object[]{line, last});
+                                stop = true;
+                                return false;
+                            }
                             last = line;
                             unchagedLoops = 0;
                         }
@@ -617,7 +625,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                     }
                 }
 
-                return !remaining.isEmpty();
+                return !(stop = remaining.isEmpty());
             }
             @Override public AnnotationDesc next() {
                 if (hasNext()) {

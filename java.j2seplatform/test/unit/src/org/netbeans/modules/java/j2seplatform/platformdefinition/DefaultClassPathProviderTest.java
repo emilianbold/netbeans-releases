@@ -43,6 +43,9 @@
  */
 
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -53,6 +56,15 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -60,6 +72,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.Project;
 
 
 
@@ -70,6 +83,7 @@ import org.netbeans.junit.MockServices;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.MasterURLMapper;
+import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -79,7 +93,6 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 
 
 /**
@@ -91,6 +104,7 @@ public class DefaultClassPathProviderTest extends NbTestCase {
     private static final int FILE_IN_PACKAGE = 0;
     private static final int FILE_IN_BAD_PACKAGE = 1;
     private static final int FILE_IN_DEFAULT_PACKAGE = 2;
+    private static final int DELAY = 2500;
 
     private static final byte[] CLASS_FILE_DATA = {
         (byte)0xca, (byte)0xfe, (byte)0xba, (byte)0xbe, 0x00, 0x00, 0x00, 0x2e, 0x00, 0x0d, 0x0a, 0x00, 0x03, 0x00, 0x0a, 0x07, 0x00, 0x0b, 0x07, 0x00,
@@ -111,7 +125,6 @@ public class DefaultClassPathProviderTest extends NbTestCase {
     private static FileObject[] execRoots;
     private static FileObject[] libSourceRoots;
     private FileObject execTestDir;
-    private Lookup lookup;
     
     /** Creates a new instance of DefaultClassPathProviderTest */
     public DefaultClassPathProviderTest (String testName) {
@@ -120,10 +133,12 @@ public class DefaultClassPathProviderTest extends NbTestCase {
                 ArchiveURLMapper.class,
                 MasterURLMapper.class,
                 JavaPlatformProviderImpl.class,
-                SFBQI.class);
+                SFBQI.class,
+                OpenProject.class);
     }
     
     
+    @Override
     protected void tearDown () throws Exception {
         this.srcRoot = null;
         this.compileRoots = null;
@@ -131,9 +146,19 @@ public class DefaultClassPathProviderTest extends NbTestCase {
     }
     
     
+    @Override
     protected void setUp() throws Exception {
         this.clearWorkDir();        
         super.setUp();
+        final RunnableFuture<Project[]> dummyFuture = new FutureTask<Project[]>(new Callable<Project[]>() {
+            @Override
+            public Project[] call() throws Exception {
+                return new Project[0];
+            }
+        });
+        dummyFuture.run();
+        assertTrue(dummyFuture.isDone());
+        OpenProject.future = dummyFuture;
         FileObject workDir = FileUtil.toFileObject(this.getWorkDir());
         assertNotNull("MasterFS is not configured.", workDir);
         this.srcRoot = workDir.createFolder("src");
@@ -223,6 +248,82 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         regs.register(ClassPath.COMPILE, new ClassPath[] {dcp});
         roots = dcp.getRoots();
         assertEquals(1, roots.length);        
+    }
+
+    /**
+     * Checks that single event is fired during opening (closing) of projects
+     */
+    public void testEvents() throws Exception {
+        final File wd = getWorkDir();
+        final File root1 = FileUtil.normalizeFile(new File (wd,"src1"));    //NOI18N
+        final File root2 = FileUtil.normalizeFile(new File (wd,"src2"));    //NOI18N
+        root1.mkdir();
+        root2.mkdir();
+        final ClassPathProvider cpp = new DefaultClassPathProvider ();
+        final ClassPath defaultCompile = cpp.findClassPath(FileUtil.toFileObject(wd), ClassPath.COMPILE);
+        assertNotNull(defaultCompile);
+        assertFalse(contains(defaultCompile, root1.toURI().toURL()));
+        assertFalse(contains(defaultCompile, root2.toURI().toURL()));
+        final Listener listener = new Listener();
+        defaultCompile.addPropertyChangeListener(listener);
+        final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+        final ClassPath compileCpProject1 = ClassPathSupport.createClassPath(root1.toURI().toURL());
+        final ClassPath compileCpProject2 = ClassPathSupport.createClassPath(root2.toURI().toURL());
+        
+        //Simulate projects open
+        RunnableFuture<Project[]> barrier = new FutureTask<Project[]>(new Callable<Project[]>() {
+            @Override
+            public Project[] call() throws Exception {
+                return new Project[0];
+            }
+        });
+        OpenProject.future = barrier;
+
+        regs.register(ClassPath.COMPILE, new ClassPath[]{compileCpProject1});
+        assertFalse(contains(defaultCompile, root1.toURI().toURL()));
+        assertFalse(listener.awaitEvent());
+        assertEquals(0, listener.get());
+        regs.register(ClassPath.COMPILE, new ClassPath[]{compileCpProject2});
+        assertFalse(contains(defaultCompile, root2.toURI().toURL()));
+        assertFalse(listener.awaitEvent());
+        assertEquals(0, listener.get());
+        barrier.run();
+        assertTrue(listener.awaitEvent());
+        assertEquals(1, listener.get());
+        assertTrue(contains(defaultCompile, root1.toURI().toURL()));
+        assertTrue(contains(defaultCompile, root2.toURI().toURL()));
+
+        //Simulate projects close
+        barrier = new FutureTask<Project[]>(new Callable<Project[]>() {
+            @Override
+            public Project[] call() throws Exception {
+                return new Project[0];
+            }
+        });
+        OpenProject.future = barrier;
+        listener.reset();
+        regs.unregister(ClassPath.COMPILE, new ClassPath[]{compileCpProject1});
+        assertTrue(contains(defaultCompile, root1.toURI().toURL()));
+        assertFalse(listener.awaitEvent());
+        assertEquals(0, listener.get());
+        regs.unregister(ClassPath.COMPILE, new ClassPath[]{compileCpProject2});
+        assertTrue(contains(defaultCompile, root2.toURI().toURL()));
+        assertFalse(listener.awaitEvent());
+        assertEquals(0, listener.get());
+        barrier.run();
+        assertTrue(listener.awaitEvent());
+        assertEquals(1, listener.get());
+        assertFalse(contains(defaultCompile, root1.toURI().toURL()));
+        assertFalse(contains(defaultCompile, root2.toURI().toURL()));
+    }
+
+    private static boolean contains (final ClassPath cp, final URL url) {
+        for (ClassPath.Entry entry : cp.entries()) {
+            if (entry.getURL().equals(url)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     
@@ -330,5 +431,93 @@ public class DefaultClassPathProviderTest extends NbTestCase {
             }
             return null;
         }
-    }                                  
+    }
+
+    public static class OpenProject implements  OpenProjectsTrampoline {
+
+        static Future<Project[]> future;
+
+        @Override
+        public Project[] getOpenProjectsAPI() {
+            return new Project[0];
+        }
+
+        @Override
+        public void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
+        }
+
+        @Override
+        public void closeAPI(Project[] projects) {
+        }
+
+        @Override
+        public Project getMainProject() {
+            return null;
+        }
+
+        @Override
+        public void setMainProject(Project project) {
+        }
+
+        @Override
+        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
+        }
+
+        @Override
+        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public Future<Project[]> openProjectsAPI() {
+            return future;
+        }
+    }
+
+    private static class Listener implements PropertyChangeListener {
+
+        private volatile int count;
+        private final Lock lock = new ReentrantLock();
+        private final Condition cnd = lock.newCondition();
+
+        public void reset() {
+            lock.lock();
+            try {
+                count = 0;
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public int get() {
+            return count;
+        }
+
+        public boolean awaitEvent() throws InterruptedException {
+            lock.lock();
+            try {
+                while (count == 0) {
+                    if (!cnd.await(DELAY, TimeUnit.MILLISECONDS)) {
+                        return false;
+                    }
+                }
+            } finally {
+                lock.unlock();
+            }
+            return true;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ClassPath.PROP_ENTRIES.equals(evt.getPropertyName())) {
+                lock.lock();
+                try {
+                    count = count + 1;
+                    cnd.signal();
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }
+
+    }
 }

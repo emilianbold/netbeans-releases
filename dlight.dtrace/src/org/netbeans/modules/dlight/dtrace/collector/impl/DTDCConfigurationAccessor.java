@@ -45,7 +45,7 @@ import java.net.URL;
 import java.util.List;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
+import org.netbeans.modules.dlight.dtrace.collector.DTraceOutputParser;
 
 /**
  *
@@ -84,7 +84,7 @@ public abstract class DTDCConfigurationAccessor {
     public abstract List<DataTableMetadata> getDatatableMetadata(
             DTDCConfiguration conf);
 
-    public abstract DtraceParser getParser(DTDCConfiguration conf);
+    public abstract DTraceOutputParser getParser(DTDCConfiguration conf);
 
     public abstract List<String> getRequiredPrivileges(DTDCConfiguration conf);
 

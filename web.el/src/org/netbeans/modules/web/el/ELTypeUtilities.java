@@ -59,7 +59,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -67,22 +71,27 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
-import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
-import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
+import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
+import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
+import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.ELVariableResolver;
+import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * Utility class for resolving elements/types for EL expressions.
@@ -93,8 +102,12 @@ public final class ELTypeUtilities {
 
     private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext"; //NOI18N
     private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";//NOI18N
-    private final ClasspathInfo cpInfo;
-
+    private final FileObject file;
+    private final JavaSource javaSource;
+    
+//    private final static Logger LOGGER = Logger.getLogger(ELTypeUtilities.class.getName());
+//    private final static boolean LOG = LOGGER.isLoggable(Level.FINE);
+    
     private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<Class<? extends Node>, Set<TypeKind>>();
     static {
         put(AstFloatingPoint.class, TypeKind.FLOAT, TypeKind.DOUBLE);
@@ -108,19 +121,72 @@ public final class ELTypeUtilities {
         kindSet.addAll(Arrays.asList(kinds));
         TYPES.put(node, kindSet);
     }
+    
+    private static final Map<ClasspathInfo, JavaSource> classpathInfo2JavaSourceMap 
+            = new WeakHashMap<ClasspathInfo, JavaSource>();
+    
+    //possibly not necessary since the creation of the classpathinfo *may* be well optimized?!?!?
+    private static final Map<FileObject, ClasspathInfo> file2classpathInfoMap 
+            = new WeakHashMap<FileObject, ClasspathInfo>();
+    
+        
+    private static synchronized  JavaSource getJavaSource(FileObject file) {
+        ClasspathInfo classpathInfo = file2classpathInfoMap.get(file);
+        if(classpathInfo == null) {
+            classpathInfo = ClasspathInfo.create(file);
+            final ClasspathInfo cpi = classpathInfo;
+            classpathInfo.addChangeListener(new ChangeListener() {
 
-    private ELTypeUtilities(ClasspathInfo cpInfo) {
-        assert cpInfo != null;
-        this.cpInfo = cpInfo;
+                @Override
+                public void stateChanged(ChangeEvent ce) {
+                    //classpath invalidated
+                    classpathInfo2JavaSourceMap.remove(cpi);
+                    
+                    //remove all file2cpi entries which points to the invalidated classpathinfo
+                    Collection<FileObject> invalidatedKeys 
+                            = new ArrayList<FileObject>();
+                    for(Entry<FileObject, ClasspathInfo> entry : file2classpathInfoMap.entrySet()) {
+                        if(entry.getValue().equals(cpi)) {
+                            invalidatedKeys.add(entry.getKey());
+                        }
+                    }
+                    for(FileObject invalidated : invalidatedKeys) {
+                        file2classpathInfoMap.remove(invalidated);
+                    }
+                }
+            });
+            
+            file2classpathInfoMap.put(file, classpathInfo);
+        }
+        
+        JavaSource javaSource = classpathInfo2JavaSourceMap.get(classpathInfo);
+        if(javaSource == null) {
+            javaSource = JavaSource.create(classpathInfo);
+            classpathInfo2JavaSourceMap.put(classpathInfo, javaSource);
+        } 
+        
+        return javaSource;
+    }
+    
+    private ELTypeUtilities(FileObject context, JavaSource javaSource) {
+        assert javaSource != null;
+        this.file = context;
+        this.javaSource = javaSource;
     }
 
-    public static ELTypeUtilities create(ClasspathInfo cpInfo) {
-        return new ELTypeUtilities(cpInfo);
-    }
-
+    /**
+     * Creates an instance of ELTypeUtilities with all java operations using a cached JavaSource
+     */
     public static ELTypeUtilities create(FileObject context) {
-        ClasspathInfo cp = ClasspathInfo.create(context);
-        return create(cp);
+        return new ELTypeUtilities(context, getJavaSource(context));
+    }
+
+    /**
+     * Creates an instance of ELTypeUtilities with all java operations using a *NOT* cached JavaSource.
+     * Use the create(FileObject context) method where possible!
+     */    
+    public static ELTypeUtilities create(FileObject context, ClasspathInfo cpInfo) {
+        return new ELTypeUtilities(context, JavaSource.create(cpInfo));
     }
 
     public String getTypeNameFor(Element element) {
@@ -143,6 +209,39 @@ public final class ELTypeUtilities {
             @Override
             public void run(CompilationController info) throws Exception {
                 setResult(info.getTypes().asElement(tm));
+            }
+        };
+        runTask(task);
+        return task.getResult();
+    }
+    
+    /**
+     * 
+     * @param element
+     * @return a list of Element-s representing all the superclasses of the element. 
+     * The list starts with the given element itself and ends with java.lang.Object
+     */
+    public List<Element> getSuperTypesFor(Element element) {
+        final TypeMirror tm = getTypeMirrorFor(element);
+        SourceTask<List<Element>> task = new SourceTask<List<Element>>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                List<Element> types = new ArrayList<Element>();
+                TypeMirror mirror = tm;
+                while(mirror.getKind() == TypeKind.DECLARED) {
+                    Element el = info.getTypes().asElement(mirror);
+                    types.add(el);
+                    
+                    if(el.getKind() == ElementKind.CLASS) {
+                        TypeElement tel = (TypeElement)el;
+                        mirror = tel.getSuperclass();
+                    } else {
+                        break;
+                    }
+                }
+                
+                setResult(types);
             }
         };
         runTask(task);
@@ -266,8 +365,8 @@ public final class ELTypeUtilities {
                 }
 
                 if (result.length() > 0) {
-                    result.insert(0, "(");
-                    result.append(")");
+                result.insert(0, "(");
+                result.append(")");
                 }
                 setResult(result.toString());
             }
@@ -276,23 +375,29 @@ public final class ELTypeUtilities {
         return task.getResult();
     }
 
-    public static Collection<ELImplicitObject> getImplicitObjects() {
-        Set<ELImplicitObject> result = new HashSet<ELImplicitObject>();
-        Collection<? extends ImplicitObjectProvider> providers =
-                Lookup.getDefault().lookupAll(ImplicitObjectProvider.class);
-        
-        for (ImplicitObjectProvider each : providers) {
-            result.addAll(each.getImplicitObjects());
-        }
-        return result;
+    public Collection<ImplicitObject> getImplicitObjects() {
+        return ELPlugin.Query.getImplicitObjects(file);
     }
 
-    public static boolean isScopeObject(Node target) {
+    public boolean isScopeObject(Node target) {
         if (!(target instanceof AstIdentifier)) {
             return false;
         }
-        for (ELImplicitObject each : ELTypeUtilities.getImplicitObjects()) {
-            if (each.getType() == ELImplicitObject.Type.SCOPE_TYPE
+        for (ImplicitObject each : getImplicitObjects()) {
+            if (each.getType() == ImplicitObjectType.SCOPE_TYPE
+                    && each.getName().equals(target.getImage())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isRawObject(Node target) {
+        if (!(target instanceof AstIdentifier)) {
+            return false;
+        }
+        for (ImplicitObject each : getImplicitObjects()) {
+            if (each.getType() == ImplicitObjectType.RAW
                     && each.getName().equals(target.getImage())) {
                 return true;
             }
@@ -309,7 +414,7 @@ public final class ELTypeUtilities {
     
     private void runTask(SourceTask<?> task) {
         try {
-            JavaSource.create(cpInfo).runUserActionTask(task, true);
+            javaSource.runUserActionTask(task, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -388,13 +493,15 @@ public final class ELTypeUtilities {
      * @return
      */
     private ExecutableElement getElementForProperty(Node property, Element enclosing) {
-        for (ExecutableElement each : ElementFilter.methodsIn(enclosing.getEnclosedElements())) {
-            // we're only interested in public methods
-            if (!each.getModifiers().contains(Modifier.PUBLIC)) {
-                continue;
-            }
-            if (isSameMethod(property, each)) {
-                return each;
+        for (Element element : getSuperTypesFor(enclosing)) {
+            for (ExecutableElement each : ElementFilter.methodsIn(element.getEnclosedElements())) {
+                // we're only interested in public methods
+                if (!each.getModifiers().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
+                if (isSameMethod(property, each)) {
+                    return each;
+                }
             }
         }
         return null;
@@ -403,11 +510,11 @@ public final class ELTypeUtilities {
     private Element getIdentifierType(final AstIdentifier identifier, final ELElement element) {
         String tempClass = null;
         // try implicit objects first
-        for (ELImplicitObject implicitObject : getImplicitObjects()) {
+        for (ImplicitObject implicitObject : getImplicitObjects()) {
             if (implicitObject.getName().equals(identifier.getImage())) {
                 if (implicitObject.getClazz() == null || implicitObject.getClazz().isEmpty()) {
                     // the identiefier represents an implicit object whose type we don't know
-                    tempClass = Object.class.getName();
+//                    tempClass = Object.class.getName();
                 } else {
                     tempClass = implicitObject.getClazz();
                 }
@@ -416,7 +523,7 @@ public final class ELTypeUtilities {
         }
         if (tempClass == null) {
             // managed beans
-            tempClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getParserResult().getFileObject());
+            tempClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getSnapshot().getSource().getFileObject());
         }
         final String clazz = tempClass;
         SourceTask<Element> task = new SourceTask<Element>() {
@@ -429,10 +536,24 @@ public final class ELTypeUtilities {
                 }
                 // probably a variable
                 int offset = element.getOriginalOffset().getStart() + identifier.startOffset();
-                Node expressionNode = ELVariableResolvers.getReferredExpression(element.getParserResult().getSnapshot(), offset);
-                if (expressionNode != null) {
-                    setResult(getReferredType(expressionNode, element.getParserResult().getFileObject(), info));
+
+                Collection<ELVariableResolver.VariableInfo> vis = ELVariableResolvers.getVariables(element.getSnapshot(), offset);
+                for(ELVariableResolver.VariableInfo vi : vis) {
+                    if(identifier.getImage().equals(vi.name)) {
+                        try {
+                            ELPreprocessor elp = new ELPreprocessor(vi.expression, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+                            Node expressionNode = ELParser.parse(elp);
+                            if (expressionNode != null) {
+                                setResult(getReferredType(expressionNode, element.getSnapshot().getSource().getFileObject(), info));
+                                return ;
+                            }
+                        }catch (ELException e) {
+                            //invalid expression
+                        }
+                    }
                 }
+
+
             }
         };
         runTask(task);
@@ -440,10 +561,52 @@ public final class ELTypeUtilities {
     }
 
     /**
+     * Resolves the given variable type
+     * @param vi the variable to be resolved
+     * @return source Element representing the variable
+     */
+    public Element getReferredType(final VariableInfo vi, final FileObject context) {
+        SourceTask<Element> task = new SourceTask<Element>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                setResult(getReferredType(info, vi, context));
+            }
+        };
+        runTask(task);
+        return task.getResult();
+        
+    }
+    
+    private Element getReferredType(CompilationController info, VariableInfo vi, FileObject context) {
+        //resolved variable
+        if(vi.clazz != null) {
+            return info.getElements().getTypeElement(vi.clazz);
+        }
+        
+        //unresolved variable
+        assert vi.expression != null;
+        try {
+            ELPreprocessor elp = new ELPreprocessor(vi.expression, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+            Node expressionNode = ELParser.parse(elp);
+            if (expressionNode != null) {
+                return getReferredType(expressionNode, context, info);
+            }
+        }catch (ELException e) {
+            //invalid expression
+        }
+        
+        return null;
+    }
+    
+    /**
      * @return the element for the type that that given {@code expression} refers to, i.e.
      * the return type of the last method in the expression.
+     * 
+     * The method can ONLY be used for resolved expressions, i.e. the base object must be a known bean,
+     * not a variable!
      */
-    private Element getReferredType(Node expression, final FileObject context, final CompilationController info) {
+    public Element getReferredType(Node expression, final FileObject context, final CompilationController info) {
 
         final Element[] result = new Element[1];
         expression.accept(new NodeVisitor() {
@@ -457,6 +620,10 @@ public final class ELTypeUtilities {
                         return;
                     }
                     Element enclosing = info.getElements().getTypeElement(beanClass);
+                    if(enclosing == null) {
+                        //no such class on the classpath
+                        return ;
+                    }
                     ExecutableElement method = null;
                     Node current = parent;
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
@@ -475,21 +642,61 @@ public final class ELTypeUtilities {
                     TypeMirror returnType = getReturnType(method);
                     //XXX: works just for generic collections, i.e. the assumption is
                     // that variables refer to collections, which is not always the case
-                    if (returnType instanceof DeclaredType) {
-                        List<? extends TypeMirror> typeArguments = ((DeclaredType) returnType).getTypeArguments();
-                        for (TypeMirror arg : typeArguments) {
-                            result[0] = info.getTypes().asElement(arg);
-                            return;
-                        }
-                    }
 
+                    if (returnType.getKind() == TypeKind.DECLARED) {
+                        if(isSubtypeOf(returnType, "java.lang.Iterable", info)) { //NOI18N
+                            List<? extends TypeMirror> typeArguments = ((DeclaredType) returnType).getTypeArguments();
+                            for (TypeMirror arg : typeArguments) {
+                                result[0] = info.getTypes().asElement(arg);
+                                return;
+                            }
+                            //use the returned type itself
+                            result[0] = info.getTypes().asElement(returnType);
+                        }
+                    } else if(returnType.getKind() == TypeKind.ARRAY) {
+                        TypeMirror componentType = ((ArrayType)returnType).getComponentType();
+                        result[0] = info.getTypes().asElement(componentType);
+                    }
                 }
             }
         });
 
         return result[0];
     }
+    
+    private boolean isSubtypeOf(TypeMirror tm, CharSequence typeName, CompilationController info) {
+        //check whether the return type implements Iterable, if so use the 
+        //parametrized type of the Iterable
+        Element element = info.getElements().getTypeElement(typeName);
+        if (element == null) {
+            return false;
+        }
+        TypeMirror type = element.asType(); //NOI18N
+        TypeMirror erasedType = info.getTypes().erasure(type);
+        TypeMirror tmErasure = info.getTypes().erasure(tm);
 
+        //hack>>>
+        //direct usage of the tm doesn't work, the isSubtype() method 
+        //returns false for the erased types. Why? Different contexts???
+        //The types seems to be exactly the same... no idea...
+
+        //so convert to the FQN
+        String tmName = info.getTypeUtilities().getTypeName(tmErasure, TypeNameOptions.PRINT_FQN).toString();
+        //and back to the type
+        TypeElement tm2Element = info.getElements().getTypeElement(tmName);
+        //<<<hack
+
+        if (tm2Element == null) {
+            return false;
+        }
+
+        TypeMirror tm2 = tm2Element.asType();
+        TypeMirror tm2Erasure = info.getTypes().erasure(tm2);
+
+        return info.getTypes().isSubtype(tm2Erasure, erasedType);
+
+    }
+   
     private TypeElement getTypeFor(final String clazz) {
         SourceTask<TypeElement> task = new SourceTask<TypeElement>() {
 
@@ -541,7 +748,7 @@ public final class ELTypeUtilities {
                                 // in resolving the beans they contain. The code below handles cases
                                 // like sessionScope.myBean => sessionScope is in position parent.jjtGetChild(i - 1)
                                 if (i > 0 && isScopeObject(parent.jjtGetChild(i - 1))) {
-                                    final String clazz = ELVariableResolvers.findBeanClass(child.getImage(), elem.getParserResult().getFileObject());
+                                    final String clazz = ELVariableResolvers.findBeanClass(child.getImage(), elem.getSnapshot().getSource().getFileObject());
                                     if (clazz == null) {
                                         return;
                                     }

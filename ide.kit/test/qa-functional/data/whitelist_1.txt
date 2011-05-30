@@ -5638,3 +5638,17 @@ org.openide.awt.HtmlRendererImpl$Type
 org.openide.filesystems.FileSystem$AsyncAtomicAction
 org.openide.filesystems.MemoryFileSystem$Mapper
 org.openide.modules.Modules
+
+# OK on May 24, 2011:
+org.netbeans.api.actions.Savable
+org.netbeans.core.GuiRunLevel$InitWinSys
+org.netbeans.modules.ide.ergonomics.WarmUp
+org.netbeans.modules.masterfs.ProvidedExtensionsAccessor
+org.netbeans.modules.openide.awt.SavableRegistry
+org.netbeans.spi.actions.AbstractSavable
+org.openide.awt.ContextAction
+org.openide.awt.ContextManager
+org.openide.awt.ContextManager$GMReference
+org.openide.awt.ContextManager$LSet
+org.openide.awt.ContextSelection
+

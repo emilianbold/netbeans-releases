@@ -47,6 +47,7 @@ package org.netbeans.test.j2ee.multiview;
  * @author pfiala
  */
 public abstract class StepIterator {
+
     private Exception error = null;
     private long startTime;
     private long duration;
@@ -77,9 +78,9 @@ public abstract class StepIterator {
         return duration;
     }
 
-    public void iterate(long stepDuration, long timeout) {
+    private void iterate(long stepDuration, long timeout) {
         startTime = System.currentTimeMillis();
-        for (; ;) {
+        for (;;) {
             try {
                 error = null;
                 success = step();

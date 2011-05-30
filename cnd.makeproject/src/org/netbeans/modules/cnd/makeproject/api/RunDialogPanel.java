@@ -47,13 +47,15 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
@@ -61,11 +63,14 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -74,26 +79,47 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public final class RunDialogPanel extends javax.swing.JPanel implements PropertyChangeListener {
+    private static final boolean TRACE_REMOTE_CREATION = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+    public static final Logger logger;
+    static {
+        logger = Logger.getLogger("org.netbeans.modules.cnd.makeproject.api.RunDialogPanel"); // NOI18N
+        if (TRACE_REMOTE_CREATION) {
+            logger.setLevel(Level.ALL);
+        }
+    }
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
     private JButton actionButton;
     private final boolean isRun;
+    private final FileSystem fileSystem;
+    private RunProjectAction projectAction;
+    private static final RequestProcessor RP = new RequestProcessor("RunDialogPanel Worker", 1); //NOI18N
     
     private static String lastSelectedExecutable = null;
     private static Project lastSelectedProject = null;
     
-    private static DefaultPicklistModel picklist = null;
-    private static String picklistHomeDir = null;
-    private static final String picklistName = "executables"; // NOI18N
     private boolean isValidating = false;
-    
+
     private void initAccessibility() {
         // Accessibility
         getAccessibleContext().setAccessibleDescription(getString("RUN_DIALOG_PANEL_AD"));
@@ -106,35 +132,27 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         environmentTextField.getAccessibleContext().setAccessibleDescription(getString("ENVIRONMENT_LABEL_AD"));
     }
     
-    public RunDialogPanel(String exePath, JButton actionButton, boolean isRun) {
+    public RunDialogPanel(FileObject executableFO, JButton actionButton, boolean isRun) throws FileStateInvalidException {
         this.actionButton = actionButton;
+        fileSystem = executableFO.getFileSystem();
         this.isRun = isRun;
-        initialize(exePath);
-        errorLabel.setText(""); //NOI18N
+        initialize(executableFO);
         initAccessibility();
     }
     
-    private void initialize(String exePath) {
+    private void initialize(FileObject executableFO) {
         initComponents();
         errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
+        errorLabel.setText(""); //NOI18N
         modifiedValidateDocumentListener = new ModifiedValidateDocumentListener();
         //modifiedRunDirectoryListener = new ModifiedRunDirectoryListener();
-        if (exePath != null) {
-            executableTextField.setText(exePath);
+        if (executableFO != null) {
+            executableTextField.setText(executableFO.getPath());
         }
         if (isRun) {
             guidanceTextarea.setText(getString("DIALOG_GUIDANCETEXT"));
         } else {
             guidanceTextarea.setText(getString("DIALOG_GUIDANCETEXT_CREATE"));
-        }
-        String[] savedExePaths = getExecutablePicklist().getElementsDisplayName();
-        String feed = null;
-        if (exePath != null) {
-            feed = exePath;
-        } else if (savedExePaths.length > 0) {
-            feed = savedExePaths[0];
-        } else {
-            feed = ""; // NOI18N
         }
         
         executableTextField.getDocument().addDocumentListener(modifiedValidateDocumentListener);
@@ -431,7 +449,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             seed = getExecutablePath();
         }
         // Show the file chooser
-        FileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("SelectWorkingDir"),
                 getString("SelectLabel"),
                 FileChooser.DIRECTORIES_ONLY,
@@ -448,9 +466,13 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private void projectComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectComboBoxActionPerformed
         int selectedIndex = projectComboBox.getSelectedIndex();
+        clearError();
+        validateExecutable();
         if (selectedIndex == 0) {
-            if (new File(executableTextField.getText()).getParentFile() != null) {
-                runDirectoryTextField.setText(new File(executableTextField.getText()).getParentFile().getPath());
+            validateProjectLocation();
+            FileObject executable =  fileSystem.findResource(getExecutablePath());
+            if (executable != null && executable.isValid() && executable.getParent() != null) {
+                runDirectoryTextField.setText(executable.getParent().getPath());
             } else {
                 if (!isValidating) {
                     executableTextField.setText(""); // NOI18N
@@ -463,8 +485,12 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             projectLocationField.setEnabled(true);
             projectLocationButton.setEnabled(true);
             projectFolderField.setEnabled(true);
-            projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder());
-            projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), new File(getExecutablePath()).getName()));
+            projectLocationField.setText(ProjectGenerator.getDefaultProjectFolder(FileSystemProvider.getExecutionEnvironment(fileSystem)));
+            if (executable != null && executable.isValid()) {
+                projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), executable.getNameExt()));
+            } else {
+                projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), "")); //NOI18N
+            }
         }
         else {
             projectKind.setEnabled(false);
@@ -495,16 +521,42 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             seed = System.getProperty("user.home");
         } // NOI18N
         
-        FileFilter[] filter;
-        if (Utilities.isWindows()){
-            filter = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter()};
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filter = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter()};
-        } else {
-            filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
+        FileFilter[] filter = null;
+        OSFamily oSFamily = null;
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        try {
+            oSFamily = HostInfoUtils.getHostInfo(executionEnvironment).getOSFamily();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (oSFamily != null) {
+            switch (oSFamily) {
+                case MACOSX:
+                    filter = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter()};
+                    break;
+                case WINDOWS:
+                    filter = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter()};
+                    break;
+                case SUNOS:
+                case LINUX:
+                case UNKNOWN:
+                    filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
+                    break;
+            }
+        }
+        if (filter == null) {
+            if (Utilities.isWindows()){
+                filter = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter()};
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                filter = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter()};
+            } else {
+                filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
+            }
         }
         // Show the file chooser
-        FileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("SelectExecutable"),
                 getString("SelectLabel"),
                 FileChooser.FILES_ONLY,
@@ -521,12 +573,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
 
     private void projectLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectLocationButtonActionPerformed
         String path = this.projectLocationField.getText();
-        FileChooser chooser = new FileChooser(
+        JFileChooser chooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("RunDialogPanel.Title_SelectProjectLocation"),
                 null, JFileChooser.DIRECTORIES_ONLY, null, path, true);
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
-            File projectDir = chooser.getSelectedFile();
-            projectLocationField.setText(projectDir.getAbsolutePath());
+            projectLocationField.setText(chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_projectLocationButtonActionPerformed
     
@@ -562,8 +613,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private Project[] getOpenedProjects() {
         List<Project> res = new ArrayList<Project>();
         for(Project p :OpenProjects.getDefault().getOpenProjects()) {
-            if (p.getLookup().lookup(ConfigurationDescriptorProvider.class) != null) {
-                res.add(p);
+            ConfigurationDescriptorProvider conf = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (conf != null && conf.gotDescriptor()) {
+                if (fileSystem.equals(conf.getConfigurationDescriptor().getBaseDirFileSystem())) {
+                    res.add(p);
+                }
             }
         }
         return res.toArray(new Project[res.size()]);
@@ -598,43 +652,46 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectComboBoxActionPerformed(null);
         //validateRunDirectory();
         projectKind.removeAllItems();
-        projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.Minimal));
-        projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.IncludeDependencies));
-        projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.CreateDependencies));
-        projectKind.setSelectedIndex(1);
-
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        if (executionEnvironment.isLocal()) {
+            projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.Minimal));
+            projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.IncludeDependencies));
+            projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.CreateDependencies));
+            projectKind.setSelectedIndex(1);
+        } else {
+            projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.IncludeDependencies));
+            projectKind.setSelectedIndex(0);
+        }
     }
     
     private boolean validateExecutable() {
         String exePath = getExecutablePath();
-        File exeFile = new File(exePath);
-        if (!exeFile.exists()) {
+        FileObject exeFile = fileSystem.findResource(exePath);
+        if (exeFile == null || !exeFile.isValid()) {
             setError("ERROR_DONTEXIST", true); // NOI18N
             return false;
         }
-        if (exeFile.isDirectory()) {
+        if (exeFile.isFolder()) {
             setError("ERROR_NOTAEXEFILE", true); // NOI18N
             return false;
         }
         return true;
     }
     
-    private boolean validateRunDirectory() {
-        String runDirectory = runDirectoryTextField.getText();
-        
-        File runDirectoryFile = new File(runDirectoryTextField.getText());
-     
-        if (!runDirectoryFile.exists()) {
-            setError("ERROR_RUNDIR_DONTEXIST", false); // NOI18N
-            return false;
+    private FileObject getExistingParent(String path) {
+        path = PathUtilities.getDirName(path);
+        FileObject fo = fileSystem.findResource(path);
+        while (fo == null) {
+            path = PathUtilities.getDirName(path);
+            if (path == null || path.length() == 0) {
+                return null;
+            } else {
+                fo = fileSystem.findResource(path);
+            }
         }
-        if (!runDirectoryFile.isDirectory()) {
-            setError("ERROR_RUNDIR_INVALID", false); // NOI18N
-            return false;
-        }
-        return true;
+        return fo;
     }
-
+    
     private boolean validateProjectLocation() {
         if (!PanelProjectLocationVisual.isValidProjectName(projectNameField.getText())) {
             setError("RunDialogPanel.MSG_IllegalProjectName", false); // NOI18N
@@ -644,31 +701,26 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             setError("RunDialogPanel.MSG_IllegalProjectLocation", false); // NOI18N
             return false;
         }
-        File f = CndFileUtils.createLocalFile(projectLocationField.getText()).getAbsoluteFile();
-        if (PanelProjectLocationVisual.getCanonicalFile(f) == null) {
-            setError("RunDialogPanel.MSG_IllegalProjectLocation", false); // NOI18N
-            return false;
-        }
-        final File destFolder = PanelProjectLocationVisual.getCanonicalFile(CndFileUtils.createLocalFile(projectFolderField.getText()).getAbsoluteFile()); // project folder always local
-        if (destFolder == null) {
-            setError("RunDialogPanel.MSG_IllegalProjectName", false); // NOI18N
-            return false;
-        }
-        File projLoc = destFolder;
-        while (projLoc != null && !projLoc.exists()) {
-            projLoc = projLoc.getParentFile();
-        }
-        if (projLoc == null || !projLoc.canWrite()) {
-            setError("RunDialogPanel.MSG_ProjectFolderReadOnly", false); // NOI18N
-            return false;
-        }
-        if (destFolder.exists()) {
-            if (destFolder.isFile()) {
+        // never use canonical as a file name validity check - it "eats" constructs like new File("*"), new File("<"), etc
+        FileObject projectDirFO = fileSystem.findResource(projectFolderField.getText()); // can be null
+        if (projectDirFO != null && projectDirFO.isValid()) {
+            if (projectDirFO.isData()) {
                 setError("RunDialogPanel.MSG_NotAFolder", false); // NOI18N
                 return false;
             }
-            if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER)) {
+            FileObject nbProjFO = projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+            if (nbProjFO != null && nbProjFO.isValid()) {
                 setError("RunDialogPanel.MSG_ProjectfolderNotEmpty", false, MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
+                return false;
+            }
+        } else {
+            FileObject existingParent = getExistingParent(projectFolderField.getText());
+            if (existingParent == null) {
+                setError("RunDialogPanel.MSG_IllegalProjectLocation", false); // NOI18N
+                return false;
+            }
+            if (!existingParent.canWrite()) {
+                setError("RunDialogPanel.MSG_ProjectFolderReadOnly", false); // NOI18N
                 return false;
             }
         }
@@ -726,23 +778,30 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private void validateFields(javax.swing.event.DocumentEvent documentEvent) {
         isValidating = true;
         try {
-            clearError();
             if (documentEvent.getDocument() == executableTextField.getDocument()) {
+                clearError();
                 projectComboBox.setSelectedIndex(0);
                 if (!validateExecutable()) {
                     return;
                 }
-                runDirectoryTextField.setText(new File(executableTextField.getText()).getParentFile().getPath());
+                FileObject executable =  fileSystem.findResource(getExecutablePath());
+                if (executable != null && executable.isValid() && executable.getParent() != null) {
+                    runDirectoryTextField.setText(executable.getParent().getPath());
+                }
             } else if (documentEvent.getDocument() == projectNameField.getDocument() ||
                        documentEvent.getDocument() == projectLocationField.getDocument()) {
-                String projectName = projectNameField.getText().trim();
-                String projectFolder = projectLocationField.getText().trim();
-                while (projectFolder.endsWith("/")) { // NOI18N
-                    projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
-                }
-                projectFolderField.setText(projectFolder + File.separatorChar + projectName);
-                if (!validateProjectLocation()) {
-                    return;
+                clearError();
+                if (projectComboBox.getSelectedIndex() == 0) {
+                    String projectName = projectNameField.getText().trim();
+                    String projectFolder = projectLocationField.getText().trim();
+                    while (projectFolder.endsWith("/") || projectFolder.endsWith("\\")) { // NOI18N
+                        projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
+                    }
+
+                    projectFolderField.setText(projectFolder + CndFileUtils.getFileSeparatorChar(fileSystem) + projectName);
+                    if (!validateProjectLocation()) {
+                        return;
+                    }
                 }
             }
         } finally {
@@ -768,54 +827,143 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         }
     }
     
-    public Project getSelectedProject() {
-        Project project;
+    public void getSelectedProject(final RunProjectAction action) {
         lastSelectedExecutable = getExecutablePath();
         if (projectComboBox.getSelectedIndex() > 0) {
             lastSelectedProject = projectChoices[projectComboBox.getSelectedIndex()-1];
-            project = lastSelectedProject;
+            Project project = lastSelectedProject;
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
             MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
             updateRunProfile(conf.getBaseDir(), conf.getProfile());
-        } else {
-            try {
-                ProgressHandle progress = ProgressHandleFactory.createHandle(getString("CREATING_PROJECT_PROGRESS")); // NOI18N
-                progress.start();
-                try {
-                    String projectParentFolder = projectLocationField.getText().trim();
-                    String projectName = projectNameField.getText().trim();
-                    String baseDir = projectFolderField.getText().trim();
-                    MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
-                            ExecutionEnvironmentFactory.getLocal().getHost());
-                    // Working dir
-                    String wd = new File(getExecutablePath()).getParentFile().getPath();
-                    wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-                    wd = CndPathUtilitities.normalizeSlashes(wd);
-                    conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
-                    // Executable
-                    String exe = getExecutablePath();
-                    exe = CndPathUtilitities.toRelativePath(baseDir, exe);
-                    exe = CndPathUtilitities.normalizeSlashes(exe);
-                    conf.getMakefileConfiguration().getOutput().setValue(exe);
-                    updateRunProfile(baseDir, conf.getProfile());
-                    ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
-                    prjParams.setOpenFlag(false)
-                             .setConfiguration(conf)
-                             .setImportantFiles(Collections.<String>singletonList(exe).iterator());
-                    project = ProjectGenerator.createBlankProject(prjParams);
-                    lastSelectedProject = project;
-                    OpenProjects.getDefault().addPropertyChangeListener(this);
-                    OpenProjects.getDefault().open(new Project[]{project}, false);
-                    OpenProjects.getDefault().setMainProject(project);
-                } finally {
-                    progress.finish();
-                }
-            } catch (Exception e) {
-                project = null;
+            if (action != null) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        action.run(lastSelectedProject);
+                    }
+                });
             }
-            lastSelectedProject = project;
+        } else {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    createNewProject(action);
+                }
+            });
         }
+    }
+    
+    private void createNewProject(final RunProjectAction action) {
+        try {
+            ProgressHandle progress = ProgressHandleFactory.createHandle(getString("CREATING_PROJECT_PROGRESS")); // NOI18N
+            progress.start();
+            try {
+                ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+                FileUtil.createFolder(fileSystem.getRoot(), projectFolderField.getText().trim());
+                projectAction = action;
+                Project project = null;
+                if (executionEnvironment.isLocal()) {
+                    project = createLocalProject();
+                } else {
+                    FileObject projectCreator = findProjectCreator();
+                    if (projectCreator == null) {
+                        project = createLocalProject();
+                    } else {
+                        project = createRemoteProject(projectCreator);
+                        if (project == null) {
+                            project = createLocalProject();
+                        }
+                    }
+                }
+            } finally {
+                progress.finish();
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private Project createLocalProject() throws IOException, IllegalArgumentException {
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        String projectName = projectNameField.getText().trim();
+        String baseDir = projectFolderField.getText().trim();
+        MakeConfiguration conf = new MakeConfiguration(new FSPath(fileSystem, baseDir), "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
+                executionEnvironment.getHost());
+        // Working dir
+        String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
+        wd = CndPathUtilitities.toRelativePath(baseDir, wd);
+        wd = CndPathUtilitities.normalizeSlashes(wd);
+        conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
+        // Executable
+        String exe = getExecutablePath();
+        exe = CndPathUtilitities.toRelativePath(baseDir, exe);
+        exe = CndPathUtilitities.normalizeSlashes(exe);
+        conf.getMakefileConfiguration().getOutput().setValue(exe);
+        updateRunProfile(baseDir, conf.getProfile());
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, new FSPath(fileSystem, baseDir));
+        prjParams.setOpenFlag(false)
+                 .setConfiguration(conf)
+                 .setHostUID(executionEnvironment.getHost())
+                 .setImportantFiles(Collections.<String>singletonList(exe).iterator())
+                 .setMakefileName(""); //NOI18N
+        Project project = ProjectGenerator.createBlankProject(prjParams);
+        lastSelectedProject = project;
+        OpenProjects.getDefault().addPropertyChangeListener(this);
+        OpenProjects.getDefault().open(new Project[]{project}, false);
+        OpenProjects.getDefault().setMainProject(project);
+        return project;
+    }
+
+    private Project createRemoteProject(FileObject projectCreator) {
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        String java = null; 
+        try {
+            java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JDK_HOME"); // NOI18N
+            if (java == null || java.isEmpty()) {
+                java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JAVA_HOME"); // NOI18N
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (TRACE_REMOTE_CREATION) {
+            logger.log(Level.INFO, "#{0} --jdkhome {1} --netbeans-project={2} --project-create binary={3} --sources=used", // NOI18N
+                    new Object[]{projectCreator.getPath(), java, projectFolderField.getText().trim(), getExecutablePath()});
+        }
+        ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
+                                     , "--jdkhome", java // NOI18N
+                                     , "--netbeans-project="+projectFolderField.getText().trim() // NOI18N
+                                     , "--project-create", "binary="+getExecutablePath() // NOI18N
+                                     , "--sources=used" // NOI18N
+                                     );
+        if (TRACE_REMOTE_CREATION) {
+            logger.log(Level.INFO, "#exitCode={0}", execute.exitCode); // NOI18N
+            logger.log(Level.INFO, execute.error);
+            logger.log(Level.INFO, execute.output);
+        }
+        String baseDir = projectFolderField.getText().trim();
+        FileObject toRefresh = fileSystem.findResource(PathUtilities.getDirName(baseDir));
+        if (toRefresh != null) {
+            toRefresh.refresh();
+        }
+        FileObject projectFO = fileSystem.findResource(baseDir);
+        if (projectFO == null) {
+            return null;
+        }
+        Project project = null;
+        try {
+            project = ProjectManager.getDefault().findProject(projectFO);
+            lastSelectedProject = project;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        OpenProjects.getDefault().addPropertyChangeListener(this);
+        OpenProjects.getDefault().open(new Project[]{project}, false);
+        OpenProjects.getDefault().setMainProject(project);
         return project;
     }
 
@@ -831,19 +979,50 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 if (lastSelectedProject == null) {
                     return;
                 }
-                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                if (extension != null) {
-                    Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("DW:buildResult", getExecutablePath()); // NOI18N
-                    map.put("DW:consolidationLevel", "file"); // NOI18N
-                    map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
-                    IteratorExtension.ProjectKind kind = ((ProjectKindItem)projectKind.getSelectedItem()).kind;
-                    extension.discoverProject(map, lastSelectedProject, kind); // NOI18N
+                if (projectAction != null) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            projectAction.run(lastSelectedProject);
+                            projectAction = null;
+                        }
+                    });
+                }
+                ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+                if (executionEnvironment.isLocal()) {
+                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                    if (extension != null) {
+                        Map<String, Object> map = new HashMap<String, Object>();
+                        map.put("DW:buildResult", getExecutablePath()); // NOI18N
+                        map.put("DW:consolidationLevel", "file"); // NOI18N
+                        map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+                        IteratorExtension.ProjectKind kind = ((ProjectKindItem)projectKind.getSelectedItem()).kind;
+                        extension.discoverProject(map, lastSelectedProject, kind); // NOI18N
+                    }
+                } else {
+                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                    if (extension != null) {
+                        extension.discoverHeadersByModel(lastSelectedProject);
+                    }
                 }
             }
         }
     }
 
+    private FileObject findProjectCreator() {
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        for(CompilerSet set : CompilerSetManager.get(executionEnvironment).getCompilerSets()) {
+            if (set.getCompilerFlavor().isSunStudioCompiler()) {
+                String directory = set.getDirectory();
+                FileObject projectCreator = fileSystem.findResource(directory+"/../lib/ide_project/bin/ide_project");
+                if (projectCreator != null && projectCreator.isValid()) {
+                    return projectCreator;
+                }
+            }
+        }
+        return null;
+    }
+            
     private void updateRunProfile(String baseDir, RunProfile runProfile) {
         // Arguments
         runProfile.setArgs(argumentTextField.getText());
@@ -866,31 +1045,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         errorLabel.setText(msg);
     }
     
-    private static DefaultPicklistModel getExecutablePicklist() {
-        if (picklist == null) {
-            picklistHomeDir = System.getProperty("netbeans.user") + File.separator + "var" + File.separator + "picklists"; // NOI18N
-            picklist = (DefaultPicklistModel)DefaultPicklistModel.restorePicklist(picklistHomeDir, picklistName);
-            if (picklist == null) {
-                picklist = new DefaultPicklistModel(16);
-            }
-        }
-        return picklist;
-    }
-    
-    public static void addElementToExecutablePicklist(String exePath) {
-        getExecutablePicklist().addElement(exePath);
-        getExecutablePicklist().savePicklist(picklistHomeDir, picklistName);
-    }
-    
     /** Look up i18n strings here */
     private String getString(String s, String ... args) {
         return NbBundle.getMessage(RunDialogPanel.class, s, args);
     }
     
-    public boolean asynchronous() {
-        return false;
-    }
-
     private final class ProjectKindItem {
         private final IteratorExtension.ProjectKind kind;
         ProjectKindItem(IteratorExtension.ProjectKind kind) {
@@ -901,5 +1060,9 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         public String toString() {
             return RunDialogPanel.this.getString("ProjectItemKind_"+kind);
         }
+    }
+    
+    public static interface RunProjectAction {
+        void run(Project project);
     }
 }

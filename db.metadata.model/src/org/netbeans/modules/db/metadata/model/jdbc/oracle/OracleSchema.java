@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 - 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008 - 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -108,6 +108,8 @@ public class OracleSchema extends JDBCSchema {
     private Set<String> getRecycleBinObjects(DatabaseMetaData dmd, String... types) {
         String driverName = null;
         String driverVer = null;
+        List<String> emptyList = Collections.emptyList();
+        Set<String> result = new HashSet<String>();
         try {
             driverName = dmd.getDriverName();
             driverVer = dmd.getDriverVersion();
@@ -120,11 +122,17 @@ public class OracleSchema extends JDBCSchema {
             if (databaseMajorVersion < 10 || types == null) {
                 return Collections.emptySet();
             }
-            Set<String> result = new HashSet<String>();
             Statement stmt = dmd.getConnection().createStatement();
+            ResultSet rs = null;
             try {
-                ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME, TYPE FROM SYS.DBA_RECYCLEBIN"); // NOI18N
-                List<String> typesL = types == null ? Collections.EMPTY_LIST : Arrays.asList(types);
+                rs = stmt.executeQuery("SELECT OBJECT_NAME, TYPE FROM SYS.DBA_RECYCLEBIN"); // NOI18N
+            } catch (SQLException ex) {
+                LOGGER.log(Level.FINE, ex.getMessage(), ex); 
+                // try both
+                rs = stmt.executeQuery("SELECT OBJECT_NAME, TYPE FROM RECYCLEBIN"); // NOI18N
+            }
+            if (rs != null) {
+                List<String> typesL = types == null ? emptyList : Arrays.asList(types);
                 try {
                     while (rs.next()) {
                         String type = rs.getString("TYPE"); // NOI18N
@@ -135,35 +143,11 @@ public class OracleSchema extends JDBCSchema {
                 } finally {
                     rs.close();
                 }
-            } finally {
-                stmt.close();
             }
-            // try both
-            if (result.isEmpty()) {
-                try {
-                    ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME, TYPE FROM RECYCLEBIN"); // NOI18N
-                    List<String> typesL = types == null ? Collections.EMPTY_LIST : Arrays.asList(types);
-                    try {
-                        while (rs.next()) {
-                            String type = rs.getString("TYPE"); // NOI18N
-                            if (typesL.isEmpty() || typesL.contains(type)) {
-                                result.add(rs.getString("OBJECT_NAME")); // NOI18N
-                            }
-                        }
-                    } finally {
-                        rs.close();
-                    }
-                } finally {
-                    stmt.close();
-                }
-            }
-            return result;
-        } catch (AbstractMethodError ame) {
-            LOGGER.log(Level.INFO, "Error while analyzing the recycle bin. JDBC Driver: " + driverName + "(" + driverVer + ")", ame);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.INFO, "Error while analyzing the recycle bin. JDBC Driver: " + driverName + "(" + driverVer + ")", e);
         }
-        return Collections.emptySet();
+        return result;
     }
 
     @Override

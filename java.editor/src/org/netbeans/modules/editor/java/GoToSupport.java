@@ -370,15 +370,9 @@ public class GoToSupport {
             return null;
         }
 
-        TypeMirror parentTypeForAnonymous = null;
-
         if (controller.getElementUtilities().isSynthetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
             //check for annonymous innerclasses:
-            TypeMirror[] classTypeRef = new TypeMirror[] {classType };
-
-            el = handlePossibleAnonymousInnerClass(controller, el, classTypeRef);
-
-            classType = parentTypeForAnonymous = classTypeRef[0];
+            el = handlePossibleAnonymousInnerClass(controller, el);
         }
 
         if (isError(el)) {
@@ -389,7 +383,7 @@ public class GoToSupport {
             return null;
         }
 
-        return new Context(classType, parentTypeForAnonymous, el);
+        return new Context(classType, el);
     }
 
     private static String computeTooltip(CompilationInfo controller, Context resolved, String key) {
@@ -397,8 +391,6 @@ public class GoToSupport {
 
         if (resolved.resolved.getKind() == ElementKind.CONSTRUCTOR && resolved.classType != null && resolved.classType.getKind() == TypeKind.DECLARED) {
             v.printExecutable(((ExecutableElement) resolved.resolved), (DeclaredType) resolved.classType, true);
-        } else if (resolved.resolved.getKind() == ElementKind.INTERFACE && resolved.parentTypeForAnonymous != null && resolved.parentTypeForAnonymous.getKind() == TypeKind.DECLARED) {
-            v.printType(((TypeElement) resolved.resolved), (DeclaredType) resolved.classType, true);
         } else  {
             v.visit(resolved.resolved, true);
         }
@@ -462,12 +454,9 @@ public class GoToSupport {
         return new int [] {ts.offset(), ts.offset() + t.length()};
     }
     
-    private static Element handlePossibleAnonymousInnerClass(CompilationInfo info, final Element el, TypeMirror[] classTypeRef) {
+    private static Element handlePossibleAnonymousInnerClass(CompilationInfo info, final Element el) {
         Element encl = el.getEnclosingElement();
         Element doubleEncl = encl != null ? encl.getEnclosingElement() : null;
-        TypeMirror classType = classTypeRef[0];
-
-        classTypeRef[0] = null;
         
         if (   doubleEncl != null
             && !doubleEncl.getKind().isClass()
@@ -481,25 +470,6 @@ public class GoToSupport {
                 NewClassTree nct = (NewClassTree) enclTreePath.getParentPath().getLeaf();
                 
                 if (nct.getClassBody() != null) {
-                    List<? extends TypeMirror> sup = classType != null && classType.getKind() == TypeKind.DECLARED
-                            ? info.getTypes().directSupertypes(classType) : Collections.<TypeMirror>emptyList();
-                    TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
-
-                    if (jlObject != null) {
-                        TypeMirror jlObjectType = jlObject.asType();
-                        TypeMirror parent = null;
-
-                        for(TypeMirror tm : sup) {
-                            if (info.getTypes().isSameType(tm, jlObjectType)) {
-                                continue;
-                            }
-                            assert parent == null;
-                            parent = tm;
-                        }
-
-                        classTypeRef[0] = parent;
-                    }
-                    
                     Element parentElement = info.getTrees().getElement(new TreePath(enclTreePath, nct.getIdentifier()));
                     
                     if (parentElement == null || parentElement.getKind().isInterface()) {
@@ -985,11 +955,9 @@ public class GoToSupport {
 
     public static final class Context {
         public final TypeMirror classType;
-        public final TypeMirror parentTypeForAnonymous;
         public final Element resolved;
-        public Context(TypeMirror classType, TypeMirror parentTypeForAnonymous, Element resolved) {
+        public Context(TypeMirror classType, Element resolved) {
             this.classType = classType;
-            this.parentTypeForAnonymous = parentTypeForAnonymous;
             this.resolved = resolved;
         }
     }

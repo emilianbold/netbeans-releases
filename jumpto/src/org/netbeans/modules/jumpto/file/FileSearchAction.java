@@ -500,6 +500,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         indexQueryText = text;
                         break;
                 }
+                long st = System.currentTimeMillis();
                 QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject [roots.size()]));
                 Collection<? extends IndexResult> results = q.query(searchField, indexQueryText, searchType);
                 ArrayList<FileDescriptor> files = new ArrayList<FileDescriptor>();
@@ -524,10 +525,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                                 project, currentProject, preferred
                     });
                 }
+                long et = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Indexed Search: {0}ms", (et-st));
                 if (isCanceled) {
                     return files;
                 }
 
+                st = System.currentTimeMillis();
                 final Set<FileObject> excludes = new HashSet<FileObject>(roots);
                 final Project[] projects = OpenProjects.getDefault().getOpenProjects();
                 final List<FileObject> sgRoots = new LinkedList<FileObject>();
@@ -560,8 +564,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         }
                     }
                 }
+                et = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Providers Search: {0}ms", (et-st));
 
                 //PENDING Now we have to search folders which not included in Search API
+                st = System.currentTimeMillis();
                 Collection <FileObject> allFolders = new ArrayList<FileObject>();
                 final FileObjectFilter[] filters = new FileObjectFilter[]{SearchInfoFactory.VISIBILITY_FILTER, SearchInfoFactory.SHARABILITY_FILTER};
                 for (FileObject root : sgRoots) {
@@ -599,6 +606,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         }
                     }
                 }
+                et = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Unindexed search: {0}ms", (et-st));
                 Collections.sort(files, 
                                  new FileComarator(panel.isPreferedProject(),
                                                    panel.isCaseSensitive()));

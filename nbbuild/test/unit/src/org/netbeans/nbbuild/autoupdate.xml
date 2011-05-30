@@ -59,4 +59,17 @@
         </autoupdate>
 
     </target>
+    
+    <target name="mirror">
+        <echo message="${root}"/>
+
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+
+        <autoupdate downloaddir="${target}">
+            <nbms dir="${dir}">
+                <include name="*.nbm"/>
+            </nbms>
+            <modules includes="${includes}"/>
+        </autoupdate>
+    </target>
 </project>

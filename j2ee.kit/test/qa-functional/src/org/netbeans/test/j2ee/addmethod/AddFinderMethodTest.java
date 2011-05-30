@@ -58,8 +58,9 @@ import org.netbeans.test.j2ee.EJBValidation;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
- *
- * @author lm97939
+ *  Called from EJBValidation test suite.
+ * 
+ * @author Libor Martinek
  */
 public class AddFinderMethodTest extends AddMethodTest {
 
@@ -70,18 +71,6 @@ public class AddFinderMethodTest extends AddMethodTest {
     /** Creates a new instance of AddMethodTest */
     public AddFinderMethodTest(String name) {
         super(name);
-    }
-
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        junit.textui.TestRunner.run(new AddFinderMethodTest("testAddFinderMethod2InEB"));
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        System.out.println("########  " + getName() + "  #######");
     }
 
     public void testAddFinderMethod1InEB() throws IOException {
@@ -145,7 +134,7 @@ public class AddFinderMethodTest extends AddMethodTest {
                     "Source Packages|test|" + toSearchFile);
             new OpenAction().performAPI(openFile2);
             final EditorOperator editor2 = EditorWindowOperator.getEditor(toSearchFile);
-            waitForEditorText(editor2, methodName);
+            editor2.txtEditorPane().waitText(methodName);
             editor2.closeDiscard();
         }
         compareFiles();

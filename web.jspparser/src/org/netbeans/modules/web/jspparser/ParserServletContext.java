@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -75,6 +77,12 @@ import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
 import javax.servlet.descriptor.TaglibDescriptor;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.JspConfig;
+import org.netbeans.modules.j2ee.dd.api.web.JspPropertyGroup;
+import org.netbeans.modules.j2ee.dd.api.web.Taglib;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -143,11 +151,73 @@ public class ParserServletContext implements ServletContext {
             
             @Override
             public Collection<TaglibDescriptor> getTaglibs() {
+                // #197633:
+                WebModule webModule = webModuleProvider.getWebModule();
+                if (webModule != null) {
+                    FileObject webxml = webModule.getDeploymentDescriptor();
+                    if (webxml != null) {
+                        try {
+                            WebApp w = DDProvider.getDefault().getDDRoot(webxml);   
+                            if (w != null) {
+                                JspConfig jc = w.getSingleJspConfig();
+                                if (jc != null) {
+                                    Collection<TaglibDescriptor> result = new ArrayList<TaglibDescriptor>();
+                                    for (Taglib tl : jc.getTaglib()) {
+                                        result.add(new TaglibDescriptorImpl(
+                                                tl.getTaglibUri(),
+                                                tl.getTaglibLocation()
+                                        ));
+                                    }
+                                    return result;
+                                }
+                            }
+                        } catch (IOException e) {
+                            LOGGER.log(Level.FINE, "getTaglibs for " + FileUtil.toFile(webxml), e);
+                        } catch (VersionNotSupportedException e) {
+                            LOGGER.log(Level.FINE, "getTaglibs for " + FileUtil.toFile(webxml), e);
+                        }
+                        
+                    }
+                }
                 return Collections.<TaglibDescriptor>emptyList();
             }
             
             @Override
             public Collection<JspPropertyGroupDescriptor> getJspPropertyGroups() {
+                WebModule webModule = webModuleProvider.getWebModule();
+                if (webModule != null) {
+                    FileObject webxml = webModule.getDeploymentDescriptor();
+                    if (webxml != null) {
+                        try {
+                            WebApp w = DDProvider.getDefault().getDDRoot(webxml);   
+                            if (w != null) {
+                                JspConfig jc = w.getSingleJspConfig();
+                                if (jc != null) {
+                                    Collection<JspPropertyGroupDescriptor> result = new ArrayList<JspPropertyGroupDescriptor>();
+                                    JspPropertyGroup[] jpgs = jc.getJspPropertyGroup();
+                                    for (int i = 0; i < jpgs.length; i++) {
+                                        JspPropertyGroup jpg = jpgs[i];
+                                        result.add(new JspPropertyGroupDescriptorImpl(
+                                                Arrays.asList(jpg.getUrlPattern()),
+                                                Boolean.toString(jpg.isElIgnored()),
+                                                jpg.getPageEncoding(),
+                                                Boolean.toString(jpg.isScriptingInvalid()),
+                                                Boolean.toString(jpg.isIsXml()),
+                                                Arrays.asList(jpg.getIncludePrelude()),
+                                                Arrays.asList(jpg.getIncludeCoda())
+                                        ));
+                                    }
+                                    return result;
+                                }
+                            }
+                        } catch (IOException e) {
+                            LOGGER.log(Level.FINE, "getJspPropertyGroups for " + FileUtil.toFile(webxml), e);
+                        } catch (VersionNotSupportedException e) {
+                            LOGGER.log(Level.FINE, "getJspPropertyGroups for " + FileUtil.toFile(webxml), e);
+                        }
+                        
+                    }
+                }
                 return Collections.<JspPropertyGroupDescriptor>emptyList();                
             }
             
@@ -157,6 +227,27 @@ public class ParserServletContext implements ServletContext {
         setAttribute(JSP_TAGFILE_JAR_URLS_CACHE, new ConcurrentHashMap<String, URL>());
     }
     
+    
+    private static final class TaglibDescriptorImpl implements TaglibDescriptor {
+
+        private String uri;
+        private String loc;
+
+        public TaglibDescriptorImpl(String uri, String loc) {
+            this.uri = uri;
+            this.loc = loc;
+        }
+        
+        @Override
+        public String getTaglibURI() {
+            return uri;
+        }
+
+        @Override
+        public String getTaglibLocation() {
+            return loc;
+        }
+    }
     
     // --------------------------------------------------------- Public Methods
     
@@ -697,5 +788,91 @@ public class ParserServletContext implements ServletContext {
          * @return {@link WebModule} instance or <code>null</code> if WebModule has already been garbage collected.
          */
         WebModule getWebModule();
+    }
+    
+    private static class JspPropertyGroupDescriptorImpl implements JspPropertyGroupDescriptor {
+
+        private Collection<String> urlPatterns;
+        private String isElIgnored;
+        private String pageEncoding;
+        private String scriptingInvalid;
+        private String isXml;
+        private Collection<String> includePreludes;
+        private Collection<String> includeCodas;
+
+        public JspPropertyGroupDescriptorImpl(Collection<String> urlPatterns, String isElIgnored, 
+                String pageEncoding, String scriptingInvalid, String isXml, 
+                Collection<String> includePreludes, Collection<String> includeCodas) {
+            this.urlPatterns = urlPatterns;
+            this.isElIgnored = isElIgnored;
+            this.pageEncoding = pageEncoding;
+            this.scriptingInvalid = scriptingInvalid;
+            this.isXml = isXml;
+            this.includePreludes = includePreludes;
+            this.includeCodas = includeCodas;
+        }
+       
+
+        
+        @Override
+        public Collection<String> getUrlPatterns() {
+            return urlPatterns;
+        }
+
+        @Override
+        public String getElIgnored() {
+            return isElIgnored;
+        }
+
+        @Override
+        public String getPageEncoding() {
+            return pageEncoding;
+        }
+
+        @Override
+        public String getScriptingInvalid() {
+            return scriptingInvalid;
+        }
+
+        @Override
+        public String getIsXml() {
+            return isXml;
+        }
+
+        @Override
+        public Collection<String> getIncludePreludes() {
+            return includePreludes;
+        }
+
+        @Override
+        public Collection<String> getIncludeCodas() {
+            return includeCodas;
+        }
+
+        @Override
+        public String getDeferredSyntaxAllowedAsLiteral() {
+            return "IGNORE ME - THIS VALUE IS NOT SUPPOSED TO BE USED"; // NOI18N
+        }
+
+        @Override
+        public String getTrimDirectiveWhitespaces() {
+            return "IGNORE ME - THIS VALUE IS NOT SUPPOSED TO BE USED"; // NOI18N
+        }
+
+        @Override
+        public String getDefaultContentType() {
+            return "IGNORE ME - THIS VALUE IS NOT SUPPOSED TO BE USED"; // NOI18N
+        }
+
+        @Override
+        public String getBuffer() {
+            return "IGNORE ME - THIS VALUE IS NOT SUPPOSED TO BE USED"; // NOI18N
+        }
+
+        @Override
+        public String getErrorOnUndeclaredNamespace() {
+            return "IGNORE ME - THIS VALUE IS NOT SUPPOSED TO BE USED"; // NOI18N
+        }
+        
     }
 }

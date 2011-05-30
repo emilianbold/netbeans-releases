@@ -72,6 +72,7 @@ public class TraceFlags {
     public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors"); // NOI18N
     public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast"); // NOI18N
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false); // NOI18N
+    public static final boolean DUMP_NATIVE_FILE_ITEM_USER_INCLUDE_PATHS = DebugUtils.getBoolean("cnd.dump.native.file.item.paths", false); // NOI18N
 
     public static final String TRACE_FILE_NAME = System.getProperty("cnd.modelimpl.trace.file");
 
@@ -158,6 +159,8 @@ public class TraceFlags {
 
     // experimental expression evaluator for template instantiations
     public static final boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", true); // NOI18N
+    public static final boolean EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.deep.variable.provider", false); // NOI18N
+    public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", false); // NOI18N
 
     public static final List<String> logMacros;
     static {

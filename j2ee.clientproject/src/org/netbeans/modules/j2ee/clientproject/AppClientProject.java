@@ -86,6 +86,7 @@ import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
@@ -629,10 +630,10 @@ public final class AppClientProject implements Project, FileChangeListener {
                     // previously do not ask and use it
                     serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_TYPE);
                     if (serverType != null) {
-                        String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-                        if (servInstIDs.length > 0) {
-                            AppClientProjectProperties.setServerInstance(AppClientProject.this, AppClientProject.this.helper, servInstIDs[0]);
-                            platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                        String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, Type.CAR, AppClientProject.this.getAPICar().getJ2eeProfile());
+                        if (instanceID != null) {
+                            AppClientProjectProperties.setServerInstance(AppClientProject.this, AppClientProject.this.helper, instanceID);
+                            platform = Deployment.getDefault().getJ2eePlatform(instanceID);
                         }
                     }
                     if (platform == null) {
@@ -690,7 +691,8 @@ public final class AppClientProject implements Project, FileChangeListener {
             }
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
             if(WebServicesClientSupport.isBroken(AppClientProject.this)) {
                 WebServicesClientSupport.showBrokenAlert(AppClientProject.this);

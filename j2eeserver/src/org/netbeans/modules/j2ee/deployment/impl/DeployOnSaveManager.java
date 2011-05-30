@@ -63,14 +63,17 @@ import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -106,6 +109,8 @@ public final class DeployOnSaveManager {
     private final WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> compileListeners = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
 
     private final WeakHashMap<J2eeModuleProvider, CopyOnSaveListener> copyListeners = new WeakHashMap<J2eeModuleProvider, CopyOnSaveListener>();
+    
+    private final WeakHashMap<J2eeModuleProvider, Object> suspended = new WeakHashMap<J2eeModuleProvider, Object>();
 
     /**
      * We need a custom thread factory because the default one stores the
@@ -219,6 +224,50 @@ public final class DeployOnSaveManager {
             }
         }
     }
+    
+    public void suspendListening(J2eeModuleProvider provider) {
+        synchronized (this) {
+            suspended.put(provider, new Object());
+            LOGGER.log(Level.FINE, "Listening suspended for {0}", provider);
+        }
+    }
+    
+    public void resumeListening(final J2eeModuleProvider provider) {
+        boolean resume = false;
+        synchronized (this) {
+            resume = suspended.containsKey(provider);
+        }
+
+        // don't do resume unless it is really needed
+        if (resume) {
+            FileObject fo = ((ConfigSupportImpl) provider.getConfigSupport()).getProjectDirectory();
+            FileUtil.refreshAll();
+
+            try {
+                FileSystem fs = (fo != null) ? fo.getFileSystem() : FileUtil.getConfigRoot().getFileSystem();
+                fs.runAtomicAction(new FileSystem.AtomicAction() {
+
+                    @Override
+                    public void run() throws IOException {
+                        clearSuspended(provider);
+                    }
+                });
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                clearSuspended(provider);
+            }
+        }        
+    }    
+
+    private void clearSuspended(J2eeModuleProvider provider) {
+        Object prev = null;
+        synchronized (this) {
+            prev = suspended.remove(provider);
+        }
+        if (LOGGER.isLoggable(Level.FINE) && prev != null) {
+            LOGGER.log(Level.FINE, "Resuming listening for {0}", provider);
+        }        
+    }
 
     public static boolean isServerStateSupported(ServerInstance si) {
         return si.isRunning() && !si.isSuspended();
@@ -242,8 +291,13 @@ public final class DeployOnSaveManager {
     public void submitChangedArtifacts(J2eeModuleProvider provider, Iterable<Artifact> artifacts) {
         assert provider != null;
         assert artifacts != null;
-
+      
         synchronized (this) {
+            // TODO should go through deploy task and return from the notification task ?
+            if (suspended.containsKey(provider)) {
+                return;
+            }
+
             Set<Artifact> preparedArtifacts = toDeploy.get(provider);
             if (preparedArtifacts == null) {
                 preparedArtifacts = new HashSet<Artifact>();
@@ -264,7 +318,7 @@ public final class DeployOnSaveManager {
             current = EXECUTOR.submit(new DeployTask(delayed));
         }
     }
-
+    
     private static final class CompileOnSaveListener implements ArtifactsUpdated {
 
         private final J2eeModuleProvider provider;
@@ -397,7 +451,7 @@ public final class DeployOnSaveManager {
                 }
             }
 
-            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
+            DeploymentTarget deploymentTarget = new DeploymentTarget(provider, null);
             TargetServer server = new TargetServer(deploymentTarget);
 
             DeploymentState state;

@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -79,10 +80,10 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
         assertFalse("File " + env + ":" + remotePath + " should not exist at this moment", HostInfoUtils.fileExists(env, remotePath));
         int uploadCount = SftpSupport.getUploadCount();
         long firstTime = System.currentTimeMillis();
-        rc = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, new PrintWriter(System.err), true).get().intValue();
+        UploadStatus res = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, true).get();
         assertEquals("Error uploading file " + localFile.getAbsolutePath() + " to " + getTestExecutionEnvironment() + ":" + remotePath, 0, rc);
         firstTime = System.currentTimeMillis() - firstTime;
-        assertEquals("Error copying " + localFile + " file to " + env + ":" + remotePath, 0, rc);
+        assertEquals("Error copying " + localFile + " file to " + env + ":" + remotePath + ' ' + res.getError(), 0, res.getExitCode());
         assertTrue("File " + env + ":" + remotePath + " should exist at this moment", HostInfoUtils.fileExists(env, remotePath));
         assertEquals("Uploads count", ++uploadCount, SftpSupport.getUploadCount());
         System.err.printf("First copying %s to %s took %d ms\n", localFile.getAbsolutePath(), remotePath, firstTime);
@@ -97,9 +98,9 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
                 uploadCount++;
             }
             long currTime = System.currentTimeMillis();
-            rc = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, new PrintWriter(System.err), true).get().intValue();
+            UploadStatus uploadStatus = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0777, true).get();
             firstTime = System.currentTimeMillis() - currTime;
-            assertEquals("Error copying " + localFile + " file to " + env + ":" + remotePath, 0, rc);
+            assertEquals("Error copying " + localFile + " file to " + env + ":" + remotePath + ' ' + uploadStatus.getError(), 0, uploadStatus.getExitCode());
             assertTrue("File " + env + ":" + remotePath + " should exist at this moment", HostInfoUtils.fileExists(env, remotePath));
             assertEquals("Uploads count on pass " + pass, uploadCount, SftpSupport.getUploadCount());
             System.err.printf("Copying (pass %d) %s to %s took %d ms\n", pass, localFile.getAbsolutePath(), remotePath, firstTime);

@@ -1,0 +1,29 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import com.tangosol.io.pof.PofReader;
+import com.tangosol.io.pof.PofWriter;
+import com.tangosol.io.pof.PortableObject;
+import java.io.IOException;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} implements PortableObject {
+
+    public void readExternal(PofReader reader) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void writeExternal(PofWriter writer) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+}

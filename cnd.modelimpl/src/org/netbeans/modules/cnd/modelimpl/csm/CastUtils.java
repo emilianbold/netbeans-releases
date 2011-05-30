@@ -45,12 +45,11 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.openide.util.CharSequences;
 
 /**
  * Utility class used for user cast operators processing.
@@ -108,27 +107,33 @@ public class CastUtils {
 	return sb.toString();
     }
 
-    public static CharSequence[] getFunctionRawName(AST token) {
+    public static CharSequence getFunctionRawName(AST token) {
         assert isCast(token);
         AST ast = token;
         token = token.getFirstChild();
-        List<CharSequence> l = new ArrayList<CharSequence>();
+        StringBuilder l = new StringBuilder();
         for( ; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.ID:
-                    l.add(NameCache.getManager().getString(AstUtil.getText(token)));
+                    if (l.length()>0) {
+                        l.append('.');
+                    }
+                    l.append(AstUtil.getText(token));
                     break;
                 case CPPTokenTypes.SCOPE:
                     break;
                 case CPPTokenTypes.LITERAL_OPERATOR:
-                    l.add(NameCache.getManager().getString(getFunctionName(ast)));
-                    return l.toArray(new CharSequence[l.size()]);
+                    if (l.length()>0) {
+                        l.append('.');
+                    }
+                    l.append(getFunctionName(ast));
+                    return NameCache.getManager().getString(CharSequences.create(l.toString()));
                 default:
                     //TODO: process templates
                     break;
             }
         }
-        return l.toArray(new CharSequence[l.size()]);
+        return NameCache.getManager().getString(CharSequences.create(l.toString()));
     }
 
     private static void addTypeText(AST ast, StringBuilder sb) {

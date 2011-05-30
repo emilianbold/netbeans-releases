@@ -42,18 +42,24 @@
 
 package org.netbeans.modules.maven.classpath;
 
+import java.util.logging.Level;
 import org.codehaus.plexus.util.StringUtils;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
+import org.codehaus.plexus.util.FileUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -61,6 +67,11 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -70,12 +81,17 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * NO listening on changes here, let the BootClassPath deal with it..
  * @author  Milos Kleint
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("DMI_COLLECTION_OF_URLS")
 public final class EndorsedClassPathImpl implements ClassPathImplementation, FileChangeListener {
+
+    private static final Logger LOG = Logger.getLogger(EndorsedClassPathImpl.class.getName());
+    static final RequestProcessor RP = new RequestProcessor(EndorsedClassPathImpl.class);
 
     private List<? extends PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -83,6 +99,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
     private BootClassPathImpl bcp;
     private String[] current;
     private final File endorsed;
+    private final Map<File,File/*|null*/> endorsed2Repo = new HashMap<File,File>();
 
     @SuppressWarnings("LeakingThisInConstructor")
     EndorsedClassPathImpl(NbMavenProjectImpl project) {
@@ -91,7 +108,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
         FileUtil.addFileChangeListener(this, endorsed);
     }
 
-    public List<? extends PathResourceImplementation> getResources() {
+    public @Override List<? extends PathResourceImplementation> getResources() {
         assert bcp != null;
         synchronized (bcp.LOCK) {
             if (this.resourcesCache == null) {
@@ -104,8 +121,53 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                 }
                 File[] jars = endorsed.listFiles();
                 if (jars != null) {
-                    for (File jar : jars) {
-                        result.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(jar)));
+                    for (final File jar : jars) {
+                        if (jar.isFile()) {
+                            if (endorsed2Repo.containsKey(jar)) {
+                                File toScan = endorsed2Repo.get(jar);
+                                if (toScan != null) {
+                                    result.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(toScan)));
+                                }
+                            } else {
+                                // #197510: blocking, must do this asynch
+                                LOG.log(Level.FINE, "looking up {0}", jar);
+                                RP.post(new Runnable() {
+                                    public @Override void run() {
+                                        synchronized (bcp.LOCK) {
+                                            if (endorsed2Repo.containsKey(jar)) {
+                                                // Another task beat us to it.
+                                                return;
+                                            }
+                                        }
+                                        File toScan = null;
+                                        REPO: for (RepositoryInfo repo : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+                                            LOG.log(Level.FINE, "checking {0}", repo);
+                                            for (NBVersionInfo analogue : RepositoryQueries.findBySHA1(jar, repo)) {
+                                                toScan = RepositoryUtil.createArtifact(analogue).getFile();
+                                                LOG.log(Level.FINE, "found {0}", toScan);
+                                                break REPO;
+                                            }
+                                        }
+                                        if (toScan == null) {
+                                            try {
+                                                toScan = new File(System.getProperty("java.io.tmpdir"), RepositoryUtil.calculateSHA1Checksum(jar) + ".jar");
+                                                if (!toScan.isFile()) {
+                                                    FileUtils.copyFile(jar, toScan);
+                                                }
+                                            } catch (IOException x) {
+                                                LOG.log(Level.INFO, "copying " + jar + " to " + toScan, x);
+                                            }
+                                        }
+                                        LOG.log(Level.FINE, "mapping {0} -> {1}", new Object[] {jar, toScan});
+                                        synchronized (bcp.LOCK) {
+                                            endorsed2Repo.put(jar, toScan);
+                                            resourcesCache = null;
+                                        }
+                                        support.firePropertyChange(PROP_RESOURCES, null, null);
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
                 current = boot;
@@ -115,11 +177,11 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
         }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
         this.support.addPropertyChangeListener (listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public @Override void removePropertyChangeListener(PropertyChangeListener listener) {
         this.support.removePropertyChangeListener (listener);
     }
 
@@ -178,7 +240,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
 
     private Set<URL> getDefJavaPlatBCP() {
         synchronized (djpbcp) {
-            if (djpbcp.size() == 0) {
+            if (djpbcp.isEmpty()) {
                 JavaPlatformManager mngr = JavaPlatformManager.getDefault();
                 JavaPlatform jp = mngr.getDefaultPlatform();
                 ClassPath cp = jp.getBootstrapLibraries();

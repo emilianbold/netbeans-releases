@@ -1,0 +1,43 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+import com.tangosol.io.pof.PofReader;
+import com.tangosol.io.pof.PofWriter;
+import com.tangosol.io.pof.PortableObject;
+import com.tangosol.util.InvocableMap.Entry;
+import com.tangosol.util.processor.AbstractProcessor;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends AbstractProcessor implements PortableObject {
+
+    public Object process(Entry entry) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Map processAll(Set setEntries) {
+        return super.processAll(setEntries);
+    }
+
+    public void readExternal(PofReader reader) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void writeExternal(PofWriter writer) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+}

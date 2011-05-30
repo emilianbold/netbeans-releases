@@ -24,7 +24,9 @@ class Catalog {
     }
 
     public static int mnemonic(String key) {
-        return bundle.getString(key).charAt(0);
+        String value = bundle.getString(key);
+        assert value.length() == 1 : "Mnemonic for " + key + "must be a single character, not " + value;
+        return value.charAt(0);
     }
 
     public static String format(String formatKey, Object... args) {

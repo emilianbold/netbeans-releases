@@ -45,8 +45,6 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.apt.impl.structure.APTBuilderImpl;
@@ -55,6 +53,8 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * implementation of APTMacro
@@ -180,11 +180,11 @@ public final class APTMacroImpl implements APTMacro {
         return retValue.toString();
     }       
 
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
     }
     
-    public APTMacroImpl(DataInput input) throws IOException {
+    public APTMacroImpl(RepositoryDataInput input) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
     }
 

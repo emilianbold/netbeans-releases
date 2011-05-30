@@ -45,13 +45,12 @@
 package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
-import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class MakefileFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class MakefileFileFilter extends FileAndFileObjectFilter {
 
+    private static String suffixes[] = {"mk", "Makefile", "makefile"}; // NOI18N
     private static MakefileFileFilter instance = null;
 
     public MakefileFileFilter() {
@@ -67,46 +66,29 @@ public class MakefileFileFilter extends FileFilterFactory.FileAndFileObjectFilte
     
     @Override
     public String getDescription() {
-	return(getString("FILECHOOSER_MAKEFILE_FILEFILTER")); // NOI18N
+        return NbBundle.getMessage(MakefileFileFilter.class, "FILECHOOSER_MAKEFILE_FILEFILTER"); // NOI18N
     }
     
     @Override
-    public boolean accept(File f) {
-	if(f != null) {
-	    if(f.isDirectory()) {
-		return true;
-	    }
-	    return checkMakefileName(f.getName());
-	}
-	return false;
+    protected boolean mimeAccept(File f) {
+        return checkMakefileName(f.getName());
     }
 
     @Override
-    public boolean accept(FileObject f) {
-	if(f != null) {
-	    if(f.isFolder()) {
-		return true;
-	    }
-	    return checkMakefileName(f.getNameExt());
-	}
-	return false;
+    protected boolean mimeAccept(FileObject f) {
+        return checkMakefileName(f.getNameExt());
     }
 
     private boolean checkMakefileName(String name) {
         if (name.indexOf("Makefile") >= 0 || // NOI18N
-                name.indexOf("makefile") >= 0 || // NOI18N
-                name.endsWith(".mk")) { // NOI18N
+            name.indexOf("makefile") >= 0) { // NOI18N
             return true;
         }
         return false;
     }
 
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(MakefileFileFilter.class);
-	}
-	return bundle.getString(s);
+    @Override
+    protected String[] getSuffixes() {
+        return suffixes;
     }
 }

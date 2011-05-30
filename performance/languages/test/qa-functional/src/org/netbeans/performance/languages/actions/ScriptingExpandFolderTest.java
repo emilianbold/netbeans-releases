@@ -141,44 +141,12 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
         new RestoreWindowAction().performAPI(projectTab);
     }
 
-    public void testExpandRubyProjectNode() {
-        WAIT_AFTER_OPEN = 1000;
-        project = Projects.RUBY_PROJECT;
-        pathToFolderNode = "";
-        expectedTime = 1000;
-        doMeasurement();          
-    }
-
-    public void testExpandFolderWith100RubyFiles() {
-        WAIT_AFTER_OPEN = 1000;
-        project = Projects.RUBY_PROJECT;
-        pathToFolderNode = "Source Files" + "|" + "100RbFiles";
-        expectedTime = 1000;
-        doMeasurement();        
-    }
-
-    public void testExpandRailsProjectNode() {
-        WAIT_AFTER_OPEN = 1000;
-        project = Projects.RAILS_PROJECT;
-        pathToFolderNode = "";
-        expectedTime = 1000;
-        doMeasurement();          
-    }
-
     public void testExpandPHPProjectNode() {
         WAIT_AFTER_OPEN = 1000;
         project = Projects.PHP_PROJECT;
         pathToFolderNode = "";
         expectedTime = 1000;
         doMeasurement();
-    }
-
-    public void testExpandFolderWith100RailsFiles() {
-        WAIT_AFTER_OPEN = 1000;
-        project = Projects.RAILS_PROJECT;
-        pathToFolderNode = "Test Files|unit" + "|" + "100RhtmlFiles";
-        expectedTime = 1000;
-        doMeasurement();        
     }
     public void testExpandFolderWith100JSFiles() {
         WAIT_AFTER_OPEN = 1000;

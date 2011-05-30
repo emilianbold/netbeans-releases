@@ -58,9 +58,9 @@ public class QMakeExecSupport extends ExecutionSupport {
     private static final String PROP_RUN_DIRECTORY = "rundirectory"; // NOI18N
     private static final String PROP_ENVIRONMENT = "environment"; // NOI18N
     // The list of our properties
-    private PropertySupport qmakeRunDirectory;
-    private PropertySupport qmakeCommandProperty;
-    private PropertySupport qmakeEnvironmentProperty;
+    private PropertySupport<String> qmakeRunDirectory;
+    private PropertySupport<String> qmakeCommandProperty;
+    private PropertySupport<String> qmakeEnvironmentProperty;
 
     public QMakeExecSupport(MultiDataObject.Entry entry) {
         super(entry);
@@ -91,9 +91,11 @@ public class QMakeExecSupport extends ExecutionSupport {
     private PropertySupport<String> createQMakeCommandProperty() {
          PropertySupport<String> result = new PropertySupport.ReadWrite<String>(PROP_QMAKE_COMMAND, String.class,
                 getString("PROP_QMAKE_COMMAND"), getString("HINT_QMAKE_COMMAND")) { // NOI18N
+            @Override
             public String getValue() {
                 return getQMakeCommand();
             }
+            @Override
             public void setValue(String val) {
                 setQMakeCommand(val);
             }
@@ -135,9 +137,11 @@ public class QMakeExecSupport extends ExecutionSupport {
     private PropertySupport<String> createRunDirectoryProperty() {
         PropertySupport<String> result = new PropertySupport.ReadWrite<String>(PROP_RUN_DIRECTORY, String.class,
                 getString("PROP_RUN_QMAKE_DIRECTORY"), getString("HINT_RUN_QMAKE_DIRECTORY")) { // NOI18N
+            @Override
             public String getValue() {
                 return getRunDirectory();
             }
+            @Override
             public void setValue(String val) {
                 setRunDirectory(val);
             }

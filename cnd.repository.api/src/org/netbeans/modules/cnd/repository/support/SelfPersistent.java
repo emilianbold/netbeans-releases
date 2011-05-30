@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.cnd.repository.support;
 
-import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * interface for object which supports writing own data in stream
@@ -63,5 +63,5 @@ import java.io.IOException;
  * @author Sergey Grinev
  */
 public interface SelfPersistent {
-        public void write (DataOutput output) throws IOException;
+    public void write (RepositoryDataOutput output) throws IOException;
 }

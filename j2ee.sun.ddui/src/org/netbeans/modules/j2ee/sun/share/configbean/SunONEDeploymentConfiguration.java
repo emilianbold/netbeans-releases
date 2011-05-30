@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -52,7 +52,6 @@ import java.util.Set;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -64,8 +63,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.sun.api.CmpMappingProvider;
@@ -108,6 +105,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     private String deploymentModuleName = "_default_"; // NOI18N
 
     private static final RequestProcessor resourceProcessor = new RequestProcessor("sun-resource-ref"); // NOI18N
+    private SunDeploymentManagerInterface sdmi;
     
 
     /** Create an instance of SunONEDeploymentConfiguration for GF V2
@@ -117,8 +115,10 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
      *
      * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException
      */
-    public SunONEDeploymentConfiguration(J2eeModule module) throws ConfigurationException {
+    public SunONEDeploymentConfiguration(J2eeModule module, SunDeploymentManagerInterface mySdmi)
+            throws ConfigurationException {
         super(module);
+        this.sdmi = mySdmi;
     }
 
     /** Create an instance of SunONEDeploymentConfiguration for Webserver.
@@ -140,6 +140,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
      */
     @Deprecated
     public SunONEDeploymentConfiguration(javax.enterprise.deploy.model.DeployableObject dObj) {
+        assert false : "used dead constructor";
     }
 
 
@@ -166,31 +167,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     }
 
     private ResourceConfiguratorInterface getResourceConfigurator() {
-        ResourceConfiguratorInterface rci = null;
-        DeploymentManager dm = getDeploymentManager();
-        if (dm instanceof SunDeploymentManagerInterface) {
-            SunDeploymentManagerInterface sdmi = (SunDeploymentManagerInterface) dm;
-            rci = sdmi.getResourceConfigurator();
-        } else {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Invalid DeploymentManager: " + dm));
-        }
-        return rci;
-    }
-
-    private DeploymentManager getDeploymentManager() {
-        DeploymentManager dm = null;
-        J2eeModuleProvider provider = getProvider(primarySunDD);
-        if (provider != null) {
-            InstanceProperties ip = provider.getInstanceProperties();
-            if (ip != null) {
-                dm = ip.getDeploymentManager();
-            } else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null Server InstanceProperties"));
-            }
-        } else {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null J2eeModuleProvider"));
-        }
-        return dm;
+        return sdmi.getResourceConfigurator(); // rci;
     }
 
     private String getProjectName(File file) {
@@ -483,15 +460,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     }
 
     private CmpMappingProvider getSunCmpMapper() {
-       CmpMappingProvider mapper = null;
-       DeploymentManager dm = getDeploymentManager();
-       if(dm instanceof SunDeploymentManagerInterface) {
-           SunDeploymentManagerInterface sdmi = (SunDeploymentManagerInterface) dm;
-           mapper = sdmi.getSunCmpMapper();
-       } else {
-           throw new IllegalStateException("Invalid DeploymentManager: " + dm);
-       }
-       return mapper;
+       return sdmi.getSunCmpMapper(); // mapper;
     }
 
     // ------------------------------------------------------------------------

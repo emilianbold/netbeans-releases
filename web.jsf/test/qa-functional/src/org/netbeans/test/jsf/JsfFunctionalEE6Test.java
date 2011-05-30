@@ -69,7 +69,7 @@ public class JsfFunctionalEE6Test extends JsfFunctionalTest {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JsfFunctionalEE6Test.class);
-        conf = addServerTests(Server.GLASSFISH_V3, conf,
+        conf = addServerTests(Server.GLASSFISH, conf,
                 "testPreconditions",
                 "testNewJSFWebProject",
                 "testRedeployProject",

@@ -76,6 +76,12 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     </locjar>
 
     <locjar warnMissingDir="true"
+      basedir="core.ui/src"
+      jarfile="${cluster}/modules/org-netbeans-core-ui.jar">
+      <branding name="nb"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
       basedir="autoupdate.services/libsrc"
       jarfile="${cluster}/modules/ext/updater.jar">
       <branding name="nb"/>
@@ -90,6 +96,12 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <locjar warnMissingDir="true"
       basedir="spi.quicksearch/src"
       jarfile="${cluster}/modules/org-netbeans-spi-quicksearch.jar">
+      <branding name="nb"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
+      basedir="options.api/src"
+      jarfile="${cluster}/modules/org-netbeans-modules-options-api.jar">
       <branding name="nb"/>
     </locjar>
 
@@ -173,7 +185,17 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
               jarfile="${cluster}/modules/org-netbeans-spi-quicksearch.jar">
         <branding name="nb"/>
       </locjar>
-
+      <mkdir dir="build/classes-ml/options.api/src"/>
+      <copy todir="build/classes-ml/options.api/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/options.api/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>      
+      <locjar basedir="build/classes-ml/options.api/src"
+              jarfile="${cluster}/modules/org-netbeans-modules-options-api.jar">
+        <branding name="nb"/>
+      </locjar>
+      
     </target>
   
 </project>

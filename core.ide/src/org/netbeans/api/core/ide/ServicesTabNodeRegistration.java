@@ -52,7 +52,7 @@ import org.openide.nodes.Node;
 /** Annotation applicable to any class that extends {@link Node} or
  * static method that returns {@link Node}. Its presence means that
  * the node shall appear in the <em>Services</em> tab.
- *
+ * @since org.netbeans.core.ide/1 1.15
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)

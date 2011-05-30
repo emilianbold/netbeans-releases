@@ -6,6 +6,5 @@ commits@web.netbeans.org=html/*,html.editor/*,html.editor.lib/*,html.lexer/*
 commits@java.netbeans.org=api.java/*,java.editor/*,java.editor.lib/*,java.freeform/*,java.guards/*,java.helpset/*,java.hints*/*,java.j2seplatform/*,java.j2seproject/*,java.kit/*,java.lexer/*,java.navigation/*,java.platform/*,java.project/*,java.source/*,java.debug/*,libs.javacapi/*,libs.javacimpl/*,java.preprocessorbridge/*,java.sourceui/*
 commits@obsolete.netbeans.org=languages*/*
 commits@php.netbeans.org=php.*/*,languages.php/*
-commits@ruby.netbeans.org=o.jruby.distro/*,o.rubyforge.debugcommons/*,ruby*/*,gsf/*,gsf.api/*,gsfpath.api/*,gsf.testrunner/*,o.jruby/*,o.kxml2/*,languages.yaml/*
 scripting-commits@ide.netbeans.org=languages.bat/*,languages.javascript/*,languages.sh/*,javascript.editing/*,javascript.refactoring/*,javascript.hints/*,o.mozilla.rhino.patched/*
 commits@javaee.netbeans.org=web.core/*,css.editor/*,css.visual/*,el.lexer/*,web.examples/*,web.fake/*,web.freeform/*,web.jsf/*,web.jsf.kit/*,web.jsf.navigation/*,web.debug/*,web.jspparser/*,web.core.syntax/*,jsp.lexer/*,web.kit/*,libs.commons_fileupload/*,web.flyingsaucer/*,libs.glassfish_logging/*,web.libraries.jsf1102/*,web.jsf12/*,web.jsf12ri/*,web.jstl11/*,servletjspapi/*,web.project/*,web.refactoring/*,spring.beans/*,spring.webmvc/*,web.struts/*,api.web.webmodule/*,hibernate*/*

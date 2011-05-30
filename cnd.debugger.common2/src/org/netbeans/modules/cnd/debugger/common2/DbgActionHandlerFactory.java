@@ -51,14 +51,17 @@ import org.openide.util.lookup.ServiceProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.openide.util.Lookup;
 
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=3000)
 public class DbgActionHandlerFactory implements ProjectActionHandlerFactory {
 
     @Override
-    public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
+    public boolean canHandle(ProjectActionEvent.Type type, Lookup context, Configuration conf) {
         if (type != ProjectActionEvent.PredefinedType.DEBUG &&
-            type != ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
+            type != ProjectActionEvent.PredefinedType.DEBUG_STEPINTO &&
+            type != ProjectActionEvent.PredefinedType.DEBUG_TEST &&
+            type != ProjectActionEvent.PredefinedType.DEBUG_STEPINTO_TEST) {
             return false;
         }
         if (conf instanceof MakeConfiguration) {
@@ -79,6 +82,6 @@ public class DbgActionHandlerFactory implements ProjectActionHandlerFactory {
 
     @Override
     public boolean canHandle(ProjectActionEvent pae) {
-        return canHandle(pae.getType(), pae.getConfiguration());
+        return canHandle(pae.getType(), pae.getContext(), pae.getConfiguration());
     }
 }

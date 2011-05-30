@@ -58,7 +58,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 
 
@@ -635,23 +635,23 @@ public class AlternativeTest extends CommonTestCase {
     }
     
     protected void checkMixed1( VariableElement element, WebBeansModel model ) {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());        
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());        
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement)injectable).getQualifiedName().toString();  
         
         assertEquals( "foo.Two", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 2 , typeElements.size());
@@ -679,32 +679,32 @@ public class AlternativeTest extends CommonTestCase {
                 "via ApplicableResult interface", twoFound );
         
         assertTrue ( "myField2 in foo.One is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( one ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( one ));
         assertTrue ( "myField1 in foo.Two is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         
         assertTrue( "myField2 in foo.One should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(one));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(one));
         assertFalse( "myField1 in foo.Two should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
     }
     
     protected void checkMixed2( VariableElement element, WebBeansModel model ) {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());        
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());        
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement)injectable).getQualifiedName().toString();  
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 1 , typeElements.size());
@@ -714,29 +714,29 @@ public class AlternativeTest extends CommonTestCase {
         assertEquals(injectable,typeElements.iterator().next());
         
         assertTrue ( "foo.Three  is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( injectable ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( injectable ));
     }
 
     protected void checkProduction1( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());        
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());        
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         assertTrue( injectable instanceof VariableElement );
         String name = injectable.getSimpleName().toString();
         
         assertEquals( "myField1", name );
 
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 1 , productions.size());
         assertEquals( 0 , typeElements.size());
@@ -744,29 +744,29 @@ public class AlternativeTest extends CommonTestCase {
         assertEquals(injectable,productions.iterator().next());
         
         assertTrue ( "myField1 defined in foo.One is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( injectable ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( injectable ));
     }
     
     protected void checkProduction2( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());        
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());        
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         assertTrue( injectable instanceof VariableElement );
         String name = injectable.getSimpleName().toString();
         
         assertEquals( "myField1", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 2 , productions.size());
         assertEquals( 0 , typeElements.size());
@@ -794,29 +794,29 @@ public class AlternativeTest extends CommonTestCase {
                 "via ApplicableResult interface", twoFound );
         
         assertTrue ( "myField2 in foo.One is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( one ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( one ));
         assertTrue ( "myField1 in foo.Two is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         
         assertTrue( "myField2 in foo.One should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(one));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(one));
         assertFalse( "myField1 in foo.Two should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
     }
     
     protected void checkProduction3( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.RESOLUTION_ERROR, result.getKind());        
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertEquals( DependencyInjectionResult.ResultKind.RESOLUTION_ERROR, result.getKind());        
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 1 , productions.size());
         assertEquals( 0 , typeElements.size());
@@ -826,26 +826,26 @@ public class AlternativeTest extends CommonTestCase {
         assertEquals( "myField2" , resolved.getSimpleName().toString());
         
         assertTrue ( "myField2 in foo.Two is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( resolved ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( resolved ));
         
         assertTrue( "myField2 should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(resolved));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(resolved));
         
     }
     
     protected void checkProduction4( VariableElement element,
             WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.RESOLUTION_ERROR, result.getKind());        
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertEquals( DependencyInjectionResult.ResultKind.RESOLUTION_ERROR, result.getKind());        
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 1 , productions.size());
         assertEquals( 0 , typeElements.size());
@@ -855,33 +855,33 @@ public class AlternativeTest extends CommonTestCase {
         assertEquals( "myField3" , resolved.getSimpleName().toString());
         
         assertTrue ( "myField3 in foo.Two is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( resolved ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( resolved ));
         
         assertTrue( "myField3 should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(resolved));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(resolved));
     }
 
     private void check2( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
         assertEquals( "foo.Two1", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 3 , typeElements.size());
@@ -916,42 +916,42 @@ public class AlternativeTest extends CommonTestCase {
                 fiveFound );
         
         assertFalse ( "foo.Two1 is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         assertTrue ( "foo.Four is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( four ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( four ));
         assertTrue ( "foo.Five is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( five ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( five ));
         
         assertFalse( "foo.Two1 should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
         assertTrue( "foo.Four should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(four));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(four));
         assertTrue( "foo.Five should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(five));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(five));
         
     }
     
     private void check1( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
         assertEquals( "foo.Two", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 2 , typeElements.size());
@@ -977,37 +977,37 @@ public class AlternativeTest extends CommonTestCase {
                 threeFound );
         
         assertFalse( "foo.Two should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
         assertTrue( "foo.Three should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(three));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(three));
         
         assertFalse ( "foo.Two is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         assertTrue ( "foo.Three is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( three ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( three ));
     }
     
     private void check3( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
         assertEquals( "foo.Two1", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 2 , typeElements.size());
@@ -1033,37 +1033,37 @@ public class AlternativeTest extends CommonTestCase {
                 fiveFound );
         
         assertFalse( "foo.Two1 should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(two));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(two));
         assertTrue( "foo.Five should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(five));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(five));
         
         assertFalse ( "foo.Two1 is not an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( two ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( two ));
         assertTrue ( "foo.Five is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( five ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( five ));
     }
     
     private void checkEnabled1( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
         assertEquals( "foo.Three", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 1 , typeElements.size());
@@ -1072,25 +1072,25 @@ public class AlternativeTest extends CommonTestCase {
                 typeElements.iterator().next().getQualifiedName().toString() );
         
         assertFalse( "foo.Three should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(injectable));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(injectable));
         
         assertTrue ( "foo.Three is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( injectable ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( injectable ));
     }
     
     private void checkEnabled2( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.RESOLUTION_ERROR, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.RESOLUTION_ERROR, result.getKind());
         
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 3 , typeElements.size());
@@ -1125,42 +1125,42 @@ public class AlternativeTest extends CommonTestCase {
                 fiveFound );
         
         assertFalse( "foo.Four should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(four));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(four));
         assertFalse( "foo.Five should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(five));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(five));
         assertTrue( "foo.One1 should be disabled", 
-                ((Result.ApplicableResult)result).isDisabled(one));    
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(one));    
         
         assertTrue ( "foo.One1 is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( one ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( one ));
         assertTrue ( "foo.Four is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( four ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( four ));
         assertTrue ( "foo.Five is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( five ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( five ));
         
     }
     
     private void checkEnabled3( VariableElement element, WebBeansModel model )
     {
-        Result result = model.getInjectable(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null);
         
         assertNotNull( result );
         
-        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
-        assertTrue( result instanceof Result.InjectableResult );
-        assertTrue( result instanceof Result.ApplicableResult );
-        assertTrue( result instanceof Result.ResolutionResult );
+        assertTrue( result instanceof DependencyInjectionResult.InjectableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ApplicableResult );
+        assertTrue( result instanceof DependencyInjectionResult.ResolutionResult );
         
-        Element injectable = ((Result.InjectableResult)result).getElement();
+        Element injectable = ((DependencyInjectionResult.InjectableResult)result).getElement();
         
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
         assertEquals( "foo.Five", name );
         
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
         
         assertEquals( 0 , productions.size());
         assertEquals( 1 , typeElements.size());
@@ -1169,9 +1169,9 @@ public class AlternativeTest extends CommonTestCase {
                 typeElements.iterator().next().getQualifiedName().toString() );
         
         assertFalse( "foo.Five should be enabled", 
-                ((Result.ApplicableResult)result).isDisabled(injectable));
+                ((DependencyInjectionResult.ApplicableResult)result).isDisabled(injectable));
         
         assertTrue ( "foo.Five is an Alternative", 
-                ((Result.ResolutionResult)result).isAlternative( injectable ));
+                ((DependencyInjectionResult.ResolutionResult)result).isAlternative( injectable ));
     }
 }

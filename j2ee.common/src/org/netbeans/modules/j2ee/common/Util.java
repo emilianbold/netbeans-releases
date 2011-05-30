@@ -205,16 +205,22 @@ public class Util {
             J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
             if (j2eeModule != null) {
                 J2eeModule.Type type = j2eeModule.getType();
-                double version = Double.parseDouble(j2eeModule.getModuleVersion());
-                if (J2eeModule.Type.EJB.equals(type) && (version > 2.1)) {
-                    return true;
-                }
-                if (J2eeModule.Type.WAR.equals(type) && (version > 2.4)) {
-                    return true;
-                }
-                if (J2eeModule.Type.CAR.equals(type) && (version > 1.4)) {
-                    return true;
-                }
+                String strVersion = j2eeModule.getModuleVersion();
+                assert strVersion != null : "Module type " + j2eeModule.getType() + " returned null module version"; // NOI18N
+                try {    
+                    double version = Double.parseDouble(strVersion);
+                    if (J2eeModule.Type.EJB.equals(type) && (version > 2.1)) {
+                        return true;
+                    }
+                    if (J2eeModule.Type.WAR.equals(type) && (version > 2.4)) {
+                        return true;
+                    }
+                    if (J2eeModule.Type.CAR.equals(type) && (version > 1.4)) {
+                        return true;
+                    }
+                } catch (NumberFormatException ex) {
+                    LOGGER.log(Level.INFO, "Module version invalid " + strVersion, ex);
+                }                
             }
         }
         return false;

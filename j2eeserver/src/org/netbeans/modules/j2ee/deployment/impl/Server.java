@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
@@ -324,7 +325,7 @@ public class Server implements Node.Cookie {
     }
 
     private static final String LAYER_DEPLOYMENT_FILE_NAMES = "DeploymentFileNames"; //NOI18N
-    private Map deployConfigDescriptorMap;
+    private Map<String, String[]> deployConfigDescriptorMap;
 
     private final void initDeploymentConfigurationFileList(FileObject fo) {
         deployConfigDescriptorMap = new HashMap();
@@ -337,7 +338,7 @@ public class Server implements Node.Cookie {
                 if (allNames == null || allNames.length == 0) {
                     continue;
                 }
-                ArrayList filepaths = new ArrayList();
+                List<String> filepaths = new ArrayList<String>();
                 for (int i = 0; i < allNames.length; i++) {
                     if (allNames[i] == null) {
                         continue;
@@ -352,6 +353,6 @@ public class Server implements Node.Cookie {
 
     public String[] getDeploymentPlanFiles(J2eeModule.Type type) {
         Object jsrModuleType = J2eeModuleAccessor.getDefault().getJsrModuleType(type);
-        return (String[]) deployConfigDescriptorMap.get(jsrModuleType.toString().toUpperCase());
+        return deployConfigDescriptorMap.get(jsrModuleType.toString().toUpperCase());
     }
 }

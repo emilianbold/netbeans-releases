@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
@@ -69,21 +71,26 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
 
     @Override
     public DocumentIndex createIndex (Context ctx) throws IOException {
-        final FileObject luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
-        return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), DocumentBasedIndexManager.Mode.CREATE);
+        final URL luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
+        return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder, DocumentBasedIndexManager.Mode.CREATE);
     }
 
     @Override
     public DocumentIndex getIndex(final FileObject indexFolder) throws IOException {
-        final FileObject luceneIndexFolder = getIndexFolder(indexFolder);
-        return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), DocumentBasedIndexManager.Mode.IF_EXIST);
+        final URL luceneIndexFolder = getIndexFolder(indexFolder);
+        return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder, DocumentBasedIndexManager.Mode.IF_EXIST);
     }
 
-    private FileObject getIndexFolder (final FileObject indexFolder) throws IOException {
+    private URL getIndexFolder (final FileObject indexFolder) throws IOException {
         assert indexFolder != null;
         final String indexVersion = Integer.toString(VERSION);
-        final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexVersion);    //NOI18N
-        return luceneIndexFolder;
+        final File luceneIndexFolder = new File (FileUtil.toFile(indexFolder),indexVersion);
+        URL result = luceneIndexFolder.toURI().toURL();
+        final String surl = result.toExternalForm();
+        if (surl.charAt(surl.length()-1) != '/') {       //NOI18N
+            result = new URL(surl+'/');  //NOI18N
+        }
+        return result;
     }
 
 }

@@ -318,7 +318,7 @@ public class FSInterceptorTest extends NbTestCase {
             if(lh == null) {
                 lh = new LogHandler();
                 VersioningManager.LOG.addHandler(lh);
-                fi = new FilesystemInterceptor();
+                fi = new FilesystemInterceptor(true);
                 fi.init(VersioningManager.getInstance());
             }
         }

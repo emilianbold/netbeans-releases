@@ -89,25 +89,25 @@ public abstract class ProjectActionBase extends NodeAction {
     }
 
     private JMenuItem getPresenter() {
-        if (!this.inited) {
-            this.presenter = new JMenuItem();
-            org.openide.awt.Actions.connect(this.presenter, (Action) this, true);
-            this.inited = true;
+        if (!inited) {
+            presenter = new JMenuItem();
+            org.openide.awt.Actions.connect(presenter, (Action) this, true);
+            inited = true;
         }
         final Collection<CsmProject> projects = getCsmProjects(getActivatedNodes());
         if (enabledAction) {
             if (projects == null) {
-                this.setEnabled(!running);
+                setEnabled(!running);
                 presenter.setVisible(false);
             } else {
                 try {
                     presenter.setVisible(true);
-                    this.setEnabled(!running);
+                    setEnabled(!running);
                 } catch (Throwable thr) {
                     // we are in awt thread;
                     // if exception occurs here, it doesn't allow even to close the project!
                     thr.printStackTrace(System.err);
-                    this.setEnabled(false);
+                    setEnabled(false);
                 }
             }
         } else {

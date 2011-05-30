@@ -43,12 +43,14 @@
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.util.Set;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.openide.util.Exceptions;
 
 /**
  * The class allowing the client to query the instance identified by
@@ -156,15 +158,7 @@ public final class ServerInstance {
      * @since 1.49
      */
     public boolean isDeployOnSaveSupported(J2eeModule module) throws InstanceRemovedException {
-        final ServerRegistry registry = ServerRegistry.getInstance();
-        // see comment at the beginning of the class
-        synchronized (registry) {
-            org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
-            IncrementalDeployment incremental = inst.getIncrementalDeployment();
-
-            // TODO missing condition on canFileDeploy - this would need started server
-            return incremental != null && incremental.isDeployOnSaveSupported();
-        }
+        return isDeployOnSaveSupported();
     }
 
     /**
@@ -181,7 +175,12 @@ public final class ServerInstance {
         // see comment at the beginning of the class
         synchronized (registry) {
             org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = getInstanceFromRegistry(registry);
-            IncrementalDeployment incremental = inst.getIncrementalDeployment();
+            IncrementalDeployment incremental;
+            try {
+                incremental = inst.getServer().getOptionalFactory().getIncrementalDeployment(inst.getDisconnectedDeploymentManager());
+            } catch (DeploymentManagerCreationException ex) {
+                throw new RuntimeException(ex);
+            }
 
             // TODO missing condition on canFileDeploy - this would need started server
             return incremental != null && incremental.isDeployOnSaveSupported();

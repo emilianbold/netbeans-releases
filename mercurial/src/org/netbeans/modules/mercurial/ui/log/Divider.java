@@ -72,7 +72,12 @@ class Divider extends JPanel {
     public Divider(ActionListener listener) {
         this.listener = listener;
         enableEvents(MouseEvent.MOUSE_ENTERED | MouseEvent.MOUSE_EXITED | MouseEvent.MOUSE_CLICKED);
-        bkg = getBackground();
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            bkg = UIManager.getColor("NbExplorerView.background");              // NOI18N
+            setBackground(bkg);
+        } else {
+            bkg = getBackground();
+        }
         sbkg = UIManager.getColor("TextField.selectionBackground"); // NOI18N
         selectedArrowColor = UIManager.getColor("TextField.selectionForeground"); // NOI18N
         arrowColor = UIManager.getColor("TextField.inactiveForeground"); // NOI18N

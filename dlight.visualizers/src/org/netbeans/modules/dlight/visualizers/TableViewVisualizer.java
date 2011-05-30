@@ -71,6 +71,7 @@ import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.ui.TextFilterPanel;
+import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponent;
 import org.netbeans.modules.dlight.visualizers.api.VisualizerToolbarComponentsProvider;
 import org.netbeans.modules.dlight.visualizers.ui.TableViewNodeChildren;
 import org.netbeans.modules.dlight.visualizers.util.TableViewDataFilter;
@@ -117,7 +118,7 @@ public abstract class TableViewVisualizer<Config extends TableBasedVisualizerCon
         this.configuration = configuration;
 
         content.add(provider);
-        
+
         setLayout(new BorderLayout());
 
         busyPanel = new TableViewBusyPanel();
@@ -342,8 +343,8 @@ public abstract class TableViewVisualizer<Config extends TableBasedVisualizerCon
     }
 
     @Override
-    public List<Component> getToolbarComponents() {
-        return Arrays.<Component>asList(textFilterPanel);
+    public List<VisualizerToolbarComponent> getToolbarComponents() {
+        return Arrays.<VisualizerToolbarComponent>asList(new VisualizerToolbarComponent(textFilterPanel));
     }
 
     @Override
@@ -354,14 +355,14 @@ public abstract class TableViewVisualizer<Config extends TableBasedVisualizerCon
             ((Component) container).addComponentListener(componentListener);
         }
         componentListener.componentShown(null);
-        
+
         super.addNotify();
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
-        
+
         componentListener.componentHidden(null);
         removeComponentListener(componentListener);
         VisualizerContainer container = getDefaultContainer();

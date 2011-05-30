@@ -44,9 +44,12 @@ package org.netbeans.modules.cnd.remote.support;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -55,6 +58,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Misc projct related utility functions
@@ -74,13 +79,22 @@ public class RemoteProjectSupport {
     }
 
     public static boolean projectExists(Project project) {
-        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
-        File nbproject = CndFileUtils.createLocalFile(baseDir, "nbproject"); //NOI18N
-        return nbproject.exists();
+        final FileObject projDirFO = project.getProjectDirectory();
+        if(projDirFO != null && projDirFO.isValid()) {
+            FileObject nbprojectFO = projDirFO.getFileObject("nbproject"); //NOI18N
+            if (nbprojectFO != null && nbprojectFO.isValid()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static File getPrivateStorage(Project project) {
-        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File baseDir = CndFileUtils.toFile(project.getProjectDirectory());
+        if (baseDir == null) {
+            return null;
+        }
+        baseDir = baseDir.getAbsoluteFile();
         final File privProjectStorage = CndFileUtils.createLocalFile(new File(baseDir, "nbproject"), "private"); //NOI18N
         return privProjectStorage;
     }
@@ -96,7 +110,11 @@ public class RemoteProjectSupport {
     }
 
     public static File[] getProjectSourceDirs(Project project, MakeConfiguration conf) {
-        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File baseDir = CndFileUtils.toFile(project.getProjectDirectory());
+        if (baseDir == null) {
+            return new File[0];
+        }
+        baseDir = baseDir.getAbsoluteFile();
         if (conf == null) {
             return new File[] { baseDir };
         }
@@ -110,20 +128,30 @@ public class RemoteProjectSupport {
         if (mcs == null) {
             return new File[0];
         }
+        if (FileUtil.toFile(mcs.getBaseDirFileObject()) == null) {
+            // no disk files
+            return sourceFilesAndDirs.toArray(new File[sourceFilesAndDirs.size()]);
+        }
         for(String soorceRoot : mcs.getSourceRoots()) {
             String path = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
             File file = CndFileUtils.createLocalFile(path); // or canonical?
             sourceFilesAndDirs.add(file);
         }
         addExtraFiles(mcs, sourceFilesAndDirs);
-        // Make sure 1st level subprojects are visible remotely
-        // First, remembr all subproject locations
-        for (String subprojectDir : conf.getSubProjectLocations()) {
-            subprojectDir = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
-            sourceFilesAndDirs.add(CndFileUtils.createLocalFile(subprojectDir));
-        }
+        List<Project> subProjects = new ArrayList<Project>(conf.getSubProjects());
+        // required projects are different - see #194997
+        for (ProjectItem requiredProject : conf.getRequiredProjectsConfiguration().getValue() ) {
+            Project p = requiredProject.getProject(conf.getBaseDir());
+            if (p != null) {
+                subProjects.add(p);                
+            }
+        }        
         // Then go trough open subprojects and add their external source roots
-        for (Project subProject : conf.getSubProjects()) {
+        for (Project subProject : subProjects) {
+            File projectDirFile = FileUtil.toFile(subProject.getProjectDirectory());
+            if (projectDirFile != null) {
+                sourceFilesAndDirs.add(projectDirFile);
+            }
             MakeConfigurationDescriptor subMcs =
                     MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
             for(String soorceRoot : mcs.getSourceRoots()) {

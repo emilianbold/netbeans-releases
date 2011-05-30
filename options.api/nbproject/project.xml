@@ -180,6 +180,16 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.settings</code-name-base>
                         <recursive/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages>

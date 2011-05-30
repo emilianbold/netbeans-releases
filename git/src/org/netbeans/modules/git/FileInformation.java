@@ -45,6 +45,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.modules.versioning.util.common.VCSFileInformation;
@@ -104,6 +105,13 @@ public class FileInformation extends VCSFileInformation {
                 s.add(Status.MODIFIED_HEAD_WORKING_TREE);
             } else if (GitStatus.Status.STATUS_ADDED.equals(statusHeadWC)) {
                 s.add(Status.NEW_HEAD_WORKING_TREE);
+            }
+            // correction
+            if (s.size() == 1 && s.contains(Status.MODIFIED_INDEX_WORKING_TREE)) {
+                // does not make sense, file is modified between index and wt but otherwise up to date
+                // let's assume it's modified also between head and wt
+                Git.STATUS_LOG.log(Level.WARNING, "inconsistent status found for {0}: {1}", new Object[] { status.getFile(), s }); //NOI18N
+                s.add(Status.MODIFIED_HEAD_WORKING_TREE);
             }
             // file is removed in the WT, but is NOT in HEAD yet
             // or is removed both in WT and index
@@ -168,28 +176,28 @@ public class FileInformation extends VCSFileInformation {
             value -= 100;
         }
         if (containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
-            value -= 100;
+            value -= 200;
         }
         if (containsStatus(Status.NEW_HEAD_WORKING_TREE)) {
-            value -= 100;
+            value -= 300;
         }
         if (containsStatus(Status.REMOVED_HEAD_INDEX)) {
             value -= 10;
         }
         if (containsStatus(Status.MODIFIED_HEAD_INDEX)) {
-            value -= 10;
+            value -= 20;
         }
         if (containsStatus(Status.NEW_HEAD_INDEX)) {
-            value -= 10;
+            value -= 30;
         }
         if (containsStatus(Status.REMOVED_INDEX_WORKING_TREE)) {
             value -= 1;
         }
         if (containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) {
-            value -= 1;
+            value -= 2;
         }
         if (containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-            value -= 1;
+            value -= 3;
         }
         if (value == 400) {
             throw new IllegalArgumentException("Uncomparable status: " + getStatus()); //NOI18N

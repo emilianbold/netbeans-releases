@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -14,6 +14,8 @@
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
@@ -218,7 +220,7 @@
             </Property>
           </AccessibilityProperties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initRenderer();&#xa;paramTable.getSelectionModel().addListSelectionListener(getListener1());&#xa;paramTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);&#xa;model.addTableModelListener(getListener2());&#xa;paramTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), ACTION_INLINE_EDITOR); //NOI18N&#xa;paramTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), ACTION_INLINE_EDITOR); //NOI18N&#xa;paramTable.getActionMap().put(ACTION_INLINE_EDITOR, getEditAction()); //NOI18N&#xa;paramTable.setSurrendersFocusOnKeystroke(true);&#xa;paramTable.setCellSelectionEnabled(false);&#xa;paramTable.setRowSelectionAllowed(true);&#xa;paramTable.putClientProperty(&quot;JTable.autoStartsEdit&quot;, Boolean.FALSE); //NOI18N&#xa;paramTable.putClientProperty(&quot;terminateEditOnFocusLost&quot;, Boolean.TRUE); //NOI18N&#xa;"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initRenderer();&#xa;paramTable.getSelectionModel().addListSelectionListener(getListener1());&#xa;paramTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);&#xa;model.addTableModelListener(getListener2());&#xa;paramTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), ACTION_INLINE_EDITOR); //NOI18N&#xa;paramTable.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), ACTION_INLINE_EDITOR); //NOI18N&#xa;paramTable.getActionMap().put(ACTION_INLINE_EDITOR, getEditAction()); //NOI18N&#xa;paramTable.setSurrendersFocusOnKeystroke(true);&#xa;paramTable.setCellSelectionEnabled(false);&#xa;paramTable.setRowSelectionAllowed(true);&#xa;// paramTable.putClientProperty(&quot;JTable.autoStartsEdit&quot;, Boolean.FALSE); //NOI18N&#xa;paramTable.putClientProperty(&quot;terminateEditOnFocusLost&quot;, Boolean.TRUE); //NOI18N&#xa;"/>
           </AuxValues>
         </Component>
       </SubComponents>

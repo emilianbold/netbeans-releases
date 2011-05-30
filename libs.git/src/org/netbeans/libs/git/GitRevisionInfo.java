@@ -90,4 +90,10 @@ public interface GitRevisionInfo {
      * @throws GitException when an error occurs
      */
     public java.util.Map<java.io.File, GitFileInfo> getModifiedFiles () throws GitException;
+    
+    /**
+     * Returns parents of this commit
+     * @return 
+     */
+    public String[] getParents ();
 }

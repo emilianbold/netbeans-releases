@@ -58,6 +58,7 @@ import org.netbeans.modules.profiler.categories.Category;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.xml.XMLUtil;
 
 
 /**
@@ -92,6 +93,9 @@ public class TestBase extends NbTestCase {
         if ( getProjectName() == null ){
             return;
         }
+        
+        // getting rid off the saxon parser
+        System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
         
         TestUtilities.setCacheFolder(getWorkDir());
         System.setProperty("j2eeserver.no.server.instance.check", "true");

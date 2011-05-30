@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.introduce.CopyFinder;
+import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
 
 /**
  *
@@ -74,7 +75,7 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
         
         for (Entry<Tree, String> e : ((BulkPatternImpl) pattern).pattern2Code.entrySet()) {
             
-            for (TreePath r : CopyFinder.computeDuplicates(info, new TreePath(topLevel, e.getKey()), toSearch, false, new AtomicBoolean(), Collections.<String, TypeMirror>emptyMap()).keySet()) {
+            for (TreePath r : CopyFinder.computeDuplicates(info, new TreePath(topLevel, e.getKey()), toSearch, false, new AtomicBoolean(), Collections.<String, TypeMirror>emptyMap(), Options.ALLOW_VARIABLES_IN_PATTERN).keySet()) {
                 Collection<TreePath> c = result.get(e.getValue());
 
                 if (c == null) {

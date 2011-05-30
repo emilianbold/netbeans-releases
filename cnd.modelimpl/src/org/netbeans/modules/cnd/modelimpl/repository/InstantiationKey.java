@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
@@ -56,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * A key for CsmInstantiation
@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
         return sb.toString();
     }
 
-    /*package*/ InstantiationKey(DataInput aStream) throws IOException {
+    /*package*/ InstantiationKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
     }
 

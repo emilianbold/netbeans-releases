@@ -46,7 +46,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Alexey Vladykin
  */
-public class QtFileFilter extends SourceFileFilter {
+public class QtFileFilter extends FileAndFileObjectFilter {
 
     private static final String SUFFIXES[] = {"pro", "qrc", "ts", "ui"}; // NOI18N
     private static QtFileFilter instance = null;

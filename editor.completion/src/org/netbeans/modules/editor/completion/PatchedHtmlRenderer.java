@@ -966,7 +966,7 @@ public final class PatchedHtmlRenderer {
 
             s = new String(ch, colorPos, end - colorPos);
         } else {
-            s = new String(ch, colorPos, 6);
+            s = new String(ch, colorPos, Math.min(6, ch.length - colorPos));
         }
 
         Color result = null;

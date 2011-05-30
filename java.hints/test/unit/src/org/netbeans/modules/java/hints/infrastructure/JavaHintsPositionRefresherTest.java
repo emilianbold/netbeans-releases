@@ -207,7 +207,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
     public void testHintCount173282() throws Exception {
         performTest("test/Test.java", "class Test { static int statField; int field; public void method() { \n|String field = \"\"; \nSystem.out.println(field); Integer.parseInt(\"1\"); if(\"\"== \"\") { System.out.println(\"ok\"); } this.statField = 23; } }",
-                new String[] {"2:53-2:60:verifier:Comparing Strings using == or !=", "1:7-1:12:verifier:Local variable hides a field", "2:92-2:96:verifier:AS0statField"});
+                new String[] {"2:53-2:60:verifier:Comparing Strings using == or !=", "1:7-1:12:verifier:Local variable hides a field", "2:97-2:106:verifier:AS0statField"});
     }
 
     public void testEmptyStatement() throws Exception {

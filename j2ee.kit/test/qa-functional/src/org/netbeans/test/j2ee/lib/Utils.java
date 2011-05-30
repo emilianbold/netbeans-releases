@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.lib;
 
 import java.io.BufferedReader;
@@ -58,19 +57,16 @@ import java.util.Locale;
 import javax.swing.JComboBox;
 import junit.framework.AssertionFailedError;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -80,80 +76,65 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.test.ide.WatchProjects;
 
 /**
  *
  * @author lm97939
  */
 public class Utils {
-    
+
     private NbTestCase nbtestcase;
-    
+
     public Utils(NbTestCase nbtestcase) {
         this.nbtestcase = nbtestcase;
     }
-    
+
     public static String getTimeIndex() {
-        return new SimpleDateFormat("HHmmssS",Locale.US).format(new Date());
+        return new SimpleDateFormat("HHmmssS", Locale.US).format(new Date());
     }
-    
+
     /**
      * Starts or Stops AppServer
      * @param start if true, starts appserver, if false stops appserver.
      */
     public static void startStopServer(boolean start) {
-        RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
-        Node serverNode = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
-        +"|Application Server");
-        new org.netbeans.jemmy.EventTool().waitNoEvent(10000);
-        if (start)
-            serverNode.performPopupAction("Start");
-        else
-            serverNode.performPopupAction("Stop");
-        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
-        ProgressSupport.waitFinished((start?"Starting":"Stopping") + " Sun Java System Application Server", 500000);
-        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+        J2eeServerNode glassFishNode = J2eeServerNode.invoke("GlassFish");
+        if (start) {
+            glassFishNode.start();
+        } else {
+            glassFishNode.stop();
+        }
     }
-    
+
     public static void prepareDatabase() {
-        		
-        new Action("Tools|"+Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_DerbyDatabase")+
-                "|"+Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_StartAction"), null).performMenu();
-        OutputTabOperator outputOper = new OutputTabOperator(Bundle.getStringTrimmed("org.netbeans.modules.derby.Bundle", "LBL_outputtab"));
-        outputOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
-        outputOper.waitText("Server is ready to accept connections on port 1527.");
         new Node(new RuntimeTabOperator().getRootNode(), "Databases|/sample").performPopupActionNoBlock("Connect");
-        try {
-            NbDialogOperator dialog = new NbDialogOperator("Connect");
-            new JTextFieldOperator(dialog,0).typeText("app");
-            dialog.ok();
-        } catch (TimeoutExpiredException e) {}
     }
-    
+
     public void assertFiles(File dir, String fileNames[], String goldenFilePrefix) throws IOException {
         AssertionFailedError firstExc = null;
-        for (int i=0; i<fileNames.length; i++) {
-            File file = new File(dir, fileNames[i]);            
+        for (int i = 0; i < fileNames.length; i++) {
+            File file = new File(dir, fileNames[i]);
             try {
-                File goldenFile = nbtestcase.getGoldenFile(goldenFilePrefix + fileNames[i]);                
-                nbtestcase.assertFile("File "+file.getAbsolutePath()+" is different than golden file "+goldenFile.getAbsolutePath()+".",
+                File goldenFile = nbtestcase.getGoldenFile(goldenFilePrefix + fileNames[i]);
+                NbTestCase.assertFile("File " + file.getAbsolutePath() + " is different than golden file " + goldenFile.getAbsolutePath() + ".",
                         file,
                         goldenFile,
-                        new File(nbtestcase.getWorkDir(), fileNames[i]+".diff"),
-                        new TrimmingLineDiff()); 
+                        new File(nbtestcase.getWorkDir(), fileNames[i] + ".diff"),
+                        new FilteringLineDiff());
             } catch (AssertionFailedError e) {
-                if (firstExc == null){
+                if (firstExc == null) {
                     firstExc = e;
-                } 
-                File copy = new File(nbtestcase.getWorkDirPath(), goldenFilePrefix+fileNames[i]);
-                copyFile(file,copy);
+                }
+                File copy = new File(nbtestcase.getWorkDirPath(), goldenFilePrefix + fileNames[i]);
+                copyFile(file, copy);
             }
         }
-        if (firstExc != null)
+        if (firstExc != null) {
             throw firstExc;
+        }
     }
-    
+
     /**
      * Copy file in to out
      * @param in File
@@ -172,7 +153,7 @@ public class Utils {
             ioe.printStackTrace(System.err);
         }
     }
-    
+
     /**
      * Loads page specified by URL
      * @param url_string URL
@@ -182,17 +163,18 @@ public class Utils {
     public static String loadFromURL(String url_string) throws IOException {
         URL url = new URL(url_string);
         BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
-            if (sb.length() > 0)
+            if (sb.length() > 0) {
                 sb.append("\n");
+            }
             sb.append(line);
         }
         reader.close();
         return sb.toString();
     }
-    
+
     /**
      * Deploys Application
      *
@@ -205,86 +187,55 @@ public class Utils {
         JTreeOperator tree = ProjectsTabOperator.invoke().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
         Node node = new ProjectRootNode(tree, projectName);
-        node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_DeployAction_Name"));
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 600000);
-        MainWindowOperator.getDefault().waitStatusText(Bundle.getString("org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", new String[] {(projectNameInStatus?projectName:"build.xml")+" (run-deploy)."}));
-        if (url != null)
+        node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_RedeployAction_Name"));
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 180000);
+        MainWindowOperator.getDefault().waitStatusText(Bundle.getString("org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", new String[]{(projectNameInStatus ? projectName : "build.xml") + " (run-deploy)"}));
+        if (url != null) {
             return Utils.loadFromURL(url);
+        }
         return null;
     }
-    
-    public static String deploy(String projectnName, String url)  throws IOException {
+
+    public static String deploy(String projectnName, String url) throws IOException {
         return deploy(projectnName, url, false);
     }
-    
+
     /** Undeploys Application. Verifies that application node in runtime disappears.
      * @param app Name of application to undeploy
      */
-    
-    public static void undeploy(String category, String app) {
-        RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
-        Node rootNode = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
-        +"|Application Server|"
-                + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Applications") + "|"
-                + category);
-        rootNode.performPopupAction("Refresh");
-        Node node = new Node(rootNode, app);
-        node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Undeploy"));
-        node.waitNotPresent();
-    }
-    
     public static void undeploy(String app) {
-        undeploy(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_AppModules"), app);
+        J2eeServerNode glassFishNode = J2eeServerNode.invoke("GlassFish");
+        // "Applications"
+        String applicationsLabel = Bundle.getStringTrimmed("org.netbeans.modules.glassfish.common.nodes.Bundle", "LBL_Apps");
+        Node applicationsNode = new Node(glassFishNode, applicationsLabel);
+        Node node = new Node(applicationsNode, app);
+        // "Undeploy"
+        node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.glassfish.common.nodes.actions.Bundle", "LBL_UndeployAction"));
+        applicationsNode.waitChildNotPresent(app);
     }
-    
-    /** Checks whether firstText in on firstLine and secondText in on secondLine. If deleteLine is true,
-     *  deletes insertLine and inserts there insertText.
-     */
-    public void checkAndModify(String file, int firstLine, String firstText,
-            int secondLine, String secondText, int insertLine, boolean deleteLine, String insertText) {
-        EditorOperator editor = EditorWindowOperator.getEditor(file);
-        if (firstText != null) {
-            if (!(editor.getText(firstLine).indexOf(firstText)>=0))
-                NbTestCase.fail("I expect text '"+firstText+"' on line "+firstLine+" in "+file+"."+
-                        "There is text: '"+editor.getText(firstLine)+"'.");
-        }
-        if (secondText != null) {
-            if (!(editor.getText(secondLine).indexOf(secondText)>=0))
-                NbTestCase.fail("I expect text '"+secondText+"' on line "+secondLine+" in "+file+"."+
-                        "There is text: '"+editor.getText(secondLine)+"'.");
-        }
-        if (deleteLine)
-            editor.deleteLine(insertLine);
-        if (insertText != null)
-            editor.insert(insertText, insertLine, 1);
-        editor.save();
-    }
-    
+
     public static void buildProject(String projectName) {
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         Node node = pto.getProjectRootNode(projectName);
-//        node.performPopupAction(Bundle.getStringTrimmed(
-//                "org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_RebuildAction_Name"));
         node.performPopupAction("Clean and Build");
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status",
-                new String[] {projectName.replace(' ', '_') + " (clean,dist)"}));
+                new String[]{projectName.replace(' ', '_') + " (clean,dist)"}));
         new EventTool().waitNoEvent(2500);
     }
-    
+
     public static void cleanProject(String projectName) {
-        Action cleanAction = new Action(null, Bundle.getStringTrimmed(
-                "org.netbeans.modules.j2ee.earproject.ui.Bundle", "LBL_RebuildAction_Name"));
+        Action cleanAction = new Action(null, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CleanProjectAction_Name_popup"));
         cleanAction.setComparator(new Operator.DefaultStringComparator(true, true));
         cleanAction.perform(new ProjectsTabOperator().getProjectRootNode(projectName));
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status",
-                new String[] {projectName.replace(' ', '_') + " (clean,dist)"}));
+                new String[]{projectName.replace(' ', '_') + " (clean)"}));
         new EventTool().waitNoEvent(2500);
     }
-    
+
     public static void createLibrary(String name, String[] jars, String[] srcs, String[] javadocs) {
         if ((name == null) || (name.indexOf(" ") > -1)) {
             throw new IllegalArgumentException("Name cannot be null nor contain spaces");
@@ -338,17 +289,13 @@ public class Utils {
         }
         ndo.ok();
     }
-    
-    public static void openOutputTab() {
-        new ActionNoBlock("Window|Output", null).performMenu();
-    }
-    
+
     public static boolean checkMissingServer(String projectName) {
         // check missing target server dialog is shown    
         // "Open Project"
         String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");
         boolean needToSetServer = false;
-        if(JDialogOperator.findJDialog(openProjectTitle, true, true) != null) {
+        if (JDialogOperator.findJDialog(openProjectTitle, true, true) != null) {
             new NbDialogOperator(openProjectTitle).close();
             needToSetServer = true;
         }
@@ -359,7 +306,7 @@ public class Utils {
         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
         // select "Run" category
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
-        if(needToSetServer) {
+        if (needToSetServer) {
             // set default server
             JComboBox comboBox = (JComboBox) new JLabelOperator(propertiesDialogOper, "Server").getLabelFor();
             new JComboBoxOperator(comboBox).setSelectedIndex(0);
@@ -367,7 +314,7 @@ public class Utils {
         // confirm properties dialog
         propertiesDialogOper.ok();
         // if setting default server, it scans server jars; otherwise it continues immediatelly
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
         return needToSetServer;
     }
 }

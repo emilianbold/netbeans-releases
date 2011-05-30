@@ -79,6 +79,7 @@ public class SessionManager  {
             options.debugForFirstPageOnly = properties.closeSession;
             options.pathMapping = properties.pathMapping;
             options.debugProxy = properties.debugProxy;
+            options.projectEncoding = properties.projectEncoding;
             startSession(sessionId, options, run);
             long started = System.currentTimeMillis();
             if (!sessionId.isInitialized(true)) {

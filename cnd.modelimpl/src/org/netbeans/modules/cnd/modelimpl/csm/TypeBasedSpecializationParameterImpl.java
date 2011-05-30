@@ -55,8 +55,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -66,6 +64,8 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -166,12 +166,12 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
     // impl of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeType(type, output);
     }
 
-    public TypeBasedSpecializationParameterImpl(DataInput input) throws IOException {
+    public TypeBasedSpecializationParameterImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.type = PersistentUtils.readType(input);
     }

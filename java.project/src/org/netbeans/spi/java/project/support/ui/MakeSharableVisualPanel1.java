@@ -136,7 +136,7 @@ final class MakeSharableVisualPanel1 extends JPanel {
     void storeSettings(WizardDescriptor wiz) {
         String librariesDefinition = getLibraryLocation();
         if (librariesDefinition != null) {
-            if (!librariesDefinition.endsWith(File.separator)) {
+            if (librariesDefinition.length() != 0 && !librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
             }
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;

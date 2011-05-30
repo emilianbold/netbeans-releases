@@ -166,12 +166,22 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
             //    throw new IllegalArgumentException(NbBundle.getMessage(ChangeParameters.class, "ERR_NoValues"));
             // }
             this.origIndex = origIndex;
-            this.name = name;
-            this.type = type;
+            this.name = trim(name);
+            this.type = trim(type);
             // do not set default value for existing parameters
-            this.defaultVal = origIndex == -1 ? defaultVal : null;
+            this.defaultVal = origIndex == -1 ? trim(defaultVal) : null;
         }
         
+        private CharSequence trim(CharSequence cs) {
+            CharSequence out = cs;
+            if (cs != null) {
+                out = cs.toString().trim();
+                if (out.length() == cs.length()) {
+                    out = cs;
+                }
+            }
+            return out;
+        }
         /**
          * Creates a new instance of ParameterInfo. This constructor is used
          * for existing non-changed parameters. All the values except original

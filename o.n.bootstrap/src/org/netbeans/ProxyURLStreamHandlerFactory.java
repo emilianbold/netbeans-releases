@@ -63,8 +63,11 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
     private static boolean proxyFactoryInitialized;
 
     public static synchronized void register() {
+        LOG.log(Level.FINE, "register: {0}", proxyFactoryInitialized); // NOI18N
+        LOG.log(Level.FINER, null, new Exception("Initialized by")); // NOI18N
         if (!proxyFactoryInitialized) {
             URLStreamHandler originalJarHandler = null;
+            if (!ProxyURLStreamHandlerFactory.class.getClassLoader().getClass().getName().equals("com.sun.jnlp.JNLPClassLoader")) { // #196970
             try {
                 List<Field> candidates = new ArrayList<Field>();
                 for (Field f : URL.class.getDeclaredFields()) {
@@ -83,6 +86,7 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
                 if (originalJarHandler == null) {
                     LOG.log(Level.SEVERE, "No way to find original stream handler for jar protocol", t); // NOI18N
                 }
+            }
             }
             try {
                 URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory(null, originalJarHandler));
@@ -122,8 +126,10 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
     private ProxyURLStreamHandlerFactory(URLStreamHandlerFactory delegate, URLStreamHandler originalJarHandler) {
         this.delegate = delegate;
         this.originalJarHandler = originalJarHandler;
+        LOG.log(Level.FINE, "new ProxyURLStreamHandlerFactory. delegate={0} originalJarHandler={1}", new Object[]{delegate, originalJarHandler});
     }
 
+    @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if (protocol.equals("jar")) {
             return originalJarHandler != null ? new JarClassLoader.JarURLStreamHandler(originalJarHandler) : null;
@@ -157,6 +163,7 @@ public class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory, Lo
         }
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         Collection<? extends URLStreamHandlerFactory> c = r.allInstances();
         synchronized (this) {

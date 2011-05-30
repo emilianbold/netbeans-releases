@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -310,11 +311,12 @@ public class Mercurial {
     }
 
     /**
-     * Refreshes cached modification timestamp of the repository's hg folder
+     * Runs a given callable and refreshes cached modification timestamp of the repository's hg folder after
+     * @param callable code to run
      * @param repository owner of the hg folder to refresh
      */
-    public void refreshWorkingCopyTimestamp(File repository) {
-        getMercurialInterceptor().refreshHgFolderTimestamp(repository);
+    public <T> T runWithoutExternalEvents (File repository, Callable<T> callable) throws Exception {
+        return getMercurialInterceptor().runWithoutExternalEvents(repository, callable);
     }
 
     /**

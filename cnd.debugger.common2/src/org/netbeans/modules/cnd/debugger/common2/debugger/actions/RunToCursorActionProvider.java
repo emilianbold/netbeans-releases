@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 
 
 public class RunToCursorActionProvider extends NativeActionsProvider {
@@ -72,14 +73,21 @@ public class RunToCursorActionProvider extends NativeActionsProvider {
 
     /* abstract in ActionsProviderSupport */
     public void doAction(Object action) {
-        String fileName = EditorContextBridge.getCurrentFilePath();
-        if (fileName.trim().equals("")) {
+	int lineNo = EditorContextBridge.getCurrentLineNumber();
+        if (lineNo < 0) {
             return;
         }
-	int lineNo = EditorContextBridge.getCurrentLineNumber();
-        getDebugger().runToCursor(fileName, lineNo);
+        if (Disassembly.isInDisasm()) {
+            RunToCursorInstAction.runToDisLine(lineNo);
+        } else {
+            String fileName = EditorContextBridge.getCurrentFilePath();
+            if (fileName.trim().equals("")) {
+                return;
+            }
+            getDebugger().runToCursor(fileName, lineNo);
+        }
     }
-
+    
     /* interface NativeActionsProvider */
     public void update(State state) {
         boolean enable = false;

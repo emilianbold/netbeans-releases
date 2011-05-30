@@ -48,8 +48,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.SessionManager;
 
 import org.netbeans.modules.php.dbgp.UnsufficientValueException;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
 import sun.misc.BASE64Decoder;
@@ -201,7 +206,20 @@ public class Property extends BaseMessageChildElement {
     public String getStringValue() throws UnsufficientValueException {
         Encoding enc = getEncoding();
         if ( Encoding.BASE64.equals( enc )){
-            return new String( getValue() );
+            Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+            if (session != null) {
+                SessionId sessionId = session.lookupFirst(null, SessionId.class);
+                if (sessionId != null) {
+                    String projectEncoding = SessionManager.getInstance().getSession(sessionId).getOptions().getProjectEncoding();
+                    try {
+                        return new String(getValue(), projectEncoding);
+                    } catch (UnsupportedEncodingException ex) {
+                        Exceptions.printStackTrace(ex);
+                        return "";
+                    }
+                }
+            }
+            return new String(getValue());
         }
         String result =  DbgpMessage.getNodeValue( getNode() );
         try {

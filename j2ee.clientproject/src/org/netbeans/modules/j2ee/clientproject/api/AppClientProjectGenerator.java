@@ -205,7 +205,8 @@ public class AppClientProjectGenerator {
         final AntProjectHelper h = setupProject(projectDir, name,
                 DEFAULT_SRC_FOLDER, DEFAULT_TEST_FOLDER,
                 null, null, null, mainClass, j2eeProfile,
-                serverInstanceID, createData.getLibrariesDefinition(), realServerLibraryName);
+                serverInstanceID, createData.getLibrariesDefinition(), realServerLibraryName,
+                createData.skipTests());
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(AppClientProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
@@ -313,7 +314,8 @@ public class AppClientProjectGenerator {
         
         final AntProjectHelper h = setupProject(projectDir, name, null, null,
                 confFolder, createData.getLibFolder(),
-                null, null, j2eeProfile, serverInstanceID, createData.getLibrariesDefinition(), realServerLibraryName);
+                null, null, j2eeProfile, serverInstanceID, createData.getLibrariesDefinition(), 
+                realServerLibraryName, createData.skipTests());
         
         final AppClientProject p = (AppClientProject) ProjectManager.getDefault().findProject(projectDir);
         final ReferenceHelper refHelper = p.getReferenceHelper();
@@ -420,11 +422,15 @@ public class AppClientProjectGenerator {
         if (!h.isSharableProject()) {
             return;
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
+        if (!createData.skipTests() && rh.getProjectLibraryManager().getLibrary("junit") == null) { // NOI18N
+            if (LibraryManager.getDefault().getLibrary("junit") != null) {
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
+            }
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
+        if (!createData.skipTests() && rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
+            if (LibraryManager.getDefault().getLibrary("junit_4") != null) {
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
+            }
         }
         Profile j2eeProfile = createData.getJavaEEProfile();
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
@@ -487,7 +493,8 @@ public class AppClientProjectGenerator {
     private static AntProjectHelper setupProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, File configFiles, File libraries,
             String resources, String mainClass, Profile j2eeProfile,
-            String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
+            String serverInstanceID, String librariesDefinition, String serverLibraryName,
+            boolean skipTests) throws IOException {
 
         Utils.logUI(NbBundle.getBundle(AppClientProjectGenerator.class), "UI_APP_PROJECT_CREATE_SHARABILITY", // NOI18N
                 new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
@@ -585,7 +592,10 @@ public class AppClientProjectGenerator {
         ep.setProperty(AppClientProjectProperties.JAVAC_TARGET, sourceLevel); // NOI18N
         
         ep.setProperty("javac.deprecation", "false"); // NOI18N
-        ep.setProperty("javac.test.classpath", new String[] { // NOI18N
+        ep.setProperty("javac.test.classpath", skipTests ? new String[] { // NOI18N
+            "${javac.classpath}:", // NOI18N
+            "${build.classes.dir}", // NOI18N
+        } : new String[] { // NOI18N
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
             "${libs.junit.classpath}:", // NOI18N

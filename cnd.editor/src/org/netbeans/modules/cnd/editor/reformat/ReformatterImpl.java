@@ -478,7 +478,12 @@ public class ReformatterImpl {
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else if (isNewStyleCast(current)){
                             if (current.id()==LT) {
-                                spaceAfter(current, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
+                                Token<CppTokenId> lookNextImportant = ts.lookNextImportant();
+                                if (lookNextImportant != null && lookNextImportant.id() == CppTokenId.SCOPE) {
+                                    spaceAfter(current, true, codeStyle.spaceKeepExtra());
+                                } else {
+                                    spaceAfter(current, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
+                                }
                             } else {
                                 spaceBefore(previous, codeStyle.spaceWithinTypeCastParens(), codeStyle.spaceKeepExtra());
                                 spaceAfter(current, codeStyle.spaceAfterTypeCast(), codeStyle.spaceKeepExtra());

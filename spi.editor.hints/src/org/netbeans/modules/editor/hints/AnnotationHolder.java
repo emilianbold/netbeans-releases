@@ -90,6 +90,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -192,7 +193,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
 
         getBag(doc);
 
-        this.doc.addDocumentListener(this);
+        DocumentUtilities.addPriorityDocumentListener(this.doc, this, DocumentListenerPriority.AFTER_CARET_UPDATE);
         editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
         this.editorCookie = editorCookie;
 
@@ -221,35 +222,29 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         attacher.attachAnnotation(line, a);
     }
 
-    void detachAnnotation(Annotation a) {
+    void detachAnnotation(ParseErrorAnnotation a) {
         attacher.detachAnnotation(a);
     }
 
     static interface Attacher {
         public void attachAnnotation(Position line, ParseErrorAnnotation a) throws BadLocationException;
-        public void detachAnnotation(Annotation a);
-    }
-
-    final class LineAttacher implements Attacher {
-        public void attachAnnotation(Position line, ParseErrorAnnotation a) throws BadLocationException {
-            throw new UnsupportedOperationException();
-//            LineCookie lc = od.getCookie(LineCookie.class);
-//            Line lineRef = lc.getLineSet().getCurrent(line);
-//
-//            a.attach(lineRef);
-        }
-        public void detachAnnotation(Annotation a) {
-            a.detach();
-        }
+        public void detachAnnotation(ParseErrorAnnotation a);
     }
 
     final class NbDocumentAttacher implements Attacher {
         public void attachAnnotation(Position lineStart, ParseErrorAnnotation a) throws BadLocationException {
-            NbDocument.addAnnotation((StyledDocument) doc, lineStart, -1, a);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("addAnnotation: pos=" + lineStart.getOffset() + ", a="+ a + ", doc=" +
+                        System.identityHashCode(doc) + "\n");
+            }
+            a.attachAnnotation((StyledDocument) doc, lineStart);
         }
-        public void detachAnnotation(Annotation a) {
+        public void detachAnnotation(ParseErrorAnnotation a) {
             if (doc != null) {
-                NbDocument.removeAnnotation((StyledDocument) doc, a);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("removeAnnotation: a=" + a + ", doc=" + System.identityHashCode(doc) + "\n");
+                }
+                a.detachAnnotation((StyledDocument) doc);
             }
         }
     }
@@ -259,6 +254,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         for (ParseErrorAnnotation a : line2Annotations.values()) {
             detachAnnotation(a);
         }
+        line2Annotations.clear();
 
         file2Holder.remove(od);
         doc.removeDocumentListener(this);
@@ -322,24 +318,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
             if (endOffset < line.getOffset())
                 return;
 
-            List<ErrorDescription> eds = getErrorsForLine(line, false);
-
-            if (eds == null)
-                return ;
-
-            eds = new LinkedList<ErrorDescription>(eds);
-
-            for (ErrorDescription ed : eds) {
-                for (Position i : errors2Lines.remove(ed)) {
-                    line2Errors.get(i).remove(ed);
-                    modifiedLines.add(i);
-                }
-                for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
-                    edsForLayer.remove(ed);
-                }
-            }
-
-            line2Errors.remove(line);
+            clearLineErrors(line, modifiedLines);
 
             //make sure the highlights are removed even for multi-line inserts:
             try {
@@ -427,24 +406,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
             }
 
             for (Position line : new LinkedList<Position>(modifiedLinesTokens)) {
-                List<ErrorDescription> eds = line2Errors.get(line);
-
-                if (eds == null || eds.isEmpty()) {
-                    continue;
-                }
-                eds = new LinkedList<ErrorDescription>(eds);
-
-                for (ErrorDescription ed : eds) {
-                    for (Position i : errors2Lines.remove(ed)) {
-                        line2Errors.get(i).remove(ed);
-                        modifiedLinesTokens.add(i);
-                    }
-                    for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
-                        edsForLayer.remove(ed);
-                    }
-                }
-
-                line2Errors.remove(line);
+                clearLineErrors(line, modifiedLinesTokens);
             }
 
             for (Position line : modifiedLinesTokens) {
@@ -456,6 +418,34 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private void clearLineErrors(Position line, Set<Position> modifiedLinesTokens) {
+        List<ErrorDescription> eds = getErrorsForLine(line, false);
+
+        if (eds == null)
+            return ;
+
+        eds = new LinkedList<ErrorDescription>(eds);
+
+        for (ErrorDescription ed : eds) {
+            List<Position> lines = errors2Lines.remove(ed);
+
+            if (lines == null) { //#	180222 
+                LOG.log(Level.WARNING, "Inconsistent error2Lines for file {1}.", new Object[] {file.getPath()}); // NOI18N
+                continue;
+            }
+
+            for (Position i : lines) {
+                line2Errors.get(i).remove(ed);
+                modifiedLinesTokens.add(i);
+            }
+            for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
+                edsForLayer.remove(ed);
+            }
+        }
+
+        line2Errors.remove(line);
     }
 
     public void changedUpdate(DocumentEvent e) {
@@ -643,9 +633,10 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
 
         if (errorDescriptions == null) {
             //nothing to do, remove old:
-            Annotation ann = line2Annotations.remove(line);
-
-            detachAnnotation(ann);
+            ParseErrorAnnotation ann = line2Annotations.remove(line);
+            if (ann != null) {
+                detachAnnotation(ann);
+            }
             return;
         }
 
@@ -688,7 +679,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
                 description.toString(),
                 line,
                 this);
-        Annotation previous = line2Annotations.put(line, pea);
+        ParseErrorAnnotation previous = line2Annotations.put(line, pea);
 
         if (previous != null) {
             detachAnnotation(previous);

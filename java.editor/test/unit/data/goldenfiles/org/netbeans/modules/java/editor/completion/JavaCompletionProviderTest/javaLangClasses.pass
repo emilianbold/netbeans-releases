@@ -3,6 +3,7 @@ ArithmeticException
 ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
+Character
 ClassCastException
 ClassCircularityError
 ClassFormatError

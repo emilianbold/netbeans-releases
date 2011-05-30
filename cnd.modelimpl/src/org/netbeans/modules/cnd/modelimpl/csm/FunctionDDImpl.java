@@ -46,8 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,6 +66,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements both CsmFunction and CsmFunctionDefinition -
@@ -210,13 +210,13 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     // iml of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.body != null: "null body in " + this.getQualifiedName();
         PersistentUtils.writeCompoundStatement(body, output);
     }
 
-    public FunctionDDImpl(DataInput input) throws IOException {
+    public FunctionDDImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
         assert this.body != null: "read null body for " + this.getName();

@@ -46,7 +46,7 @@ package org.netbeans.modules.web.beans.impl.model.results;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 
 
 
@@ -54,7 +54,7 @@ import org.netbeans.modules.web.beans.api.model.Result;
  * @author ads
  *
  */
-abstract class BaseResult implements Result {
+abstract class BaseResult implements DependencyInjectionResult {
     
     BaseResult( VariableElement element , TypeMirror type ){
         myElement = element;
@@ -65,6 +65,7 @@ abstract class BaseResult implements Result {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result#getVariable()
      */
+    @Override
     public VariableElement getVariable() {
         return myElement;
     }
@@ -72,6 +73,7 @@ abstract class BaseResult implements Result {
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result#getVariableType()
      */
+    @Override
     public TypeMirror getVariableType() {
         return myType;
     }

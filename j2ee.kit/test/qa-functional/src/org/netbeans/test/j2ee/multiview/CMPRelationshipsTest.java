@@ -41,12 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.multiview;
 
 import java.io.File;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -66,74 +64,70 @@ import org.openide.loaders.DataObject;
  * @author jhorvath
  */
 public class CMPRelationshipsTest extends DDTestCase {
-    
+
     public CMPRelationshipsTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.out.println("############ "+getName()+" ############");
+        System.out.println("############ " + getName() + " ############");
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
     }
-    
+
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CMPRelationshipsTest.class);
-        conf = addServerTests(conf,"testOpenProject","testAddRelationship",
-        "testModifyRelationship","testRemoveRelationship");
+        conf = addServerTests(conf, "testOpenProject", "testAddRelationship",
+                "testModifyRelationship", "testRemoveRelationship");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        TestRunner.run(suite());
-    }
-    
+
     /*
      * Method open project
      *
      */
-    public void testOpenProject() throws Exception{
+    public void testOpenProject() throws Exception {
         File projectDir = new File(getDataDir(), "projects/TestCMPRelationships");
-        project = (Project)J2eeProjectSupport.openProject(projectDir);
+        project = (Project) J2eeProjectSupport.openProject(projectDir);
         assertNotNull("Project is null.", project);
         Thread.sleep(1000);
-        
-        EjbJarProject ejbJarProject = (EjbJarProject)project;
+
+        EjbJarProject ejbJarProject = (EjbJarProject) project;
         ddFo = ejbJarProject.getAPIEjbJar().getDeploymentDescriptor();  // deployment descriptor
         assertNotNull("ejb-jar.xml FileObject is null.", ddFo);
-        
-        ddObj = (EjbJarMultiViewDataObject)DataObject.find(ddFo); //MultiView Editor
-        assertNotNull("MultiViewDO is null.",ddObj);
-        
-        EditCookie edit = (EditCookie)ddObj.getCookie(EditCookie.class);
+
+        ddObj = (EjbJarMultiViewDataObject) DataObject.find(ddFo); //MultiView Editor
+        assertNotNull("MultiViewDO is null.", ddObj);
+
+        EditCookie edit = (EditCookie) ddObj.getCookie(EditCookie.class);
         edit.edit();
         Thread.sleep(1000);
     }
-    
+
     /*
      * Add CMP Relationship
      */
     public void testAddRelationship() throws Exception {
         String displayName = "testAddRelationship";
-        assertNotNull("DDObject not found",ddObj);
-        EjbJar ejbJar=ddObj.getEjbJar();
-        Relationships relationships=ejbJar.getSingleRelationships();
-        if (relationships==null) relationships=ddObj.getEjbJar().newRelationships();
-        ejbJar.setRelationships(relationships);
+        assertNotNull("DDObject not found", ddObj);
+        EjbJar ejbJar1 = ddObj.getEjbJar();
+        Relationships relationships = ejbJar1.getSingleRelationships();
+        if (relationships == null) {
+            relationships = ddObj.getEjbJar().newRelationships();
+        }
+        ejbJar1.setRelationships(relationships);
         ddObj.showElement(relationships); //open visual editor
         Utils.waitForAWTDispatchThread();
-        
-        CmpRelationshipsTableModel tableModel=(CmpRelationshipsTableModel) getDetailPanel().getTable().getModel();
-        
-        RelationshipHelper relationshipHelper=new RelationshipHelper(relationships);
-        
+
+        CmpRelationshipsTableModel tableModel = (CmpRelationshipsTableModel) getDetailPanel().getTable().getModel();
+
+        RelationshipHelper relationshipHelper = new RelationshipHelper(relationships);
+
         relationshipHelper.setRelationName("test");
         relationshipHelper.setDescription("test description");
         relationshipHelper.roleA.setRoleName("role A");
@@ -145,84 +139,86 @@ public class CMPRelationshipsTest extends DDTestCase {
         relationshipHelper.roleB.setMultiple(false);
         relationshipHelper.roleB.setCascadeDelete(false);
         ddObj.getModelSynchronizer().requestUpdateData();
-        
+
         Thread.sleep(4000);
         Utils.waitForAWTDispatchThread();
-        
+
         //save ejb-jar.xml editor
-        SaveCookie saveCookie = (SaveCookie)ddObj.getCookie(SaveCookie.class);
+        SaveCookie saveCookie = (SaveCookie) ddObj.getCookie(SaveCookie.class);
         assertNotNull("Save cookie is null, Data object isn't changed!", saveCookie);
-        if(saveCookie != null)
+        if (saveCookie != null) {
             saveCookie.save();
+        }
         //check file on disc
         assertFile("ejb-jar.xml");
     }
-    
+
     /*
      * Modify CMP Relationship
      */
     public void testModifyRelationship() throws Exception {
         String displayName = "testModifyRelationship";
-        assertNotNull("DDObject not found",ddObj);
-        EjbJar ejbJar=ddObj.getEjbJar();
-        Relationships relationships=ejbJar.getSingleRelationships();
-        if (relationships==null) fail("Relationships == null");
+        assertNotNull("DDObject not found", ddObj);
+        EjbJar ejbJar1 = ddObj.getEjbJar();
+        Relationships relationships = ejbJar1.getSingleRelationships();
+        if (relationships == null) {
+            fail("Relationships == null");
+        }
         ddObj.showElement(relationships); //open visual editor
         Utils.waitForAWTDispatchThread();
-        
-        CmpRelationshipsTableModel tableModel=(CmpRelationshipsTableModel) getDetailPanel().getTable().getModel();
-       
-        EjbRelation ejbRelation = ejbJar.getSingleRelationships().getEjbRelation(0);
-        RelationshipHelper relationshipHelper=new RelationshipHelper(ejbRelation);
-        
+
+        CmpRelationshipsTableModel tableModel = (CmpRelationshipsTableModel) getDetailPanel().getTable().getModel();
+
+        EjbRelation ejbRelation = ejbJar1.getSingleRelationships().getEjbRelation(0);
+        RelationshipHelper relationshipHelper = new RelationshipHelper(ejbRelation);
+
         relationshipHelper.roleA.setMultiple(true);
         relationshipHelper.roleA.setCascadeDelete(false);
         relationshipHelper.roleB.setMultiple(true);
         relationshipHelper.roleB.setCascadeDelete(false);
         ddObj.getModelSynchronizer().requestUpdateData();
-        
+
         Thread.sleep(4000);
         Utils.waitForAWTDispatchThread();
         //save ejb-jar.xml editor
-        SaveCookie saveCookie = (SaveCookie)ddObj.getCookie(SaveCookie.class);
+        SaveCookie saveCookie = (SaveCookie) ddObj.getCookie(SaveCookie.class);
         assertNotNull("Save cookie is null, Data object isn't changed!", saveCookie);
-        if(saveCookie != null)
+        if (saveCookie != null) {
             saveCookie.save();
+        }
         //check file on disc
         //assertFile(FileUtil.toFile(ddFo),getGoldenFile("testModifyRelationship_ejb-jar.xml"), new File(getWorkDir(), "testModifyRelationship_ejb-jar.diff"));
         assertFile("ejb-jar.xml");
     }
-    
+
     /*
      * Remove CMP Relationship
      */
     public void testRemoveRelationship() throws Exception {
         String displayName = "testRemoveRelationship";
-        assertNotNull("DDObject not found",ddObj);
-        EjbJar ejbJar=ddObj.getEjbJar();
-        Relationships relationships=ejbJar.getSingleRelationships();
-        if (relationships==null) fail("Relationships == null");
+        assertNotNull("DDObject not found", ddObj);
+        EjbJar ejbJar1 = ddObj.getEjbJar();
+        Relationships relationships = ejbJar1.getSingleRelationships();
+        if (relationships == null) {
+            fail("Relationships == null");
+        }
         ddObj.showElement(relationships); //open visual editor
         Utils.waitForAWTDispatchThread();
-        
+
         relationships.removeEjbRelation(relationships.getEjbRelation(0));
-        ejbJar.setRelationships(null);
+        ejbJar1.setRelationships(null);
         ddObj.getModelSynchronizer().requestUpdateData();
-        
+
         Thread.sleep(4000);
         Utils.waitForAWTDispatchThread();
-        
+
         //save ejb-jar.xml editor
-        SaveCookie saveCookie = (SaveCookie)ddObj.getCookie(SaveCookie.class);
+        SaveCookie saveCookie = (SaveCookie) ddObj.getCookie(SaveCookie.class);
         assertNotNull("Save cookie is null, Data object isn't changed!", saveCookie);
-        if(saveCookie != null)
+        if (saveCookie != null) {
             saveCookie.save();
+        }
         //check file on disc
         assertFile("ejb-jar.xml");
     }
-    
-
-    
-   
-    
 }

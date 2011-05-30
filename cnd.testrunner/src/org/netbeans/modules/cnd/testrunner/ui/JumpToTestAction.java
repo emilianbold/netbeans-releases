@@ -52,7 +52,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 
 /**
@@ -85,13 +87,13 @@ final class JumpToTestAction extends BaseTestMethodNodeAction {
             }
         }
 
-        String absPath = null;
+        FileObject absPath = null;
         if (testRootFolder != null) {
             loop : for (Folder folder : testRootFolder.getAllTests()) {
                 Item[] items = folder.getAllItemsAsArray();
                 for (int k = 0; k < items.length; k++) {
                     if(items[k].getName().replaceAll("(.*)\\..*", "$1").equals(testcase.getClassName())) { // NOI18N
-                        absPath = items[k].getAbsPath();
+                        absPath = items[k].getFileObject();
                         break loop;
                     }
                 }
@@ -100,7 +102,7 @@ final class JumpToTestAction extends BaseTestMethodNodeAction {
         if(absPath == null) {
             return;
         }
-        CsmFile file = CsmModelAccessor.getModel().findFile(absPath, false);
+        CsmFile file = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(absPath), true, false);
         if(file == null) {
             return;
         }

@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,6 +68,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -111,17 +111,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
         put();
     }
 
-    public FileComponentReferences(DataInput input) throws IOException {
+    public FileComponentReferences(RepositoryDataInput input) throws IOException {
         super(input);
         UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
         fileUID = defaultFactory.readUID(input);
-        int collSize = input.readInt();
-        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
-        for(int i = 0; i < collSize; i++) {
-            CsmUID<CsmObject> refObj = UIDObjectFactory.getDefaultFactory().readUID(input);
-            ReferenceImpl ref = new ReferenceImpl(fileUID, refObj, defaultFactory, input);
-            references.put(ref, refObj);
-        }
+        references = defaultFactory.readReferencesSortedToUIDMap(input, fileUID);
     }
 
     // only for EMPTY static field
@@ -259,7 +253,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
     }
 
     @Override
-    public void write(DataOutput out) throws IOException {
+    public void write(RepositoryDataOutput out) throws IOException {
         super.write(out);
         UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
         defaultFactory.writeUID(fileUID, out);
@@ -275,7 +269,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
     }
 
-    private static final class ReferenceImpl implements CsmReference, Comparable<ReferenceImpl>{
+    public static final class ReferenceImpl implements CsmReference, Comparable<ReferenceImpl>{
         private final CsmUID<CsmFile> file;
         private final CsmReferenceKind refKind;
         private final CsmUID<CsmObject> refObj;
@@ -309,7 +303,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.closestTopLevelObjectUID = closestTopLevelObjectUID;
         }
 
-        private ReferenceImpl(CsmUID<CsmFile> fileUID, CsmUID<CsmObject> refObj, UIDObjectFactory defaultFactory, DataInput input) throws IOException {
+        public ReferenceImpl(CsmUID<CsmFile> fileUID, CsmUID<CsmObject> refObj, UIDObjectFactory defaultFactory, RepositoryDataInput input) throws IOException {
             this.file = fileUID;
             this.refObj = refObj;
             assert refObj != null;
@@ -321,7 +315,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.closestTopLevelObjectUID = defaultFactory.readUID(input);
         }
 
-        private void write(UIDObjectFactory defaultFactory, DataOutput out) throws IOException {
+        private void write(UIDObjectFactory defaultFactory, RepositoryDataOutput out) throws IOException {
             out.writeInt(this.start);
             out.writeInt(this.end);
             PersistentUtils.writeUTF(identifier, out);

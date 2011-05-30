@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -61,6 +60,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.sync.ZipSyncFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -88,9 +88,8 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         setupHost("rfs");
     }
 
-    private void doTest(String projectKey, String sync, String buildCommand, Level loggersLevel) throws Exception {
+    private void doTest(String projectKey, String sync, String buildCommand) throws Exception {
         setupHost(sync);
-        setLoggersLevel(loggersLevel);
         setDefaultCompilerSet("GNU");
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String projectPath = rcFile.get( SECTION, projectKey);
@@ -119,14 +118,13 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String sync = rcFile.get(SECTION,"sync", ZipSyncFactory.ID);
         String buildCommand = rcFile.get(SECTION, "build-command", ActionProvider.COMMAND_BUILD);
-        doTest("project", sync, buildCommand, Level.ALL);
+        doTest("project", sync, buildCommand);
     }
 
     @If(section=SECTION, key = "measure.plain.copy")
     @ForAllEnvironments(section = SECTION)
     @org.netbeans.api.annotations.common.SuppressWarnings("OBL")
     public void testPlainCopy() throws Exception {
-        setLoggersLevel(Level.OFF);
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String timestampsPath = rcFile.get(SECTION,"timestamps");
         assertNotNull(timestampsPath);
@@ -154,19 +152,14 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         String tmpFile = rcs.getOutput();
         tmpFile = stripLf(tmpFile);
         for (File file : files) {
-            Future<Integer> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), env, tmpFile, 0777, null);
-            assertEquals(0, task.get().intValue());
+            Future<UploadStatus> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), env, tmpFile, 0777);
+            assertEquals(0, task.get().getExitCode());
         }
         time = System.currentTimeMillis() - time;
         System.out.printf("FILES PLAIN COPYING TOOK %d ms\n", time);
         // cleanup
         int rc = RemoteCommandSupport.run(env, "rm " + tmpFile);
         assertEquals(0, rc);
-    }
-
-    private void setLoggersLevel(Level level) {
-        log.setLevel(level);
-        org.netbeans.modules.nativeexecution.support.Logger.getInstance().setLevel(level);
     }
 
     private String stripLf(String text) {

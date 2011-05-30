@@ -1104,7 +1104,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
             if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
                 setWarningMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_MissingServer"));
-                //return false;
             }
 
             return true;

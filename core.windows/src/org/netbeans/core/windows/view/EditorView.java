@@ -263,6 +263,8 @@ public class EditorView extends ViewElement {
                 }
             } );
             setDropTarget( dropTarget );
+            if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+                setOpaque( false);
         }
         
         public void setAreaComponent(Component areaComponent) {

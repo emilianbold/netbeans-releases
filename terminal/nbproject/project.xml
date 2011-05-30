@@ -66,11 +66,35 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.47.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.io</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.23</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.21.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.21.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -124,10 +148,18 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>com.sun.tools.dlight.accessor</friend>
+                <friend>com.sun.tools.nativeexecution.accessor</friend>
                 <friend>com.sun.tools.swdev.toolscommon.base</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.dbx</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>

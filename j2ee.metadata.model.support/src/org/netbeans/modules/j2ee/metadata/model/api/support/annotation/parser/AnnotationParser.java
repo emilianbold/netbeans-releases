@@ -106,7 +106,7 @@ public final class AnnotationParser {
     private final static Set<Class<?>> PRIMITIVE_WRAPPERS = new HashSet<Class<?>>();
 
     private final Map<String, ValueProvider> providers = new HashMap<String, ValueProvider>();
-    private final AnnotationModelHelper helper;
+    private final AnnotationHelper helper;
 
     static {
         PRIMITIVE_WRAPPERS.add(Boolean.class);
@@ -131,10 +131,15 @@ public final class AnnotationParser {
      */
     public static AnnotationParser create(AnnotationModelHelper helper) {
         Parameters.notNull("helper", helper); // NOI18N
+        return new AnnotationParser(helper.getHelper());
+    }
+    
+    public static AnnotationParser create(AnnotationHelper helper) {
+        Parameters.notNull("helper", helper); // NOI18N
         return new AnnotationParser(helper);
     }
 
-    private AnnotationParser(AnnotationModelHelper helper) {
+    private AnnotationParser(AnnotationHelper helper) {
         this.helper = helper;
     }
 
@@ -407,7 +412,8 @@ public final class AnnotationParser {
         }
 
         protected boolean isSameAsTypeToCheck(TypeMirror otherType) {
-            return helper.getCompilationController().getTypes().isSameType(typeToCheck, otherType);
+            return helper.getCompilationInfo().getTypes().isSameType(typeToCheck, 
+                    otherType);
         }
     }
 

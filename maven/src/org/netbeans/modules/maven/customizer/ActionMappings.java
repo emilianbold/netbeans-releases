@@ -86,7 +86,7 @@ import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.ActionProviderImpl;
-import org.netbeans.modules.maven.TestSkippingChecker;
+import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
@@ -528,6 +528,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             txtGoals.setText(createSpaceSeparatedList(mapp != null ? mapp.getGoals() : Collections.EMPTY_LIST));
             txtProfiles.setText(createSpaceSeparatedList(mapp != null ? mapp.getActivatedProfiles() : Collections.EMPTY_LIST));
             taProperties.setText(createPropertiesList(mapp != null ? mapp.getProperties() : new Properties()));
+            taProperties.setCaretPosition(0);
             if (handle != null && "pom".equals(handle.getProject().getPackaging())) { //NOI18N
                 cbRecursively.setEnabled(true);
                 cbRecursively.setSelected(mapp != null ? mapp.isRecursive() : true);
@@ -670,16 +671,16 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     private String createPropertiesList(Properties properties) {
-        String str = ""; //NOI18N
+        StringBuilder b = new StringBuilder();
         if (properties != null) {
-            Iterator it = properties.keySet().iterator();
-            while (it.hasNext()) {
-                String elem = (String) it.next();
-                String val = properties.getProperty(elem);
-                str = str + elem + "=" + val + "\n"; //NOI18N
+            for (Map.Entry<?,?> entry : properties.entrySet()) {
+                if (b.length() > 0) {
+                    b.append('\n');
+                }
+                b.append(entry.getKey()).append('=').append(entry.getValue());
             }
         }
-        return str;
+        return b.toString();
     }
     
     
@@ -991,8 +992,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
 
         public void actionPerformed(ActionEvent e) {
-            String replace = TestSkippingChecker.PROP_SKIP_TEST + "=true"; //NOI18N
-            String pattern = ".*" + TestSkippingChecker.PROP_SKIP_TEST + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
+            String replace = TestChecker.PROP_SKIP_TEST + "=true"; //NOI18N
+            String pattern = ".*" + TestChecker.PROP_SKIP_TEST + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
             replacePattern(pattern, area, replace, true);
         }
     }
@@ -1116,8 +1117,8 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         String props = area.getText();
         Matcher match = Pattern.compile(pattern, Pattern.DOTALL).matcher(props);
         if (match.matches()) {
-            int begin = props.indexOf(TestSkippingChecker.PROP_SKIP_TEST);
-            props = props.replace(TestSkippingChecker.PROP_SKIP_TEST + match.group(1), replace); //NOI18N
+            int begin = props.indexOf(TestChecker.PROP_SKIP_TEST);
+            props = props.replace(TestChecker.PROP_SKIP_TEST + match.group(1), replace); //NOI18N
             area.setText(props);
             if (select) {
                 area.setSelectionStart(begin);

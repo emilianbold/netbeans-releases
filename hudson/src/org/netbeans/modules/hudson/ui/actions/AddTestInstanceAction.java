@@ -58,8 +58,9 @@ import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 
 /**
  * #161911: downloads & runs latest hudson.war and configures it for you.
@@ -68,14 +69,21 @@ public class AddTestInstanceAction extends AbstractAction implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(AddTestInstanceAction.class.getName());
 
+    @Messages("AddTestInstanceAction.label=Try Hudson on &Localhost")
     public AddTestInstanceAction() {
-        super(NbBundle.getMessage(AddTestInstanceAction.class, "AddTestInstanceAction.label"));
+        super(AddTestInstanceAction_label());
     }
 
     public void actionPerformed(ActionEvent e) {
         RequestProcessor.getDefault().post(this);
     }
 
+    @Messages({
+        "# {0} - path to javaws", "AddTestInstanceAction.no_javaws=Could not find {0}. Run: javaws https://hudson.dev.java.net/hudson.jnlp",
+        "AddTestInstanceAction.could_not_run=Could not download or run Hudson. Run: javaws https://hudson.dev.java.net/hudson.jnlp",
+        "AddTestInstanceAction.starting=Downloading & running Hudson...",
+        "AddTestInstanceAction.instance_name=Local Test Server"
+    })
     public void run() {
         // XXX could use JavaPlatformManager.default.defaultPlatform.findTool("javaws") if could depend on java.platform
         File javaHome = new File(System.getProperty("java.home"));
@@ -88,23 +96,23 @@ public class AddTestInstanceAction extends AbstractAction implements Runnable {
             javaws = new File(bindir, "javaws");
         }
         if (!javaws.isFile()) {
-            warning(NbBundle.getMessage(AddTestInstanceAction.class, "AddTestInstanceAction.no_javaws", javaws));
+            warning(AddTestInstanceAction_no_javaws(javaws));
             return;
         }
         try {
             int exit = new ProcessBuilder(javaws.getAbsolutePath(), "https://hudson.dev.java.net/hudson.jnlp").start().waitFor();
             if (exit != 0) {
-                warning(NbBundle.getMessage(AddTestInstanceAction.class, "AddTestInstanceAction.could_not_run"));
+                warning(AddTestInstanceAction_could_not_run());
                 return;
             }
         } catch (Exception x) {
-            warning(NbBundle.getMessage(AddTestInstanceAction.class, "AddTestInstanceAction.could_not_run"));
+            warning(AddTestInstanceAction_could_not_run());
             LOG.log(Level.INFO, null, x);
             return;
         }
         final AtomicBoolean cancelled = new AtomicBoolean();
         ProgressHandle progress = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(AddTestInstanceAction.class, "AddTestInstanceAction.starting"), new Cancellable() {
+                AddTestInstanceAction_starting(), new Cancellable() {
             public boolean cancel() {
                 cancelled.set(true);
                 return true;
@@ -122,8 +130,7 @@ public class AddTestInstanceAction extends AbstractAction implements Runnable {
                 try {
                     new ConnectionBuilder().url(localhost).connection();
                     // Success!
-                    String label = NbBundle.getMessage(AddTestInstanceAction.class, "AddTestInstanceAction.instance_name");
-                    HudsonInstanceImpl.createHudsonInstance(label, localhost, "1"); // NOI18N
+                    HudsonInstanceImpl.createHudsonInstance(AddTestInstanceAction_instance_name(), localhost, "1"); // NOI18N
                     UI.selectNode(localhost);
                     break;
                 } catch (IOException x) {

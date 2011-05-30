@@ -456,7 +456,7 @@ class BraceCompletion {
             // Search would stop on an extra opening left brace if found
             int braceBalance = 0; // balance of '{' and '}'
             int bracketBalance = -1; // balance of the brackets or parenthesis
-            int lastRBracketIndex = javaTS.index();
+            int numOfSemi = 0;
             boolean finished = false;
             while (!finished && javaTS.movePrevious()) {
                 JavaTokenId id = javaTS.token().id();
@@ -499,9 +499,31 @@ class BraceCompletion {
                     case RBRACE:
                         braceBalance--;
                         break;
+                        
+                    case SEMICOLON:
+                        numOfSemi++;
+                        break;
                 }
             }
 
+            if (bracketBalance == 0 && numOfSemi < 2) {
+                finished = false;
+                while (!finished && javaTS.movePrevious()) {
+                    switch (javaTS.token().id()) {
+                        case WHITESPACE:
+                        case LINE_COMMENT:
+                        case BLOCK_COMMENT:
+                        case JAVADOC_COMMENT:
+                            break;
+                        case FOR:
+                            bracketBalance--;
+                        default:
+                            finished = true;
+                            break;
+                    }
+                }
+            }
+            
             skipClosingBracket = bracketBalance != 0;
 
             //commented out due to #147683:

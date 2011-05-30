@@ -1,5 +1,0 @@
-    self.gsub!(pattern) do^ |c| h[c] end
-                        --
-HINT:Convert between {}-blocks and do/end blocks
-FIX:Convert do/end-block to a {}-block
-FIX:Expand single-line block to multiple lines

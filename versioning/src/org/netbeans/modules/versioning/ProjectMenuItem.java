@@ -85,28 +85,33 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     }
 
     private JComponent [] createItems() {
-        Node [] nodes = getActivatedNodes();
-        if (nodes.length > 0) {
-            Set<VersioningSystem> owners = getOwnersForProjectNodes(nodes);
-            if (owners.size() != 1) {
-                return new JComponent[0];
+        List<JComponent> popups = new ArrayList<JComponent>();            
+        if(!VersioningManager.isInitialized()) {            
+            popups.add(InitMenuItem.create(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));            
+            popups.add(InitMenuItem.create(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_LocalHistory")));            
+        } else {
+            Node [] nodes = getActivatedNodes();
+            if (nodes.length > 0) {
+                Set<VersioningSystem> owners = getOwnersForProjectNodes(nodes);
+                if (owners.size() != 1) {
+                    return new JComponent[0];
+                }
+                VersioningSystem owner = owners.iterator().next();
+                VersioningSystem localHistory = getLocalHistory(nodes);
+
+                if (owner == null || owner.getVCSAnnotator() != null) {
+                    // prepare a lazy menu, it's items will be properly created at the time the menu is expanded
+                    JMenu menu = new LazyMenu(nodes, owner);
+                    popups.add(menu);
+                }
+                if(localHistory != null && localHistory.getVCSAnnotator() != null) {
+                    // prepare a lazy menu for the local history, it's items will be properly created at the time the menu is expanded
+                    JMenu menu = new LazyMenu(nodes, localHistory);
+                    popups.add(menu);
+                }
             }
-            VersioningSystem owner = owners.iterator().next();
-            VersioningSystem localHistory = getLocalHistory(nodes);
-            List<JComponent> popups = new ArrayList<JComponent>();            
-            if (owner == null || owner.getVCSAnnotator() != null) {
-                // prepare a lazy menu, it's items will be properly created at the time the menu is expanded
-                JMenu menu = new LazyMenu(nodes, owner);
-                popups.add(menu);
-            }
-            if(localHistory != null && localHistory.getVCSAnnotator() != null) {
-                // prepare a lazy menu for the local history, it's items will be properly created at the time the menu is expanded
-                JMenu menu = new LazyMenu(nodes, localHistory);
-                popups.add(menu);
-            }
-            return popups.toArray(new JComponent[popups.size()]);
         }
-        return new JComponent[0];
+        return popups.toArray(new JComponent[popups.size()]);        
     }
 
     private VersioningSystem getLocalHistory(Node [] nodes) {

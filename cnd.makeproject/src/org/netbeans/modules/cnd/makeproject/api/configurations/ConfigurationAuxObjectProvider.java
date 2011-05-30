@@ -50,5 +50,5 @@ public interface ConfigurationAuxObjectProvider {
     /**
      * Creates an instance of the auxiliary information object
      */
-    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs);
+    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration);
 }

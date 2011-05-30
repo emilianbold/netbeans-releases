@@ -179,7 +179,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]));
         final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null);
-        TreeLoader.preRegister(jt.getContext(), cpInfo);
+        TreeLoader.preRegister(jt.getContext(), cpInfo, true);
         //Force JTImpl.prepareCompiler to get JTImpl into Context
         try {
             jt.parse(new JavaFileObject[0]);

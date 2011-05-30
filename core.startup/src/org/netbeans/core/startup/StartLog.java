@@ -136,10 +136,8 @@ public class StartLog {
                 // ErrorManager, etc.
                 e.printStackTrace();
                 // Presumably you did want to keep on going at this point.
-                // Note that this can only happen when logging is off
-                // (which is the default).
                 System.err.flush();
-                TopSecurityManager.exit(1);
+                LOG.setLevel(Level.OFF);
             }
             LOG.log(Level.FINE, "end", action); // NOI18N
         }

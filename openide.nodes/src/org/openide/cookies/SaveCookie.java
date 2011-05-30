@@ -43,16 +43,14 @@
  */
 package org.openide.cookies;
 
+import org.netbeans.api.actions.Savable;
 import org.openide.nodes.Node;
 
 
-/** The cookie for the save operation.
+/** The cookie for the save operation. Since 7.23 it implements
+* {@link Savable}.
 *
 * @author Dafe Simonek
 */
-public interface SaveCookie extends Node.Cookie {
-    /** Invoke the save operation.
-     * @throws IOException if the object could not be saved
-     */
-    public void save() throws java.io.IOException;
+public interface SaveCookie extends Node.Cookie, Savable {
 }

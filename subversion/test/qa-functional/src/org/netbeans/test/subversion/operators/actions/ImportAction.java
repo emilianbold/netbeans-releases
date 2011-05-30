@@ -20,6 +20,9 @@ public class ImportAction extends ActionNoBlock {
     /** "Versioning" menu item. */
     public static final String VERSIONING_ITEM = "Versioning";
     
+    /** "Team" menu item. */
+    public static final String TEAM_ITEM = "Team";
+    
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
             
@@ -31,7 +34,7 @@ public class ImportAction extends ActionNoBlock {
     
     /** Creates a new instance of ImportAction */
     public ImportAction() {
-        super(VERSIONING_ITEM + "|" + SVN_ITEM + "|" + IMPORT_MAIN_ITEM, VERSIONING_ITEM + "|" + IMPORT_POPUP_ITEM);
+        super(TEAM_ITEM + "|" + SVN_ITEM + "|" + IMPORT_MAIN_ITEM, VERSIONING_ITEM + "|" + IMPORT_POPUP_ITEM);
     }
     
 }

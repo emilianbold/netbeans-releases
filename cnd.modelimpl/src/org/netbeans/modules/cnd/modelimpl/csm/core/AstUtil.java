@@ -47,12 +47,11 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.openide.util.CharSequences;
 
 /**
  * Miscellaneous AST-related static utility functions
@@ -76,16 +75,31 @@ public class AstUtil {
 	return (ast == null || ast.getType() == CPPTokenTypes.EOF);
     }
 
-    public static CharSequence[] getRawNameInChildren(AST ast) {
+    public static CharSequence getRawNameInChildren(AST ast) {
         return getRawName(findIdToken(ast));
     }
 
-    public static CharSequence[] getRawName(AST token) {
-        List<CharSequence> l = new ArrayList<CharSequence>();
+    public static CharSequence[] toRawName(CharSequence rawName) {
+        if (rawName == null) {
+            return null;
+        }
+        String[] split = rawName.toString().split("\\."); //NOI18N
+        CharSequence[] res = new CharSequence[split.length];
+        for(int i = 0; i < split.length; i++) {
+            res[i] = CharSequences.create(split[i]);
+        }
+        return res;
+    }
+    
+    public static CharSequence getRawName(AST token) {
+        StringBuilder l = new StringBuilder();
         for( ; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.ID:
-                    l.add(NameCache.getManager().getString(AstUtil.getText(token)));
+                    if (l.length()>0) {
+                        l.append('.');
+                    }
+                    l.append(AstUtil.getText(token));
                     break;
                 case CPPTokenTypes.SCOPE:
                     break;
@@ -94,7 +108,7 @@ public class AstUtil {
                     break;
             }
         }
-        return l.toArray(new CharSequence[l.size()]);
+        return NameCache.getManager().getString(CharSequences.create(l.toString()));
     }
 
     private static AST findIdToken(AST ast) {

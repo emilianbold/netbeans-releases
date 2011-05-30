@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.16
+#Version 6.21.1
 
 CLSS public abstract interface java.awt.event.ActionListener
 intf java.util.EventListener
@@ -322,10 +322,12 @@ hcls DelegateAction
 
 CLSS public org.openide.actions.RedoAction
 cons public init()
+intf org.openide.util.ContextAwareAction
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public boolean isEnabled()
 meth public java.lang.String getName()
+meth public javax.swing.Action createContextAwareInstance(org.openide.util.Lookup)
 meth public org.openide.util.HelpCtx getHelpCtx()
 meth public void performAction()
 supr org.openide.util.actions.CallableSystemAction
@@ -379,6 +381,7 @@ innr public abstract interface static Model
 intf org.openide.util.ContextAwareAction
 intf org.openide.util.actions.Presenter$Menu
 intf org.openide.util.actions.Presenter$Popup
+meth protected void initialize()
 meth public java.lang.String getName()
 meth public javax.swing.Action createContextAwareInstance(org.openide.util.Lookup)
 meth public javax.swing.JMenuItem getMenuPresenter()
@@ -388,7 +391,7 @@ meth public static void setModel(org.openide.actions.ToolsAction$Model)
  anno 0 java.lang.Deprecated()
 meth public void actionPerformed(java.awt.event.ActionEvent)
 supr org.openide.util.actions.SystemAction
-hfds gl,serialVersionUID
+hfds serialVersionUID,taskGl
 hcls DelegateAction,G,Inline,Popup
 
 CLSS public abstract interface static org.openide.actions.ToolsAction$Model
@@ -400,10 +403,12 @@ meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public org.openide.actions.UndoAction
 cons public init()
+intf org.openide.util.ContextAwareAction
 meth protected boolean asynchronous()
 meth protected java.lang.String iconResource()
 meth public boolean isEnabled()
 meth public java.lang.String getName()
+meth public javax.swing.Action createContextAwareInstance(org.openide.util.Lookup)
 meth public org.openide.util.HelpCtx getHelpCtx()
 meth public void performAction()
 supr org.openide.util.actions.CallableSystemAction

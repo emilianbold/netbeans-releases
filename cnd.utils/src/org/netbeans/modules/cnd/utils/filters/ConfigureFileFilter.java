@@ -45,13 +45,12 @@
 package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
-import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class ConfigureFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class ConfigureFileFilter extends FileAndFileObjectFilter {
 
+    private static String suffixes[] = {"pro", "configure"}; // NOI18N
     private static ConfigureFileFilter instance = null;
 
     public ConfigureFileFilter() {
@@ -67,50 +66,28 @@ public class ConfigureFileFilter extends FileFilterFactory.FileAndFileObjectFilt
     
     @Override
     public String getDescription() {
-        return(getString("FILECHOOSER_CONFIGURE_FILEFILTER")); // NOI18N
+        return NbBundle.getMessage(ConfigureFileFilter.class, "FILECHOOSER_CONFIGURE_FILEFILTER"); // NOI18N
     }
     
     @Override
-    public boolean accept(File f) {
-        if(f != null) {
-            if(f.isDirectory()) {
-                return true;
-            }
-            return accept(f.getName());
+    protected boolean mimeAccept(File f) {
+        return acceptName(f.getName());
+    }
+
+    @Override
+    protected boolean mimeAccept(FileObject f) {
+        return acceptName(f.getNameExt());
+    }
+
+    private boolean acceptName(String name) {
+        if(name != null && name.equals("CMakeLists.txt")) { // NOI18N
+            return true;
         }
         return false;
     }
 
     @Override
-    public boolean accept(FileObject f) {
-        if(f != null) {
-            if(f.isFolder()) {
-                return true;
-            }
-            return accept(f.getNameExt());
-        }
-        return false;
-    }
-
-    private boolean accept(String name) {
-        if(name != null) {
-            if (name.equals("configure")) { // NOI18N
-                return true;
-            } else if (name.equals("CMakeLists.txt")) { // NOI18N
-                return true;
-            } else if (name.endsWith(".pro")) { // NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakefileFileFilter.class);
-        }
-        return bundle.getString(s);
+    protected String[] getSuffixes() {
+        return suffixes;
     }
 }

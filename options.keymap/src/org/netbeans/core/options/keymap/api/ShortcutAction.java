@@ -60,7 +60,7 @@ public interface ShortcutAction {
     /**
      * The display name is what the user can see when the shortcut
      * is displayed in the configuration dialogs.
-     * @return the display name
+     * @return the display name, or {@code ""} if this action should not be displayed
      */
     public String getDisplayName ();
     

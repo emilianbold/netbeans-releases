@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.38
+#Version 7.46.1
 
 CLSS public java.io.IOException
 cons public init()
@@ -373,6 +373,7 @@ meth public final boolean hasExt(java.lang.String)
 meth public final java.io.OutputStream getOutputStream() throws java.io.IOException
 meth public final java.net.URL getURL() throws org.openide.filesystems.FileStateInvalidException
 meth public final void delete() throws java.io.IOException
+meth public java.io.OutputStream createAndOpen(java.lang.String) throws java.io.IOException
 meth public java.lang.String asText() throws java.io.IOException
 meth public java.lang.String asText(java.lang.String) throws java.io.IOException
 meth public java.lang.String getMIMEType()
@@ -491,7 +492,7 @@ meth public void refresh(boolean)
 meth public void removeNotify()
 supr java.lang.Object
 hfds LOG,PROP_CAPABILITIES,SFS_STATUS,STATUS_NONE,assigned,capability,capabilityListener,changeSupport,fclSupport,fileStatusList,hidden,internLock,repository,serialVersionUID,systemName,thrLocal,valid,vetoableChangeList
-hcls EventDispatcher,FileStatusDispatcher
+hcls AsyncAtomicAction,EventDispatcher,FileStatusDispatcher
 
 CLSS public abstract interface static org.openide.filesystems.FileSystem$AtomicAction
  outer org.openide.filesystems.FileSystem
@@ -590,6 +591,7 @@ meth public static java.lang.String getMIMEType(java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public static java.lang.String getMIMEType(org.openide.filesystems.FileObject)
 meth public static java.lang.String getRelativePath(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject)
+meth public static java.lang.String normalizePath(java.lang.String)
 meth public static java.net.URL getArchiveFile(java.net.URL)
 meth public static java.net.URL getArchiveRoot(java.net.URL)
 meth public static java.net.URL urlForArchiveOrDir(java.io.File)
@@ -632,7 +634,7 @@ meth public static void removeRecursiveListener(org.openide.filesystems.FileChan
 meth public static void setMIMEType(java.lang.String,java.lang.String)
 meth public static void setOrder(java.util.List<org.openide.filesystems.FileObject>) throws java.io.IOException
 supr java.lang.Object
-hfds LOG,REFRESH_RP,ZIP_HEADER_1,ZIP_HEADER_2,archiveFileCache,diskFileSystem,holders,refreshTask,transientAttributes
+hfds LOG,REFRESH_RP,ZIP_HEADER_1,ZIP_HEADER_2,archiveFileCache,diskFileSystem,holders,normalizedRef,refreshTask,transientAttributes
 hcls Holder,NonCanonicalizingFile,NonCanonicalizingFileSystemView
 
 CLSS public org.openide.filesystems.JarFileSystem

@@ -218,7 +218,10 @@ public final class MacroMap implements Cloneable {
         }
 
         String oldpath = get(name);
-        String newPath = path + (oldpath == null ? "" : (isWindows ? ';' : ':') + oldpath);
+        String newPath = path + (oldpath == null ? "" : (isWindows ? ';' : ':') + oldpath); // NOI18N
+        newPath = newPath.replaceAll("::", ":"); // NOI18N
+        newPath = newPath.replaceAll("^:", ""); // NOI18N
+        newPath = newPath.replaceAll(":$", ""); // NOI18N
         put(name, newPath);
     }
 
@@ -238,8 +241,12 @@ public final class MacroMap implements Cloneable {
         }
     }
 
-    public void remove(String name) {
-        map.remove(name);
+    public String remove(String name) {
+        return map.remove(name);
+    }
+
+    public Map<String, String> toMap() {
+        return new TreeMap<String, String>(map);
     }
 
     private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {

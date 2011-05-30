@@ -120,6 +120,9 @@ abstract class URIMapper {
         return mergedMapper;
     }
     static URIMapper createDefaultMapper(URI webServerURI, FileObject sourceFileObj, FileObject sourceRoot) {
+        if (sourceRoot == null) {
+            return null;
+        }
         if (!"file".equals(webServerURI.getScheme())) {//NOI18N
             return null;
         }

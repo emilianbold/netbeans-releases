@@ -78,7 +78,7 @@ public class GoToSymbolProvider implements SearchProvider {
         for (SymbolDescriptor td : local.getTypes()) {
             FileObject fo = td.getFileObject();
             String displayHint = fo == null ? null : fo.getPath(); 
-            String htmlDisplayName = td.getSymbolName() + " " + NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()) ;
+            String htmlDisplayName = escapeLtGt(td.getSymbolName()) + " " + NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",escapeLtGt(td.getOwnerName()));
             if (!response.addResult(new GoToSymbolCommand(td),
                                     htmlDisplayName,
                                     displayHint,
@@ -87,7 +87,13 @@ public class GoToSymbolProvider implements SearchProvider {
             }
         }
     }
-    
+     
+    private static String escapeLtGt(String input) {
+        String temp = input.replaceAll("<", "&lt;"); // NOI18N
+        temp = temp.replaceAll(">", "&gt;"); // NOI18N
+        return temp;
+    }
+     
     private static class GoToSymbolCommand implements Runnable {
         private SymbolDescriptor command;
         

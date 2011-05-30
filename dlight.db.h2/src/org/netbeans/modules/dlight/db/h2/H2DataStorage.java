@@ -62,7 +62,9 @@ import org.netbeans.modules.dlight.api.storage.ForeignKeyConstraint;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -70,7 +72,6 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.util.Exceptions;
 
 public final class H2DataStorage extends SQLDataStorage {
 
@@ -82,7 +83,6 @@ public final class H2DataStorage extends SQLDataStorage {
     private static final String url;
     private static String persistentURL;
     final String dbURL;
-    private final List<DataTableMetadata> tableMetadatas;
     boolean isPersistent = false;
 
     static {
@@ -108,10 +108,10 @@ public final class H2DataStorage extends SQLDataStorage {
             tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
         }
 
-        storagesDir = System.getProperty("dlight.storages.folder") == null ? tempDir : System.getProperty("dlight.storages.folder"); // NOI18N
+        storagesDir = PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_FOLDER == null ? tempDir : PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_FOLDER ; // NOI18N
         url = "jdbc:h2:" + storagesDir + "/h2_db_dlight"; // NOI18N
-        if (System.getProperty("dlight.storages.host") != null) {
-            persistentURL = "jdbc:h2:tcp://" + System.getProperty("dlight.storages.host") + storagesDir;
+        if (PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_HOST != null) {
+            persistentURL = "jdbc:h2:tcp://" + PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_HOST + storagesDir;
         } else {
             persistentURL = url;//use EMBEDDED version if dlight.storages.host is not defined
         }
@@ -137,7 +137,7 @@ public final class H2DataStorage extends SQLDataStorage {
                 }
             }
             dbIndex.getAndSet(newValue);
-            if (System.getProperty("dlight.storages.folder") == null) { // NOI18N
+            if (PersistentDataStorageFactory.PERSISTENT_DATA_STORAGE_FOLDER == null) { // NOI18N
                 DLightExecutorService.submit(new Runnable() {
 
                     @Override
@@ -169,22 +169,17 @@ public final class H2DataStorage extends SQLDataStorage {
     H2DataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
-        this.tableMetadatas = new ArrayList<DataTableMetadata>();
         initStorageTypes();
     }
 
     @Override
     public boolean shutdown() {
         //do not remove if it is persistent
-        if (isPersistent) {
-            return true;
-        }
-
         boolean result = super.shutdown();
-        //do nor remove if it is persistent, but close the connection
-        if (isPersistent){
+        if (isPersistent) {
             return result;
-        }        
+        }
+          
         //find current DB folder we are placing H2 database files
         final String folderToDelete = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.lastIndexOf("/") + 1); // NOI18N
         result = result && Util.deleteLocalDirectory(new File(folderToDelete));
@@ -212,7 +207,7 @@ public final class H2DataStorage extends SQLDataStorage {
             //if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
             createTable(tdmd);
             //}
-            this.tableMetadatas.add(tdmd);
+            this.tables.put(tdmd.getName(), tdmd);
         }
     }
 
@@ -298,7 +293,8 @@ public final class H2DataStorage extends SQLDataStorage {
 //    }
     @Override
     public boolean hasData(DataTableMetadata data) {
-        return data.isProvidedBy(tableMetadatas);
+        List<DataTableMetadata> toCheck = new ArrayList<DataTableMetadata>(tables.values());
+        return data.isProvidedBy(toCheck);
     }
 
     @Override
@@ -319,7 +315,7 @@ public final class H2DataStorage extends SQLDataStorage {
                 loadTable(tableName);
             }
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(this, ex);
         }
     }
 
@@ -334,9 +330,9 @@ public final class H2DataStorage extends SQLDataStorage {
             }
             DataTableMetadata result = new DataTableMetadata(tableName, columns, null);
             super.loadTable(result);
-            this.tableMetadatas.add(result);
+            tables.put(result.getName(), result);
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(this, ex);
         }
     }
 }

@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.j2ee.earproject;
 
-import java.io.File;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -56,7 +54,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -74,6 +71,7 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
         this.p = p;
     }
 
+    @Override
     public Result findSourceRoots(URL binaryRoot) {
         if (FileUtil.getArchiveFile(binaryRoot) != null) {
             binaryRoot = FileUtil.getArchiveFile(binaryRoot);
@@ -116,7 +114,7 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                     u = FileUtil.getArchiveFile(u);
                 }
                 FileObject cpItem = URLMapper.findFileObject(u);
-                if (cpItem.isFolder()) {
+                if (cpItem == null || cpItem.isFolder()) {
                     continue;
                 }
                 if (cpItem.getNameExt().equals(libFile)) {

@@ -60,6 +60,7 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
@@ -231,7 +232,11 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
             try {
                 FileLock lock = fo.lock();
                 try {
-                    Charset encoding = FileEncodingQuery.getEncoding(fo);
+                    Charset encoding = FileEncodingQuery.getEncoding(fo);                    
+                    if (!CndFileUtils.isLocalFileSystem(fo.getFileSystem()) && encoding.equals(Charset.defaultCharset())) {
+                        // XXX:fullRemote looks like !CndFileUtils.isLocalFileSystem(fo.getFileSystem()) is not needed here
+                        encoding = FileEncodingQuery.getEncoding(f);
+                    }
                     BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
                             fo.getOutputStream(lock), encoding));
                     try {

@@ -54,7 +54,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.config.gen.Server;
@@ -74,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.modules.tomcat5.progress.MultiProgressObjectWrapper;
 import org.netbeans.modules.tomcat5.util.*;
 import org.openide.util.NbBundle;
@@ -87,6 +90,8 @@ import org.openide.util.NbBundle;
 public class TomcatManager implements DeploymentManager {
     
     public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70};
+    
+    public static final String KEY_UUID = "NB_EXEC_TOMCAT_START_PROCESS_UUID"; //NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(TomcatManager.class.getName());
 
@@ -105,7 +110,7 @@ public class TomcatManager implements DeploymentManager {
     private boolean connected;
     
     /** uri of this DeploymentManager. */
-    private String uri;
+    private final String uri;
     
     private StartTomcat startTomcat;
     
@@ -1025,7 +1030,9 @@ public class TomcatManager implements DeploymentManager {
     public void terminate() {
         Process proc = getTomcatProcess();
         if (proc != null) {
-            proc.destroy();
+            Map<String, String> env = new HashMap<String, String>();
+            env.put(KEY_UUID, uri);
+            ExternalProcessSupport.destroy(process, env);
         }
     }
     

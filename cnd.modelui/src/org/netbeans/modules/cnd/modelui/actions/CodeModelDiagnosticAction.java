@@ -131,7 +131,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 final DataObject dob = node.getLookup().lookup(DataObject.class);
                 if (dob != null) {
                     lookupObjects.add(dob);
-                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, false);
+                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, false, false);
                     if (csmFiles != null) {
                         files.addAll(Arrays.asList(csmFiles));
                     }
@@ -203,17 +203,22 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 }
                 pw.close();
                 // copy all into output window
-                FileInputStream stream = new FileInputStream(tmpFile.getAbsolutePath());
-                BufferedReader das = new BufferedReader(new InputStreamReader(stream));
-                String line;
-                do {
-                    line = das.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    out.println(line);
-                } while (true);
-                err.printf("Cnd diagnostics is saved in %s\n", tmpFile);// NOI18N 
+                try {
+                    FileInputStream stream = new FileInputStream(tmpFile);
+                    BufferedReader das = new BufferedReader(new InputStreamReader(stream));
+                    String line;
+                    do {
+                        line = das.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        out.println(line);
+                    } while (true);
+                    err.printf("Cnd diagnostics is saved in %s\n", tmpFile);// NOI18N
+                    das.close();
+                } catch (IOException e) {
+                    err.printf("Can not display file content %s,\ndue to %s\n", tmpFile, e.getMessage());// NOI18N
+                }
                 err.close();
                 out.close();
             } catch (IOException ex) {

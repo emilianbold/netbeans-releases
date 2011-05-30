@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,6 +59,8 @@ import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * macro map is created for each translation unit and
@@ -229,14 +229,14 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         // persistence support
 
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
             output.writeInt(crc1);
             output.writeInt(crc2);
             APTSerializeUtils.writeSystemMacroMap(this.sysMacroMap, output);
         }
 
-        public FileStateImpl(final DataInput input) throws IOException {
+        public FileStateImpl(final RepositoryDataInput input) throws IOException {
             super(input);
             this.crc1 = input.readInt();
             this.crc2 = input.readInt();
@@ -258,7 +258,27 @@ public class APTFileMacroMap extends APTBaseMacroMap {
 
     private final LinkedList<CharSequence> expandingMacros = new LinkedList<CharSequence>();
     private final HashSet<CharSequence> expandingMacroIDs = new HashSet<CharSequence>();
+    private boolean afterPPDefinedKeyword = false;
 
+    @Override
+    public boolean pushPPDefined() {
+        if (afterPPDefinedKeyword) {
+            return false;
+        } else {
+            afterPPDefinedKeyword = true;
+            return true;
+        }
+    }
+
+    @Override
+    public boolean popPPDefined() {
+        if (afterPPDefinedKeyword) {
+            afterPPDefinedKeyword = false;
+            return true;
+        }
+        return false;
+    }
+    
     @Override
     public boolean pushExpanding(APTToken token) {
         assert (token != null);

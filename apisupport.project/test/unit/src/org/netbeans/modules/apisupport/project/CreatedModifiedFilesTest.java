@@ -539,7 +539,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
 
     public void testLayerEntryOverlappingFilenames() throws Exception { // #85138
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
-        FileObject content = FileUtil.createMemoryFileSystem().getRoot().createData("x");
+        FileObject content = TestFileUtils.writeFile(FileUtil.createMemoryFileSystem().getRoot(), "x", "content");
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         Operation op = cmf.createLayerEntry("file", content, null, null, null);
         cmf.add(op);

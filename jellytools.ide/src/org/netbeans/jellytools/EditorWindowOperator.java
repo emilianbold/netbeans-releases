@@ -257,7 +257,8 @@ public class EditorWindowOperator {
      */
     public static void selectDocument(int index) {
         btDown().push();
-        new PopupSwitcherOperator().selectItem(index);
+        JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
+        tableOper.selectCell(index, 0);
     }
 
     /** Pushes down arrow control button in top right corner intended to 
@@ -266,7 +267,13 @@ public class EditorWindowOperator {
      */
     public static void selectDocument(String name) {
         btDown().push();
-        new PopupSwitcherOperator().selectItem(name);
+        JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
+        int row = tableOper.findCellRow(name);
+        if (row > -1) {
+            tableOper.selectCell(row, 0);
+        } else {
+            throw new JemmyException("Cannot select document \"" + name + "\".");
+        }
     }
     
     /** Performs verification by accessing all sub-components */    

@@ -2,6 +2,7 @@
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
     <mapID target="org.netbeans.modules.mercurial.about" url="mercurial-about.html"/>
+	<mapID target="org.netbeans.modules.mercurial.commit" url="mercurial-commit.html"/>
     <mapID target="org.netbeans.modules.mercurial.quickref" url="mercurial-quickref.html" />
     <mapID target="org.netbeans.modules.mercurial.status" url="mercurial-status.html" />
     <mapID target="org.netbeans.modules.mercurial.statuswindow" url="mercurial-statuswindow.html" />

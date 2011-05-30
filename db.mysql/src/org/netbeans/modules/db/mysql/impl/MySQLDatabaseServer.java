@@ -84,7 +84,6 @@ import org.netbeans.modules.db.mysql.util.ExecSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -171,6 +170,7 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
         return DEFAULT;
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private MySQLDatabaseServer() {
         RequestProcessor.getDefault().post(connProcessor);
 
@@ -769,6 +769,8 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
                 Throwable e = cmd.getException();
                 if (e instanceof DatabaseException) {
                     throw (DatabaseException)e;
+                } else if (e.getClass().getName().contains("MySQLSyntaxErrorException")) { // NOI18N
+                    throw new DatabaseException(e);
                 } else {
                     throw Utils.launderThrowable(e);
                 }
@@ -1068,9 +1070,10 @@ public final class MySQLDatabaseServer implements DatabaseServer, PropertyChange
                 if (outqueue != null) {
                     this.throwable = e;
                 } else {
+                    this.throwable = e;
                     // Since this is asynchronous, we are responsible for reporting the exception to the user.
-                    String message = NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_DatabaseCommandFailed", callingMethod);
-                    Exceptions.printStackTrace(new Exception(message, e));
+                    Utils.displayErrorMessage(
+                            NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_DatabaseCommandFailed", callingMethod, e.getMessage())); // NOI18N
                 }
             } finally {
                 if (outqueue != null) {

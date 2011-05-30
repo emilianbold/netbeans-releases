@@ -79,6 +79,7 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean includeWSBeforePHPDoc;
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
+    private boolean isFirstUseStatementPart;
 
     public FormatVisitor(BaseDocument document) {
 	this.document = document;
@@ -126,7 +127,7 @@ public class FormatVisitor extends DefaultVisitor {
 	// find comment before the node.
 	List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
 	int indexBeforeLastComment = -1;  // remember last comment
-	while (ts.moveNext() && ts.offset() < node.getStartOffset()) {
+	while (moveNext() && ts.offset() < node.getStartOffset()) {
             if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE
                     && path.size() > 1 && path.get(1) instanceof NamespaceDeclaration) {
                 // this a a fix for probalem that namespace declaration through {}, doesn't end with the end of  }
@@ -189,7 +190,7 @@ public class FormatVisitor extends DefaultVisitor {
 	path.removeFirst();
 
 //	if (ts.offset() <= node.getEndOffset()) {
-	while (ts.moveNext() && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
+	while (moveNext() && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
 	    //xxSystem.out.println(indentS + ts.token().id() + "<" + ts.offset() + ", " + (ts.offset() + ts.token().length()) + ">, " + "After " + node.getClass().getSimpleName() + " [" + node.getStartOffset() + ", " + node.getEndOffset() + "]");
 	    addFormatToken(formatTokens);
 	}
@@ -212,7 +213,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
 		    || path.get(1) instanceof ArrayElement
 		    || path.get(1) instanceof FormalParameter
-		    || path.get(1) instanceof ReturnStatement
+//		    || path.get(1) instanceof ReturnStatement
                     || path.get(1) instanceof CastExpression) {
 		// when the array is on the beginning of the line, indent items in normal way
 		delta = options.indentArrayItems;
@@ -392,7 +393,10 @@ public class FormatVisitor extends DefaultVisitor {
 			addFormatToken(formatTokens);
 		    }
 		} else {
-		    addFormatToken(formatTokens);
+                    FormatToken lastToken = formatTokens.get(formatTokens.size() - 1);
+                    if (!(lastToken.getId() == FormatToken.Kind.TEXT && lastToken.getOffset() >= ts.offset())) {
+                        addFormatToken(formatTokens);
+                    }
 		}
 	    }
 	    ts.movePrevious();
@@ -459,7 +463,9 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(ConditionalExpression node) {
 	scan(node.getCondition());
 	boolean wrap = node.getIfTrue() != null ? true : false;
-	boolean putContinualIndent = !(path.get(1) instanceof Assignment);
+        ASTNode astNode = path.get(1);
+	boolean putContinualIndent = !(astNode instanceof Assignment
+                || astNode instanceof ReturnStatement);
 	if (wrap) {
 	    while (ts.moveNext()
 		    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString()))) {
@@ -532,9 +538,10 @@ public class FormatVisitor extends DefaultVisitor {
 	    super.visit(node);
 	} else {
 	    addAllUntilOffset(node.getStartOffset());
-	    if (ts.moveNext()) {
+	    if (moveNext()) {
 		addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
-		boolean addIndent = !(node.getExpression() instanceof MethodInvocation);
+                Expression expression = node.getExpression();
+		boolean addIndent = !(expression instanceof MethodInvocation || expression instanceof StaticMethodInvocation);
 		if (addIndent) {
 		    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
 		    super.visit(node);
@@ -571,7 +578,7 @@ public class FormatVisitor extends DefaultVisitor {
 		|| ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof FieldsDeclaration))) {
 	    //addAllUntilOffset(statements.get(index).getEndOffset() + 1);
 	    addRestOfLine();
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset() + ts.token().length()));
+	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELD, ts.offset() + ts.token().length()));
 	}
     }
 
@@ -736,7 +743,7 @@ public class FormatVisitor extends DefaultVisitor {
                     ftoken = formatTokens.get(formatTokens.size() - 1);
                 }
                 if (ftoken.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
-                    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), -1 * options.continualIndentSize));
+                    formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
                     for(int i = removed.size() - 1; i > -1; i--) {
                         formatTokens.add(removed.get(i));
                     }
@@ -744,7 +751,7 @@ public class FormatVisitor extends DefaultVisitor {
                     for(int i = removed.size() - 1; i > -1; i--) {
                         formatTokens.add(removed.get(i));
                     }
-                    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), -1 * options.continualIndentSize));
+                    formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
                 }
             }
 	}
@@ -924,6 +931,18 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(ReturnStatement node) {
+        while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_RETURN) {
+            addFormatToken(formatTokens);
+        }
+        // add return
+        addFormatToken(formatTokens);
+        formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        super.visit(node);
+        formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+    }
+    
+    @Override
     public void visit(SingleFieldDeclaration node) {
 	scan(node.getName());
 	if (node.getValue() != null) {
@@ -1030,12 +1049,33 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 	includeWSBeforePHPDoc = true;
 
-
+        isFirstUseStatementPart = true;
 	super.visit(node);
 	if (isNextNodeTheSameInBlock(path.get(1), node)) {
 	    addRestOfLine();
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_USE, ts.offset() + ts.token().length()));
 	}
+    }
+
+    @Override
+    public void visit(UseStatementPart statementPart) {
+        FormatToken lastFormatToken = formatTokens.get(formatTokens.size() - 1);
+        boolean lastRemoved = false;
+        if (ts.token().id() == PHPTokenId.PHP_NS_SEPARATOR 
+                && lastFormatToken.getId() == FormatToken.Kind.TEXT
+                && "\\".equals(lastFormatToken.getOldText())) {
+            formatTokens.remove(formatTokens.size() - 1);
+            lastRemoved = true;
+        }
+        if (isFirstUseStatementPart) {
+            formatTokens.add(new FormatToken.AnchorToken(ts.offset()));
+            isFirstUseStatementPart = false;
+        }
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USES_PART, ts.offset()));
+        if (lastRemoved) {
+            formatTokens.add(lastFormatToken);
+        }
+        super.visit(statementPart);
     }
 
     private int lastIndex = -1;
@@ -1045,7 +1085,7 @@ public class FormatVisitor extends DefaultVisitor {
         assert showAssertFor188809 = true;
         if (showAssertFor188809) {
             try {
-                assert false : "The same token (index: " + ts.index() + " - " + ts.token().id() + ")  was precessed before.\nPlease report this to help fix issue 188809.\n\n" // sNOI18N
+                assert false : "The same token (index: " + ts.index() + " - " + ts.token().id() + ", format tokens: " + formatTokens.size() + ")  was precessed before.\nPlease report this to help fix issue 188809.\n\n" // sNOI18N
                         + document.getText(0, document.getLength() - 1);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
@@ -1057,6 +1097,8 @@ public class FormatVisitor extends DefaultVisitor {
     private void addFormatToken(List<FormatToken> tokens) {
         if (lastIndex == ts.index()) {
             showAssertionFor188809();
+            ts.moveNext();
+            return;
         }
         lastIndex = ts.index();
 	switch (ts.token().id()) {
@@ -1330,7 +1372,7 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     private void addAllUntilOffset(int offset) {
-	while (ts.moveNext() && ts.offset() < offset) {
+	while (moveNext() && ts.offset() < offset) {
 	    addFormatToken(formatTokens);
 	}
 	ts.movePrevious();
@@ -1528,6 +1570,15 @@ public class FormatVisitor extends DefaultVisitor {
 	    scan(body);
 	    addEndOfUnbreakableSequence(body.getEndOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+    }
+    
+    private boolean moveNext() {
+        boolean value = ts.moveNext();
+        if (value) {
+            FormatToken last = formatTokens.get(formatTokens.size() -1 );
+            value =  !(last.getId() == FormatToken.Kind.TEXT && last.getOffset() >= ts.offset());
+        }
+        return value;
     }
 
     protected static boolean isWhitespace (final CharSequence text) {

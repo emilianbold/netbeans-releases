@@ -308,7 +308,7 @@ public class PHPIndexTest extends TestBase {
         assertEquals(fncName.getQueryName(), fncA.getName());
 
         List<ParameterElement> parameters = fncA.getParameters();
-        assertEquals(parameters.size(), 3);
+        assertEquals(parameters.size(), 4);
 
         final ParameterElement firstParam = parameters.get(1);
         assertTrue(firstParam.isMandatory());
@@ -328,11 +328,17 @@ public class PHPIndexTest extends TestBase {
         assertTrue(secondType.canBeResolved());
         assertEquals("ParameterClass", secondType.getRawTypeName());
 
-        final ParameterElement lastParam = parameters.get(2);
-        assertFalse(lastParam.isMandatory());
-        assertEquals("\"test\"", lastParam.getDefaultValue());
-        assertFalse(lastParam.hasDeclaredType());
-        assertEquals(0, lastParam.getTypes().size());
+        final ParameterElement thirdParam = parameters.get(2);
+        assertFalse(thirdParam.isMandatory());
+        assertEquals("\"test\"", thirdParam.getDefaultValue());
+        assertFalse(thirdParam.hasDeclaredType());
+        assertEquals(0, thirdParam.getTypes().size());
+        
+        final ParameterElement fourthParam = parameters.get(3);
+        assertFalse(fourthParam.isMandatory());
+        assertEquals("MY_CONST", fourthParam.getDefaultValue());
+        assertFalse(fourthParam.hasDeclaredType());
+        assertEquals(0, thirdParam.getTypes().size());
     }
 
     /**

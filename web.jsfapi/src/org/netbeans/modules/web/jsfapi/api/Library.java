@@ -44,6 +44,7 @@ public interface Library extends LibraryInfo {
 
     public String getDefaultNamespace();
 
+    @Deprecated
     public LibraryType getType();
 
     public Collection<? extends LibraryComponent> getComponents();

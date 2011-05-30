@@ -224,6 +224,9 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 Scope inScope = getInScope();
                 if (inScope != null) {
                     inScope = inScope.getInScope();
+                    if (isGloballyVisible() && inScope instanceof ClassScope) {
+                        inScope = inScope.getInScope();
+                    }
                 }
                 if (inScope instanceof VariableScope) {
                     VariableScope varScope = (VariableScope)inScope;

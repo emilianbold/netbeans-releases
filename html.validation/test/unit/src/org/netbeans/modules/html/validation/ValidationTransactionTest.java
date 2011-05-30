@@ -186,7 +186,7 @@ public class ValidationTransactionTest extends TestBase {
         ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
         validate(code, true, result.getHtmlVersion(), vt);
 
-        assertSame(ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION, vt.parser);
+        assertSame(ParserMode.XML_NO_EXTERNAL_ENTITIES, vt.parser);
         assertNotNull(vt.xmlParser);
         assertNull(vt.htmlParser);
     }
@@ -206,7 +206,7 @@ public class ValidationTransactionTest extends TestBase {
         ValidationTransaction vt = ValidationTransaction.create(result.getHtmlVersion());
         validate(code, true, result.getHtmlVersion(), vt);
 
-        assertSame(ParserMode.XML_EXTERNAL_ENTITIES_NO_VALIDATION, vt.parser);
+        assertSame(ParserMode.XML_NO_EXTERNAL_ENTITIES, vt.parser);
         assertNotNull(vt.xmlParser);
         assertNull(vt.htmlParser);
     }

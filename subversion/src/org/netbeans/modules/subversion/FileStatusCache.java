@@ -95,7 +95,7 @@ public class FileStatusCache {
      */ 
     private static final Map<File, FileInformation> NOT_MANAGED_MAP = new NotManagedMap();
        
-    public static final ISVNStatus REPOSITORY_STATUS_UNKNOWN  = null;
+    public static final RepositoryStatus REPOSITORY_STATUS_UNKNOWN  = null;
 
     // Constant FileInformation objects that can be safely reused
     // Files that have a revision number cannot share FileInformation objects 
@@ -490,7 +490,7 @@ public class FileStatusCache {
      * @param file
      * @param repositoryStatus
      */ 
-    public FileInformation refresh(File file, ISVNStatus repositoryStatus) {
+    public FileInformation refresh(File file, RepositoryStatus repositoryStatus) {
         return refresh(file, repositoryStatus, false);
     }
     
@@ -536,7 +536,7 @@ public class FileStatusCache {
         }
     }    
     
-    private FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
+    private FileInformation refresh (File file, RepositoryStatus repositoryStatus, boolean forceChangeEvent) {
         
         boolean refreshDone = false;
         FileInformation current = null;
@@ -723,11 +723,11 @@ public class FileStatusCache {
         propertySupport.removePropertyChangeListener(listener);
     }
     
-    // --- Package private contract ------------------------------------------
-    
-    boolean ready() {
+    public boolean ready() {
         return ready;
     }
+    
+    // --- Package private contract ------------------------------------------
 
     /**
      * compute the cache index
@@ -896,7 +896,7 @@ public class FileStatusCache {
      * @param status entry for this file or null if the file is unknown to subversion
      * @return FileInformation file/folder status bean
      */ 
-    private FileInformation createFileInformation(File file, ISVNStatus status, ISVNStatus repositoryStatus) {
+    private FileInformation createFileInformation(File file, ISVNStatus status, RepositoryStatus repositoryStatus) {
         if (status == null || status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
             if (!SvnUtils.isManaged(file)) {
                 return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
@@ -914,34 +914,38 @@ public class FileStatusCache {
      * @param status status of the file/folder as reported by the CVS server 
      * @return FileInformation file/folder status bean
      */ 
-    private FileInformation createVersionedFileInformation(File file, ISVNStatus status, ISVNStatus repositoryStatus) {
+    private FileInformation createVersionedFileInformation(File file, ISVNStatus status, RepositoryStatus repositoryStatus) {
 
         SVNStatusKind kind = status.getTextStatus();
         SVNStatusKind pkind = status.getPropStatus();
 
         int remoteStatus = 0;
         if (repositoryStatus != REPOSITORY_STATUS_UNKNOWN) {
-            if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.MODIFIED
-            || repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.MODIFIED) {
+            if (repositoryStatus.getStatus().getRepositoryTextStatus() == SVNStatusKind.MODIFIED
+            || repositoryStatus.getStatus().getRepositoryPropStatus() == SVNStatusKind.MODIFIED) {
                 remoteStatus = FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY;
-            } else if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.DELETED
+            } else if (repositoryStatus.getStatus().getRepositoryTextStatus() == SVNStatusKind.DELETED
             /*|| repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.DELETED*/) {
                 remoteStatus = FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY;
-            } else if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.ADDED
-                        || repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.REPLACED) {
+            } else if (repositoryStatus.getStatus().getRepositoryTextStatus() == SVNStatusKind.ADDED
+                        || repositoryStatus.getStatus().getRepositoryTextStatus() == SVNStatusKind.REPLACED) {
                 // solved in createMissingfileInformation
-            } else if ( (repositoryStatus.getRepositoryTextStatus() == null &&
-                         repositoryStatus.getRepositoryPropStatus() == null)
+            } else if ( (repositoryStatus.getStatus().getRepositoryTextStatus() == null &&
+                         repositoryStatus.getStatus().getRepositoryPropStatus() == null)
                         ||
-                        (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.NONE &&
-                         repositoryStatus.getRepositoryPropStatus() == SVNStatusKind.NONE))
+                        (repositoryStatus.getStatus().getRepositoryTextStatus() == SVNStatusKind.NONE &&
+                         repositoryStatus.getStatus().getRepositoryPropStatus() == SVNStatusKind.NONE))
             {
                 // no remote change at all
             } else {
                 // so far above were observed....
                 Subversion.LOG.log(Level.WARNING,"SVN.FSC: unhandled repository status: {0}" + "\n" +   // NOI18N
                                        "\ttext: " + "{1}" + "\n" +             // NOI18N
-                                       "\tprop: " + "{2}", new Object[]{file.getAbsolutePath(), repositoryStatus.getRepositoryTextStatus(), repositoryStatus.getRepositoryPropStatus()});                    // NOI18N
+                                       "\tprop: " + "{2}", new Object[] { file.getAbsolutePath(), repositoryStatus.getStatus().getRepositoryTextStatus(), //NOI18N
+                                           repositoryStatus.getStatus().getRepositoryPropStatus() });
+            }
+            if (repositoryStatus.getLock() != null) {
+                remoteStatus |= FileInformation.STATUS_LOCKED_REMOTELY;
             }
         }
         
@@ -1009,7 +1013,7 @@ public class FileStatusCache {
      * @param file file/folder to examine
      * @return FileInformation file/folder status bean
      */ 
-    private FileInformation createMissingEntryFileInformation(File file, ISVNStatus repositoryStatus) {
+    private FileInformation createMissingEntryFileInformation(File file, RepositoryStatus repositoryStatus) {
         
         // ignored status applies to whole subtrees
         boolean exists = file.exists();
@@ -1066,9 +1070,9 @@ public class FileStatusCache {
             }
         } else {
             if (repositoryStatus != REPOSITORY_STATUS_UNKNOWN) {
-                if (repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.ADDED
-                        || repositoryStatus.getRepositoryTextStatus() == SVNStatusKind.REPLACED) {
-                    boolean folder = repositoryStatus.getNodeKind() == SVNNodeKind.DIR;
+                if (repositoryStatus.getStatus().getRepositoryTextStatus() == SVNStatusKind.ADDED
+                        || repositoryStatus.getStatus().getRepositoryTextStatus() == SVNStatusKind.REPLACED) {
+                    boolean folder = repositoryStatus.getStatus().getNodeKind() == SVNNodeKind.DIR;
                     return new FileInformation(FileInformation.STATUS_VERSIONED_NEWINREPOSITORY, folder);
                 }
             }
@@ -1094,30 +1098,6 @@ public class FileStatusCache {
     private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
         getLabelsCache().remove(file); // remove info from label cache, it could change
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
-    }
-
-    public void setCommand(int command) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logCommandLine(String commandLine) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logMessage(String message) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logError(String message) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logRevision(long revision, String path) {
-        // boring ISVNNotifyListener event
-    }
-
-    public void logCompleted(String message) {
-        // boring ISVNNotifyListener event
     }
 
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
@@ -1524,6 +1504,24 @@ public class FileStatusCache {
                 hash = 53 * hash + (this.stickyString != null ? this.stickyString.hashCode() : 0);
                 return hash;
             }
+        }
+    }
+
+    public static class RepositoryStatus {
+        private final ISVNStatus status;
+        private final ISVNLock lock;
+
+        public RepositoryStatus (ISVNStatus status, ISVNLock lock) {
+            this.status = status;
+            this.lock = lock;
+        }
+
+        public ISVNStatus getStatus () {
+            return status;
+        }
+
+        public ISVNLock getLock () {
+            return lock;
         }
     }
 }

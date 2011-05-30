@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package multi.stateful.ejbs.remote;
 
 import java.rmi.RemoteException;
@@ -11,10 +10,9 @@ import javax.ejb.EJBHome;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 public interface MRSSRemoteHome extends EJBHome {
-
-    multi.stateful.ejbs.remote.MRSSRemote create()  throws CreateException, RemoteException;
     
+    multi.stateful.ejbs.remote.MRSSRemote create() throws CreateException, RemoteException;
 }

@@ -56,7 +56,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -115,16 +115,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.19</specification-version>
+                        <specification-version>1.10.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -239,6 +230,11 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.asm</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.discovery</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -248,11 +244,6 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.dwarfdump</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.cnd.asm</code-name-base>
-                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -285,6 +276,10 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.dlight.remote.impl</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -300,10 +295,6 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -341,11 +332,14 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <package>org.netbeans.modules.cnd.discovery.api</package>
                 <package>org.netbeans.modules.cnd.discovery.wizard.api</package>
+                <package>org.netbeans.modules.cnd.discovery.wizard.api.support</package>
             </friend-packages>
         </data>
     </configuration>

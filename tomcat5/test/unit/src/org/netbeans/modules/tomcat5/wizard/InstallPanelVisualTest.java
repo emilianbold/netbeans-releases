@@ -75,7 +75,7 @@ public class InstallPanelVisualTest extends NbTestCase {
     }
     
     public void testIsServerXmlValid() {
-        InstallPanelVisual inst = new InstallPanelVisual(TomcatVersion.TOMCAT_55);
+        InstallPanelVisual inst = new InstallPanelVisual();
         for (int i = 0; true; i++) {
             File serverXml = new File(datadir, "conf/valid/server_" + i + ".xml");
             if (!serverXml.exists()) {

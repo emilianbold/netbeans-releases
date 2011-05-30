@@ -55,16 +55,24 @@ import org.openide.util.HelpCtx;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Top component of the Versioning view.
  * 
  * @author Maros Sandor
  */
-public class HgVersioningTopComponent extends TopComponent {
+@TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_ALWAYS, preferredID=HgVersioningTopComponent.PREFERRED_ID)
+@TopComponent.Registration(mode="output", openAtStartup=false, position=3109)
+public class HgVersioningTopComponent extends TopComponent implements Externalizable {
    
     private static final long serialVersionUID = 1L;    
     
@@ -73,7 +81,7 @@ public class HgVersioningTopComponent extends TopComponent {
     private String                  contentTitle;
     private String                  branchTitle;
     private long                    lastUpdateTimestamp;
-    private static final String PREFERRED_ID = "hgversioning"; // NOI18N
+    public static final String PREFERRED_ID = "hgversioningTC"; // NOI18N
     
     private static HgVersioningTopComponent instance;
 
@@ -89,22 +97,51 @@ public class HgVersioningTopComponent extends TopComponent {
         add(syncPanel);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
 
+    @Override
     protected void componentActivated() {
         updateTitle();
         syncPanel.focus();
     }
 
+    @Override
     protected void componentOpened() {
         super.componentOpened();
         refreshContent();
     }
 
+    @Override
     protected void componentClosed() {
         super.componentClosed();
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeObject(this.contentTitle);
+        out.writeObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        setContentTitle((String) in.readObject());
+        File[] files = (File[]) in.readObject();
+        List<Node> nodes = new LinkedList<Node>();
+        for (File file : files) {
+            nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)) {
+                @Override
+                public String getDisplayName() {
+                    return getLookup().lookup(File.class).getName();
+                }
+            });
+        }
+        VCSContext ctx = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+        setContext(ctx);
     }
 
     private void refreshContent() {
@@ -142,8 +179,8 @@ public class HgVersioningTopComponent extends TopComponent {
     
     private void updateTitle() {
         SwingUtilities.invokeLater(new Runnable (){
+            @Override
             public void run() {
-                
                 if (contentTitle == null) {
                     setName(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
                 } else {
@@ -163,6 +200,7 @@ public class HgVersioningTopComponent extends TopComponent {
                                 contentTitle, name.equals(contentTitle)? "": "[" + name + "] ", branchTitle)); // NOI18N
                     }
                 }                
+                setToolTipText(getName());
             }
         });
     }
@@ -201,28 +239,6 @@ public class HgVersioningTopComponent extends TopComponent {
         return getDefault();
     }
 
-    public int getPersistenceType() {
-        // #129268: Need VCSContext to be persistable for this to be set to PERSISTENCE_ALWAYS
-        return TopComponent.PERSISTENCE_NEVER; 
-    }
-    
-    /** replaces this in object stream */
-    public Object writeReplace() {
-        return new ResolvableHelper();
-    }
-    
-    protected String preferredID() {
-        return PREFERRED_ID;
-    }
-    
-    final static class ResolvableHelper implements Serializable {
-        private static final long serialVersionUID = 1L;
-        public Object readResolve() {
-            return HgVersioningTopComponent.getDefault();
-        }
-    }
-    
-
     /**
      * Programmatically invokes the Refresh action.
      */ 
@@ -250,19 +266,7 @@ public class HgVersioningTopComponent extends TopComponent {
             setBranchTitle(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_VersioningView_UnnamedBranchTitle")); // NOI18N
             refreshContent();
         }
-        setToolTipText(getContextFilesList(ctx, NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"))); // NOI18N            
-    }
-    
-    private String getContextFilesList(VCSContext ctx, String def) {
-        if (ctx == null || ctx.getRootFiles().size() == 0) return def;
-        StringBuffer sb = new StringBuffer(200);
-        sb.append("<html>"); // NOI18N
-        for (File file : ctx.getRootFiles()) {
-            sb.append(file.getAbsolutePath());
-            sb.append("<br>"); // NOI18N
-        }
-        sb.delete(sb.length() - 4, Integer.MAX_VALUE);
-        return sb.toString();
+        setToolTipText(getName());
     }
 
     /** Tests whether it shows some content. */

@@ -65,9 +65,11 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequestPopulationException;
 import org.apache.maven.execution.MavenExecutionRequestPopulator;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.mapping.Lifecycle;
 import org.apache.maven.lifecycle.mapping.LifecycleMapping;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -81,7 +83,10 @@ import org.apache.maven.settings.building.SettingsBuildingException;
 import org.apache.maven.settings.building.SettingsBuildingRequest;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
+import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
  *
@@ -96,6 +101,8 @@ public final class MavenEmbedder {
     public static final File DEFAULT_USER_SETTINGS_FILE = new File(userMavenConfigurationHome, "settings.xml");
     public static final File DEFAULT_GLOBAL_SETTINGS_FILE =
             new File(System.getProperty("maven.home", System.getProperty("user.dir", "")), "conf/settings.xml");
+
+    private static final Logger LOG = Logger.getLogger(MavenEmbedder.class.getName());
     private final PlexusContainer plexus;
     private final DefaultMaven maven;
     private final ProjectBuilder projectBuilder;
@@ -103,6 +110,8 @@ public final class MavenEmbedder {
     private final MavenExecutionRequestPopulator populator;
     private final SettingsBuilder settingsBuilder;
     private final EmbedderConfiguration embedderConfiguration;
+    private long settingsTimestamp;
+    private Settings settings;
 
     MavenEmbedder(EmbedderConfiguration configuration) throws ComponentLookupException {
         embedderConfiguration = configuration;
@@ -143,15 +152,24 @@ public final class MavenEmbedder {
         }
     }
 
-    public Settings getSettings() {
+    public synchronized Settings getSettings() {
+        long newSettingsTimestamp = DEFAULT_GLOBAL_SETTINGS_FILE.lastModified() ^ DEFAULT_USER_SETTINGS_FILE.lastModified();
+        // could be included but currently constant: hashCode() of those files; getSystemProperties.hashCode()
+        if (settings != null && settingsTimestamp == newSettingsTimestamp) {
+            LOG.log(Level.FINER, "settings.xml cache hit for {0}", this);
+            return settings;
+        }
+        LOG.log(Level.FINE, "settings.xml cache miss for {0}", this);
         SettingsBuildingRequest req = new DefaultSettingsBuildingRequest();
         req.setGlobalSettingsFile(DEFAULT_GLOBAL_SETTINGS_FILE);
         req.setUserSettingsFile(DEFAULT_USER_SETTINGS_FILE);
         req.setSystemProperties(getSystemProperties());
         try {
-            return settingsBuilder.build(req).getEffectiveSettings();
+            settings = settingsBuilder.build(req).getEffectiveSettings();
+            settingsTimestamp = newSettingsTimestamp;
+            return settings;
         } catch (SettingsBuildingException x) {
-            Logger.getLogger(MavenEmbedder.class.getName()).log(Level.FINE, null, x); // #192768: do not even bother logging to console by default, too noisy
+            LOG.log(Level.FINE, null, x); // #192768: do not even bother logging to console by default, too noisy
             return new Settings();
         }
     }
@@ -189,24 +207,25 @@ public final class MavenEmbedder {
         }
     }
 
-    public Artifact createArtifactWithClassifier(String groupId, String artifactId, String version, String type, String classifier) {
+    public Artifact createArtifactWithClassifier(@NonNull String groupId, @NonNull String artifactId, @NonNull String version, String type, String classifier) {
         return repositorySystem.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
     }
 
-    public Artifact createArtifact(String groupId, String artifactId, String version, String packaging ){
+    public Artifact createArtifact(@NonNull String groupId, @NonNull String artifactId, @NonNull String version, @NonNull String packaging) {
          return repositorySystem.createArtifact(groupId,  artifactId,  version,  packaging);
     }
 
-    public Artifact createArtifact(String groupId, String artifactId, String version, String scope, String type ){
+    public Artifact createArtifact(@NonNull String groupId, @NonNull String artifactId, @NonNull String version, String scope, String type) {
          return repositorySystem.createArtifact( groupId,  artifactId,  version,   scope,  type);
     }
 
-    public Artifact createProjectArtifact(String groupId, String artifactId, String version ){
+    public Artifact createProjectArtifact(@NonNull String groupId, @NonNull String artifactId, @NonNull String version) {
         return repositorySystem.createProjectArtifact(groupId, artifactId, version);
     }
 
 
     public void resolve(Artifact sources, List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException {
+        setUpLegacySupport();
         ArtifactResolutionRequest req = new ArtifactResolutionRequest();
         req.setLocalRepository(localRepository);
         req.setRemoteRepositories(remoteRepositories);
@@ -250,7 +269,7 @@ public final class MavenEmbedder {
         try {
             return plexus.lookup(clazz);
         } catch (ComponentLookupException ex) {
-            Logger.getLogger(MavenEmbedder.class.getName()).warning(ex.getMessage());
+            LOG.warning(ex.getMessage());
         }
         return null;
     }
@@ -286,4 +305,16 @@ public final class MavenEmbedder {
 
         return req;
     }
+
+    /**
+     * Needed to avoid an NPE in {@link org.sonatype.aether.impl.internal.DefaultArtifactResolver#resolveArtifacts} under some conditions.
+     * (Also {@link org.sonatype.aether.impl.internal.DefaultMetadataResolver#resolve}; wherever a {@link org.sonatype.aether.RepositorySystemSession} is used.)
+     * Should be called in the same thread as whatever thread was throwing the NPE.
+     */
+    public void setUpLegacySupport() {
+        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
+        session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(getLocalRepository().getBasedir()));
+        lookupComponent(LegacySupport.class).setSession(new MavenSession(getPlexus(), session, new DefaultMavenExecutionRequest(), new DefaultMavenExecutionResult()));
+    }
+
 }

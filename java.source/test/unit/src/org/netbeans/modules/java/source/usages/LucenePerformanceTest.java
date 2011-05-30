@@ -103,7 +103,7 @@ public class LucenePerformanceTest extends NbTestCase {
 //        Map<String,List<String>> data = loadData(new File ("/tmp/data"));
 //        storeData(new File ("/tmp/data"),data);
         long startTime = System.currentTimeMillis();
-        index.store (data, Collections.<Pair<String,String>>emptySet(), DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(), true);
+        index.store (data, Collections.<Pair<String,String>>emptySet(), DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(false), true);
         long endTime = System.currentTimeMillis();
         long delta = (endTime-startTime);
         System.out.println("Indexing: " + delta);

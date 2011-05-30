@@ -55,7 +55,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.10.0.1</specification-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -79,7 +79,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.8</specification-version>
+                        <specification-version>1.10.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -203,7 +203,11 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
+                <package>org.netbeans.modules.cnd.debugger.gdb2</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

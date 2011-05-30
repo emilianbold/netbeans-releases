@@ -5196,4 +5196,29 @@ public class FormatterTestCase extends EditorBase {
                 "};\n"
                 );
     }
+
+    public void test194813() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "class A\n" +
+                "{\n" +
+                "};\n" +
+                "\n" +
+                "A* foo(A* t)\n" +
+                "{\n" +
+                "    return dynamic_cast< ::A * > (t);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect < :: formatting",
+                "class A\n" +
+                "{\n" +
+                "};\n" +
+                "\n" +
+                "A* foo(A* t)\n" +
+                "{\n" +
+                "    return dynamic_cast< ::A *> (t);\n" +
+                "}\n"
+                );
+    }
 }

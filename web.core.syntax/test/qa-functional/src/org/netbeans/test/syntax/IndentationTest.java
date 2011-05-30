@@ -124,7 +124,7 @@ public class IndentationTest extends CompletionTest {
                 CompletionJListOperator.hideAll();
                 int invocationPossition = eOperator.txtEditorPane().getCaret().getDot();
                 eOperator.pushKey(KeyEvent.VK_ENTER);
-                eOperator.waitModified(true);
+                eOperator.waitModified(true);              
                 Thread.sleep(1000);
                 CompletionJListOperator.hideAll();
                 int shift = eOperator.txtEditorPane().getCaret().getDot() - invocationPossition;
@@ -134,7 +134,7 @@ public class IndentationTest extends CompletionTest {
                     ref(actualPossition.start + " -> " + eOperator.txtEditorPane().getCaretPosition());
                     Thread.sleep(2000);
                 }
-                actualPossition = getNextPossition(eOperator.getText(), actualPossition.start + 1);
+                actualPossition = getNextPossition(doc.getText(0, doc.getLength()), actualPossition.start + 1); // modified, previous version: actualPossition = getNextPossition(eOperator.getText(), actualPossition.start + 1);
             }
             if (debugMode) {
                 ref(new EditorOperator(testFileObj.getName()).getText());

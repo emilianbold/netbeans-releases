@@ -198,9 +198,11 @@ public class OverridingMethodsImpl implements OverridingMethods {
             StringBuilder sb = new StringBuilder(30);
             TypeElement type = (TypeElement) getElement();
             sb.append(type.getFullyQualifiedName().toNotFullyQualified().toString());
-            sb.append(" ("); // NOI18N
-            sb.append(type.getFileObject().getNameExt());
-            sb.append(")"); // NOI18N
+            if (type.getFileObject() != null) {
+                sb.append(" ("); // NOI18N
+                sb.append(type.getFileObject().getNameExt());
+                sb.append(")"); // NOI18N
+            }
             return sb.toString();
         }
     }

@@ -46,8 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -56,6 +54,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -66,7 +66,7 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
 
     private final CharSequence alias;
     private final CharSequence namespace;
-    private final CharSequence[] rawName;
+    private final CharSequence rawName;
     
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
 
@@ -167,7 +167,7 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
         return getName();
     }
     
-    private static CharSequence[] createRawName(AST node) {
+    private static CharSequence createRawName(AST node) {
         AST token = node.getFirstChild();
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
             token = token.getNextSibling();
@@ -178,12 +178,12 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
                 return AstUtil.getRawName(token.getFirstChild());
             }
         }
-        return new CharSequence[0];
+        return CharSequences.empty();
     }
 
     @Override
     public CharSequence[] getRawName() {
-        return rawName;
+        return AstUtil.toRawName(rawName);
     }
     
     @Override
@@ -209,26 +209,26 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
     // iml of SelfPersistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.alias != null;
         PersistentUtils.writeUTF(alias, output);
         assert this.namespace != null;
         PersistentUtils.writeUTF(namespace, output);
-        PersistentUtils.writeStrings(this.rawName, output);
+        PersistentUtils.writeUTF(this.rawName, output);
         
         // save cached namespace
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedNamespaceUID, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
     
-    public NamespaceAliasImpl(DataInput input) throws IOException {
+    public NamespaceAliasImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.alias = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.alias != null;
         this.namespace = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.namespace != null;
-        this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
+        this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
         
         // read cached namespace
         this.referencedNamespaceUID = UIDObjectFactory.getDefaultFactory().readUID(input);

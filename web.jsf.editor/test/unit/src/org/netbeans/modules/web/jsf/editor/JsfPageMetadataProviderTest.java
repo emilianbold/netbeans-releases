@@ -48,6 +48,7 @@ import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.web.common.api.WebPageMetadata;
+import org.netbeans.modules.web.jsfapi.api.JsfUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -93,7 +94,7 @@ public class JsfPageMetadataProviderTest extends TestBaseForTestProject {
         assertFalse(namespaces.contains("http://www.w3.org/1999/xhtml"));
 
         //test mimetype
-        assertEquals(JsfPageMetadataProvider.JSF_PAGE_MIMETYPE, meta.value(WebPageMetadata.MIMETYPE));
+        assertEquals(JsfUtils.JSF_XHTML_FILE_MIMETYPE, meta.value(WebPageMetadata.MIMETYPE));
     }
 
     public void testNoPageMetadataForPlainXHTML() {

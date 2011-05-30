@@ -55,7 +55,7 @@ public final class PhpDocPreferences {
     public static String getPhpDocTarget(PhpModule phpModule, boolean showPanel) {
         Preferences preferences = getPreferences(phpModule);
         String phpDocTarget = preferences.get(PHPDOC_TARGET, null);
-        if (phpDocTarget == null && showPanel) {
+        if ((phpDocTarget == null || phpDocTarget.isEmpty()) && showPanel) {
             phpDocTarget = BrowseFolderPanel.open(phpModule);
             if (phpDocTarget == null) {
                 // cancelled

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.28
+#Version 6.34.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -272,8 +272,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,changeSupportLock,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,opaquePropertyChangeListener,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public init()
@@ -353,11 +353,12 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
+meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,ncomponents,numOfHWComponents,numOfLWComponents,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public abstract interface java.awt.ItemSelectable
@@ -861,7 +862,7 @@ meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
 meth public void update(java.awt.Graphics)
 meth public void updateUI()
 supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
+hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
 CLSS public javax.swing.JMenu
@@ -1325,7 +1326,7 @@ meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removeVetoableChangeListener(java.beans.VetoableChangeListener)
 meth public void setState(java.lang.Object)
 supr java.lang.Object
-hfds PROP_CHANGE_IMMEDIATE,beans,change,changeImmediate,dummyDescriptor,editable,factory,featureDescriptor,state,support
+hfds LOG,PROP_CHANGE_IMMEDIATE,beans,change,changeImmediate,dummyDescriptor,editable,factory,featureDescriptor,state,support
 
 CLSS public abstract interface org.openide.explorer.propertysheet.PropertyModel
 fld public final static java.lang.String PROP_VALUE = "value"
@@ -1382,7 +1383,7 @@ meth public void setPreferences(int)
 meth public void updateValue()
 supr javax.swing.JComponent
 hfds beans,changeImmediate,displayer,initializing,inner,isGtk,listener,model,preferences,prop,reusableEnv,reusableModel,settingModel
-hcls AccessiblePropertyPanel,CustomEditorProxyAction,Listener
+hcls AccessiblePropertyPanel,BridgeAccessor,CustomEditorProxyAction,Listener
 
 CLSS public org.openide.explorer.propertysheet.PropertySheet
 cons public init()
@@ -1725,6 +1726,7 @@ cons public init(java.lang.String)
 meth protected int getAllowedDropActions(java.awt.datatransfer.Transferable)
 meth protected org.netbeans.swing.outline.OutlineModel createOutlineModel(org.openide.explorer.view.NodeTreeModel,org.netbeans.swing.outline.RowModel,java.lang.String)
 meth public !varargs final void setPropertyColumns(java.lang.String[])
+meth public boolean isDefaultActionAllowed()
 meth public boolean isDragSource()
 meth public boolean isDropTarget()
 meth public boolean isExpanded(org.openide.nodes.Node)
@@ -1736,6 +1738,8 @@ meth public final void addPropertyColumn(java.lang.String,java.lang.String,java.
 meth public final void setPropertyColumnDescription(java.lang.String,java.lang.String)
 meth public int getAllowedDragActions()
 meth public int getAllowedDropActions()
+meth public int getHorizontalScrollBarPolicy()
+meth public int getTreeHorizontalScrollBarPolicy()
 meth public org.netbeans.swing.outline.Outline getOutline()
 meth public org.openide.explorer.view.NodePopupFactory getNodePopupFactory()
 meth public void addNotify()
@@ -1748,17 +1752,19 @@ meth public void removeTreeExpansionListener(javax.swing.event.TreeExpansionList
 meth public void requestFocus()
 meth public void setAllowedDragActions(int)
 meth public void setAllowedDropActions(int)
+meth public void setDefaultActionAllowed(boolean)
 meth public void setDragSource(boolean)
 meth public void setDropTarget(boolean)
 meth public void setNodePopupFactory(org.openide.explorer.view.NodePopupFactory)
 meth public void setPopupAllowed(boolean)
 meth public void setProperties(org.openide.nodes.Node$Property[])
  anno 0 java.lang.Deprecated()
+meth public void setTreeHorizontalScrollBarPolicy(int)
 meth public void setTreeSortable(boolean)
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JScrollPane
-hfds allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,manager,managerListener,model,outline,popupFactory,popupListener,rowModel,treeModel,wlpc,wlvc
-hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineViewOutline,PopupAction,PopupAdapter,PrototypeProperty,TableSelectionListener
+hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,manager,managerListener,model,outline,popupFactory,popupListener,rowModel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
+hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineScrollLayout,OutlineViewOutline,PopupAction,PopupAdapter,PrototypeProperty,ScrollListener,Selection,TableSelectionListener
 
 CLSS public org.openide.explorer.view.TableView
 cons public init()
@@ -1792,6 +1798,7 @@ cons public init(org.openide.explorer.view.NodeTableModel)
 fld protected javax.swing.JTable treeTable
 meth protected org.openide.explorer.view.NodeTreeModel createModel()
 meth protected void showSelection(javax.swing.tree.TreePath[])
+meth public boolean isExpanded(org.openide.nodes.Node)
 meth public boolean requestFocusInWindow()
 meth public final int getTableAutoResizeMode()
 meth public final int getTableColumnPreferredWidth(int)
@@ -1802,6 +1809,8 @@ meth public final void setTreePreferredWidth(int)
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
 meth public void addMouseListener(java.awt.event.MouseListener)
 meth public void addNotify()
+meth public void collapseNode(org.openide.nodes.Node)
+meth public void expandNode(org.openide.nodes.Node)
 meth public void removeMouseListener(java.awt.event.MouseListener)
 meth public void removeNotify()
 meth public void requestFocus()
@@ -1833,6 +1842,7 @@ meth public boolean isDragSource()
 meth public boolean isDropTarget()
 meth public boolean isExpanded(org.openide.nodes.Node)
 meth public boolean isPopupAllowed()
+meth public boolean isQuickSearchAllowed()
 meth public boolean isRootVisible()
 meth public boolean requestFocusInWindow()
 meth public int getAllowedDragActions()
@@ -1852,13 +1862,14 @@ meth public void setDefaultActionAllowed(boolean)
 meth public void setDragSource(boolean)
 meth public void setDropTarget(boolean)
 meth public void setPopupAllowed(boolean)
+meth public void setQuickSearchAllowed(boolean)
 meth public void setRootVisible(boolean)
 meth public void setSelectionMode(int)
 meth public void setUseSubstringInQuickSearch(boolean)
 meth public void updateUI()
 meth public void validate()
 supr javax.swing.JScrollPane
-hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,autoWaitCursor,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,isSynth,lastSearchField,manager,managerListener,origSelectionPaths,originalScrollMode,popupListener,quickSearchUsingSubstring,searchTextField,searchpanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
+hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,allowedQuickSearch,autoWaitCursor,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,isSynth,lastSearchField,manager,managerListener,origSelectionPaths,originalScrollMode,popupListener,quickSearchKeyAdapter,quickSearchUsingSubstring,removedNodeWasSelected,searchTextField,searchpanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
 hcls CursorR,DummyTransferHandler,ExplorerScrollPaneLayout,ExplorerTree,PopupAdapter,PopupSupport,SearchPanel,TreePropertyListener,VisualizerHolder
 
 CLSS public org.openide.explorer.view.Visualizer

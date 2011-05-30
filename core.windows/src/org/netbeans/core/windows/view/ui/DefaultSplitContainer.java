@@ -146,6 +146,8 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
 //            Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
 //            if (fillC != null) setBackground (fillC);
+            if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+                setOpaque( false);
         }
         
         public ModeView getModeView() {

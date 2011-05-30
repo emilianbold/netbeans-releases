@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +66,8 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Storage for project or namespace declarations.
@@ -83,7 +83,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
         declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
     }
 
-    protected DeclarationContainer(DataInput input) throws IOException {
+    protected DeclarationContainer(RepositoryDataInput input) throws IOException {
         super(input);
         declarations = UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(input, UniqueNameCache.getManager());
     }
@@ -334,7 +334,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
     }
 
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         try {
             declarationsLock.readLock().lock();

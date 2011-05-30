@@ -10,5 +10,5 @@ src/
 src/conf/
 src/conf/application.xml
 src/conf/MANIFEST.MF
-src/conf/sun-application.xml
+src/conf/glassfish-application.xml
 build.xml

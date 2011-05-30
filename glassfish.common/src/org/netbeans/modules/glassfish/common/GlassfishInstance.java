@@ -413,6 +413,24 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             return false;
         }
         GlassfishInstance other = (GlassfishInstance) obj;
+        if (null == getDeployerUri()) {
+            return false;
+        }
+        if (null == other.getDeployerUri()) {
+            return false;
+        }
+        if (null == commonSupport) {
+            return false;
+        }
+        if (null == commonSupport.getDomainName()) {
+            return false;
+        }
+        if (null == other.getCommonSupport()) {
+            return false;
+        }
+        if (null == other.getCommonSupport().getDomainName()) {
+            return false;
+        }
         return getDeployerUri().replace("127.0.0.1", "localhost").equals(other.getDeployerUri().replace("127.0.0.1", "localhost")) &&
                 commonSupport.getDomainName().equals(other.getCommonSupport().getDomainName()) &&
                 commonSupport.getDomainsRoot().equals(other.getCommonSupport().getDomainsRoot()) &&

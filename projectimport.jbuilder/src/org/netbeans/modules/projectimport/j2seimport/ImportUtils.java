@@ -67,7 +67,6 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -262,7 +261,7 @@ public final class ImportUtils {
     
     private void setJavaPlatform(final JavaPlatform platform, final AntProjectHelper helper) {
         Element pcd = helper.getPrimaryConfigurationData(true);
-        Element el = pcd.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+        Element el = pcd.getOwnerDocument().createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,
                 "explicit-platform"); // NOI18N
         
         pcd.appendChild(el);

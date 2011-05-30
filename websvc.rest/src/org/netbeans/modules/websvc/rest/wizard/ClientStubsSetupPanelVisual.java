@@ -67,7 +67,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
-import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.State;
+import org.netbeans.modules.websvc.rest.codegen.model.State;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -124,16 +124,8 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             sourceGroups = Util.getSourceGroups(project);
             SourceGroupUISupport.connect(locationCB, sourceGroups);
             String folderName = Constants.REST_STUBS_DIR;
-            if(createJmakiCheckBox.isSelected())
-                folderName = Constants.REST_JMAKI_DIR;
             folderTextField.setText(folderName);
             
-            if (isJmakiEnabled(project)) {
-                if (!createJmakiCheckBox.isEnabled()) {
-                    createJmakiCheckBox.setEnabled(true);
-                    createJmakiCheckBox.setSelected(true);
-                }
-            }
         }
     }
 
@@ -148,7 +140,6 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         if(wadlFile != null)
             wizard.putProperty(WizardProperties.WADL_TO_STUB, wadlFile);
         wizard.putProperty(WizardProperties.OVERWRITE_EXISTING, overwriteCheckBox.isSelected());
-        wizard.putProperty(WizardProperties.CREATE_JMAKI_REST_COMPONENTS, createJmakiCheckBox.isSelected());
         
         if (stubRootFolder == null && sourceGroups.length > 0) {
 
@@ -162,10 +153,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         if (path != null && path.trim().length() > 0) {
             path = folderTextField.getText();
         } else {
-            if(createJmakiCheckBox.isSelected())
-                path = Constants.REST_JMAKI_DIR;
-            else
-                path = Constants.REST_STUBS_DIR;
+            path = Constants.REST_STUBS_DIR;
         }
         wizard.putProperty(WizardProperties.STUB_FOLDER_NAME, path);
     }
@@ -195,41 +183,10 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 }
             }
         }
-        if(createJmakiCheckBox.isSelected() && !isJmakiEnabled(project)) {
-            AbstractPanel.setInfoMessage(wizard, "MSG_NoJmaki");
-            return false;
-        }
         AbstractPanel.clearErrorMessage(wizard);
         return true;
     }
 
-    private boolean isJmakiEnabled(Project project) {
-        FileObject fo = project.getProjectDirectory();
-
-        if(fo.getFileObject("web/glue.js") != null || 
-                fo.getFileObject("web/resources/jmaki.js") != null)     //NOI18N
-            return true;
-//        try {
-//            Class wmc = Class.forName("org.netbeans.modules.web.api.webmodule.WebModule");
-//            Constructor c = wmc.getConstructor(FileObject.class);
-//            c.setAccessible( true );
-//            Object wm = c.newInstance(fo);
-//            
-//            Class lp = Class.forName("org.netbeans.modules.sun.jmaki.LibraryProvider");
-//            Method[] methods = lp.getDeclaredMethods();
-//            for( Method m : methods ) {
-//                if( "isInWebModule".equals( m.getName() ) ) {
-//                    m.setAccessible( true );
-//                    Object res = m.invoke( wm );
-//                    return ((Boolean)res).booleanValue();
-//                }
-//            }
-//        } catch (Exception ex) {
-//            //ex.printStackTrace();
-//        }
-        return false;
-    }
-    
     public void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
     }
@@ -304,7 +261,6 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         overwriteCheckBox = new javax.swing.JCheckBox();
-        createJmakiCheckBox = new javax.swing.JCheckBox();
         projectRadioButton = new javax.swing.JRadioButton();
         wadlRadioButton = new javax.swing.JRadioButton();
         wadlBrowseButton = new javax.swing.JButton();
@@ -347,7 +303,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         projectList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "DESC_ProjectList")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_AddProject")); // NOI18N
-        addButton.setToolTipText("null");
+        addButton.setToolTipText(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "HINT_CustomizerProjectReferences_AddProject")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonshowProjectDialog(evt);
@@ -355,7 +311,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_RemoveProject")); // NOI18N
-        removeButton.setToolTipText("null");
+        removeButton.setToolTipText(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "HINT_CustomizerProjectReferences_RemoveProject")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -365,14 +321,6 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
 
         overwriteCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(overwriteCheckBox, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_OverwriteExisting")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(createJmakiCheckBox, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_CreateJmakiRestComponents")); // NOI18N
-        createJmakiCheckBox.setEnabled(false);
-        createJmakiCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                createJmakiCheckBoxStateChanged(evt);
-            }
-        });
 
         org.openide.awt.Mnemonics.setLocalizedText(projectRadioButton, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_ProjectsToGenerateStubFor")); // NOI18N
         projectRadioButton.setToolTipText(org.openide.util.NbBundle.getBundle(ClientStubsSetupPanelVisual.class).getString("DESC_ProjectList")); // NOI18N
@@ -416,12 +364,6 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(createJmakiCheckBox)
-                .add(18, 18, 18)
-                .add(overwriteCheckBox)
-                .addContainerGap(127, Short.MAX_VALUE))
             .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -430,8 +372,8 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(21, 21, 21)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, wadlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, wadlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE))
                         .add(4, 4, 4))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
@@ -440,9 +382,9 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                             .add(locationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, locationCB, 0, 351, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, locationCB, 0, 370, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE))
                         .add(6, 6, 6)))
                 .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -451,6 +393,10 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                     .add(removeButton)
                     .add(wadlBrowseButton)))
             .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(overwriteCheckBox)
+                .addContainerGap(376, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {addButton, browseButton, removeButton, wadlBrowseButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -491,9 +437,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(createJmakiCheckBox)
-                    .add(overwriteCheckBox))
+                .add(overwriteCheckBox)
                 .addContainerGap())
         );
 
@@ -580,22 +524,6 @@ private void addButtonshowProjectDialog(java.awt.event.ActionEvent evt) {//GEN-F
     }
 }//GEN-LAST:event_addButtonshowProjectDialog
 
-private void createJmakiCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_createJmakiCheckBoxStateChanged
-    if(createJmakiCheckBox.isSelected()) {
-        folderTextField.setText(Constants.REST_JMAKI_DIR);
-        enableFromWadl(false);
-    } else {
-        folderTextField.setText(Constants.REST_STUBS_DIR);
-        enableFromWadl(true);
-    }
-    fireChange();
-}//GEN-LAST:event_createJmakiCheckBoxStateChanged
-
-private void enableFromWadl(boolean enable) {
-    wadlRadioButton.setEnabled(enable);
-    wadlTextField.setEnabled(enable);
-    wadlBrowseButton.setEnabled(enable);
-}
 
 private void projectRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectRadioButtonActionPerformed
     isProjectSelection = true;
@@ -667,7 +595,6 @@ private void wadlTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton browseButton;
-    private javax.swing.JCheckBox createJmakiCheckBox;
     private javax.swing.JLabel folderLabel;
     private javax.swing.JTextField folderTextField;
     private javax.swing.JScrollPane jScrollPane1;

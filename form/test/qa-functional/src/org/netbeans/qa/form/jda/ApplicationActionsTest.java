@@ -44,6 +44,7 @@
 package org.netbeans.qa.form.jda;
 
 import java.util.ArrayList;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -55,6 +56,7 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
@@ -62,6 +64,9 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  * Testing properties of JDA FrameView node
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 NOT WORKS NOW
  */
 public class ApplicationActionsTest extends ExtJellyTestCase {
     private static String FOO_SIMPLEMETHOD = "FooSimpleMethod";
@@ -77,25 +82,17 @@ public class ApplicationActionsTest extends ExtJellyTestCase {
         super(testName);
         
         setTestProjectName("JDABasic"+ this.getTimeStamp()); // NOI18N        
-        //setTestProjectName("JDABasic1192194570138");
         setTestPackageName(getTestProjectName().toLowerCase());
         
     }
     
-    /* Method allowing to execute test directly from IDE. */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ApplicationActionsTest("testCreateJDAProject")); // NOI18N        
-        suite.addTest(new ApplicationActionsTest("testInvokeWindow")); // NOI18N
-        suite.addTest(new ApplicationActionsTest("testCreateNewSimpleAction")); // NOI18N        
-        suite.addTest(new ApplicationActionsTest("testCreateNewComplexAction")); // NOI18N        
-        suite.addTest(new ApplicationActionsTest("testGeneratedCodeAndProperties")); // NOI18N
-        return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ApplicationActionsTest.class).addTest(
+                "testCreateJDAProject",
+                "testInvokeWindow",
+                "testCreateNewSimpleAction",
+                "testCreateNewComplexAction",
+                "testGeneratedCodeAndProperties").gui(true).clusters(".*").enableModules(".*"));
     }
 
     /** Creating JDA Basic project */

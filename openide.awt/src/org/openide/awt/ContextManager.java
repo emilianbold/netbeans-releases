@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
+import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
@@ -109,7 +111,8 @@ class ContextManager extends Object {
         synchronized (CACHE) {
             LSet<T> existing = findLSet(type);
             if (existing == null) {
-                existing = new LSet<T>(lookup, type);
+                Lookup.Result<T> result = createResult(lookup.lookupResult(type));
+                existing = new LSet<T>(result, type);
                 listeners.put(type, existing);
             }
             existing.add(a);
@@ -117,7 +120,10 @@ class ContextManager extends Object {
             
             if (a.selectMode == ContextSelection.ALL) {
                 if (selectionAll == null) {
-                    selectionAll = new LSet<Lookup.Provider>(lookup, Lookup.Provider.class);
+                    Lookup.Result<Lookup.Provider> result = createResult(
+                        lookup.lookupResult(Lookup.Provider.class)
+                    );
+                    selectionAll = new LSet<Lookup.Provider>(result, Lookup.Provider.class);
                 }
                 selectionAll.add(a);
             }
@@ -220,6 +226,10 @@ class ContextManager extends Object {
         return result;
     }
     
+    protected <T> Lookup.Result<T> createResult(Lookup.Result<T> res) {
+        return res;
+    }
+    
     public <T> void actionPerformed(final ActionEvent e, ContextAction.Performer<? super T> perf, final Class<T> type, ContextSelection selectMode) {
         Lookup.Result<T> result = findResult(type);
         final List<? extends T> all = listFromResult(result);
@@ -283,7 +293,61 @@ class ContextManager extends Object {
         public boolean isSurvive() {
             return true;
         }
+
+        @Override
+        protected <T> Result<T> createResult(Result<T> res) {
+            return new NeverEmptyResult<T>(res);
+        }
     }
+    
+    private static final class NeverEmptyResult<T> extends Lookup.Result<T> {
+        private final Lookup.Result<T> delegate;
+        private Collection<? extends Item<T>> allItems = Collections.emptyList();
+        private Collection<? extends T> allInstances = Collections.emptyList();
+        private Set<Class<? extends T>> allClasses = Collections.emptySet();
+
+        public NeverEmptyResult(Result<T> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void addLookupListener(LookupListener l) {
+            delegate.addLookupListener(l);
+        }
+
+        @Override
+        public void removeLookupListener(LookupListener l) {
+            delegate.removeLookupListener(l);
+        }
+
+        @Override
+        public Collection<? extends Item<T>> allItems() {
+            Collection<? extends Item<T>> res = delegate.allItems();
+            if (!res.isEmpty()) {
+                allItems = res;
+            }
+            return allItems;
+        }
+
+        @Override
+        public Collection<? extends T> allInstances() {
+            Collection<? extends T> res = delegate.allInstances();
+            if (!res.isEmpty()) {
+                allInstances = res;
+            }
+            return allInstances;
+        }
+
+        @Override
+        public Set<Class<? extends T>> allClasses() {
+            Set<Class<? extends T>> res = delegate.allClasses();
+            if (!res.isEmpty()) {
+                allClasses = res;
+            }
+            return allClasses;
+        }
+
+    } // end of NeverEmptyResult
     
     /** Special set, that is weakly holding its actions, but also
      * listens on changes in lookup.
@@ -292,8 +356,8 @@ class ContextManager extends Object {
     implements LookupListener, Runnable {
         final Lookup.Result<T> result;
         
-        public LSet(Lookup context, Class<T> type) {
-            this.result = context.lookupResult(type);
+        public LSet(Lookup.Result<T> context, Class<T> type) {
+            this.result = context;
             this.result.addLookupListener(this);
             // activate listener
             this.result.allItems();

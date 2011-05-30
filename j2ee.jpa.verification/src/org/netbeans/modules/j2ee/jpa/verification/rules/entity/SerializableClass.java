@@ -98,9 +98,11 @@ public class SerializableClass  extends JPAClassRule {
         for (TypeMirror iface : subject.getInterfaces()){
             if ("java.io.Serializable".equals(iface.toString())){ //NOI18N
                 return true;
+            } else if(iface instanceof DeclaredType){
+                DeclaredType iType = (DeclaredType) iface;
+                if(extendsFromSerializable((TypeElement) iType.asElement())) return true;
             }
         }
-        
         return false;
     }
 }

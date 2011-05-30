@@ -98,7 +98,7 @@ public class WebLogicalViewProvider extends AbstractLogicalViewProvider2 {
     };
 
     @Override
-    protected String[] getBreakableProperties() {
+    public String[] getBreakableProperties() {
         return createListOfBreakableProperties(((WebProject)getProject()).getSourceRoots(), ((WebProject)getProject()).getTestSourceRoots(), BREAKABLE_PROPERTIES);
     }
 

@@ -118,7 +118,10 @@ public abstract class Module extends ModuleInfo {
     private PackageExport[] publicPackages;
     /** Set<String> of CNBs of friend modules or null */
     private Set/*<String>*/ friendNames;
-    
+
+    private final static PackageExport[] ZERO_PACKAGE_ARRAY = new PackageExport[0];
+    private final static String[] ZERO_STRING_ARRAY = new String[0];
+
     /** Use ModuleManager.create as a factory. */
     protected Module(ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         if (autoload && eager) throw new IllegalArgumentException("A module may not be both autoload and eager"); // NOI18N
@@ -364,7 +367,7 @@ public abstract class Module extends ModuleInfo {
             // Token provides
             String providesS = attr.getValue("OpenIDE-Module-Provides"); // NOI18N
             if (providesS == null) {
-                provides = new String[] {};
+                provides = ZERO_STRING_ARRAY;
             } else {
                 StringTokenizer tok = new StringTokenizer(providesS, ", "); // NOI18N
                 provides = new String[tok.countTokens()];
@@ -399,7 +402,7 @@ public abstract class Module extends ModuleInfo {
             String exportsS = attr.getValue("OpenIDE-Module-Public-Packages"); // NOI18N
             if (exportsS != null) {
                 if (exportsS.trim().equals("-")) { // NOI18N
-                    publicPackages = new PackageExport[0];
+                    publicPackages = ZERO_PACKAGE_ARRAY;
                 } else {
                     StringTokenizer tok = new StringTokenizer(exportsS, ", "); // NOI18N
                     List<PackageExport> exports = new ArrayList<PackageExport>(Math.max(tok.countTokens(), 1));

@@ -113,9 +113,6 @@ public final class MIMENames {
     /** Generic Executable files */
     public static final String EXE_MIME_TYPE = "application/x-exe"; //NOI18N
     
-    /** Generic Executable files */
-    public static final String DLL_MIME_TYPE = "application/x-exe+dll"; //NOI18N
-
     /** ELF Core files */
     public static final String ELF_CORE_MIME_TYPE = "application/x-core+elf"; //NOI18N
 
@@ -200,7 +197,6 @@ public final class MIMENames {
             return false;
         }
         return  mime.equals(EXE_MIME_TYPE) ||
-                mime.equals(DLL_MIME_TYPE) ||
                 mime.equals(ELF_EXE_MIME_TYPE) ||
                 mime.equals(ELF_CORE_MIME_TYPE) ||
                 mime.equals(ELF_SHOBJ_MIME_TYPE) ||

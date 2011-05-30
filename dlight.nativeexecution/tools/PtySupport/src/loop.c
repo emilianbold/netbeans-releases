@@ -151,11 +151,12 @@ int loop(int master_fd) {
 #endif
 
 static ssize_t writen(int fd, const void *ptr, size_t n) {
-    size_t nleft;
+    const char *pos = ptr;
+    size_t nleft = n;
     ssize_t nwritten;
-    nleft = n;
+    
     while (nleft > 0) {
-        if ((nwritten = write(fd, ptr, nleft)) < 0) {
+        if ((nwritten = write(fd, pos, nleft)) < 0) {
             if (nleft == n)
                 return (-1); /* error, return -1 */
             else
@@ -164,7 +165,7 @@ static ssize_t writen(int fd, const void *ptr, size_t n) {
             break;
         }
         nleft -= nwritten;
-        ptr += nwritten;
+        pos += nwritten;
     }
     return (n - nleft); /* return >= 0 */
 }

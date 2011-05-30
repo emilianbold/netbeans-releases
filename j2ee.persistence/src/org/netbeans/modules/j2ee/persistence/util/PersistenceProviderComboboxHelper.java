@@ -62,10 +62,12 @@ import javax.swing.JList;
 import javax.swing.JSeparator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibraryCustomizer;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.openide.util.NbBundle;
@@ -83,8 +85,10 @@ public final class PersistenceProviderComboboxHelper {
     
     private final static String SEPARATOR = "PersistenceProviderComboboxHelper.SEPARATOR";
     private final static String EMPTY = "PersistenceProviderComboboxHelper.EMPTY";
+    private final static Provider preferredProvider = ProviderUtil.ECLIPSELINK_PROVIDER;
 
     private final PersistenceProviderSupplier providerSupplier;
+    private final Project project;
 
     /**
      * Creates a new PersistenceProviderComboboxHelper. 
@@ -102,7 +106,7 @@ public final class PersistenceProviderComboboxHelper {
             // a java se project
             aProviderSupplier = new DefaultPersistenceProviderSupplier();
         }
-        
+        this.project = project;
         this.providerSupplier = aProviderSupplier;
     }
     
@@ -189,7 +193,21 @@ public final class PersistenceProviderComboboxHelper {
         providerCombo.addItem(new NewPersistenceLibraryItem());
         providerCombo.addItem(new ManageLibrariesItem());
         providerCombo.setRenderer(new PersistenceProviderCellRenderer(getDefaultProvider(providers)));
-        providerCombo.setSelectedIndex(0);
+        //select either default or first or preferred provider depending on project details
+        int selectIndex = 0;
+        if(providers.getSize()>1){
+            String defProviderVersion = ProviderUtil.getVersion((Provider) providers.getElementAt(0));
+            boolean specialCase = Util.isJPAVersionSupported(project, Persistence.VERSION_2_0) && (defProviderVersion == null || defProviderVersion.equals(Persistence.VERSION_1_0));//jpa 2.0 is supported by default (or first) is jpa1.0 or udefined version provider
+            if(specialCase){
+                for (int i = 1; i<providers.getSize() ; i++){
+                    if(preferredProvider.equals(providers.getElementAt(i))){
+                        selectIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+        providerCombo.setSelectedIndex(selectIndex);
     }
     
     

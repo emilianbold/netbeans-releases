@@ -46,7 +46,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -73,7 +72,7 @@ import org.openide.util.Exceptions;
 
 public class SpringBinaryIndexer extends BinaryIndexer {
 
-    private static final Logger LOGGER = Logger.getLogger(SpringBinaryIndexer.class.getSimpleName());
+   public static final Logger LOGGER = Logger.getLogger(SpringBinaryIndexer.class.getSimpleName());
 
     static final String INDEXER_NAME = "SpringBinary"; //NOI18N
     static final int INDEX_VERSION = 1;

@@ -188,6 +188,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return port;
     }
 
+    public boolean isRemote() {
+        // TODO optimize
+        return Boolean.parseBoolean(getInstanceProperties().getProperty(WLPluginProperties.REMOTE_ATTR));
+    }
+    
     @CheckForNull
     public synchronized Version getServerVersion() {
         init();
@@ -243,7 +248,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return mutableState.getServerProcess();
     }
 
-    public synchronized void setServerProcess(Process serverProcess) {
+    public void setServerProcess(Process serverProcess) {
         mutableState.setServerProcess(serverProcess);
     }
 
@@ -420,6 +425,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        if (isWebProfile()) {
+            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
+            return wpDeployer.getAvailableModules(moduleType, target);
+        }
+        
         try {
             return executeAction(new Action<TargetModuleID[]>() {
                 @Override
@@ -449,6 +459,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        if (isWebProfile()) {
+            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
+            return wpDeployer.getNonRunningModules(moduleType, target);
+        }
+
         try {
             return executeAction(new Action<TargetModuleID[]>() {
                 @Override
@@ -478,6 +493,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        if (isWebProfile()) {
+            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
+            return wpDeployer.getRunningModules(moduleType, target);
+        }
+        
         try {
             return executeAction(new Action<TargetModuleID[]>() {
                 @Override

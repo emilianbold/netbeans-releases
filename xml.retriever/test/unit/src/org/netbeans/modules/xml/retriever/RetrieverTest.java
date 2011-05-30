@@ -111,6 +111,11 @@ public class RetrieverTest extends TestCase {
         URI slaveURI = new URI("A/B/C/D/E");
         String result = Utilities.relativize(masterURI, slaveURI);
         assert(result.equals("D/E"));        
+	
+        masterURI = new URI("file:/A/B/C/");
+	slaveURI = new URI("file:/A/F/G");
+        result = Utilities.relativize(masterURI, slaveURI);
+        assert( result.equals("../../F/G"));
     }
     
     

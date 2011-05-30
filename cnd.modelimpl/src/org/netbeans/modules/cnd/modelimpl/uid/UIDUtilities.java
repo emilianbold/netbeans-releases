@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.uid;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -84,6 +82,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * utilities to create CsmUID for CsmObjects
@@ -426,7 +426,7 @@ public class UIDUtilities {
             weakT = TraceFlags.USE_WEAK_MEMORY_CACHE && key.hasCache() ? new WeakReference<Object>(obj) : DUMMY;
         }
 
-        CachedUID(DataInput aStream) throws IOException {
+        CachedUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
             weakT = TraceFlags.USE_WEAK_MEMORY_CACHE && getKey().hasCache() ? new WeakReference<Object>(null) : DUMMY;
         }
@@ -480,7 +480,7 @@ public class UIDUtilities {
             super(KeyUtilities.createProjectKey(project), project);
         }
 
-        /* package */ ProjectUID(DataInput aStream) throws IOException {
+        /* package */ ProjectUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
     }
@@ -494,7 +494,7 @@ public class UIDUtilities {
             super(KeyUtilities.createNamespaceKey(ns), ns);
         }
 
-        /* package */ NamespaceUID(DataInput aStream) throws IOException {
+        /* package */ NamespaceUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
     }
@@ -508,7 +508,7 @@ public class UIDUtilities {
             super(KeyUtilities.createFileKey(file), file);
         }
 
-        /* package */ FileUID(DataInput aStream) throws IOException {
+        /* package */ FileUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
     }
@@ -526,7 +526,7 @@ public class UIDUtilities {
             super(key, obj);
         }
 
-        /* package */ OffsetableDeclarationUIDBase(DataInput aStream) throws IOException {
+        /* package */ OffsetableDeclarationUIDBase(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -554,7 +554,7 @@ public class UIDUtilities {
             super(key, obj);
         }
 
-        /* package */ OffsetableDeclarationUIDBaseCached(DataInput aStream) throws IOException {
+        /* package */ OffsetableDeclarationUIDBaseCached(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -584,7 +584,7 @@ public class UIDUtilities {
 //            assert ((RegistarableDeclaration)typedef).isRegistered();            
         }
 
-        /* package */ TypedefUID(DataInput aStream) throws IOException {
+        /* package */ TypedefUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -603,7 +603,7 @@ public class UIDUtilities {
             super(KeyUtilities.createMacroKey(macro), macro);
         }
 
-        /* package */ MacroUID(DataInput aStream) throws IOException {
+        /* package */ MacroUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
     }
@@ -617,7 +617,7 @@ public class UIDUtilities {
             super(KeyUtilities.createIncludeKey(incl), incl);
         }
 
-        /* package */ IncludeUID(DataInput aStream) throws IOException {
+        /* package */ IncludeUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
     }
@@ -631,7 +631,7 @@ public class UIDUtilities {
             super(KeyUtilities.createInheritanceKey(inh), inh);
         }
 
-        /* package */ InheritanceUID(DataInput aStream) throws IOException {
+        /* package */ InheritanceUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
     }
@@ -645,7 +645,7 @@ public class UIDUtilities {
             super(KeyUtilities.createParamListKey(paramList), paramList);
         }
 
-        /* package */ ParamListUID(DataInput aStream) throws IOException {
+        /* package */ ParamListUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
     }
@@ -659,7 +659,7 @@ public class UIDUtilities {
             super(decl);
         }
 
-        /* package */ DeclarationUID(DataInput aStream) throws IOException {
+        /* package */ DeclarationUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -678,7 +678,7 @@ public class UIDUtilities {
             super(classifier);
         }
 
-        /* package */ ClassifierUID(DataInput aStream) throws IOException {
+        /* package */ ClassifierUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -697,7 +697,7 @@ public class UIDUtilities {
             super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) classifier, index), classifier);
         }
 
-        /* package */ UnnamedClassifierUID(DataInput aStream) throws IOException {
+        /* package */ UnnamedClassifierUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -716,7 +716,7 @@ public class UIDUtilities {
             super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase<?>) decl, index), decl);
         }
 
-        /* package */ UnnamedOffsetableDeclarationUID(DataInput aStream) throws IOException {
+        /* package */ UnnamedOffsetableDeclarationUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -736,7 +736,7 @@ public class UIDUtilities {
             super(key, obj);
         }
 
-        /* package */ InstantiationUID(DataInput aStream) throws IOException {
+        /* package */ InstantiationUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
 
@@ -769,7 +769,7 @@ public class UIDUtilities {
             return (ProjectBase) projectUID.getObject();
         }
 
-        /* package */ UnresolvedUIDBase(DataInput aStream) throws IOException {
+        /* package */ UnresolvedUIDBase(RepositoryDataInput aStream) throws IOException {
             projectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
         }
 
@@ -777,7 +777,7 @@ public class UIDUtilities {
         public abstract T getObject();
 
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(projectUID, output);
         }
 
@@ -825,13 +825,13 @@ public class UIDUtilities {
             return getProject().getDummyForUnresolved(name);
         }
 
-        public UnresolvedClassUID(DataInput input) throws IOException {
+        public UnresolvedClassUID(RepositoryDataInput input) throws IOException {
             super(input);
             name = PersistentUtils.readUTF(input, NameCache.getManager());
         }
 
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
             PersistentUtils.writeUTF(name, output);
         }
@@ -863,7 +863,7 @@ public class UIDUtilities {
             super(project);
         }
 
-        public UnresolvedNamespaceUID(DataInput input) throws IOException {
+        public UnresolvedNamespaceUID(RepositoryDataInput input) throws IOException {
             super(input);
         }
 
@@ -880,7 +880,7 @@ public class UIDUtilities {
             prjRef = (ProjectBase)project;
         }
 
-        public UnresolvedFileUID(DataInput input) throws IOException {
+        public UnresolvedFileUID(RepositoryDataInput input) throws IOException {
             super(input);
         }
 

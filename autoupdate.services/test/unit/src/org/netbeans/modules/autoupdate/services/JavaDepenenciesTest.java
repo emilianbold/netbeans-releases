@@ -72,6 +72,7 @@ public class JavaDepenenciesTest extends NbmAdvancedTestCase {
     
     @Override
     protected void setUp () throws IOException {
+        System.setProperty("netbeans.user", getWorkDirPath());
         Lookup.getDefault ().lookup (ModuleInfo.class);
         clearWorkDir ();
     }

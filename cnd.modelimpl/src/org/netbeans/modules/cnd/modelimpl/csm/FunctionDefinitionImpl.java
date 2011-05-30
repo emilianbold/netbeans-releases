@@ -47,8 +47,6 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import java.util.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -57,6 +55,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * @author Vladimir Kvasihn
@@ -258,7 +258,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeCompoundStatement(this.body, output);
 
@@ -266,7 +266,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
     }
 
-    public FunctionDefinitionImpl(DataInput input) throws IOException {
+    public FunctionDefinitionImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
 

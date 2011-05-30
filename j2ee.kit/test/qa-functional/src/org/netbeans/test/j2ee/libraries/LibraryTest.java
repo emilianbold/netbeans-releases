@@ -86,7 +86,7 @@ public class LibraryTest extends J2eeTestCase {
     protected String libName = "My_Math_Library-1.0";
     protected String ejbName = "MultiSrcRootEjb";
     protected String webName = "MultiSrcRootWar";
-    protected ProjectsTabOperator pto = new ProjectsTabOperator();
+    protected ProjectsTabOperator pto = ProjectsTabOperator.invoke();
     
     /** Creates a new instance of LibraryTest */
     public LibraryTest(String s) {
@@ -100,7 +100,7 @@ public class LibraryTest extends J2eeTestCase {
      * Tests if Add Java EE module action in EAR project also adds entries
      * to standard deployment descriptor.
      */
-    public void testDD() {
+    public void testDD() throws Exception {
         //create library
         Utils.createLibrary(libName,
                 new String[] {getDataDir().getAbsolutePath() + File.separator + "libs" + File.separator + "MathLib.jar"},
@@ -109,8 +109,8 @@ public class LibraryTest extends J2eeTestCase {
         //create empty j2ee project
         WizardUtils.createNewProject(CATEGORY_JAVA_EE,"Enterprise Application");
         NewJavaProjectNameLocationStepOperator npnlso =
-                WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
-        WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
+                WizardUtils.setProjectNameLocation(appName, getProjectPath());
+        WizardUtils.setJ2eeSpecVersion(npnlso, "1.4");
         //Create EJB Module:
         String moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreateEjbModule");
         JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
@@ -127,10 +127,10 @@ public class LibraryTest extends J2eeTestCase {
         Utils.buildProject(appName);
         //check ear's DDs
         List l = new ArrayList();
-        File f = new File(getWorkDirPath(), appName);
+        File f = new File(getProjectPath(), appName);
         f = new File(f, "src/conf");
         l.add(new File(f, "application.xml"));
-        l.add(new File(f, "sun-application.xml"));
+        l.add(new File(f, "glassfish-application.xml"));
         checkFiles(l);
     }
     
@@ -139,13 +139,13 @@ public class LibraryTest extends J2eeTestCase {
      * if all necessary changes in manifest files are done
      * and if final EAR application contains all modules and libraries
      */
-    public void testDDMs() {
+    public void testDDMs() throws Exception {
         //add library to EJB module
         addLibrary(pto, ejbName, libName);
         //call EJB from websvc in web => should add ejbs on web's classpath
         EditorOperator eo = EditorWindowOperator.getEditor("ServletForEJB.java");
         String ejbjar_bundle
-                = "org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle";
+                = "org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.Bundle";
         eo.setCaretPosition(37, 7);
         GenerateCodeOperator.openDialog(
                 Bundle.getStringTrimmed(ejbjar_bundle, "LBL_CallEjbAction"), eo);
@@ -156,6 +156,8 @@ public class LibraryTest extends J2eeTestCase {
         JRadioButtonOperator jrbo = new JRadioButtonOperator(ndo, 0);
         jrbo.setSelected(true);
         ndo.ok();
+        eo.txtEditorPane().waitText("lookupLocalSessionLocal()");  //NOI18N
+        new EventTool().waitNoEvent(1000);  // wait for better stability
         eo.save();
         //check servlet impl class if code is added correctly
         File ws = new File(getDataDir(), "projects/MultiSrcRootWar/src/java/servlet/ServletForEJB.java");
@@ -169,10 +171,10 @@ public class LibraryTest extends J2eeTestCase {
         Utils.buildProject(appName);
         //check ear's DDs & MFs in all components
         List l = new ArrayList();
-        File f = new File(new File(getWorkDirPath()).getParentFile(), "testDD/" + appName);
+        File f = new File(getProjectPath(), appName);
         f = new File(f, "src/conf");
         l.add(new File(f, "application.xml"));
-        l.add(new File(f, "sun-application.xml"));
+        l.add(new File(f, "glassfish-application.xml"));
         JarFile ear = null;
         try {
             f = new File(f.getParentFile().getParentFile(), "build");
@@ -194,7 +196,7 @@ public class LibraryTest extends J2eeTestCase {
         assertNotNull("MultiSrcRootEjb.jar is not in created ear",
                 ear.getEntry("MultiSrcRootEjb.jar"));
         assertNotNull("MathLib.jar is not in created ear",
-                ear.getEntry("MathLib.jar"));
+                ear.getEntry("lib/MathLib.jar"));
     }
     
     protected void addJ2eeModule(ProjectsTabOperator pto, String appName,
@@ -238,6 +240,11 @@ public class LibraryTest extends J2eeTestCase {
             os.close();
         }
         return f;
+    }
+    
+    /** Returns path to project root which is shared between all test cases. */
+    private String getProjectPath() throws Exception {
+        return getWorkDir().getParentFile().getParentFile().getCanonicalPath();
     }
     
     protected void checkFiles(List newFiles) {

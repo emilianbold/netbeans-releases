@@ -204,7 +204,7 @@ public class ResetCommand extends GitCommand {
                             RefUpdate u = repository.updateRef(Constants.HEAD);
                             u.setNewObjectId(commit);
                             if (u.forceUpdate() == RefUpdate.Result.LOCK_FAILURE) {
-                                throw new GitException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr)); //NOI18N
+                                throw new GitException.RefUpdateException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr), RefUpdate.Result.LOCK_FAILURE); //NOI18N
                             }
                         }
                     } finally {

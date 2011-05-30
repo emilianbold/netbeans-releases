@@ -46,11 +46,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -70,14 +70,28 @@ public abstract class CndFileSystemProvider {
             this.absolutePath = absolutePath;
             this.directory = directory;
         }
+
+        @Override
+        public String toString() {
+            return "FileInfo{" + "absolutePath=" + absolutePath + "directory=" + directory + '}';//NOI18N
+        }
+    }
+
+    public interface CndFileSystemProblemListener {
+        void problemOccurred(FSPath fsPath);
+        void recovered(FileSystem fileSystem);
     }
 
     private static CndFileSystemProvider getDefault() {
         return DEFAULT;
     }
 
-    public static String getCaseInsensitivePath(CharSequence path) {
-        return getDefault().getCaseInsensitivePathImpl(path);
+    public static void addFileSystemProblemListener(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        getDefault().addFileSystemProblemListenerImpl(listener, fileSystem);
+    }
+    
+    public static void removeFileSystemProblemListener(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        getDefault().removeFileSystemProblemListenerImpl(listener, fileSystem);
     }
 
     public static File toFile(FileObject fileObject) {
@@ -88,6 +102,16 @@ public abstract class CndFileSystemProvider {
         }
         return file;
     }
+    
+    /**
+     * JFileChooser works in the term of files.
+     * For such "perverted" files FileUtil.toFileObject won't work.
+     * @param file
+     * @return 
+     */
+    public static FileObject toFileObject(File file) {
+        return getDefault().toFileObjectImpl(file);
+    }    
 
     public static Boolean exists(CharSequence path) {
         return getDefault().existsImpl(path);
@@ -103,7 +127,7 @@ public abstract class CndFileSystemProvider {
 
     public static FileObject toFileObject(CharSequence absPath) {
         FileObject result = getDefault().toFileObjectImpl(absPath);
-        CndUtils.assertNotNull(result, "Null file object"); //NOI18N
+        CndUtils.assertNotNull(result, "Null file object for ", absPath); //NOI18N
         return result;
     }
 
@@ -121,7 +145,7 @@ public abstract class CndFileSystemProvider {
 
     public static CharSequence fileObjectToUrl(FileObject fileObject) {
         CharSequence result = getDefault().fileObjectToUrlImpl(fileObject);
-        CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
+        CndUtils.assertNotNull(result, "Null URL for file object ", fileObject); //NOI18N
         return result;
     }
     
@@ -129,7 +153,35 @@ public abstract class CndFileSystemProvider {
         CndUtils.assertAbsolutePathInConsole(absPath.toString());
         return getDefault().getCanonicalPathImpl(fileSystem, absPath);
     }
+    
+    public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
+        return getDefault().getCanonicalFileObjectImpl(fo);
+    }
+    
+    public static String getCanonicalPath(FileObject fo) throws IOException {
+        return getDefault().getCanonicalPathImpl(fo);        
+    }
+    
+    public static String normalizeAbsolutePath(FileSystem fs, String absPath) {
+        return getDefault().normalizeAbsolutePathImpl(fs, absPath);
+    }
+    
+    public static void addFileChangeListener(FileChangeListener listener) {
+        getDefault().addFileChangeListenerImpl(listener);
+    }
 
+    public static void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
+        getDefault().addFileChangeListenerImpl(listener, fileSystem, path);
+    }
+
+    public static void removeFileChangeListener(FileChangeListener listener) {
+        getDefault().removeFileChangeListenerImpl(listener);
+    }
+
+    public static void removeFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path) {
+        getDefault().removeFileChangeListenerImpl(listener, fileSystem, path);
+    }
+    
     /**
      * Checks whether the file specified by path exists or not
      * @param path
@@ -148,39 +200,32 @@ public abstract class CndFileSystemProvider {
     protected abstract CharSequence toUrlImpl(FSPath fSPath);
     protected abstract CharSequence toUrlImpl(FileSystem fileSystem, CharSequence absPath);
     protected abstract FileObject urlToFileObjectImpl(CharSequence url);
+    protected abstract FileObject toFileObjectImpl(File file);
 
-    protected abstract String getCaseInsensitivePathImpl(CharSequence path);
-    
     protected abstract CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException;
+    protected abstract FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException;
+    protected abstract String getCanonicalPathImpl(FileObject fo) throws IOException;
+    
+    protected abstract String normalizeAbsolutePathImpl(FileSystem fs, String absPath);
+    
+    protected abstract boolean addFileChangeListenerImpl(FileChangeListener listener);
+    protected abstract boolean removeFileChangeListenerImpl(FileChangeListener listener);
+    
+    protected abstract boolean addFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path);    
+    protected abstract boolean removeFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path);    
 
+    protected abstract void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
+    protected abstract void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem);
+    
     private static class DefaultProvider extends CndFileSystemProvider {
 
         private CndFileSystemProvider[] cache;
-        private FileSystem fileFileSystem;
 
         DefaultProvider() {
             Collection<? extends CndFileSystemProvider> instances =
                     Lookup.getDefault().lookupAll(CndFileSystemProvider.class);
             cache = instances.toArray(new CndFileSystemProvider[instances.size()]);
-        }
-
-        private synchronized FileSystem getFileFileSystem() {
-            if (fileFileSystem == null) {
-                File tmpDirFile = new File(System.getProperty("java.io.tmpdir"));
-                tmpDirFile = CndFileUtils.normalizeFile(tmpDirFile);
-                FileObject tmpDirFo = FileUtil.toFileObject(tmpDirFile); // File SIC!  //NOI18N
-                if (tmpDirFo != null) {
-                    try {
-                        fileFileSystem = tmpDirFo.getFileSystem();
-                    } catch (FileStateInvalidException ex) {
-                        // it's no use to log it here
-                    }
-                }
-                if (fileFileSystem == null) {
-                    fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
-                }
-            }
-            return fileFileSystem;
+            CndUtils.assertTrueInConsole(cache.length > 0, "CndFileSystemProvider NOT FOUND"); // NOI18N
         }
 
         @Override
@@ -196,7 +241,23 @@ public abstract class CndFileSystemProvider {
             File file = new File(FileUtil.normalizePath(absPath.toString()));
             fo = FileUtil.toFileObject(file);
             if (fo == null) {
-                fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
+                fo = InvalidFileObjectSupport.getInvalidFileObject(file);
+            }
+            return fo;
+        }
+
+        @Override
+        protected FileObject toFileObjectImpl(File file) {
+            FileObject fo;
+            for (CndFileSystemProvider provider : cache) {
+                fo = provider.toFileObjectImpl(file);
+                if (fo != null) {
+                    return fo;
+                }
+            }
+            fo = FileUtil.toFileObject(file);
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(file);
             }
             return fo;
         }
@@ -280,17 +341,6 @@ public abstract class CndFileSystemProvider {
         }
         
         @Override
-        public String getCaseInsensitivePathImpl(CharSequence path) {
-            for (CndFileSystemProvider provider : cache) {
-                String data = provider.getCaseInsensitivePathImpl(path);
-                if (data != null) {
-                    return data;
-                }
-            }
-            return path.toString();
-        }
-
-        @Override
         protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
             for (CndFileSystemProvider provider : cache) {
                 CharSequence canonical = provider.getCanonicalPathImpl(fileSystem, absPath);
@@ -299,6 +349,99 @@ public abstract class CndFileSystemProvider {
                 }
             }
             return absPath;
+        }
+
+        @Override
+        protected FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException {
+            for (CndFileSystemProvider provider : cache) {
+                FileObject canonical = provider.getCanonicalFileObjectImpl(fo);
+                if (canonical != null) {
+                    return canonical;
+                }
+            }
+            return fo;
+        }
+
+        @Override
+        protected String getCanonicalPathImpl(FileObject fo) throws IOException {
+            for (CndFileSystemProvider provider : cache) {
+                String canonical = provider.getCanonicalPathImpl(fo);
+                if (canonical != null) {
+                    return canonical;
+                }
+            }
+            return fo.getPath();
+        }
+
+        @Override
+        protected String normalizeAbsolutePathImpl(FileSystem fs, String absPath) {
+            for (CndFileSystemProvider provider : cache) {
+                String normalized = provider.normalizeAbsolutePathImpl(fs, absPath);
+                if (normalized != null) {
+                    return normalized;
+                }
+            }
+            return absPath;
+        }
+
+        @Override
+        protected boolean addFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+            for (CndFileSystemProvider provider : cache) {
+                if (provider.addFileChangeListenerImpl(listener, fileSystem, path)) {
+                    return true;
+                }
+            }
+            if (CndFileUtils.isLocalFileSystem(fileSystem)) {
+                FileUtil.addFileChangeListener(listener, FileUtil.normalizeFile(new File(path)));
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        protected boolean removeFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+            for (CndFileSystemProvider provider : cache) {
+                if (provider.removeFileChangeListenerImpl(listener, fileSystem, path)) {
+                    return true;
+                }
+            }
+            if (CndFileUtils.isLocalFileSystem(fileSystem)) {
+                FileUtil.removeFileChangeListener(listener, FileUtil.normalizeFile(new File(path)));
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        protected boolean addFileChangeListenerImpl(FileChangeListener listener) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.addFileChangeListenerImpl(listener);
+            }
+            return true;
+        }
+
+        @Override
+        protected boolean removeFileChangeListenerImpl(FileChangeListener listener) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.removeFileChangeListenerImpl(listener);
+            }
+            return true;
+        }
+
+        @Override
+        protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.addFileSystemProblemListenerImpl(listener, fileSystem);
+            }
+        }
+
+        @Override
+        protected void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+            for (CndFileSystemProvider provider : cache) {
+                provider.removeFileSystemProblemListenerImpl(listener, fileSystem);
+            }
         }        
     }
 }

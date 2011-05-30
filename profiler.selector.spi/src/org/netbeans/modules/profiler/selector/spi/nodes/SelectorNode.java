@@ -243,7 +243,7 @@ abstract public class SelectorNode extends CheckTreeNode {
 
     @Override
     public String toString() {
-        return getUserObject().toString();
+        return getDisplayName();
     }
 
     /**
@@ -261,5 +261,13 @@ abstract public class SelectorNode extends CheckTreeNode {
      */
     final protected void setValid(boolean value) {
         valid = value;
+    }
+    
+    /**
+     * Used to update the displayName property after the node has been initialized
+     * @param displayName The new display name
+     */
+    final protected void updateDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

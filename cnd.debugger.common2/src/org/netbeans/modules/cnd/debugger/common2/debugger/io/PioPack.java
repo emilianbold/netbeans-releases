@@ -85,6 +85,6 @@ public class PioPack extends InternalTerminalPack {
     }
 
     public static TermComponent makePio(int flags) {
-	return TermComponentFactory.createNewTermComponent(PioTopComponent.getDefault(), flags);
+	return TermComponentFactory.createNewTermComponent(PioTopComponent.findInstance(), flags);
     }
 }

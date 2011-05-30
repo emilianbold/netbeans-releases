@@ -235,6 +235,7 @@ public class HtmlPreferences {
     }
 
     private static Collection<String> getMimetypesWithEnabledHtmlErrorCheckingAsCollection() {
+        lazyIntialize();
         //return modifiable collection!
         ArrayList<String> list = new ArrayList<String>();
         list.addAll(Arrays.asList(mimetypesWithEnabledHtmlErrorChecking.split(mimetypesDelimiter)));

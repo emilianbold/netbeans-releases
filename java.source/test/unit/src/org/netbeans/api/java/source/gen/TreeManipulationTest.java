@@ -48,7 +48,7 @@ import javax.lang.model.element.ExecutableElement;
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.orgm">RKo</a>)
  * @todo documentation
  */
-public class TreeManipulationTest extends GeneratorTest  {
+public class TreeManipulationTest extends GeneratorTestBase  {
     
     public TreeManipulationTest(String aName) {
         super(aName);

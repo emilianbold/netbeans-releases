@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/javaee/api/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-	<resource>jar:nbinst://org.netbeans.modules.javaee.api/modules/ext/javaee-web-api-6.0.jar!</resource>
+	<resource>jar:nbinst://org.netbeans.modules.javaee.api/modules/ext/javaee-web-api-6.0.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>

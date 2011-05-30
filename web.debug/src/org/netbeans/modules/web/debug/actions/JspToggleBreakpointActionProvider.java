@@ -103,12 +103,10 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
         }
 
         //#issue 65969 fix:
-        //we allow bp setting only if the file is JSP or TAG file and target server of it's module is NOT WebLogic 9;
+        //we allow bp setting only if the file is JSP or TAG file
         //TODO it should be solved by adding new API into j2eeserver which should announce whether the target server
         //supports JSP debugging or not
-        String serverID = Utils.getTargetServerID(fo);
-
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, owner != null && webRoot != null && isJsp && !"WebLogic9".equals(serverID)); //NOI18N
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, owner != null && webRoot != null && isJsp);
         if ( debugger != null && 
              debugger.getState () == debugger.STATE_DISCONNECTED
         ) 

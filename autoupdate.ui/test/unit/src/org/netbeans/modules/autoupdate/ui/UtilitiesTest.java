@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,7 @@ public class UtilitiesTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
         MockServices.setServices(
             MockUpdateProvider.class,
             MockInstalledModuleProvider.class
@@ -78,7 +78,7 @@ public class UtilitiesTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #5746: "Pending items are provided" from MockUpdateProvider.getUpdateItems
     public void testIgnoresDisabledModules() {
         List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits();
-        List<UnitCategory> categories = Utilities.makeUpdateCategories(uu, true);
+        List<UnitCategory> categories = Utilities.makeUpdateCategories(uu, false);
         
         assertNotNull("Categories created", categories);
         assertEquals("Something in there", 1, categories.size());

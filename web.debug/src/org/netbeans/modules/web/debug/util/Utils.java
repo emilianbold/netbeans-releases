@@ -137,8 +137,7 @@ public class Utils {
         return (url == null) ? null : url.toString();
     }
     
-    public static String getJspPath(String url) {
-       
+    public static String getJspPath(String url) {       
         FileObject fo = getFileObjectFromUrl(url);
         String jspRelativePath = url;
         if (fo != null) {
@@ -146,9 +145,13 @@ public class Utils {
             if (wm != null)
                 jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
         }
+        JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
+        String translated = finder.getServletSourcePath(jspRelativePath);
+        if (translated != null) {
+            return translated;
+        }
         
         return jspRelativePath;
-
     }
     
     public static String getServletClass(String url) {
@@ -177,7 +180,7 @@ public class Utils {
 
         String servletPath = finder.getServletResourcePath(jspRelativePath);      
         if (servletPath == null) // we don't have class name, so assume we are debugging tomcat or appsrv
-                servletPath = JspNameUtil.getServletResourcePath(contextPath, jspRelativePath);
+                servletPath = JspNameUtil.getServletResourcePath(finder, contextPath, jspRelativePath);
         if (servletPath != null) {
             servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
             servletPath = servletPath.replace('/', '.'); //NOI18N
@@ -187,12 +190,25 @@ public class Utils {
     }
 
     public static String getClassFilter(String url) {
+        FileObject fo = getFileObjectFromUrl(url);
+        if (fo == null) {
+            return null;
+        }
+        JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
+        
         String filter = getServletClass(url);
         if (filter != null) {
             // get package only
-            filter = filter.substring(0, filter.lastIndexOf('.')) + ".*"; //NOI18N
-            if (filter.startsWith("org.apache.jsp")) 
-                filter = "org.apache.jsp.*";
+            int lastDot = filter.lastIndexOf('.');
+            if (lastDot > 0) {
+                filter = filter.substring(0, lastDot) + ".*"; //NOI18N
+                String basePackageName = finder.getServletBasePackageName();
+                if (basePackageName == null) {
+                    basePackageName = "org.apache.jsp"; // NOI18N
+                }
+                if (filter.startsWith(basePackageName)) 
+                    filter = basePackageName + ".*"; // NOI18N
+            }
         }
         return filter;
     }

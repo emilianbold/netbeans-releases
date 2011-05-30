@@ -49,6 +49,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Content;
 import org.netbeans.editor.ext.html.dtd.DTD.ContentModel;
@@ -99,6 +100,12 @@ public class AstNode {
     }
 
     public AstNode(String name, NodeType nodeType, int startOffset, int endOffset, boolean isEmpty) {
+        //issue 195617 - NPE when AstNode's name is null
+        Parameters.notNull("name", name);
+//        if(name == null) {
+//            name = "null";
+//        }
+        
         this.name = name;
         this.nodeType = nodeType;
         this.startOffset = startOffset;
@@ -369,7 +376,6 @@ public class AstNode {
     }
 
     public String getNameWithoutPrefix() {
-        if(name == null) { throw new NullPointerException(); } //issue 194537 - some diagnostic has been added to the html.parser module so once exception reporter reopens the issue again the ide log should be source of the info.
         int colonIndex = name().indexOf(':');
         return colonIndex == -1 ? name() : name().substring(colonIndex + 1);
     }

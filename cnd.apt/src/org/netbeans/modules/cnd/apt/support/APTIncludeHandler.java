@@ -52,6 +52,12 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public interface APTIncludeHandler {
+    public enum IncludeState {
+        Success,
+        Fail,
+        Recursive
+    }
+
     /*
      * save/restore state of handler
      */
@@ -68,9 +74,9 @@ public interface APTIncludeHandler {
      * @param path included file absolute path
      * @param aptNode #include directive
      * @param resolvedDirIndex index of resolved directory in lists of include paths
-     * @return false if inclusion is recursive and was prohibited
+     * @return IncludeState.Recursive if inclusion is recursive and was prohibited
      */
-    public boolean pushInclude(CharSequence path, APTInclude aptNode, int resolvedDirIndex);
+    public IncludeState pushInclude(CharSequence path, APTInclude aptNode, int resolvedDirIndex);
     
     /*
      * notify about finished inclusion

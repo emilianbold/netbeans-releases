@@ -57,13 +57,13 @@ final class PathElements {
     private static final String DELIMITER = "/"; // NOI18N
 
     /** Original name */
-    private String name;
+    private final String name;
 
     /** tokenizer */
     private StringTokenizer tokenizer;
 
     /** tokens */
-    private List<String> tokens;
+    private final List<String> tokens;
 
     /** Creates new PathElements */
     public PathElements(String name) {
@@ -83,7 +83,7 @@ final class PathElements {
         return new EnumerationImpl(this);
     }
 
-    boolean contains(int i) {
+    synchronized boolean contains(int i) {
         if (tokens.size() <= i) {
             scanUpTo(i);
         }
@@ -91,7 +91,7 @@ final class PathElements {
         return (tokens.size() > i);
     }
 
-    String get(int i) throws NoSuchElementException {
+    synchronized String get(int i) throws NoSuchElementException {
         if (tokens.size() <= i) {
             scanUpTo(i);
         }
@@ -132,11 +132,13 @@ final class PathElements {
         }
 
         /** From Enumeration */
+        @Override
         public boolean hasMoreElements() {
             return elements.contains(pos);
         }
 
         /** From Enumeration */
+        @Override
         public String nextElement() throws NoSuchElementException {
             return elements.get(pos++);
         }

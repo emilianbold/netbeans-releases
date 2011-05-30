@@ -63,13 +63,16 @@ import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -77,8 +80,10 @@ import org.openide.util.RequestProcessor;
  */
 public class TrieDictionary implements Dictionary {
 
-    private byte[] array;
-    private ByteBuffer buffer;
+    private static final Logger LOG = Logger.getLogger(TrieDictionary.class.getName());
+    
+    private final byte[] array;
+    private final ByteBuffer buffer;
 
     TrieDictionary(byte[] array) {
         this.array = array;
@@ -229,11 +234,7 @@ public class TrieDictionary implements Dictionary {
     }
 
     static Dictionary getDictionary(File trie, List<URL> sources) throws IOException {
-        if (!trie.exists()) {
-            return new FutureDictionary(trie, sources);
-        }
-
-        return new TrieDictionary(trie);
+        return new FutureDictionary(trie, sources);
     }
 
     private static int toUnsigned(byte b) {
@@ -400,63 +401,90 @@ public class TrieDictionary implements Dictionary {
         private final File trie;
         private final List<URL> sources;
         private final AtomicReference<Dictionary> delegate = new AtomicReference<Dictionary>();
-        private final CountDownLatch wait;
-        public FutureDictionary(File trie, List<URL> sources) {
+        private final AtomicReference<Task> workingTask = new AtomicReference<Task>();
+        private final AtomicBoolean wasBroken = new AtomicBoolean();
+
+        public FutureDictionary(File trie, List<URL> sources) throws IOException {
             this.trie = trie;
             this.sources = sources;
-            this.wait = new CountDownLatch(1);
-            WORKER.post(this);
-        }
-        public ValidityType validateWord(CharSequence word) {
-            try {
-                wait.await();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+            if (!trie.exists()) {
+                workingTask.set(WORKER.post(this));
+            } else {
+                delegate.set(new TrieDictionary(trie));
             }
+        }
+        
+        public ValidityType validateWord(CharSequence word) {
+            waitDictionaryConstructed();
 
             Dictionary dict = delegate.get();
 
             if (dict != null) {
-                return dict.validateWord(word);
+                try {
+                    return dict.validateWord(word);
+                } catch (IndexOutOfBoundsException ex) {
+                    rebuild(ex);
+                }
             }
 
             return ValidityType.VALID;
         }
 
         public List<String> findValidWordsForPrefix(CharSequence word) {
-            try {
-                wait.await();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            waitDictionaryConstructed();
 
             Dictionary dict = delegate.get();
 
             if (dict != null) {
-                return dict.findValidWordsForPrefix(word);
+                try {
+                    return dict.findValidWordsForPrefix(word);
+                } catch (IndexOutOfBoundsException ex) {
+                    rebuild(ex);
+                }
             }
 
             return Collections.emptyList();
         }
 
         public List<String> findProposals(CharSequence word) {
-            try {
-                wait.await();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            waitDictionaryConstructed();
 
             Dictionary dict = delegate.get();
 
             if (dict != null) {
-                return dict.findProposals(word);
+                try {
+                    return dict.findProposals(word);
+                } catch (IndexOutOfBoundsException ex) {
+                    rebuild(ex);
+                }
             }
 
             return Collections.emptyList();
         }
 
+        private void waitDictionaryConstructed() {
+            Task t = workingTask.get();
+
+            if (t != null) {
+                t.waitFinished();
+                workingTask.set(null);
+            }
+        }
+
+        private void rebuild(Throwable t) {
+            //the on disk cache is likely broken, attempt to fix:
+            if (!wasBroken.getAndSet(true)) {
+                LOG.log(Level.INFO, "An exception thrown while read dictionary cache, attempting to rebuild.", t);
+                workingTask.set(WORKER.post(this));
+            } else {
+                LOG.log(Level.INFO, "An exception thrown while read dictionary cache for second time, giving up.", t);
+                delegate.set(null);
+            }
+        }
+
         public void run() {
             trie.getParentFile().mkdirs();
+            trie.delete();
 
             boolean done = false;
 
@@ -470,7 +498,7 @@ public class TrieDictionary implements Dictionary {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
-                wait.countDown();
+                workingTask.set(null);
                 if (!done) {
                     trie.delete();
                 }

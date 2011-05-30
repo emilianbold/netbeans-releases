@@ -344,9 +344,10 @@ public class TinyTest extends TestBase {
                        "3:16-3:86:verifier:ERR_Tiny_enumMap",
                        "FIX_Tiny_enumMap",
                        ("package test;\n" +
+                        "import java.util.EnumMap;\n" +
                         "public class Test {\n" +
                         "     private java.util.Map<java.lang.annotation.RetentionPolicy, Boolean> test() {\n" +
-                        "         return new java.util.HashMap<java.lang.annotation.RetentionPolicy, Boolean>(java.lang.annotation.RetentionPolicy.class);\n" +
+                        "         return new EnumMap<java.lang.annotation.RetentionPolicy, Boolean>(java.lang.annotation.RetentionPolicy.class);\n" +
                         "     }\n" +
                         "}\n").replaceAll("[\t\n ]+", " "));
     }

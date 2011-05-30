@@ -54,6 +54,7 @@ import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -132,7 +133,7 @@ public final class Splash implements Stamps.Updater {
     
     private Splash() {
         Stamps s = Stamps.getModulesJARs();
-        if (!CLIOptions.isNoSplash()) {
+        if (!CLIOptions.isNoSplash() && !GraphicsEnvironment.isHeadless()) {
             if (!s.exists("splash.png")) {
                 s.scheduleSave(this, "splash.png", false);
             } else {

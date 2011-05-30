@@ -53,7 +53,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author  Pavel Flaska
  */
-public class FieldTest2 extends GeneratorTest {
+public class FieldTest2 extends GeneratorTestBase {
 
     /** Creates a new instance of FieldTest2 */
     public FieldTest2(String name) {

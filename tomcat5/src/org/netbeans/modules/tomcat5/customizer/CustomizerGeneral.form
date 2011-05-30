@@ -164,7 +164,9 @@
     <Component class="javax.swing.JLabel" name="credentialsLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/tomcat5/customizer/Bundle.properties" key="CustomizerGeneral.credentialsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/tomcat5/customizer/Bundle.properties" key="CustomizerGeneral.credentialsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+            <Argument index="0" javacode="custData.isTomcat70() ? &quot;manager-script&quot; : &quot;manager&quot;"/>
+          </ResourceString>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/tomcat5/customizer/Bundle.properties" key="CustomizerGeneral.credentialsLabel.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

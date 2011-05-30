@@ -130,7 +130,14 @@ public class StrictWarning extends JsErrorRule {
         return Collections.singleton(key);
     }
 
-    public void run(JsRuleContext context, Error error, List<Hint> result) {
+    //haaaack!
+    private void setContextRemove(RuleContext context) {
+        if(context instanceof JsRuleContext) {
+            ((JsRuleContext)context).remove = true;
+        }
+    }
+    
+    public void run(RuleContext context, Error error, List<Hint> result) {
         JsParseResult info = AstUtilities.getParseResult(context.parserResult);
         BaseDocument doc = context.doc;
 
@@ -148,7 +155,7 @@ public class StrictWarning extends JsErrorRule {
             if (!SupportedBrowsers.getInstance().isSupported(BrowserVersion.IE7)) { // If you want IE5.5 you're also affected
                 // We don't care about this error anyway
 
-                context.remove = true;
+                setContextRemove(context);
                 return;
             }
 
@@ -165,7 +172,7 @@ public class StrictWarning extends JsErrorRule {
             // getting used in the field. I should consider enabling this based on specific
             // language support values
             if ("debugger".equals(keyword)) { // NOI18N
-                context.remove = true;
+                setContextRemove(context);
                 return;
             }
 
@@ -194,13 +201,13 @@ public class StrictWarning extends JsErrorRule {
             if (key.equals(NO_SIDE_EFFECTS) && node.hasChildren() && node.getFirstChild().getType() == Token.NAME &&
                 "debugger".equals(node.getFirstChild().getString())) { // NOI18N
                 // Don't warn about no side effects on the debugger keyword...
-                context.remove = true;
+                setContextRemove(context);
                 return;
             }
 
             // In HTML etc ignore these
             if (/*node.getType() == Token.EMPTY && */!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getSnapshot().getSource().getMimeType())) {
-                context.remove = true;
+                setContextRemove(context);
                 return;
             }
             
@@ -208,7 +215,7 @@ public class StrictWarning extends JsErrorRule {
                 Node firstChild = node.getFirstChild();
                 if (firstChild != null && firstChild.getType() == Token.NAME &&
                         JsEmbeddingProvider.isGeneratedIdentifier(firstChild.getString())) {
-                    context.remove = true;
+                    setContextRemove(context);
                     return;
                 }
             }
@@ -228,7 +235,7 @@ public class StrictWarning extends JsErrorRule {
                 OffsetRange sanitizedRange = jpr.getSanitizedRange();
                 if (sanitizedRange.overlaps(range) || sanitizedRange.containsInclusive(range.getStart()) ||
                         sanitizedRange.containsInclusive(range.getEnd())) {
-                    context.remove = true;
+                    setContextRemove(context);
                     return;
                 }
             }
@@ -366,10 +373,10 @@ public class StrictWarning extends JsErrorRule {
 
     private static class RemoveTrailingCommaFix implements PreviewableFix {
 
-        private final JsRuleContext context;
+        private final RuleContext context;
         private final int offset;
 
-        public RemoveTrailingCommaFix(JsRuleContext context, int offset) {
+        public RemoveTrailingCommaFix(RuleContext context, int offset) {
             this.context = context;
             this.offset = offset;
         }
@@ -408,12 +415,12 @@ public class StrictWarning extends JsErrorRule {
 
     private static class AssignToVar implements PreviewableFix {
         private final boolean assign;
-        private final JsRuleContext context;
+        private final RuleContext context;
         private final Node node;
         private int varOffset;
         private String varName;
 
-        public AssignToVar(JsRuleContext context, Node node, boolean assign) {
+        public AssignToVar(RuleContext context, Node node, boolean assign) {
             this.context = context;
             this.node = node;
             this.assign = assign;

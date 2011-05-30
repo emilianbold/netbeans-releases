@@ -921,6 +921,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         // make jsp compilation libraries sharable if jsp compilation is ticked on
         if (uiProperties.COMPILE_JSP_MODEL.isSelected()) {
             libs.add("jsp-compilation"); // NOI18N
+            libs.add("jsp-compilation-syscp"); // NOI18N
             libs.add("jsp-compiler"); // NOI18N
         }
         boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);

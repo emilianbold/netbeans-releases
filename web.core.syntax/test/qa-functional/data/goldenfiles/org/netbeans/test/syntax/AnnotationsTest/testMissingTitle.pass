@@ -1,3 +1,12 @@
-The tag content is unresolved, expecting one of 
---
+Error: Quirky doctype. Expected "".
+From line 4, column 4; to line 5, column 63
+
+
+----
+(Alt-Enter shows hints)
+Error: Required children missing from element "head".
+From line 9, column 5; to line 9, column 11
+
+
+----
 (Alt-Enter shows hints)

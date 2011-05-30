@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
@@ -98,11 +100,11 @@ public class EclipseProjectReference {
         return project;
     }
     
-    public File getEclipseProjectLocation() {
+    public @NonNull File getEclipseProjectLocation() {
         return eclipseProjectLocation;
     }
 
-    public File getEclipseWorkspaceLocation() {
+    public @CheckForNull File getEclipseWorkspaceLocation() {
         return eclipseWorkspaceLocation;
     }
     
@@ -138,7 +140,7 @@ public class EclipseProjectReference {
         return NbPreferences.forModule(EclipseProjectReference.class);
     }
 
-    public static EclipseProjectReference read(Project project) {
+    public static @CheckForNull EclipseProjectReference read(Project project) {
         // XXX using shared prefs is incorrect if an absolute path was stored!
         Preferences prefs = ProjectUtils.getPreferences(project, EclipseProjectReference.class, true);
         String projectLoc = prefs.get("project", null); //NOI18N

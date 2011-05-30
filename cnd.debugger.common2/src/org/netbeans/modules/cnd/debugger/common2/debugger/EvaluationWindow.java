@@ -45,44 +45,31 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Iterator;
-import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.accessibility.AccessibleContext;
+import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 
 import org.netbeans.spi.viewmodel.Models;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
-import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Catalog;
 
 
 public final class EvaluationWindow extends TopComponent
@@ -90,17 +77,15 @@ public final class EvaluationWindow extends TopComponent
 {
 
     /** generated Serialized Version UID */
-    static final String preferredID = "EvaluationWindow"; // NOI18N
-    static EvaluationWindow DEFAULT;
+    private static final String preferredID = "EvaluationWindow"; // NOI18N
+    private static EvaluationWindow DEFAULT;
 
     private transient JComponent tree = null;
     private String name;
     private String view_name;
     private NativeDebugger debugger = null;
-    private JMenuItem menuItemFollowSelectedPointer;
     private JMenuItem menuItemClear;
     private JPopupMenu popup;
-    private JRadioButtonMenuItem rbMenuItem;
     private JTextArea ta;
     private JScrollPane ta_sp;
     private JPanel hp;
@@ -108,52 +93,19 @@ public final class EvaluationWindow extends TopComponent
     //private ArrayList<String> current_addrs;
     private PopupListener popupListener;
     private String expr;
-    private JTextField memory_length_jtf;
-    private String[] formats = { 
-                                        Catalog.get("Default_format"),    //NOI18N
-                                        Catalog.get("l_Hexadecimal"),    //NOI18N
-                                        Catalog.get("L_Hexadecimal"),    //NOI18N
-                                        Catalog.get("l_Decimal"),        //NOI18N
-                                        Catalog.get("L_Decimal"),        //NOI18N
-                                        Catalog.get("l_U_Decimal"),        //NOI18N
-                                        Catalog.get("L_U_Decimal"),        //NOI18N
-                                        Catalog.get("l_Float"),          //NOI18N
-                                        Catalog.get("L_Float"),          //NOI18N
-					/*
-                                        Catalog.get("w_Hexadecimal"),    //NOI18N
-                                     // Catalog.get("w_Decimal"),        //NOI18N
-                                        Catalog.get("l_Octal"),          //NOI18N
-                                     // Catalog.get("w_Octal"),          //NOI18N
-                                        Catalog.get("L_Float"),          //NOI18N
-                                        Catalog.get("l_Float"),          //NOI18N
-                                        Catalog.get("L_Instructions"),   //NOI18N
-                                        Catalog.get("L_Characters"),     //NOI18N
-                                        Catalog.get("L_WideCharacters"), //NOI18N
-					*/
-                                      };
-    private String[] short_formats = {
-                                              " ",       //NOI18N
-                                              "-fx ",        //NOI18N
-                                              "-flx ",        //NOI18N
-                                              "-fd ",        //NOI18N
-                                              "-fld ",        //NOI18N
-                                              "-fu ",        //NOI18N
-                                              "-flu ",        //NOI18N
-                                              "(float) ",        //NOI18N
-                                              "(double) ",        //NOI18N
-                                             };
+
     private JComboBox format_jcb;
     private FormatListener format_listener;
-    private int format;
-    private boolean dontShowText=true;
+    private FormatOption format;
     private JComboBox exprList;
     private String selected_text = null;
 
-    public static EvaluationWindow getDefault() {
+    public static synchronized EvaluationWindow getDefault() {
         if (DEFAULT == null) {
-            EvaluationWindow tc = (EvaluationWindow) WindowManager.getDefault().findTopComponent(preferredID);
-            if (tc == null)
-                new EvaluationWindow();
+            DEFAULT = (EvaluationWindow) WindowManager.getDefault().findTopComponent(preferredID);
+            if (DEFAULT == null) {
+                DEFAULT = new EvaluationWindow();
+            }
         }
         return DEFAULT;
     }
@@ -162,16 +114,17 @@ public final class EvaluationWindow extends TopComponent
 	name = Catalog.get("TITLE_EvaluationWindow");    //NOI18N
 	view_name = Catalog.get("TITLE_EvaluationView"); //NOI18N
 	super.setName(name);
-	DEFAULT = this;
 	final String iconDir = "org/netbeans/modules/cnd/debugger/common2/icons/";//NOI18N
 	setIcon(org.openide.util.ImageUtilities.loadImage
 	    (iconDir + "evaluate_expression.png")); // NOI18N
     }
 
+    @Override
     protected String preferredID() {
         return this.getClass().getName();
     }
 
+    @Override
     protected void componentHidden () {
 	if (exprList != null)
             exprList.setSelectedIndex(0);
@@ -180,12 +133,17 @@ public final class EvaluationWindow extends TopComponent
         }
     }
     
+    @Override
     public void componentShowing () {
         super.componentShowing ();
-	connectToDebugger(DebuggerManager.get().currentDebugger());
-        updateWindow();
+	boolean update = connectToDebugger(DebuggerManager.get().currentDebugger());
+        if (update) {
+            updateWindow();
+            updateFormats();
+        }
     }
 
+    @Override
     protected void componentClosed () {
         super.componentClosed();
 	if (debugger != null) {
@@ -203,21 +161,38 @@ public final class EvaluationWindow extends TopComponent
 	}
     }
 
-    protected void connectToDebugger (NativeDebugger debugger) {
+    private boolean connectToDebugger (NativeDebugger debugger) {
+        boolean res = this.debugger != debugger;
 	this.debugger = debugger;
-	if (debugger == null) 
-	    return;
-	debugger.registerEvaluationWindow(this);
+	if (debugger != null) {
+            debugger.registerEvaluationWindow(this);
+        }
+        return res;
+    }
+    
+    private void updateFormats() {
+        FormatOption[] evalFormats = debugger.getEvalFormats();
+        if (evalFormats != null) {
+            format_jcb.setModel(new DefaultComboBoxModel(debugger.getEvalFormats()));
+            format_jcb.setEnabled(true);
+        } else {
+            format_jcb.setModel(new DefaultComboBoxModel(new FormatOption[]{FormatOption.EMPTY}));
+            format_jcb.setEnabled(false);
+        }
+        updateSelectedFormat();
     }
 
+    @Override
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;
     }
             
+    @Override
     public String getName () {
         return (name);
     }
     
+    @Override
     public String getToolTipText () {
         return (view_name);
     }
@@ -235,9 +210,10 @@ public final class EvaluationWindow extends TopComponent
     }
     
     private void exprEval() {
-        format = format_jcb.getSelectedIndex();
-	if (expr != null && !expr.equals(""))
-            debugger.exprEval(short_formats[format], expr);
+        format = (FormatOption)format_jcb.getSelectedItem();
+	if (expr != null && !expr.equals("") && format != null) {
+            debugger.exprEval(format, expr);
+        }
     }
 
     private int exprMap(String expr) {
@@ -306,7 +282,6 @@ public final class EvaluationWindow extends TopComponent
 
             // Default settings
             expr = ""; //NOI18N
-            format = 0;
             
             //cp = new JPanel(new FlowLayout());
 	    cp = new JPanel(new java.awt.GridBagLayout());
@@ -323,8 +298,8 @@ public final class EvaluationWindow extends TopComponent
             JLabel cp_text3 = new JLabel(Catalog.get("LBL_Format")); // NOI18N
             cp_text3.setToolTipText(Catalog.get("HINT_Output_format")); // NOI18N
 	    format_listener = new FormatListener();
-            format_jcb = new JComboBox(formats);
-            format_jcb.setSelectedIndex(format);
+            format_jcb = new JComboBox();
+            updateFormats();
             format_jcb.addActionListener(format_listener);
 
 	    java.awt.GridBagConstraints gridBagConstraints ;
@@ -404,25 +379,23 @@ public final class EvaluationWindow extends TopComponent
 
             String ac = ev.getActionCommand();
             if (ac.equals("comboBoxChanged")) { // NOI18N
-                // Changed start address
-                JComboBox cb = (JComboBox)ev.getSource();
-                String s = (String)cb.getSelectedItem();
-                for (int i=0; i < formats.length; i++) {
-                    if (formats[i].equals(s)) {
-                        format = i;
-                        format_jcb.setSelectedIndex(i);
-                        exprEval();
-                    }
-                }
+                exprEval();
             }
         }
     }
+    
+    private void updateSelectedFormat() {
+        if (format != null) {
+            format_jcb.setSelectedItem(format);
+            if (format_jcb.getSelectedItem() != null) {
+                return;
+            }
+        }
+        format_jcb.setSelectedIndex(0);
+    }
 
     
-    class PopupListener extends MouseAdapter
-                           implements ActionListener, 
-                                      PopupMenuListener
-    {
+    class PopupListener extends MouseAdapter {
         JPopupMenu popup;
 
         PopupListener(JPopupMenu popupMenu) {
@@ -451,25 +424,6 @@ public final class EvaluationWindow extends TopComponent
                 popup.show(e.getComponent(),
                            e.getX(), e.getY());
             }
-        }
-
-        public void actionPerformed(ActionEvent ev) {
-            JMenuItem source = (JMenuItem)(ev.getSource());
-            String s = source.getText();
-            for (int i=0; i < formats.length; i++) {
-                if (formats[i].equals(s)) {
-                    format = i;
-                    format_jcb.setSelectedIndex(i);
-                    exprEval();
-                }
-            }
-        }
-
-        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-        }
-        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        }
-        public void popupMenuCanceled(PopupMenuEvent e) {
         }
     }
 

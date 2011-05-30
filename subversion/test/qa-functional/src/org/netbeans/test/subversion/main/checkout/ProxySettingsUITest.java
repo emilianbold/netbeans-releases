@@ -12,7 +12,6 @@ package org.netbeans.test.subversion.main.checkout;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;

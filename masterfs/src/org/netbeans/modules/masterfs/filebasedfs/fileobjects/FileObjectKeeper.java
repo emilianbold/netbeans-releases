@@ -59,6 +59,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.Exceptions;
 
 /** Keeps list of fileobjects under given root. Adapted from Jan Lahoda's work
  * in issue 168237
@@ -110,34 +111,42 @@ final class FileObjectKeeper implements FileChangeListener {
                  timeStamp = -timeStamp;
              }
          }
-         
+
          File file = Watcher.wrap(root.getFileName().getFile(), root);
          LinkedList<File> arr = new LinkedList<File>();
          long ts = root.getProvidedExtensions().refreshRecursively(file, previous, arr);
-         for (File f : arr) {
-             if (f.isDirectory()) {
-                 continue;
-             }
-             long lm = f.lastModified();
-             LOG.log(Level.FINE, "  check {0} for {1}", new Object[] { lm, f });
-             if (lm > ts) {
-                 ts = lm;
-             }
-             if (lm > previous && factory != null && !recursive) {
-                 final BaseFileObj prevFO = factory.getCachedOnly(f);
-                 if (prevFO == null) {
-                     BaseFileObj who = factory.getValidFileObject(f, Caller.GetChildern);
-                     if (who != null) {
-                         LOG.log(Level.FINE, "External change detected {0}", who);  //NOI18N
-                         who.fireFileChangedEvent(expected);
-                      } else {
-                         LOG.log(Level.FINE, "Cannot get valid FileObject. File probably removed: {0}", f);  //NOI18N
+         try {
+             for (File f : arr) {
+                 if (f.isDirectory()) {
+                     continue;
+                 }
+                 long lm = f.lastModified();
+                 LOG.log(Level.FINE, "  check {0} for {1}", new Object[] { lm, f });
+                 if (lm > ts) {
+                     ts = lm;
+                 }
+                 if (lm > previous && factory != null && !recursive) {
+                     final BaseFileObj prevFO = factory.getCachedOnly(f);
+                     if (prevFO == null) {
+                         BaseFileObj who = factory.getValidFileObject(f, Caller.GetChildern);
+                         if (who != null) {
+                             LOG.log(Level.FINE, "External change detected {0}", who);  //NOI18N
+                             who.fireFileChangedEvent(expected);
+                          } else {
+                             LOG.log(Level.FINE, "Cannot get valid FileObject. File probably removed: {0}", f);  //NOI18N
+                          }
+                     } else {
+                         LOG.log(Level.FINE, "Do classical refresh for {0}", prevFO);  //NOI18N
+                         prevFO.refresh(expected, true);
                       }
-                 } else {
-                     LOG.log(Level.FINE, "Do classical refresh for {0}", prevFO);  //NOI18N
-                     prevFO.refresh(expected, true);
                   }
-              }
+             }
+         } catch (StackOverflowError ex) {
+             Exceptions.attachMessage(ex, 
+                "FileObjectKeeper.init for " + this.root +  // NOI18N
+                 " timeStamp: " + timeStamp + " recursive: " + recursive // NOI18N
+             ); 
+             throw ex;
          }
          synchronized (TIME_STAMP_LOCK) {
              if (!recursive) {

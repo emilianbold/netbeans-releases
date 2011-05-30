@@ -43,8 +43,11 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.io.IOException;
+import java.util.Arrays;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.errors.CheckoutConflictException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.merge.MergeStrategy;
@@ -61,6 +64,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public class MergeCommand extends GitCommand {
     private final String revision;
     private GitMergeResult result;
+    private String commitMessage;
 
     public MergeCommand (Repository repository, String revision, ProgressMonitor monitor) {
         super(repository, monitor);
@@ -81,13 +85,24 @@ public class MergeCommand extends GitCommand {
         if (ref == null) {
             command.include(Utils.findCommit(repository, revision));
         } else {
-            String mergeRevisionName = Utils.getRefName(ref);
-            command.include(mergeRevisionName, ref.getTarget().getObjectId());
+            String msg = commitMessage;
+            if (msg == null) {
+                msg = Utils.getRefName(ref);
+            }
+            command.include(msg, ref.getTarget().getObjectId());
         }
         command.setStrategy(MergeStrategy.RESOLVE);
         try {
             result = new JGitMergeResult(command.call(), repository.getWorkTree());
         } catch (GitAPIException ex) {
+            throw new GitException(ex);
+        } catch (JGitInternalException ex) {
+            if (ex.getCause() instanceof CheckoutConflictException) {
+                String[] lines = ex.getCause().getMessage().split("\n"); //NOI18N
+                if (lines.length > 1) {
+                    throw new GitException.CheckoutConflictException(Arrays.copyOfRange(lines, 1, lines.length), ex.getCause());
+                }
+            }
             throw new GitException(ex);
         }
     }
@@ -99,5 +114,12 @@ public class MergeCommand extends GitCommand {
 
     public GitMergeResult getResult () {
         return result;
+    }
+
+    void setCommitMessage (String message) {
+        if (message != null) {
+            message = message.replace("\n", "").replace("\r", ""); //NOI18N
+        }
+        this.commitMessage = message;
     }
 }

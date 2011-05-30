@@ -1,3 +1,0 @@
-  HasManyThroughCantAssociateThroughHasManyReflection = ActiveSupport::Deprecation::DeprecatedConstantProxy.new('ActiveRecord::HasManyThroughCantAssociateThroughHasManyReflection', 'ActiveRecord::HasManyThroughCantAssociateThroughHasOneOrManyReflection')
-  ---------------------------------------------------
-HINT:Style: Constants traditionally use uppercase letters only

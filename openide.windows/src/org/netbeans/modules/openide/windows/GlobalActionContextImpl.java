@@ -49,7 +49,11 @@ import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.ButtonModel;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.Utilities;
@@ -168,6 +172,13 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
         }
         if ("permanentFocusOwner".equals(evt.getPropertyName())) {
             Component[] arr = { (Component)evt.getNewValue() };
+            if (arr[0] instanceof AbstractButton) {
+                Action a = ((AbstractButton)arr[0]).getAction();
+                if (a instanceof ContextAwareAction) {
+                    // ignore focus change into a button with our action
+                    return;
+                }
+            }
             blickActionMap(null, arr);
         }
     }

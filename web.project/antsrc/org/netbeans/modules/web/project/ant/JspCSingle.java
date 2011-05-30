@@ -45,17 +45,11 @@
 package org.netbeans.modules.web.project.ant;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 import org.apache.jasper.JasperException;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.PathTokenizer;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.FileSet;
 
 /**
  * Ant task that extends org.apache.jasper.JspC to allow calling single file
@@ -65,8 +59,8 @@ import org.apache.tools.ant.types.FileSet;
  */
 public class JspCSingle extends JspC {
 
-    public static final String FILES_PARAM = "-jspc.files";
-    public static final String URIROOT_PARAM = "-uriroot";
+    public static final String FILES_PARAM = "-jspc.files"; // NOI18N
+    public static final String URIROOT_PARAM = "-uriroot"; // NOI18N
     
     /*
     private static PrintWriter debugwriter = null;
@@ -145,7 +139,7 @@ public class JspCSingle extends JspC {
                 StringTokenizer tok = new StringTokenizer (jspFiles, " ,"); //NOI18N
                 LinkedList list = new LinkedList ();
                 while (tok.hasMoreTokens ()) {
-                    String jsp = uriroot + "/" + tok.nextToken ();
+                    String jsp = uriroot + "/" + tok.nextToken (); // NOI18N
                     list.add (jsp);
                 }
                 setArgs( (String []) list.toArray (new String[list.size ()]));

@@ -57,9 +57,8 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
@@ -75,7 +74,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
 
 /**
@@ -123,13 +121,8 @@ public class LogReader {
     private PathMap getPathMapper(ProjectProxy project) {
         Project p = project.getProject();
         if (p != null) {
-            RemoteProject info = p.getLookup().lookup(RemoteProject.class);
-            if (info != null) {
-                ExecutionEnvironment developmentHost = info.getDevelopmentHost();
-                if (developmentHost != null && developmentHost.isRemote()) {
-                    return HostInfoProvider.getMapper(developmentHost);
-                }
-            }
+            // it won't now return null for local environment
+            return RemoteSyncSupport.getPathMap(p);
         }
         return null;
     }
@@ -681,72 +674,72 @@ public class LogReader {
         }
     }
 
-    private boolean gatherLine(LineInfo li) {
+    private void gatherLine(LineInfo li) {
         String line = li.compileLine;
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        String what = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
-        if (what == null){
-            return false;
-        }
-        if (what.endsWith(".s") || what.endsWith(".S")) {  //NOI18N
-            // It seems assembler file was compiled by C compiler.
-            // Exclude assembler files from C/C++ code model.
-            return false;
-        }
-        String file = null;
-        if (what.startsWith("/")){  //NOI18N
-            file = what;
-        } else {
-            file = workingDir+"/"+what;  //NOI18N
-        }
-        List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
-        for(String s : userIncludes){
-            userIncludesCached.add(PathCache.getString(s));
-        }
-        Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
-        for(Map.Entry<String,String> e : userMacros.entrySet()){
-            if (e.getValue() == null) {
-                userMacrosCached.put(PathCache.getString(e.getKey()), null);
-            } else {
-                userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
+        for(String what : sourcesList) {
+            if (what == null){
+                continue;
             }
-        }
-        File f = new File(file);
-        if (f.exists() && f.isFile()) {
-            if (TRACE) {System.err.println("**** Gotcha: " + file);}
-            result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached));
-            return true;
-        }
-        if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
-            f = new File(guessWorkingDir+"/"+what);  //NOI18N
-            if (f.exists() && f.isFile()) {
-                if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
-                result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached));
-                return true;
+            if (what.endsWith(".s") || what.endsWith(".S")) {  //NOI18N
+                // It seems assembler file was compiled by C compiler.
+                // Exclude assembler files from C/C++ code model.
+                continue;
             }
-        }
-        if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
-        if (!what.startsWith("/") && userIncludes.size()+userMacros.size() > 0){  //NOI18N
-            List<String> res = findFiles(what);
-            if (res == null || res.isEmpty()) {
-                if (TRACE) {System.err.println("** And there is no such file under root");}
+            String file = null;
+            if (what.startsWith("/")){  //NOI18N
+                file = what;
             } else {
-                if (res.size() == 1) {
-                    result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros));
-                    if (TRACE) {System.err.println("** Gotcha: " + res.get(0) + File.separator + what);}
-                    // kinda adventure but it works
-                    setGuessWorkingDir(res.get(0));
-                    return true;
+                file = workingDir+"/"+what;  //NOI18N
+            }
+            List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
+            for(String s : userIncludes){
+                userIncludesCached.add(PathCache.getString(s));
+            }
+            Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
+            for(Map.Entry<String,String> e : userMacros.entrySet()){
+                if (e.getValue() == null) {
+                    userMacrosCached.put(PathCache.getString(e.getKey()), null);
                 } else {
-                    if (TRACE) {System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");}
+                    userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
                 }
             }
-            if (TRACE) {System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]");} //NOI18N
-            return false;
+            File f = new File(file);
+            if (f.exists() && f.isFile()) {
+                if (TRACE) {System.err.println("**** Gotcha: " + file);}
+                result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached));
+                continue;
+            }
+            if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
+                f = new File(guessWorkingDir+"/"+what);  //NOI18N
+                if (f.exists() && f.isFile()) {
+                    if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
+                    result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached));
+                    continue;
+                }
+            }
+            if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
+            if (!what.startsWith("/") && userIncludes.size()+userMacros.size() > 0){  //NOI18N
+                List<String> res = findFiles(what);
+                if (res == null || res.isEmpty()) {
+                    if (TRACE) {System.err.println("** And there is no such file under root");}
+                } else {
+                    if (res.size() == 1) {
+                        result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros));
+                        if (TRACE) {System.err.println("** Gotcha: " + res.get(0) + File.separator + what);}
+                        // kinda adventure but it works
+                        setGuessWorkingDir(res.get(0));
+                        continue;
+                    } else {
+                        if (TRACE) {System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");}
+                    }
+                }
+                if (TRACE) {System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]");} //NOI18N
+            }
         }
-        return false;
     }
 
     static class CommandLineSource implements SourceFileProperties {
@@ -770,7 +763,7 @@ public class LogReader {
             } else if (languageArtifacts.contains("c++")) { // NOI18N
                 language = ItemProperties.LanguageKind.CPP;
             } else {
-                String mime =MIMESupport.getKnownMIMETypeByExtension(sourcePath);
+                String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
                 if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
                     if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
                         language = ItemProperties.LanguageKind.CPP;
@@ -975,7 +968,7 @@ public class LogReader {
 
     private void gatherSubFolders(File d){
         if (d.exists() && d.isDirectory() && d.canRead()){
-            if (DiscoveryUtils.ignoreFolder(d)){
+            if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
             String path = d.getAbsolutePath().replace('\\', '/');

@@ -128,12 +128,6 @@ public class DynamicVerifyTest extends NbTestCase {
         Map<String,String> all = FeatureManager.projectFiles();
 
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
-        try {
-            Class.forName("org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton", true, Thread.currentThread().getContextClassLoader());
-            all.put("OK", "org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton");
-        } catch (ClassNotFoundException x) {
-            // no ruby cluster, OK
-        }
 
         iterateRegistrations(sb, ProjectFactory.class, null, all);
 
@@ -158,16 +152,6 @@ public class DynamicVerifyTest extends NbTestCase {
             Thread.currentThread().getContextClassLoader()
         );
         iterateRegistrations(sb, ant, ant.getDeclaredMethod("getType"), all);
-        try {
-            Class<?> rake = Class.forName(
-                "org.netbeans.modules.ruby.spi.project.support.rake.RakeBasedProjectType",
-                true,
-                Thread.currentThread().getContextClassLoader()
-            );
-            iterateRegistrations(sb, rake, rake.getDeclaredMethod("getType"), all);
-        } catch (ClassNotFoundException x) {
-            // no ruby cluster, OK
-        }
 
         if (!all.isEmpty()) {
             fail("Not all IDE projects are registered for ergonomics mode, see the list below.\n" +

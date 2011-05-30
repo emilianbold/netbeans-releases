@@ -57,6 +57,7 @@ import org.netbeans.modules.target.iterator.spi.TargetPanelProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.wizards.FileType;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -160,6 +161,19 @@ public class JSFTargetPanelProvider extends WebTargetPanelProvider<FileType>{
     
     protected WebModule getWebModule(){
         return myUIManager.getWebModule();
+    }
+
+    @Override
+    public boolean isValid(TargetChooserPanel<FileType> panel) {
+        if (super.isValid(panel)) {
+            // check that this project has a valid target server
+            if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(panel.getProject())) {
+                panel.getTemplateWizard().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    NbBundle.getMessage(JSFTargetPanelProvider.class, "WARN_MissingTargetServer"));
+            }
+            return true;
+        }
+        return false;
     }
 
     private boolean isFacelets() {

@@ -150,7 +150,9 @@ public class TomcatUsers {
      * @throws IOException if the file does not exist or an error occurs during 
      *         parsing it.
      */
-    public static boolean hasManagerRole(File tomcatUsersFile, String username) throws IOException {
+    public static boolean hasManagerRole(TomcatVersion version,
+            File tomcatUsersFile, String username) throws IOException {
+
         Document doc = getDocument(tomcatUsersFile);
         Element root = doc.getDocumentElement();
         NodeList users = root.getElementsByTagName("user"); // NOI18N
@@ -163,8 +165,14 @@ public class TomcatUsers {
             }
             if (username.equals(name)) { // NOI18N
                 String roles = user.getAttribute("roles"); // NOI18N
-                if (hasRole(roles, "manager")) { // NOI18N
-                    return true;
+                if (TomcatVersion.TOMCAT_70.equals(version)) {
+                    if (hasRole(roles, "manager-script")) { // NOI18N
+                        return true;
+                    }                    
+                } else {
+                    if (hasRole(roles, "manager")) { // NOI18N
+                        return true;
+                    }
                 }
             }
         }

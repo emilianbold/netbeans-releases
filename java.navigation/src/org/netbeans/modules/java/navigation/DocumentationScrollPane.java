@@ -72,6 +72,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -94,6 +95,8 @@ public class DocumentationScrollPane extends JScrollPane {
     private static final int ACTION_JAVADOC_FORWARD = 2;
     private static final int ACTION_JAVADOC_OPEN_IN_BROWSER = 3;
     private static final int ACTION_JAVADOC_OPEN_SOURCE = 4;
+
+    private static final RequestProcessor RP = new RequestProcessor(DocumentationScrollPane.class);
 
     private JButton bBack, bForward, bGoToSource, bShowWeb;    
     private HTMLDocView view;
@@ -434,10 +437,18 @@ public class DocumentationScrollPane extends JScrollPane {
             if (e != null && HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
                 final String desc = e.getDescription();
                 if (desc != null) {
-                    ElementJavadoc doc = currentDocumentation.resolveLink(desc);
-                    if (doc != null) {
-                        setData(doc, false);
-                    }
+                    RP.post(new Runnable() {
+                        public @Override void run() {
+                            final ElementJavadoc doc = currentDocumentation.resolveLink(desc);
+                            if (doc != null) {
+                                EventQueue.invokeLater(new Runnable() {
+                                    public @Override void run() {
+                                        setData(doc, false);
+                                    }
+                                });
+                            }
+                        }
+                    });
                 }                    
             }
         }

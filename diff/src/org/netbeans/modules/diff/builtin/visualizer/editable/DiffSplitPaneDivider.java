@@ -171,6 +171,11 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             setOpaque(true);
             renderingHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
                     "awt.font.desktophints")); // NOI18N
+            
+            // aqua background workaround
+            if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {         // NOI18N
+                setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+            }                  
         }
 
         public String getToolTipText(MouseEvent event) {

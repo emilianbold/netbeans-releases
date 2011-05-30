@@ -47,14 +47,14 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.util.* ;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmEnum
@@ -175,12 +175,12 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
 // impl of SelfPersistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.enumerators, output, false);
     }
     
-    public EnumImpl(DataInput input) throws IOException {
+    public EnumImpl(RepositoryDataInput input) throws IOException {
         super(input);
         int collSize = input.readInt();
         if (collSize < 0) {

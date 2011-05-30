@@ -1451,18 +1451,20 @@ public class RADComponent {
                                 FormProperty prop = accessibilityProperties[i];
                                 nameToProperty.remove(prop.getName());
                             }
-                            Node.PropertySet[] newPS = new Node.PropertySet[propertySets.length-1];
-                            int idx = 0;
-                            for (Node.PropertySet ps : propertySets) {
-                                if (!"accessibility".equals(ps.getName())) { // NOI18N
-                                    newPS[idx++] = ps;
-                                }
-                            }
-                            Node.PropertySet[] oldPS = propertySets;
-                            propertySets = newPS;
                             accessibilityData = null;
                             accessibilityProperties = NO_PROPERTIES;
-                            getNodeReference().firePropertyChangeHelper(Node.PROP_PROPERTY_SETS, oldPS, newPS);
+                            if (propertySets != null) {
+                                Node.PropertySet[] newPS = new Node.PropertySet[propertySets.length-1];
+                                int idx = 0;
+                                for (Node.PropertySet ps : propertySets) {
+                                    if (!"accessibility".equals(ps.getName())) { // NOI18N
+                                        newPS[idx++] = ps;
+                                    }
+                                }
+                                Node.PropertySet[] oldPS = propertySets;
+                                propertySets = newPS;
+                                getNodeReference().firePropertyChangeHelper(Node.PROP_PROPERTY_SETS, oldPS, newPS);
+                            }
                         }
                     }
                 });

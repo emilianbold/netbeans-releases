@@ -16,7 +16,7 @@
 <%--CC
 <% request.getSession().|
 void removeAttribute
-<% request.getSession().removeAttribute(name)
+<% request.getSession().removeAttribute(name);
 --%>
 
 <%-- Java completion for session object --%>

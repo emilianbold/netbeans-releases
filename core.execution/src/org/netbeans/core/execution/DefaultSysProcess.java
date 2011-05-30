@@ -85,8 +85,10 @@ final class DefaultSysProcess extends ExecutorTask {
         destroyed = true;
         try {
             group.interrupt();
+            group.getRunClassThread().waitForEnd(3000);
+            // Do not rush into Thread.stop, which could freeze ProcessDestroyPerformerImpl.destroy; give interrupt a chance to do its work.
             group.stop();
-            group.getRunClassThread().waitForEnd();
+            group.getRunClassThread().waitForEnd(1000);
         } catch (InterruptedException e) {
             Logger.getLogger(DefaultSysProcess.class.getName()).log(Level.WARNING, null, e);
         }

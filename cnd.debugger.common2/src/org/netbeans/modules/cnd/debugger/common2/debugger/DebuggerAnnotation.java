@@ -55,11 +55,11 @@ import java.util.Date;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
-import org.openide.text.Annotation;
 import org.openide.text.Line;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 import org.openide.util.Utilities;
 
 /**
@@ -73,7 +73,7 @@ import org.openide.util.Utilities;
  * file is described.
  */
 public class DebuggerAnnotation
-        extends Annotation
+        extends BreakpointAnnotation
         implements PropertyChangeListener {
 
     public static final String TYPE_CURRENT_PC = "CurrentPC"; // NOI18N
@@ -87,6 +87,7 @@ public class DebuggerAnnotation
     private String type;
     private final long addr;
     private String shortDescription = null;
+    private final NativeBreakpoint breakpoint;
 
     public static interface Listener {
 
@@ -94,17 +95,23 @@ public class DebuggerAnnotation
     };
 
     public DebuggerAnnotation(Listener owner, String type, Line line, long addr,
-            boolean isCurrent) {
+            boolean isCurrent, NativeBreakpoint breakpoint) {
         this.addr = addr;
         this.owner = owner;
         this.type = type;
         this.line = line;
+        this.breakpoint = breakpoint;
         ourAttach(line, isCurrent);
     }
 
     public DebuggerAnnotation(Listener owner, String type, Line line,
             boolean isCurrent) {
-        this(owner, type, line, 0, isCurrent);
+        this(owner, type, line, 0, isCurrent, null);
+    }
+
+    @Override
+    public NativeBreakpoint getBreakpoint() {
+        return breakpoint;
     }
 
     // interface PropertyChangeListener

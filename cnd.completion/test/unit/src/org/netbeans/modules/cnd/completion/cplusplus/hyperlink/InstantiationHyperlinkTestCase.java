@@ -186,4 +186,9 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz144079.cpp", 10, 12, "iz144079.cpp", 5, 1);
         performTest("iz144079.cpp", 11, 12, "iz144079.cpp", 1, 1);
     }
+
+    public void testBug185657() throws Exception {
+        // Bug 185657 - Unresolved ids in two dimensional vector usage
+        performTest("bug185657.cpp", 854, 25, "bug185657.cpp", 847, 5);
+    }
 }

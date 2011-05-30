@@ -158,11 +158,9 @@ public class RepositoryRevision {
             return path;
         }
         
+        @Override
         public String toString() {
-            StringBuffer text = new StringBuffer();            
-            text.append("\t");
-            text.append(getPath());
-            return text.toString();
+            return changedPath.getPath();
         }
 
         

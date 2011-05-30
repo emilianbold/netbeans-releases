@@ -171,24 +171,6 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         repaintManager().resetRegionFilters();
     }
     
-    public void testOpening20kbRubyFile() {
-        testProject = Projects.RUBY_PROJECT;
-        WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";
-        doMeasurement();
-    }
-
-    public void testOpening20kbRHTMLFile() {
-        testProject = Projects.RAILS_PROJECT;
-        WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Test Files|unit";
-        doMeasurement();
-    }
-
     public void testOpening20kbJSFile() {
         testProject = Projects.SCRIPTING_PROJECT;
         WAIT_AFTER_OPEN = 2000;

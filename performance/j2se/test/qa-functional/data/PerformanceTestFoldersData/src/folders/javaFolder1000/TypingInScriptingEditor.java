@@ -126,19 +126,7 @@ public class TypingInScriptingEditor extends org.netbeans.modules.performance.ut
         
         return projectsTab.getProjectRootNode(projectName);
     }
-    
-    public void test_RB_EditorTyping() {
-        testProject = Projects.RUBY_PROJECT;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";
-        doMeasurement();
-    }
-    public void test_RHTML_EditorTyping() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Views";
-        doMeasurement();
-    }
+
     public void test_JScript_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript20kb.js";

@@ -128,6 +128,18 @@ public final class APTPredefinedMacroMap implements APTMacroMap {
     public void undef(APTFile file, APTToken name) {
         APTUtils.LOG.log(Level.SEVERE, "undef is not supported", new IllegalAccessException()); // NOI18N
     }
+
+    @Override
+    public boolean pushPPDefined() {
+        APTUtils.LOG.log(Level.SEVERE, "pushPPDefined is not supported", new IllegalAccessException()); // NOI18N
+        return false;
+    }
+
+    @Override
+    public boolean popPPDefined() {
+        APTUtils.LOG.log(Level.SEVERE, "popPPDefined is not supported", new IllegalAccessException()); // NOI18N
+        return false;
+    }
    
     @Override
     public boolean pushExpanding(APTToken token) {

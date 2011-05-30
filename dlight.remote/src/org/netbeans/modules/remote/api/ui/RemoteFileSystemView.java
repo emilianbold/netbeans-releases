@@ -94,7 +94,7 @@ import org.openide.util.Exceptions;
         RemoteLogger.getInstance().log(Level.FINEST, "RFSV: creating file for {0}", path);
         FileObject fo = fs.findResource(path);
         if (fo == null || !fo.isValid()) {
-            RemoteLogger.getInstance().log(Level.INFO, "Null file object for {0}", path);
+            RemoteLogger.getInstance().log(Level.FINEST, "Null file object for {0}", path);
             return new FileObjectBasedFile(env, path);
         } else {
             return new FileObjectBasedFile(env, fo);

@@ -86,12 +86,14 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.j2ee.core.Profile;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
@@ -182,7 +184,7 @@ class WebActionProvider extends BaseActionProvider {
 
     public WebActionProvider(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator) {
         super(project, updateHelper, evaluator, project.getSourceRoots(), project.getTestSourceRoots(), 
-                project.getAntProjectHelper(), new CallbackImpl(project.getClassPathProvider()));
+                project.getAntProjectHelper(), new CallbackImpl(project.getClassPathProvider(), project.getWebModule()));
         commands = new HashMap<String, String[]>();
         commands.put(COMMAND_BUILD, new String[]{"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
@@ -890,9 +892,9 @@ class WebActionProvider extends BaseActionProvider {
 // previously do not ask and use it
         String serverType = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
-            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-            if (servInstIDs.length > 0) {
-                setServerInstance(servInstIDs[0]);
+            String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, J2eeModule.Type.WAR, ((WebProject) getProject()).getAPIWebModule().getJ2eeProfile());
+            if (instanceID != null) {
+                setServerInstance(instanceID);
                 return true;
             }
         }
@@ -993,13 +995,16 @@ class WebActionProvider extends BaseActionProvider {
         return foundWebServiceAnnotation[0];
     }
 
-    public static class CallbackImpl implements BaseActionProvider.Callback {
+    private static class CallbackImpl implements BaseActionProvider.Callback2 {
+
+        private final J2eeModuleProvider provider;
 
         // be aware: there are two ClassPathProviderImpl: one in java.api.common and second in web.project
-        private ClassPathProviderImpl cp;
+        private final ClassPathProviderImpl cp;
 
-        public CallbackImpl(ClassPathProviderImpl cp) {
+        public CallbackImpl(ClassPathProviderImpl cp, J2eeModuleProvider provider) {
             this.cp = cp;
+            this.provider = provider;
         }
 
         @Override
@@ -1012,5 +1017,19 @@ class WebActionProvider extends BaseActionProvider {
             return cp.findClassPath(file, type);
         }
 
+        @Override
+        public void antTargetInvocationFailed(String command, Lookup context) {
+            Deployment.getDefault().resumeDeployOnSave(provider);
+        }
+
+        @Override
+        public void antTargetInvocationFinished(String command, Lookup context, int result) {
+            Deployment.getDefault().resumeDeployOnSave(provider);
+        }
+
+        @Override
+        public void antTargetInvocationStarted(String command, Lookup context) {
+            Deployment.getDefault().suspendDeployOnSave(provider);
+        }
     }
 }

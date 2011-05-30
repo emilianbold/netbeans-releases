@@ -1,5 +1,0 @@
-
-if ()
-  puts "world"
-end
-

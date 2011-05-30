@@ -49,7 +49,7 @@ import org.netbeans.modules.versioning.VcsVisibilityQueryImplementation;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 
 /**
- * Provides the visibility servis according to {@link VisibilityQueryImplementation2}
+ * Provides the visibility service according to {@link VisibilityQueryImplementation2}
  * for a particular VersioningSystem
  * 
  * @author Tomas Stupka

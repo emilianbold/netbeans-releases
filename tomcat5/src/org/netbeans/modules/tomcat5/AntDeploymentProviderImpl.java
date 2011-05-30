@@ -70,10 +70,24 @@ public class AntDeploymentProviderImpl implements AntDeploymentProvider {
     }
 
     public void writeDeploymentScript(OutputStream os, Object moduleType) throws IOException {
-        InputStream is = AntDeploymentProviderImpl.class.getResourceAsStream("resources/tomcat-ant-deploy.xml"); // NOI18N
+        String name = null;
+        switch (tm.getTomcatVersion()) {
+            case TOMCAT_70:
+                name = "resources/tomcat-ant-deploy70.xml";
+                break;
+            case TOMCAT_60:
+                name = "resources/tomcat-ant-deploy60.xml";
+                break;
+            case TOMCAT_55:
+            case TOMCAT_50:
+            default:
+                name = "resources/tomcat-ant-deploy.xml";
+        }
+        
+        InputStream is = AntDeploymentProviderImpl.class.getResourceAsStream(name); // NOI18N
         if (is == null) {
             // this should never happen, but better make sure
-            LOGGER.severe("Missing resource resources/tomcat-ant-deploy.xml."); // NOI18N
+            LOGGER.log(Level.SEVERE, "Missing resource {0}.", name); // NOI18N
             return;
         }
         try {

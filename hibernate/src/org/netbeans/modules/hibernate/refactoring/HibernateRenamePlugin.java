@@ -126,6 +126,10 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
 
         // Find the mapping files in this project
         Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
+        if(proj == null){
+            //file is not part of any project
+            return null;
+        }
         HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
         if (env == null) {
             // The project does not support Hibernate framework

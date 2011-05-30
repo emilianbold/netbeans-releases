@@ -104,6 +104,9 @@ public final class StandardLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern CWD_LEAVE = Pattern.compile(".*Leaving directory [`'\"]?([^`'\"]+)(['\"]|$|\\.\\.\\.$)"); // NOI18N
+
+    /** Hack for #194151. */
+    public static final String USING_STANDARD_REDIRECTOR = "USING_STANDARD_REDIRECTOR";
     
     /**
      * Data stored in the session.
@@ -407,6 +410,7 @@ public final class StandardLogger extends AntLogger {
             }
         }
         if ("java".equals(event.getTaskName()) &&
+                event.getProperty(USING_STANDARD_REDIRECTOR) == null &&
                 (event.getLogLevel() == AntEvent.LOG_WARN || event.getLogLevel() == AntEvent.LOG_INFO)) {
             // stdout and stderr is printed directly for java
             return;
@@ -424,9 +428,10 @@ public final class StandardLogger extends AntLogger {
         getSessionData(event.getSession()).lastHyperlink = null;
     }
 
-    private static final Pattern IMPORTANT_MESSAGE = Pattern.compile("\\[deprecation\\]|warning|stopped");
+    // exclusion of "cannot find symbol" is a workaround for javac #6403465 (fixed in JDK 7): AP-generated sources initially not found
+    private static final Pattern UNIMPORTANT_MESSAGE = Pattern.compile("\\[deprecation\\]|warning|stopped|cannot find symbol");
     public static boolean isImportant(String message) {
-        return !IMPORTANT_MESSAGE.matcher(message).find();
+        return !UNIMPORTANT_MESSAGE.matcher(message).find();
     }
 
     public static class PartiallyLinkedLine { // used also in ForkedJavaOverride

@@ -1,0 +1,12 @@
+Error: Almost standards mode doctype. Expected e.g. "".
+From line 1, column 1; to line 2, column 46
+
+
+----
+(Alt-Enter shows hints)
+Error: The "frameset" element is obsolete. Use the "iframe" element and CSS instead, or use server-side includes.
+From line 8, column 1; to line 8, column 10
+
+
+----
+(Alt-Enter shows hints)

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.16
+#Version 7.20.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -272,8 +272,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,changeSupportLock,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,opaquePropertyChangeListener,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public init()
@@ -353,11 +353,12 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
+meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,ncomponents,numOfHWComponents,numOfLWComponents,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public java.awt.Dialog
@@ -399,7 +400,7 @@ meth public void show()
  anno 0 java.lang.Deprecated()
 meth public void toBack()
 supr java.awt.Window
-hfds DEFAULT_MODAL_EXCLUSION_TYPE,base,blockedWindows,isInDispose,isInHide,keepBlockingCT,keepBlockingEDT,modal,modalDialogs,modalFilter,modalityType,nameCounter,resizable,serialVersionUID,showAppContext,title,undecorated
+hfds base,blockedWindows,isInDispose,isInHide,keepBlocking,modal,modalDialogs,modalFilter,modalityType,nameCounter,resizable,serialVersionUID,showAppContext,title,undecorated
 hcls WakingRunnable
 
 CLSS public abstract interface java.awt.MenuContainer
@@ -468,6 +469,7 @@ meth public void dispose()
 meth public void hide()
  anno 0 java.lang.Deprecated()
 meth public void pack()
+meth public void paint(java.awt.Graphics)
 meth public void removeNotify()
 meth public void removeWindowFocusListener(java.awt.event.WindowFocusListener)
 meth public void removeWindowListener(java.awt.event.WindowListener)
@@ -492,7 +494,7 @@ meth public void show()
 meth public void toBack()
 meth public void toFront()
 supr java.awt.Container
-hfds OPENED,allWindows,alwaysOnTop,anchor,autoRequestFocus,base,beforeFirstShow,beforeFirstWindowShown,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,ownedWindowList,serialVersionUID,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
+hfds OPENED,TRANSPARENT_BACKGROUND_COLOR,allWindows,alwaysOnTop,anchor,base,beforeFirstShow,beforeFirstWindowShown,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,opacity,opaque,ownedWindowList,securityWarningAlignmentX,securityWarningAlignmentY,securityWarningHeight,securityWarningPointX,securityWarningPointY,securityWarningWidth,serialVersionUID,shape,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
 hcls WindowDisposerRecord
 
 CLSS public abstract interface java.awt.event.ActionListener
@@ -964,9 +966,10 @@ meth public int getNodesCount(boolean)
 meth public org.openide.nodes.Node findChild(java.lang.String)
 meth public org.openide.nodes.Node[] getNodes(boolean)
 meth public static <%0 extends java.lang.Object> org.openide.nodes.Children create(org.openide.nodes.ChildFactory<{%%0}>,boolean)
+meth public static org.openide.nodes.Children createLazy(java.util.concurrent.Callable<org.openide.nodes.Children>)
 supr java.lang.Object
 hfds LOG,PR,entrySupport,lazySupport,parent
-hcls Dupl,Empty,Entry,ProjectManagerDeadlockDetector
+hcls Dupl,Empty,Entry,LazyChildren,ProjectManagerDeadlockDetector
 
 CLSS public static org.openide.nodes.Children$Array
  outer org.openide.nodes.Children

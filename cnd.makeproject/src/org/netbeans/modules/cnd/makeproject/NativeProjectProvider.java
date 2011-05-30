@@ -156,8 +156,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     @Override
-    public Object getProject() {
-        return this.project;
+    public Lookup.Provider getProject() {
+        return project;
     }
 
     @Override
@@ -195,7 +195,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             CndUtils.assertFalse(true, "Can not find RemoteProject in " + project.getProjectDirectory()); //NOI18N
             projectRoot = project.getProjectDirectory().getPath();
         } else {
-            projectRoot = rp.getBaseDir();
+            projectRoot = rp.getSourceBaseDir();
         }
         CndUtils.assertNotNull(projectRoot, "null projectRoot"); //NOI18N        
         return projectRoot;
@@ -304,13 +304,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
         }
         // Fire NativeProject change event
-        if (actualList.size() > 0) {
+        if (!actualList.isEmpty()) {
             for (NativeProjectItemsListener listener : getListenersCopy()) {
-                if (actualList.size() == 1) {
-                    listener.fileAdded(actualList.get(0));
-                } else {
-                    listener.filesAdded(actualList);
-                }
+                listener.filesAdded(actualList);
             }
         }
     }
@@ -320,13 +316,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             System.out.println("fireFilesRemoved "); // NOI18N
         }
         // Fire NativeProject change event
-        if (nativeFileItems.size() > 0) {
+        if (!nativeFileItems.isEmpty()) {
             for (NativeProjectItemsListener listener : getListenersCopy()) {
-                if (nativeFileItems.size() == 1) {
-                    listener.fileRemoved(nativeFileItems.get(0));
-                } else {
-                    listener.filesRemoved(nativeFileItems);
-                }
+                listener.filesRemoved(nativeFileItems);
             }
         }
     }
@@ -351,6 +343,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    @Override
     public void fireFilesPropertiesChanged() {
         if (TRACE) {
             new Exception().printStackTrace(System.err);

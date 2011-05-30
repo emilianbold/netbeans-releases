@@ -14,15 +14,15 @@ import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
+import javax.sql.DataSource;
 
 /**
  * This is the bean class for the TestingSessionBean enterprise bean.
  * Created 29.4.2005 15:24:25
  * @author lm97939
  */
-public class TestingSessionBean implements SessionBean, TestingSessionRemoteBusiness, TestingSessionLocalBusiness {
-    private SessionContext context;
+public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSessionRemoteBusiness, test.TestingSessionLocalBusiness {
+    private javax.ejb.SessionContext context;
     
     // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click the + sign on the left to edit the code.">
     // TODO Add code to acquire and use other enterprise resources (DataSource, JMS, enterprise bean, Web services)
@@ -30,7 +30,7 @@ public class TestingSessionBean implements SessionBean, TestingSessionRemoteBusi
     /**
      * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
      */
-    public void setSessionContext(SessionContext aContext) {
+    public void setSessionContext(javax.ejb.SessionContext aContext) {
         context = aContext;
     }
     
@@ -73,57 +73,47 @@ public class TestingSessionBean implements SessionBean, TestingSessionRemoteBusi
     // "EJB Methods > Add Business Method" or "Web Service > Add Operation")
 
     public String testBusinessMethod1() {
-        //TODO implement testBusinessMethod1
         return null;
     }
 
     public String testBusinessMethod2(String a, int b) throws Exception {
-        //TODO implement testBusinessMethod2
         return null;
     }
 
-    private TestingEntityLocalHome lookupTestingEntityBean() {
+    private TestingEntityLocalHome lookupTestingEntityBeanLocal() {
         try {
             Context c = new InitialContext();
-            TestingEntityLocalHome rv = (TestingEntityLocalHome) c.lookup("java:comp/env/ejb/TestingEntityBean");
+            TestingEntityLocalHome rv = (TestingEntityLocalHome) c.lookup("java:comp/env/TestingEntityBean");
             return rv;
-        }
-        catch(NamingException ne) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE,"exception caught" ,ne);
+        } catch (NamingException ne) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", ne);
             throw new RuntimeException(ne);
         }
     }
 
-    private TestingEntityRemoteHome lookupMyTestingEntityBean() {
-        try {
-            Context c = new InitialContext();
-            Object remote = c.lookup("java:comp/env/ejb/MyTestingEntityBean");
-            TestingEntityRemoteHome rv = (TestingEntityRemoteHome) PortableRemoteObject.narrow(remote, TestingEntityRemoteHome.class);
-            return rv;
-        }
-        catch(NamingException ne) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE,"exception caught" ,ne);
-            throw new RuntimeException(ne);
-        }
+    private DataSource getMyTestingDatabase() throws NamingException {
+        Context c = new InitialContext();
+        return (DataSource) c.lookup("java:comp/env/myTestingDatabase");
     }
 
-    private Message createJMSMessageForTestingMessageDestination(Session session, Object messageData) throws JMSException {
+    private Message createJMSMessageForjmsTestingMessageBean(Session session, Object messageData) throws JMSException {
+        // TODO create and populate message to send
         TextMessage tm = session.createTextMessage();
         tm.setText(messageData.toString());
         return tm;
     }
 
-    private void sendJMSMessageToTestingMessageDestination(Object messageData) throws NamingException, JMSException {
+    private void sendJMSMessageToTestingMessageBean(Object messageData) throws NamingException, JMSException {
         Context c = new InitialContext();
-        ConnectionFactory cf = (ConnectionFactory) c.lookup("java:comp/env/jms/TestingMessageDestinationFactory");
+        ConnectionFactory cf = (ConnectionFactory) c.lookup("java:comp/env/jms/TestingMessageBeanFactory");
         Connection conn = null;
         Session s = null;
-        try { 
+        try {
             conn = cf.createConnection();
-            s = conn.createSession(false,s.AUTO_ACKNOWLEDGE);
-            Destination destination = (Destination) c.lookup("java:comp/env/jms/TestingMessageDestination");
+            s = conn.createSession(false, s.AUTO_ACKNOWLEDGE);
+            Destination destination = (Destination) c.lookup("java:comp/env/jms/TestingMessageBean");
             MessageProducer mp = s.createProducer(destination);
-            mp.send(createJMSMessageForTestingMessageDestination(s,messageData));
+            mp.send(createJMSMessageForjmsTestingMessageBean(s, messageData));
         } finally {
             if (s != null) {
                 try {

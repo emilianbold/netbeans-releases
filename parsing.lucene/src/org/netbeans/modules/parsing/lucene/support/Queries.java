@@ -251,39 +251,7 @@ public final class Queries {
         }
         return -1;
     }
-    
-    private static abstract class DocumentVisitor {
-
-        public void generate(IndexReader reader, TermEnum enumerator) throws IOException {
-            final int[] docs = new int[32];
-            final int[] freqs = new int[32];
-            final TermDocs termDocs = reader.termDocs();
-            try {
-                do {
-                    final Term term = enumerator.term();
-                    if (term == null) {
-                        break;
-                    }
-                    termDocs.seek(term);
-                    while (true) {
-                        final int count = termDocs.read(docs, freqs);
-                        if (count != 0) {
-                            for (int i = 0; i < count; i++) {
-                                visit(term, docs[i]);
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                } while (enumerator.next());
-            } finally {
-                termDocs.close();
-            }
-        }
-
-        abstract public void visit(Term term, int doc);
-    }
-    
+        
     private static abstract class TCFilter extends Filter {
         public abstract void attach (TermCollector collector);
     }
@@ -295,22 +263,40 @@ public final class Queries {
         @Override
         public final DocIdSet getDocIdSet(IndexReader reader) throws IOException {
             final FilteredTermEnum enumerator = getTermEnum(reader);
-            try {
-                // if current term in enum is null, the enum is empty -> shortcut
-                if (enumerator.term() == null) {
-                    return DocIdSet.EMPTY_DOCIDSET;
-                }
+            // if current term in enum is null, the enum is empty -> shortcut
+            if (enumerator.term() == null) {
+                return DocIdSet.EMPTY_DOCIDSET;
+            }
+            try {                                
                 // else fill into a OpenBitSet
                 final OpenBitSet bitSet = new OpenBitSet(reader.maxDoc());
-                new DocumentVisitor() {
-                    @Override
-                    public void visit(Term term, int doc) {
-                        bitSet.set(doc);
-                        if (termCollector != null) {
-                            termCollector.add(doc, term);
+                final int[] docs = new int[32];
+                final int[] freqs = new int[32];
+                final TermDocs termDocs = reader.termDocs();
+                try {
+                    do {
+                        final Term term = enumerator.term();
+                        if (term == null) {
+                            break;
                         }
-                    }
-                }.generate(reader, enumerator);
+                        termDocs.seek(term);
+                        while (true) {
+                            final int count = termDocs.read(docs, freqs);
+                            if (count != 0) {
+                                for (int i = 0; i < count; i++) {
+                                    bitSet.set(docs[i]);
+                                    if (termCollector != null) {
+                                        termCollector.add(docs[i], term);
+                                    }
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                    } while (enumerator.next());
+                } finally {
+                    termDocs.close();
+                }
                 return bitSet;
             } finally {
                 enumerator.close();

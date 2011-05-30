@@ -281,6 +281,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 g.setColor(GridDesigner.SELECTION_COLOR);
                 g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
             }
+            paintConstraints(g);
             paintSelection(g);
         }
         if (animation && (animPhase == 1f)) {
@@ -367,7 +368,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         header.setBackground(c);
         header.setHorizontalAlignment(SwingConstants.CENTER);
         for (int i=0; i<columns; i++) {
-            header.setText(Integer.toString(i+1));
+            header.setText(Integer.toString(i));
             header.setBorder(selectedColumns.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder());
             headerHeight = header.getPreferredSize().height;
             int start = extendedBound(columnBounds, i);
@@ -381,7 +382,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
         // Paint the rows
         for (int i=0; i<rows; i++) {
-            header.setText(Integer.toString(i+1));
+            header.setText(Integer.toString(i));
             Border border = selectedRows.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder();
             header.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(0,HEADER_GAP/2,0,HEADER_GAP/2)));
             int start = extendedBound(rowBounds, i);
@@ -395,26 +396,47 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     }
 
     /**
+     * Paints additional information about component constraints.
+     * 
+     * @param g graphics to use for painting.
+     */
+    private void paintConstraints(Graphics g) {
+        Point shift = fromComponentPane(new Point());
+        Graphics gg = g.create();
+        gg.translate(shift.x, shift.y);
+        for (Component comp : componentPane.getComponents()) {
+            if (GridUtils.isPaddingComponent(comp)) {
+                continue;
+            }
+            boolean selected = selection.contains(comp);
+            gridInfo.paintConstraints(gg, comp, selected);
+        }
+    }
+
+    /**
      * Paints the selection.
      *
      * @param g graphics object.
      */
     private void paintSelection(Graphics g) {
         if (animation) return;
+        Graphics gClip = g.create();
+        Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
+        gClip.setClip(paneRect);
         for (Component selComp : selection) {
             Rectangle rect = fromComponentPane(selectionResizingBounds(selComp));
             Rectangle inner = fromComponentPane(selComp.getBounds());
-            g.setColor(HIGHLIGHT_COLOR);
+            gClip.setColor(HIGHLIGHT_COLOR);
             if ((inner.width == 0) || (inner.height == 0)) {
                 // GridBagLayout sets location of such components
                 // to (0,0) which makes inner rectangle incorrect.
                 // Happily, we can ignore inner rectangle in this case.
-                g.fillRect(rect.x, rect.y, rect.width, rect.height);
+                gClip.fillRect(rect.x, rect.y, rect.width, rect.height);
             } else {
-                g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
-                g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
-                g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
-                g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
+                gClip.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
+                gClip.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
+                gClip.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
+                gClip.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
             }
             g.setColor(GridDesigner.SELECTION_COLOR);
             int x = rect.x-1;
@@ -441,6 +463,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             y -= rect.height+2-h;
             g.drawImage(resizeHandle, x-rw, y-rh/2, null); // left
         }
+        gClip.dispose();
     }
 
     /**
@@ -825,13 +848,16 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @return component at the specified point or {@code null}.
      */
     Component findComponent(Point innerPanePoint) {
-        for (Component comp : componentPane.getComponents()) {
-            if (GridUtils.isPaddingComponent(comp)) {
-                continue;
-            }
-            Rectangle rect = fromComponentPane(comp.getBounds());
-            if (rect.contains(innerPanePoint)) {
-                return comp;
+        Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
+        if (paneRect.contains(innerPanePoint)) {
+            for (Component comp : componentPane.getComponents()) {
+                if (GridUtils.isPaddingComponent(comp)) {
+                    continue;
+                }
+                Rectangle rect = fromComponentPane(comp.getBounds());
+                if (rect.contains(innerPanePoint)) {
+                    return comp;
+                }
             }
         }
         return null;
@@ -1076,11 +1102,13 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 if (inverse) {
                     newSelection.addAll(selection);
                 }
+                Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
                 for (Component comp : componentPane.getComponents()) {
                     if (GridUtils.isPaddingComponent(comp)) {
                         continue;
                     }
                     Rectangle rect = fromComponentPane(comp.getBounds());
+                    rect = rect.intersection(paneRect);
                     if (draggingRect.intersects(rect)) {
                         if (inverse && newSelection.contains(comp)) {
                             newSelection.remove(comp);

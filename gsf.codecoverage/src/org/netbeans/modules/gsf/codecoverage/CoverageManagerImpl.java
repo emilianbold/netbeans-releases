@@ -64,6 +64,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
 
 /**
@@ -249,10 +250,14 @@ public class CoverageManagerImpl implements CoverageManager {
             }
         }
 
-        CoverageReportTopComponent report = showingReports.get(project);
+        final CoverageReportTopComponent report = showingReports.get(project);
         if (report != null) {
-            List<FileCoverageSummary> coverage = provider.getResults();
-            report.updateData(coverage);
+            final List<FileCoverageSummary> coverage = provider.getResults();
+            Mutex.EVENT.readAccess(new Runnable() {
+                public @Override void run() {
+                    report.updateData(coverage);
+                }
+            });
         }
     }
 

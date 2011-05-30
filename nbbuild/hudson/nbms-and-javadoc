@@ -15,7 +15,9 @@ ant verify-libs-and-licenses || exit
 ant -f autoupdate.services/build.xml # build first to ensure DTD validation works
 ant -Dcluster.config=experimental \
     -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false -Dnbms.fail.on.error=false \
-    build-nbms create-license-summary create-netbeans-import finish-build || exit
+    build-nbms || exit
+ant -Dcluster.config=stableuc create-license-summary || exit
+ant -Dcluster.config=experimental create-netbeans-import finish-build || exit
 
 rm -rv nbbuild/netbeans/ergonomics nbbuild/nbms/ergonomics # not going to have been built reasonably anyway
 ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit

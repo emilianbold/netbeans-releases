@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.ejbcore.action;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -143,14 +144,21 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
             addMethodToInterface(methodModelCopy, remote);
         }
         
-        // ejb class, add 'public' modifier
+        // ejb class, add 'public' modifier, 'Override' annotation if required
+        List<MethodModel.Annotation> annotations;
+        if ((generateLocal && local != null) || (generateRemote && remote != null)) {
+            annotations = Collections.singletonList(MethodModel.Annotation.create("java.lang.Override")); //NOI18N
+        } else {
+            annotations = Collections.<MethodModel.Annotation>emptyList();
+        }
         MethodModel methodModelCopy = MethodModel.create(
                 methodModel.getName(),
                 methodModel.getReturnType(),
                 methodModel.getBody(),
                 methodModel.getParameters(),
                 methodModel.getExceptions(),
-                Collections.singleton(Modifier.PUBLIC)
+                Collections.singleton(Modifier.PUBLIC),
+                annotations
                 );
         
         addMethod(methodModelCopy, ejbClassFileObject, ejbClass);

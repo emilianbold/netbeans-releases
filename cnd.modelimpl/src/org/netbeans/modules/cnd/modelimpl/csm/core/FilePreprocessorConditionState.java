@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +53,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -76,7 +76,7 @@ public final class FilePreprocessorConditionState {
         this.fileName = fileName;
     }
     
-    public FilePreprocessorConditionState(DataInput input) throws IOException {
+    public FilePreprocessorConditionState(RepositoryDataInput input) throws IOException {
         int size = input.readInt();
         if (size > 0) {
             offsets = new int[size];
@@ -89,7 +89,7 @@ public final class FilePreprocessorConditionState {
         fileName = null;
     }
 
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         int size = offsets.length;
         output.writeInt(size);
         if (size > 0) {
@@ -240,6 +240,15 @@ public final class FilePreprocessorConditionState {
                 addBlockImpl(startDeadBlock, endDeadBlock);
             }
         }
+        
+        /**
+         * Implements APTParseFileWalker.EvalCallback -
+         * adds offset of dead branch to offsets array
+         */        
+        @Override
+        public void onStoppedDirective(APT apt) {
+            addBlockImpl(apt.getToken().getOffset(), Integer.MAX_VALUE);
+        }
 
         /**
          * Implements APTParseFileWalker.EvalCallback -
@@ -291,11 +300,21 @@ public final class FilePreprocessorConditionState {
         }
 
         public FilePreprocessorConditionState build() {
-            int[] offsets = new int[blocks.size()*2];
+            int size = 0;
+            for (int[] deadInterval : blocks) {
+                size++;
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
+            }
+            int[] offsets = new int[size*2];
             int index = 0;
             for (int[] deadInterval : blocks) {
                 offsets[index++] = deadInterval[0];
                 offsets[index++] = deadInterval[1];
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
             }
             return build(this.name, offsets);
         }
@@ -326,6 +345,9 @@ public final class FilePreprocessorConditionState {
                 sb.append(deadInterval[0]);
                 sb.append("-");//NOI18N
                 sb.append(deadInterval[1]);
+                if (deadInterval[1] == Integer.MAX_VALUE) {
+                    break;
+                }
             }
             sb.append("]");//NOI18N
             return sb.toString();

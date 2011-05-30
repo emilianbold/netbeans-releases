@@ -52,10 +52,7 @@ public abstract class ProgressManager {
     private final boolean old = false;	// use old progress bar	
 					// for comparison
 
-    private PhasedProgress.CancelListener cancelListener;
     private PhasedProgress phasedProgress;
-
-    private final DebuggerManager manager = DebuggerManager.get();
 
     protected ProgressManager() {
     }
@@ -80,14 +77,15 @@ public abstract class ProgressManager {
 	    DebuggerManager.get().updateProgress("Progress", "START", 0); // NOI18N
 	    return false;
 	}
-	setCancelListener(cancelListener);
-	if (phasedProgress != null)
+	if (phasedProgress != null) {
 	    return false;
+        }
 	int cols = shortNames? 40: 60;
 	phasedProgress = new PhasedProgress(title(),
 					   levelLabels(),
 					   cancelListener,
 					   cols);
+        setCancelListener(cancelListener);
 	return true;
     }
 
@@ -138,9 +136,9 @@ public abstract class ProgressManager {
     }
 
     public void setCancelListener(PhasedProgress.CancelListener cl) {
-	this.cancelListener = cl;
-	if (phasedProgress != null)
+	if (phasedProgress != null) {
 	    phasedProgress.setCancelListener(cl);
+        }
     }
 }
 

@@ -103,9 +103,6 @@ public class MeasureJ2SEDialogsTest {
         .addTest(TemplateManagerTest.class)
         .addTest(ToDoWindowTest.class)
         .addTest(VersioningWindowTest.class)
-        .addTest(KenaiLoginTest.class)
-        .addTest(NewKenaiProjectTest.class)
-        .addTest(GetKenaiSourcesTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
   
         return suite;

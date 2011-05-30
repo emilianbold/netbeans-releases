@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -97,7 +98,7 @@ public final class SuiteUtils {
     
     static final String MODULES_PROPERTY = "modules"; // NOI18N
     
-    private final SuiteProperties suiteProps;
+    private final @NonNull SuiteProperties suiteProps;
     
     private SuiteUtils(final SuiteProperties suiteProps) {
         assert suiteProps != null;
@@ -323,7 +324,7 @@ public final class SuiteUtils {
                             FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
                                     getFileObject("nbproject/platform.properties"); // NOI18N
                             FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
-                            if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
+                            if (subModuleNbProject != null && subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
                                 FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
                             }
                         }
@@ -432,7 +433,8 @@ public final class SuiteUtils {
     /** Generates unique property key suitable for a given modules. */
     private String generatePropertyKey(final Project subModule) {
         String key = "project." + ProjectUtils.getInformation(subModule).getName(); // NOI18N
-        String[] keys = suiteProps.getProperty(MODULES_PROPERTY).split("(?<=:)", -1); // NOI18N
+        String modules = suiteProps.getProperty(MODULES_PROPERTY);
+        String[] keys = modules != null ? modules.split("(?<=:)", -1) : new String[0]; // NOI18N
         int index = 0;
         while (Arrays.binarySearch(keys, "${" + key + "}") >= 0) { // NOI18N
             key += "_" + ++index; // NOI18N

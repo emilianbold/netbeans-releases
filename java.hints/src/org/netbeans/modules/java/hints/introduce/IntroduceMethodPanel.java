@@ -282,12 +282,13 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     }
 
     public boolean getReplaceOther() {
-        return duplicates.isSelected();
+        return replaceOtherTest != null ? replaceOtherTest : duplicates.isSelected();
     }
     
     //For tests:
     private String methodNameTest;
     private Set<Modifier> accessTest;
+    private Boolean replaceOtherTest;
     
     void setAccess(Set<Modifier> access) {
         this.accessTest = access;
@@ -297,4 +298,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         this.methodNameTest = methodName;
     }
 
+    void setReplaceOther(boolean v) {
+        this.replaceOtherTest = v;
+    }
 }

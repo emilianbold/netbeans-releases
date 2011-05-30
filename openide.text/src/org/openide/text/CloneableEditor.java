@@ -967,6 +967,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return new Dimension(bounds.width / 2, bounds.height / 2);
     }
 
+    @Override
+    public void open() {
+        boolean wasNull = getClientProperty( "TopComponentAllowDockAnywhere" ) == null; //NOI18N
+        super.open();
+        if( wasNull ) {
+            //since we don't define a mode to dock this editor to, the window
+            //system thinks we're an uknown component allowed to dock anywhere
+            //but editor windows can dock into editor modes only, so let's clear
+            //the 'special' flag
+            putClientProperty( "TopComponentAllowDockAnywhere", null); //NOI18N
+        }
+    }
+
     private Action getAction(String key) {
         if (key == null) {
             return null;

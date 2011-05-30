@@ -49,6 +49,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -83,7 +84,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     private static final Logger LOG = Logger.getLogger(AbstractIndenter.class.getName());
 
     protected static final boolean DEBUG = LOG.isLoggable(Level.FINE);
+    protected static final boolean DEBUG_PERFORMANCE = Logger.getLogger("AbstractIndenter.PERF").isLoggable(Level.FINE);
+    private static long startTime1;
+    private static long startTimeTotal;
 
+    private static final int MAX_INDENT = 200;
+    
     public static boolean inUnitTestRun = false;
 
     private IndenterFormattingContext formattingContext;
@@ -197,6 +203,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 if (l.size() > 0) {
                     updateLineOffsets(l);
                 }
+            } else {
+                startTimeTotal = System.currentTimeMillis();
             }
             calculateIndentation();
             applyIndentation();
@@ -208,6 +216,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         } finally {
             if (formattingContext.isLastIndenter()) {
                 formattingContext.removeListener();
+                if (DEBUG_PERFORMANCE) {
+                    System.err.println("[IndPer] Total time "+(System.currentTimeMillis()-startTimeTotal)+" ms");
+                }
             } else {
                 formattingContext.enableListener();
             }
@@ -303,7 +314,14 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 assert ts != null : "start="+start+" newStart="+newStart+" jts="+joinedTS;
                 start = newStart;
             }
+            startTime1 = System.currentTimeMillis();
             initialOffset = getFormatStableStart(joinedTS, start, end, rangesToIgnore);
+            if (DEBUG_PERFORMANCE) {
+                System.err.println("[IndPer] Locating FormatStableStart took "+(System.currentTimeMillis()-startTime1)+" ms");
+                System.err.println("[IndPer] Current line index is: "+(Utilities.getLineOffset(doc, start)));
+                System.err.println("[IndPer] FormatStableStart line starts at index: "+(Utilities.getLineOffset(doc, initialOffset)));
+                System.err.println("[IndPer] Number of ranges to ignore: "+rangesToIgnore.ranges.size());
+            }
             if (DEBUG && !rangesToIgnore.isEmpty()) {
                 System.err.println("Ignored ranges: "+rangesToIgnore.dump());
             }
@@ -312,14 +330,22 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         // list of lines with their indentation
         final List<Line> indentedLines = new ArrayList<Line>();
 
+        startTime1 = System.currentTimeMillis();
         // get list of code blocks of our language in form of [line start number, line end number]
         List<LinePair> linePairs = calculateLinePairs(blocks, initialOffset, end);
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] calculateLinePairs (total pairs="+linePairs.size()+") took "+(System.currentTimeMillis()-startTime1)+" ms");
+        }
         if (DEBUG) {
             System.err.println("line pairs to process="+linePairs);
         }
 
         // process blocks of our language and record data for each line:
+        startTime1 = System.currentTimeMillis();
         processLanguage(joinedTS, linePairs, initialOffset, end, indentedLines, rangesToIgnore);
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] processLanguage ("+getContext().mimePath()+") took " +(System.currentTimeMillis()-startTime1)+" ms");
+        }
 
         assert formattingContext.getIndentationData() != null;
         List<List<Line>> indentationData = formattingContext.getIndentationData();
@@ -365,7 +391,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         // recalcualte line numbers according to new offsets
+        startTime1 = System.currentTimeMillis();
         recalculateLineIndexes();
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] recalculateLineIndexes took "+(System.currentTimeMillis()-startTime1)+" ms");
+        }
 
         // apply line data into concrete indentation:
         int lineStart = Utilities.getLineOffset(getDocument(), context.startOffset());
@@ -373,7 +403,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         assert formattingContext.getIndentationData() != null;
         List<List<Line>> indentationData = formattingContext.getIndentationData();
 
+        startTime1 = System.currentTimeMillis();
         List<Line> indentedLines = mergeIndentedLines(indentationData);
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] mergeIndentedLines took "+(System.currentTimeMillis()-startTime1)+" ms");
+        }
         if (DEBUG) {
             System.err.println("Merged line data:");
             for (Line l : indentedLines) {
@@ -1306,7 +1340,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             index--;
         }
         while ((forward ? index < tokenText.length() : index > 0) &&
-                tokenText.charAt(index) == ' ') {
+                tokenText.charAt(index) == ' ' || tokenText.charAt(index) == '\t') {
             if (forward) {
                 index++;
             } else {
@@ -1370,7 +1404,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
         boolean beingFormatted = line != null ? line.index >= lineStart : false;
         int thisLineIndent = 0;
-        List<IndentCommand> allCommands = new ArrayList<IndentCommand>(allPreviousCommands);
+        
+        //UnmodifiableButExtendableList assumptions:
+        //1. allCommands does not escape from this context,
+        //2. only get(index), size() and add(object) methods are called on it.
+        List<IndentCommand> allCommands = new UnmodifiableButExtendableList<IndentCommand>(allPreviousCommands);
+        
         int preservedLineIndentation = -1;
 
         // iterate over indent commands for the given line and calculate line's indentation
@@ -1570,6 +1609,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         Map<Integer, Integer> suggestedIndentsForOtherLines = new HashMap<Integer, Integer>();
 
         // iterate over lines indentation commands and calculate real indentation
+        startTime1 = System.currentTimeMillis();
         for (Line line : indentedLines) {
 
             if (previousLine != null && previousLine.index+1 != line.index) {
@@ -1600,6 +1640,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     line.preliminaryNextLineIndent, commands, false, lineStart);
             previousLine = line;
         }
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] calculateLineIndent took "+(System.currentTimeMillis()-startTime1)+" ms");
+        }
 
         for (int i = previousLine.index+1; i <= lineEnd; i++) {
             // store indent for all other lines to the end of document:
@@ -1607,10 +1650,18 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         // set line indent for preserved lines:
+        startTime1 = System.currentTimeMillis();
         updateIndentationForPreservedLines(indentedLines, context.isIndent() ? lineStart : -1);
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] updateIndentationForPreservedLines took "+(System.currentTimeMillis()-startTime1)+" ms");
+        }
 
         // generate line indents for lines within a block:
+        startTime1 = System.currentTimeMillis();
         indentedLines = generateBlockIndentsForForeignLanguage(indentedLines, suggestedIndentsForOtherLines);
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] generateBlockIndentsForForeignLanguage took "+(System.currentTimeMillis()-startTime1)+" ms");
+        }
 
        // DEBUG info:
         if (DEBUG) {
@@ -1626,10 +1677,18 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         }
 
+        startTime1 = System.currentTimeMillis();
         storeIndentsForOtherFormatters(suggestedIndentsForOtherLines);
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] storeIndentsForOtherFormatters took "+(System.currentTimeMillis()-startTime1)+" ms");
+        }
 
         // physically modify document's indentation
+        startTime1 = System.currentTimeMillis();
         modifyDocument(indentedLines, lineStart, lineEnd);
+        if (DEBUG_PERFORMANCE) {
+            System.err.println("[IndPer] modifyDocument took "+(System.currentTimeMillis()-startTime1)+" ms");
+        }
     }
 
     private void storeIndentsForOtherFormatters(Map<Integer, Integer> suggestedIndentsForOtherLines) {
@@ -1768,11 +1827,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
             assert line.existingLineIndent != -1 : "line is missing existingLineIndent "+line;
             if (line.existingLineIndent != newIndent || line.tabIndentation) {
-                context.modifyIndent(line.offset, newIndent);
+                    context.modifyIndent(line.offset, Math.min(newIndent, MAX_INDENT));
             }
         }
     }
-
+        
     private void debugIndentation(int lineOffset, List<IndentCommand> iis, String text, boolean indentable) throws BadLocationException {
         int index = Utilities.getLineOffset(getDocument(), lineOffset);
         char ch = ' ';
@@ -1914,7 +1973,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     }
 
     /**
-     * Descriptor of range wihtin documente defined by (inclusive) document offsets.
+     * Descriptor of range within document defined by (inclusive) document offsets.
      */
     public static final class OffsetRanges {
         List<OffsetRange> ranges;
@@ -2070,6 +2129,146 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
 
+    }
+    
+    /**
+     * !!! the implementation only implements following methods: size, get(...), add(...) !!!
+     * @param <T> 
+     */
+    private static class UnmodifiableButExtendableList<T> implements List<T> {
+
+        private static final String NOT_SUPPORTED_MGS = "UnmodifiableButExtendableList doesn't implement the method, if you've modified the using code, please update the UnmodifiableButExtendableList class accordingly!"; //NOI18N
+        
+        private List<T> original;
+        private List<T> ext;
+
+        public UnmodifiableButExtendableList(List<T> original) {
+            this.original = original;
+            this.ext = new ArrayList<T>();
+        }
+        
+        @Override
+        public int size() {
+            return original.size() + ext.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return original.isEmpty() && ext.isEmpty();
+        }
+
+        @Override
+        public boolean add(T e) {
+            return ext.add(e);
+        }
+        
+        @Override
+        public T get(int i) {
+            int os = original.size();
+            if(i < os) {
+                return original.get(i);
+            } else {
+                return ext.get(i - os);
+            }
+        }
+        
+        //>>> follows unsupported operations >>>
+        
+        @Override
+        public boolean contains(Object o) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public Object[] toArray() {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public <T> T[] toArray(T[] ts) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends T> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean addAll(int i, Collection<? extends T> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> clctn) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public T set(int i, T e) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public void add(int i, T e) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public T remove(int i) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public ListIterator<T> listIterator() {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public ListIterator<T> listIterator(int i) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+
+        @Override
+        public List<T> subList(int i, int i1) {
+            throw new UnsupportedOperationException(NOT_SUPPORTED_MGS);
+        }
+        
     }
 
 }

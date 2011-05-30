@@ -158,26 +158,30 @@ public class ToStringGenerator implements CodeGenerator {
 
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                        Element e = description.getElementHandle().resolve(copy);
+                        TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
                         path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                        if (path == null)
-                            return;
-                        ClassTree cls = (ClassTree) path.getLeaf();
-                        int idx = GeneratorUtils.findClassMemberIndex(copy, cls, caretOffset);
-                        ArrayList<VariableElement> fields = new ArrayList<VariableElement>();
-                        for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
-                            VariableElement field = (VariableElement) elementHandle.resolve(copy);
-                            if (field == null)
-                                return;
-                            fields.add(field);
-                        }
-                        MethodTree mth = createToStringMethod(copy, fields, cls.getSimpleName().toString());
-                        if (idx >= 0) {
-                            cls = copy.getTreeMaker().insertClassMember(cls, idx, mth);
+                        if (path == null) {
+                            String message = NbBundle.getMessage(ToStringGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
+                            org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                         } else {
-                            cls = copy.getTreeMaker().addClassMember(cls, mth);
+                            ClassTree cls = (ClassTree) path.getLeaf();
+                            int idx = GeneratorUtils.findClassMemberIndex(copy, cls, caretOffset);
+                            ArrayList<VariableElement> fields = new ArrayList<VariableElement>();
+                            for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
+                                VariableElement field = (VariableElement) elementHandle.resolve(copy);
+                                if (field == null)
+                                    return;
+                                fields.add(field);
+                            }
+                            MethodTree mth = createToStringMethod(copy, fields, cls.getSimpleName().toString());
+                            if (idx >= 0) {
+                                cls = copy.getTreeMaker().insertClassMember(cls, idx, mth);
+                            } else {
+                                cls = copy.getTreeMaker().addClassMember(cls, mth);
+                            }
+                            copy.rewrite(path.getLeaf(), cls);
                         }
-                        copy.rewrite(path.getLeaf(), cls);
                     }
                 });
                 GeneratorUtils.guardedCommit(component, mr);

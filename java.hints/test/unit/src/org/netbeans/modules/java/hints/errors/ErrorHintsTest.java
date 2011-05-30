@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import org.netbeans.modules.java.hints.infrastructure.*;
+import org.openide.util.NbBundle;
 
 /**
  * @author Jan Lahoda
@@ -461,4 +462,8 @@ public class ErrorHintsTest extends HintsTestBase {
         performTest("org.netbeans.test.java.hints.MakeClassAbstract3", "abstract", 3, 1);
     }
     
+    static {
+        NbBundle.setBranding("test");
+    }
+
 }

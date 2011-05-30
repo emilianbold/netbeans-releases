@@ -62,6 +62,7 @@ import javax.swing.Action;
 import org.openide.actions.EditAction;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /** Check what can be done when registering loaders in layer.
@@ -104,6 +105,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         addRemove(mime, l.getClass(), add);
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, final Class<F> clazz, final boolean add) throws Exception {
+        final Lookup lkp = Lookups.forPath("Loaders/" + mime + "/Factories");
         final String res = "Loaders/" + mime + "/Factories/" + clazz.getSimpleName().replace('.', '-') + ".instance";
         final FileObject root = FileUtil.getConfigRoot();
         class R implements FileSystem.AtomicAction {
@@ -120,11 +122,14 @@ public class DataLoaderInLayerTest extends NbTestCase {
                 }
             }
         }
+        LOG.log(Level.INFO, "Wait before modifying {0}", res);
+        Collection<? extends F> tmpRes = lkp.lookupAll(clazz);
+        FolderLookup.ProxyLkp.DISPATCH.waitFinished();
         LOG.log(Level.INFO, "Modifying {0}", res);
         FileUtil.runAtomicAction(new R());
         LOG.info("Modification done");
         for (int i = 0; i < 100; i++) {
-            Object f = Lookups.forPath("Loaders/" + mime + "/Factories").lookup(clazz);
+            Object f = lkp.lookup(clazz);
             FolderLookup.ProxyLkp.DISPATCH.waitFinished();
             LOG.log(Level.INFO, "waiting for {0} at #{1} result: {2}", new Object[]{add ? "add" : "remove", i, f});
             if (add == (f != null)) {
@@ -137,6 +142,9 @@ public class DataLoaderInLayerTest extends NbTestCase {
         // automatically
         DataObjectPool.getPOOL().revalidate();
         LOG.info("revalidating finished");
+        tmpRes = lkp.lookupAll(clazz);
+        FolderLookup.ProxyLkp.DISPATCH.waitFinished();
+        LOG.info("wait after revalidating");
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
         String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";

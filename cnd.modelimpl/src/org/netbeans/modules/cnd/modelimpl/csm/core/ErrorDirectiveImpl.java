@@ -42,14 +42,14 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
@@ -95,13 +95,13 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
     // serialization
     
     @SuppressWarnings("unchecked")
-    public ErrorDirectiveImpl(DataInput input) throws IOException {
+    public ErrorDirectiveImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.msg = PersistentUtils.readUTF(input, DefaultCache.getManager());
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeUTF(msg, output);
     }

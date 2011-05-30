@@ -63,6 +63,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
+import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.VariableAssignments;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch.BulkPattern;
@@ -795,6 +796,26 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
 
+    public void testDisableVariablesWhenVerifyingDuplicates1() throws Exception {
+        performVariablesTest("package test; public class Test { public void test() { int $i = 1, $j = 2; int k = $i + $i; } }",
+                             "$i + $i",
+                             new Pair[] {new Pair<String, int[]>("$i", new int[] {83, 85})},
+                             new Pair[0],
+                             new Pair[0],
+                             false,
+                             true);
+    }
+
+    public void testDisableVariablesWhenVerifyingDuplicates2() throws Exception {
+        performVariablesTest("package test; public class Test { public void test() { int $i = 1, $j = 2; int k = $i + $i; } }",
+                             "$i + $i",
+                             new Pair[] {new Pair<String, int[]>("$i", new int[] {83, 85})},
+                             new Pair[0],
+                             new Pair[0],
+                             false,
+                             false);
+    }
+
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }
@@ -1043,7 +1064,7 @@ public class CopyFinderTest extends NbTestCase {
     }
 
     protected Map<TreePath, VariableAssignments> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
-        return CopyFinder.computeDuplicates(info, searchingFor, scope, cancel, designedTypeHack);
+        return CopyFinder.computeDuplicates(info, searchingFor, scope, true, cancel, designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN);
     }
 
     private void performRemappingTest(String code, String... remappableVariables) throws Exception {
@@ -1123,7 +1144,7 @@ public class CopyFinderTest extends NbTestCase {
     }
 
     protected Collection<TreePath> computeDuplicates(TreePath path) {
-        return computeDuplicates(info, path, new TreePath(info.getCompilationUnit()), new AtomicBoolean(), null).keySet();
+        return CopyFinder.computeDuplicates(info, path, new TreePath(info.getCompilationUnit()), new AtomicBoolean(), null).keySet();
     }
 
     public static final class Pair<A, B> {

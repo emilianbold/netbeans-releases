@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
@@ -53,6 +51,8 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -283,13 +283,13 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             output.writeByte(this.attributes);
             APTSerializeUtils.writeIncludeState(this.inclState, output);
             APTSerializeUtils.writeMacroMapState(this.macroState, output);
         }
 
-        public StateImpl(FileSystem fs, DataInput input) throws IOException {
+        public StateImpl(FileSystem fs, RepositoryDataInput input) throws IOException {
             this.attributes = input.readByte();
             this.inclState = APTSerializeUtils.readIncludeState(fs, input);
             this.macroState = APTSerializeUtils.readMacroMapState(input);

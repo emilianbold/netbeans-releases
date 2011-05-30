@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -73,6 +74,9 @@ public class FileElementsCollector {
     private final CsmFile destFile;
     private int startOffset;
     private int destOffset;
+    private int returnPoint;
+    private int localReturnPoint;
+    private int localEndPoint;
     private final CsmProject onlyInProject;
 
 //    private final ProjectBase project;
@@ -82,12 +86,23 @@ public class FileElementsCollector {
 //        this.project = (ProjectBase) file.getProject();
         this.destOffset = offset;
         this.startOffset = 0;
+        this.returnPoint = 0;
+        this.localReturnPoint = 0;
         this.onlyInProject = onlyInProject;
+    }
+
+    public int getReturnPoint() {
+        return returnPoint;
     }
 
     public synchronized void incrementOffset(int newOffset){
         if (mapsGathered) {
-            startOffset = destOffset;
+            if (newOffset <= destOffset && newOffset > localReturnPoint ||
+                newOffset <= localEndPoint && newOffset > localReturnPoint) {
+                // All local maps is up-to-date.
+                return;
+            }
+            startOffset = returnPoint;
         }
         destOffset = newOffset;
         if (startOffset < destOffset) {
@@ -191,11 +206,11 @@ public class FileElementsCollector {
         gatherFileMaps(this.destFile);
     }
 
-    protected void gatherFileMaps(CsmFile file) {
+    private void gatherFileMaps(CsmFile file) {
         gatherFileMaps(new HashSet<CsmFile>(), file, this.startOffset, this.destOffset);
     }
 
-    protected void gatherFileMaps(Set<CsmFile> visitedFiles, CsmFile file, int startOffset, int endOffset) {
+    private void gatherFileMaps(Set<CsmFile> visitedFiles, CsmFile file, int startOffset, int endOffset) {
         if( visitedFiles.contains(file) ) {
             return;
         }
@@ -209,6 +224,11 @@ public class FileElementsCollector {
             }
             // check that include is above the end offset
             if (inc.getEndOffset() < endOffset) {
+                if (endOffset != Integer.MAX_VALUE) {
+                    returnPoint = inc.getEndOffset();
+                    localReturnPoint = returnPoint;
+                    localEndPoint = localReturnPoint;
+                }
                 CsmFile incFile = inc.getIncludeFile();
                 if( incFile != null && (onlyInProject == null || incFile.getProject() == onlyInProject)) {
                     // in includes look for everything
@@ -229,11 +249,11 @@ public class FileElementsCollector {
         }
     }
 
-    protected void gatherDeclarationsMaps(Iterable declarations, int startOffset, int endOffset, boolean global) {
+    private void gatherDeclarationsMaps(Iterable declarations, int startOffset, int endOffset, boolean global) {
         gatherDeclarationsMaps(declarations.iterator(), startOffset, endOffset, global);
     }
 
-    protected void gatherDeclarationsMaps(Iterator it, int startOffset, int endOffset, boolean global) {
+    private void gatherDeclarationsMaps(Iterator it, int startOffset, int endOffset, boolean global) {
         while(it.hasNext()) {
             CsmOffsetable o = (CsmOffsetable) it.next();
             try {
@@ -247,7 +267,24 @@ public class FileElementsCollector {
                 }
                 //assert o instanceof CsmScopeElement;
                 if(CsmKindUtilities.isScopeElement((CsmObject)o)) {
+                    if (endOffset != Integer.MAX_VALUE) {
+                        if (global) {
+                            returnPoint = Math.max(returnPoint, start);
+                            localReturnPoint = returnPoint;
+                            localEndPoint = localReturnPoint;
+                        } else {
+                            localReturnPoint = Math.max(returnPoint, start);
+                            localEndPoint = localReturnPoint;
+                        }
+                    }
                     gatherScopeElementMaps((CsmScopeElement) o, end, endOffset, global);
+                    if (endOffset != Integer.MAX_VALUE) {
+                        if (o instanceof CsmExpressionStatement) {
+                            if (!global) {
+                                localEndPoint = Math.max(localEndPoint, end);
+                            }
+                        }
+                    }
                 } else {
                     if( FileImpl.reportErrors ) {
                         System.err.println("Expected CsmScopeElement, got " + o);
@@ -266,7 +303,7 @@ public class FileElementsCollector {
     /**
      * It is quaranteed that element.getStartOffset < this.destOffset
      */
-    protected void gatherScopeElementMaps(CsmScopeElement element, int end, int endOffset, boolean global) {
+    private void gatherScopeElementMaps(CsmScopeElement element, int end, int endOffset, boolean global) {
         CsmDeclaration.Kind kind = CsmKindUtilities.isDeclaration(element) ? ((CsmDeclaration) element).getKind() : null;
         if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
             CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;

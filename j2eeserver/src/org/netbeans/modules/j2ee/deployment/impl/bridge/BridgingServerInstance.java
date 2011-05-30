@@ -78,7 +78,9 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Nod
 
     public static BridgingServerInstance createInstance(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
         BridgingServerInstance created = new BridgingServerInstance(instance);
-        created.commonInstance = ServerInstanceFactory.createServerInstance(created);
+        synchronized (created) {
+            created.commonInstance = ServerInstanceFactory.createServerInstance(created);
+        }
         return created;
     }
     
@@ -134,7 +136,9 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Nod
     }
 
     public ServerInstance getCommonInstance() {
-        return commonInstance;
+        synchronized (this) {
+            return commonInstance;
+        }
     }
     
 

@@ -415,36 +415,24 @@ public final class JavaMembersModel extends DefaultTreeModel {
                     Set<Modifier> modifiers = enclosedElement.getModifiers();
 
                     if (enclosedElement.getKind() == ElementKind.CONSTRUCTOR) {
-                        if (!JavaMembersAndHierarchyOptions.isShowConstructors()) {
-                            continue;
-                        }
 
                         ExecutableElement constructor = (ExecutableElement) enclosedElement;
 
                         node = new ConstructorTreeNode(getFileObject(),
                                 constructor, compilationInfo, this);
                     } else if (enclosedElement.getKind() == ElementKind.METHOD) {
-                        if (!JavaMembersAndHierarchyOptions.isShowMethods()) {
-                            continue;
-                        }
 
                         ExecutableElement method = (ExecutableElement) enclosedElement;
 
                         node = new MethodTreeNode(getFileObject(), method,
                                 compilationInfo, this);
                     } else if (enclosedElement.getKind() == ElementKind.FIELD) {
-                        if (!JavaMembersAndHierarchyOptions.isShowFields()) {
-                            continue;
-                        }
 
                         VariableElement field = (VariableElement) enclosedElement;
 
                         node = new FieldTreeNode(getFileObject(), field,
                                 compilationInfo, this);
                     } else if (enclosedElement.getKind() == ElementKind.ENUM_CONSTANT) {
-                        if (!JavaMembersAndHierarchyOptions.isShowEnumConstants()) {
-                            continue;
-                        }
 
                         VariableElement enumConstant = (VariableElement) enclosedElement;
 

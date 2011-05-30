@@ -85,28 +85,32 @@ public class ActionRegistrationHinter implements Hinter {
 
     @Messages({"# {0} - class or method return type", "ActionRegistrationHinter.not_presenter=You cannot use @ActionRegistration on the eager action {0} unless it is assignable to ContextAwareAction, DynamicMenuContent, or some Presenter.* interface."})
      public @Override void process(final Context ctx) throws Exception {
-        final Object instanceCreate = ctx.instanceFile().getAttribute("literal:instanceCreate");
+        final FileObject file = ctx.file();
+        if (!file.isData() || !file.hasExt("instance")) {
+            return; // not supporting *.settings etc. for now
+        }
+        final Object instanceCreate = file.getAttribute("literal:instanceCreate");
         if ("method:org.openide.awt.Actions.alwaysEnabled".equals(instanceCreate)) {
-            ctx.addStandardHint(new Callable<Void>() {
+            ctx.addStandardAnnotationHint(new Callable<Void>() {
                 public @Override Void call() throws Exception {
                     if (!annotationsAvailable(ctx)) {
                         return null;
                     }
-                    ctx.findAndModifyDeclaration(ctx.instanceFile().getAttribute("literal:delegate"), new RegisterAction(ctx));
+                    ctx.findAndModifyDeclaration(file.getAttribute("literal:delegate"), new RegisterAction(ctx));
                     return null;
                 }
             });
         } else if ("method:org.openide.awt.Actions.checkbox".equals(instanceCreate)) {
             // #193279: no associated annotation available
         } else if ("method:org.openide.awt.Actions.callback".equals(instanceCreate) || "method:org.openide.awt.Actions.context".equals(instanceCreate)) {
-            ctx.addHint(Severity.WARNING, ctx.standardDescription()/* XXX no fixes yet */);
+            ctx.addHint(Severity.WARNING, ctx.standardAnnotationDescription()/* XXX no fixes yet */);
         } else if ("method:org.openide.windows.TopComponent.openAction".equals(instanceCreate)) {
             // XXX pending #191407: @OpenActionRegistration (w/ @ActionID and @ActionReference)
             // (could also do @Registration but would be a separate Hinter)
             // (@Description probably needed but harder since need to remove method overrides)
-        } else if (ctx.instanceFile().getPath().startsWith("Actions/")) {
+        } else if (file.getPath().startsWith("Actions/")) {
             // Old-style eager action of some variety.
-            ctx.addStandardHint(new Callable<Void>() {
+            ctx.addStandardAnnotationHint(new Callable<Void>() {
                 public @Override Void call() throws Exception {
                     if (!annotationsAvailable(ctx)) {
                         return null;
@@ -115,11 +119,11 @@ public class ActionRegistrationHinter implements Hinter {
                     if (instanceCreate != null) {
                         action = instanceCreate;
                     } else {
-                        Object clazz = ctx.instanceFile().getAttribute("instanceClass");
+                        Object clazz = file.getAttribute("instanceClass");
                         if (clazz != null) {
                             action = "new:" + clazz;
                         } else {
-                            action = "new:" + ctx.instanceFile().getName().replace('-', '.');
+                            action = "new:" + file.getName().replace('-', '.');
                         }
                     }
                     ctx.findAndModifyDeclaration(action, new RegisterAction(ctx) {
@@ -171,35 +175,36 @@ public class ActionRegistrationHinter implements Hinter {
 
         public @Override void run(WorkingCopy wc, Element declaration, ModifiersTree modifiers) throws Exception {
             Map<String,Object> params = new HashMap<String,Object>();
-            params.put("category", ctx.instanceFile().getParent().getPath().substring("Actions/".length()));
-            params.put("id", ctx.instanceFile().getName().replace('-', '.'));
+            FileObject file = ctx.file();
+            params.put("category", file.getParent().getPath().substring("Actions/".length()));
+            params.put("id", file.getName().replace('-', '.'));
             ModifiersTree nue = ctx.addAnnotation(wc, modifiers, "org.openide.awt.ActionID", params);
             params.clear();
-            String displayName = ctx.bundlevalue(ctx.instanceFile().getAttribute("literal:displayName"), declaration);
+            String displayName = ctx.bundlevalue(file.getAttribute("literal:displayName"), declaration);
             if (displayName == null) {
                 // @ActionRegistration requires this attr, even though it is unused for eager actions.
                 displayName = "#TODO";
             }
             params.put("displayName", displayName);
-            params.put("iconBase", ctx.instanceFile().getAttribute("iconBase"));
-            Boolean noIconInMenu = (Boolean) ctx.instanceFile().getAttribute("noIconInMenu");
+            params.put("iconBase", file.getAttribute("iconBase"));
+            Boolean noIconInMenu = (Boolean) file.getAttribute("noIconInMenu");
             if (noIconInMenu != null) {
                 params.put("iconInMenu", !noIconInMenu);
             }
-            params.put("asynchronous", ctx.instanceFile().getAttribute("asynchronous"));
+            params.put("asynchronous", file.getAttribute("asynchronous"));
             nue = ctx.addAnnotation(wc, nue, "org.openide.awt.ActionRegistration", params);
-            ctx.delete(ctx.instanceFile());
+            ctx.delete(file);
             TreeMaker make = wc.getTreeMaker();
             List<AnnotationTree> anns = new ArrayList<AnnotationTree>();
-            for (FileObject shadow : NbCollections.iterable(ctx.instanceFile().getFileSystem().getRoot().getData(true))) {
+            for (FileObject shadow : NbCollections.iterable(file.getFileSystem().getRoot().getData(true))) {
                 if (!shadow.hasExt("shadow")) {
                     continue;
                 }
-                if (ctx.instanceFile().getPath().equals(shadow.getAttribute("originalFile"))) {
+                if (file.getPath().equals(shadow.getAttribute("originalFile"))) {
                     List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
                     arguments.add(make.Assignment(make.Identifier("path"), make.Literal(shadow.getParent().getPath())));
                     String name = shadow.getName();
-                    if (!name.equals(ctx.instanceFile().getName())) {
+                    if (!name.equals(file.getName())) {
                         arguments.add(make.Assignment(make.Identifier("name"), make.Literal(name)));
                     }
                     Integer pos = (Integer) shadow.getAttribute("position");

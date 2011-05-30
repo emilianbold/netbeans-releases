@@ -44,7 +44,6 @@ package org.netbeans.modules.css.gsf;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,6 +72,7 @@ import org.openide.util.Exceptions;
  */
 public class CssStructureScanner implements StructureScanner {
 
+    @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
 //         //so far the css parser always parses the whole css content
 //        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
@@ -91,9 +91,11 @@ public class CssStructureScanner implements StructureScanner {
         }
 
         final List<StructureItem> items = new ArrayList<StructureItem>();
-
+        final CharSequence topLevelSnapshotText = snapshot.getSource().createSnapshot().getText();
+        
         NodeVisitor rulesSearch = new NodeVisitor() {
 
+            @Override
             public void visit(SimpleNode node) {
                 if (node.kind() == CssParserTreeConstants.JJTSELECTORLIST) {
                     //get parent - style rule
@@ -103,11 +105,11 @@ public class CssStructureScanner implements StructureScanner {
                     int eo = snapshot.getOriginalOffset(ruleNode.endOffset());
                     if (eo != so) {
 
-                        StringBuffer selectorsListText = new StringBuffer();
+                        StringBuilder selectorsListText = new StringBuilder();
                         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
                             SimpleNode n = (SimpleNode) node.jjtGetChild(i);
                             if (n.kind() == CssParserTreeConstants.JJTSELECTOR) {
-                                StringBuffer content = new StringBuffer();
+                                StringBuilder content = new StringBuilder();
                                 //found selector
                                 for (int j = 0; j < n.jjtGetNumChildren(); j++) {
                                     SimpleNode n2 = (SimpleNode) n.jjtGetChild(j);
@@ -116,7 +118,7 @@ public class CssStructureScanner implements StructureScanner {
                                             n2.kind() == CssParserTreeConstants.JJTCOMBINATOR) {
                                         if (n2.image().trim().length() > 0) {
                                             try {
-                                                CharSequence nodeText = snapshot.getSource().createSnapshot().getText().subSequence(
+                                                CharSequence nodeText = topLevelSnapshotText.subSequence(
                                                         snapshot.getOriginalOffset(n2.startOffset()),
                                                         snapshot.getOriginalOffset(n2.endOffset()));
                                                 content.append(nodeText);
@@ -163,6 +165,7 @@ public class CssStructureScanner implements StructureScanner {
 //        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
 //        return ci.getText().substring(documentSO, documentEO);
 //    }
+    @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
@@ -190,6 +193,7 @@ public class CssStructureScanner implements StructureScanner {
 
         NodeVisitor foldsSearch = new NodeVisitor() {
 
+            @Override
             public void visit(SimpleNode node) {
                 if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
                     int so = snapshot.getOriginalOffset(node.startOffset());
@@ -222,6 +226,7 @@ public class CssStructureScanner implements StructureScanner {
 
     }
 
+    @Override
     public Configuration getConfiguration() {
         return new Configuration(true, false);
     }
@@ -245,47 +250,58 @@ public class CssStructureScanner implements StructureScanner {
             this.to = source.getOriginalOffset(element.node().endOffset());
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getSortText() {
             return getName();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             return escape(getName());
         }
 
+        @Override
         public ElementHandle getElementHandle() {
             return element;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.RULE;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean isLeaf() {
             return true;
         }
 
         //TODO - could I put rules here???
+        @Override
         public List<? extends StructureItem> getNestedItems() {
             return Collections.emptyList();
         }
 
+        @Override
         public long getPosition() {
             return from;
         }
 
+        @Override
         public long getEndPosition() {
             return to;
         }
 
+        @Override
         public ImageIcon getCustomIcon() {
             return null;
         }

@@ -66,6 +66,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 /**
  * 
@@ -111,16 +112,16 @@ public final class NativeProjectProvider {
         }
         String mimeType = "";
         if (fo != null) {
-            mimeType = MIMESupport.getFileMIMEType(fo);
+            mimeType = MIMESupport.getSourceFileMIMEType(fo);
         } else {
-            mimeType = MIMESupport.getFileMIMEType(file);
+            mimeType = MIMESupport.getSourceFileMIMEType(file);
         }
         return getLanguage(mimeType);
     }
 
     public static NativeFileItem.Language getLanguage(FileObject fo, DataObject dobj) {
         CndUtils.assertNotNull(fo, "null file object"); //NOI18N
-        String mimeType = MIMESupport.getFileMIMEType(fo);
+        String mimeType = MIMESupport.getSourceFileMIMEType(fo);
         return getLanguage(mimeType);
     }
 
@@ -207,7 +208,7 @@ public final class NativeProjectProvider {
 	}
 	
         @Override
-        public Object getProject() {
+        public Lookup.Provider getProject() {
             return null;
         }
 
@@ -298,7 +299,7 @@ public final class NativeProjectProvider {
 
         @Override
         public NativeFileItem findFileItem(FileObject fileObject) {
-            return findFileItem(CndFileUtils.getNormalizedPath(fileObject));
+            return findFileItem(CndFileUtils.normalizePath(fileObject));
         }
 
         private NativeFileItem findFileItem(String path) {
@@ -359,6 +360,10 @@ public final class NativeProjectProvider {
         @Override
         public String getPlatformName() {
             return null;
+        }
+
+        @Override
+        public void fireFilesPropertiesChanged() {
         }
     }    
         

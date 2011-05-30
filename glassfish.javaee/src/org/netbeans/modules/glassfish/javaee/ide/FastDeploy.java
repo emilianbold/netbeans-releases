@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -81,6 +82,8 @@ import org.xml.sax.SAXException;
  * @author Peter Williams
  */
 public class FastDeploy extends IncrementalDeployment implements IncrementalDeployment2 {
+
+    private static final String GFDEPLOY = "gfdeploy"; // NOI18N
     
     private Hk2DeploymentManager dm;
     
@@ -119,6 +122,13 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
+
+        // prevent issues by protecting against triggering
+        //   http://java.net/jira/browse/GLASSFISH-15690
+        ProgressObject po = checkAgainstGF15690(dir,moduleId);
+        if (null != po) {
+            return po;
+        }
         final MonitorProgressObject deployProgress = new MonitorProgressObject(dm, moduleId);
         final MonitorProgressObject updateCRProgress = new MonitorProgressObject(dm, moduleId);
         deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress,moduleId, dm.getServerInstance(), J2eeModule.Type.WAR.equals(module.getType())));
@@ -165,6 +175,31 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
             return updateCRProgress;
         }
     }
+
+    private static Pattern badName = Pattern.compile(".*\\s.*_[jwrc]ar"); // NOI18N
+    private static Pattern badPath = Pattern.compile(".*[\\\\/].*\\s.*_[jwrc]ar[\\\\/].*"); // NOI18N
+
+    private ProgressObject checkAgainstGF15690(final File dir, Hk2TargetModuleID moduleId) {
+        File parent = dir.getParentFile();
+        MonitorProgressObject po = null;
+        if (null != parent) {
+            if (GFDEPLOY.equals(parent.getName())) {
+                File modules[] = dir.listFiles();
+                for (File f : modules) {
+                    if (f.isDirectory()) {
+                        String fname = f.getName();
+                        if (badName.matcher(fname).matches()) {
+                            po = new MonitorProgressObject(dm, moduleId);
+                            po.operationStateChanged(GlassfishModule.OperationState.FAILED,
+                                    NbBundle.getMessage(FastDeploy.class, "ERR_SPACE_IN_JAR_NAMES", fname)); // NOI18N
+                            return po;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
     
     /**
      * 
@@ -185,6 +220,16 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
     private ProgressObject incrementalDeploy(final TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor, final File[] requiredLibraries) {
         final MonitorProgressObject progressObject = new MonitorProgressObject(dm,
                 (Hk2TargetModuleID) targetModuleID, CommandType.REDEPLOY);
+        // prevent issues by protecting against triggering
+        //   http://java.net/jira/browse/GLASSFISH-15690
+        for (File f : appChangeDescriptor.getChangedFiles()) {
+            String fname = f.getAbsolutePath();
+            if (badPath.matcher(fname).matches()) { // NOI18N
+                progressObject.operationStateChanged(GlassfishModule.OperationState.FAILED,
+                        NbBundle.getMessage(FastDeploy.class, "ERR_SPACE_IN_JAR_NAMES", fname)); // NOI18N
+                return progressObject;
+            }
+        }
         MonitorProgressObject restartObject = new MonitorProgressObject(dm, (Hk2TargetModuleID) targetModuleID,
                 CommandType.REDEPLOY);
         final MonitorProgressObject updateCRObject = new MonitorProgressObject(dm,
@@ -302,7 +347,7 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
                throw new IllegalStateException();
             }
             String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(Utils.computeModuleID(app, null, null));
-            String dirName = "gfdeploy"; // NOI18N
+            String dirName = GFDEPLOY;
             if (null != moduleName) {
                 dirName += "/"+moduleName; // NOI18N
             }

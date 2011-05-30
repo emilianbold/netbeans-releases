@@ -8,15 +8,13 @@ package test;
 
 import java.io.*;
 import java.net.*;
-
-import java.rmi.RemoteException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.CreateException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.rmi.PortableRemoteObject;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 
@@ -70,12 +68,12 @@ public class TestingServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }
+    // </editor-fold>
 
-    private TestingSessionRemote lookupTestingSessionBean() {
+    private TestingSessionLocal lookupTestingSessionBeanLocal() {
         try {
             Context c = new InitialContext();
-            Object remote = c.lookup("java:comp/env/TestingSessionBean");
-            TestingSessionRemoteHome rv = (TestingSessionRemoteHome) PortableRemoteObject.narrow(remote, TestingSessionRemoteHome.class);
+            TestingSessionLocalHome rv = (TestingSessionLocalHome) c.lookup("java:comp/env/TestingSessionBean");
             return rv.create();
         } catch (NamingException ne) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", ne);
@@ -83,10 +81,6 @@ public class TestingServlet extends HttpServlet {
         } catch (CreateException ce) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", ce);
             throw new RuntimeException(ce);
-        } catch (RemoteException re) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", re);
-            throw new RuntimeException(re);
         }
     }
-    // </editor-fold>
 }

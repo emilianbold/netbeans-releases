@@ -80,6 +80,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,6 +91,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -1070,6 +1072,37 @@ public final class SourceUtils {
         return resolvedClass.getValue();
     }
 
+    /**
+     * Resolves a class by its name
+     * @param className The name of the class to be resolved
+     * @param project A project to start the resolution process in
+     * @return Returns a TypeElement representing the resolved class or NULL
+     */
+    public static TypeElement resolveClassByName(final String className, final Project project) {
+        if (className == null || project == null) {
+            return null;
+        }
+        JavaSource js = getSources(project);
+        
+        final TypeElement[] rslt = new TypeElement[1];
+        
+        if (js != null) {
+            try {
+                js.runUserActionTask(new Task<CompilationController>() {
+                    
+                    @Override
+                    public void run(CompilationController cc) throws Exception {
+                        rslt[0] = resolveClassByName(className, cc);
+                    }
+                }, false);
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+        }
+        
+        return rslt[0];
+    }
+    
     /**
      * Resolves a class by its name
      * @param className The name of the class to be resolved

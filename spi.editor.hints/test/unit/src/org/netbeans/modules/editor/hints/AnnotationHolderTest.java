@@ -247,7 +247,7 @@ public class AnnotationHolderTest extends NbTestCase {
                     this.annotation = a;
                 }
             }
-            public void detachAnnotation(Annotation a) {}
+            public void detachAnnotation(ParseErrorAnnotation a) {}
         }
         
         AttacherImpl impl = new AttacherImpl();
@@ -321,7 +321,7 @@ public class AnnotationHolderTest extends NbTestCase {
         //these tests currently ignore annotations:
         class AttacherImpl implements Attacher {
             public void attachAnnotation(Position line, ParseErrorAnnotation a) throws BadLocationException {}
-            public void detachAnnotation(Annotation a) {}
+            public void detachAnnotation(ParseErrorAnnotation a) {}
         }
         
         AnnotationHolder.getInstance(file).attacher = new AttacherImpl();

@@ -86,7 +86,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     }
 
     @Override
-    protected void postTest(String[] args, Object... params) {
+    protected void postTest(String[] args, Object... params) throws Exception {
         if (!getTraceModel().getProject().isStable(null)) {
             CndUtils.threadsDump();
             while (!getTraceModel().getProject().isStable(null)) {

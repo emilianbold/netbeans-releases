@@ -158,7 +158,7 @@ public class StatusTest extends AbstractGitTestCase {
         });
         GitVersioningTopComponent tc = tcs[0];
         assertNotNull(tc);
-        assertName(tc, "Git - work ");
+        assertName(tc, "Git - work - (no branch)");
         File f = new File(repositoryLocation, "f");
         f.createNewFile();
         add();

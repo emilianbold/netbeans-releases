@@ -120,7 +120,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         updateInProjectCombo(false);
     }
 
-    static boolean isMaven(Project project) {
+    public static boolean isMaven(Project project) {
         return project.getLookup().lookup(AntArtifactProvider.class) == null;
     }
 
@@ -132,7 +132,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         }
         inProjectCombo.setVisible(show);
         if (show && projectsList == null) {
-            List<Project> projects = getProjectsList();
+            List<Project> projects = SessionEJBWizardPanel.getProjectsList(project);
             projectsList = new DefaultComboBoxModel(projects.toArray(new Project[projects.size()]));
             final ListCellRenderer defaultRenderer = inProjectCombo.getRenderer();
             if (!projects.isEmpty()){
@@ -150,7 +150,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         }
     }
 
-    private List<Project> getProjectsList() {
+    public static List<Project> getProjectsList(Project project) {
         List<Project> names = new ArrayList<Project>();
         boolean maven = isMaven(project);
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {

@@ -50,6 +50,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import org.netbeans.jellytools.DocumentsDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -84,7 +85,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     private String _testPackageName = "data"; // NOI18N
     public static String DELETE_OBJECT_CONFIRM = "Confirm Object Deletion"; // NOI18N
     /* Skip file (JFrame,Frame, JDialog, ...) delete in the end of each test */
-    public Boolean DELETE_FILES = false;
+    public Boolean DELETE_FILES = true;
     public static String OS = System.getProperty("os.name").toLowerCase();
 
     public String getTestProjectName() {
@@ -208,8 +209,8 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
             act.performPopup(node);
 
             //new NbDialogOperator(DELETE_OBJECT_CONFIRM).yes();
-            NbDialogOperator op = new NbDialogOperator("Safe Delete");
-            new JButtonOperator(op, "Refactor").clickMouse();
+            NbDialogOperator op = new NbDialogOperator("Delete");
+            new JButtonOperator(op, "Ok").clickMouse();
         }
     }
 
@@ -555,9 +556,9 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         NewProjectWizardOperator op = new NewProjectWizardOperator();
         op.selectProject("Java Desktop Application"); // NOI18N
         op.next();
-
+        op.next();
         NbDialogOperator newJDAOp = new NbDialogOperator("New Desktop Application"); // NOI18N
-        new JTextFieldOperator(newJDAOp, 3).typeText(getTestProjectName());
+        new JTextFieldOperator(newJDAOp, 2).typeText(getTestProjectName());
         new JButtonOperator(newJDAOp, "Finish").push(); // NOI18N
     }
     // Method for checking jdk version
@@ -576,7 +577,13 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         if (specVersion.startsWith("1.6")) {
             return "jdk16";
         }
+        
+        if (specVersion.startsWith("1.7")) {
+            return "jdk17";
+        }
 
         throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
     }
+    
+   
 }

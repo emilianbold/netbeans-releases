@@ -109,7 +109,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
         return ModelUtils.RESCHEDULE_HIGHLIGHT_DELAY;
     }
 
-    private static class PhaseRunnerImpl implements PhaseRunner {
+    private static final class PhaseRunnerImpl implements PhaseRunner {
         private final Collection<Cancellable> listeners = new HashSet<Cancellable>();
         private final DataObject dobj;
         private final CsmFile file;
@@ -142,7 +142,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             }
         }
         
-        protected BaseDocument getDocument() {
+        private BaseDocument getDocument() {
             return weakDoc != null ? weakDoc.get() : null;
         }
 
@@ -151,13 +151,13 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             return true;
         }
         
-        protected void addCancelListener(Cancellable interruptor){
+        private void addCancelListener(Cancellable interruptor){
             synchronized(listeners) {
                 listeners.add(interruptor);
             }
         }
 
-        protected void removeCancelListener(Cancellable interruptor){
+        private void removeCancelListener(Cancellable interruptor){
             synchronized(listeners) {
                 listeners.remove(interruptor);
             }
@@ -177,7 +177,16 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
             return false;
         }
 
-        protected static class MyInterruptor implements Interrupter, Cancellable {
+        @Override
+        public String toString() {
+            if (file == null) {
+                return "HighlightProviderTaskFactory runner"; //NOI18N
+            } else {
+                return "HighlightProviderTaskFactory runner for "+file.getAbsolutePath(); //NOI18N
+            }
+        }
+
+        private static final class MyInterruptor implements CancellableInterruptor {
             private boolean canceled = false;
             @Override
             public boolean cancelled() {
@@ -191,4 +200,6 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
         }
     }
 
+    public static interface CancellableInterruptor extends Interrupter, Cancellable {
+    }
 }

@@ -75,16 +75,6 @@ final class TextLayoutPart {
     private final int offsetShift; // 16 + 4 = 20 bytes
     
     /**
-     * Relative x shift of the stored bounds of the child view against
-     * a start of the text layout (first child view's bounds).
-     * <br/>
-     * This helps child view to compute bounds of the whole text layout
-     * (e.g. for proper getVisualHighlightShape() computation)
-     * without knowing its index in a parent box view.
-     */
-    private final float xShift; // 20 + 4 = 24 bytes
-    
-    /**
      * Extra foreground to be rendered (or null if same as whole text layout).
      */
     private final Color foreground; // 24 + 4 = 28 bytes
@@ -95,13 +85,12 @@ final class TextLayoutPart {
     private final Color background; // 28 + 4 = 32 bytes
 
     TextLayoutPart(TextLayoutWrapper wrapper,
-            int index, int offsetShift, float xShift,
+            int index, int offsetShift,
             Color foreground, Color background)
     {
         this.wrapper = wrapper;
         this.index = index;
         this.offsetShift = offsetShift;
-        this.xShift = xShift;
         this.foreground = foreground;
         this.background = background;
     }
@@ -126,7 +115,7 @@ final class TextLayoutPart {
     }
     
     float textLayoutWidth() {
-        return TextLayoutUtils.getWidth(textLayout());
+        return Math.abs(TextLayoutUtils.getWidth(textLayout()));
     }
 
     Color foreground() {
@@ -149,18 +138,13 @@ final class TextLayoutPart {
         return offsetShift;
     }
     
-    float xShift() {
-        return xShift;
-    }
-
     boolean isLast() {
         return (index() == viewCount() - 1);
     }
     
     public String toStringShort() {
         return "[" + index + "#" + viewCount() + "]<" + offsetShift + // NOI18N
-                ">;x=" + ViewUtils.toStringPrec1(xShift) + // NOI18N
-                ";fC=" + ViewUtils.toString(foreground) + // NOI18N
+                ">;fC=" + ViewUtils.toString(foreground) + // NOI18N
                 ";bC=" + ViewUtils.toString(background); // NOI18N
     }
 

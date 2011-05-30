@@ -54,22 +54,25 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 public class SimpleRWAccess implements FileRWAccess {
     
-    private RandomAccessFile randomAccessFile;
+    private RepositoryRandomAccessFile randomAccessFile;
     private static final class Lock {}
     private final Object lock = new Lock();
 
     public SimpleRWAccess(File file) throws IOException {
-	randomAccessFile = new RandomAccessFile(file, "rw"); // NOI18N
+	randomAccessFile = new RepositoryRandomAccessFile(file, "rw"); // NOI18N
     }
 
+    @Override
     public long size() throws IOException {
 	return randomAccessFile.length();
     }
 
+    @Override
     public void truncate(long size) throws IOException {
 	randomAccessFile.setLength(size);
     }
     
+    @Override
     public void move(long offset, int size, long newOffset) throws IOException {
 	byte[] buffer = new byte[size];
 	synchronized( lock ) {
@@ -80,6 +83,7 @@ public class SimpleRWAccess implements FileRWAccess {
 	}
     }
     
+    @Override
     public void move(FileRWAccess from, long offset, int size, long newOffset) throws IOException {
 	if( ! (from instanceof  SimpleRWAccess) ) {
 	    throw new IllegalArgumentException("Illegal class to move from: " + from.getClass().getName()); // NOI18N
@@ -93,10 +97,12 @@ public class SimpleRWAccess implements FileRWAccess {
     }
     
     
+    @Override
     public void close() throws IOException {
 	randomAccessFile.close();
     }
     
+    @Override
     public int write(PersistentFactory factory, Persistent object, long offset) throws IOException {
 	synchronized( lock ) {
 	    randomAccessFile.seek(offset);
@@ -106,6 +112,7 @@ public class SimpleRWAccess implements FileRWAccess {
     }
     
     
+    @Override
     public Persistent read(PersistentFactory factory, long offset, int size) throws IOException {
 	synchronized( lock ) {
 	    randomAccessFile.seek(offset);
@@ -113,6 +120,7 @@ public class SimpleRWAccess implements FileRWAccess {
 	}
     }
     
+    @Override
     public FileDescriptor getFD() throws IOException {
 	return randomAccessFile.getFD();
     }

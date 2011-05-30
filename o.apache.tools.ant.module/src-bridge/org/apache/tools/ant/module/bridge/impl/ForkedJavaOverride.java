@@ -79,6 +79,7 @@ public class ForkedJavaOverride extends Java {
         if (redirector instanceof NbRedirector) {
             redirector = new Redirector(this);
         }
+        getProject().setProperty(StandardLogger.USING_STANDARD_REDIRECTOR, "true");
     }
     public @Override void setInput(File input) {
         useStandardRedirector();

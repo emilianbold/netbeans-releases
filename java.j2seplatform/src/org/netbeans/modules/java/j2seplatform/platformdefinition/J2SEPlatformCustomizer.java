@@ -82,6 +82,7 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 public class J2SEPlatformCustomizer extends JTabbedPane {
 
@@ -230,7 +231,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     c.gridwidth = GridBagConstraints.REMAINDER;
                     c.fill = GridBagConstraints.HORIZONTAL;
                     c.anchor = GridBagConstraints.NORTHWEST;
-                    c.insets = new Insets(0, 6, 6, 12);
+                    c.insets = new Insets(0, 6, 6, 6);
                     ((GridBagLayout) this.getLayout()).setConstraints(addURLButton, c);
                     this.add(addURLButton);
                 }
@@ -365,6 +366,10 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             chooser.setApproveButtonText(approveButtonName);
             chooser.setApproveButtonMnemonic (approveButtonNameMne.charAt(0));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            if (Utilities.isMac()) {
+                //New JDKs and JREs are bundled into package, allow JFileChooser to navigate in
+                chooser.putClientProperty("JFileChooser.packageIsTraversable", "always");   //NOI18N
+            }
             //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
             chooser.setAcceptAllFileFilterUsed( false );
             chooser.setFileFilter (new ArchiveFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
@@ -376,8 +381,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 PathModel model = (PathModel) this.resources.getModel();
                 boolean addingFailed = false;
                 int firstIndex = this.resources.getModel().getSize();
-                for (int i = 0; i < fs.length; i++) {
-                    File f = fs[i];
+                for (File f : fs) {
                     //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
                     // E.g. for /foo/src it returns /foo/src/src
                     // Try to convert it back by removing last invalid name component
@@ -387,7 +391,9 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                             f = parent;
                         }
                     }
-                    addingFailed|=!model.addPath (f);
+                    if (f.exists()) {
+                        addingFailed|=!model.addPath (f);
+                    }
                 }
                 if (addingFailed) {
                     new NotifyDescriptor.Message (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_CanNotAddResolve"),

@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.util.Mutex.ExceptionAction;
@@ -97,7 +99,7 @@ final public class UpgradableProject {
         }
     }
     
-    private EclipseProjectReference getEclipseProjectReference() {
+    private @CheckForNull EclipseProjectReference getEclipseProjectReference() {
         if (!initialized) {
             reference = EclipseProjectReference.read(project);
             // cache data only if project is reachable
@@ -117,8 +119,12 @@ final public class UpgradableProject {
      * Shows UI to resolve location of eclipse project and workspace and returns 
      * true if reference was succesfully resolved.
      */
-    public boolean updateBrokenEclipseReference(Map<String,String> resolvedEntries) {
-        return UpdateEclipseReferencePanel.showEclipseReferenceResolver(getEclipseProjectReference(), resolvedEntries);
+    public boolean updateBrokenEclipseReference(@NonNull Map<String,String> resolvedEntries) {
+        EclipseProjectReference ref = getEclipseProjectReference();
+        if (ref == null) {
+            return true;
+        }
+        return UpdateEclipseReferencePanel.showEclipseReferenceResolver(ref, resolvedEntries);
     }
 
     File getStoredEclipseProjectFolder() {

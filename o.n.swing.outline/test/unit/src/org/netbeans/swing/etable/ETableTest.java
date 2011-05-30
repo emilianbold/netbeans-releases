@@ -45,6 +45,8 @@ package org.netbeans.swing.etable;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Properties;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -95,6 +97,26 @@ public class ETableTest extends NbTestCase {
         t.sortingPermutation = null; // because that is what we do after calling toggleSortedColumn
         assertEquals("Sort reorder (3) not ok", 3, t.convertRowIndexToModel(0));
         assertEquals("Sort reorder (4) not ok", 4, t.convertRowIndexToModel(5));
+    }
+    
+    public void testFirePropertyChangeForQuickFilter() {
+        ETable t = new ETable();
+        class L implements PropertyChangeListener {
+            int cnt;
+            
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                assertEquals("quickFilter", evt.getPropertyName());
+                cnt++;
+            }
+            
+        }
+        L listener = new L();
+        t.addPropertyChangeListener(listener);
+        t.setQuickFilter(1, new Object());
+        assertEquals("One filter change", 1, listener.cnt);
+        t.unsetQuickFilter();
+        assertEquals("Second change", 2, listener.cnt);
     }
 
     

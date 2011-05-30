@@ -105,6 +105,21 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="ant-hooks">
+            <api name="java-api-common"/>
+            <summary>Added methods to track ant invocation</summary>
+            <version major="1" minor="29"/>
+            <date day="25" month="4" year="2011"/>
+            <author login="phejl"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added methods to track ant invocation from subclasses.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+            <issue number="197838"/>
+        </change>
         <change id="source-level-query-2">
             <api name="java-api-common"/>
             <summary>Added a factory method to create SourceLevelQueryImplementation2</summary>

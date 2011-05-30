@@ -517,7 +517,9 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
             master.tableRowSelected(table.getSelectedRow());
         } else {
             List<DiffNode> selectedNodes = new ArrayList<DiffNode>();
-            if (min != -1) {
+            if (min == -1) {
+                master.tableRowSelected(-1);
+            } else {
                 for (int i = min; i <= max; i++) {
                     if (selectionModel.isSelectedIndex(i)) {
                         int idx = sorter.modelIndex(i);

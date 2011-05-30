@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -61,16 +62,23 @@ final class MultipleCallStackRootNode extends AbstractNode {
     private final List<StackRootNode> children = new ArrayList<StackRootNode>();
     private final Image icon = ImageUtilities.icon2Image(new MyIcon());
     private final Action prefferedAction;
+    private final Action[] actions;
 
-    MultipleCallStackRootNode(Action action) {
+    MultipleCallStackRootNode(Action prefferedAction, Action[] otherActions) {
         super(Children.LEAF);
         setDisplayName("Root");//NOI18N
-        this.prefferedAction = action;
+        this.prefferedAction = prefferedAction;
+        List<Action> rs = new ArrayList<Action>();
+        rs.add(prefferedAction);
+        if (otherActions != null){
+            rs.addAll(Arrays.asList(otherActions));
+        }
+        this.actions  = rs.toArray(new Action[0]);
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[]{prefferedAction};
+        return actions;
     }
 
     synchronized void add(final StackRootNode node) {

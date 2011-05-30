@@ -44,8 +44,10 @@
 
 package org.netbeans.api.java.source;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,9 +70,12 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -95,41 +100,7 @@ public class SourceUtilsTest extends NbTestCase {
         clearWorkDir();
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {SFBQImpl.getDefault()});
     }
-
-    private void prepareTest() throws Exception {
-        File work = getWorkDir();
-        FileObject workFO = FileUtil.toFileObject(work);
         
-        assertNotNull(workFO);
-        
-        FileObject sourceRoot = workFO.createFolder("src");
-        FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache = workFO.createFolder("cache");
-        FileObject packageRoot = sourceRoot.createFolder("sourceutils");
-        
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
-        
-        String capitalizedName = "T" + getName().substring(1);
-        
-        TestUtil.copyFiles(FileUtil.toFile(sourceRoot), "sourceutils/" + capitalizedName + ".java");
-        
-        packageRoot.refresh();
-        
-        FileObject testSource = packageRoot.getFileObject(capitalizedName + ".java");
-        
-        assertNotNull(testSource);
-
-        SourceUtilsTestUtil.compileRecursively(sourceRoot);
-        
-        js = JavaSource.forFileObject(testSource);
-        
-        assertNotNull(js);
-        
-        info = SourceUtilsTestUtil.getCompilationInfo(js, JavaSource.Phase.RESOLVED);
-        
-        assertNotNull(info);
-    }
-    
     public void testGetEnclosingTypeElement() throws Exception {
         //only a scatch of the test, add testcases as needed:
         prepareTest();
@@ -316,69 +287,15 @@ public class SourceUtilsTest extends NbTestCase {
         assertEquals (new URL[] {url1, url3, url5}, result);
     }
     
-    
-    private void assertEquals (URL[] expected, Set<URL> result) {
-        assertEquals (expected.length,result.size());
-        for (URL eurl : expected) {
-            assertTrue (result.remove(eurl));
-        }
-        assertTrue(result.isEmpty());
-    }
-    
-    private <E extends Element> E findElementBySimpleName(String simpleName, List<E> elements) {
-        for (E e : elements) {
-            if (simpleName.contentEquals(e.getSimpleName()))
-                return e;
-        }
-        
-        fail("Not found element with simple name: " + simpleName);
-        
-        throw new Error("Should never be here!");
-    }
-    
-    public void testGetFQNsForSimpleName() throws Exception {
-// The method was removed,
-// tzezula: I am going to create an replacement using lucene        
-//        prepareTest();
-//        
-//        List<TypeElement> fqnTEs;
-//        List<String> fqns;
-//        
-//        fqnTEs = SourceUtils.getFQNsForSimpleNamePrefix(info, "List", true);
-//        fqns = new ArrayList<String>();
-//        
-//        for (TypeElement te : fqnTEs) {
-//            fqns.add(te.getQualifiedName().toString());
-//        }
-//        
-//        assertTrue(fqns.remove("java.util.List"));
-//        assertTrue(fqns.remove("java.awt.List"));
-//        
-//        //JDK16 specific:
-//        fqns.remove("com.sun.xml.bind.v2.schemagen.xmlschema.List");
-//        
-//        assertEquals(fqns.toString(), 0, fqns.size());
-//
-//        fqnTEs = SourceUtils.getFQNsForSimpleNamePrefix(info, "File", true);
-//        fqns = new ArrayList<String>();
-//        
-//        for (TypeElement te : fqnTEs) {
-//            fqns.add(te.getQualifiedName().toString());
-//        }
-//        
-//        assertTrue(fqns.remove("java.io.File"));
-//        
-//        assertEquals(fqns.toString(), 0, fqns.size());
-        
-        //XXX: onlyExact
-    }
-    
-    
+                    
     public void testGetFile () throws Exception {
         File workDir = getWorkDir();
         FileObject workFo = FileUtil.toFileObject(workDir);
         assertNotNull (workFo);
         FileObject src = workFo.createFolder("src");
+        FileObject userDir = workFo.createFolder("ud");
+        CacheFolder.setCacheFolder(userDir);
+        ClassIndexManager.getDefault().createUsagesQuery(src.getURL(), true);
         FileObject srcInDefPkg = src.createData("Foo","java");
         assertNotNull(srcInDefPkg);
         FileObject sourceFile = src.createFolder("org").createFolder("me").createData("Test", "java");
@@ -408,6 +325,156 @@ public class SourceUtilsTest extends NbTestCase {
         handle = ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, new String[] {"Foo"});
         result = SourceUtils.getFile(handle,cpInfo);
         assertNotNull(result);
+    }
+
+    public void testGetMainClasses() throws Exception {
+        final File wd = getWorkDir();
+        final FileObject src = FileUtil.createFolder(new File (wd,"src"));
+        final FileObject userDir = FileUtil.createFolder(new File (wd,"ud"));
+        CacheFolder.setCacheFolder(userDir);
+        final FileObject emptyClass = createFile(src, "C1.java","class C1 {}");
+        assertEquals(0, SourceUtils.getMainClasses(emptyClass).size());
+        final FileObject classWithMethod = createFile(src, "C2.java","class C2 { public static void test (String... args){} }");
+        assertEquals(0, SourceUtils.getMainClasses(classWithMethod).size());
+        final FileObject classWithMethod2 = createFile(src, "C3.java","class C3 { static void main (String... args){} }");
+        assertEquals(0, SourceUtils.getMainClasses(classWithMethod2).size());
+        final FileObject classWithMethod3 = createFile(src, "C4.java","class C4 { public void main (String... args){} }");
+        assertEquals(0, SourceUtils.getMainClasses(classWithMethod3).size());
+        final FileObject classWithMethod4 = createFile(src, "C5.java","class C5 { public static void main (StringBuilder... args){} }");
+        assertEquals(0, SourceUtils.getMainClasses(classWithMethod4).size());
+        final FileObject simpleMain = createFile(src, "M1.java","class M1 { public static void main (String... args){} }");
+        assertMain(new String[] {"M1"}, SourceUtils.getMainClasses(simpleMain));
+        final FileObject simpleMain2 = createFile(src, "M2.java","public class M2 { public static void main (String... args){} }");
+        assertMain(new String[] {"M2"}, SourceUtils.getMainClasses(simpleMain2));
+        final FileObject innerMain = createFile(src, "M3.java","class M3 { public static class Inner { public static void main (String... args){} } }");
+        assertMain(new String[] {"M3.Inner"}, SourceUtils.getMainClasses(innerMain));
+        final FileObject innerMain2 = createFile(src, "M4.java","class M4 { protected static class Inner { public static void main (String... args){} } }");
+        assertMain(new String[] {"M4.Inner"}, SourceUtils.getMainClasses(innerMain2));
+        final FileObject innerMain3 = createFile(src, "M5.java","class M5 { static class Inner { public static void main (String... args){} } }");
+        assertMain(new String[] {"M5.Inner"}, SourceUtils.getMainClasses(innerMain3));
+        final FileObject innerMain4 = createFile(src, "M6.java","class M6 { private static class Inner { public static void main (String... args){} } }");
+        assertMain(new String[] {"M6.Inner"}, SourceUtils.getMainClasses(innerMain4));
+        final FileObject innerMain5 = createFile(src, "M7.java","class M7 { class Inner { public static void main (String... args){} } }");
+        assertEquals(0, SourceUtils.getMainClasses(innerMain5).size());
+        final FileObject innerMain6 = createFile(src, "M8.java","class M8 { class Inner { static class InnerInner {public static void main (String... args){} } } }");
+        assertEquals(0, SourceUtils.getMainClasses(innerMain6).size());
+        final FileObject innerMain7 = createFile(src, "M9.java","class M9 { static class Inner { static class InnerInner {public static void main (String... args){} } } }");
+        assertMain(new String[] {"M9.Inner.InnerInner"}, SourceUtils.getMainClasses(innerMain7));
+        final FileObject twoTop = createFile(src, "T1.java","class T1 { public static void main (String... args){}} class T1X {public static void main (String... args){}}");
+        assertMain(new String[] {"T1","T1X"}, SourceUtils.getMainClasses(twoTop));
+        final FileObject twoTop2 = createFile(src, "T2.java","class T2 { public static void main (String... args){} static class Inner {public static void main (String... args){}}} class T2X {public static void main (String... args){} static class Inner {public static void main (String... args){}}}");
+        assertMain(new String[] {"T2","T2X", "T2.Inner", "T2X.Inner"}, SourceUtils.getMainClasses(twoTop2));
+        final FileObject inhMain = createFile(src, "D1.java","class D1 { public static void main (String... args){}} class D1X extends D1 {}");
+        assertMain(new String[] {"D1","D1X"}, SourceUtils.getMainClasses(inhMain));
+    }
+    
+    public void testGenerateReadableParameterName() throws Exception {
+        System.out.println("testGenerateReadableParameterName");
+        Match m = new Match("java.lang.Object", "o");
+        m.match("java.lang.Runnable", "r")
+        .match("java.awt.event.ActionListener,java.awt.event.ActionListener","al,al1")
+        .match("java.io.InputStream", "in")
+        .match("java.io.OutputStream","out")
+        .match("java.io.ByteArrayOutputStream","stream")
+        .match("missingthing.Foodbar", "fdbr")
+        .match("somepackage.FillUpNoKnownMessageEverywhere", "funkme")
+        .match("java.lang.Class","type")
+        .match("java.lang.Class<T>", "type")
+        .match("org.openide.util.Lookup","lkp")
+        .match("sun.awt.KeyboardFocusManagerPeerImpl", "kfmpi")
+        .match("com.foo.BigInterface", "bi")
+        .match("java.util.concurrent.Callable<Runnable>", "clbl")
+        .match("int[]", "ints")
+        .match("short", "s")
+        .match("java.lang.Integer...", "intgrs")
+        .match("java.awt.Component[]", "cmpnts")
+        .match("int,java.lang.Runnable", "i,r")
+        .match("java.lang.Runnable[]", "rs")
+        .match("com.foo.Classwithanannoyinglylongname", "c")
+        .match("com.foo.Classwithanannoyinglylongname,foo.bar.Classwithanotherannoyinglylongname", "c,c1")
+        .match("com.foo.Classwithanannoyinglylongname,foo.bar.ClasswithLongnameButshortAcronym", "c,clba")
+        .match("com.foo.ClassWithAnAnnoyinglyLongNameThatGoesOnForever", "c");
+        m.assertMatch();
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="Helper methods & Mock services">
+    
+    private void prepareTest() throws Exception {
+        File work = getWorkDir();
+        FileObject workFO = FileUtil.toFileObject(work);
+        
+        assertNotNull(workFO);
+        
+        FileObject sourceRoot = workFO.createFolder("src");
+        FileObject buildRoot  = workFO.createFolder("build");
+        FileObject cache = workFO.createFolder("cache");
+        FileObject packageRoot = sourceRoot.createFolder("sourceutils");
+        
+        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
+        
+        String capitalizedName = "T" + getName().substring(1);
+        
+        TestUtil.copyFiles(FileUtil.toFile(sourceRoot), "sourceutils/" + capitalizedName + ".java");
+        
+        packageRoot.refresh();
+        
+        FileObject testSource = packageRoot.getFileObject(capitalizedName + ".java");
+        
+        assertNotNull(testSource);
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+        
+        js = JavaSource.forFileObject(testSource);
+        
+        assertNotNull(js);
+        
+        info = SourceUtilsTestUtil.getCompilationInfo(js, JavaSource.Phase.RESOLVED);
+        
+        assertNotNull(info);
+    }
+
+    private void assertEquals (URL[] expected, Set<URL> result) {
+        assertEquals (expected.length,result.size());
+        for (URL eurl : expected) {
+            assertTrue (result.remove(eurl));
+        }
+        assertTrue(result.isEmpty());
+    }
+
+    private <E extends Element> E findElementBySimpleName(String simpleName, List<E> elements) {
+        for (E e : elements) {
+            if (simpleName.contentEquals(e.getSimpleName()))
+                return e;
+        }
+
+        fail("Not found element with simple name: " + simpleName);
+
+        throw new Error("Should never be here!");
+    }
+
+    private void assertMain(final String[] expected, final Iterable<? extends ElementHandle<TypeElement>> result) {
+        final Set<String> es = new HashSet<String>(Arrays.asList(expected));
+        for (ElementHandle<TypeElement> r : result) {
+            assertTrue(es.remove(r.getQualifiedName()));
+        }
+        assertTrue(es.isEmpty());
+    }
+
+
+    private static FileObject createFile (final FileObject folder, final String name, final String content) throws IOException {
+        final FileObject fo = FileUtil.createData(folder, name);
+        final FileLock lock = fo.lock();
+        try {
+            final OutputStream out = fo.getOutputStream(lock);
+            try {
+                FileUtil.copy(new ByteArrayInputStream(content.getBytes()), out);
+            } finally {
+                out.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        return fo;
     }
     
     
@@ -451,36 +518,7 @@ public class SourceUtilsTest extends NbTestCase {
             return instance;
         }
     }
-
-    public void testGenerateReadableParameterName() throws Exception {
-        System.out.println("testGenerateReadableParameterName");
-        Match m = new Match("java.lang.Object", "o");
-        m.match("java.lang.Runnable", "r")
-        .match("java.awt.event.ActionListener,java.awt.event.ActionListener","al,al1")
-        .match("java.io.InputStream", "in")
-        .match("java.io.OutputStream","out")
-        .match("java.io.ByteArrayOutputStream","stream")
-        .match("missingthing.Foodbar", "fdbr")
-        .match("somepackage.FillUpNoKnownMessageEverywhere", "funkme")
-        .match("java.lang.Class","type")
-        .match("java.lang.Class<T>", "type")
-        .match("org.openide.util.Lookup","lkp")
-        .match("sun.awt.KeyboardFocusManagerPeerImpl", "kfmpi")
-        .match("com.foo.BigInterface", "bi")
-        .match("java.util.concurrent.Callable<Runnable>", "clbl")
-        .match("int[]", "ints")
-        .match("short", "s")
-        .match("java.lang.Integer...", "intgrs")
-        .match("java.awt.Component[]", "cmpnts")
-        .match("int,java.lang.Runnable", "i,r")
-        .match("java.lang.Runnable[]", "rs")
-        .match("com.foo.Classwithanannoyinglylongname", "c")
-        .match("com.foo.Classwithanannoyinglylongname,foo.bar.Classwithanotherannoyinglylongname", "c,c1")
-        .match("com.foo.Classwithanannoyinglylongname,foo.bar.ClasswithLongnameButshortAcronym", "c,clba")
-        .match("com.foo.ClassWithAnAnnoyinglyLongNameThatGoesOnForever", "c");
-        m.assertMatch();
-    }
-
+    
     private static final class Match {
         private String[] fqns;
         private String[] names;
@@ -513,99 +551,5 @@ public class SourceUtilsTest extends NbTestCase {
             return next;
         }
     }
-    
-//    //tests for SourceUtils.filterSupportedMIMETypes:
-//
-//    @SuppressWarnings("deprecation")
-//    public void testFilter() throws Exception {
-//        SourceUtilsTestUtil.setLookup(new Object[] {new JavaSourceProviderImpl(), new ResolverImpl()}, SourceUtilsTest.class.getClassLoader());
-//        boolean registered = false;
-//        
-//        for (JavaSourceProvider p : Lookup.getDefault().lookupAll(JavaSourceProvider.class)) {
-//            if (p instanceof JavaSourceProvider) {
-//                registered = true;
-//                break;
-//            }
-//        }
-//        
-//        assertTrue(registered);
-//        
-//        FileObject work = FileUtil.toFileObject(getWorkDir());
-//        
-//        FileObject file1 = FileUtil.createData(work, "test.ext1");
-//        FileObject file2 = FileUtil.createData(work, "test.ext2");
-//        FileObject file3 = FileUtil.createData(work, "test.ext3");
-//        FileObject file4 = FileUtil.createData(work, "test.ext4");
-//        FileObject file5 = FileUtil.createData(work, "test.txt");
-//        FileObject file6 = FileUtil.createData(work, "test.ant");
-//
-//        assertEquals("text/x-java", FileUtil.getMIMEType(file1));
-//        assertEquals("text/jsp", FileUtil.getMIMEType(file2));
-//        assertEquals("text/plain", FileUtil.getMIMEType(file3));
-//        assertEquals("text/test+x-java", FileUtil.getMIMEType(file4));
-//        assertEquals("text/test+x-ant+xml", FileUtil.getMIMEType(file6));
-//        
-//        List<FileObject> files = Arrays.asList(file1, file2, file3, file4, file5, file6);
-//        
-//        assertEquals(Arrays.asList(file1, file2, file3, file4, file6), SourceUtils.filterSupportedMIMETypes(files, F1.class));
-//        assertEquals(Arrays.asList(file1, file4), SourceUtils.filterSupportedMIMETypes(files, F2.class));
-//        assertEquals(Arrays.asList(file4), SourceUtils.filterSupportedMIMETypes(files, F3.class));
-//        assertEquals(Arrays.asList(file1, file4), SourceUtils.filterSupportedMIMETypes(files, F4.class));
-//        assertEquals(Arrays.asList(file1, file2, file4), SourceUtils.filterSupportedMIMETypes(files, F5.class));
-//    }
-//    
-//    public static class JavaSourceProviderImpl implements JavaSourceProvider {
-//        public PositionTranslatingJavaFileFilterImplementation forFileObject(FileObject fo) {
-//            if ("txt".equals(fo.getExt()))
-//                return null;
-//            
-//            return new PositionTranslatingJavaFileFilterImplementation() {
-//                public int getOriginalPosition(int javaSourcePosition) {
-//                    return javaSourcePosition;
-//                }
-//                public int getJavaSourcePosition(int originalPosition) {
-//                    return originalPosition;
-//                }
-//                public Reader filterReader(Reader r) {
-//                    return r;
-//                }
-//                public CharSequence filterCharSequence(CharSequence charSequence) {
-//                    return charSequence;
-//                }
-//                public Writer filterWriter(Writer w) {
-//                    return w;
-//                }
-//                public void addChangeListener(ChangeListener listener) {}
-//                public void removeChangeListener(ChangeListener listener) {}
-//            };
-//        }
-//    }
-//    
-//    public static class ResolverImpl extends MIMEResolver {
-//        public String findMIMEType(FileObject fo) {
-//            String ext = fo.getExt();
-//            
-//            if ("ext1".contains(ext)) return "text/x-java";
-//            if ("ext2".contains(ext)) return "text/jsp";
-//            if ("ext3".contains(ext)) return "text/plain";
-//            if ("ext4".contains(ext)) return "text/test+x-java";
-//            if ("ant".contains(ext)) return "text/test+x-ant+xml";
-//            
-//            return null;
-//        }
-//    }
-//    
-//    @SupportedMimeTypes("*")
-//    private static class F1 {}
-//    
-//    @SupportedMimeTypes("text/x-java")
-//    private static class F2 {}
-//    
-//    @SupportedMimeTypes("text/test+x-java")
-//    private static class F3 {}
-//    
-//    private static class F4 {}
-//    
-//    @SupportedMimeTypes({"text/x-java", "text/jsp"})
-//    private static class F5 {}
+    //</editor-fold>
 }

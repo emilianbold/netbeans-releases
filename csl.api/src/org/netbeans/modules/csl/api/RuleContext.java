@@ -77,7 +77,7 @@ public class RuleContext {
     /** The document */
     @NonNull
     public BaseDocument doc;
-
+    
 // XXX: parsingapi
 //    /** All the embedded parser results for this compilation info */
 //    @NonNull

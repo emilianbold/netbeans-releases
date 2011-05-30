@@ -69,13 +69,14 @@ import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
  */
 public class WSStackUtils {
 
+    private Project project;
+    private J2eePlatform j2eePlatform;
+    
     /**
      * this string constant is usd as ServerInstanceID in case maven
      * project has no server appointed.
      */
     public static final String DEVNULL = "DEV-NULL"; //NOI18N
-    private Project project;
-    private J2eePlatform j2eePlatform;
 
     /** Creates a new instance of WSStackUtils */
     public WSStackUtils(Project project) {

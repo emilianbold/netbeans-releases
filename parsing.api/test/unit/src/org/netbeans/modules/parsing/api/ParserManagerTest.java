@@ -47,6 +47,8 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +59,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -139,7 +142,7 @@ public class ParserManagerTest extends NbTestCase {
     public void testParseWhenScanFinished () throws Exception {
         RUEmulator emulator = new RUEmulator();
         Utilities.setIndexingStatus(emulator);
-        emulator.setScanningInProgress(true);
+        emulator.setScanningInProgress(EnumSet.of(IndexingState.STARTING));
 
         FileUtil.setMIMEType ("foo", "text/foo");
         final FileObject workDir = FileUtil.toFileObject (getWorkDir ());
@@ -254,18 +257,19 @@ public class ParserManagerTest extends NbTestCase {
 
     private static class RUEmulator extends ParserResultTask implements Utilities.IndexingStatus {
 
-        private volatile boolean scanning = false;
+        private final Set<IndexingState> scanning = EnumSet.noneOf(IndexingState.class);
 
-        public void setScanningInProgress(boolean scanning) {
-            this.scanning = scanning;
+        public void setScanningInProgress(final Set<? extends IndexingState> state) {
+            this.scanning.addAll(state);
         }
         
         public void scan () {
-            scanning = true;
+            scanning.add(IndexingState.WORKING);
             Utilities.scheduleSpecialTask(this);
         }
 
-        public boolean isScanInProgress() {
+        @Override
+        public Set<? extends IndexingState> getIndexingState() {
             return scanning;
         }
 
@@ -291,7 +295,7 @@ public class ParserManagerTest extends NbTestCase {
             } catch (InterruptedException ex) {
                 // ignore
             }
-            scanning = false;
+            scanning.clear();
         }
 
     }

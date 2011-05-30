@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.23
+#Version 2.26.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -89,6 +89,12 @@ CLSS public abstract interface !annotation org.netbeans.spi.debugger.ui.ColumnMo
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int position()
 meth public abstract java.lang.String path()
+
+CLSS public abstract interface !annotation org.netbeans.spi.debugger.ui.ColumnModelRegistrations
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.spi.debugger.ui.ColumnModelRegistration[] value()
 
 CLSS public abstract interface org.netbeans.spi.debugger.ui.Constants
 fld public final static java.lang.String BREAKPOINT_ENABLED_COLUMN_ID = "BreakpointEnabled"

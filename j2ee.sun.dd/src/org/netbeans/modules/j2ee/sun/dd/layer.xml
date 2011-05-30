@@ -12,6 +12,12 @@
             <file name="sun-resources_1_3.dtd" url="impl/resources/sun-resources_1_3.dtd">
                 <attr name="systemId" stringvalue="http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd"/>
             </file>
+            <file name="sun-resources_1_4.dtd" url="impl/resources/sun-resources_1_4.dtd">
+                <attr name="systemId" stringvalue="http://www.sun.com/software/appserver/dtds/sun-resources_1_4.dtd"/>
+            </file>
+            <file name="glassfish-resources_1_5.dtd" url="impl/resources/glassfish-resources_1_5.dtd">
+                <attr name="systemId" stringvalue="http://glassfish.org/dtds/glassfish-resources_1_5.dtd"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

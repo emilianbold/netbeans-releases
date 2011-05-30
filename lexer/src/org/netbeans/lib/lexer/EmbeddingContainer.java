@@ -184,11 +184,18 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                 // so no need to call etl.setNextEmbeddedTokenList(prevEtl.nextEmbeddedTokenList())
                 ec.addEmbeddedTokenList(prevEtl, etl, true);
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("@@@@@@@@@@ NATURAL-EMBEDDING-CREATED for " + embeddedLanguagePath.mimePath() +
-                            ", " + embedding + ": " + etl.dumpInfo(null) +
-                            ", initTokensInNew=" + initTokensInNew + '\n');
+                    StringBuilder sb = new StringBuilder(200);
+                    sb.append("@@@@@@@@@@ NATURAL-EMBEDDING-CREATED EC-"); // NOI18N
+                    LexerUtilsConstants.appendIdentityHashCode(sb, ec);
+                    sb.append(" ROOT-"); // NOI18N
+                    LexerUtilsConstants.appendIdentityHashCode(sb, rootTokenList);
+                    sb.append(" for ").append(embeddedLanguagePath.mimePath()). // NOI18N
+                            append(", ").append(embedding).append(": "). // NOI18N
+                            append(etl.dumpInfo(null)).append(", initTokensInNew="). // NOI18N
+                            append(initTokensInNew).append('\n');
+                    LOG.fine(sb.toString());
                     if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
-                        LOG.log(Level.INFO, "Natural embedding created by:", new Exception());
+                        LOG.log(Level.INFO, "Natural embedding created by:", new Exception()); // NOI18N
                     }
                 }
 
@@ -501,6 +508,16 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
     }
     
     private void markRemoved() {
+        if (LOG.isLoggable(Level.FINE)) {
+            StringBuilder sb = new StringBuilder(100);
+            sb.append("EmbeddingContainer.markRemoved(): EC-");
+            LexerUtilsConstants.appendIdentityHashCode(sb, this);
+            sb.append('\n');
+            LOG.fine(sb.toString());
+            if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the removal marking
+                LOG.log(Level.INFO, "Embedding marked as removed:", new Exception());
+            }
+        }
         // Set cachedModCount to LexerUtilsConstants.MOD_COUNT_REMOVED which should not occur
         // for regular cases which should force existing token sequences to be invalidated.
         cachedModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;

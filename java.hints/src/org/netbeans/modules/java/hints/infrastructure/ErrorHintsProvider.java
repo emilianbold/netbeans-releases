@@ -323,7 +323,9 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             "compiler.err.report.access",
             "compiler.err.does.not.override.abstract",
             "compiler.err.abstract.cant.be.instantiated",
-            "compiler.warn.missing.SVUID"
+            "compiler.warn.missing.SVUID",
+            "compiler.warn.has.been.deprecated",
+            "compiler.warn.raw.class.use"
     ));
 
     private static final Set<JavaTokenId> WHITESPACE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);

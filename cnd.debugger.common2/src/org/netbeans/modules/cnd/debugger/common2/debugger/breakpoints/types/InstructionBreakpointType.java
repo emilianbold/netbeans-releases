@@ -69,4 +69,9 @@ public class InstructionBreakpointType extends NativeBreakpointType {
 	else
 	    return new InstructionBreakpointPanel(editable);
     }
+    
+    @Override
+    public String id() {
+        return "Instruction"; //NOI18N
+    }
 }

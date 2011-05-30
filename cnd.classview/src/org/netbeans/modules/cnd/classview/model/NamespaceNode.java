@@ -55,7 +55,7 @@ import org.openide.nodes.Children;
  * @author Vladimir Kvasihn
  */
 public class NamespaceNode extends NPNode {
-    private String id;
+    private CharSequence id;
     private CsmProject project;
     
     public NamespaceNode(CsmNamespace ns, Children.Array key) {
@@ -64,13 +64,13 @@ public class NamespaceNode extends NPNode {
     }
 
     private void init(CsmNamespace ns){
-        id = ns.getQualifiedName().toString();
+        id = ns.getQualifiedName();
         project = ns.getProject();
         String name = ns.getQualifiedName().toString();
         String displayName = CVUtil.getNamespaceDisplayName(ns).toString();
         setName(name);
         setDisplayName(displayName);
-        setShortDescription(ns.getQualifiedName().toString());
+        setShortDescription(name);
     }
 
     public CsmNamespace getNamespace() {

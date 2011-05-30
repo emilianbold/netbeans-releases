@@ -244,6 +244,16 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\n@Deprecated\npublic class T {\n}\n");
     }
 
+    public void testNewLineIndentationAfterSimpleAnnotationInsideEmptyClass() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    @Deprecated|\n}\n",
+                "package t;\npublic class T {\n    @Deprecated\n    \n}\n");
+    }
+
+    public void testLineIndentationAfterSimpleAnnotationInsideEmptyClass() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    @Deprecated\n|\n}\n",
+                "package t;\npublic class T {\n    @Deprecated\n    \n}\n");
+    }
+
     public void testNewLineIndentationAfterField() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public int i;|\n}\n",
                 "package t;\npublic class T {\n    public int i;\n    \n}\n");
@@ -692,6 +702,26 @@ public class ReindenterTest extends NbTestCase {
         }
     }
 
+    public void testNewLineIndentationBeforeWhileInDoWhile() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        do {\n        }| while (check());\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        do {\n        }\n        while (check());\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeWhileInDoWhile() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        do {\n        }\n| while (check());\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        do {\n        }\n        while (check());\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationBeforeWhileOnNewLineInDoWhile() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        do {\n        }|\n        while (check());\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        do {\n        }\n        \n        while (check());\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeWhileOnNewLineInDoWhile() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        do {\n        }\n|\n        while (check());\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        do {\n        }\n        \n        while (check());\n    }\n}\n");
+    }
+
     public void testNewLineIndentationInsideDoWhileCond() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        do {\n        } while (check()|);\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        do {\n        } while (check()\n                );\n    }\n}\n");
@@ -888,6 +918,26 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        if (true) {\n        }\n        else {\n        }\n    }\n}\n");
     }
 
+    public void testNewLineIndentationBeforeElseOnNewLine() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        if (true) {\n        }|\n        else {\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        if (true) {\n        }\n        \n        else {\n        }\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeElseOnNewLine() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        if (true) {\n        }\n|\n        else {\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        if (true) {\n        }\n        \n        else {\n        }\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationAfterStatementBeforeElseOnNewLine() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        if (true)\n            System.out.println();|\n        else {\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        if (true)\n            System.out.println();\n        \n        else {\n        }\n    }\n}\n");
+    }
+
+    public void testLineIndentationAfterStatementBeforeElseOnNewLine() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        if (true)\n            System.out.println();\n|\n        else {\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        if (true)\n            System.out.println();\n        \n        else {\n        }\n    }\n}\n");
+    }
+
     public void testNewLineIndentationBeforeElseStmt() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        if (true) {\n        } else|\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        if (true) {\n        } else\n            \n    }\n}\n");
@@ -1054,6 +1104,16 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        try {\n        }\n        catch (Exception e) {\n        }\n    }\n}\n");
     }
 
+    public void testNewLineIndentationBeforeCatchOnNewLine() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        try {\n        }|\n        catch (Exception e) {\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        try {\n        }\n        \n        catch (Exception e) {\n        }\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeCatchOnNewLine() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        try {\n        }\n|\n        catch (Exception e) {\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        try {\n        }\n        \n        catch (Exception e) {\n        }\n    }\n}\n");
+    }
+
     public void testNewLineIndentationBeforeCatchBlock() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        try {\n        } catch (Exception e)| {\n        }\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        try {\n        } catch (Exception e)\n        {\n        }\n    }\n}\n");
@@ -1094,6 +1154,16 @@ public class ReindenterTest extends NbTestCase {
     public void testLineIndentationBeforeFinally() throws Exception {
         performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        try {\n        }\n|finally {\n        }\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        try {\n        }\n        finally {\n        }\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationBeforeFinallyOnNewLine() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        try {\n        }|\n        finally {\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        try {\n        }\n        \n        finally {\n        }\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeFinallyOnNewLine() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        try {\n        }\n|\n        finally {\n        }\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        try {\n        }\n        \n        finally {\n        }\n    }\n}\n");
     }
 
     public void testNewLineIndentationBeforeFinallyBlock() throws Exception {
@@ -1366,6 +1436,38 @@ public class ReindenterTest extends NbTestCase {
         }
     }
 
+    public void testNewLineIndentationBeforeNewArrayInit() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        int[] arr = new int[]| {\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        int[] arr = new int[]\n        {\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeNewArrayInit() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        int[] arr = new int[]\n|                {\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        int[] arr = new int[]\n        {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationBeforeHalfIndentedNewArrayInit() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        int[] arr = new int[]| {\n    }\n}\n",
+                    "package t;\npublic class T {\n    public void op() {\n        int[] arr = new int[]\n          {\n    }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testLineIndentationBeforeHalfIndentedNewArrayInit() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        int[] arr = new int[]\n|                {\n    }\n}\n",
+                    "package t;\npublic class T {\n    public void op() {\n        int[] arr = new int[]\n          {\n    }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
     public void testNewLineIndentationIndideEmptyArrayInit() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        int[] arr = {|\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        int[] arr = {\n            \n    }\n}\n");
@@ -1433,6 +1535,38 @@ public class ReindenterTest extends NbTestCase {
         try {
             performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        int[] arr =\n          {\n|            }\n    }\n}\n",
                     "package t;\npublic class T {\n    public void op() {\n        int[] arr =\n          {\n          }\n    }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testNewLineIndentationBeforeNewClassTreeBody() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()| {\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n        {\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeNewClassTreeBody() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n|                {\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n        {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationBeforeHalfIndentedNewClassTreeBody() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()| {\n    }\n}\n",
+                    "package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n          {\n    }\n}\n");
+        } finally {
+            preferences.remove("otherBracePlacement");
+        }
+    }
+
+    public void testLineIndentationBeforeHalfIndentedNewClassTreeBody() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n|                {\n    }\n}\n",
+                    "package t;\npublic class T {\n    public void op() {\n        Runnable r = new Runnable()\n          {\n    }\n}\n");
         } finally {
             preferences.remove("otherBracePlacement");
         }
@@ -1518,6 +1652,26 @@ public class ReindenterTest extends NbTestCase {
             preferences.remove("tab-size");
             preferences.remove("expand-tabs");
         }
+    }
+
+    public void testNewLineIndentationAtWrongIndentedMultilineCommentStart() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n   /*|\n    public void op() {\n    }\n}\n",
+                "package t;\npublic class T {\n   /*\n    * \n    public void op() {\n    }\n}\n");
+    }
+
+    public void testLineIndentationAtWrongIndentedMultilineCommentStart() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n   /*\n|\n    public void op() {\n    }\n}\n",
+                "package t;\npublic class T {\n   /*\n    * \n    public void op() {\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideWrongIndentedMultilineComment() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n   /*\n    *|\n    */\n    public void op() {\n    }\n}\n",
+                "package t;\npublic class T {\n   /*\n    *\n    * \n    */\n    public void op() {\n    }\n}\n");
+    }
+
+    public void testLineIndentationInsideWrongIndentedMultilineComment() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n   /*\n    *\n|\n    */\n    public void op() {\n    }\n}\n",
+                "package t;\npublic class T {\n   /*\n    *\n    * \n    */\n    public void op() {\n    }\n}\n");
     }
 
     public void testNewLineIndentationInsideMethodInvocation() throws Exception {

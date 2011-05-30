@@ -91,9 +91,14 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
     private final TableCellRenderer BOOLEAN_RENDERER = new BooleanCellRenderer();
     private final TableCellRenderer CELL_FOCUS_RENDERER = new CellFocusCustomRenderer();
 
-    @SuppressWarnings("deprecation")
     public ResultSetCellRenderer() {
-        super(FormatStringValue.TO_STRING);
+        super(new StringValue() {
+
+            @Override
+            public String getString(Object o) {
+                return o == null ? "null" : o.toString(); // NOI18N
+            }
+        });
     }
 
     public ResultSetCellRenderer(ComponentProvider componentProvider) {

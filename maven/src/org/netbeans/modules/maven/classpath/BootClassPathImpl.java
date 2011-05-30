@@ -47,9 +47,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -61,7 +62,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.util.WeakListeners;
 
 /**
@@ -72,7 +72,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
     private List<? extends PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private final NbMavenProjectImpl project;
+    private final @NonNull NbMavenProjectImpl project;
     private String lastHintValue = null;
     private boolean activePlatformValid = true;
     private JavaPlatformManager platformManager;
@@ -82,13 +82,14 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
     
 
-    BootClassPathImpl(NbMavenProjectImpl project, EndorsedClassPathImpl ecpImpl) {
+    BootClassPathImpl(@NonNull NbMavenProjectImpl project, EndorsedClassPathImpl ecpImpl) {
         this.project = project;
         this.ecpImpl = ecpImpl;
         ecpImpl.setBCP(this);
+        ecpImpl.addPropertyChangeListener(this);
     }
 
-    public List<? extends PathResourceImplementation> getResources() {
+    public @Override List<? extends PathResourceImplementation> getResources() {
         synchronized (LOCK) {
             if (this.resourcesCache == null) {
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
@@ -97,9 +98,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
                 if (jp != null) {
                     //TODO May also listen on CP, but from Platform it should be fixed.
                     ClassPath cp = jp.getBootstrapLibraries();
-                    List entries = cp.entries();
-                    for (Iterator it = entries.iterator(); it.hasNext();) {
-                        ClassPath.Entry entry = (ClassPath.Entry) it.next();
+                    for (ClassPath.Entry entry : cp.entries()) {
                         result.add (ClassPathSupport.createResource(entry.getURL()));
                     }
                 }
@@ -109,11 +108,11 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
         this.support.addPropertyChangeListener (listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    public @Override void removePropertyChangeListener(PropertyChangeListener listener) {
         this.support.removePropertyChangeListener (listener);
     }
 
@@ -135,7 +134,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
             JavaPlatform plat = getActivePlatform(val);
             if (plat == null) {
                 //TODO report how?
-                Logger.getLogger(BootClassPathImpl.class.getName()).fine("Cannot find java platform with id of '" + val + "'"); //NOI18N
+                Logger.getLogger(BootClassPathImpl.class.getName()).log(Level.FINE, "Cannot find java platform with id of ''{0}''", val); //NOI18N
                 plat = platformManager.getDefaultPlatform();
                 activePlatformValid = false;
             }
@@ -169,8 +168,8 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        String newVal = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_JDK_PLATFORM, true);
+    public @Override void propertyChange(PropertyChangeEvent evt) {
+        String newVal = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
         if (evt.getSource() == project && evt.getPropertyName().equals(NbMavenProjectImpl.PROP_PROJECT)) {
             if (ecpImpl.resetCache()) {
                 resetCache();
@@ -198,6 +197,8 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
                     resetCache();
                 }
             }
+        } else if (evt.getSource() == ecpImpl) {
+            resetCache();
         }
     }
     

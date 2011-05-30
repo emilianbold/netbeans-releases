@@ -113,6 +113,12 @@ public class JavaTokenListTest extends NbTestCase {
                 "abd", "abe"
         );
     }
+
+    public void testEntities() throws Exception {
+        tokenListTest(
+                "/** &gt; &#62; */"
+        );
+    }
     
     public void testIsIdentifierLike() throws Exception {
         assertTrue(JavaTokenList.isIdentifierLike("JTable"));

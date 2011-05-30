@@ -62,6 +62,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -85,8 +86,6 @@ public final class NavigatorTC extends TopComponent {
     /** label signalizing no available providers */
     private final JLabel notAvailLbl = new JLabel(
             NbBundle.getMessage(NavigatorTC.class, "MSG_NotAvailable")); //NOI18N
-   /** special lookup for naviagtor TC */
-    private Lookup navTCLookup;
     
     /** Creates new NavigatorTC, singleton */
     private NavigatorTC() {
@@ -112,7 +111,14 @@ public final class NavigatorTC extends TopComponent {
         holderPanel.setOpaque(false);
         
         getController().installActions();
-
+        
+        associateLookup(
+            new ProxyLookup(
+                new Lookup [] { 
+                    Lookups.singleton(getActionMap()), 
+                    getController().getPanelLookup() 
+                }));
+        
         // empty initially
         setToEmpty();
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) {
@@ -288,22 +294,6 @@ public final class NavigatorTC extends TopComponent {
     }
     
     // << Window system
-
-    
-    /** Combines default Lookup of TC with lookup from active navigator
-     * panel.
-     */
-    @Override
-    public Lookup getLookup() {
-        if (navTCLookup == null) {
-            Lookup defaultLookup = super.getLookup();
-            Lookup clientLookup = getController().getPanelLookup();
-            navTCLookup = new ProxyLookup(
-                    new Lookup [] { defaultLookup, clientLookup }
-            ); 
-        }
-        return navTCLookup;
-    }
 
     @Override
     public UndoRedo getUndoRedo() {

@@ -386,8 +386,12 @@ public class Install extends ModuleInstall {
     
     /** Ends penidng tasks. */
     private static void killPendingTasks() {
-        // XXX
-        //CallableSystemAction.killRunningActions();
+        // no way to kill actions
+
+        for (InternalHandle h : Controller.getDefault().getModel().getHandles()) {
+            h.requestCancel();
+        }
+        
         killRunningExecutors();
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)

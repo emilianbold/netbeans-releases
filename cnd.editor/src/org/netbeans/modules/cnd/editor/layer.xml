@@ -557,7 +557,8 @@
             <attr name="position" intvalue="900"/>
             <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Category_Display_Name"/>
             <file name="BuildTools">
-                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd\.properties"/>
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd\.properties|config/Preferences/org/netbeans/modules/cnd/toolchain\.properties"/>
+                <!--attr name="exclude" stringvalue="config/Preferences/org/netbeans/modules/cnd/toolchain\.properties#.*@.*"/-->
                 <attr name="position" intvalue="100"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Build_Tools_Display_Name"/>
             </file>

@@ -51,7 +51,7 @@ public final class GdbLocal {
     private String name;
     private String type;
     private String value;
-    private boolean isLeaf;
+    private boolean simple;
 
     public GdbLocal(MIValue localvar) {
 	MIValue namev = localvar.asTuple().valueOf("name"); // NOI18N
@@ -67,10 +67,10 @@ public final class GdbLocal {
 	MIValue valuev = localvar.asTuple().valueOf("value"); // NOI18N
 	if (valuev != null) {
 	    value = valuev.asConst().value();
-	    isLeaf = true;
+	    simple = true;
 	} else {
 	    value = GdbDebuggerImpl.STRUCT_VALUE;
-	    isLeaf = false;
+	    simple = false;
         }
     }
 
@@ -84,5 +84,13 @@ public final class GdbLocal {
 
     public String getValue() {
 	return value;
+    }
+
+    public void setValue(String value) {
+	this.value = value;
+    }
+
+    public boolean isSimple() {
+        return simple;
     }
 }

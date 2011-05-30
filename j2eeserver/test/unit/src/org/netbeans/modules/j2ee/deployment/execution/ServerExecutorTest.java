@@ -45,14 +45,9 @@
 package org.netbeans.modules.j2ee.deployment.execution;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
-import org.netbeans.tests.j2eeserver.devmodule.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.filesystems.*;
 import java.io.*;
-import java.util.*;
 
 /**
  *
@@ -74,7 +69,6 @@ public class ServerExecutorTest extends NbTestCase {
     public void testNothing() {
     }
     
-    static private DeployTarget dt;
     static private LocalFileSystem wfs;
     static FileSystem getWorkFileSystem() {
         if (wfs != null)
@@ -88,96 +82,7 @@ public class ServerExecutorTest extends NbTestCase {
             throw new RuntimeException(e);
         }
     }
-        
-   public static class DeployTarget implements DeploymentTarget {
-        J2eeModule j2eeMod;
-        ServerString target;
-        
-        /** Creates a new instance of TestDeployTarget */
-        public DeployTarget(J2eeModule mod, ServerString target) {
-            j2eeMod = mod;
-            this.target = target;
-        }
-        
-        public boolean doFastDeploy() {
-            return false;
-        }
-        
-        public boolean dontDeploy() {
-            return false;
-        }
-        
-        public java.io.File getConfigurationFile() {
-            return null;
-        }
-        
-        public org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule getModule() {
-            return j2eeMod;
-        }
-        
-        public org.netbeans.modules.j2ee.deployment.impl.ServerString getServer() {
-            return target;
-        }
-        public void setServer(ServerString server) { this.target = server; }
-        
-        public TargetModule[] getTargetModules() {
-            TargetModule.List l = readTargetModule(getName());
-            if (l == null)
-                return new TargetModule[0];
-            return  l.getTargetModules();
-        }
-        
-        public void setTargetModules(TargetModule[] targetModules) {
-            System.out.println("-------------SETTARGETMODULES: name="+getName()+","+Arrays.asList(targetModules));
-                writeTargetModule(getName(),  new TargetModule.List(targetModules));
-        }
-        
-        public void startClient() {
-        }
-        public void startClient(String clientURL) {
             
-        }
-        
-        String name;
-        public String getName() {
-            try {
-            if (name == null) {
-                String serverName = this.getServer().getUrl();
-                serverName = serverName.substring(serverName.lastIndexOf(':')+1);
-                name = serverName + getModule().getArchive().getName();
-            }
-            } catch(Exception e) {
-                throw new RuntimeException(e);
-            }
-            return name;
-        }
-        
-        public String getDeploymentName() {
-            return null;
-        }
-
-        public String getClientUrl(String partUrl) {
-            return null;
-        }
-        
-        public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter() {
-            return null;
-        }
-        
-        public org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider getModuleConfigurationProvider() {
-            return null;
-        }
-        
-        public org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport getConfigSupport() {
-            return null;
-        }
-
-        public ResourceChangeReporter getResourceChangeReporter() {
-            throw null;
-        }
-        
-    }
-    
     public static boolean writeTargetModule(String destFile, TargetModule.List tml) {
         FileLock lock = null;
         Writer writer = null;

@@ -77,7 +77,6 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
@@ -445,6 +444,7 @@ public class FolderChildrenTest extends NbTestCase {
     public void testChildrenListenToFilesystemByABadea () throws Exception {
         doChildrenListenToFilesystem (false);
     }
+    @RandomlyFails // NB-Core-Build #6258: FolderChildren doesn't contain /hudson/workdir/jobs/NB-Core-Build/workspace/openide.loaders/build/test/unit/work/o.o.l.F/cltfbab-1/workFolder/C.txt expected:<1> but was:<0>
     public void testChildrenListenToFileByABadea () throws Exception {
         doChildrenListenToFilesystem (true);
     }
@@ -692,6 +692,32 @@ public class FolderChildrenTest extends NbTestCase {
         Node[] arr = folder.getNodeDelegate().getChildren().getNodes(true);
 
         assertNodes( arr, new String[] { "A" } );
+    }
+    
+    public void testRenameHiddenEntry() throws Exception {
+        FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), "two");
+        List<FileObject> arr = new ArrayList<FileObject>();
+        final int FILES = 2;
+        for (int i = 0; i < FILES; i++) {
+            arr.add(FileUtil.createData(folder, "" + i + ".dat"));
+        }
+        DataFolder df = DataFolder.findFolder(folder);
+
+        VisQ visq = new VisQ();
+
+        FilterNode fn = new FilterNode(new FilterNode(new AbstractNode(df.createNodeChildren(visq))));
+        Node[] one = fn.getChildren().getNodes(true);
+        assertEquals("One node", 1, one.length);
+        assertEquals("0.dat", one[0].getName());
+        
+        FileObject first = folder.getFileObject("1.dat");
+        assertNotNull("First found", first);
+        FileLock lock = first.lock();
+        first.rename(lock, "2", "dat");
+        lock.releaseLock();
+        
+        Node[] two = fn.getChildren().getNodes(true);
+        assertEquals("Two are now visible", 2, two.length);
     }
 
     public void testALotOfHiddenEntries() throws Exception {

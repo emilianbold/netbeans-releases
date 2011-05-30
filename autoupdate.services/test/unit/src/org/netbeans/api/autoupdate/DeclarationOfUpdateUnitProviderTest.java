@@ -69,6 +69,8 @@ public class DeclarationOfUpdateUnitProviderTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", getWorkDirPath());
+        clearWorkDir();
         List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(false);
         for (UpdateUnitProvider updateUnitProvider : providers) {
             String name = updateUnitProvider.getName();

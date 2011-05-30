@@ -165,11 +165,21 @@ public class Utils {
         protected ASTNode node = null;
 
         public ASTNode locate(ASTNode beginNode, int astOffset) {
-            offset = astOffset;
-            scan(beginNode);
+            offset = astOffset;            scan(beginNode);
+            if (node instanceof Program) {
+                // probably no node was found except whole file. 
+                // try to look for a documentation node
+                List<Comment> comments = ((Program)node).getComments();
+                for (Comment comment : comments) {
+                    if (comment.getStartOffset() <= offset && offset <= comment.getEndOffset()){
+                        scan(comment);
+                    }
+                }
+            }
             return this.node;
         }
 
+        @Override
         public void scan(ASTNode node) {
             if (node != null) {
                 if (node.getStartOffset() <= offset && offset <= node.getEndOffset()) {
@@ -177,6 +187,14 @@ public class Utils {
                     node.accept(this);
                 }
             }
+        }
+        
+        @Override
+        public void visit(PHPDocTypeTag node) {
+        }
+
+        @Override
+        public void visit(PHPDocVarTypeTag node) {
         }
     }
 

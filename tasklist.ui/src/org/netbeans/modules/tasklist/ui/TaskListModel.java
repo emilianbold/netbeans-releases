@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.tasklist.ui;
 
+import java.awt.EventQueue;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -134,20 +135,37 @@ class TaskListModel extends AbstractTableModel implements TaskList.Listener {
         return list.getTask( row );
     }
 
-    public void tasksAdded( List<? extends Task> tasks ) {
+    public void tasksAdded( final List<? extends Task> tasks ) {
         if( tasks.isEmpty() )
             return;
-        int startRow = list.indexOf( tasks.get(0) );
-        int endRow = list.indexOf( tasks.get(tasks.size()-1) );
-        fireTableRowsInserted( startRow, endRow );
+        
+        final int startRow = list.indexOf(tasks.get(0));
+        final int endRow = list.indexOf(tasks.get(tasks.size() - 1));
+        if( startRow > -1 && endRow > -1 ) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    fireTableRowsInserted(startRow, endRow);
+                }
+            });
+        }
     }
 
-    public void tasksRemoved( List<? extends Task> tasks ) {
+    public void tasksRemoved( final List<? extends Task> tasks ) {
         if( tasks.isEmpty() )
             return;
-        int startRow = list.indexOf( tasks.get(0) );
-        int endRow = list.indexOf( tasks.get(tasks.size()-1) );
-        fireTableRowsDeleted( startRow, endRow );
+
+        final int startRow = list.indexOf( tasks.get(0) );
+        final int endRow = list.indexOf( tasks.get(tasks.size()-1) );
+        
+        if( startRow > -1 && endRow > -1 ) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    fireTableRowsDeleted( startRow, endRow );
+                }
+            });
+        }
     }
 
     public void cleared() {

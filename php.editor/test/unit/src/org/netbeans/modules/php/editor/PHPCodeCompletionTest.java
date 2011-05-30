@@ -746,6 +746,30 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/classConstructorOptionalParam.php", "$var = new A^", false);
     }
     
+    public void testIssue194836() throws Exception {
+        checkCompletion("testfiles/completion/lib/test194836/index.php", "$user->^", false);
+    }
+    
+    public void testIssue153707_01() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue153707.php", "class property: ^", false);
+    }
+    
+    public void testIssue153707_02() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue153707.php", "class property: $^", false);
+    }
+    
+    public void testIssue153707_03() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue153707.php", "class property: $thi^", false);
+    }
+    
+    public void testIssue153707_04() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue153707.php", "class property: $this->^", false);
+    }
+
+    public void testIssue197571() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue197571.php", "sfWidgetFormSchema::^", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         //just test them as standalone files (just PHP Platform in index)

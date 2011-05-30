@@ -24,7 +24,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="targetTextField" pref="173" max="32767" attributes="0"/>
+                      <Component id="targetTextField" pref="208" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="targetButton" min="-2" max="-2" attributes="0"/>
                   </Group>

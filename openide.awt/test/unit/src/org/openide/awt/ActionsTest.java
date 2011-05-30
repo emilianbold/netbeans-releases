@@ -60,6 +60,7 @@ import javax.swing.KeyStroke;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -77,11 +78,24 @@ public class ActionsTest extends NbTestCase {
     
     // colors of the testing images in this order:
     // (test recognizes the icon by the white/black colors in specified positions :-)))
-    // testIcon.gif
-    // testIcon_rollover.gif
-    // testIcon_pressed.gif
-    // testIcon_disabled.gif
+    //  FIRST EIGHT (original)         SECOND EIGHT (selected)
+    // 0 testIcon.gif                 8 testIcon_selected.gif
+    // 1 testIcon_rollover.gif        9 testIcon_rolloverSelected.gif
+    // 2 testIcon_pressed.gif        10      --not-used--
+    // 3 testIcon_disabled.gif       11 testIcon_disabledSelected.gif
+    // 4 testIcon24.gif              12 testIcon24_selected.gif
+    // 5 testIcon24_rollover.gif     13 testIcon24_rolloverSelected.gif
+    // 6 testIcon24_pressed.gif      14      --not-used--
+    // 7 testIcon24_disabled.gif     15 testIcon24_disabledSelected.gif
     private static int[][] RESULT_COLORS_00 = {
+        {255, 255, 255},
+        {0, 0, 0},
+        {255, 255, 255},
+        {0, 0, 0},
+        {255, 255, 255},
+        {0, 0, 0},
+        {255, 255, 255},
+        {0, 0, 0},
         {255, 255, 255},
         {0, 0, 0},
         {255, 255, 255},
@@ -100,12 +114,46 @@ public class ActionsTest extends NbTestCase {
         {255, 255, 255},
         {0, 0, 0},
         {0, 0, 0},
+        {255, 255, 255},
+        {255, 255, 255},
+        {0, 0, 0},
+        {0, 0, 0},
+        {255, 255, 255},
+        {255, 255, 255},
+        {0, 0, 0},
+        {0, 0, 0},
     };
     private static int[][] RESULT_COLORS_11 = {
         {255, 255, 255},
         {255, 255, 255},
         {255, 255, 255},
         {255, 255, 255},
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0},
+        {255, 255, 255},
+        {255, 255, 255},
+        {255, 255, 255},
+        {255, 255, 255},
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0},
+    };
+    private static int[][] RESULT_COLORS_10 = {
+        {255, 255, 255},
+        {255, 255, 255},
+        {255, 255, 255},
+        {255, 255, 255},
+        {255, 255, 255},
+        {255, 255, 255},
+        {255, 255, 255},
+        {255, 255, 255},
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
@@ -124,22 +172,36 @@ public class ActionsTest extends NbTestCase {
     public void testIconsAction() throws Exception {
         JButton jb = new JButton();
         Actions.connect(jb, new TestAction());
-        
+
         Icon icon = jb.getIcon();
         assertNotNull(icon);
         checkIfLoadedCorrectIcon(icon, jb, 0, "Enabled icon");
-        
+
         Icon rolloverIcon = jb.getRolloverIcon();
         assertNotNull(rolloverIcon);
         checkIfLoadedCorrectIcon(rolloverIcon, jb, 1, "Rollover icon");
-        
+
         Icon pressedIcon = jb.getPressedIcon();
         assertNotNull(pressedIcon);
         checkIfLoadedCorrectIcon(pressedIcon, jb, 2, "Pressed icon");
-        
+
         Icon disabledIcon = jb.getDisabledIcon();
         assertNotNull(disabledIcon);
         checkIfLoadedCorrectIcon(disabledIcon, jb, 3, "Disabled icon");
+        
+        Icon selectedIcon = jb.getSelectedIcon();
+        assertNotNull(selectedIcon);
+        checkIfLoadedCorrectIcon(selectedIcon, jb, 8, "Selected icon");
+        
+        Icon rolloverSelectedIcon = jb.getRolloverSelectedIcon();
+        assertNotNull(rolloverSelectedIcon);
+        checkIfLoadedCorrectIcon(rolloverSelectedIcon, jb, 9, "RolloverSelected icon");
+
+        // no pressedSelected
+        
+        Icon disabledSelectedIcon = jb.getDisabledSelectedIcon();
+        assertNotNull(disabledSelectedIcon);
+        checkIfLoadedCorrectIcon(disabledSelectedIcon, jb, 11, "DisabledSelected icon");
     }
     
     /**
@@ -180,19 +242,47 @@ public class ActionsTest extends NbTestCase {
         
         Icon icon = jb.getIcon();
         assertNotNull(icon);
-        checkIfLoadedCorrectIcon(icon, jb, 4, "Enabled icon");
+        checkIfLoadedCorrectIcon(icon, jb, 4, "Enabled icon24");
         
         Icon rolloverIcon = jb.getRolloverIcon();
         assertNotNull(rolloverIcon);
-        checkIfLoadedCorrectIcon(rolloverIcon, jb, 5, "Rollover icon");
+        checkIfLoadedCorrectIcon(rolloverIcon, jb, 5, "Rollover icon24");
         
         Icon pressedIcon = jb.getPressedIcon();
         assertNotNull(pressedIcon);
-        checkIfLoadedCorrectIcon(pressedIcon, jb, 6, "Pressed icon");
+        checkIfLoadedCorrectIcon(pressedIcon, jb, 6, "Pressed icon24");
         
         Icon disabledIcon = jb.getDisabledIcon();
         assertNotNull(disabledIcon);
-        checkIfLoadedCorrectIcon(disabledIcon, jb, 7, "Disabled icon");
+        checkIfLoadedCorrectIcon(disabledIcon, jb, 7, "Disabled icon24");
+
+        Icon selectedIcon = jb.getSelectedIcon();
+        assertNotNull(selectedIcon);
+        checkIfLoadedCorrectIcon(selectedIcon, jb, 12, "Selected icon24");
+
+        Icon rolloverSelectedIcon = jb.getRolloverSelectedIcon();
+        assertNotNull(rolloverSelectedIcon);
+        checkIfLoadedCorrectIcon(rolloverSelectedIcon, jb, 13, "RolloverSelected icon24");
+
+        // no pressedSelected
+
+        Icon disabledSelectedIcon = jb.getDisabledSelectedIcon();
+        assertNotNull(disabledSelectedIcon);
+        checkIfLoadedCorrectIcon(disabledSelectedIcon, jb, 15, "DisabledSelected icon24");
+    }
+
+    /**
+     * Tests that "unknownIcon" is used if no iconBase
+     */
+    public void testToggleButtonUnknownIcon() throws Exception {
+        AbstractButton b = new AlwaysEnabledAction.DefaultIconToggleButton();
+        Action action = new TestAction();
+        action.putValue("iconBase", null);
+        Actions.connect(b, action);
+        Icon icon = b.getIcon();
+        assertNotNull("null ToggleButton icon", icon);
+        Icon expectedIcon = ImageUtilities.loadImageIcon("org/openide/awt/resources/unknown.gif", false); //NOI18N
+        assertEquals("unkownIcon not used", expectedIcon, icon);
     }
     
     /**
@@ -437,6 +527,7 @@ public class ActionsTest extends NbTestCase {
         checkIfIconOk(icon, c, 0, 0, RESULT_COLORS_00[rowToCheck], nameOfIcon);
         checkIfIconOk(icon, c, 0, 1, RESULT_COLORS_01[rowToCheck], nameOfIcon);
         checkIfIconOk(icon, c, 1, 1, RESULT_COLORS_11[rowToCheck], nameOfIcon);
+        checkIfIconOk(icon, c, 1, 0, RESULT_COLORS_10[rowToCheck], nameOfIcon);
     }
     
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -53,59 +53,63 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.eecommon.api.DomainEditor;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
-import org.netbeans.modules.glassfish.javaee.JavaEEServerModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
-import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Nitya Doraisamy
  */
 public class ResourcesHelper {
+
+    private static RequestProcessor RP = new RequestProcessor("Sample Datasource work");
     
-    public static void addSampleDatasource(J2eeModule module) {
-        File f = module.getResourceDirectory();
-        if(null != f && f.exists()){
-            f = f.getParentFile();
-        }
-        if (null != f) {
-            Project p = FileOwnerQuery.getOwner(f.toURI());
-            if (null != p) {
-                J2eeModuleProvider jmp = getProvider(p);
-                if (null != jmp) {
-                    DeploymentManager dm = getDeploymentManager(jmp);
-                    if (dm instanceof Hk2DeploymentManager) {
-                        GlassfishModule commonSupport = ((Hk2DeploymentManager) dm).getCommonServerSupport();
-                        String gfdir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-                        if (null != gfdir) {
-                            String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-                            if (commonSupport.getServerState() != ServerState.RUNNING) {
-                                // TODO : need to account for remote domain here?
-                                DomainEditor de = new DomainEditor(gfdir, domain, false);
-                                de.createSampleDatasource();
-                            } else {
-                                registerSampleResource(commonSupport);
+    public static void addSampleDatasource(final J2eeModule module , final DeploymentManager dmParam) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                File f = module.getResourceDirectory();
+                if(null != f && f.exists()){
+                    f = f.getParentFile();
+                }
+                if (null != f) {
+                    Project p = FileOwnerQuery.getOwner(f.toURI());
+                    if (null != p) {
+                        J2eeModuleProvider jmp = getProvider(p);
+                        if (null != jmp) {
+                            DeploymentManager dm = dmParam;
+                            if (dm instanceof Hk2DeploymentManager) {
+                                GlassfishModule commonSupport = ((Hk2DeploymentManager) dm).getCommonServerSupport();
+                                String gfdir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+                                if (null != gfdir) {
+                                    String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
+                                    if (commonSupport.getServerState() != ServerState.RUNNING) {
+                                        // TODO : need to account for remote domain here?
+                                        DomainEditor de = new DomainEditor(gfdir, domain, false);
+                                        de.createSampleDatasource();
+                                    } else {
+                                        registerSampleResource(commonSupport);
+                                    }
+                                }
                             }
                         }
+                    } else {
+                        Logger.getLogger("glassfish-javaee").finer("Could not find project for J2eeModule");   // NOI18N
                     }
+                } else {
+                    Logger.getLogger("glassfish-javaee").finer("Could not find project root directory for J2eeModule");   // NOI18N
                 }
-            } else {
-                Logger.getLogger("glassfish-javaee").finer("Could not find project for J2eeModule");   // NOI18N
             }
-        } else {
-            Logger.getLogger("glassfish-javaee").finer("Could not find project root directory for J2eeModule");   // NOI18N
-        }
+        });
     }
 
     static private J2eeModuleProvider getProvider(Project project) {
@@ -117,54 +121,6 @@ public class ResourcesHelper {
         return provider;
     }
 
-    static private DeploymentManager getDeploymentManager(J2eeModuleProvider provider) {
-        DeploymentManager dm = null;
-        InstanceProperties ip = provider.getInstanceProperties();
-        if (ip != null) {
-            dm = ip.getDeploymentManager();
-        }
-        return dm;
-    }
-
-    static private DeploymentManager getDeploymentManager(J2eeModule module){
-        DeploymentManager dm =  null;
-        File f = module.getResourceDirectory();
-        if(null != f && f.exists()){
-            f = f.getParentFile();
-        }
-        if (null != f) {
-            Project p = FileOwnerQuery.getOwner(f.toURI());
-            if (null != p) {
-                J2eeModuleProvider jmp = getProvider(p);
-                if (null != jmp) {
-                    dm = getDeploymentManager(jmp);
-                }
-            } else {
-                Logger.getLogger("glassfish-javaee").finer("Could not find project for J2eeModule");   // NOI18N
-            }
-        } else {
-            Logger.getLogger("glassfish-javaee").finer("Could not find project root directory for J2eeModule");   // NOI18N
-        }
-        return dm;
-    }
-
-    static public boolean isEE6(J2eeModule module){
-        boolean isee6 = false;
-        DeploymentManager dm = getDeploymentManager(module);
-        if (dm instanceof Hk2DeploymentManager) {
-            Hk2DeploymentManager hk2 = (Hk2DeploymentManager) dm;
-            ServerInstance si = hk2.getServerInstance();
-            Lookup lookup = ServerUtilities.getEe6Utilities().getLookupFor(si);
-            if (lookup != null) {
-                JavaEEServerModule servermod = lookup.lookup(JavaEEServerModule.class);
-                if (servermod != null) {
-                    isee6 = true;
-                }
-            }
-        }
-        return isee6;
-    }
-    
     static private void registerSampleResource(GlassfishModule commonSupport) {
         String sample_poolname = "SamplePool"; //NOI18N
         String sample_jdbc = "jdbc/sample"; //NOI18N
@@ -204,10 +160,10 @@ public class ResourcesHelper {
             if ((classname != null && classname.length() > 0) &&
                     (restype != null && restype.length() > 0) &&
                     (name != null && name.length() > 0)) {
-                cmd.append("datasourceclassname=" + classname);
-                cmd.append(PARAM_SEPARATOR + "restype=" + restype); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "property=" + properties); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "jdbc_connection_pool_id" + "=");
+                cmd.append("datasourceclassname=").append(classname);
+                cmd.append(PARAM_SEPARATOR).append("restype=").append(restype); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("property=").append(properties); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("jdbc_connection_pool_id=");
                 cmd.append(name);
                 query = cmd.toString();
             }
@@ -219,8 +175,8 @@ public class ResourcesHelper {
         public CreateJDBCResourceCommand(final String name, final String poolname) {
             super("create-jdbc-resource"); // NOI18N
             StringBuilder cmd = new StringBuilder(128);
-            cmd.append("connectionpoolid=" + poolname); // NOI18N
-            cmd.append(PARAM_SEPARATOR + "jndi_name" + "="); // NOI18N
+            cmd.append("connectionpoolid=").append(poolname); // NOI18N
+            cmd.append(PARAM_SEPARATOR).append("jndi_name="); // NOI18N
             cmd.append(name);
             query = cmd.toString();
         }
@@ -235,11 +191,11 @@ public class ResourcesHelper {
             if ((name != null && name.length() > 0) &&
                     (restype != null && restype.length() > 0) &&
                     (raname != null && raname.length() > 0)) {
-                cmd.append("enabled=" + "true");
-                cmd.append(PARAM_SEPARATOR + "restype=" + restype); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "raname=" + restype); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "property=" + raname); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "jndi_name" + "=");
+                cmd.append("enabled=true");
+                cmd.append(PARAM_SEPARATOR).append("restype=").append(restype); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("raname=").append(restype); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("property=").append(raname); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("jndi_name=");   // NOI18N
                 cmd.append(name);
                 query = cmd.toString();
 }
@@ -255,10 +211,10 @@ public class ResourcesHelper {
             if ((name != null && name.length() > 0) &&
                     (raname != null && raname.length() > 0) &&
                     (conndefnname != null && conndefnname.length() > 0)) {
-                cmd.append("raname=" + raname); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "connectiondefinition=" + conndefnname); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "property=" + properties); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "poolname" + "=");
+                cmd.append("raname=").append(raname); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("connectiondefinition=").append(conndefnname); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("property=").append(properties); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("poolname="); // NOI18N
                 cmd.append(name);
                 query = cmd.toString();
             }
@@ -272,10 +228,10 @@ public class ResourcesHelper {
             StringBuilder cmd = new StringBuilder(128);
             if ((name != null && name.length() > 0) &&
                     (poolname != null && poolname.length() > 0)) {
-                cmd.append("enabled=" + "true");
-                cmd.append(PARAM_SEPARATOR + "poolname=" + poolname); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "property=" + properties); // NOI18N
-                cmd.append(PARAM_SEPARATOR + "jndi_name" + "=");
+                cmd.append("enabled=true");
+                cmd.append(PARAM_SEPARATOR).append("poolname=").append(poolname); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("property=").append(properties); // NOI18N
+                cmd.append(PARAM_SEPARATOR).append("jndi_name="); // NOI18N
                 cmd.append(name);
                 query = cmd.toString();
             }

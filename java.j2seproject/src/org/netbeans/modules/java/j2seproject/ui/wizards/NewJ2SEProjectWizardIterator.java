@@ -182,7 +182,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             break;
         default:
-            h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition);
+            h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition, true);
             handle.progress (2);
             if (mainClass != null && mainClass.length () > 0) {
                 try {

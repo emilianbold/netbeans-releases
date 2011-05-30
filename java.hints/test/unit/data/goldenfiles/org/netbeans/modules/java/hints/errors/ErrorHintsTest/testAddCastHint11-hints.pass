@@ -1,2 +1,2 @@
 Cast ...new ArrayList<...>(...) to List<CharSequence>
-Change type of l2 to ArrayList<T>
+Change type of l2 to ArrayList&lt;T>

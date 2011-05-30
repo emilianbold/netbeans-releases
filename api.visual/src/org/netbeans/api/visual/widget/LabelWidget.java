@@ -260,6 +260,9 @@ public class LabelWidget extends Widget {
             rectangle.grow (1, 1); // WORKAROUND - even text antialiasing is included into the boundary
         } else {
             Graphics2D gr = getGraphics ();
+            if (gr == null) { // #192529
+                return super.calculateClientArea();
+            }
             FontMetrics fontMetrics = gr.getFontMetrics (getFont ());
             Rectangle2D stringBounds = fontMetrics.getStringBounds (label, gr);
             rectangle = GeomUtil.roundRectangle (stringBounds);

@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module: org.netbeans.modules.web.libraries.jsf1102/1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/libraries/jsf1102/Bundle.properties
-OpenIDE-Module-Implementation-Version: 1102
-OpenIDE-Module-Layer: org/netbeans/modules/web/libraries/jsf1102/layer.xml

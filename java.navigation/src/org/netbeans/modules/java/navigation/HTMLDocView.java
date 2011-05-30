@@ -84,6 +84,7 @@ class HTMLDocView extends JEditorPane {
             public void run(){
                 Reader in = new StringReader("<HTML><BODY>"+content+"</BODY></HTML>");//NOI18N                
                 try{
+                    setContentType("text/html"); //NOI18N
                     Document doc = getDocument();
                     doc.remove(0, doc.getLength());
                     getEditorKit().read(in, getDocument(), 0);  //!!! still too expensive to be called from AWT

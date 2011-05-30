@@ -46,6 +46,7 @@ import junit.framework.*;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -93,5 +94,25 @@ public class JavaOutputListenerProviderTest extends TestCase {
                 FileUtil.normalizeFile(new File("/home/mkleint/src/mevenide/mevenide2/netbeans/nb-project/src/test/java/org/codehaus/mevenide/netbeans/output/JavaOutputListenerProviderTest.java")).getAbsolutePath());
         visitor.resetVisitor();
         provider.sequenceFail("mojoexecute#compiler:testCompile", visitor);
+        
+        if (Utilities.isWindows()) { // #197381
+            provider.processLine("Compiling 1 source file to c:\\DOCUME~1\\My Self\\prj\\target\\classes", visitor);
+            provider.processLine("C:\\Documents and Settings\\My Self\\prj\\src\\main\\java\\test\\prj\\App.java:[11,45] not a statement", visitor); // after MCOMPILER-140
+            ann = (CompileAnnotation) visitor.getOutputListener();
+            assertNotNull(ann);
+            assertEquals("C:\\Documents and Settings\\My Self\\prj\\src\\main\\java\\test\\prj\\App.java", ann.clazzfile.getAbsolutePath());
+            visitor.resetVisitor();
+            provider.processLine("Compiling 1 source file to X:\\Documents and Settings\\My Self\\prj\\target\\classes", visitor);
+            provider.processLine("\\Documents and Settings\\My Self\\prj\\src\\main\\java\\test\\prj\\App.java:[11,45] not a statement", visitor);
+            ann = (CompileAnnotation) visitor.getOutputListener();
+            assertNotNull(ann);
+            assertEquals("X:\\Documents and Settings\\My Self\\prj\\src\\main\\java\\test\\prj\\App.java", ann.clazzfile.getAbsolutePath());
+            provider.processLine("Compiling 1 source file to \\\\server\\share\\prj\\target\\classes", visitor);
+            provider.processLine("\\\\server\\share\\prj\\src\\main\\java\\test\\prj\\App.java:[11,45] not a statement", visitor);
+            ann = (CompileAnnotation) visitor.getOutputListener();
+            assertNotNull(ann);
+            assertEquals("\\\\server\\share\\prj\\src\\main\\java\\test\\prj\\App.java", ann.clazzfile.getAbsolutePath());
+            visitor.resetVisitor();
+        }
     }
 }

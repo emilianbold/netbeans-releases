@@ -50,25 +50,40 @@ import java.io.File;
  */
 public final class GitFileInfo {
 
+    public static enum Status {
+        ADDED,
+        MODIFIED,
+        RENAMED,
+        COPIED,
+        REMOVED,
+        UNKNOWN
+    }
+    
     private String relativePath;
-    private GitStatus.Status status;
+    private Status status;
     private final File file;
+    private File originalFile;
 
-    public GitFileInfo (File file, String relativePath, GitStatus.Status status) {
+    public GitFileInfo (File file, String relativePath, Status status, File originalFile) {
         this.relativePath = relativePath;
         this.status = status;
         this.file = file;
+        this.originalFile = originalFile;
     }
 
     public String getRelativePath() {
         return relativePath;
     }
 
-    public GitStatus.Status getStatus() {
+    public Status getStatus() {
         return status;
     }
 
     public File getFile () {
         return file;
+    }
+    
+    public File getOriginalFile () {
+        return originalFile;
     }
 }

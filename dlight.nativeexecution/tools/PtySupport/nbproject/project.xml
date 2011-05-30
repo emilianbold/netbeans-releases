@@ -10,6 +10,45 @@
             <header-extensions>h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
+            <sourceRootList/>
+            <confList>
+                <confElem>
+                    <name>Solaris_x64</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Solaris_x86</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Linux_x64</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Linux_x86</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>MacOS_x64</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>MacOS_x86</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Solaris_sparc</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Solaris_sparc64</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Windows_x86</name>
+                    <type>1</type>
+                </confElem>
+            </confList>
         </data>
     </configuration>
 </project>

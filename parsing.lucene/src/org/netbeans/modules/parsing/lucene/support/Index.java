@@ -62,6 +62,25 @@ import org.netbeans.api.annotations.common.NullAllowed;
  * @author Tomas Zezula
  */
 public interface Index {
+
+    /**
+     * Index status returned by {@link Index#getStatus(boolean)} method
+     * @since 2.1
+     */
+    enum Status {
+        /**
+         * Index does not exist
+         */
+        EMPTY,
+        /**
+         * Index is broken
+         */
+        INVALID,
+        /**
+         * Index is valid
+         */
+        VALID;
+    }
     
     /**
      * An exception thrown by {@link Index} when operation is called on
@@ -69,20 +88,17 @@ public interface Index {
      */
     public static final class IndexClosedException extends IOException {        
     }
-    
-    /**
-     * Check if the index already exists
-     * @return true if the index already exists on disk.
-     */
-    boolean exists ();
+        
     
     /**
      * Checks the validity of the index. The index is invalid when it's broken.
      * @param tryOpen when true the {@link Index} does exact but more expensive check.
-     * @return true when {@link Index} is not broken
+     * @return {@link Status#INVALID} when the index is broken, {@link Status#EMPTY}
+     * when the index does not exist or {@link  Status#VALID} if the index is valid
      * @throws IOException in case of IO problem
+     * @since 2.1
      */
-    boolean isValid (boolean tryOpen) throws IOException;    
+    Status getStatus (boolean tryOpen) throws IOException;
     
     /**
      * Queries the {@link Index} by given queries.

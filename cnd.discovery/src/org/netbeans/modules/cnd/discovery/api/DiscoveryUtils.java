@@ -54,8 +54,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -110,14 +109,6 @@ public class DiscoveryUtils {
             }
         }
         return new HashMap<String,String>();
-    }
-    
-    public static boolean ignoreFolder(File file){
-        if (file.isDirectory()) {
-            String name = file.getName();
-            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
-        }
-        return false;
     }
 
     public static List<String> scanCommandLine(String line){
@@ -214,8 +205,9 @@ public class DiscoveryUtils {
     public static String normalizeAbsolutePath(String path) {
         boolean caseSensitive = CndFileUtils.isSystemCaseSensitive();
         if (!caseSensitive) {
-            // with case sensitive "path"s returned by remote compilers
-            path = CndFileSystemProvider.getCaseInsensitivePath(path);
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
         }
         String normalized;
         // small optimization for true case sensitive OSs
@@ -253,9 +245,8 @@ public class DiscoveryUtils {
     /**
      * parse compile line
      */
-    public static String gatherCompilerLine(String line, boolean isScriptOutput,
+    public static List<String> gatherCompilerLine(String line, boolean isScriptOutput,
             List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts){
-        boolean TRACE = false;
         List<String> list = DiscoveryUtils.scanCommandLine(line);
         boolean hasQuotes = false;
         for(String s : list){
@@ -286,7 +277,6 @@ public class DiscoveryUtils {
             }
             list = newList;
         }
-        String what = null;
         Iterator<String> st = list.iterator();
         String option = null; 
         if (st.hasNext()) {
@@ -295,6 +285,16 @@ public class DiscoveryUtils {
                 option = st.next();
             }
         }
+        return gatherCompilerLine(st, isScriptOutput, userIncludes, userMacros, libraries, languageArtifacts);
+    }
+    /**
+     * parse compile line
+     */
+    public static List<String> gatherCompilerLine( Iterator<String> st, boolean isScriptOutput,
+            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts){
+        boolean TRACE = false;
+        String option = null; 
+        List<String> what = new ArrayList<String>(1);
         while(st.hasNext()){
             option = st.next();
             boolean isQuote = false;
@@ -496,22 +496,25 @@ public class DiscoveryUtils {
                 // Skip redurect
                 break;
             } else {
-                if (option.endsWith(".il") || option.endsWith(".o") || option.endsWith(".a") ||  //NOI18N
-                    option.endsWith(".so") || option.endsWith(".so.1")) {  //NOI18N
+                if (SourcesVisibilityQuery.getDefault().isIgnored(option)) {
                     continue;
                 }
-                if (what == null) {
-                    what = option;
+                if (what.isEmpty()) {
+                    what.add(option);
                 } else {
                     if (TRACE) {
-                        System.out.println("**** What is this ["+option + "] if previous was ["+ what + "]?"); //NOI18N
-                        System.out.println("*> "+line); //NOI18N
+                        System.out.println("**** What is this ["+option + "] if previous was ["+ what.get(0) + "]?"); //NOI18N
                     }
-                    if ((option.endsWith(".c") || option.endsWith(".cc") || option.endsWith(".cpp") || //NOI18N
-                        option.endsWith(".cxx") ||option.endsWith(".c++") || option.endsWith(".C")) && //NOI18N
-                        !(what.endsWith(".c") || what.endsWith(".cc") || what.endsWith(".cpp") || //NOI18N
-                        what.endsWith(".cxx") ||what.endsWith(".c++") || what.endsWith(".C"))) { //NOI18N
-                        what = option;
+                    if (SourcesVisibilityQuery.getDefault().isVisible(option)) {
+                        if (what.size() == 1) {
+                            if (!SourcesVisibilityQuery.getDefault().isVisible(what.get(0))) {
+                                what.set(0, option);
+                            } else {
+                                what.add(option);
+                            }
+                        } else {
+                            what.add(option);
+                        }
                     }
                 }
             }

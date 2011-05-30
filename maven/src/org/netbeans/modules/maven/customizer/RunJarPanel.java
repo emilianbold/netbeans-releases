@@ -65,7 +65,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.maven.MavenSourcesImpl;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
@@ -329,7 +329,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_VMHint")); // NOI18N
 
         lblConfiguration.setLabelFor(comConfiguration);
-        org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, "&Configuration:");
+        org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, NbBundle.getMessage(RunJarPanel.class, "RunJarPanel.lblConfiguration.text")); // NOI18N
 
         comConfiguration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 

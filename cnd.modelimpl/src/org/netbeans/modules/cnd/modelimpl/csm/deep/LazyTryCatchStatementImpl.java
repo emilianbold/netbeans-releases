@@ -48,8 +48,6 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -57,6 +55,8 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Lazy try-catch statements
@@ -91,11 +91,11 @@ public final class LazyTryCatchStatementImpl extends LazyStatementImpl implement
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
-    public LazyTryCatchStatementImpl(DataInput input) throws IOException {
+    public LazyTryCatchStatementImpl(RepositoryDataInput input) throws IOException {
         super(input);
     }
 

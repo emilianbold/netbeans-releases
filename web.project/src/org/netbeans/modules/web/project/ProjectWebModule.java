@@ -694,7 +694,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        synchronized (this) {
+        //synchronized (this) {
             // XXX need to listen on the module version
             // if (!webAppPropChangeLInitialized) {
             //     try {
@@ -713,7 +713,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             //         // TODO MetadataModel: how should we handle this?
             //     }
             // }
-        }
+        //}
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
     

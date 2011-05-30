@@ -41,53 +41,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.AWTEventListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import javax.swing.JDialog;
-
-import org.netbeans.junit.*;
-
-import org.netbeans.jemmy.*;
+import javax.swing.SwingUtilities;
+import junit.framework.AssertionFailedError;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.DialogWaiter;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.jemmy.util.Dumper;
+import org.netbeans.junit.AssertionFailedErrorException;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
-/** JUnit test case with implemented Jemmy/Jelly2 support stuff
+/** JUnit test case with implemented Jemmy/JellyTools support stuff.
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @version 1.0
+ * @author Adam Sotona
  */
 public class JellyTestCase extends NbTestCase {
-    
+
     /** screen capture feature in case of failure is enabled by default
      */
     public boolean captureScreen = Boolean.valueOf(System.getProperty("jemmy.screen.capture", "true")).booleanValue();
-    
     /** screen XML dump feature in case of failure is disabled by default
      */
     public boolean dumpScreen = Boolean.getBoolean("jemmy.screen.xmldump");
-    
     /** closing all modal dialogs after each test case is disabled by default
      */
     public boolean closeAllModal = Boolean.valueOf(System.getProperty("jelly.close.modal", "true")).booleanValue();
@@ -100,7 +97,7 @@ public class JellyTestCase extends NbTestCase {
     public JellyTestCase(String testName) {
         super(testName);
     }
-    
+
     /** Inits environment before test case is executed. It can be overridden
      * in sub class but it is recommended to call super.initEnvironment() at
      * the beginning.
@@ -120,30 +117,28 @@ public class JellyTestCase extends NbTestCase {
         String timeoutsFile = System.getProperty("jelly.timeouts_file");
         try {
             JemmyProperties.getCurrentTimeouts().load(getClass().getClassLoader().
-                         getResourceAsStream("org/netbeans/jellytools/timeouts"));
-            if(timeoutsResource != null && !"".equals(timeoutsResource)) {
+                    getResourceAsStream("org/netbeans/jellytools/timeouts"));
+            if (timeoutsResource != null && !"".equals(timeoutsResource)) {
                 JemmyProperties.getCurrentTimeouts().load(
-                    getClass().getClassLoader().getResourceAsStream(timeoutsResource));
-            } else if(timeoutsFile != null && !"".equals(timeoutsFile)) {
+                        getClass().getClassLoader().getResourceAsStream(timeoutsResource));
+            } else if (timeoutsFile != null && !"".equals(timeoutsFile)) {
                 JemmyProperties.getCurrentTimeouts().load(timeoutsFile);
             }
         } catch (Exception e) {
             throw new JemmyException("Initialization of timeouts failed.", e);
         }
     }
-    
-    /** Overriden method from JUnit framework execution to perform conditional
+
+    /** Overridden method from JUnit framework execution to perform conditional
      * screen shot and conversion from TimeoutExpiredException to AssertionFailedError. <br>
      * Waits a second before test execution.
      * @throws Throwable Throwable
      */
+    @Override
     public void runBare() throws Throwable {
         initEnvironment();
-        // workaround for JDK bug 4924516 (see below)
-        Toolkit.getDefaultToolkit().addAWTEventListener(distributingHierarchyListener, 
-                                                        HierarchyEvent.HIERARCHY_EVENT_MASK);
         // wait 
-        if(waitNoEvent) {
+        if (waitNoEvent) {
             new EventTool().waitNoEvent(1000);
         }
         try {
@@ -155,21 +150,22 @@ public class JellyTestCase extends NbTestCase {
             // suite is notified about test failure so it can do some debug actions
             try {
                 failNotify(th);
-            } catch (Exception e3) {}
+            } catch (Exception e3) {
+            }
             captureScreen();
             // closes all modal dialogs in dependency on systems property
-            if (closeAllModal) try {
-                closeAllModal();
-            } catch (Exception e) {}
+            if (closeAllModal) {
+                try {
+                    closeAllModal();
+                } catch (Exception e) {
+                }
+            }
             if (th instanceof JemmyException) {
                 // all instancies of JemmyException are re-throwed as AssertionError (test failed)
                 throw new AssertionFailedErrorException(th.getMessage(), th);
             } else {
                 throw th;
             }
-        } finally {
-            // workaround for JDK bug 4924516 (see below)
-            Toolkit.getDefaultToolkit().removeAWTEventListener(distributingHierarchyListener);
         }
     }
 
@@ -189,7 +185,6 @@ public class JellyTestCase extends NbTestCase {
             throw th;
         }
     }
-
     private boolean isScreenCaptured = false;
 
     private void captureScreen() {
@@ -239,8 +234,8 @@ public class JellyTestCase extends NbTestCase {
         }
         String relCaptureFile = captureFile.substring(workspace.length()).replace(File.separatorChar, '/');
         System.err.println("Capturing to:");
-        System.err.println(hudsonURL + "job/" + System.getenv("JOB_NAME") + "/" +
-                System.getenv("BUILD_NUMBER") + "/artifact/" + relCaptureFile);
+        System.err.println(hudsonURL + "job/" + System.getenv("JOB_NAME") + "/"
+                + System.getenv("BUILD_NUMBER") + "/artifact/" + relCaptureFile);
     }
 
     /** Method called in case of fail or error just after screen shot and XML dumps. <br>
@@ -250,52 +245,54 @@ public class JellyTestCase extends NbTestCase {
      * @param reason Throwable reason of current fail */
     protected void failNotify(Throwable reason) {
     }
-    
+
     /** Closes all opened modal dialogs. Non-modal stay opened. */
     public static void closeAllModal() {
         JDialog dialog;
         ComponentChooser chooser = new ComponentChooser() {
+
+            @Override
             public boolean checkComponent(Component comp) {
-                return(comp instanceof JDialog &&
-                       comp.isShowing() &&
-                       ((JDialog)comp).isModal());
+                return (comp instanceof JDialog
+                        && comp.isShowing()
+                        && ((JDialog) comp).isModal());
             }
+
+            @Override
             public String getDescription() {
-                return("Modal dialog");
+                return ("Modal dialog");
             }
         };
-        while((dialog = (JDialog)DialogWaiter.getDialog(chooser)) != null) {
+        while ((dialog = (JDialog) DialogWaiter.getDialog(chooser)) != null) {
             closeDialogs(findBottomDialog(dialog, chooser), chooser);
         }
     }
 
     private static JDialog findBottomDialog(JDialog dialog, ComponentChooser chooser) {
         Window owner = dialog.getOwner();
-        if(chooser.checkComponent(owner)) {
-            return(findBottomDialog((JDialog)owner, chooser));
+        if (chooser.checkComponent(owner)) {
+            return (findBottomDialog((JDialog) owner, chooser));
         }
-        return(dialog);
+        return (dialog);
     }
-    
+
     private static void closeDialogs(JDialog dialog, ComponentChooser chooser) {
         Window[] ownees = dialog.getOwnedWindows();
-        for(int i = 0; i < ownees.length; i++) {
-            if(chooser.checkComponent(ownees[i])) {
-                closeDialogs((JDialog)ownees[i], chooser);
+        for (int i = 0; i < ownees.length; i++) {
+            if (chooser.checkComponent(ownees[i])) {
+                closeDialogs((JDialog) ownees[i], chooser);
             }
         }
         new JDialogOperator(dialog).close();
     }
-    
+
     /** Finishes test with status Fail
      * @param t Throwable reason of test failure
-     */    
+     */
     public void fail(Throwable t) {
         t.printStackTrace(getLog());
         throw new AssertionFailedErrorException(t);
     }
-    
-    
     /*
      * methods for managing failures of group of dependent tests
      * Usage: each method involved in a group must start with 
@@ -309,12 +306,11 @@ public class JellyTestCase extends NbTestCase {
      *     endTest();
      * }
      */
-    
     /** private variable for holding state whether test was finished
      */
     private boolean testStatus = true;
-    
-    /** Checks whether previus test finished correctly and
+
+    /** Checks whether previous test finished correctly and
      *  sets test status to 'not finished' state
      *
      */
@@ -324,66 +320,59 @@ public class JellyTestCase extends NbTestCase {
         }
         testStatus = false;
     }
-    
+
     /** Sets the test status to 'finished' state (test passed)
      */
     protected void endTest() {
         testStatus = true;
     }
-    
+
     /** Clears test status (used when test does not depend on previous test)
      */
     protected void clearTestStatus() {
         testStatus = true;
     }
-    
-    private Vector openedProjects = null;
+    private List<Object> openedProjects = null;
 
     /**
-     * Waits for the initial scanning to be finished. This should be better than
-     * the original solution, but will fail anyway if IDE cluster is not present.
-     *
-     * @throws ClassNotFoundException
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
+     * Waits for the source scanning to be finished.
+     * @throws AssertionFailedError if scanning was canceled or other exception appears
      */
-    public void waitScanFinished()
-    {
+    public void waitScanFinished() {
         try {
-            ClassLoader l = Thread.currentThread().getContextClassLoader();
-            if (l == null)
-            {
-                l = getClass().getClassLoader();
-            }
-            Class<?> repositoryUpdaterClass = Class.forName("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater", true, l);
-            final Object repositoryUpdater = repositoryUpdaterClass.getMethod("getDefault").invoke(null);
+            class Wait implements Runnable {
 
-            final Method isScanInProgressMethod = repositoryUpdaterClass.getMethod("isScanInProgress");
+                boolean initialized;
+                boolean ok;
 
-            Waiter waiter = new Waiter(new Waitable() {
-                public Object actionProduced(Object anObject) {
-                    Boolean result;
+                @Override
+                public void run() {
+                    if (initialized) {
+                        ok = true;
+                        return;
+                    }
+                    initialized = true;
                     try {
-                        result = (Boolean) isScanInProgressMethod.invoke(repositoryUpdater);
+                        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                        if (loader == null) {
+                            loader = getClass().getClassLoader();
+                        }
+                        // reflection used becaues ScanDialog is in java.sourceui in java cluster
+                        // ScanDialog.runWhenScanFinished(this, "tests");
+                        Class<?> scanDialogClass = Class.forName("org.netbeans.api.java.source.ui.ScanDialog", true, loader);
+                        Method runWhenScanFinishedMethod = scanDialogClass.getDeclaredMethod("runWhenScanFinished", Runnable.class, String.class);
+                        boolean canceled = (Boolean) runWhenScanFinishedMethod.invoke(null, this, "tests");
+                        assertFalse("Scanning canceled.", canceled);
+                        assertTrue("Runnable run", ok);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
                     }
-                    catch (Exception e)
-                    {
-                        throw new JemmyException("Error during waiting for the end of scanning: ", e);
-                    }
-                    return result ? null : Boolean.TRUE;
                 }
-                public String getDescription() {
-                    return("Waiting for scanning to finish.");
-                }
-            });
-
-            Timeouts timeouts = waiter.getTimeouts();
-            timeouts.setTimeout("Waiter.WaitingTime", 600000); //set timeout for 10 minutes
-            waiter.waitAction(null);
-        }
-        catch (Exception e) {
-            throw new JemmyException("Waiting for end of scanning failed.", e);
+            }
+            Wait wait = new Wait();
+            SwingUtilities.invokeAndWait(wait);
+        } catch (Exception ex) {
+            throw (AssertionFailedError) new AssertionFailedError().initCause(ex);
         }
     }
 
@@ -404,9 +393,9 @@ public class JellyTestCase extends NbTestCase {
             Object openProjectsInstance = getDefaultOpenProjectsMethod.invoke(null);
             Method getOpenProjectsMethod = openProjectsClass.getMethod("getOpenProjects");
             if (openedProjects == null) {
-                openedProjects = new Vector();
+                openedProjects = new ArrayList();
             }
-            Vector newProjects = new Vector();
+            List<Object> newProjects = new ArrayList<Object>();
             Object pr;
             for (String p : projects) {
                 Method getDefaultMethod = projectManagerClass.getMethod("getDefault");
@@ -434,7 +423,7 @@ public class JellyTestCase extends NbTestCase {
             Method openMethod = openProjectsClass.getMethod("open", new Class[]{projectsArray.getClass(), Boolean.TYPE});
             openMethod.invoke(openProjectsInstance, projectsArray, false);
             openedProjects.addAll(newProjects);
-            
+
             waitScanFinished();
         } catch (IllegalAccessException ex) {
             Exceptions.printStackTrace(ex);
@@ -448,20 +437,21 @@ public class JellyTestCase extends NbTestCase {
             Exceptions.printStackTrace(ex);
         }
     }
+
     /**
      * Open projects located within <code>NbTestCase.getDataDir();</code>
      * @param projects - relative to dataDir (test/qa-functional/data) path names. 
      * @throws IOException
      */
     public void openDataProjects(String... projects) throws IOException {
-        
+
         String[] fullPaths = new String[projects.length];
         for (int i = 0; i < projects.length; i++) {
-            fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];            
+            fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];
         }
         openProjects(fullPaths);
     }
-    
+
     /**
      * Close projects opened by openProjects(String ...) or openDataProjects(String ...)
      */
@@ -469,6 +459,7 @@ public class JellyTestCase extends NbTestCase {
         closeOpenedProjects(openedProjects.toArray());
         openedProjects.clear();
     }
+
     /**
      * Close projects opened by openProjects(String ...) or openDataProjects(String ...)
      */
@@ -497,75 +488,24 @@ public class JellyTestCase extends NbTestCase {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     protected static junit.framework.Test createModuleTest(String modules, String clusters, Class testClass, String... testNames) {
         return NbModuleSuite.create(testClass, clusters, modules, testNames);
     }
+
     protected static junit.framework.Test createModuleTest(Class testClass, String... testNames) {
         return createModuleTest(".*", ".*", testClass, testNames);
     }
-    
-    /* Workaround for JDK bug http://developer.java.sun.com/developer/bugParade/bugs/4924516.html.
-     * Also see issue http://www.netbeans.org/issues/show_bug.cgi?id=32466.
-     * ------------------------------------------------------------------------------------------
-     * It can be removed when it is fixed (probably in JDK1.5.0). The following
-     * listener is added to Toolkit at runBare() method and removed when it finishes. 
-     * It distributes HierarchyEvent to all listening components and its subcomponents.
-     */
-    private static final DistributingHierarchyListener 
-                distributingHierarchyListener = new DistributingHierarchyListener();
 
-    /*
-    public GlassFishV2ServerNode getGlassFishV2Node() {
-        return GlassFishV2ServerNode.getGlassFishV2Node(System.getProperty("com.sun.aas.installRoot"));
-    }
-     */
-    
-    private static class DistributingHierarchyListener implements AWTEventListener {
-        
-        public DistributingHierarchyListener() {
-        }
-        
-        public void eventDispatched(java.awt.AWTEvent aWTEvent) {
-            HierarchyEvent hevt = null;
-            if (aWTEvent instanceof HierarchyEvent) {
-                hevt = (HierarchyEvent) aWTEvent;
-            }
-            if (hevt != null && ((HierarchyEvent.SHOWING_CHANGED & hevt.getChangeFlags()) != 0)) {
-                distributeShowingEvent(hevt.getComponent(), hevt);
-            }
-        }
-        
-        private static void distributeShowingEvent(Component c, HierarchyEvent hevt) {
-            //HierarchyListener[] hierarchyListeners = c.getHierarchyListeners();
-            // Need to use component.getListeners because it is not synchronized
-            // and it not cause deadlock
-            HierarchyListener[] hierarchyListeners = (HierarchyListener[])(c.getListeners(HierarchyListener.class));
-            if (hierarchyListeners != null) {
-                for (int i = 0; i < hierarchyListeners.length; i++) {
-                    hierarchyListeners[i].hierarchyChanged(hevt);
-                }
-            }
-            if (c instanceof Container) {
-                Container cont = (Container) c;
-                int n = cont.getComponentCount();
-                for (int i = 0; i < n; i++) {
-                    distributeShowingEvent(cont.getComponent(i), hevt);
-                }
-            }
-        }
-    }
-
-    private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread,StackTraceElement[]> data) {
+    private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread, StackTraceElement[]> data) {
         sb.append(indent).append("Thread ").append(t.getName()).append('\n');
-        
+
         for (StackTraceElement e : data.get(t)) {
-            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
-                    .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
+            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName()).append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
         }
     }
 
-    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, Map<Thread,StackTraceElement[]> data) {
+    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, Map<Thread, StackTraceElement[]> data) {
         sb.append(indent).append("Group ").append(tg.getName()).append('\n');
         indent = indent.concat("  ");
 
@@ -573,25 +513,30 @@ public class JellyTestCase extends NbTestCase {
         ThreadGroup[] chg = new ThreadGroup[groups];
         tg.enumerate(chg, false);
         for (ThreadGroup inner : chg) {
-            if (inner != null) appendGroup(sb, indent, inner, data);
+            if (inner != null) {
+                appendGroup(sb, indent, inner, data);
+            }
         }
 
         int threads = tg.activeCount();
-        Thread[] cht= new Thread[threads];
+        Thread[] cht = new Thread[threads];
         tg.enumerate(cht, false);
         for (Thread t : cht) {
-            if (t != null) appendThread(sb, indent, t, data);
+            if (t != null) {
+                appendThread(sb, indent, t, data);
+            }
         }
     }
 
     private static String threadDump() {
-        Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
+        Map<Thread, StackTraceElement[]> all = Thread.getAllStackTraces();
         ThreadGroup root = Thread.currentThread().getThreadGroup();
-        while (root.getParent() != null) root = root.getParent();
+        while (root.getParent() != null) {
+            root = root.getParent();
+        }
 
         StringBuffer sb = new StringBuffer();
         appendGroup(sb, "", root, all);
         return sb.toString();
     }
-
 }

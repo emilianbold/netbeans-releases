@@ -45,7 +45,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -132,7 +132,7 @@ public class MavenProjectNode extends AbstractNode {
     @Override
     public Image getIcon(int param) {
         Image img = ImageUtilities.icon2Image(info.getIcon());
-        if (reporter.getReports().size() > 0) {
+        if (reporter.isBroken()) {
             Image ann = ImageUtilities.loadImage(BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipBroken);
             img = ImageUtilities.mergeImages(img, ann, 8, 0);//NOI18N
@@ -143,7 +143,7 @@ public class MavenProjectNode extends AbstractNode {
     @Override
     public Image getOpenedIcon(int param) {
         Image img = ImageUtilities.icon2Image(info.getIcon());
-        if (reporter.getReports().size() > 0) {
+        if (reporter.isBroken()) {
             Image ann = ImageUtilities.loadImage(BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipBroken);
             img = ImageUtilities.mergeImages(img, ann, 8, 0);//NOI18N
@@ -171,12 +171,11 @@ public class MavenProjectNode extends AbstractNode {
         buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5")).append("</i><b> ").append(project.getOriginalMavenProject().getPackaging()).append("</b><br><i>");//NOI18N
         //TODO escape the short description
         buf.append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project6")).append("</i> ").append(breakPerLine(desc, NbBundle.getMessage(MavenProjectNode.class, "DESC_Project5").length()));//NOI18N
-        if (reporter.getReports().size() > 0) {
+        Collection<ProblemReport> problems = reporter.getReports();
+        if (!problems.isEmpty()) {
             buf.append("<br><b>").append(NbBundle.getMessage(MavenProjectNode.class, "DESC_Project7")).append("</b><br><ul>");//NOI18N
-            Iterator it = reporter.getReports().iterator();
-            while (it.hasNext()) {
-                ProblemReport elem = (ProblemReport) it.next();
-                buf.append("<li>" + elem.getShortDescription() + "</li>");//NOI18N
+            for (ProblemReport elem : problems) {
+                buf.append("<li>").append(elem.getShortDescription()).append("</li>");//NOI18N
             }
             buf.append("</ul>");//NOI18N
         }

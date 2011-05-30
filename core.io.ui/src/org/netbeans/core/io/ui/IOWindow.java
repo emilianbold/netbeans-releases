@@ -194,7 +194,7 @@ public final class IOWindow implements IOContainer.Provider {
         private static final String ICON_PROP = "tabIcon"; //NOI18N
         private static final String TOOLBAR_ACTIONS_PROP = "toolbarActions"; //NOI18N
         private static final String TOOLBAR_BUTTONS_PROP = "toolbarButtons"; //NOI18N
-        private static final String ICON_RESOURCE = "org/netbeans/core/resources/frames/output.png"; // NOI18N
+        private static final String ICON_RESOURCE = "org/netbeans/core/io/ui/output.png"; // NOI18N
         private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
         private JTabbedPane pane;
         private JComponent singleTab;

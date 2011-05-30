@@ -247,7 +247,7 @@ public class Tiny {
             String displayName = NbBundle.getMessage(Tiny.class, "FIX_Tiny_enumMap");
 
             fixes = new Fix[] {
-                JavaFix.rewriteFix(ctx, displayName, ctx.getPath(), "new $coll<$param, $to>($param.class)")
+                JavaFix.rewriteFix(ctx, displayName, ctx.getPath(), "new java.util.EnumMap<$param, $to>($param.class)")
             };
         } else {
             fixes = new Fix[0];

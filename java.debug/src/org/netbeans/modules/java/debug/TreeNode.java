@@ -58,7 +58,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ContinueTree;
-import com.sun.source.tree.DisjunctiveTypeTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -89,6 +88,7 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
@@ -397,12 +397,12 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
 
         @Override
-        public Void visitDisjunctiveType(DisjunctiveTypeTree tree, List<Node> d) {
+        public Void visitUnionType(UnionTypeTree tree, List<Node> d) {
             List<Node> below = new ArrayList<Node>();
 
             addCorrespondingType(below);
             addCorrespondingComments(below);
-            super.visitDisjunctiveType(tree, below);
+            super.visitUnionType(tree, below);
 
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;

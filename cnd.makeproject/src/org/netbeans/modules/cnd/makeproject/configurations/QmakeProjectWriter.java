@@ -44,12 +44,14 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -58,8 +60,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Writes qmake project (*.pro file) for given configuration.
@@ -147,11 +151,15 @@ public class QmakeProjectWriter {
      */
     public void write() throws IOException {
         if (configuration.isQmakeConfiguration()) {
-            File qmakeProject = new File(configuration.getBaseDir(),
-                    PROJECT_PREFIX + configuration.getName() + PROJECT_SUFFIX);
+            final FSPath baseFSPath = configuration.getBaseFSPath();            
+            FileObject confBaseFO = baseFSPath.getFileObject();
+            if (confBaseFO == null) {
+                throw new FileNotFoundException("FileObject not found: " + baseFSPath); //NOI18N
+            }
+            FileObject qmakeProjectFO = FileUtil.createData(confBaseFO, PROJECT_PREFIX + configuration.getName() + PROJECT_SUFFIX);
             BufferedWriter bw = null;
             try {
-                bw = new BufferedWriter(new FileWriter(qmakeProject));
+                bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(qmakeProjectFO)));
                 write(bw);
             } finally {
                 if (bw != null) {
