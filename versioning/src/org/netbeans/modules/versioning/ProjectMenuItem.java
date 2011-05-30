@@ -64,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -149,10 +150,15 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     }
     
     private JComponent [] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
-        VCSAnnotator an = owner.getVCSAnnotator();
-        if (an == null) return null;
         VCSContext ctx = VCSContext.forNodes(nodes);
-        Action [] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+        Action [] actions = null;
+        if(owner instanceof DelegatingVCS) {
+            actions = ((DelegatingVCS) owner).getInitActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+        } else {
+            VCSAnnotator an = owner.getVCSAnnotator();
+            if (an == null) return null; 
+            actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+        }
         JComponent [] items = new JComponent[actions.length];
         int i = 0;
         for (Action action : actions) {
@@ -179,7 +185,8 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         } else if (action instanceof Presenter.Menu) {
             item = ((Presenter.Menu) action).getMenuPresenter();
         } else {
-            item = new JMenuItem(action);
+            item = new JMenuItem();
+            Actions.connect(item, action, true);
         }
         Mnemonics.setLocalizedText(item, (String) action.getValue(Action.NAME));
         return item;
