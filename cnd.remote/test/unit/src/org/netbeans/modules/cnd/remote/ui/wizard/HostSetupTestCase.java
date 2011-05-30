@@ -90,7 +90,7 @@ public class HostSetupTestCase extends RemoteTestBase {
                 }
             }
             if (!found) {
-                assertTrue("Compiler set " + csReferenceName + " at " + mspec + " (" + execEnv + ")", false);
+                assertTrue("Compiler set " + csReferenceName + " at " + mspec + " (" + execEnv + ") not found", false);
             }
         }
         //Runnable runOnFinish = validator.getRunOnFinish();
