@@ -284,8 +284,13 @@ PropertyChangeListener {
             }
         }
         String language = (session != null) ? session.getCurrentLanguage() : null;
-        String methodName = t.getMethodName ();
-        if ("".equals (methodName)) methodName = "?";
+        String methodName;
+        if (t != null) {
+            methodName  = t.getMethodName ();
+            if ("".equals (methodName)) methodName = "?";
+        } else {
+            methodName = "?";
+        }
         // replace $ by \$
         methodName = dollarEscapePattern.matcher (methodName).replaceAll 
             ("\\\\\\$");
@@ -293,7 +298,7 @@ PropertyChangeListener {
             (methodName);
         
         // 4) replace {lineNumber} by the current line number
-        int lineNumber = t.getLineNumber (language);
+        int lineNumber = (t != null) ? t.getLineNumber (language) : -1;
         if (lineNumber < 0)
             printText = lineNumberPattern.matcher (printText).replaceAll 
                 ("?");
@@ -348,10 +353,12 @@ PropertyChangeListener {
                     theDebugger = debugger;
                 }
                 CallStackFrame csf = null;
-                try {
-                    CallStackFrame[] topFramePtr = t.getCallStack(0, 1);
-                    if (topFramePtr.length > 0) csf = topFramePtr[0];
-                } catch (AbsentInformationException aiex) {}
+                if (t != null) {
+                    try {
+                        CallStackFrame[] topFramePtr = t.getCallStack(0, 1);
+                        if (topFramePtr.length > 0) csf = topFramePtr[0];
+                    } catch (AbsentInformationException aiex) {}
+                }
                 try {
                 value = ((Variable) theDebugger.getClass().getMethod("evaluate", String.class, CallStackFrame.class).
                         invoke(theDebugger, expression, csf)).getValue();
