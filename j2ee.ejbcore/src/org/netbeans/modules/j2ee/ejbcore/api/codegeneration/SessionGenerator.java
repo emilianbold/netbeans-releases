@@ -44,12 +44,17 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
+import java.util.List;
+import org.netbeans.modules.j2ee.common.method.MethodModel.Annotation;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -63,8 +68,11 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
+import org.netbeans.modules.j2ee.ejbcore.action.BusinessMethodGenerator;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.TimerOptions;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,6 +111,7 @@ public final class SessionGenerator {
     private final boolean isSimplified;
 //    private final boolean hasBusinessInterface;
     private final boolean isXmlBased;
+    private final TimerOptions timerOptions;
     
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
@@ -119,13 +128,13 @@ public final class SessionGenerator {
 
     private final Map<String, String> templateParameters;
 
-    public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
-            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
-        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified, hasBusinessInterface, isXmlBased, false);
-    } 
+    public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal,
+            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, TimerOptions timerOptions) {
+        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified, hasBusinessInterface, isXmlBased, timerOptions, false);
+    }
     
     protected SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
-            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, boolean isTest) {
+            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, TimerOptions timerOptions, boolean isTest) {
         this.pkg = pkg;
         this.remotePkg = pkg;
         this.hasRemote = hasRemote;
@@ -149,6 +158,8 @@ public final class SessionGenerator {
         this.templateParameters.put("package", packageName);
         this.templateParameters.put("localInterface", packageNameWithDot + localName);
         this.templateParameters.put("remoteInterface", packageNameWithDot + remoteName);
+        // set timer options if available
+        this.timerOptions = timerOptions;
         if (isTest) {
             // set date, time and user to values used in goldenfiles
             this.templateParameters.put("date", "{date}");
@@ -260,6 +271,12 @@ public final class SessionGenerator {
         if (hasLocal) {
             GenerationUtils.createClass(EJB30_LOCAL, pkg, localName, null, templateParameters);
         }
+
+        // fill up the session bean with the timer method if needed
+        if (timerOptions != null) {
+            generateTimerMethodForBean(ejbClassFO, "myTimer", timerOptions);
+        }
+
         return ejbClassFO;
     }
 
@@ -317,6 +334,27 @@ public final class SessionGenerator {
     
     private void generateEJB30Xml() throws IOException {
         throw new UnsupportedOperationException("Method not implemented yet.");
+    }
+
+    private void generateTimerMethodForBean(FileObject bean, String methodName, TimerOptions timerOptions) {
+        try {
+            MethodModel.Annotation annotation = MethodModel.Annotation.create(
+                    "javax.ejb.Schedule", timerOptions.getTimerOptionsAsMap()); // NOI18N
+            MethodModel method = MethodModel.create(
+                    methodName,
+                    "void", // NOI18N
+                    "System.out.println(\"Timer event: \" + new java.util.Date());", // NOI18N
+                    Collections.<MethodModel.Variable>emptyList(),
+                    Collections.<String>emptyList(),
+                    Collections.<Modifier>emptySet(), 
+                    Collections.singletonList(annotation)
+                    );
+
+                BusinessMethodGenerator generator = BusinessMethodGenerator.create(packageNameWithDot + ejbClassName, bean);
+                generator.generate(method, hasLocal, hasRemote);
+        } catch (IOException ex) {
+            Logger.getLogger(SessionGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
       //TODO: RETOUCHE WS
