@@ -131,33 +131,19 @@ public final class ELTypeUtilities {
     
         
     private static synchronized  JavaSource getJavaSource(FileObject file) {
+        /*
+         * Note: The ClasspathInfo is not an immutable object. As the underlying
+         * class-path changes the CPI's equals and hashCode method return values
+         * changes accordingly. The usage of the CPI as a key in the classpathInfo2JavaSourceMap
+         * HashMap is not correct, but since such change happens occassionally
+         * the probability of having two entries for the same CPI (once with 
+         * the invalid hashcode and once with the correct) is not high. Since the
+         * Map implementation is a WeakHashMap such entries are likely to be GCed
+         * soon so there shouldn't be memory leask either.
+         */
         ClasspathInfo classpathInfo = file2classpathInfoMap.get(file);
         if(classpathInfo == null) {
             classpathInfo = ClasspathInfo.create(file);
-            final ClasspathInfo cpi = classpathInfo;
-            classpathInfo.addChangeListener(new ChangeListener() {
-
-                @Override
-                public void stateChanged(ChangeEvent ce) {
-                    //classpath invalidated
-                    cpi.removeChangeListener(this);
-                    
-                    classpathInfo2JavaSourceMap.remove(cpi);
-                    
-                    //remove all file2cpi entries which points to the invalidated classpathinfo
-                    Collection<FileObject> invalidatedKeys 
-                            = new ArrayList<FileObject>();
-                    for(Entry<FileObject, ClasspathInfo> entry : file2classpathInfoMap.entrySet()) {
-                        if(entry.getValue().equals(cpi)) {
-                            invalidatedKeys.add(entry.getKey());
-                        }
-                    }
-                    for(FileObject invalidated : invalidatedKeys) {
-                        file2classpathInfoMap.remove(invalidated);
-                    }
-                }
-            });
-            
             file2classpathInfoMap.put(file, classpathInfo);
         }
         
