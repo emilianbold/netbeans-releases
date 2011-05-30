@@ -1041,12 +1041,12 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public void lock(File[] arg0, String arg1, boolean arg2) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new SVNClientException(new UnsupportedOperationException("Not supported with commandline client."));
     }
 
     @Override
     public void unlock(File[] arg0, boolean arg1) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new SVNClientException(new UnsupportedOperationException("Not supported with commandline client."));
     }
 
     @Override
