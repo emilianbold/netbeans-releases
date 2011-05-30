@@ -58,7 +58,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
@@ -69,20 +68,30 @@ import org.openide.util.NbBundle;
  * @author Chris Webster
  * @author Martin Adamek
  */
-public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIterator{
+public final class SessionEJBWizard implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private SessionEJBWizardDescriptor ejbPanel;
     private WizardDescriptor wiz;
+    private TimerOptions timerOptions;
+    private String resourceWizardName;
 
-    public static SessionEJBWizard create () {
-        return new SessionEJBWizard ();
+    public SessionEJBWizard(String resourceWizardName, TimerOptions timerOptions) {
+        this.resourceWizardName = resourceWizardName;
+        this.timerOptions = timerOptions;
     }
 
-    public String name () {
-    return NbBundle.getMessage (SessionEJBWizard.class,
-                     "LBL_SessionEJBWizardTitle");
+    public static SessionEJBWizard createSession() {
+        return new SessionEJBWizard("LBL_SessionEJBWizardTitle", null); //NOI18N
+    }
+
+    public static SessionEJBWizard createTimerSession() {
+        return new SessionEJBWizard("LBL_TimerSessionEJBWizardTitle", new TimerOptions()); //NOI18N
+    }
+
+    public String name() {
+        return NbBundle.getMessage (SessionEJBWizard.class, resourceWizardName);
     }
 
     public void uninitialize(WizardDescriptor wiz) {
@@ -92,7 +101,7 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
-        ejbPanel = new SessionEJBWizardDescriptor(project);
+        ejbPanel = new SessionEJBWizardDescriptor(project, timerOptions);
         WizardDescriptor.Panel wizardDescriptorPanel = new MultiTargetChooserPanel(project, sourceGroups, ejbPanel, true);
 
         panels = new WizardDescriptor.Panel[] {wizardDescriptorPanel};
@@ -113,7 +122,8 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
                 ejbPanel.getSessionType(),
                 isSimplified, 
                 true, // TODO: UI - add checkbox for creation of business interface
-                !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
+                !isSimplified, // TODO: UI - add checkbox for option XML (not annotation) usage
+                ejbPanel.getTimerOptions()
                 );
         FileObject result = null;
         try {

@@ -144,13 +144,16 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
             addMethodToInterface(methodModelCopy, remote);
         }
         
-        // ejb class, add 'public' modifier, 'Override' annotation if required
-        List<MethodModel.Annotation> annotations;
-        if ((generateLocal && local != null) || (generateRemote && remote != null)) {
-            annotations = Collections.singletonList(MethodModel.Annotation.create("java.lang.Override")); //NOI18N
-        } else {
-            annotations = Collections.<MethodModel.Annotation>emptyList();
+        // ejb class
+        // add all specified annothations and join Override if has local, remote interfaces
+        List<MethodModel.Annotation> annotations = new ArrayList<MethodModel.Annotation>();
+        if (!methodModel.getAnnotations().isEmpty()) {
+            annotations.addAll(methodModel.getAnnotations());
         }
+        if ((generateLocal && local != null) || (generateRemote && remote != null)) {
+            annotations.add(MethodModel.Annotation.create("java.lang.Override")); //NOI18N
+        }
+        // add 'public' modifier
         MethodModel methodModelCopy = MethodModel.create(
                 methodModel.getName(),
                 methodModel.getReturnType(),
