@@ -238,16 +238,13 @@ public class VersionsCache {
             File svnDir = getMetadataDir(referenceFile.getParentFile());
             if (svnDir == null) {
                 // try to check 1.7 metadata
-                SubversionVCS vcs = Lookup.getDefault().lookup(SubversionVCS.class);
-                if (vcs != null) {
-                    File topmost = vcs.getTopmostManagedAncestor(referenceFile);
+                File topmost = Subversion.getInstance().getTopmostManagedAncestor(referenceFile);
                     File newMetadataFolder;
                     if (topmost != null && (newMetadataFolder = new File(topmost, SvnUtils.SVN_ADMIN_DIR)).exists()) {
                         svnDir = newMetadataFolder;
                         newMetadataFormat = new File(svnDir, "pristine").exists(); //NOI18N
                     }
                 }
-            }
             if (svnDir == null) {
                 return null;
             }

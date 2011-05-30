@@ -191,6 +191,16 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             File f = layer(e).file("Actions/" + aid.category() + "/" + id + ".instance");
             f.bundlevalue("displayName", ar.displayName());
             
+            String menuText = ar.menuText();
+            if(!menuText.isEmpty()) {
+                f.bundlevalue("menuText", menuText);
+            }
+
+            String popupText = ar.popupText();
+            if (!popupText.isEmpty()) {
+                f.bundlevalue("popupText", popupText);
+            }
+            
             String key;
             boolean createDelegate = true;
             if (e.getKind() == ElementKind.FIELD) {
