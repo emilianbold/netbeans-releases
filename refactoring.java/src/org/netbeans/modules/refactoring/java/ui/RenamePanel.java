@@ -109,7 +109,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             return;
         }
 
-        if (RetoucheUtils.getElementKind(handle) == ElementKind.FIELD) {
+        if (handle!=null && RetoucheUtils.getElementKind(handle) == ElementKind.FIELD) {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
