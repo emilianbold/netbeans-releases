@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ComboStringConfig
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -511,6 +512,25 @@ public final class RunProfile implements ConfigurationAuxObject {
     public String getRunDirectory() {
         String runDirectory;
         String runDir2 = getRunDir();
+        
+        // #198813 - Can not run or debug a project if the project folder is not in the source root
+        // If this is a makefile based project, and project metadata resides in a separate dir and the field is empty -
+        // just return build  directory.
+        // TODO: common solution for
+        // #198843 - Wrong run directory when creating a project from existing sources
+        if (runDir2.length() == 0 && makeConfiguration != null) {
+            FileObject baseFO = makeConfiguration.getBaseFSPath().getFileObject();
+            if (baseFO != null) {
+                FileObject[] children = baseFO.getChildren();
+                if (children != null && children.length == 1 && children[0].getNameExt().equals("nbproject")) {
+                    MakefileConfiguration mc = makeConfiguration.getMakefileConfiguration();
+                    if (mc != null) {
+                        return mc.getAbsBuildCommandWorkingDir();
+                    }
+                }
+            }
+        }
+        
         if (runDir2.length() == 0) {
             runDir2 = "."; // NOI18N
         }
