@@ -44,23 +44,61 @@
 
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EmptyStatementTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ErroneousTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.SynchronizedTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -140,12 +178,30 @@ public class Flow {
         
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, Flow.State>();
         private Map<Tree, State> use2Values = new IdentityHashMap<Tree, State>();
+        private Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private boolean inParameters;
+        private Tree nearestMethod;
+        private Set<VariableElement> currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
         private final Set<Tree> deadBranches = new HashSet<Tree>();
 
         public VisitorImpl(CompilationInfo info, AtomicBoolean cancel) {
             super(cancel);
             this.info = info;
+        }
+
+        @Override
+        public Boolean scan(Tree tree, Void p) {
+            Boolean result = super.scan(tree, p);
+
+            Collection<Map<VariableElement, State>> toResume = resumeAfter.remove(tree);
+
+            if (toResume != null) {
+                for (Map<VariableElement, State> s : toResume) {
+                    variable2State = mergeOr(variable2State, s);
+                }
+            }
+
+            return result;
         }
 
         @Override
@@ -186,7 +242,7 @@ public class Flow {
                 case IDENTIFIER:
                     break;
                 default:
-                    throw new IllegalStateException(node.getVariable().getKind().name());
+                    //#198975: ignore
             }
 
             scan(node.getExpression(), p);
@@ -209,6 +265,7 @@ public class Flow {
             
             if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
                 variable2State.put((VariableElement) e, State.create(node.getInitializer() != null ? new TreePath(getCurrentPath(), node.getInitializer()) : inParameters ? getCurrentPath() : null));
+                currentMethodVariables.add((VariableElement) e);
             }
             
             return null;
@@ -393,21 +450,32 @@ public class Flow {
 
         @Override
         public Boolean visitMethod(MethodTree node, Void p) {
-            scan(node.getModifiers(), p);
-            scan(node.getReturnType(), p);
-            scan(node.getTypeParameters(), p);
+            Tree oldNearestMethod = nearestMethod;
+            Set<VariableElement> oldCurrentMethodVariables = currentMethodVariables;
 
-            inParameters = true;
-
+            nearestMethod = node;
+            currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
+            
             try {
-                scan(node.getParameters(), p);
-            } finally {
-                inParameters = false;
-            }
+                scan(node.getModifiers(), p);
+                scan(node.getReturnType(), p);
+                scan(node.getTypeParameters(), p);
 
-            scan(node.getThrows(), p);
-            scan(node.getBody(), p);
-            scan(node.getDefaultValue(), p);
+                inParameters = true;
+
+                try {
+                    scan(node.getParameters(), p);
+                } finally {
+                    inParameters = false;
+                }
+
+                scan(node.getThrows(), p);
+                scan(node.getBody(), p);
+                scan(node.getDefaultValue(), p);
+            } finally {
+                nearestMethod = oldNearestMethod;
+                currentMethodVariables = oldCurrentMethodVariables;
+            }
             
             return null;
         }
@@ -492,16 +560,273 @@ public class Flow {
 
             beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
 
-            scan(node.getInitializer(), null);
             scan(node.getCondition(), null);
             scan(node.getStatement(), null);
             scan(node.getUpdate(), null);
 
-            variable2State = beforeLoop;
+            variable2State = mergeOr(beforeLoop, variable2State);
 
             return null;
         }
-        
+
+        public Boolean visitTry(TryTree node, Void p) {
+            scan(node.getResources(), null);
+
+            Map<VariableElement, State> oldVariable2State = variable2State;
+
+            variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
+
+            scan(node.getBlock(), null);
+
+            HashMap<VariableElement, State> afterBlockVariable2State = new HashMap<VariableElement, Flow.State>(variable2State);
+
+            for (CatchTree ct : node.getCatches()) {
+                Map<VariableElement, State> variable2StateBeforeCatch = variable2State;
+
+                variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
+
+                scan(ct, null);
+
+                variable2State = mergeOr(variable2StateBeforeCatch, variable2State);
+            }
+
+            if (node.getFinallyBlock() != null) {
+                variable2State = mergeOr(mergeOr(oldVariable2State, variable2State), afterBlockVariable2State);
+
+                scan(node.getFinallyBlock(), null);
+            }
+            
+            return null;
+        }
+
+        public Boolean visitReturn(ReturnTree node, Void p) {
+            super.visitReturn(node, p);
+            variable2State = new HashMap<VariableElement, State>(variable2State);
+            //performance: limit ammount of held variables and their mapping:
+            for (VariableElement ve : currentMethodVariables) {
+                variable2State.remove(ve);
+            }
+            resumeAfter(nearestMethod, variable2State);
+            variable2State = new HashMap<VariableElement, State>();
+            return null;
+        }
+
+        public Boolean visitBreak(BreakTree node, Void p) {
+            super.visitBreak(node, p);
+
+            StatementTree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            
+            resumeAfter(target, variable2State);
+
+            variable2State = new HashMap<VariableElement, State>();
+            
+            return null;
+        }
+
+        public Boolean visitSwitch(SwitchTree node, Void p) {
+            scan(node.getExpression(), null);
+
+            Map<VariableElement, State> origVariable2State = new HashMap<VariableElement, State>(variable2State);
+
+            variable2State = new HashMap<VariableElement, State>();
+
+            boolean exhaustive = false;
+
+            for (CaseTree ct : node.getCases()) {
+                variable2State = mergeOr(variable2State, origVariable2State);
+
+                if (ct.getExpression() == null) {
+                    exhaustive = true;
+                }
+
+                scan(ct, null);
+            }
+
+            if (!exhaustive) {
+                variable2State = mergeOr(variable2State, origVariable2State);
+            }
+            
+            return null;
+        }
+
+        public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+            scan(node.getExpression(), null);
+
+            Map<VariableElement, State> beforeLoop = variable2State;
+
+            variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
+
+            scan(node.getStatement(), null);
+
+            beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
+
+            scan(node.getStatement(), null);
+
+            variable2State = mergeOr(beforeLoop, variable2State);
+
+            return null;
+        }
+
+        private void resumeAfter(Tree target, Map<VariableElement, State> state) {
+            Collection<Map<VariableElement, State>> r = resumeAfter.get(target);
+
+            if (r == null) {
+                resumeAfter.put(target, r = new ArrayList<Map<VariableElement, State>>());
+            }
+
+            r.add(new HashMap<VariableElement, State>(state));
+        }
+
+        public Boolean visitWildcard(WildcardTree node, Void p) {
+            super.visitWildcard(node, p);
+            return null;
+        }
+
+        public Boolean visitUnionType(UnionTypeTree node, Void p) {
+            super.visitUnionType(node, p);
+            return null;
+        }
+
+        public Boolean visitTypeParameter(TypeParameterTree node, Void p) {
+            super.visitTypeParameter(node, p);
+            return null;
+        }
+
+        public Boolean visitTypeCast(TypeCastTree node, Void p) {
+            super.visitTypeCast(node, p);
+            return null;
+        }
+
+        public Boolean visitThrow(ThrowTree node, Void p) {
+            super.visitThrow(node, p);
+            return null;
+        }
+
+        public Boolean visitSynchronized(SynchronizedTree node, Void p) {
+            super.visitSynchronized(node, p);
+            return null;
+        }
+
+        public Boolean visitPrimitiveType(PrimitiveTypeTree node, Void p) {
+            super.visitPrimitiveType(node, p);
+            return null;
+        }
+
+        public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
+            super.visitParenthesized(node, p);
+            return null;
+        }
+
+        public Boolean visitParameterizedType(ParameterizedTypeTree node, Void p) {
+            super.visitParameterizedType(node, p);
+            return null;
+        }
+
+        public Boolean visitOther(Tree node, Void p) {
+            super.visitOther(node, p);
+            return null;
+        }
+
+        public Boolean visitNewClass(NewClassTree node, Void p) {
+            super.visitNewClass(node, p);
+            return null;
+        }
+
+        public Boolean visitNewArray(NewArrayTree node, Void p) {
+            super.visitNewArray(node, p);
+            return null;
+        }
+
+        public Boolean visitModifiers(ModifiersTree node, Void p) {
+            super.visitModifiers(node, p);
+            return null;
+        }
+
+        public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+            super.visitMethodInvocation(node, p);
+            return null;
+        }
+
+        public Boolean visitLabeledStatement(LabeledStatementTree node, Void p) {
+            super.visitLabeledStatement(node, p);
+            return null;
+        }
+
+        public Boolean visitInstanceOf(InstanceOfTree node, Void p) {
+            super.visitInstanceOf(node, p);
+            return null;
+        }
+
+        public Boolean visitImport(ImportTree node, Void p) {
+            super.visitImport(node, p);
+            return null;
+        }
+
+        public Boolean visitExpressionStatement(ExpressionStatementTree node, Void p) {
+            super.visitExpressionStatement(node, p);
+            return null;
+        }
+
+        public Boolean visitErroneous(ErroneousTree node, Void p) {
+            super.visitErroneous(node, p);
+            return null;
+        }
+
+        public Boolean visitEmptyStatement(EmptyStatementTree node, Void p) {
+            super.visitEmptyStatement(node, p);
+            return null;
+        }
+
+        public Boolean visitContinue(ContinueTree node, Void p) {
+            super.visitContinue(node, p);
+            return null;
+        }
+
+        public Boolean visitCompilationUnit(CompilationUnitTree node, Void p) {
+            super.visitCompilationUnit(node, p);
+            return null;
+        }
+
+        public Boolean visitClass(ClassTree node, Void p) {
+            super.visitClass(node, p);
+            return null;
+        }
+
+        public Boolean visitCatch(CatchTree node, Void p) {
+            super.visitCatch(node, p);
+            return null;
+        }
+
+        public Boolean visitCase(CaseTree node, Void p) {
+            super.visitCase(node, p);
+            return null;
+        }
+
+        public Boolean visitBlock(BlockTree node, Void p) {
+            super.visitBlock(node, p);
+            return null;
+        }
+
+        public Boolean visitAssert(AssertTree node, Void p) {
+            super.visitAssert(node, p);
+            return null;
+        }
+
+        public Boolean visitArrayType(ArrayTypeTree node, Void p) {
+            super.visitArrayType(node, p);
+            return null;
+        }
+
+        public Boolean visitArrayAccess(ArrayAccessTree node, Void p) {
+            super.visitArrayAccess(node, p);
+            return null;
+        }
+
+        public Boolean visitAnnotation(AnnotationTree node, Void p) {
+            super.visitAnnotation(node, p);
+            return null;
+        }
+
         private Map<VariableElement, State> mergeOr(Map<VariableElement, State> into, Map<VariableElement, State> what) {
             for (Entry<VariableElement, State> e : what.entrySet()) {
                 State stt = into.get(e.getKey());
@@ -537,5 +862,5 @@ public class Flow {
             return new State(assignments);
         }
     }
-    
+
 }

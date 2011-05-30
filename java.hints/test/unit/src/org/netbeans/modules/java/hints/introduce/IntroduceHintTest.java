@@ -1453,20 +1453,20 @@ public class IntroduceHintTest extends NbTestCase {
                        "    public void loop(int a) {\n" +
                        "        String s= \"\";\n" +
                        "        while(--a>0) {\n" +
-                       "            s = foo(a, s);\n" +
+                       "            foo(a, s);\n" +
                        "            return;\n" +
                        "        }\n" +
                        "        System.err.println(s);\n" +
                        "    }\n" +
-                       "    private String foo(int a, String s) {\n" +
+                       "    private void foo(int a, String s) {\n" +
                        "        //6\n" +
                        "        if (a%3 != 0) {\n" +
                        "            s = s+\"--, \";\n" +
-                       "            return s;\n" +
+                       "            return;\n" +
                        "        }\n" +
                        "        //7\n" +
                        "        s = s+a+\", \";\n" +
-                       "        return s;\n" +
+                       "        return;\n" +
                        "        //8\n" +
                        "    }\n" +
                        "}").replaceAll("[ \t\n]+", " "),

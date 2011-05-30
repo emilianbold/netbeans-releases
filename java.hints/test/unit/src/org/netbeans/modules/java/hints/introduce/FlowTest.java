@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import static org.junit.Assert.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -198,6 +203,217 @@ public class FlowTest extends NbTestCase {
                     "1");
     }
 
+    public void testIncorrectDeadBranch() throws Exception {
+        performDeadBranchTest("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void i() {\n" +
+                              "        if (!i.getAndSet(true)) {\n" +
+                              "            System.err.println(\"\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "    private final java.util.concurrent.atomic.AtomicBoolean i = new java.util.concurrent.atomic.AtomicBoolean();\n" +
+                              "}\n");
+    }
+
+    public void testTryCatch() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii;\n" +
+                    "        try {\n" +
+                    "            ii = 1;\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            ii = 2;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1",
+                    "2");
+    }
+
+    public void testTryCatchFinally() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii;\n" +
+                    "        try {\n" +
+                    "            ii = 1;\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            ii = 2;\n" +
+                    "        } finally {\n" +
+                    "            ii = 3;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "3");
+    }
+
+    public void testTryFinally() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii;\n" +
+                    "        try {\n" +
+                    "            ii = 1;\n" +
+                    "        } finally {\n" +
+                    "            ii = 3;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "3");
+    }
+
+    public void testTryFinally2() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii = 0;\n" +
+                    "        try {\n" +
+                    "            ii = 1;\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            ii = 2;\n" +
+                    "        } finally {\n" +
+                    "            System.err.println(i`i);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1",
+                    "2");
+    }
+
+    public void testSwitch1() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(int p, int r) {\n" +
+                    "        int ii;\n" +
+                    "        switch (p) {\n" +
+                    "            case 0: ii = 1; break;\n" +
+                    "            case 1: if (r > 5) {\n" +
+                    "                         ii = 5;\n" +
+                    "                         break;\n" +
+                    "                    }\n" +
+                    "                    ii = 2;\n" +
+                    "            case 2: ii = 3; break;\n" +
+                    "            default: ii = 4; break;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1",
+                    "5",
+                    "3",
+                    "4");
+    }
+
+    public void testSwitch2() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(int p) {\n" +
+                    "        int ii;\n" +
+                    "        switch (p) {\n" +
+                    "            case 0: ii = 1; break;\n" +
+                    "            case 1: ii = 2;\n" +
+                    "            case 2: ii = 3; return;\n" +
+                    "            default: ii = 4; break;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1",
+                    "4");
+    }
+
+    public void testSwitch3() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(int p) {\n" +
+                    "        int ii = 0;\n" +
+                    "        switch (p) {\n" +
+                    "            case 0: ii = 1; break;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "1");
+    }
+
+    public void testSwitch4() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(String str) {\n" +
+                    "        final int mm = 1;\n" +
+                    "        int b = 0;\n" +
+                    "        switch (str.length()) {\n" +
+                    "            case 0: break;\n" +
+                    "            case 1: b |= m`m; break;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "1");
+    }
+
+    public void testForUpdate() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        for (int ii = 0; ii < 100; ii = ii + 1) {\n" +
+                    "            System.err.println(i`i);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "ii + 1");
+    }
+
+    public void testForEach() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(String... args) {\n" +
+                    "        boolean ff = true;\n" +
+                    "        for (String a : args) {\n" +
+                    "            if (!f`f) System.err.println(1);\n" +
+                    "            ff = false;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "true",
+                    "false");
+    }
+
+    public void testAnonymous() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        final String model = \"\";\n" +
+                    "        java.util.Collections.sort(java.util.Collections.emptyList(), new java.util.Comparator<Object>() {\n" +
+                    "            public int compare(Object o1, Object o2) {\n" +
+                    "                return 0;\n" +
+                    "            }\n" +
+                    "        });\n" +
+                    "        System.err.println(mod`el);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "\"\"");
+    }
+
+    public void test198975() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        int ii = 1;\n" +
+                    "        ii + +=;\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "1");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 
@@ -264,6 +480,32 @@ public class FlowTest extends NbTestCase {
         }
 
         assertEquals(new HashSet<String>(Arrays.asList(assignments)), actual);
+    }
+
+    private void performDeadBranchTest(String code) throws Exception {
+        List<String> splitted = new LinkedList<String>(Arrays.asList(code.split(Pattern.quote("|"))));
+        List<Integer> goldenSpans = new ArrayList<Integer>(splitted.size() - 1);
+        StringBuilder realCode = new StringBuilder();
+
+        realCode.append(splitted.remove(0));
+
+        for (String s : splitted) {
+            goldenSpans.add(realCode.length());
+            realCode.append(s);
+        }
+
+        prepareTest(realCode.toString(), false);
+
+        FlowResult flow = Flow.assignmentsForUse(info, new AtomicBoolean());
+
+        List<Integer> actual = new ArrayList<Integer>(2 * flow.getDeadBranches().size());
+
+        for (Tree dead : flow.getDeadBranches()) {
+            actual.add((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), dead));
+            actual.add((int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), dead));
+        }
+
+        assertEquals(goldenSpans, actual);
     }
 
 }

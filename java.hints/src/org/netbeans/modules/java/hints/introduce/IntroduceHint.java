@@ -1934,7 +1934,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         assert handle != null;
 
-                        if (exitsFromAllBranches && handle.getLeaf().getKind() == Kind.RETURN && returnAssignTo == null) {
+                        if (exitsFromAllBranches && handle.getLeaf().getKind() == Kind.RETURN && returnAssignTo == null && returnType.getKind() != TypeKind.VOID) {
                             nueStatements.add(make.Return(invocation));
                         } else {
                             if (ret == null) {
