@@ -44,30 +44,41 @@
 
 package org.openide.text;
 
+import java.awt.Container;
 import java.awt.EventQueue;
-import java.io.PrintStream;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import javax.swing.JEditorPane;
+import org.netbeans.api.actions.Openable;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.junit.*;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
+import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport.Pane;
+import org.openide.util.Lookup;
 
-/** DefaultDataObject is supposed to have open operation that shows the text
- * editor or invokes a dialog with questions.
+/** Check behavior of 
+ * {@link DataEditorSupport#create(org.openide.loaders.DataObject, org.openide.loaders.MultiDataObject.Entry, org.openide.nodes.CookieSet, java.util.concurrent.Callable)}
+ * factory method.
  *
  * @author  Jaroslav Tulach
  */
-public final class SimpleDESTest extends NbTestCase {
+public final class SimpleFactoryTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
-    
     private FileSystem lfs;
     private DataObject obj;
     
-    /** Creates a new instance of DefaultSettingsContextTest */
-    public SimpleDESTest(String name) {
+    public SimpleFactoryTest(String name) {
         super(name);
     }
 
@@ -75,12 +86,17 @@ public final class SimpleDESTest extends NbTestCase {
     protected Level logLevel() {
         return Level.FINE;
     }
+
+    @Override
+    protected boolean runInEQ() {
+        return false;
+    }
     
     @Override
     protected void setUp() throws java.lang.Exception {
         clearWorkDir ();
         
-        System.setProperty("org.openide.util.Lookup", "org.openide.text.SimpleDESTest$Lkp");
+        System.setProperty("org.openide.util.Lookup", "org.openide.text.SimpleFactoryTest$Lkp");
         super.setUp();
         
         LocalFileSystem l = new LocalFileSystem ();
@@ -94,85 +110,58 @@ public final class SimpleDESTest extends NbTestCase {
         assertEquals ("The right class", obj.getClass (), SO.class);
     }
 
-    @RandomlyFails // NB-Core-Build #1210
-    public void testHasEditorCookieForResonableContentOfFiles () throws Exception {
-        doCookieCheck (true);
-    }
-    
-    private void doCookieCheck (boolean hasEditCookie) throws Exception {
-        EditorCookie c = tryToOpen (
-            "Ahoj Jardo," +
-            "how are you" +
-            "\t\n\rBye"
-        );
-        assertNotNull (c);
+    public void testOurNodeSubclassCreated() throws Exception {
+        final EditorCookie ec = obj.getLookup().lookup(EditorCookie.class);
+        assertNotNull("Editor", ec);
+        Openable open = obj.getLookup().lookup(Openable.class);
+        assertNotNull("Open", open);
+        open.open();
         
-        assertEquals (
-            "Next questions results in the same cookie", 
-            c, 
-            obj.getCookie(EditorCookie.class)
-        );
-        assertEquals (
-            "Print cookie is provided",
-            c,
-            obj.getCookie(org.openide.cookies.PrintCookie.class)
-        );
-        assertEquals (
-            "CloseCookie as well",
-            c,
-            obj.getCookie(org.openide.cookies.CloseCookie.class)
-        );
-        
-        if (hasEditCookie) {
-            assertEquals (
-                "EditCookie as well",
-                c,
-                obj.getCookie(org.openide.cookies.EditCookie.class)
-            );
-        } else {
-            assertNull (
-                "No EditCookie",
-                obj.getCookie(org.openide.cookies.EditCookie.class)
-            );
+        class GEP implements Runnable {
+            JEditorPane[] arr;
             
-        }
-        
-        OpenCookie open = obj.getCookie(OpenCookie.class);
-        open.open ();
-        waitAWT();
-        
-        javax.swing.text.Document d = c.getDocument();
-        assertNotNull (d);
-        
-        d.insertString(0, "Kuk", null);
-        
-        assertNotNull (
-            "Now there is a save cookie", 
-            obj.getCookie (org.openide.cookies.SaveCookie.class)
-        );
-    }
-    
-    private void waitAWT() throws Exception {
-        EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
+                arr = ec.getOpenedPanes();
             }
-        });
-    }
-    
-    public void testItIsPossibleToMaskEditCookie () throws Exception {
-        doCookieCheck (false);
-    }
-    
-    private EditorCookie tryToOpen (String content) throws Exception {
-        FileObject fo = obj.getPrimaryFile();
-        FileLock lock = fo.lock();
-        PrintStream os = new PrintStream (fo.getOutputStream(lock));
-        os.print (content);
-        os.close ();
-        lock.releaseLock();
+        }
+        GEP gep = new GEP();
+        EventQueue.invokeAndWait(gep);
         
-        return obj.getCookie(EditorCookie.class);
+        assertEquals("One", 1, gep.arr.length);
+        
+        MyCE mice = null;
+        Container c = gep.arr[0];
+        for (;;) {
+            if (c instanceof MyCE) {
+                // OK
+                mice = (MyCE)c;
+                break;
+            }
+            if (c instanceof CloneableEditor) {
+                fail("Wrong CloneableEditor: " + c);
+            }
+            if (c == null) {
+                fail("No good parent!");
+            }
+            c = c.getParent();
+        }
+        
+        assertNotNull("MyCE found", mice);
+        assertNull("No integers", mice.getLookup().lookup(Integer.class));
+        ((SO)obj).addInteger();
+        assertEquals("One integer in object", Integer.valueOf(10), obj.getLookup().lookup(Integer.class));
+        assertEquals("One integer", Integer.valueOf(10), mice.getLookup().lookup(Integer.class));
+        
+        Savable sav = obj.getLookup().lookup(Savable.class);
+        assertNull("No savable yet", sav);
+        
+        ec.getDocument().insertString(0, "Ahoj!", null);
+        
+        sav = obj.getLookup().lookup(Savable.class);
+        assertNotNull("Now modified", sav);
+        
+        assertEquals(obj.getPrimaryFile().getNameExt(), sav.toString());
     }
     
     //
@@ -194,42 +183,54 @@ public final class SimpleDESTest extends NbTestCase {
             super (SO.class.getName ());
             getExtensions().addExtension("test");
         }
-        protected org.openide.loaders.MultiDataObject createMultiObject(FileObject primaryFile) throws org.openide.loaders.DataObjectExistsException, java.io.IOException {
+        @Override
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
             return new SO (primaryFile);
         }
     } // end of SL
     
-    private static final class SO extends org.openide.loaders.MultiDataObject implements org.openide.nodes.CookieSet.Factory {
-        private org.openide.nodes.Node.Cookie cookie = (org.openide.nodes.Node.Cookie)DataEditorSupport.create(this, getPrimaryEntry(), getCookieSet ());
+    private static final class SO extends org.openide.loaders.MultiDataObject 
+    implements Callable<CloneableEditorSupport.Pane> {
+        private CloneableEditorSupport support = DataEditorSupport.create(this, getPrimaryEntry(), getCookieSet (), this);
         
         
         public SO (FileObject fo) throws org.openide.loaders.DataObjectExistsException {
             super (fo, SL.getLoader(SL.class));
-            
-            if (fo.getNameExt().indexOf ("MaskEdit") == -1) {
-                getCookieSet ().add (cookie);
-            } else {
-                getCookieSet ().add (new Class[] { 
-                    OpenCookie.class, 
-                    org.openide.cookies.CloseCookie.class, EditorCookie.class, 
-                    org.openide.cookies.PrintCookie.class
-                }, this); 
-            }
+            getCookieSet ().add((Node.Cookie)support);
         }
         
+        @Override
+        public Lookup getLookup() {
+            return getCookieSet().getLookup();
+        }
         
-        public org.openide.nodes.Node.Cookie createCookie (Class c) {
-            return cookie;
+        @Override
+        public Pane call() throws Exception {
+            return new MyCE(support);
+        }
+        
+        public void addInteger() {
+            getCookieSet().assign(Integer.class, 10);            
         }
     } // end of SO
+    
+    private static final class MyCE extends CloneableEditor {
+        private MyCE(CloneableEditorSupport support) {
+            super(support);
+            this.associateLookup(support.getLookup());
+        }
+    }
 
     private static final class DLP extends org.openide.loaders.DataLoaderPool {
-        protected java.util.Enumeration loaders() {
+
+        @Override
+        protected Enumeration<? extends DataLoader> loaders() {
             return java.util.Collections.enumeration(
                 java.util.Collections.singleton(
                     SL.getLoader (SL.class)
                 )
             );
         }
+        
     } // end of DataLoaderPool
 }
