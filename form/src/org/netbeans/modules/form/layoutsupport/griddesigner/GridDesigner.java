@@ -227,7 +227,7 @@ public class GridDesigner extends JPanel {
      */
     private JComponent initLeftColumn() {
         sheet = new PropertySheet();
-        sheet.setPreferredSize(new Dimension(310, 500));
+        sheet.setPreferredSize(new Dimension(310, 300));
         JPanel leftPanel;
         if (customizer == null) {
             leftPanel = sheet;
