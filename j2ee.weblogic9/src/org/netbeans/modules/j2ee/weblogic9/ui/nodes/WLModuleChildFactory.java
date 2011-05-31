@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -96,6 +99,18 @@ public class WLModuleChildFactory
             }
 
             if (modules != null) {
+                Arrays.sort(modules, new Comparator<TargetModuleID>() {
+
+                    @Override
+                    public int compare(TargetModuleID o1, TargetModuleID o2) {
+                        if (o1.getModuleID() == null) {
+                            return o2.getModuleID() == null ? 0 : -1;
+                        } else if (o2.getModuleID() == null){
+                            return 1;
+                        }
+                        return o1.getModuleID().compareTo(o2.getModuleID());
+                    }
+                });
                 for (TargetModuleID module : modules) {
                     toPopulate.add(new WLModuleNode(module, lookup, moduleType,
                             stoppedByName.contains(module.getModuleID())));

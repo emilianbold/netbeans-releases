@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <project name="libs.javacimpl" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="-check-nb-javac-exists">
-        <available property="nb-javac.exists" file="../nb-javac/make"/>
+        <available property="nb-javac.exists" file="../nb-javac/make/netbeans/nb-javac/build.xml"/>
     </target>
     <target name="-release.files-build-javac" if="nb-javac.exists">
         <ant dir="../nb-javac/make/netbeans/nb-javac" target="jar" inheritAll="false"/>

@@ -58,10 +58,13 @@ public final class ReparseProjectAction extends ProjectActionBase {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(getClass(), "CTL_ReparseProject"); //NOI18N
+        final Collection<CsmProject> projects = getCsmProjects(getActivatedNodes());
+        if (projects != null && projects.size() > 1) {
+            return NbBundle.getMessage(ReparseProjectAction.class, "CTL_ReparseProjects", projects.size()); //NOI18N
+        }
+        return NbBundle.getMessage(ReparseProjectAction.class, "CTL_ReparseProject"); //NOI18N
     }
 
-    
     @Override
     protected void performAction(Collection<CsmProject> csmProjects) {
         CsmModelAccessor.getModel().scheduleReparse(csmProjects);

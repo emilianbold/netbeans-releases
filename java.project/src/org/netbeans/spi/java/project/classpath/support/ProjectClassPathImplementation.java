@@ -147,11 +147,11 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                         try {
                             result.add(ClassPathSupport.createResource(entry));
                         } catch (IllegalArgumentException iae) {
-                            //Logging for issue #181155
+                            //Logging for issue #181155, #186213
                             String foStatus;
                             try {
                                 final FileObject fo = URLMapper.findFileObject(f.toURI().toURL());
-                                foStatus = fo == null ? "not exist" : fo.isValid() ? "valid" : "invalid";   //NOI18N
+                                foStatus = fo == null ? "not exist" : fo.isValid() ? fo.isFolder() ? "valid folder" : "valid file" : "invalid";   //NOI18N
                             } catch (MalformedURLException ex) {
                                 foStatus = "malformed"; //NOI18N
                             }

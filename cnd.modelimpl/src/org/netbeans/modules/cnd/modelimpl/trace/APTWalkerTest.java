@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
@@ -89,10 +90,10 @@ public class APTWalkerTest extends APTAbstractWalker {
     @Override
     protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
         resolvingTime += System.currentTimeMillis() - lastTime;
-        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
-            APTFile apt;
+        if (resolvedPath != null && 
+            getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex()) == IncludeState.Success) {
             try {
-                apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
+                APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
                 APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
                 walker.visit();
                 resolvingTime += walker.resolvingTime;

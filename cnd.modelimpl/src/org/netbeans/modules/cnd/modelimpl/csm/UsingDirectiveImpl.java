@@ -48,16 +48,19 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmUsingDirective
@@ -66,7 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
 
     private final CharSequence name;
-    private final CharSequence[] rawName;
+    private final CharSequence rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
@@ -103,6 +106,13 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
             if (CsmKindUtilities.isNamespace(result)) {
                 referencedNamespace = (CsmNamespace)result;
                 _setReferencedNamespace(referencedNamespace);
+                if (referencedNamespace != null) {
+                    if (UIDProviderIml.isPersistable(UIDs.get(this))) {
+                        if (UIDProviderIml.isPersistable(UIDs.get(referencedNamespace))) {
+                            RepositoryUtils.put(this);
+                        }
+                    }
+                }
             }
         }
         return referencedNamespace;
@@ -135,7 +145,7 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
     
     @Override
     public CharSequence[] getRawName() {
-        return rawName;
+        return AstUtil.toRawName(rawName);
     }
     
     @Override
@@ -148,21 +158,21 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
     // iml of SelfPersistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        PersistentUtils.writeStrings(this.rawName, output);
+        PersistentUtils.writeUTF(this.rawName, output);
         
         // save cached namespace
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedNamespaceUID, output);
     }
     
-    public UsingDirectiveImpl(DataInput input) throws IOException {
+    public UsingDirectiveImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         assert this.name != null;
-        this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
+        this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
         
         // read cached namespace
         this.referencedNamespaceUID = UIDObjectFactory.getDefaultFactory().readUID(input);        

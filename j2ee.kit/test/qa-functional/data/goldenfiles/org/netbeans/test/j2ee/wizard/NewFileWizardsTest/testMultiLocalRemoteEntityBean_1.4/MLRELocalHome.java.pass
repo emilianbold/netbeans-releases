@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package multi.ejbs.entity;
 
 import javax.ejb.CreateException;
@@ -11,12 +10,11 @@ import javax.ejb.FinderException;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 public interface MLRELocalHome extends EJBLocalHome {
-
-    multi.ejbs.entity.MLRELocal findByPrimaryKey(java.lang.Long key)  throws FinderException;
     
-    multi.ejbs.entity.MLRELocal create(java.lang.Long key)  throws CreateException;
-
+    multi.ejbs.entity.MLRELocal findByPrimaryKey(java.lang.Long key) throws FinderException;
+    
+    multi.ejbs.entity.MLRELocal create(java.lang.Long key) throws CreateException;
 }

@@ -43,11 +43,14 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.util.Parameters;
@@ -57,6 +60,8 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public class Utilities {
+
+    private static final ThreadLocal<Parser.CancelReason> cancelReason = new ThreadLocal<Parser.CancelReason>();
     
     private Utilities () {}
 
@@ -108,16 +113,20 @@ public class Utilities {
         status = st;
     }
 
+    public static Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
+        if (status == null) {
+            return RepositoryUpdater.getDefault().getIndexingState();
+        } else {
+            return status.getIndexingState();
+        }
+    }
+
     /**
      * Asks the {@link IndexingStatus} about state of indexing
      * @return true when indexing is active
      */
     public static boolean isScanInProgress () {
-        if (status == null) {
-            return RepositoryUpdater.getDefault().isScanInProgress();
-        } else {
-            return status.isScanInProgress();
-        }
+        return !getIndexingState().isEmpty();        
     }
     //where
     private static volatile IndexingStatus status;
@@ -126,7 +135,7 @@ public class Utilities {
      * Provides state of indexing
      */
     public static interface IndexingStatus {
-        boolean isScanInProgress ();
+        Set<? extends RepositoryUpdater.IndexingState> getIndexingState ();
     }
 
     //Helpers to bridge java.source factories into parsing.api
@@ -153,5 +162,20 @@ public class Utilities {
         Parameters.notNull ("task", task);
         Parameters.notNull ("source", source);
         TaskProcessor.rescheduleTasks (Collections.<SchedulerTask>singleton (task), source, null);
+    }
+
+    //Internal API among TaskProcessor and RepositoryUpdater
+    //If SchedulerTask will need the information about cancel
+    //add the CancelReason parameter into cancel like it's in Parser
+    public static Parser.CancelReason getTaskCancelReason() {
+        return cancelReason.get();
+    }
+
+    static void setTaskCancelReason(final @NullAllowed Parser.CancelReason reason) {
+        if (reason == null) {
+            cancelReason.remove();
+        } else {
+            cancelReason.set(reason);
+        }
     }
 }

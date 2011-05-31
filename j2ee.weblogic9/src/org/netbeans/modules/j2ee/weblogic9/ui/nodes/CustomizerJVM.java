@@ -48,23 +48,18 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.swing.DefaultComboBoxModel;
 
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.Vendor;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.JvmVendor;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,6 +68,8 @@ import org.openide.util.NbBundle;
 class CustomizerJVM extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 3411155308004602121L;
+
+    private WLDeploymentManager manager;
     
     CustomizerJVM(WLDeploymentManager manager) {
         this.manager = manager;
@@ -82,9 +79,9 @@ class CustomizerJVM extends javax.swing.JPanel {
     }
 
     private void initValues() {
-        Object vendor = manager.getInstanceProperties().getProperty(
-                WLPluginProperties.VENDOR);
-        List<Object> vendors = new LinkedList<Object>();
+        JvmVendor vendor = JvmVendor.fromPropertiesString(manager.getInstanceProperties().getProperty(
+                WLPluginProperties.VENDOR));
+        List<JvmVendor> vendors = new ArrayList<JvmVendor>(5);
         Properties runtimeProps = WLPluginProperties
                 .getRuntimeProperties(manager.getInstanceProperties()
                         .getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR));
@@ -93,81 +90,67 @@ class CustomizerJVM extends javax.swing.JPanel {
         final String sunHome = runtimeProps.getProperty(WLPluginProperties.
                 SUN_JAVA_HOME);
         final Properties javaHomeProps = 
-            (Properties)runtimeProps.get(WLPluginProperties.JAVA_HOME);
-        if ( beaHome != null && beaHome.trim().length()>0 ){
-            vendors.add( WLPluginProperties.Vendor.ORACLE.toString() );
+            (Properties) runtimeProps.get(WLPluginProperties.JAVA_HOME);
+        if (beaHome != null && beaHome.trim().length() > 0) {
+            vendors.add(WLPluginProperties.JvmVendor.ORACLE);
         }
-        if ( sunHome!= null && sunHome.trim().length() >0 ){
-            vendors.add( WLPluginProperties.Vendor.SUN.toString() );
+        if (sunHome!= null && sunHome.trim().length() > 0) {
+            vendors.add(WLPluginProperties.JvmVendor.SUN);
         }
-        if ( vendor == null || vendor.toString().trim().length() == 0 ){
-            vendor = DEFAULT_VENDOR;
-        }
-        vendors.add( DEFAULT_VENDOR );// NOI18N
+        vendors.add(WLPluginProperties.JvmVendor.DEFAULT);
         
-        Enumeration<Object> keys = javaHomeProps.keys();
-        while ( keys.hasMoreElements()){
-            String key = (String)keys.nextElement();
-            if ( key.length() > 0 && !key.equals(Vendor.SUN.toString()) && 
-                    !key.equals(Vendor.ORACLE.toString()))
-            {
-                vendors.add( key );
-            }
+        for (Enumeration<Object> keys = javaHomeProps.keys(); keys.hasMoreElements();) {
+            String key = (String) keys.nextElement();
+            if (key.length() > 0 && !key.equals(JvmVendor.SUN.toPropertiesString()) && 
+                    !key.equals(JvmVendor.ORACLE.toPropertiesString())) {
+                vendors.add(JvmVendor.fromPropertiesString(key));
+            }            
         }
         
-        vendorName.setModel( new DefaultComboBoxModel(vendors.toArray( )));
+        vendorName.setModel(new DefaultComboBoxModel(vendors.toArray()));
         vendorName.setSelectedItem(vendor);
         
-        if (vendor == DEFAULT_VENDOR) {
-            javaHome.setText(javaHomeProps.getProperty(""));
-        }
-        else if (vendor.equals(Vendor.ORACLE.toString())) {
+        if (vendor == JvmVendor.DEFAULT) {
+            javaHome.setText(javaHomeProps.getProperty("")); // NOI18N
+        } else if (vendor == JvmVendor.ORACLE) {
             javaHome.setText(beaHome);
-        }
-        else if (vendor.equals(Vendor.SUN.toString())) {
+        } else if (vendor == JvmVendor.SUN) {
             javaHome.setText(sunHome);
-        }
-        else {
-            javaHome.setText(javaHomeProps.getProperty(vendor.toString()));
+        } else {
+            javaHome.setText(javaHomeProps.getProperty(vendor.toPropertiesString()));
         }
         
         vendorName.addItemListener( new ItemListener() {
             
             @Override
-            public void itemStateChanged( ItemEvent event ) {
-                Object item = event.getItem();
-                if ( item == DEFAULT_VENDOR ){
+            public void itemStateChanged(ItemEvent event) {
+                JvmVendor item = (JvmVendor) event.getItem();
+                if (item == JvmVendor.DEFAULT) {
                     javaHome.setText(javaHomeProps.getProperty(""));
-                    manager.getInstanceProperties().setProperty(
-                            WLPluginProperties.VENDOR, "");
-                }
-                else {
-                    String vendor = event.getItem().toString();
-                    if ( vendor.equals( Vendor.ORACLE.toString())){
+                } else {
+                    if (item == JvmVendor.ORACLE) {
                         javaHome.setText(beaHome);
-                    }
-                    else if ( vendor.equals( Vendor.SUN.toString())){
+                    } else if (item == JvmVendor.SUN) {
                         javaHome.setText(sunHome);
+                    } else {
+                        javaHome.setText(javaHomeProps.getProperty(item.toPropertiesString()));
                     }
-                    else {
-                        javaHome.setText(javaHomeProps.getProperty(vendor));
-                    }
-                    manager.getInstanceProperties().setProperty(
-                            WLPluginProperties.VENDOR, vendor );
                 }
+                manager.getInstanceProperties().setProperty(
+                        WLPluginProperties.VENDOR, item.toPropertiesString());                
             }
         });
         
         String javaOpts = manager.getInstanceProperties().getProperty(
                 WLPluginProperties.JAVA_OPTS);
-        if ( javaOpts != null ){
-            vmOptions.setText( javaOpts.trim());
+        if (javaOpts != null) {
+            vmOptions.setText(javaOpts.trim());
         }
         
         String memOpts = manager.getInstanceProperties().getProperty(
                 WLPluginProperties.MEM_OPTS);
-        if ( memOpts!= null){
-            memoryOptions.setText( memOpts.trim());
+        if (memOpts != null) {
+            memoryOptions.setText(memOpts.trim());
         }
         
         vmOptions.getDocument().addDocumentListener( 
@@ -236,12 +219,12 @@ class CustomizerJVM extends javax.swing.JPanel {
                             .addComponent(memoryOptionsLabel))
                         .addGap(8, 8, 8)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
-                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
-                            .addComponent(memoryOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                            .addComponent(memoryOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
                             .addComponent(vmOptionsSampleLabel)
-                            .addComponent(memoryOptionsCommentLabel))))
+                            .addComponent(memoryOptionsCommentLabel)
+                            .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -267,7 +250,7 @@ class CustomizerJVM extends javax.swing.JPanel {
                     .addComponent(memoryOptionsLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(memoryOptionsCommentLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
                 .addComponent(noteChangesLabel)
                 .addContainerGap())
         );
@@ -292,23 +275,6 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptionsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSN_VmMemoryOptions")); // NOI18N
         memoryOptionsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACSD_VmMemoryOptions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    private static final class DefaultVendor{
-        private DefaultVendor(){
-            
-        }
-        
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-            return NbBundle.getMessage(CustomizerJVM.class, "TXT_VendorDefaultItem");   // NOI18N
-        }
-        
-    }
-
-    private static final DefaultVendor DEFAULT_VENDOR = new DefaultVendor();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField javaHome;
@@ -323,7 +289,5 @@ class CustomizerJVM extends javax.swing.JPanel {
     private javax.swing.JLabel vmOptionsLabel;
     private javax.swing.JLabel vmOptionsSampleLabel;
     // End of variables declaration//GEN-END:variables
-    
-    private WLDeploymentManager manager;
 
 }

@@ -113,52 +113,18 @@ public class PhysicalView {
         SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
                 
         FileObject projectDirectory = p.getProjectDirectory();
-        SourceGroup projectDirGroup = null;
-        
-        // First find the source group which will represent the project
-        for( int i = 0; i < groups.length; i++ ) {
-            FileObject groupRoot = groups[i].getRootFolder();
-            if ( projectDirectory.equals( groupRoot ) ||
-                 FileUtil.isParentOf( groupRoot, projectDirectory ) ) {
-                if ( projectDirGroup != null ) {
-                    // more than once => Illegal
-                    projectDirGroup = null;
-                    break;
-                }
-                else {
-                    projectDirGroup = groups[i];
-                }
-            }
-        }
-        
-        if ( projectDirGroup == null ) {
-            // Illegal project
-            LOG.log(Level.WARNING,"Project {0} either does not contain it''s project directory under generic source groups or the directory is under more than one source group", p);
-            return new Node[0];
-        }
-
-        FileObject rootFolder = projectDirGroup.getRootFolder();
-        if (/* #150018 */!rootFolder.isValid() || /* #181323 */!rootFolder.isFolder()) {
-            return new Node[0];
-        }
-        
-        // Create the nodes
         ArrayList<Node> nodesList = new ArrayList<Node>( groups.length );
-        nodesList.add(new ProjectIconNode(new GroupNode(p, projectDirGroup, true, DataFolder.findFolder(rootFolder)), true));
         
         for (SourceGroup group : groups) {
-            if (group == projectDirGroup) {
-                continue;
-            }
             if ("sharedlibraries".equals(group.getName())) { //NOI18N
                 //HACK - ignore shared libs group in UI, it's only useful for version control commits.
                 continue;
             }
-            rootFolder = group.getRootFolder();
+            FileObject rootFolder = group.getRootFolder();
             if (!rootFolder.isValid() || !rootFolder.isFolder()) {
                 continue;
             }
-            nodesList.add(new ProjectIconNode(new GroupNode(p, group, false, DataFolder.findFolder(rootFolder)), true));
+            nodesList.add(new ProjectIconNode(new GroupNode(p, group, projectDirectory.equals(rootFolder) || FileUtil.isParentOf(rootFolder, projectDirectory), DataFolder.findFolder(rootFolder)), true));
         }
         
         Node nodes[] = new Node[ nodesList.size() ];
@@ -370,7 +336,7 @@ public class PhysicalView {
     private static final class ProjectIconNode extends FilterNode { // #194068
         private final boolean root;
         public ProjectIconNode(Node orig, boolean root) {
-            super(orig, new ProjectBadgingChildren(orig));
+            super(orig, orig.isLeaf() ? Children.LEAF : new ProjectBadgingChildren(orig));
             this.root = root;
         }
         public @Override Image getIcon(int type) {

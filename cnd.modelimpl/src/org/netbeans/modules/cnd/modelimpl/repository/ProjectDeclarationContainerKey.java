@@ -43,24 +43,24 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * Key for DeclarationContainer data
  * @author Vladimir Kvashin
  */
-public class ProjectDeclarationContainerKey extends ProjectNameBasedKey {
+public final class ProjectDeclarationContainerKey extends ProjectNameBasedKey {
 
     public ProjectDeclarationContainerKey(CharSequence project) {
         super(project);
     }
 
-    ProjectDeclarationContainerKey(DataInput in) throws IOException {
+    ProjectDeclarationContainerKey(RepositoryDataInput in) throws IOException {
         super(in);
     }
 

@@ -1,7 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
+Copyright &copy; 2007, 2011 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -32,13 +31,23 @@ Start a debugging session
 <ul>
 <li>
 To debug the main project, choose Debug &gt; 
-<a href="StartingLocalDebuggingSession.html">Debug Main Project</a>.
+<a href="StartingLocalDebuggingSession.html">Debug Main Project</a> 
+or click the Debug Main Project toolbar button 
+<img src="../images/Debug_Main_Project.gif" alt="Debug Main Project button">.
 </li>
 <li>
 To debug any individual project, right-click the project and choose 
-Debug Project.
+Debug.
 </li>
-</ol>
+<li>
+To debug a core file, choose Debug &gt; Debug Core File, 
+and specify the host, core file, 
+executable, and project in the Debug Core File dialog box. 
+</li>
+<li>
+To attach the debugger to a running process, choose Debug &gt; Attach Debugger.
+</li>
+ </ol>
 </td>
 </tr>
 <tr>
@@ -49,7 +58,8 @@ Finish a debugging session.
 <ul>
 <li>
 To finish the current session, choose Debug &gt; 
-Finish Debugger Session (Shift-F5).
+Finish Debugger Session (Shift-F5) or click the Finish Debugger Session toolbar 
+button <img src="../images/Finish_Debugger_Session.gif" alt="Finish Debugger Session button">.
 </li>
 <li>To finish any session, open the Sessions window (Alt-Shift-6), 
 right-click the session, and choose Finish.
@@ -71,15 +81,16 @@ click in the left margin next to the desired line.
 </tr>
 <tr valign="top">
 <td>
-Set a function breakpoint.
+Set a function or instruction breakpoint.
 </td>
 <td>
 <ol>
-<li>In the Source Editor, select the function on which you 
-wish to set a breakpoint.</li>
+<li>In the Source Editor or the Disassembly window, select the function or instruction 
+on which you wish to set a breakpoint.</li>
 <li>Choose Debug &gt; New Breakpoint (Ctrl-Shift-F8).</li>
 <li>In the New Breakpoint dialog box, select the breakpoint type, set 
 any required options, and click OK.
+</li>
 </ol>
 </td>
 </tr>
@@ -93,7 +104,7 @@ Modify breakpoint properties.
 Open the Breakpoints window (Alt-Shift-5).
 </li>
 <li>
-Right-click the breakpoint and choose Customize
+Right-click the breakpoint and choose Customize.
 </li>
 <li>
 Change any required settings and actions and click OK.
@@ -111,19 +122,6 @@ Set a watch
 choose <a href="CreatingCorC++Watch.html">New Watch</a> (Ctrl-Shift-F7)..</li>
 </li>
 </ul>
-</td>
-<tr valign="top">
-<td>
-Modify a watch.
-</td>
-<td>
-<ol>
-<li>
-Open the Watches window (Alt-Shift-2).
-</li>
-<li>Right-click the watch, and choose Customize.
-</li>
-</ol>
 </td>
 </tr>
 <!-- Unimplemented tasks<tr valign="top">
@@ -143,12 +141,13 @@ Right-click the thread and choose Suspend or Resume.
 </ul>
 </td>
 </tr>
+-->
 <tr valign="top">
 <td>Pop the most recent call from the call stack.
 </td>
 <td>
 <ul>
-<li>Choose Run &gt; Stack &gt; Pop <a href="PoppingCorC++Stack.html">
+<li>Right-click in the Call Stack window and choose Pop <a href="PoppingCorC++Stack.html">
 Topmost Call</a>.
 </li>
 </td>
@@ -172,7 +171,6 @@ top of the call stack.
 </td>
 </tr>
 
--- End unimplemented tasks -->
 <tr valign="top">
 <td>
 Browse information for calls on the call stack.

@@ -16,7 +16,7 @@ import java.awt.*;
  */
 public class ${name} extends Frame {
 
-    public Main () {
+    public ${name} () {
         initComponents();
     }
 

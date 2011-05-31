@@ -43,20 +43,22 @@
  */
 package org.netbeans.qa.form.issues;
 
+import java.io.IOException;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.actions.*;
-import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
-import java.util.*;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Issue #103199 test - Undo after Cut&Paste removes componets from designer
  * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103199">issue</a>
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class CutAndPasteTest extends ExtJellyTestCase {
     
@@ -65,20 +67,17 @@ public class CutAndPasteTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /* Method allowing to execute test directly from IDE. */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+  public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(CutAndPasteTest.class).addTest(
+                "testCutAndPaste"
+                ).gui(true).clusters(".*").enableModules(".*"));
+
     }
-    
-    /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CutAndPasteTest("testCutAndPaste")); // NOI18N
-        return suite;
-    }
+
     
     /** Cut and paste test. */
-    public void testCutAndPaste() {
+    public void testCutAndPaste() throws IOException {
+        openDataProjects(_testProjectName);
         String frameName = createJFrameFile();
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();

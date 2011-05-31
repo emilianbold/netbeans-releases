@@ -34,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.LogHandler;
 
 /**
@@ -96,10 +97,10 @@ public class CleanupTest extends LHTestCase {
         store.setLabel(file3, ts, "dil3");                
         
         // check the files created in storage
-        assertFile(file1, store, ts,    -1, 4, 2, "data1.1", TOUCHED);
-        assertFile(file2, store, ts,    -1, 4, 2, "data2.1", TOUCHED);
-        assertFile(file3, store, ts,    -1, 4, 2, "data3.1", TOUCHED);
-        assertFile(file4, store, ts,    -1, 3, 2, "data4.1", TOUCHED);
+        assertFile(file1, store, ts,    -1, 3, 2, "data1.1", TOUCHED);
+        assertFile(file2, store, ts,    -1, 3, 2, "data2.1", TOUCHED);
+        assertFile(file3, store, ts,    -1, 3, 2, "data3.1", TOUCHED);
+        assertFile(file4, store, ts,    -1, 2, 2, "data4.1", TOUCHED);
         assertFile(file5, store, tsCreateFile5, -1, 2, 2, "data5",   TOUCHED);
 //        assertFile(file6, store, tsCreateFile6, -1, 2, 2, "data6",   TOUCHED);
         
@@ -108,10 +109,10 @@ public class CleanupTest extends LHTestCase {
         store.cleanUp(ttl); 
         
         // check the cleaned storage
-        assertFile(file1, store, ts, -1, 2, 2, "data1.1", TOUCHED);
-        assertFile(file2, store, ts, -1, 3, 2, "data2.1", TOUCHED);
-        assertFile(file3, store, ts, -1, 3, 2, "data3.1", TOUCHED);
-        assertFile(file4, store, ts, -1, 2, 2, "data4.1", TOUCHED);
+        assertFile(file1, store, ts, -1, 1, 2, "data1.1", TOUCHED);
+        assertFile(file2, store, ts, -1, 2, 2, "data2.1", TOUCHED);
+        assertFile(file3, store, ts, -1, 2, 2, "data3.1", TOUCHED);
+        assertFile(file4, store, ts, -1, 1, 2, "data4.1", TOUCHED);
         
         // check labels for file2 - the first one should be deleted
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -157,8 +158,8 @@ public class CleanupTest extends LHTestCase {
         createFile(store, file2, ts, "data2");        
 
         // check the files created in storage
-        assertFile(file1, store, ts,    -1, 2, 1, "data1", TOUCHED);
-        assertFile(file2, store, ts,    -1, 2, 1, "data2", TOUCHED);
+        assertFile(file1, store, ts,    -1, 1, 1, "data1", TOUCHED);
+        assertFile(file2, store, ts,    -1, 1, 1, "data2", TOUCHED);
                 
         // run clean up - time to live = 3 days 
         long ttl = 3 * 24 * 60 * 60 * 1000;
@@ -168,8 +169,6 @@ public class CleanupTest extends LHTestCase {
         File storage = new File(new File(getDataDir(), "var"), "filehistory");
         assertEquals(1, storage.list().length);
     }
-    
-    
     
     public void testCleanUp() throws Exception {
         LocalHistoryTestStore store = createStore();
@@ -193,8 +192,8 @@ public class CleanupTest extends LHTestCase {
         lh.reset(); changeFile(store, file2, ts, "data2.1"); lh.waitUntilDone();
         
         // check the files created in storage
-        assertFile(file1, store, ts, -1, 3, 1, "data1.1", TOUCHED);
-        assertFile(file2, store, ts, -1, 3, 1, "data2.1", TOUCHED);
+        assertFile(file1, store, ts, -1, 2, 1, "data1.1", TOUCHED);
+        assertFile(file2, store, ts, -1, 2, 1, "data2.1", TOUCHED);
                 
         // run clean up - time to live = 3 days 
         long ttl = 3 * 24 * 60 * 60 * 1000;
@@ -202,10 +201,62 @@ public class CleanupTest extends LHTestCase {
 
         // check the files after the cleanup
         // the versions data1 and data2 are to be deleted
-        assertFile(file1, store, ts, -1, 2, 0, "data1.1", TOUCHED);
-        assertFile(file2, store, ts, -1, 2, 0, "data2.1", TOUCHED);
+        assertFile(file1, store, ts, -1, 1, 0, "data1.1", TOUCHED);
+        assertFile(file2, store, ts, -1, 1, 0, "data2.1", TOUCHED);
+    }    
         
+    public void testCleanUpLabels() throws Exception {
+        LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
+        File folder = new File(getDataDir(), "datafolder");        
+        folder.mkdirs();
         
+        // create the files
+        File file1 = new File(folder, "file1");
+        
+        // CREATE HISTORY
+        // 5 days ago
+        long ts5days = System.currentTimeMillis() - 5 * 24 * 60 * 60 * 1000;
+        createFile(store, file1, ts5days, "data1");
+        
+        // check the files created in storage
+        assertFile(file1, store, ts5days, -1, 1, 1, "data1", TOUCHED, false);
+        
+        // 4 days ago
+        long ts4days = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
+        lh.reset(); changeFile(store, file1, ts4days, "data1.1"); lh.waitUntilDone();
+        
+        // label a file => it's not going to be cleanedup
+        store.setLabel(file1, ts4days, "labeltext");
+
+        // check the files created in storage
+        assertFile(file1, store, ts4days, -1, 2, 1, "data1.1", TOUCHED, true);
+        
+        // 2 days ago
+        long ts2days = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000;
+        lh.reset(); changeFile(store, file1, ts2days, "data1.2"); lh.waitUntilDone();
+        
+        // check the files created in storage
+        assertFile(file1, store, ts2days, -1, 3, 1, "data1.2", TOUCHED, true);
+        
+        LocalHistorySettings.getInstance().setCleanUpLabeled(false);
+        
+        // run clean up - time to live = 3 days 
+        long ttl = 3 * 24 * 60 * 60 * 1000;
+        store.cleanUp(ttl); 
+
+        // check the files after the cleanup
+        // only the versions ts5days are to be deleted
+        assertFile(file1, store, ts2days, -1, 2, 0, "data1.2", TOUCHED, true); // still 2 revision there
+
+        LocalHistorySettings.getInstance().setCleanUpLabeled(true);
+        
+        // run clean up - time to live = 3 days 
+        store.cleanUp(ttl); 
+        
+        // check the files after the cleanup
+        // the versions data1 and data1.1 and data1.2 are to be deleted
+        assertFile(file1, store, ts2days, -1, 1, 0, "data1.2", TOUCHED, false); // only this one revision left
         
     }    
     

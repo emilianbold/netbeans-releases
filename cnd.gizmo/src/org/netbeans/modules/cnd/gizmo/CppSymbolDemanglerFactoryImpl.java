@@ -59,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-@ServiceProvider(service = CppSymbolDemanglerFactory.class)
+@ServiceProvider(service = CppSymbolDemanglerFactory.class, position = 200)
 public final class CppSymbolDemanglerFactoryImpl implements CppSymbolDemanglerFactory {
 
     @Override

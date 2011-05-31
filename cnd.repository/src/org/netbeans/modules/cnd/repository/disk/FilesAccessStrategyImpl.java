@@ -331,13 +331,12 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         }
         else {
             for (int i = 0 ; i < size; ++i) {
-                nameBuffer.append(id.getAt(i));
-                nameBuffer.append(SEPARATOR_CHAR);
+                nameBuffer.append(id.getAt(i)).append(SEPARATOR_CHAR);
             }
         }
 
         for (int j = 0 ; j < id.getSecondaryDepth(); ++j) {
-            nameBuffer.append(id.getSecondaryAt(j)  + SEPARATOR_CHAR);
+            nameBuffer.append(id.getSecondaryAt(j)).append(SEPARATOR_CHAR);
         }
 
         String fileName = nameBuffer.toString();

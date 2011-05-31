@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.util.Cancellable;
 
 /**
@@ -99,8 +100,9 @@ public interface CsmModel {
      * associated with the same path, in the case the same file is included into different projects
      *
      * @param absPath absolute file path
+     * @since 1.13.2
      */
-    public abstract CsmFile findFile(CharSequence absPath, boolean snapShot);
+    public abstract CsmFile findFile(FSPath absPath, boolean createIfPossible, boolean snapShot);
     
     /**
      * Returns the state of the model

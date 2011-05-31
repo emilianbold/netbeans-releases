@@ -344,12 +344,11 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 return;
             }
 
-            if (serverInstance.getCustomizer() != null) {
-                Component component = serverInstance.getCustomizer();
-                if (component != null) {
-                    addComponent(clientPanel, component);
-                }
+            Component component = serverInstance.getCustomizer();
+            if (component != null) {
+                addComponent(clientPanel, component);
             }
+
             // handle the correct window size
             int height = getHeight();
             int width = getWidth();
@@ -490,6 +489,10 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 // Need to make sure instances with null display names do not
                 // end up in fresh.  See issue #152834.
                 for (ServerInstance instance : provider.getInstances()) {
+                    assert instance != null : "ServerInstance returned by provider " + provider + " is null";
+                    if (instance == null) {
+                        continue;
+                    }                    
                     if (null != instance.getDisplayName()) {
                         fresh.add(instance);
                     } else {

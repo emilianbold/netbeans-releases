@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +66,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport;
@@ -72,6 +75,7 @@ import org.netbeans.modules.project.ui.actions.TestSupport.TestProject;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
@@ -100,7 +104,11 @@ public class ProjectsRootNodeTest extends NbTestCase {
     
     public ProjectsRootNodeTest(String testName) {
         super(testName);
-    }            
+    }
+
+    protected @Override void setUp() throws Exception {
+        clearWorkDir();
+    }
 
     public void testBehaviourOfProjectsLogicNode() throws Exception {
         MockLookup.setInstances(new TestSupport.TestProjectFactory());
@@ -401,6 +409,34 @@ public class ProjectsRootNodeTest extends NbTestCase {
         assertEquals(icon1, node.getIcon(BeanInfo.ICON_COLOR_16x16));
         MockLookup.setInstances();
         listener.assertEvents(Node.PROP_ICON, Node.PROP_OPENED_ICON);
+    }
+
+    public void testReplaceProjectSingleNonRootNode() throws Exception { // #197864
+        FileObject d = FileUtil.toFileObject(getWorkDir()).createFolder("p");
+        final FileObject d2 = d.createFolder("testproject");
+        MockLookup.setInstances(new TestSupport.TestProjectFactory());
+        final TestProject p = (TestProject) ProjectManager.getDefault().findProject(d);
+        p.setLookup(Lookups.singleton(new Sources() {
+            public @Override SourceGroup[] getSourceGroups(String type) {
+                if (type.equals(TYPE_GENERIC)) {
+                    return new SourceGroup[] {GenericSources.group(p, d2, "testproject", "Testing", null, null)};
+                } else {
+                    return new SourceGroup[0];
+                }
+            }
+            public @Override void addChangeListener(ChangeListener listener) {}
+            public @Override void removeChangeListener(ChangeListener listener) {}
+        }));
+        final LazyProject lp = new LazyProject(d.getURL(), "p", new ExtIcon());
+        Children ch = new ProjectsRootNode.ProjectChildren(ProjectsRootNode.PHYSICAL_VIEW) {
+            public @Override void addNotify() {
+                setKeys(Collections.singleton(new ProjectsRootNode.ProjectChildren.Pair(lp)));
+            }
+        };
+        ProjectsRootNode.checkNoLazyNode(ch);
+        Node[] ns = ch.getNodes(true);
+        assertEquals(1, ns.length);
+        assertEquals("p - Testing", ns[0].getDisplayName());
     }
 
 }

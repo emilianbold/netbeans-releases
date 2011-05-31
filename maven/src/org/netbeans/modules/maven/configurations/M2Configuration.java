@@ -77,10 +77,10 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     private @NonNull final String id;
     private List<String> profiles;
     private final NbMavenProjectImpl project;
-    static final String FILENAME = "nbactions.xml"; //NOI18N
+    private static final String FILENAME = "nbactions.xml"; //NOI18N
 
-    static final String FILENAME_PREFIX = "nbactions-"; //NOI18N
-    static final String FILENAME_SUFFIX = ".xml"; //NOI18N
+    private static final String FILENAME_PREFIX = "nbactions-"; //NOI18N
+    private static final String FILENAME_SUFFIX = ".xml"; //NOI18N
     private Date lastModified = new Date();
     private boolean lastTimeExists = true;
     private final Map<String,String> properties = new HashMap<String,String>();

@@ -95,7 +95,7 @@ import org.netbeans.modules.form.project.ClassPathUtils;
  * @author Jan Stola
  */
 public class FormEditor {
-    static final int LOADING = 1;
+    static final int LOADING = 1; // TODO: move to FormEditorSupport
     static final int SAVING = 2;
 
     /** The FormModel instance holding the form itself */
@@ -158,7 +158,7 @@ public class FormEditor {
 
     // -----
 
-    FormEditor(FormDataObject formDataObject) {
+    public FormEditor(FormDataObject formDataObject) {
         this.formDataObject = formDataObject;
     }
 
@@ -217,64 +217,22 @@ public class FormEditor {
         persistenceManager = pm;
     }
 
-    boolean isFormLoaded() {
+    public boolean isFormLoaded() {
         return formLoaded;
     }
     
-    /** This methods loads the form, reports errors, creates the FormDesigner */
-    void loadFormDesigner() {
-        getFormDataObject().getFormEditorSupport().showOpeningStatus("FMT_OpeningForm"); // NOI18N
-
-        preCreationUpdate();
-
-        // load form data and report errors
-        try {
-            loadFormData();
-        }
-        catch (PersistenceException ex) { // a fatal loading error happened
-            logPersistenceError(ex, 0);
-            if (!formLoaded) { // loading failed - don't keep empty designer opened
-                java.awt.EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        getFormDataObject().getFormEditorSupport().selectJavaEditor();
-                    }
-                });
-            }
-        }
-
-        getFormDataObject().getFormEditorSupport().hideOpeningStatus();
-
-        // report errors during loading
-        reportErrors(LOADING);
-
-        // may do additional setup for just created form
-        postCreationUpdate();
-    }
-
     boolean loadForm() {
         if (formLoaded)
             return true;
 
         if (java.awt.EventQueue.isDispatchThread()) {
-            try {
-                loadFormData();
-            }
-            catch (PersistenceException ex) {
-                logPersistenceError(ex, 0);
-            }
-        }
-        else { // loading must be done in AWT event dispatch thread
+            loadFormData();
+        } else { // loading must be done in AWT event dispatch thread
             try {
                 java.awt.EventQueue.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            loadFormData();
-                        }
-                        catch (PersistenceException ex) {
-                            logPersistenceError(ex, 0);
-                        }
+                        loadFormData();
                     }
                 });
             }
@@ -289,7 +247,7 @@ public class FormEditor {
     /** This method performs the form data loading. All open/load methods go
      * through this one.
      */
-    private void loadFormData() throws PersistenceException {
+    public void loadFormData() {
         if (formLoaded)
             return; // form already loaded
 
@@ -309,7 +267,12 @@ public class FormEditor {
 
         // first find PersistenceManager for loading the form
         if (persistenceManager == null) {
-            persistenceManager = recognizeForm(formDataObject);
+            try {
+                persistenceManager = recognizeForm(formDataObject);
+            } catch (PersistenceException ex) {
+                logPersistenceError(ex, 0);
+                return;
+            }
         }
 
         // create and register new FormModel instance
@@ -345,7 +308,8 @@ public class FormEditor {
             persistenceManager = null;
             openForms.remove(formModel);
             formModel = null;
-            throw ex;
+            logPersistenceError(ex, 0);
+            return;
         }
         catch (Exception ex) { // should not happen, but for sure...
             ex.printStackTrace();
@@ -369,11 +333,9 @@ public class FormEditor {
         if (formModel.wasCorrected()) // model repaired or upgraded
             formModel.fireFormChanged(false);
 
-        // create form nodes hierarchy and add it to SourceChildren
+        // create form nodes hierarchy
         formRootNode = new FormRootNode(formModel);
         formRootNode.getChildren().getNodes();
-        formDataObject.getNodeDelegate().getChildren()
-                                          .add(new Node[] { formRootNode });
         
         attachFormListener();
         attachDataObjectListener();
@@ -416,7 +378,7 @@ public class FormEditor {
             persistenceErrors = new ArrayList<Throwable>();
     }
     
-    private void logPersistenceError(Throwable t, int index) {
+    void logPersistenceError(Throwable t, int index) {
         if (persistenceErrors == null)
             persistenceErrors = new ArrayList<Throwable>();
 
@@ -517,9 +479,10 @@ public class FormEditor {
      * 
      * @param operation operation being performed.
      */
-    public void reportErrors(int operation) {        
-        if (!anyPersistenceError())
-            return; // no errors or warnings logged
+    public String reportErrors(int operation) {        
+        if (!anyPersistenceError()) {
+            return null; // no errors or warnings logged
+        }
 
         final ErrorManager errorManager = ErrorManager.getDefault();
         final GandalfPersistenceManager persistManager = 
@@ -571,53 +534,22 @@ public class FormEditor {
                 errorManager.notify(ErrorManager.WARNING, t);
             }
         }
-        
+
+        resetPersistenceErrorLog();
+
         if (checkLoadingErrors && anyNonFatalLoadingError) {
             // the form was loaded with some non-fatal errors - some data
             // was not loaded - show a warning about possible data loss
-            final String wholeMsg = userErrorMsgs.append(
-                    FormUtils.getBundleString("MSG_FormLoadedWithErrors")).toString();  // NOI18N
-
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    // for some reason this would be displayed before the
-                    // ErrorManager if not invoked later
-                    if (!isFormLoaded()) {
-                        return; // issue #164444
-                    }
-                    
-                    JButton viewOnly = new JButton(FormUtils.getBundleString("CTL_ViewOnly"));		// NOI18N
-                    JButton allowEditing = new JButton(FormUtils.getBundleString("CTL_AllowEditing"));	// NOI18N                                        
-                    
-                    Object ret = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                        wholeMsg,
-                        FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
-                        NotifyDescriptor.DEFAULT_OPTION,
-                        NotifyDescriptor.WARNING_MESSAGE,
-                        new Object[] { viewOnly, allowEditing, NotifyDescriptor.CANCEL_OPTION },
-                        viewOnly ));
-                   
-                    if(ret == viewOnly) {
-                        setFormReadOnly();
-                    } else if(ret == allowEditing) {    
-                        destroyInvalidComponents();
-                    } else { // close form, switch to source editor
-                        getFormDesigner().reset(FormEditor.this); // might be reused
-                        closeForm();
-                        getFormDataObject().getFormEditorSupport().selectJavaEditor();
-                    }                                                      
-                }
-            });
+            return userErrorMsgs.append(FormUtils.getBundleString("MSG_FormLoadedWithErrors")).toString();  // NOI18N
+        } else {
+            return null;
         }
-
-        resetPersistenceErrorLog();
     }    
     
     /**
      * Destroys all components from {@link #formModel} taged as invalid
      */
-    private void destroyInvalidComponents() {
+    void destroyInvalidComponents() {
         Collection<RADComponent> allComps = formModel.getAllComponents();
         List<RADComponent> invalidComponents = new ArrayList<RADComponent>(allComps.size());
         // collect all invalid components
@@ -643,11 +575,10 @@ public class FormEditor {
     /**
      * Sets the FormEditor in Read-Only mode
      */
-    private void setFormReadOnly() {
+    void setFormReadOnly() {
         formModel.setReadOnly(true);
         getFormDesigner().getHandleLayer().setViewOnly(true);                                                
         detachFormListener();
-        getFormDataObject().getFormEditorSupport().updateMVTCDisplayName();                                
     }
 
     boolean needPostCreationUpdate() {
@@ -655,7 +586,7 @@ public class FormEditor {
         // see o.n.m.f.w.TemplateWizardIterator.instantiate()
     }
 
-    private void preCreationUpdate() {
+    void preCreationUpdate() {
         FileObject fob = formDataObject.getPrimaryFile();
         Object libName = fob.getAttribute("requiredLibrary"); // NOI18N
         if (libName != null) {
@@ -680,7 +611,7 @@ public class FormEditor {
      * of layout code generation needs to be honored, or properties
      * internationalized or converted to resources.
      */
-    private void postCreationUpdate() {
+    void postCreationUpdate() {
         if (formLoaded && formModel != null && !formModel.isReadOnly()
             && needPostCreationUpdate()) // just created via New wizard
         {   // detect settings, update the form, regenerate code, save
@@ -729,7 +660,7 @@ public class FormEditor {
     void setFormDesigner(FormDesigner designer) {
         formDesigner = designer;
     }
-    
+
     /** Closes the form. Used when closing the form editor or reloading
      * the form. */
     void closeForm() {
@@ -740,37 +671,13 @@ public class FormEditor {
             formModelToAssistant.remove(formModel);
             formLoaded = false;
             
-            // remove nodes hierarchy
-            if (formDataObject.isValid()) {
-                // Avoiding deadlock (issue 51796)
-                java.awt.EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (formDataObject.isValid()) {
-                            formDataObject.getNodeDelegate().getChildren()
-                                .remove(new Node[] { formRootNode });
-                        }
-                        formRootNode = null;
-                    }
-                });
-            }
-            
             // remove listeners
             detachFormListener();
             detachDataObjectListener();
             detachPaletteListener();
 
-            // focus the next form in inspector
-            FormEditor next;
             if (openForms.isEmpty()) {
-                next = null;
                 detachSettingsListener();
-            }
-            else { // still any opened forms - focus some
-                next = openForms.values().iterator().next();
-            }
-            if (ComponentInspector.exists()) {
-                ComponentInspector.getInstance().focusForm(next);
             }
 
             // close the floating windows
@@ -788,6 +695,7 @@ public class FormEditor {
             }
             
             // reset references
+            formRootNode = null;
             formDesigner = null;
             persistenceManager = null;
             persistenceErrors = null;
@@ -873,18 +781,13 @@ public class FormEditor {
                 FormDesigner designer = getFormDesigner();
                 if (designer != null) {
                     if (compsToSelect != null) {
-                        designer.clearSelectionImpl();
-                        for (Iterator it=compsToSelect.iterator(); it.hasNext(); ) {
-                            designer.addComponentToSelectionImpl((RADComponent)it.next());
-                        }
-                        designer.updateComponentInspector();
-//                        RADComponent[] comps =
-//                            new RADComponent[compsToSelect.size()];
-//                        compsToSelect.toArray(comps);
-//                        designer.setSelectedComponents(comps);
+                        RADComponent[] comps = new RADComponent[compsToSelect.size()];
+                        compsToSelect.toArray(comps);
+                        designer.setSelectedComponents(comps);
                     }
-                    else if (nodeToSelect != null)
-                        designer.setSelectedNode(nodeToSelect);
+                    else if (nodeToSelect != null) {
+                        designer.setSelectedNodes(nodeToSelect);
+                    }
                 }
 
                 if (modifying)  { // mark the form document modified explicitly
@@ -1003,14 +906,11 @@ public class FormEditor {
                     // multiview updated by FormEditorSupport
                     // code regenerated by FormRefactoringUpdate
                 }
-                else if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
-                    if (ComponentInspector.exists()) { // #40224
-                        Node[] nodes = ComponentInspector.getInstance()
-                                 .getExplorerManager().getSelectedNodes();
-                        for (int i=0; i < nodes.length; i++) {
-                            if (nodes[i] instanceof FormNode) { // Issue 181709
-                                ((FormNode)nodes[i]).updateCookies();
-                            }
+                else if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())
+                         && formDesigner != null) {
+                    for (Node node : formDesigner.getSelectedNodes()) {
+                        if (node instanceof FormNode) { // Issue 181709
+                            ((FormNode)node).updateCookies();
                         }
                     }
                 }

@@ -37,6 +37,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.String;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.junit.NbTestCase;
@@ -82,15 +88,31 @@ public class LHTestCase extends NbTestCase {
         }        
     }
     
-    public static void assertFile(File file, LocalHistoryTestStore store, long ts, long storeFileLastModified, int siblings, int parentChildren, String data, int action) throws Exception {
+    public static void assertFile(File file, LocalHistoryTestStore store, long ts, long storeFileLastModified, int versions, int parentChildren, String data, int action) throws Exception {
+        assertFile(file, store, ts, storeFileLastModified, versions, parentChildren, data, action, false);
+    }
+
+    public static void assertFile(File file, LocalHistoryTestStore store, long ts, long storeFileLastModified, int versions, int parentChildren, String data, int action, boolean containsLabel) throws Exception {
 
         File storeFolder = store.getStoreFolder(file);
         String[] files = storeFolder.list();
         if (files == null || files.length == 0) {
             fail("no files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
         }
-        if (files.length != siblings) {
-            fail("wrong amount of files in store folder " + files.length + " instead of expected " + siblings + " : file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
+        Set<String> filesSet = new HashSet<String>(Arrays.asList(files));
+        if(!filesSet.contains("data")) {
+            fail("no data file available for file file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
+        }
+        if(containsLabel && !filesSet.contains("labels")) {
+            fail("no labels file available for file file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
+        }
+        if(!containsLabel && filesSet.contains("labels")) {
+            fail("labels file available for file file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
+        }
+
+        int count = files.length - 1 - (containsLabel ? 1 : 0); // 1 for data and 1 or 0 for label
+        if (count != versions) {
+            fail("wrong amount of files in store folder " + count + " instead of expected " + versions + " : file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
         }
 
         File storeParent = store.getStoreFolder(file.getParentFile());
@@ -208,6 +230,12 @@ public class LHTestCase extends NbTestCase {
             file.mkdirs();
         }
         store.fileCreate(file, ts);        
+    }
+    
+    static void createSymlink(LocalHistoryStore store, File file, long ts, File fileSym) throws Exception {
+        Process p = Runtime.getRuntime().exec(new String[] {"ln", "-s", file.getAbsolutePath(), fileSym.getAbsolutePath()});
+        p.waitFor();
+        store.fileCreate(fileSym, ts);        
     }
 
     static void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {

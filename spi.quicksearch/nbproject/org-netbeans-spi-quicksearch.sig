@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.6
+#Version 1.9.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -26,7 +26,9 @@ hfds stroke,text
 
 CLSS public final org.netbeans.spi.quicksearch.SearchResponse
 meth public boolean addResult(java.lang.Runnable,java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
 meth public boolean addResult(java.lang.Runnable,java.lang.String,java.lang.String,java.util.List<? extends javax.swing.KeyStroke>)
+ anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
 supr java.lang.Object
 hfds catResult,sRequest
 

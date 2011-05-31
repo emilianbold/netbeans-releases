@@ -591,6 +591,9 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_FIELD:
                                         newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
                                         break;
+                                    case WHITESPACE_AFTER_FIELD:
+                                        newLines = docOptions.blankLinesAfterField + 1 > newLines ? docOptions.blankLinesAfterField + 1 : newLines;
+                                        break;
                                     case WHITESPACE_BETWEEN_FIELDS:
                                         indentRule = true;
                                         newLines = 1;
@@ -616,6 +619,16 @@ public class TokenFormatter {
                                     case WHITESPACE_AFTER_USE:
                                         indentRule = true;
                                         newLines = docOptions.blankLinesAfterUse + 1;
+                                        break;
+                                    case WHITESPACE_BEFORE_USES_PART:
+                                        indentRule = true;
+                                        if (formatTokens.get(index -1 ).getId() == FormatToken.Kind.ANCHOR) {
+                                            newLines = 0;
+                                            countSpaces = 1;
+                                        } else {
+                                            newLines = 1;
+                                            countSpaces = lastAnchor.getAnchorColumn();
+                                        }
                                         break;
                                     case WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS:
                                         indentRule = true;
@@ -854,9 +867,14 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_WHILE_STATEMENT:
                                         indentRule = true;
-                                        ws = countWSBeforeAStatement(docOptions.wrapWhileStatement, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
-                                        newLines = ws.lines;
-                                        countSpaces = ws.spaces;
+                                        if (!isBeforeEmptyStatement(formatTokens, index)) {
+                                            ws = countWSBeforeAStatement(docOptions.wrapWhileStatement, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
+                                            newLines = ws.lines;
+                                            countSpaces = ws.spaces;
+                                        } else {
+                                            newLines = 0;
+                                            countSpaces = docOptions.spaceBeforeSemi ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_BEFORE_DO_STATEMENT:
                                         indentRule = true;
@@ -1727,8 +1745,40 @@ public class TokenFormatter {
                                     if (!replaceOld.equals(replaceNew)
                                             && ((indexOldText + replaceOld.length()) <= oldText.length()
                                             || indexNewText == indexNewTextLine)) {
-                                        delta = replaceSimpleString(document, realOffset + indexOldText,
-                                                replaceOld, replaceNew, delta);
+                                        
+                                        if (newText.trim().length() == 0) {
+                                            delta = replaceSimpleString(document, realOffset + indexOldText,
+                                                    replaceOld, replaceNew, delta);
+                                        } else {
+                                            // in template we can move only with whitespaces
+                                            // if we will touch a parameter of the template
+                                            // then the processing of the template is stopped. 
+                                            // see issue #197906
+                                            int indexOldChar = 0;
+                                            int indexNewChar = 0;
+                                            while (indexNewChar < replaceNew.length() && indexOldChar < replaceOld.length()) {
+                                                char newChar = replaceNew.charAt(indexNewChar);
+                                                char oldChar = replaceOld.charAt(indexOldChar);
+                                                if (newChar != oldChar) {
+                                                    if (Character.isWhitespace(newChar)) {
+                                                        delta = replaceSimpleString(document, realOffset + indexOldText + indexNewChar,
+                                                            "", "" + newChar, delta);
+                                                        indexNewChar++;
+                                                    } else {
+                                                       if (Character.isWhitespace(oldChar)) {
+                                                           delta = replaceSimpleString(document, realOffset + indexOldText + indexNewChar,
+                                                            "" + oldChar, "", delta);
+                                                            indexOldChar++;
+                                                       }
+                                                    }
+                                                    
+                                                } else {
+                                                    indexNewChar++;
+                                                    indexOldChar++;
+                                                }
+                                            }
+
+                                        }
                                     }
                                     indexOldText = indexOldTextLine + 1;//(indexOldText == indexOldTextLine ? 2 : 1);
                                     indexNewText = indexNewTextLine + 1;//(indexNewText == indexNewTextLine ? 2 : 1);
@@ -1824,6 +1874,20 @@ public class TokenFormatter {
 		}
 		return length;
 	    }
+
+            private boolean isBeforeEmptyStatement(List<FormatToken> formatTokens, int index) {
+                FormatToken token = formatTokens.get(index);
+                boolean value = false;
+                index++;
+                while (index < formatTokens.size() && (token.getOldText() == null
+                        && token.getId() != FormatToken.Kind.WHITESPACE)) {
+                    token = formatTokens.get(index);
+                    index++;
+                }
+                
+                value = index < formatTokens.size() && ";".equals(token.getOldText());
+                return value;
+            }
 	});
     }
 

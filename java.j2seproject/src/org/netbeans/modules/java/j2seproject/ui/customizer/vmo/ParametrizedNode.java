@@ -7,12 +7,6 @@ import org.antlr.runtime.Token;
  */
 public class ParametrizedNode extends JavaVMOption<OptionValue.SimpleString> {
     private String delimiter;
-    public ParametrizedNode(Token name, String delimiter, Token parameter) {
-        this(name, delimiter, parameter, true);
-    }
-    public ParametrizedNode(Token name, String delimiter, Token parameter, boolean isValid) {
-        this(name,delimiter, parameter != null ? parameter.getText() : null, isValid);        
-    }
 
     public ParametrizedNode(Token token, int splitIndex) {
         super(token);

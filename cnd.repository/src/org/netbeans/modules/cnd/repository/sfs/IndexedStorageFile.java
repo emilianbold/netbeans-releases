@@ -375,12 +375,12 @@ class IndexedStorageFile extends FileStorage {
 
     private void loadIndex() throws IOException {
         InputStream in, bin;
-        DataInputStream din = null;
+        RepositoryDataInputStream din = null;
 
         try {
             in = new FileInputStream(indexFile);
             bin = new BufferedInputStream(in);
-            din = new DataInputStream(bin);
+            din = new RepositoryDataInputStream(bin);
 
             index = FileIndexFactory.getDefaultFactory().readIndex(din);
 
@@ -393,12 +393,12 @@ class IndexedStorageFile extends FileStorage {
 
     private void storeIndex() throws IOException {
         OutputStream out, bos;
-        DataOutputStream dos = null;
+        RepositoryDataOutputStream dos = null;
 
         try {
             out = new FileOutputStream(indexFile);
             bos = new BufferedOutputStream(out, 1024);
-            dos = new DataOutputStream(bos);
+            dos = new RepositoryDataOutputStream(bos);
 
             FileIndexFactory.getDefaultFactory().writeIndex(index, dos);
         } finally {

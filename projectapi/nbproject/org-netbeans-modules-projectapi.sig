@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.31
+#Version 1.35.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -99,7 +99,7 @@ meth public static org.netbeans.spi.project.AuxiliaryConfiguration getAuxiliaryC
 meth public static org.openide.filesystems.FileObject getCacheDirectory(org.netbeans.api.project.Project,java.lang.Class<?>) throws java.io.IOException
 supr java.lang.Object
 hfds LOG
-hcls BasicInformation
+hcls AnnotateIconProxyProjectInformation,BasicInformation
 
 CLSS public abstract interface org.netbeans.api.project.SourceGroup
 fld public final static java.lang.String PROP_CONTAINERSHIP = "containership"
@@ -250,6 +250,11 @@ meth public abstract void saveProject(org.netbeans.api.project.Project) throws j
 CLSS public abstract interface org.netbeans.spi.project.ProjectFactory2
 intf org.netbeans.spi.project.ProjectFactory
 meth public abstract org.netbeans.api.project.ProjectManager$Result isProject2(org.openide.filesystems.FileObject)
+
+CLSS public abstract interface org.netbeans.spi.project.ProjectIconAnnotator
+meth public abstract java.awt.Image annotateIcon(org.netbeans.api.project.Project,java.awt.Image,boolean)
+meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public abstract interface !annotation org.netbeans.spi.project.ProjectServiceProvider
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)

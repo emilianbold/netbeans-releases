@@ -46,11 +46,7 @@ package org.netbeans.jellytools.modules.form;
 import java.awt.Component;
 import java.io.IOException;
 import javax.swing.JButton;
-
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
-
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.actions.AttachWindowAction;
@@ -59,14 +55,15 @@ import org.netbeans.jellytools.nodes.FormNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-
 import org.netbeans.jemmy.operators.JFrameOperator;
 
 /** Test FormDesignerOperator, ComponentPaletteOperator 
  * and ComponentInspectorOperator.
  */
 public class FormEditorOperatorTest extends JellyTestCase {
-    public final static String[] tests = new String[] {
+
+    private static final String SAMPLE_FRAME = "JFrameSample.java";
+    public final static String[] tests = new String[]{
         "testOpen",
         "testSourceButton",
         "testEditor",
@@ -76,34 +73,14 @@ public class FormEditorOperatorTest extends JellyTestCase {
         "testPreviewForm",
         "testClose"
     };
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new TestSuite();
-        suite.addTest(new FormEditorOperatorTest("testOpen"));
-        suite.addTest(new FormEditorOperatorTest("testSourceButton"));
-        suite.addTest(new FormEditorOperatorTest("testEditor"));
-        suite.addTest(new FormEditorOperatorTest("testDesignButton"));
-        suite.addTest(new FormEditorOperatorTest("testDesign"));
-        suite.addTest(new FormEditorOperatorTest("testProperties"));
-        suite.addTest(new FormEditorOperatorTest("testPreviewForm"));
-        suite.addTest(new FormEditorOperatorTest("testClose"));
-        return(suite);
-         */
-        return createModuleTest(FormEditorOperatorTest.class, 
-        tests);
+        return createModuleTest(FormEditorOperatorTest.class, tests);
     }
-    
+
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
@@ -111,36 +88,35 @@ public class FormEditorOperatorTest extends JellyTestCase {
         super(testName);
     }
 
-    private static final String SAMPLE_FRAME = "JFrameSample.java";
-    
     /** Print out test name. */
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
     }
-    
+
     /** Opens sample JFrame. */
     public void testOpen() throws Exception {
         FormNode node = new FormNode(new SourcePackagesNode("SampleProject"),
-                                    "sample1|"+SAMPLE_FRAME); // NOI18N
+                "sample1|" + SAMPLE_FRAME); // NOI18N
         node.open();
     }
-    
+
     /** Test source toggle button. */
     public void testSourceButton() {
         new FormDesignerOperator(SAMPLE_FRAME).source();
     }
-    
+
     /** Test editor method. */
     public void testEditor() {
         new FormDesignerOperator(SAMPLE_FRAME).editor();
     }
-    
+
     /** Test Design toggle button. */
     public void testDesignButton() {
         new FormDesignerOperator(SAMPLE_FRAME).design();
     }
-    
+
     /** Test design actions. */
     public void testDesign() {
         FormDesignerOperator designer = new FormDesignerOperator(SAMPLE_FRAME);
@@ -163,7 +139,7 @@ public class FormEditorOperatorTest extends JellyTestCase {
         palette.selectComponent("Button"); // NOI18N
         designer.clickOnComponent(button1);
     }
-    
+
     /** Test setting properties of components. */
     public void testProperties() {
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
@@ -177,7 +153,7 @@ public class FormEditorOperatorTest extends JellyTestCase {
         inspector.selectComponent("JFrame|jButton1"); // NOI18N
         new Property(pso, "text").setValue("Close"); // NOI18N
     }
-    
+
     /** Test preview form mode of form designer. */
     public void testPreviewForm() {
         FormDesignerOperator designer = new FormDesignerOperator(SAMPLE_FRAME);
@@ -185,7 +161,7 @@ public class FormEditorOperatorTest extends JellyTestCase {
         myFrame.resize(400, 400);
         myFrame.close();
     }
-    
+
     /** Closes java source together with form editor. */
     public void testClose() {
         new FormDesignerOperator(SAMPLE_FRAME).closeDiscard();

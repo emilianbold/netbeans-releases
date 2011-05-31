@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.websvc.rest.model.impl;
 
+import java.util.Collections;
+
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
@@ -67,6 +69,15 @@ public class RestApplicationImpl extends PersistentObject implements RestApplica
 
     public String getApplicationClass() {
         return applicationClass;
+    }
+
+    public boolean refresh(TypeElement type) {
+        if (!Utils.isRestApplication(type, getHelper())) {
+            return false;
+        }
+        applicationPath = Utils.getApplicationPath(type);
+        applicationClass = type.getQualifiedName().toString();
+        return true;
     }
 
 }

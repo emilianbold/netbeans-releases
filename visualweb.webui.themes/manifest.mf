@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.visualweb.webui.themes
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/webui/themes/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/visualweb/webui/themes/resources/layer.xml
-OpenIDE-Module-Specification-Version: 2.7
-AutoUpdate-Show-In-Client: false
-

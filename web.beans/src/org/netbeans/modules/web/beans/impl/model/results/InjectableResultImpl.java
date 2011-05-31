@@ -47,9 +47,9 @@ import java.util.Set;
 
 import javax.lang.model.element.Element;
 
-import org.netbeans.modules.web.beans.api.model.Result.ApplicableResult;
-import org.netbeans.modules.web.beans.api.model.Result.InjectableResult;
-import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ApplicableResult;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.InjectableResult;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResolutionResult;
 
 
 /**
@@ -64,7 +64,7 @@ public class InjectableResultImpl extends ResultImpl implements InjectableResult
             Set<Element> enabledBeans)
     {
         super(origin.getVariable(), origin.getVariableType(), 
-                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getTypeElements(), origin.getProductions(), 
                 origin.getHelper());
         myInjectable = injectable;
         myEnabled = enabledBeans;
@@ -73,6 +73,7 @@ public class InjectableResultImpl extends ResultImpl implements InjectableResult
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getElement()
      */
+    @Override
     public Element getElement() {
         return myInjectable;
     }
@@ -80,6 +81,7 @@ public class InjectableResultImpl extends ResultImpl implements InjectableResult
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.ApplicableResult#isDisabled(javax.lang.model.element.Element)
      */
+    @Override
     public boolean isDisabled( Element element ) {
         return !myEnabled.contains( element );
     }

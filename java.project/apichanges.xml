@@ -109,6 +109,37 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="BrokenReferencesSupport-showAlert">
+            <api name="general"/>
+            <summary>Added <code>showAlert</code> method into the<code>BrokenReferencesSupport</code></summary>
+            <version major="1" minor="37"/>
+            <date day="7" month="3" year="2011"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added showAlert method having project context allowing the broken references alert to do
+                    the broken references resolution.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport"/>
+            <issue number="195249"/>
+        </change>
+        <change id="LibraryDefiner">
+            <api name="general"/>
+            <summary>Added <code>LibraryDefiner</code></summary>
+            <version major="1" minor="35"/>
+            <date day="2" month="2" year="2011"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a new SPI to permit alternate ways of resolving missing library references.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport"/>
+            <issue number="194744"/>
+        </change>
         <change id="JavadocAndSourceRootDetection.findSourceRoots">
             <api name="general"/>
             <summary>Added JavadocAndSourceRootDetection.findSourceRoots method to find all source roots under the given folder</summary>

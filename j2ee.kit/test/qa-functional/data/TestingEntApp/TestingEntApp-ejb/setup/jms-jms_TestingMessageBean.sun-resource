@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<resources>
-  <jms-resource enabled="true" jndi-name="jms/TestingMessageBean" res-type="javax.jms.Queue">
-    <description/>
-    <property name="Name" value="TestingMessageBean">
-      <description/>
-    </property>
-  </jms-resource>
-</resources>

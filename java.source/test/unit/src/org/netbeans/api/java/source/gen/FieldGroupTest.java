@@ -1109,6 +1109,53 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testMove187766() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        int i,j,k;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            //XXX: should ideally be:
+            //"    int i, j,k;\n" +
+            //instead of:
+            "    int i;\n" +
+            "    int j;\n" +
+            "    int k;\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                ClassTree nueClazz = make.removeClassMember(clazz, 1);
+
+                nueClazz = make.addClassMember(nueClazz, block.getStatements().get(0));
+                nueClazz = make.addClassMember(nueClazz, block.getStatements().get(1));
+                nueClazz = make.addClassMember(nueClazz, block.getStatements().get(2));
+
+                workingCopy.rewrite(clazz, nueClazz);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     String getGoldenPckg() {
         return "";

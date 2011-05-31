@@ -214,16 +214,16 @@ public class LexUtilities {
         ts.moveEnd();
         ts.movePrevious();
         int offset = ts.offset() + ts.token().length();
-        ts.move(currentIndex);
+        ts.moveIndex(currentIndex);
         return offset;
     }
 
     public static int getTokenSequenceEndOffset(JoinedTokenSequence<? extends TokenId> ts) {
-        int currentIndex = ts.index();
+        int[] currentIndex = ts.index();
         ts.moveEnd();
         ts.movePrevious();
         int offset = ts.offset() + ts.token().length();
-        ts.move(currentIndex);
+        ts.moveIndex(currentIndex);
         return offset;
     }
 
@@ -232,21 +232,21 @@ public class LexUtilities {
         ts.moveStart();
         ts.moveNext();
         int offset = ts.offset();
-        ts.move(currentIndex);
+        ts.moveIndex(currentIndex);
         return offset;
     }
 
     public static int getTokenSequenceStartOffset(JoinedTokenSequence<? extends TokenId> ts) {
-        int currentIndex = ts.index();
+        int[] currentIndex = ts.index();
         ts.moveStart();
         ts.moveNext();
         int offset = ts.offset();
-        ts.move(currentIndex);
+        ts.moveIndex(currentIndex);
         return offset;
     }
 
     public static <T1 extends TokenId> Token<T1> getTokenAtOffset(JoinedTokenSequence<T1> ts, int offset) {
-        int currentIndex = ts.index();
+        int[] currentIndex = ts.index();
         ts.move(offset);
         ts.moveNext();
         Token<T1> t = ts.token();

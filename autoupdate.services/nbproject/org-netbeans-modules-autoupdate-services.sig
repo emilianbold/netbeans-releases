@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.20
+#Version 1.25.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -94,6 +94,7 @@ innr public final static OperationInfo
 meth public boolean canBeAdded(org.netbeans.api.autoupdate.UpdateUnit,org.netbeans.api.autoupdate.UpdateElement)
 meth public boolean contains(org.netbeans.api.autoupdate.UpdateElement)
 meth public boolean remove(org.netbeans.api.autoupdate.UpdateElement)
+meth public java.lang.String toString()
 meth public java.util.List<org.netbeans.api.autoupdate.OperationContainer$OperationInfo<{org.netbeans.api.autoupdate.OperationContainer%0}>> listAll()
 meth public java.util.List<org.netbeans.api.autoupdate.OperationContainer$OperationInfo<{org.netbeans.api.autoupdate.OperationContainer%0}>> listInvalid()
 meth public org.netbeans.api.autoupdate.OperationContainer$OperationInfo<{org.netbeans.api.autoupdate.OperationContainer%0}> add(org.netbeans.api.autoupdate.UpdateElement)
@@ -168,6 +169,7 @@ meth public boolean equals(java.lang.Object)
 meth public boolean isEnabled()
 meth public int getDownloadSize()
 meth public int hashCode()
+meth public java.awt.Image getSourceIcon()
 meth public java.lang.String getAuthor()
 meth public java.lang.String getCategory()
 meth public java.lang.String getCodeName()
@@ -178,10 +180,12 @@ meth public java.lang.String getHomepage()
 meth public java.lang.String getLicence()
 meth public java.lang.String getNotification()
 meth public java.lang.String getSource()
+meth public java.lang.String getSourceDescription()
 meth public java.lang.String getSpecificationVersion()
 meth public java.lang.String toString()
 meth public org.netbeans.api.autoupdate.UpdateUnit getUpdateUnit()
 meth public org.netbeans.api.autoupdate.UpdateUnitProvider$CATEGORY getSourceCategory()
+ anno 0 java.lang.Deprecated()
 supr java.lang.Object
 hfds impl
 
@@ -225,12 +229,16 @@ innr public final static !enum CATEGORY
 meth public !varargs java.util.List<org.netbeans.api.autoupdate.UpdateUnit> getUpdateUnits(org.netbeans.api.autoupdate.UpdateManager$TYPE[])
 meth public boolean isEnabled()
 meth public boolean refresh(org.netbeans.api.progress.ProgressHandle,boolean) throws java.io.IOException
+meth public java.awt.Image getSourceIcon()
 meth public java.lang.String getDescription()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getName()
+meth public java.lang.String getSourceDescription()
+meth public java.lang.String toString()
 meth public java.net.URL getProviderURL()
 meth public java.util.List<org.netbeans.api.autoupdate.UpdateUnit> getUpdateUnits()
 meth public org.netbeans.api.autoupdate.UpdateUnitProvider$CATEGORY getCategory()
+ anno 0 java.lang.Deprecated()
 meth public void setDisplayName(java.lang.String)
 meth public void setEnable(boolean)
 meth public void setProviderURL(java.net.URL)
@@ -250,6 +258,7 @@ CLSS public final org.netbeans.api.autoupdate.UpdateUnitProviderFactory
 meth public !varargs org.netbeans.api.autoupdate.UpdateUnitProvider create(java.lang.String,java.io.File[])
 meth public java.util.List<org.netbeans.api.autoupdate.UpdateUnitProvider> getUpdateUnitProviders(boolean)
 meth public org.netbeans.api.autoupdate.UpdateUnitProvider create(java.lang.String,java.lang.String,java.net.URL)
+meth public org.netbeans.api.autoupdate.UpdateUnitProvider create(java.lang.String,java.lang.String,java.net.URL,java.lang.String,java.lang.String)
 meth public org.netbeans.api.autoupdate.UpdateUnitProvider create(java.lang.String,java.lang.String,java.net.URL,org.netbeans.api.autoupdate.UpdateUnitProvider$CATEGORY)
 meth public static org.netbeans.api.autoupdate.UpdateUnitProviderFactory getDefault()
 meth public void refreshProviders(org.netbeans.api.progress.ProgressHandle,boolean) throws java.io.IOException

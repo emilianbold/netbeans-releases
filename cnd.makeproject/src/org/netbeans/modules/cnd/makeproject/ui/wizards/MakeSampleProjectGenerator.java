@@ -65,6 +65,8 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -77,7 +79,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,7 +120,14 @@ public class MakeSampleProjectGenerator {
         }
         if (mainProject != null) {
             File parentFolderLocation = prjParams.getProjectFolder();
-            File mainProjectLocation = CndFileUtils.createLocalFile(parentFolderLocation, mainProject);
+            
+            File mainProjectLocation;
+            if (mainProject.equals(".")) { // NOI18N
+                mainProjectLocation = parentFolderLocation;
+            }
+            else {
+                mainProjectLocation = CndFileUtils.createLocalFile(parentFolderLocation, mainProject);
+            }
             File[] subProjectLocations = null;
             if (subProjects != null) {
                 List<File> subProjectsFiles = new ArrayList<File>();
@@ -147,13 +155,14 @@ public class MakeSampleProjectGenerator {
                 FileUtil.refreshFor(prjFile);
             }
             // Change project name in 'project.xml'
-            FileObject fo = prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+            FileObject fo = prjLoc.getFileObject(MakeProjectHelper.PROJECT_XML_PATH);
             File projXml = FileUtil.toFile(fo);
             Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
             if (name != null) {
-                changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
+                //changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
+                changeXmlFileByTagName(doc, "name", name, null); // NOI18N
             }
-            saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
+            saveXml(doc, prjLoc, MakeProjectHelper.PROJECT_XML_PATH);
 
             // Change working dir and default conf in 'projectDescriptor.xml'
             //String workingDir = projectLocation.getPath();
@@ -361,11 +370,11 @@ public class MakeSampleProjectGenerator {
         return Collections.singleton(DataObject.find(prjLoc));
     }
 
-    private static void addToSet(List<DataObject> set, File projectFile, ProjectGenerator.ProjectParameters prjParams) throws IOException {
+    private static void addToSet(List<DataObject> set, File projectFile, ProjectGenerator.ProjectParameters prjParams, String projectName) throws IOException {
         try {
             FileObject prjLoc = null;
             prjLoc = CndFileUtils.toFileObject(projectFile);
-            postProcessProject(prjLoc, null, prjParams);
+            postProcessProject(prjLoc, projectName, prjParams);
             prjLoc.refresh(false);
             set.add(DataObject.find(prjLoc));
         } catch (Exception e) {
@@ -377,10 +386,10 @@ public class MakeSampleProjectGenerator {
     private static Set<DataObject> createProjectWithSubprojectsFromTemplate(InputStream templateResourceStream, File parentFolderLocation, File mainProjectLocation, File[] subProjectLocations, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         List<DataObject> set = new ArrayList<DataObject>();
         unzip(templateResourceStream, parentFolderLocation);
-        addToSet(set, mainProjectLocation, prjParams);
+        addToSet(set, mainProjectLocation, prjParams, prjParams.getProjectName());
         if (subProjectLocations != null) {
             for (int i = 0; i < subProjectLocations.length; i++) {
-                addToSet(set, subProjectLocations[i], prjParams);
+                addToSet(set, subProjectLocations[i], prjParams, null);
             }
         }
         FileObject prjLoc = CndFileUtils.toFileObject(prjParams.getProjectFolder());
@@ -501,7 +510,7 @@ public class MakeSampleProjectGenerator {
         FileObject xml = FileUtil.createData(dir, path);
         FileLock lock = xml.lock();
         try {
-            OutputStream os = xml.getOutputStream(lock);
+            OutputStream os = SmartOutputStream.getSmartOutputStream(xml, lock);
             try {
                 XMLUtil.write(doc, os, "UTF-8"); // NOI18N
             } finally {

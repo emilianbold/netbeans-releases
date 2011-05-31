@@ -42,7 +42,10 @@
             <resource>
                 <targetPath>META-INF</targetPath>
                 <directory>src</directory>
-                <includes/>
+                <includes>
+		    <include>jax-ws-catalog.xml</include>
+                    <include>wsdl/**</include>
+                </includes>
             </resource>
         </resources>
         <plugins>
@@ -93,7 +96,7 @@
     </build>
     <repositories>
         <repository>
-            <url>http://download.java.net/maven/1</url>
+            <url>http://download.java.net/maven/1/</url>
             <id>jaxws21</id>
             <layout>legacy</layout>
             <name>Repository for library Library[jaxws21]</name>

@@ -64,12 +64,13 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
+import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 
 /**
  * Manages warning/error/stack trace hyperlinking in the Output Window.
@@ -176,6 +177,7 @@ class Hyperlinker {
             acted(false);
         }
 
+        @Messages({"# {0} - file path in workspace", "Hyperlinker.looking_for=Looking for {0}...", "# {0} - file path in workspace", "Hyperlinker.not_found=No file {0} found in remote workspace."})
         private void acted(final boolean force) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -203,13 +205,13 @@ class Hyperlinker {
                         // XXX #159829: consider aligning local line number with remote line number somehow
                     }
                     if (f == null) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Hyperlinker.class, "Hyperlinker.looking_for", path));
+                        StatusDisplayer.getDefault().setStatusText(Hyperlinker_looking_for(path));
                         f = job.getRemoteWorkspace().findResource(path);
                         LOG.log(Level.FINE, "Tried to find remote file at {0} using {1}", new Object[] {f, path});
                     }
                     if (f == null) {
                         if (force) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Hyperlinker.class, "Hyperlinker.not_found", path));
+                        StatusDisplayer.getDefault().setStatusText(Hyperlinker_not_found(path));
                             Toolkit.getDefaultToolkit().beep();
                         }
                         return;

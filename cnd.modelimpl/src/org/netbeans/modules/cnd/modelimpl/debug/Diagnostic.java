@@ -149,7 +149,7 @@ public class Diagnostic {
                         }
                     }
                     if (add) {
-                        times.addFirst(new Entry(parseTime, file.getAbsolutePath()));
+                        times.addFirst(new Entry(parseTime, file.getBuffer().getUrl()));
                     }
                     if (times.size() > SLOW_FILE_NUMBER) {
                         times.removeLast();

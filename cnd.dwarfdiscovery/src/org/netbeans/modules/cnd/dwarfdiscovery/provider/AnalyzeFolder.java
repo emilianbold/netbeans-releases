@@ -59,11 +59,11 @@ import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -211,7 +211,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     @Override
-    public List<Configuration> analyze(ProjectProxy project, final Progress progress) {
+    public List<Configuration> analyze(final ProjectProxy project, final Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
@@ -221,7 +221,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 private List<String> myIncludedFiles;
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
-                    return ProjectImpl.divideByLanguage(getSourcesConfiguration());
+                    return ProjectImpl.divideByLanguage(getSourcesConfiguration(), project);
                 }
                 
                 @Override
@@ -353,7 +353,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             return;
         }
         if (d.exists() && d.isDirectory() && d.canRead()){
-            if (DiscoveryUtils.ignoreFolder(d)){
+            if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
             String path = d.getAbsolutePath();

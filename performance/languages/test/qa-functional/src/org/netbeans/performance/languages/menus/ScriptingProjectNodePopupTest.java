@@ -118,14 +118,6 @@ public class ScriptingProjectNodePopupTest extends  PerformanceTestCase {
         dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
     
-    public void testRubyProjectNodePopupMenu() {
-        testNode(getProjectNode(Projects.RUBY_PROJECT));        
-    }
-    
-    public void testRailsProjectNodePopupMenu() {
-        testNode(getProjectNode(Projects.RAILS_PROJECT));        
-    }
-    
     public void testPHPProjectNodePopupMenu() {
         testNode(getProjectNode(Projects.PHP_PROJECT));
     }

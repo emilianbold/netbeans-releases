@@ -73,6 +73,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
@@ -415,14 +416,17 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             mode = Mode.HEAD_VS_WORKING_TREE;
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
             if (context != null) GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
+            if (fileTable != null) fileTable.setSelectedMode(DiffMode.HEAD_VS_WORKINGTREE);
         } else if (panel.tgbHeadVsIndex.isSelected()) {
             mode = Mode.HEAD_VS_INDEX;
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
             if (context != null) GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
+            if (fileTable != null) fileTable.setSelectedMode(DiffMode.HEAD_VS_INDEX);
         } else {
             mode = Mode.INDEX_VS_WORKING_TREE;
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
             if (context != null) GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
+            if (fileTable != null) fileTable.setSelectedMode(DiffMode.INDEX_VS_WORKINGTREE);
         }
     }
 
@@ -567,9 +571,11 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                         SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
                         statusRefreshSupport = SystemAction.get(StatusAction.class).scanStatus(context);
-                        statusRefreshSupport.getTask().waitFinished();
-                        if (!(statusRefreshSupport == null || statusRefreshSupport.isCanceled())) {
-                            refreshNodes();
+                        if (statusRefreshSupport != null) {
+                            statusRefreshSupport.getTask().waitFinished();
+                            if (!statusRefreshSupport.isCanceled()) {
+                                refreshNodes();
+                            }
                         }
                     }
                 }
@@ -837,7 +843,10 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 public void run() {
                     for (DiffNode node : toAdd) {
                         setups.put(node.getFile(), localSetups.get(node.getFile()));
-                        editorCookies.put(node.getFile(), cookies.get(node.getFile()));
+                        EditorCookie cookie = cookies.get(node.getFile());
+                        if(cookie != null) {
+                            editorCookies.put(node.getFile(), cookie);
+                        }
                     }
                     for (DiffNode node : toRemove) {
                         setups.remove(node.getFile());

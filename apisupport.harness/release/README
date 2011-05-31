@@ -629,10 +629,9 @@ cluster - cluster directory your module is to be built into. For netbeans.org
 modules, this is a subdirectory of nbbuild/netbeans/; the subdirectory name is
 defined automatically from nbbuild/cluster.properties, with a fallback to
 "extra". For suite component modules, it defaults to
-"${suite.dir}/build/cluster", though you could override it if you wanted (e.g.
-in platform.properties); similarly, for standalone modules, it defaults to
-"${basedir}/build/cluster". Available in project.properties for netbeans.org
-modules only.
+"${suite.dir}/build/cluster"; similarly, for standalone modules, it defaults to
+"${basedir}/build/cluster". Value available for substitution in
+project.properties for netbeans.org modules only.
 
 code.name.base - your code name base as org.netbeans.modules.foo
 
@@ -734,6 +733,10 @@ module.run.classpath [since 5.0u1] - your main module source's run-time
 classpath, according to <module-dependencies>. Similar to ${module.classpath}
 except does not use public-package-only JARs; includes run-time-only
 dependencies; and processes dependencies transitively.
+
+module.processor.classpath [since 7.0.1] - your main module source's processor
+classpath, according to <module-dependencies>. Similar to
+${module.run.classpath} except run-time-only dependencies are not considered.
 
 module.jar - location of module JAR relative to cluster directory. Do not
 override directly; override ${module.jar.basename} (default

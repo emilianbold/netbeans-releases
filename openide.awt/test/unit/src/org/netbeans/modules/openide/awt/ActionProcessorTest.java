@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.openide.awt;
 
+import java.net.URL;
+import javax.tools.ToolProvider;
 import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -52,6 +54,7 @@ import org.openide.awt.ActionID;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
+import java.net.URLClassLoader;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -60,6 +63,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -591,6 +595,31 @@ public class ActionProcessorTest extends NbTestCase {
             return null;
         }
     }
+    
+    @ActionID(category="menutext", id="namedaction")
+    @ActionRegistration(displayName="This is an Action", menuText="This is a Menu Action", popupText="This is a Popup Action")
+    public static class NamedAction extends AbstractAction {
+        public NamedAction() { }
+        @Override
+        public void actionPerformed(ActionEvent e) { }
+    }
+
+    public void testPopupAndMenuText() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/menutext/namedaction.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        
+        Action a = (Action) obj;
+        assertEquals("This is an Action", a.getValue(Action.NAME));
+        JMenuItem item = new JMenuItem();
+        Actions.connect(item, a, false);
+        assertEquals("This is a Menu Action", item.getText());
+        item = new JMenuItem();
+        Actions.connect(item, a, true);
+        assertEquals("This is a Popup Action", item.getText());
+    }
+    
     public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
         FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-one.instance");
         assertNotNull("Instance found", fo);
@@ -841,6 +870,39 @@ public class ActionProcessorTest extends NbTestCase {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertFalse("Compilation has to fail:\n" + os, r);
+    }
+
+    public void testWrongPointerToIcon() throws IOException {
+        clearWorkDir();
+        // Cannot just check for e.g. SourceVersion.RELEASE_7 because we might be running JDK 6 javac w/ JDK 7 boot CP, and that is in JRE.
+        // (Anyway libs.javacapi/external/javac-api-nb-7.0-b07.jar, in the test's normal boot CP, has this!)
+        // Filter.class added in 7ae4016c5938, not long after f3323b1c65ee which we rely on for this to work.
+        // Also cannot just check Class.forName(...) since tools.jar not in CP but ToolProvider loads it specially.
+        if (new URLClassLoader(new URL[] {ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource().getLocation()}).findResource("com/sun/tools/javac/util/Filter.class") == null) {
+            System.err.println("#196933: testWrongPointerToIcon will only pass when using JDK 7 javac, skipping");
+            return;
+        }
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import org.openide.util.actions.Presenter;\n" +
+            "import java.awt.event.*;\n" +
+            "import java.util.List;\n" +
+            "import javax.swing.*;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\", iconBase=\"does/not/exist.png\") " +
+            "@ActionReference(path=\"manka\", position=11)" +
+            "public class A implements ActionListener {\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+        if (!os.toString().contains("does/not/exist.png")) {
+            fail("Shall contain warning about does/not/exist.png resource:\n" + os);
+        }
     }
     
 }

@@ -39,14 +39,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.util.usagetracking;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -61,7 +63,7 @@ public final class SunStudioUserCounter {
     static {
         SUNW_NO_UPDATE_NOTIFY = (System.getProperty("SUNW_NO_UPDATE_NOTIFY") != null);  // NOI18N
     }
- 
+
     public enum IDEType {
 
         CND("cnd"), // NOI18N
@@ -128,17 +130,34 @@ public final class SunStudioUserCounter {
                     ssBinPath += "/"; // NOI18N
                 }
                 checkUpdatePath = ssBinPath + "../prod/bin/check_update"; // NOI18N
+                try {
+                    if (!HostInfoUtils.fileExists(env, checkUpdatePath)) {
+                        checkUpdatePath = ssBinPath + "../lib/condev/bin/check_update"; // NOI18N
+                    }
+                } catch (ConnectException ex) {
+                    // skip
+                } catch (IOException ex) {
+                    // skip
+                } catch (InterruptedException ex) {
+                    // skip
+                }
             }
         }
         return checkUpdatePath;
     }
+
     /**
      * count active user of the IDE
      * @param checkUpdatePath path to SunStudio "bin" directory
      * @param execEnv execution environment
      */
     public static void countIDE(final String ssBaseDir, final ExecutionEnvironment execEnv) {
-        countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, getIDEType().getTag());
+        File winDistConfiguration = new File(System.getProperty("netbeans.home") + File.separator + "remotehosts.xml"); // NOI18N
+        if (execEnv.isRemote() && winDistConfiguration.exists()) {
+            countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, "winide"); // NOI18N
+        } else {
+            countTool(getCheckUpdatePath(ssBaseDir, execEnv), execEnv, getIDEType().getTag());
+        }
     }
 
     public static void countDLight(final ExecutionEnvironment execEnv) {
@@ -174,6 +193,7 @@ public final class SunStudioUserCounter {
         }
         countTool(getCheckUpdatePath(ssBin, execEnv), execEnv, "gizmo"); // NOI18N
     }
+
     /**
      * count active user of the tool
      * @param checkUpdatePath path to SunStudio check_update
@@ -188,6 +208,8 @@ public final class SunStudioUserCounter {
         }
         if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             SS_USER_COUNT.post(new Runnable() {
+
+                @Override
                 public void run() {
                     NativeProcessBuilder nb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(checkUpdatePath).setArguments(toolTag);
                     try {

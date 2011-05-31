@@ -47,8 +47,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -64,6 +62,8 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmClass
@@ -244,6 +244,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
     
     @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         CsmUID<? extends CsmOffsetableDeclaration> out = null;
         synchronized (members) {
@@ -372,7 +377,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         assert this.kind != null;
         writeKind(this.kind, output);
@@ -384,7 +389,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         factory.writeUIDCollection(this.inheritances, output, true);
     }
 
-    public ClassImpl(DataInput input) throws IOException {
+    public ClassImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.kind = readKind(input);
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
@@ -417,7 +422,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     private static final int UNION_KIND = 2;
     private static final int STRUCT_KIND = 3;
 
-    private static void writeKind(CsmDeclaration.Kind kind, DataOutput output) throws IOException {
+    private static void writeKind(CsmDeclaration.Kind kind, RepositoryDataOutput output) throws IOException {
         int kindHandler;
         if (kind == CsmDeclaration.Kind.CLASS) {
             kindHandler = CLASS_KIND;
@@ -430,7 +435,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         output.writeByte(kindHandler);
     }
 
-    private static CsmDeclaration.Kind readKind(DataInput input) throws IOException {
+    private static CsmDeclaration.Kind readKind(RepositoryDataInput input) throws IOException {
         int kindHandler = input.readByte();
         CsmDeclaration.Kind kind;
         switch (kindHandler) {
@@ -841,6 +846,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (typeAST == null) {
                 return false;
             }
+            typeAST = getFirstSiblingSkipQualifiers(typeAST);
+            if (typeAST == null) {
+                return false;
+            }
             if (typeAST.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN) {
                 if (typeAST.getType() == CPPTokenTypes.LITERAL_enum) {
                     typeAST = typeAST.getNextSibling();
@@ -852,7 +861,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
             // common type for all bit fields
             CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
-            boolean bitFieldAdded = renderBitFieldImpl(token, typeAST.getNextSibling(), type, null);
+            typeAST = getFirstSiblingSkipQualifiers(typeAST.getNextSibling());
+            if (typeAST == null) {
+                return false;
+            }
+            boolean bitFieldAdded = renderBitFieldImpl(token, typeAST, type, null);
             return bitFieldAdded;
         }
 
@@ -863,11 +876,19 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             AST start = startOffsetAST;
             AST prev = idAST;
             while (cont) {
-                if (idAST == null || idAST.getType() != CPPTokenTypes.ID) {
+                boolean unnamed = false;
+                AST colonAST;
+                if (idAST == null) {
+                    break;
+                } else if (idAST.getType() == CPPTokenTypes.ID) {
+                    colonAST = idAST.getNextSibling();
+                } else if (idAST.getType() == CPPTokenTypes.COLON){
+                    colonAST = idAST;
+                    unnamed = true;
+                } else {
                     break;
                 }
 
-                AST colonAST = idAST.getNextSibling();
                 if (colonAST == null || colonAST.getType() != CPPTokenTypes.COLON) {
                     break;
                 }
@@ -889,11 +910,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         start = idAST;
                     }
                 }
-                NameHolder nameHolder = NameHolder.createSimpleName(idAST);
-                FieldImpl field = FieldImpl.create(start, getContainingFile(), type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
-                ClassImpl.this.addMember(field,!isRenderingLocalContext());
-                if (classifier != null) {
-                    classifier.addEnclosingVariable(field);
+                if(!unnamed) {
+                    NameHolder nameHolder = NameHolder.createSimpleName(idAST);
+                    FieldImpl field = FieldImpl.create(start, getContainingFile(), type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
+                    ClassImpl.this.addMember(field,!isRenderingLocalContext());
+                    if (classifier != null) {
+                        classifier.addEnclosingVariable(field);
+                    }
                 }
                 added = true;
                 if (cont) {
@@ -953,13 +976,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
             assert this.visibility != null;
             PersistentUtils.writeVisibility(this.visibility, output);
         }
 
-        public MemberTypedef(DataInput input) throws IOException {
+        public MemberTypedef(RepositoryDataInput input) throws IOException {
             super(input);
             this.visibility = PersistentUtils.readVisibility(input);
             assert this.visibility != null;
@@ -1083,7 +1106,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
             assert visibility != null;
             PersistentUtils.writeVisibility(visibility, output);
@@ -1092,7 +1115,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             UIDObjectFactory.getDefaultFactory().writeUID(classDefinition, output);
         }
 
-        public ClassMemberForwardDeclaration(DataInput input) throws IOException {
+        public ClassMemberForwardDeclaration(RepositoryDataInput input) throws IOException {
             super(input);
             visibility = PersistentUtils.readVisibility(input);
             assert visibility != null;

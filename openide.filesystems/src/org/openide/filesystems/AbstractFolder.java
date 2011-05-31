@@ -280,8 +280,12 @@ abstract class AbstractFolder extends FileObject {
                 // than in getChild, than it is not called
                 // so often.
                 fo.check();
-
-                fo = fo.getChild(en.nextElement());
+                final String next = en.nextElement();
+                if ("..".equals(next)) {
+                    fo = (AbstractFolder)fo.getParent();
+                } else {
+                    fo = fo.getChild(next);
+                }
             }
         }
 

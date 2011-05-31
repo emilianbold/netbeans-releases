@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,6 +42,15 @@
 
 package org.netbeans.modules.glassfish.spi;
 
+import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import java.util.concurrent.Future;
+import org.netbeans.modules.glassfish.common.Commands;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.modules.glassfish.common.CommandRunner;
+import java.util.HashMap;
 import java.io.File;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -197,4 +206,36 @@ public class UtilsTest extends NbTestCase {
         assertEquals(expResult, result);
     }
 
+    public static void main(String... args) throws InterruptedException, ExecutionException {
+        for (int i = 0 ; i < 2000 ; i++) {
+            String hostname =  //"127.0.0.1";
+                 "10.229.117.91";
+            int port = 4848;
+            if (false)
+                System.out.println(Utils.getHttpListenerProtocol(hostname, port));
+            else {
+                Map<String,String> ip = new HashMap<String,String>();
+                ip.put(GlassfishModule.HOSTNAME_ATTR, hostname);
+                ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
+                CommandRunner cr = new CommandRunner(CommonServerSupport.isRunning(hostname, port, hostname), null,
+                        Collections.unmodifiableMap(ip), null);
+                Future<OperationState> x = null;
+                Commands.LocationCommand lc = new Commands.LocationCommand();
+                x = cr.execute(lc);
+                System.out.println(x.get() == OperationState.COMPLETED);
+                System.out.println(lc.getDomainRoot()+":"+lc.getInstallRoot());
+                System.out.println(lc.getServerMessage());
+                System.out.println(lc.getSrc());
+
+                cr = new CommandRunner(CommonServerSupport.isRunning(hostname, port, hostname), null, Collections.unmodifiableMap(ip), null);
+                ServerCommand.GetPropertyCommand gpc = new ServerCommand.GetPropertyCommand("*.server-config.*.http-listener-1.port");
+                x = cr.execute(gpc);
+                System.out.println(x.get() == OperationState.COMPLETED);
+                System.out.println(gpc.getData());
+                System.out.println(gpc.getServerMessage());
+                System.out.println(gpc.getSrc());
+            }
+        }
+        System.exit(0);
+    }
 }

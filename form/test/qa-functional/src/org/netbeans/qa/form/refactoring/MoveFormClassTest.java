@@ -43,7 +43,6 @@
  */
 package org.netbeans.qa.form.refactoring;
 
-import java.io.IOException;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -66,6 +65,9 @@ import org.netbeans.junit.NbModuleSuite;
  * Tests form refactoring, 3rd scenarion : Move form class into dif package
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 26 APRIL 2011 WORKS
  */
 public class MoveFormClassTest extends ExtJellyTestCase {
 
@@ -82,14 +84,14 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         super(testName);
     }
 
-    public void setUp() throws IOException{
-        openProject(_testProjectName);
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(MoveFormClassTest.class)
-                .addTest("testCreatePackage", "testRefactoring", "testChangesInJavaFile", "testChangesInPropertiesFile" )
-                .clusters(".*").enableModules(".*").gui(true));
+    
+      public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(MoveFormClassTest.class).addTest(
+                "testCreatePackage", 
+                "testRefactoring", 
+                "testChangesInJavaFile", 
+                "testChangesInPropertiesFile" 
+                ).clusters(".*").enableModules(".*").gui(true));
 
     }
 
@@ -164,7 +166,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         openAction.perform(formnode);
 
         FormDesignerOperator designer = new FormDesignerOperator(CLASS_NAME);
-
+        
         // new class package
         findInCode("package data.subdata;", designer);
     }

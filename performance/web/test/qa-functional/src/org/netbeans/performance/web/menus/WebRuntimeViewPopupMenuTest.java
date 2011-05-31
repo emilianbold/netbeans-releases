@@ -104,7 +104,7 @@ public class WebRuntimeViewPopupMenuTest extends PerformanceTestCase {
         WEB_APPLICATIONS = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.nodes.Bundle",
         "LBL_WebApps");
         TOMCAT = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle",
-        "LBL_TomcatFactory60");
+        "LBL_TomcatFactory");
 
         expectedTime = UI_RESPONSE;
         track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;

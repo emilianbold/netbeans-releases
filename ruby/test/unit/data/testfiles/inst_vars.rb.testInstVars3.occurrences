@@ -1,3 +1,0 @@
-  attr_accessor |>MARK_OCCURRENCES::title<|
-    |>MARK_OCCURRENCES:@title<| = init
-    puts |>MARK_OCCURRENCES:self.|>MARK_OCCURRENCES:t^itle<|

@@ -50,8 +50,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -86,17 +84,24 @@ public final class DocumentBasedIndexManager {
         if (li == null) {
             try {
                 switch (mode) {
-                    case CREATE:                    
-                        li = IndexManager.createDocumentIndex(new File(root.toURI()));
+                    case CREATE:
+                    {
+                        final File file = new File(root.toURI());
+                        file.mkdir();
+                        li = IndexManager.createDocumentIndex(file);
                         indexes.put(root,li);
                         break;
+                    }
                     case IF_EXIST:
-                        final FileObject fo = URLMapper.findFileObject(root);
-                        if (fo != null && fo.isFolder() && fo.getChildren(false).hasMoreElements()) {
-                            li = IndexManager.createDocumentIndex(new File(root.toURI()));
+                    {
+                        final File file = new File(root.toURI());
+                        String[] children;
+                        if (file.isDirectory() && (children=file.list())!= null && children.length > 0) {
+                            li = IndexManager.createDocumentIndex(file);
                             indexes.put(root,li);
                         }
                         break;
+                    }
                 }
             } catch (URISyntaxException e) {
                 throw new IOException(e);

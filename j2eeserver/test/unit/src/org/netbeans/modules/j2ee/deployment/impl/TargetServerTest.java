@@ -46,13 +46,7 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import junit.framework.*;
 import org.netbeans.junit.*;
-import java.util.*;
 import java.io.*;
-import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
-import org.netbeans.modules.j2ee.deployment.impl.*;
-import javax.enterprise.deploy.spi.*;
-import org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentManager;
-import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 
 /**
  *

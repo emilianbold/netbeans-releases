@@ -44,6 +44,14 @@
 
 package org.netbeans.editor;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.text.Segment;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
@@ -122,6 +130,7 @@ final class DocumentContent implements AbstractDocument.Content, CharSeq, GapSta
     public Position createPosition(int offset) throws BadLocationException {
         checkOffset(offset);
         BasePosition pos = new BasePosition();
+//        registerStack(pos);
         markVector.insert(markVector.createMark(pos, offset));
         return pos;
     }
@@ -130,6 +139,7 @@ final class DocumentContent implements AbstractDocument.Content, CharSeq, GapSta
     throws BadLocationException {
         checkOffset(offset);
         BasePosition pos = new BasePosition();
+//        registerStack(pos);
         markVector.insert(markVector.createBiasMark(pos, offset, bias));
         return pos;
     }
@@ -143,6 +153,82 @@ final class DocumentContent implements AbstractDocument.Content, CharSeq, GapSta
         checkOffset(offset);
         return markVector.insert(markVector.createMark(offset));
     }
+
+//    private Map<List<StackTraceElement>, int[]> stack2Count;
+//    private int dumpIndex;
+//    private void registerStack(BasePosition pos) {
+//        if (stack2Count == null) {
+//            stack2Count = new HashMap<List<StackTraceElement>, int[]>();
+//        }
+//        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+//        List<StackTraceElement> stack = Arrays.asList(stackTrace).subList(3, Math.min(stackTrace.length, 13));
+//        int[] count = stack2Count.get(stack);
+//        if (count == null) {
+//            // count[0] is total count allocated
+//            // count[1] is last dumpIndex when active marks with that stack were computed
+//            // count[2] total count of active marks for dumpIndex so far
+//            // if count[1] != dumpIndex the count[2] is reset to zero
+//            count = new int[3];
+//            stack2Count.put(stack, count);
+//        }
+//        count[0]++;
+//        pos.allocStack = stack;
+//
+//        if (count[0] % 300 == 0) {
+//            System.gc();
+//            // Dump the map
+//            dumpIndex++;
+//            // Count all active marks
+//            synchronized (markVector) {
+//                int markCount = markVector.getMarkCount();
+//                for (int i = 0; i < markCount; i++) {
+//                    MultiMark mark = markVector.getMark(i);
+//                    if (mark != null) {
+//                        BasePosition pos2 = mark.get();
+//                        if (pos2 != null) {
+//                            int[] count2 = stack2Count.get(pos2.allocStack);
+//                            if (count2[1] != dumpIndex) {
+//                                count2[1] = dumpIndex;
+//                                count2[2] = 0; // Reset counting for different dumpIndex
+//                            }
+//                            count2[2]++;
+//                        }
+//                    }
+//                }
+//            }
+//            Set<Map.Entry<List<StackTraceElement>,int[]>> sortedStacks
+//                    = new TreeSet<Map.Entry<List<StackTraceElement>,int[]>>(
+//                        new Comparator<Map.Entry<List<StackTraceElement>,int[]>>() {
+//                            @Override
+//                            public int compare(Entry<List<StackTraceElement>, int[]> e1, Entry<List<StackTraceElement>, int[]> e2) {
+//                                // Sort from highest current number of marks
+//                                return e2.getValue()[2] - e1.getValue()[2];
+//                            }
+//                        }
+//            );
+//            sortedStacks.addAll(stack2Count.entrySet());
+//
+//            StringBuilder sb = new StringBuilder(1000);
+//            int i = 0;
+//            for (Map.Entry<List<StackTraceElement>,int[]> entry : sortedStacks) {
+//                int[] entryCount = entry.getValue();
+//                if (entryCount[1] != dumpIndex) {
+//                    entryCount[1] = dumpIndex;
+//                    entryCount[2] = 0;
+//                }
+//                sb.append("STACK for " + entryCount[2] + " positions (" + entryCount[0] + " totally allocated):\n");
+//                List<StackTraceElement> elems = entry.getKey();
+//                for (StackTraceElement e : elems) {
+//                    sb.append("    ").append(e).append('\n');
+//                }
+//                if (++i > 8) { // Only output the most used stacktraces
+//                    break;
+//                }
+//            }
+//            sb.append(toString()).append(", stacks: ").append(stack2Count.size());
+//            System.err.println(sb);
+//        }
+//    }
 
     public int length() {
         return charArray.length - gapLength;

@@ -97,7 +97,7 @@ import org.openide.util.NbBundle;
  */
 public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyChangeListener {
     
-    public static interface Builder {
+    public static interface Builder extends ActionListener {
 
         public Children createCategoriesChildren (DataFolder folder);
         
@@ -336,6 +336,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 ((ExplorerProviderPanel)categoriesPanel).setRootNode (root);
             }
         });
+        ((ExplorerProviderPanel)projectsPanel).addDefaultActionListener( firer );
         description.addHyperlinkListener(new ClickHyperlinks());
     }
 
@@ -554,7 +555,10 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             ((GridBagLayout)this.getLayout()).setConstraints(component, c);
             this.add (component);
         }
-        
+
+        void addDefaultActionListener( ActionListener al ) {
+            //do nothing by default
+        }
     }
 
 
@@ -609,7 +613,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             setDefaultProcessor( this );
             ToolTipManager.sharedInstance ().unregisterComponent (list);
         }
-        
+
         public void actionPerformed( ActionEvent e ) {
             // Do nothing
         }
@@ -644,7 +648,12 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 // doesn't matter, can ignore it
             }
         }
-        
+
+        @Override
+        void addDefaultActionListener( ActionListener al ) {
+            createComponent();
+            ((TemplatesListView)list).setDefaultProcessor( al );
+        }
     }
    
     // Variables declaration - do not modify//GEN-BEGIN:variables

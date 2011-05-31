@@ -98,7 +98,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getParseCount());// NOI18N 
+            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getLongParseCount());// NOI18N 
             Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
             for (CsmFile csmFile : allFiles) {
                 if (csmFile instanceof FileImpl) {
@@ -122,7 +122,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getParseCount());// NOI18N 
+            printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getLongParseCount());// NOI18N 
             Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
             for (CsmFile csmFile : allFiles) {
                 if (csmFile instanceof FileImpl) {

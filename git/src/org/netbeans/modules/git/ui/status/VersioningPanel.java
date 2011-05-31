@@ -79,6 +79,11 @@ class VersioningPanel extends JPanel {
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
         jPanel2.setLayout(new ToolbarLayout());
+        
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+            jPanel2.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+        }                
     }
 
     /**

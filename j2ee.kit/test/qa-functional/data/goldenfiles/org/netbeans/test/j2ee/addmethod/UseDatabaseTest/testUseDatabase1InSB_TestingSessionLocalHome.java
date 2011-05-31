@@ -1,21 +1,18 @@
 
 package test;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBLocalHome;
-
 
 /**
  * This is the local-home interface for TestingSession enterprise bean.
  */
-public interface TestingSessionLocalHome extends EJBLocalHome {
+public interface TestingSessionLocalHome extends javax.ejb.EJBLocalHome {
     
     
     
     /**
      *
      */
-    TestingSessionLocal create()  throws CreateException;
+    test.TestingSessionLocal create()  throws javax.ejb.CreateException;
     
     
 }

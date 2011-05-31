@@ -111,6 +111,20 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>New @VersioningSystem.Registration annotation</summary>
+            <version major="1" minor="19"/>
+            <date day="23" month="5" year="2011"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                Register a VCS System via the <code>@VersioningSystem.Registration</code> 
+                instead of <code>@ServiceProvider</code>.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VersioningSystem"/>
+            <issue number="196290"/>
+        </change>
+        <change>
+            <api name="versioning_spi"/>
             <summary>beforeCopy(), doCopy() and afterCopy() methods added to VCSInterceptor</summary>
             <version major="1" minor="18"/>
             <date day="27" month="8" year="2010"/>

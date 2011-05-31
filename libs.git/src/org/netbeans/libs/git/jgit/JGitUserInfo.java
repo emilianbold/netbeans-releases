@@ -54,7 +54,7 @@ public final class JGitUserInfo extends GitUser {
     private final String name;
     private final String email;
 
-    JGitUserInfo(PersonIdent authorIdent) {
+    public JGitUserInfo(PersonIdent authorIdent) {
         this.name = authorIdent.getName();
         this.email = authorIdent.getEmailAddress();
     }

@@ -127,7 +127,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
             return IndexManager.readAccess(new IndexManager.Action<Boolean>() {
                 @Override
                 public Boolean run() throws IOException, InterruptedException {
-                    return !PersistentClassIndex.this.index.exists();
+                    return index.getStatus(false) == Index.Status.EMPTY;
                 }
             }).booleanValue();
         } catch (InterruptedException ie) {
@@ -142,7 +142,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public boolean isValid() {
         try {
-            return index.isValid(true);
+            return index.getStatus(true) != Index.Status.INVALID;
         } catch (IOException ex) {
             return false;
         }
@@ -412,7 +412,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         @Override
         public void deleteEnclosedAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
             resetPkgCache();
-            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(), false);
+            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(true), false);
         }
         @Override
         public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {

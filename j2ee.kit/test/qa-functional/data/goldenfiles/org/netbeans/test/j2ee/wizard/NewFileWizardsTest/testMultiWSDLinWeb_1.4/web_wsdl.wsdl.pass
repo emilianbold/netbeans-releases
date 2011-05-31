@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<definitions name="web_wsdl" targetNamespace="http://j2ee.netbeans.org/wsdl/web_wsdl"
-    xmlns="http://schemas.xmlsoap.org/wsdl/"
-    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/web_wsdl">
-    <types/>
-</definitions>

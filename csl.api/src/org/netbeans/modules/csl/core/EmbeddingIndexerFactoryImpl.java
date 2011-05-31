@@ -107,6 +107,11 @@ public final class EmbeddingIndexerFactoryImpl extends EmbeddingIndexerFactory {
         return getFactory().getIndexVersion();
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s[%s]",getClass().getName(),getFactory());
+    }
+
     // public implementation
 
     public static EmbeddingIndexerFactory create(FileObject fileObject) {

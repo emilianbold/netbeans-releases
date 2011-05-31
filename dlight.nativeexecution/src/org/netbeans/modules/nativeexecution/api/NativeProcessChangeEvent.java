@@ -54,4 +54,9 @@ public class NativeProcessChangeEvent extends ChangeEvent {
         this.state = state;
         this.pid = pid;
     }
+
+    @Override
+    public String toString() {
+        return "NativeProcessChangeEvent{process=" + source +  " state=" + state + ", pid=" + pid + '}'; // NOI18N
+    }    
 }

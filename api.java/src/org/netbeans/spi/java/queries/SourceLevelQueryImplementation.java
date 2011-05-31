@@ -47,22 +47,8 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Permits providers to return specification source level of Java source file.
- * <p>
- * A default implementation is registered by the
- * <code>org.netbeans.modules.java.project</code> module which looks up the
- * project corresponding to the file (if any) and checks whether that
- * project has an implementation of this interface in its lookup. If so, it
- * delegates to that implementation. Therefore it is not generally necessary
- * for a project type provider to register its own global implementation of
- * this query, if it depends on the Java Project module and uses this style.
- * </p>
- * @see org.netbeans.api.java.queries.SourceLevelQuery
- * @see org.netbeans.api.queries.FileOwnerQuery
- * @see org.netbeans.api.project.Project#getLookup
- * @see org.netbeans.api.java.classpath.ClassPath#BOOT
- * @author David Konecny
  * @since org.netbeans.api.java/1 1.5
- * @deprecated use {@link SourceForBinaryQueryImplementation2}
+ * @deprecated use {@link SourceLevelQueryImplementation2}
  */
 @Deprecated
 public interface SourceLevelQueryImplementation {

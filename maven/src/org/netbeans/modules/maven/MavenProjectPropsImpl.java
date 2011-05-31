@@ -48,7 +48,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.LookupMerger;
@@ -163,7 +162,11 @@ public class MavenProjectPropsImpl {
         } else {
             el.removeChild(enEl);
         }
-        conf.putConfigurationFragment(el, shared);
+        if (el.getElementsByTagNameNS(NAMESPACE, "*").getLength() > 0) {
+            conf.putConfigurationFragment(el, shared);
+        } else {
+            conf.removeConfigurationFragment(ROOT, NAMESPACE, shared);
+        }
     }
 
     private void writeAuxiliaryData(AuxiliaryConfiguration conf, TreeMap<String, String> props, boolean shared) {
@@ -184,7 +187,11 @@ public class MavenProjectPropsImpl {
                 el.removeChild(enEl);
             }
         }
-        conf.putConfigurationFragment(el, shared);
+        if (el.getElementsByTagNameNS(NAMESPACE, "*").getLength() > 0) {
+            conf.putConfigurationFragment(el, shared);
+        } else {
+            conf.removeConfigurationFragment(ROOT, NAMESPACE, shared);
+        }
     }
 
     private Element getOrCreateRootElement(AuxiliaryConfiguration conf, boolean shared) {

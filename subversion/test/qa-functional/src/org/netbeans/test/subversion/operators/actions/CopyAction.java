@@ -15,17 +15,23 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  *
  * @author peter
  */
-public class CopyAction extends ActionNoBlock{
+public class CopyAction extends ActionNoBlock {
+    
+    /** "Team" menu item. */
+    public static final String TEAM_ITEM = "Team";
     
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
-            
+
     /** "Copy..." menu item. */
-    public static final String COPY_ITEM = "Copy To...";
+    public static final String COPY_MENU_ITEM = "Copy to...";
+    
+    /** "Copy..." popup item. */
+    public static final String COPY_POPUP_ITEM = "Copy To...";
     
     /** Creates a new instance of CopyAction */
     public CopyAction() {
-        super("Versioning" + "|" + COPY_ITEM, SVN_ITEM + "|" + COPY_ITEM);
+        super(TEAM_ITEM + "|" + COPY_MENU_ITEM, SVN_ITEM + "|" + COPY_POPUP_ITEM);
     }
     
 }

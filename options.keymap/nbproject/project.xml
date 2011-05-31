@@ -154,6 +154,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.editor.macros</friend>
                 <friend>org.netbeans.modules.jumpto</friend>
+                <friend>org.netbeans.modules.jvi</friend>
                 <friend>org.netbeans.modules.options.editor</friend>
                 <package>org.netbeans.core.options.keymap.api</package>
                 <package>org.netbeans.core.options.keymap.spi</package>

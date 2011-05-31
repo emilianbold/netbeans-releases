@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -82,9 +84,11 @@ import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackRequestsProvider.AddFunctionRequest;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackRequestsProvider.AddNodeRequest;
-import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
+import org.netbeans.modules.dlight.core.stack.api.CallStackEntry;
+import org.netbeans.modules.dlight.core.stack.api.CallStackEntryParser;
+import org.netbeans.modules.dlight.core.stack.api.impl.DefaultStackParserImpl;
+import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage2;
+import org.netbeans.modules.dlight.core.stack.storage.impl.DBProxy.StackNode;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
@@ -93,39 +97,35 @@ import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.spi.support.SQLRequest;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.spi.support.SQLRequestsProcessor;
 import org.netbeans.modules.dlight.spi.support.SQLStatementsCache;
+import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.util.Util;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NotImplementedException;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider {
+public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage2, ThreadDumpProvider {
 
+    private static final Logger LOG = DLightLogger.getLogger(SQLStackDataStorage.class);
+    private static final CallStackEntryParser defaultParser = new DefaultStackParserImpl();
     private final List<DataTableMetadata> tableMetadatas;
-    private final Map<CharSequence, Long> funcCache;
-    private final Map<NodeCacheKey, Long> nodeCache;
     private final AtomicBoolean closed = new AtomicBoolean(false);
-    private MetricsCache metricsCache;
+    private DBProxy dbProxy;
     private SQLRequestsProcessor requestsProcessor;
     private SQLStackRequestsProvider requestsProvider;
     private SQLStatementsCache stmtCache;
     private SQLDataStorage sqlStorage;
     private CppSymbolDemangler demangler;
     private ServiceInfoDataStorage serviceInfoDataStorage;
-    private long funcIdSequence;
-    private long nodeIdSequence;
 
     public SQLStackDataStorage() {
         tableMetadatas = new ArrayList<DataTableMetadata>();
-        funcCache = new HashMap<CharSequence, Long>();
-        nodeCache = new HashMap<NodeCacheKey, Long>();
-        funcIdSequence = 0;
-        nodeIdSequence = 0;
     }
 
     @Override
@@ -137,11 +137,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
         this.serviceInfoDataStorage = serviceInfoStorage;
         CppSymbolDemanglerFactory factory = Lookup.getDefault().lookup(CppSymbolDemanglerFactory.class);
-        if (factory != null) {
-            demangler = factory.getForCurrentSession(serviceInfoStorage.getInfo());
-        } else {
-            demangler = null;
-        }
+        demangler = (factory == null) ? null : factory.getForCurrentSession(serviceInfoStorage.getInfo());
         //exec Env?
     }
 
@@ -161,17 +157,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             throw new IllegalStateException("Already attached"); // NOI18N
         }
 
-        this.sqlStorage = (SQLDataStorage) storage;
+        sqlStorage = (SQLDataStorage) storage;
         stmtCache = SQLStatementsCache.getFor(sqlStorage);
-        metricsCache = new MetricsCache();
-        requestsProvider = new SQLStackRequestsProvider(stmtCache, metricsCache);
+        requestsProvider = new SQLStackRequestsProvider(stmtCache);
         requestsProcessor = sqlStorage.getRequestsProcessor();
+        dbProxy = new DBProxy(requestsProcessor, requestsProvider);
 
-        try {
-            initTables();
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        initTables();
     }
 
     private <T extends DataFilter> Collection<T> getDataFilters(List<DataFilter> filters, Class<T> clazz) {
@@ -223,15 +215,13 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     @Override
     public boolean shutdown() {
         if (closed.compareAndSet(false, true)) {
-            funcCache.clear();
-            nodeCache.clear();
-            metricsCache = null;
+            dbProxy.shutdown();
             requestsProvider = null;
 
             try {
                 stmtCache.close();
             } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
             }
 
             stmtCache = null;
@@ -240,55 +230,113 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return true;
     }
 
-    private void initTables() throws SQLException, IOException {
-        InputStream is = SQLStackDataStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); //NOI18N
+    private void initTables() {
+        InputStream is = SQLStackDataStorage.class.getClassLoader().getResourceAsStream("org/netbeans/modules/dlight/core/stack/resources/schema.sql"); // NOI18N
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
         try {
-            Pattern autoIncrementPattern = Pattern.compile("\\{AUTO_INCREMENT\\}"); //NOI18N
+            Pattern autoIncrementPattern = Pattern.compile("\\{AUTO_INCREMENT\\}"); // NOI18N
             String line;
             StringBuilder buf = new StringBuilder();
             while ((line = reader.readLine()) != null) {
-                if (line.startsWith("-- ")) { //NOI18N
+                if (line.startsWith("-- ")) { // NOI18N
                     continue;
                 }
                 line = autoIncrementPattern.matcher(line).replaceAll(sqlStorage.getAutoIncrementExpresion());
                 buf.append(line);
-                if (line.endsWith(";")) { //NOI18N
+                if (line.endsWith(";")) { // NOI18N
                     String sql = buf.toString();
                     buf.setLength(0);
                     String sqlToExecute = sql.substring(0, sql.length() - 1);
-                    try{
+                    try {
                         sqlStorage.executeUpdate(sqlToExecute);
-                    }catch(SQLException e){
-
+                    } catch (SQLException e) {
+                        if (LOG.isLoggable(Level.WARNING)) {
+                            LOG.log(Level.WARNING, "Exception while tables initialization: {0}", e.getMessage()); // NOI18N
+                        }
                     }
                 }
             }
+        } catch (IOException e) {
+            if (LOG.isLoggable(Level.WARNING)) {
+                LOG.log(Level.WARNING, "Exception while tables initialization: {0}", e.getMessage()); // NOI18N
+            }
         } finally {
-            reader.close();
+            try {
+                reader.close();
+            } catch (IOException e) {
+            }
         }
     }
 
     @Override
-    public long putStack(List<CharSequence> stack) {
-        return putSample(stack, -1, -1);
+    public long putStack(long contextID, List<CharSequence> stack) {
+        // Even if this stack has no any associated metrics, we need to store the 
+        // association with the context
+        return putSample(contextID, stack, 0, 0);
     }
 
     @Override
-    public long putSample(List<CharSequence> stack, long timestamp, long duration) {
+    public long putStack(long contextID, List<CharSequence> stack, CallStackEntryParser parser) {
+        // Even if this stack has no any associated metrics, we need to store the 
+        // association with the context
+        return putSample(contextID, stack, 0, 0);
+    }
+
+    @Override
+    /**
+     * stack is a list of entries in the following format:
+     */
+    public long putSample(long contextID, List<CharSequence> stack, long timestamp, long duration) {
+        return putSample(contextID, stack, timestamp, duration, null);
+    }
+
+    @Override
+    public synchronized long putSample(long contextID, List<CharSequence> stack, long timestamp, long duration, CallStackEntryParser parser) {
+        if (parser == null) {
+            parser = defaultParser;
+        }
+
         long callerId = 0;
         Set<Long> funcs = new HashSet<Long>();
-        for (int i = 0; i < stack.size(); ++i) {
-            boolean isLeaf = i + 1 == stack.size();
-            CharSequence funcName = stack.get(i);
-            SourceFileInfo sourceFile = FunctionNameUtils.getSourceFileInfo(funcName.toString());
-            long funcId = generateFuncId(funcName, sourceFile);
-            updateMetrics(funcId, false, timestamp, duration, !funcs.contains(funcId), isLeaf);
-            funcs.add(funcId);
-            long nodeId = generateNodeId(callerId, funcId, getOffset(funcName), sourceFile == null ? -1 : sourceFile.getLine());
-            updateMetrics(nodeId, true, timestamp, duration, true, isLeaf);
-            callerId = nodeId;
+        StackNode node;
+        String stackEntry;
+        AtomicBoolean isNewNode = new AtomicBoolean();
+
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            // Create a String() object from the passed CharSequence
+            // this guarantees that caches will use immutable keys...
+            stackEntry = stack.get(i).toString();
+
+            CallStackEntry entry = parser.parseEntry(stackEntry);
+
+            node = dbProxy.getNodeID(entry, callerId, isNewNode);
+
+            if (isNewNode.get()) {
+                CharSequence module = entry.getModulePath();
+                if (module != null) {
+                    dbProxy.addModuleInfo(node, contextID, module, entry.getOffsetInModule());
+                }
+
+                SourceFileInfo sourceFileInfo = entry.getSourceFileInfo();
+                if (sourceFileInfo != null) {
+                    dbProxy.addSourceInfo(node, contextID, sourceFileInfo);
+                }
+            }
+
+            if (duration > 0) {
+                dbProxy.updateFuncMetrics(node.funcID, contextID, timestamp, duration, !funcs.contains(node.funcID), i == 0);
+            }
+
+            // in case of recursion metrics will not be added again next time
+            funcs.add(node.funcID);
+            callerId = node.nodeID;
         }
+
+        if (duration > 0) {
+            dbProxy.updateNodeMetrics(callerId, contextID, timestamp, duration);
+        }
+
         return callerId;
     }
 
@@ -303,124 +351,82 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
     @Override
     public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
-        try {
-            List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
-            ResultSet rs = sqlStorage.select(null, null, prepareCallersSelect(path));
-            try {
-                while (rs.next()) {
-                    Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
-                    String funcName = rs.getString(2);
-                    String fileName = rs.getString(5);
-                    long line_number  = rs.getLong(6);
-                    String createdFullName = funcName +
-                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
-                    result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName,
-                            createdFullName, fileName), metrics));
-                }
-            } finally {
-                rs.close();
-            }
-            demangle(result);
-            return result;
-        } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyList();
-        }
+        throw new NotImplementedException();
     }
 
     @Override
     public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
-        try {
-            List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
-            ResultSet rs = sqlStorage.select(null, null, prepareCalleesSelect(path));
-            try {
-                while (rs.next()) {
-                    Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
-                    String funcName = rs.getString(2);
-                    String fileName = rs.getString(5);
-                    long line_number  = rs.getLong(6);
-                    String createdFullName = funcName + 
-                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
-                    result.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), funcName, 
-                            createdFullName, fileName), metrics));
-                }
-            } finally {
-                rs.close();
-            }
-            demangle(result);
-            return result;
-        } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyList();
-        }
+        throw new NotImplementedException();
     }
 
     @Override
     public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, List<DataFilter> filters, int limit) {
+        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
         try {
-            List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
             TimeIntervalDataFilter timeFilter = Util.firstInstanceOf(TimeIntervalDataFilter.class, filters);
-            PreparedStatement select = stmtCache.getPreparedStatement(
-                    "SELECT Func.func_id, Func.func_name, SUM(FuncMetricAggr.time_incl) AS time_incl, " //NOI18N
-                    + "SUM(FuncMetricAggr.time_excl) AS time_excl, SourceFiles.source_file, Func.line_number  " + //NOI18N
-                    " FROM Func LEFT JOIN FuncMetricAggr ON Func.func_id = FuncMetricAggr.func_id " + // NOI18N
-                    " LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N                    
-                    (timeFilter != null ? "WHERE ? <= FuncMetricAggr.bucket_id AND FuncMetricAggr.bucket_id < ? " : "") + // NOI18N
-                    "GROUP BY Func.func_id, Func.func_name,  SourceFiles.source_file, Func.line_number " + // NOI18N
-                    "ORDER BY " + metric.getMetricID() + " DESC"); //NOI18N
+
+            StringBuilder sqlQuery = new StringBuilder();
+            sqlQuery.append("select func_id, fname, context_id, sum(time_incl) as time_incl, sum(time_excl) as time_excl "); // NOI18N
+            sqlQuery.append("from funcmetrics left join funcnames on funcnames.id = funcmetrics.func_id "); // NOI18N
             if (timeFilter != null) {
-                select.setLong(1, timeToBucketId(timeFilter.getInterval().getStart()));//.getStartMilliSeconds()));
-                select.setLong(2, timeToBucketId(timeFilter.getInterval().getEnd()));//.getEndMilliSeconds()));
+                Range<Long> interval = timeFilter.getInterval();
+                sqlQuery.append("where bucket >= ").append(DBProxy.timeToBucket(interval.getStart())); // NOI18N
+                sqlQuery.append(" and bucket <= ").append(DBProxy.timeToBucket(interval.getEnd())); // NOI18N
             }
+            sqlQuery.append(" group by func_id, fname, context_id"); // NOI18N
+            sqlQuery.append(" order by ").append(metric.getMetricID()).append(" desc"); // NOI18N
+
+            PreparedStatement select = stmtCache.getPreparedStatement(sqlQuery.toString());
             select.setMaxRows(limit);
 
             ResultSet rs = select.executeQuery();
             try {
                 while (rs.next()) {
-                    Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
-                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(3)));
-                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(4)));
+                    long func_id = rs.getLong(1);
                     String name = rs.getString(2);
-                    String fileName = rs.getString(5);
-                    long line_number  = rs.getLong(6);
-                    String createdFullName = name +
-                            (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
-                    funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(1), name, 
-                            createdFullName, fileName), metrics));
+                    long context_id = rs.getLong(3);
+                    Map<FunctionMetric, Object> metrics = new HashMap<FunctionMetric, Object>();
+                    metrics.put(FunctionMetric.CpuTimeInclusiveMetric, new Time(rs.getLong(4)));
+                    metrics.put(FunctionMetric.CpuTimeExclusiveMetric, new Time(rs.getLong(5)));
+                    FunctionImpl func = new FunctionImpl(func_id, context_id, name, name);
+                    result.add(new FunctionCallImpl(func, metrics));
                 }
             } finally {
                 rs.close();
             }
 
-            demangle(funcList);
-
-            return funcList;
-        } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            demangle(result);
+        } catch (Exception e) {
         }
-        return Collections.emptyList();
+
+        return result;
     }
 
     @Override
+    /**
+     * get list of function calls with metrics based on a provided metadata 
+     * (table or view), filtered with filters ... 
+     * 
+     * functionDescription gives names of some columns that are needed to 
+     * construct Function object ('name', 'offset', 'id' and 'context')
+     */
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata,
             List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters) {
+        List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
+
         try {
             Collection<FunctionMetric> metrics = new ArrayList<FunctionMetric>();
             for (Column metricColumn : metricsColumn) {
                 FunctionMetric metric = FunctionMetricsFactory.getInstance().getFunctionMetric(new FunctionMetric.FunctionMetricConfiguration(metricColumn.getColumnName(), metricColumn.getColumnUName(), metricColumn.getColumnClass()));
                 metrics.add(metric);
             }
-            String functionColumnName = functionDescription.getNameColumn();
-            String offesetColumnName = functionDescription.getOffsetColumn();
-            String functionUniqueID = functionDescription.getUniqueColumnName();
-            List<FunctionCallWithMetric> funcList = new ArrayList<FunctionCallWithMetric>();
+
+            String cFuncID = functionDescription.getFunctionIDColumnName();
+            String cFuncName = functionDescription.getFunctionNameColumnName();
+            String cFuncContext = functionDescription.getContextIDColumnName();
+            String cOffset = functionDescription.getOffsetColumnName();
+
             Collection<TimeIntervalDataFilter> timeFilters = getDataFilters(filters, TimeIntervalDataFilter.class);
-            //create list of DataTableMetadataFilter
-            //if we hvae Time column create filter
             Collection<DataTableMetadataFilter> tableFilters = new ArrayList<DataTableMetadataFilter>();
             DataTableMetadataFilterSupport filtersSupport = DataTableMetadataFilterSupport.getInstance();
             for (TimeIntervalDataFilter timeFilter : timeFilters) {
@@ -428,6 +434,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
 
             ResultSet rs = sqlStorage.select(metadata, tableFilters);
+
             try {
                 while (rs.next()) {
                     Map<FunctionMetric, Object> metricValues = new HashMap<FunctionMetric, Object>();
@@ -436,199 +443,35 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                             rs.findColumn(m.getMetricID());
                             Object value = rs.getObject(m.getMetricID());
                             if (m.getMetricValueClass() == Time.class && value != null) {
-                                value = new Time(Long.valueOf(value + ""));
+                                value = new Time(Long.valueOf(value.toString()));
                             }
                             metricValues.put(m, value);
-                        } catch (SQLException e) {
-                            Exceptions.printStackTrace(e);
+                        } catch (SQLException ex) {
+                            SQLExceptions.printStackTrace(sqlStorage, ex);
                         }
                     }
-                    String funcName = rs.getString(functionColumnName);
-                    funcList.add(new FunctionCallImpl(new FunctionImpl(rs.getInt(functionUniqueID),
-                            funcName, funcName), offesetColumnName != null ? rs.getLong(offesetColumnName) : -1, metricValues));
+
+                    long funcID = rs.getLong(cFuncID);
+                    long contextID = cFuncContext == null ? -1 : rs.getLong(cFuncContext);
+                    String funcName = rs.getString(cFuncName);
+                    long offset = cOffset == null ? -1 : rs.getLong(cOffset);
+
+                    FunctionImpl func = new FunctionImpl(funcID, contextID, funcName, funcName);
+                    result.add(new FunctionCallImpl(func, offset, metricValues));
                 }
             } finally {
                 rs.close();
             }
 
-            demangle(funcList);
-
-            return funcList;
+            demangle(result);
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyList();
+            SQLExceptions.printStackTrace(sqlStorage, ex);
         }
-    }
-
-////////////////////////////////////////////////////////////////////////////////
-    private void updateMetrics(long id, boolean funcOrNode, long timestamp, long duration, boolean addIncl, boolean addExcl) {
-        if (duration > 0) {
-            long bucket = timeToBucketId(timestamp);
-            SQLRequest request;
-
-            if (funcOrNode) {
-                metricsCache.updateNodeMetrics(id, bucket, duration, addIncl, addExcl);
-                request = requestsProvider.updateNodeMetrics(id, bucket);
-            } else {
-                metricsCache.updateFunctionMetrics(id, bucket, duration, addIncl, addExcl);
-                request = requestsProvider.updateFunctionMetrics(id, bucket);
-            }
-
-            requestsProcessor.queueRequest(request);
-        }
-    }
-
-    private long generateNodeId(long callerId, long funcId, long offset, int lineNumber) {
-        synchronized (nodeCache) {
-            long lastNodeKey = offset;
-            if (lineNumber != -1){//use ut as a key
-                lastNodeKey = lineNumber;
-            }
-            NodeCacheKey cacheKey = new NodeCacheKey(callerId, funcId, lastNodeKey);
-            Long nodeId = nodeCache.get(cacheKey);
-            if (nodeId == null) {
-                nodeId = ++nodeIdSequence;
-                AddNodeRequest cmd = requestsProvider.addNode(nodeId, callerId, funcId, offset, lineNumber);
-                requestsProcessor.queueRequest(cmd);
-                nodeCache.put(cacheKey, nodeId);
-            }
-            return nodeId;
-        }
-    }
-
-    private long generateFuncId(final CharSequence fname, SourceFileInfo sourceFileInfo) {
-        // Need an immutable copy of fname. Otherwise will use
-        // wrong key in funcCache (mutuable fname)
-        String funcName = fname.toString();
-        String fullFuncName = funcName;
-        int source_file_index = -1;
-        int line_number = -1;
-        //check if there is a source file name information        
-        if (sourceFileInfo != null && sourceFileInfo.getFileName() != null) {
-            //funcName = FunctionNameUtils.getFullFunctionName(funcName);
-            line_number = sourceFileInfo.getLine();
-            int plusPos = lastIndexOf(funcName, '+'); // NOI18N
-            if (0 <= plusPos) {
-                funcName = funcName.substring(0, plusPos);
-            }
-
-            try {
-                PreparedStatement ps = stmtCache.getPreparedStatement(
-                        "SELECT id from SourceFiles where source_file=?"); // NOI18N
-                ps.setString(1, sourceFileInfo.getFileName());
-                ResultSet rs = ps.executeQuery();
-                if (rs != null && rs.next()) {
-                    //get the id
-                    source_file_index = rs.getInt("id"); //NOI18N
-                } else {
-                    PreparedStatement stmt = stmtCache.getPreparedStatement(
-                            "INSERT INTO SourceFiles (source_file) VALUES (?)"); // NOI18N
-                    stmt.setString(1, sourceFileInfo.getFileName());
-                    int r = stmt.executeUpdate();
-                    if (r > 0) {
-                        ResultSet generatedKeys = stmt.getGeneratedKeys();
-                        if (generatedKeys != null && generatedKeys.next() && generatedKeys.getMetaData().getColumnCount() > 0) {
-                            source_file_index = generatedKeys.getInt(1);
-                        }
-                    }
-                }
-            } catch (SQLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            int plusPos = lastIndexOf(funcName, '+'); // NOI18N
-            if (0 <= plusPos) {
-                funcName = funcName.substring(0, plusPos);
-            }
-            fullFuncName = funcName;
-        }
-
-        synchronized (funcCache) {
-            Long funcId = funcCache.get(funcName);
-            if (funcId == null) {
-                funcId = ++funcIdSequence;
-                AddFunctionRequest cmd = requestsProvider.addFunction(funcId, funcName, source_file_index, line_number);
-                requestsProcessor.queueRequest(cmd);
-                funcCache.put(funcName, funcId);
-            }
-            return funcId;
-        }
-    }
-
-    private long getOffset(CharSequence cs) {
-        int plusPos = lastIndexOf(cs, '+'); // NOI18N
-        if (0 <= plusPos) {
-            try {
-                return Long.parseLong(cs.subSequence(plusPos + 3, cs.length()).toString(), 16);
-            } catch (NumberFormatException ex) {
-                // ignore
-            }
-        }
-        return 0l;
-    }
-
-    private int lastIndexOf(CharSequence cs, char c) {
-        for (int i = cs.length() - 1; 0 <= i; --i) {
-            if (cs.charAt(i) == c) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private String prepareCallersSelect(List<FunctionCallWithMetric> path) throws SQLException {
-        StringBuilder buf = new StringBuilder();
-        int size = path.size();
-
-        buf.append(" SELECT F.func_id, F.func_name, SUM(N.time_incl), SUM(N.time_excl), " //NOI18N
-                + " S.source_file, N.line_number  FROM Node AS N "); //NOI18N
-        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
-        buf.append(" LEFT JOIN SourceFiles AS S ON F.func_source_file_id = S.id  "); //NOI18N        
-        buf.append(" INNER JOIN Node N1 ON N.node_id = N1.caller_id "); //NOI18N
-
-        for (int i = 1; i < size; ++i) {
-            buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
-            buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
-        }
-        buf.append(" WHERE "); //NOI18N
-        for (int i = 0; i < size; ++i) {
-            if (0 < i) {
-                buf.append("AND "); //NOI18N
-            }
-            buf.append("N").append(i + 1).append(".func_id = "); //NOI18N
-            buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
-        }
-        buf.append(" GROUP BY F.func_id, F.func_name, S.source_file, N.line_number"); //NOI18N
-        return buf.toString();
-    }
-
-    private String prepareCalleesSelect(List<FunctionCallWithMetric> path) throws SQLException {
-        StringBuilder buf = new StringBuilder();
-        int size = path.size();
-
-        buf.append("SELECT F.func_id, F.func_name,  SUM(N.time_incl), SUM(N.time_excl), " //NOI18N
-                + " S.source_file, N1.line_number  FROM Node AS N1 "); //NOI18N
-        for (int i = 1; i < size; ++i) {
-            buf.append(" INNER JOIN Node AS N").append(i + 1); //NOI18N
-            buf.append(" ON N").append(i).append(".node_id = N").append(i + 1).append(".caller_id "); //NOI18N
-        }
-        buf.append(" INNER JOIN Node N ON N").append(size).append(".node_id = N.caller_id "); //NOI18N
-        buf.append(" LEFT JOIN Func AS F ON N.func_id = F.func_id "); //NOI18N
-        buf.append(" LEFT JOIN SourceFiles  AS S ON F.func_source_file_id = S.id  "); //NOI18N                                
-        buf.append(" WHERE "); //NOI18N
-        for (int i = 0; i < size; ++i) {
-            if (0 < i) {
-                buf.append(" AND "); //NOI18N
-            }
-            buf.append(" N").append(i + 1).append(".func_id = "); //NOI18N
-            buf.append(((FunctionImpl) path.get(i).getFunction()).getId());
-        }
-        buf.append(" GROUP BY F.func_id, F.func_name, S.source_file, N1.line_number"); //NOI18N
-        return buf.toString();
+        return result;
     }
 
     private ThreadSnapshot fetchSnapshot(int threadId, long timestamp, boolean fullMsa) throws SQLException {
-        PreparedStatement s = stmtCache.getPreparedStatement("SELECT leaf_id, mstate FROM CallStack WHERE thread_id = ? AND time_stamp = ?"); // NOI18N
+        PreparedStatement s = stmtCache.getPreparedStatement("SELECT stack_id, mstate FROM CallStack WHERE thread_id = ? AND timestamp = ?"); // NOI18N
         s.setInt(1, threadId);
         s.setLong(2, timestamp);
         ResultSet rs = s.executeQuery();
@@ -668,10 +511,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         TimeFilter timeFilter = Util.firstInstanceOf(TimeFilter.class, query.getFilters());
         if (timeFilter != null) {
             if (0 <= timeFilter.getStartTime()) {
-                conditions.add(timeFilter.getStartTime() + " <= time_stamp"); // NOI18N
+                conditions.add(timeFilter.getStartTime() + " <= timestamp"); // NOI18N
             }
             if (0 <= timeFilter.getEndTime()) {
-                conditions.add("time_stamp <= " + timeFilter.getEndTime()); // NOI18N
+                conditions.add("timestamp <= " + timeFilter.getEndTime()); // NOI18N
             }
         }
 
@@ -679,16 +522,16 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         if (timeFilter != null) {
             switch (timeFilter.getMode()) {
                 case FIRST:
-                    select.append("MIN(time_stamp) "); // NOI18N
+                    select.append("MIN(timestamp) "); // NOI18N
                     break;
                 case LAST:
-                    select.append("MAX(time_stamp) "); // NOI18N
+                    select.append("MAX(timestamp) "); // NOI18N
                     break;
                 default:
-                    select.append("time_stamp "); // NOI18N
+                    select.append("timestamp "); // NOI18N
             }
         } else {
-            select.append("time_stamp "); // NOI18N
+            select.append("timestamp "); // NOI18N
         }
 
         select.append("FROM CallStack "); // NOI18N
@@ -729,7 +572,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             }
             return snapshots;
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
             return Collections.emptyList();
         }
     }
@@ -882,42 +725,165 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     @Override
+    public Function getLeafFunction(long stackId) {
+        long funcID, offset, offsetInModule, srcLine, srcColumn;
+        String funcName, module, srcFile;
+        StringBuilder qname = new StringBuilder();
+        long nodeID = stackId;
+        Function func = null;
+        try {
+            PreparedStatement ps = stmtCache.getPreparedStatement(
+                    "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.fline, sourceinfo.fcolumn" // NOI18N
+                    + " from stacknode left join funcnames on funcnames.id = stacknode.func_id" // NOI18N
+                    + " left join moduleinfo on moduleinfo.node_id = stacknode.id" // NOI18N
+                    + " left join modules on modules.id = moduleinfo.module_id" // NOI18N
+                    + " left join sourceinfo on sourceinfo.node_id = stacknode.id" // NOI18N
+                    + " left join sourcefiles on sourcefiles.id = sourceinfo.file_id" // NOI18N
+                    + " where stacknode.id = ?"); // NOI18N
+
+            ps.setLong(1, nodeID);
+
+            ResultSet rs = ps.executeQuery();
+            try {
+                if (rs.next()) {
+                    nodeID = rs.getLong(1);
+                    funcID = rs.getLong(2);
+                    offset = rs.getLong(3);
+                    funcName = rs.getString(4);
+                    module = rs.getString(5);
+                    offsetInModule = rs.getLong(6);
+                    srcFile = rs.getString(7);
+                    srcLine = rs.getLong(8);
+                    srcColumn = rs.getLong(9);
+
+                    String moduleOffset = offsetInModule < 0 ? null : "0x" + Long.toHexString(offsetInModule); // NOI18N
+
+                    if (module != null) {
+                        qname.append(module);
+                        if (moduleOffset != null) {
+                            qname.append('+').append(moduleOffset);
+                        }
+                        qname.append('`');
+                    }
+
+                    qname.append(funcName);
+
+                    if (offset > 0) {
+                        qname.append("+0x").append(Long.toHexString(offset)); // NOI18N
+                    }
+
+                    if (srcFile != null) {
+                        qname.append(':').append(srcFile);
+                        if (srcLine > 0) {
+                            qname.append(':').append(srcLine);
+                            if (srcColumn > 0) {
+                                qname.append(':').append(srcColumn);
+                            }
+                        }
+                    }
+
+                    func = new FunctionImpl(funcID, -1, funcName, qname.toString(), module, moduleOffset, srcFile);
+
+                } else {//try to get from the cache
+                    func =  dbProxy.getLeafFunction(stackId);
+                }
+            } finally {
+                qname.setLength(0);
+                rs.close();
+            }
+
+        } catch (SQLException ex) {
+            SQLExceptions.printStackTrace(sqlStorage, ex);
+        }
+        if (func != null){
+            demangle(func);
+        }
+        return func;
+    }
+
+    @Override
+    /**
+     * Callstack itself is out of any context. So, returned list is not binded 
+     * to any context (!) - context should be used in sequent calls to other 
+     * API methods...
+     */
     public synchronized List<FunctionCall> getCallStack(final long stackId) {
+        long funcID, offset, offsetInModule, srcLine, srcColumn;
+        String funcName, module, srcFile;
+        StringBuilder qname = new StringBuilder();
+
         List<FunctionCall> result = new ArrayList<FunctionCall>();
         try {
             long nodeID = stackId;
             while (0 < nodeID) {
                 PreparedStatement ps = stmtCache.getPreparedStatement(
-                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Node.line_number, "  //NOI18N
-                        + "Func.func_name, "//NOI18N
-                        + " SourceFiles.source_file " + // NOI18N
-                        "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N
-                        "WHERE node_id = ?"); // NOI18N
+                        "select caller_id, func_id, offset, fname, modules.path, module_offset, sourcefiles.path, sourceinfo.fline, sourceinfo.fcolumn" // NOI18N
+                        + " from stacknode left join funcnames on funcnames.id = stacknode.func_id" // NOI18N
+                        + " left join moduleinfo on moduleinfo.node_id = stacknode.id" // NOI18N
+                        + " left join modules on modules.id = moduleinfo.module_id" // NOI18N
+                        + " left join sourceinfo on sourceinfo.node_id = stacknode.id" // NOI18N
+                        + " left join sourcefiles on sourcefiles.id = sourceinfo.file_id" // NOI18N
+                        + " where stacknode.id = ?"); // NOI18N
+
                 ps.setLong(1, nodeID);
 
                 ResultSet rs = ps.executeQuery();
                 try {
                     if (rs.next()) {
-                        String funcName = rs.getString(6);
-                        long line_number = rs.getLong(5);
-                        String fileName = rs.getString(7);
-                        final long offset = rs.getLong(4);
-                        String fullFuncName = funcName + "+0x" + Long.toHexString(offset) + (fileName != null ? ":" + fileName + ":" + line_number : "");//NOI18N
-                        FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, fullFuncName, fileName);
-                        result.add(new FunctionCallImpl(func, offset, new HashMap<FunctionMetric, Object>()));
-                        nodeID = rs.getInt(2);
+                        nodeID = rs.getLong(1);
+                        funcID = rs.getLong(2);
+                        offset = rs.getLong(3);
+                        funcName = rs.getString(4);
+                        module = rs.getString(5);
+                        offsetInModule = rs.getLong(6);
+                        srcFile = rs.getString(7);
+                        srcLine = rs.getLong(8);
+                        srcColumn = rs.getLong(9);
+
+                        String moduleOffset = offsetInModule < 0 ? null : "0x" + Long.toHexString(offsetInModule); // NOI18N
+
+                        if (module != null) {
+                            qname.append(module);
+                            if (moduleOffset != null) {
+                                qname.append('+').append(moduleOffset);
+                            }else{
+                                qname.append('+').append("0x0");//NOI18N
+                            }
+                            qname.append('`');
+                        }
+
+                        qname.append(funcName);
+
+                        if (offset > 0) {
+                            qname.append("+0x").append(Long.toHexString(offset)); // NOI18N
+                        }else{
+                            qname.append('+').append("0x0");//NOI18N
+                        }
+
+                        if (srcFile != null) {
+                            qname.append(':').append(srcFile);
+                            if (srcLine >= 0) {
+                                qname.append(':').append(srcLine);
+                                if (srcColumn >= 0) {
+                                    qname.append(':').append(srcColumn);
+                                }
+                            }
+                        }
+
+                        FunctionImpl func = new FunctionImpl(funcID, -1, funcName, qname.toString(), module, moduleOffset, srcFile);
+                        result.add(new FunctionCallImpl(func, offset, Collections.<FunctionMetric, Object>emptyMap()));
                     } else {
                         break;
                     }
                 } finally {
+                    qname.setLength(0);
                     rs.close();
                 }
             }
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
         }
         demangle(result);
-        Collections.reverse(result);
         return result;
     }
 
@@ -934,202 +900,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    /**
-     *
-     * @param timestamp  in nanoseconds
-     * @return bucket id
-     */
-    private static long timeToBucketId(long timestamp) {
-        return timestamp / 1000 / 1000 / 1000;  // bucket is 1 second
-    }
-
-////////////////////////////////////////////////////////////////////////////////
-    private static class NodeCacheKey {
-
-        private final long callerId;
-        private final long funcId;
-        private final long offset;
-
-        public NodeCacheKey(long callerId, long funcId, long offset) {
-            this.callerId = callerId;
-            this.funcId = funcId;
-            this.offset = offset;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof NodeCacheKey)) {
-                return false;
-            }
-            final NodeCacheKey that = (NodeCacheKey) obj;
-            return callerId == that.callerId && funcId == that.funcId && offset == that.offset;
-        }
-
-        @Override
-        public int hashCode() {
-            return 13 * ((int) (callerId >> 32) | (int) callerId) + 17 * ((int) (funcId >> 32) | (int) funcId) + ((int) (offset >> 32) | (int) offset);
-        }
-    }
-
-    protected static class FunctionImpl implements Function {
-
-        private final long id;
-        private String name;
-        private final String quilifiedName;
-        private final String module_name;
-        private final String module_offset;
-        private final String source_file;
-
-        public FunctionImpl(long id, String name, String qualifiedName) {
-            this(id, name, qualifiedName, FunctionNameUtils.getFunctionModule(qualifiedName), FunctionNameUtils.getFunctionModuleOffset(qualifiedName),
-                    FunctionNameUtils.getSourceFileInfo(qualifiedName) == null ? null : FunctionNameUtils.getSourceFileInfo(qualifiedName).getFileName());
-        }
-
-        public FunctionImpl(long id, String name, String qualifiedName, String source_file) {
-            this(id, name, qualifiedName, FunctionNameUtils.getFunctionModule(qualifiedName),
-                    FunctionNameUtils.getFunctionModuleOffset(qualifiedName), source_file);
-        }
-
-        public FunctionImpl(long id, String name, String qualifiedName, String module_name, String module_offset, String source_file) {
-            this.id = id;
-            this.name = name;
-            this.quilifiedName = qualifiedName;
-            this.module_name = module_name;
-            this.module_offset = module_offset;
-            this.source_file = source_file;
-        }
-
-        public long getId() {
-            return id;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        private void setName(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getSignature() {
-            return quilifiedName;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        @Override
-        public String getQuilifiedName() {
-            return FunctionNameUtils.getFunctionQName(name);
-        }
-
-        @Override
-        public String getModuleName() {
-            return FunctionNameUtils.getFunctionModule(name);
-        }
-
-        String getFullName() {
-            return FunctionNameUtils.getFullFunctionName(quilifiedName);
-        }
-
-        @Override
-        public String getModuleOffset() {
-            return module_offset;
-        }
-
-        @Override
-        public String getSourceFile() {
-            return source_file;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof FunctionImpl)) {
-                return false;
-            }
-
-            FunctionImpl that = (FunctionImpl) obj;
-            return (this.id == that.id && this.getFullName().equals(that.getFullName()));
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 29 * hash + (this.getFullName() != null ? this.getFullName().hashCode() : 0);
-            hash = 29 * hash + (int) (this.id ^ (this.id >>> 32));
-            return hash;
-        }
-    }
-
-    protected static class FunctionCallImpl extends FunctionCallWithMetric {
-
-        private final Map<FunctionMetric, Object> metrics;
-        private final int lineNumber;
-
-        FunctionCallImpl(Function function, long offset, Map<FunctionMetric, Object> metrics) {
-            super(function, offset);
-            this.metrics = metrics;
-            SourceFileInfo sourceFileInfo = FunctionNameUtils.getSourceFileInfo(function.getSignature());
-            lineNumber = sourceFileInfo == null ? -1 : sourceFileInfo.getLine();
-            setLineNumber(lineNumber);
-
-        }
-
-        FunctionCallImpl(Function function, Map<FunctionMetric, Object> metrics) {
-            this(function, 0, metrics);
-        }
-
-        @Override
-        public String getDisplayedName() {
-            if (hasLineNumber()) {
-                return FunctionNameUtils.getFunctionName(getFunction().getSignature());
-                //+ "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
-            }
-            return getFunction().getName() + (hasOffset() ? ("+0x" + Long.toHexString(getOffset())) : ""); //NOI18N
-        }
-
-        @Override
-        public Object getMetricValue(FunctionMetric metric) {
-            return metrics.get(metric);
-        }
-
-        @Override
-        public Object getMetricValue(String metric_id) {
-            for (FunctionMetric metric : metrics.keySet()) {
-                if (metric.getMetricID().equals(metric_id)) {
-                    return metrics.get(metric);
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public boolean hasMetric(String metric_id) {
-            for (FunctionMetric metric : metrics.keySet()) {
-                if (metric.getMetricID().equals(metric_id)) {
-                    return true;
-                }
-            }
-            return false;
-
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder();
-            buf.append("FunctionCall{ function=").append(getFunction()); //NOI18N
-            buf.append(", metrics=").append(metrics).append(" }"); //NOI18N
-            return buf.toString();
-        }
-
-        @Override
-        public int getLineNumber() {
-
-            return lineNumber;
+    private void demangle(Function f) {
+        if (demangler != null) {
+            String demangled = demangler.demangle(f.getName());
+            ((FunctionImpl) f).setName(demangled);
         }
     }
 }

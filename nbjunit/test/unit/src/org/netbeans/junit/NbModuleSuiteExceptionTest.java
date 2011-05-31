@@ -64,7 +64,7 @@ public class NbModuleSuiteExceptionTest extends TestCase {
         System.setProperty("generate.msg", "true");
         System.setProperty("generate.exc", "true");
 
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteException.class).gui(false));
+        Test instance = NbModuleSuite.createConfiguration(NbModuleSuiteException.class).gui(false).suite();
         TestResult r = junit.textui.TestRunner.run(instance);
         assertEquals("No failures", 0, r.failureCount());
         assertEquals("No errors", 0, r.errorCount());
@@ -74,11 +74,11 @@ public class NbModuleSuiteExceptionTest extends TestCase {
         System.setProperty("generate.msg", "true");
         System.setProperty("generate.exc", "false");
 
-        Test instance = NbModuleSuite.create(
+        Test instance =
             NbModuleSuite.createConfiguration(NbModuleSuiteException.class).
             gui(false).
             failOnMessage(Level.WARNING)
-        );
+        .suite();
         TestResult r = junit.textui.TestRunner.run(instance);
         assertEquals("One failure", 1, r.failureCount());
         assertEquals("No errors", 0, r.errorCount());
@@ -90,11 +90,11 @@ public class NbModuleSuiteExceptionTest extends TestCase {
         System.setProperty("generate.msg", "false");
         System.setProperty("generate.exc", "true");
 
-        Test instance = NbModuleSuite.create(
+        Test instance =
             NbModuleSuite.createConfiguration(NbModuleSuiteException.class).
             gui(false).
             failOnException(Level.INFO)
-        );
+        .suite();
         TestResult r = junit.textui.TestRunner.run(instance);
         assertEquals("One failure", 1, r.failureCount());
         assertEquals("No errors", 0, r.errorCount());

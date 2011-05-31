@@ -110,10 +110,10 @@ public class SCFTHandlerTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        String txt = "<html><h1>${title}</h1></html>";
+        String txt = "print('<html><h1>'); print(title); print('</h1></html>');";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo.setAttribute("javax.script.ScriptEngine", "js");
         
         
         DataObject obj = DataObject.find(fo);
@@ -135,10 +135,10 @@ public class SCFTHandlerTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        String txt = "<html><h1>${nameAndExt}</h1></html>";
+        String txt = "print('<html><h1>'); print(nameAndExt); print('</h1></html>')";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo.setAttribute("javax.script.ScriptEngine", "js");
         
         
         DataObject obj = DataObject.find(fo);
@@ -162,17 +162,17 @@ public class SCFTHandlerTest extends NbTestCase {
         FileObject root = lfs.getRoot();
         FileObject fo = FileUtil.createData(root, "j.java");
         OutputStream os = fo.getOutputStream();
-        String txt = "<html><h1>${nameAndExt}</h1></html>";
+        String txt = "print('<html><h1>'); print(nameAndExt); print('</h1></html>')";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo.setAttribute("javax.script.ScriptEngine", "js");
         
         FileObject fo2 = FileUtil.createData(root, "j.form");
         OutputStream os2 = fo2.getOutputStream();
-        String txt2 = "<html><h2>${nameAndExt}</h2></html>";
+        String txt2 = "print('<html><h2>'); print(nameAndExt); print('</h2></html>')";
         os2.write(txt2.getBytes());
         os2.close();
-        fo2.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo2.setAttribute("javax.script.ScriptEngine", "js");
         
         DataObject obj = DataObject.find(fo);
         assertEquals("Both files", 2, obj.files().size());
@@ -203,51 +203,19 @@ public class SCFTHandlerTest extends NbTestCase {
         assertEquals(exp2, readFile(newForm));
     }
     
-     public void testCreateFromTemplateUsingFreemarkerAndInclude() throws Exception {
-         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-         FileObject fclasses = FileUtil.createFolder(root, "classes");
-         FileObject fincludes = FileUtil.createFolder(root, "includes");
-         FileObject fclass = FileUtil.createData(fclasses, "class.txt");
-         OutputStream os = fclass.getOutputStream();
-         String classtxt = "<#include \"../includes/include.txt\">";
-         os.write(classtxt.getBytes());
-         os.close();
-         fclass.setAttribute("javax.script.ScriptEngine", "freemarker");
-         FileObject finclude = FileUtil.createData(fincludes, "include.txt");
-         os = finclude.getOutputStream();
-         String includetxt = "<html><h1>${title}</h1></html>";
-         os.write(includetxt.getBytes());
-         os.close();
-         
-         
-         DataObject obj = DataObject.find(fclass);
-         
-         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
-         
-         Map<String,String> parameters = Collections.singletonMap("title", "Nazdar");
-         DataObject n = obj.createFromTemplate(folder, "complex", parameters);
-         
-         assertEquals("Created in right place", folder, n.getFolder());
-         assertEquals("Created with right name", "complex.txt", n.getName());
-         
-         String exp = "<html><h1>Nazdar</h1></html>";
-         assertEquals(exp, readFile(n.getPrimaryFile()));
-         
-     }
-    
     public void testBasePropertiesAlwaysPresent() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        String txt = "<html><h1>${name}</h1>" +
-            "<h2>${date}</h2>" +
-            "<h3>${time}</h3>" +
-            "<h4>${user}</h4>" +
-            "<h4>${dateTime?string(\"yy\")}</h4>" +
-            "</html>";
+        String txt = "print('<html><h1>'); print(name); print('</h1>');" +
+            "print('<h2>'); print(date); print('</h2>');" +
+            "print('<h3>'); print(time); print('</h3>');" +
+            "print('<h4>'); print(user); print('</h4>');" +
+            "print('<h4>'); print(dateTime.getTime()); print('</h4>');" +
+            "print('</html>');";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo.setAttribute("javax.script.ScriptEngine", "js");
         
         
         DataObject obj = DataObject.find(fo);
@@ -294,7 +262,7 @@ public class SCFTHandlerTest extends NbTestCase {
          FileObject xml = FileUtil.createData(xmldir, "class.txt");
          OutputStream os = xml.getOutputStream();
          FileUtil.copy(getClass().getResourceAsStream("utf8.xml"), os);
-         xml.setAttribute("javax.script.ScriptEngine", "freemarker");
+         xml.setAttribute("javax.script.ScriptEngine", "js");
          os.close();
          
          DataObject obj = DataObject.find(xml);
@@ -317,9 +285,8 @@ public class SCFTHandlerTest extends NbTestCase {
          assertEquals("Created with right name", "complex.txt", n.getName());
          
          
-         String read = readChars(n.getPrimaryFile(), set);
-         
-         String exp = readChars(xml, Charset.forName("utf-8"));
+         String read = readChars(n.getPrimaryFile(), set).replaceAll("println\\('", "").replaceAll("'\\);", "");
+         String exp = readChars(xml, Charset.forName("utf-8")).replaceAll("println\\('", "").replaceAll("'\\);", "");
          assertEquals(exp, read);
          
      }
@@ -331,13 +298,13 @@ public class SCFTHandlerTest extends NbTestCase {
         FileObject root = fs.getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.java");
         FileObject fo2 = FileUtil.createData(root, "simpleObject.form");
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
-        fo2.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo2.setAttribute("javax.script.ScriptEngine", "js");
 
         Charset set = Charset.forName("iso-8859-2");
         OutputStream os = fo2.getOutputStream();
         OutputStreamWriter w = new OutputStreamWriter(os, set);
-        String txt = "skvělej tým, co nikdy neusíná - ěščřžýáíéúů";
+        String txt = "print('skvělej tým, co nikdy neusíná - ěščřžýáíéúů')";
         w.write(txt);
         w.close();
         
@@ -377,6 +344,7 @@ public class SCFTHandlerTest extends NbTestCase {
             fail("no input stream for " + snd);
         }
         String read = new String(cbuf, 0, len);
+        txt = txt.replaceAll("print\\('", "").replaceAll("'\\)", "");
         
         assertEquals(txt, read);
     }

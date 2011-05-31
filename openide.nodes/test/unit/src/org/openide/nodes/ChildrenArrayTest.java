@@ -61,10 +61,6 @@ public class ChildrenArrayTest extends NbTestCase {
         super(name);
     }
 
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(ChildrenArrayTest.class));
-    }
-
     protected Children.Array createChildren () {
         return new Children.Array ();
     }

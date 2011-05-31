@@ -62,6 +62,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
@@ -342,13 +343,37 @@ public final class SharableLibrariesUtils {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        
+
+        @NbBundle.Messages({            
+            "TXT_AlreadyExists=<html>The file {0} already exists in the library folder.<br>Using the existing file."
+        })
         private void updateReference(File oldFile, String key, boolean main, FileObject dir) {
-            FileObject src = FileUtil.toFileObject(oldFile);
+            final FileObject src = FileUtil.toFileObject(oldFile);
+            if (src == null) {
+                assert !oldFile.exists() : "The file: " + oldFile.getAbsolutePath() + " exists but FileObject cannot be found.";    //NOI18N
+                return;
+            }
             FileObject newFile;
             try {
-                //TODO it could actually already exist..
-                newFile = FileUtil.copyFile(src, dir, src.getName());
+                newFile = dir.getFileObject(src.getNameExt());
+                if (newFile != null) {
+                    final Runnable action = new Runnable() {
+                        @Override
+                        public void run() {                            
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                Bundle.TXT_AlreadyExists(src.getNameExt()),
+                                NotifyDescriptor.WARNING_MESSAGE));
+                                
+                        }
+                    };
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        action.run();
+                    } else {
+                        SwingUtilities.invokeLater(action);
+                    }
+                } else {
+                    newFile = FileUtil.copyFile(src, dir, src.getName());
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 newFile = src;

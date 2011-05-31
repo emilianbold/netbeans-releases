@@ -47,9 +47,11 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -105,7 +107,7 @@ public class UnbufferSupport {
             InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
             File file = fl.locate(unbufferPath + "/" + unbufferLib, "org.netbeans.modules.dlight.nativeexecution", false); // NOI18N
 
-            log.fine("Look for unbuffer library here: " + unbufferPath + "/" + unbufferLib); // NOI18N
+            log.log(Level.FINE, "Look for unbuffer library here: {0}/{1}", new Object[]{unbufferPath, unbufferLib}); // NOI18N
 
             if (file != null && file.exists()) {
                 if (execEnv.isRemote()) {
@@ -132,11 +134,11 @@ public class UnbufferSupport {
                                 String remoteLib_64 = remotePath + "_64/" + unbufferLib; // NOI18N
 
                                 String fullLocalPath = file.getParentFile().getAbsolutePath(); // NOI18N
-                                Future<Integer> copyTask;
-                                copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remoteLib_32, 0755, null, true); // NOI18N
-                                copyTask.get();
-                                copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "_64/" + unbufferLib, execEnv, remoteLib_64, 0755, null, true); // NOI18N
-                                copyTask.get();
+                                Future<UploadStatus> copyTask;
+                                copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "/" + unbufferLib, execEnv, remoteLib_32, 0755, true); // NOI18N
+                                copyTask.get(); // is it OK not to check upload exit code?
+                                copyTask = CommonTasksSupport.uploadFile(fullLocalPath + "_64/" + unbufferLib, execEnv, remoteLib_64, 0755, true); // NOI18N
+                                copyTask.get(); // is it OK not to check upload exit code?
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (ExecutionException ex) {

@@ -45,7 +45,6 @@ import com.sun.el.parser.AstBracketSuffix;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,7 +53,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -62,14 +60,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -251,36 +243,9 @@ public final class ResourceBundles {
      * @return
      */
     private List<String> initJSFResourceBundles() {
-        MetadataModel<JsfModel> model = JsfModelFactory.getModel(webModule);
-        if (model == null) {
-            return Collections.emptyList();
-        }
-        try {
-            return model.runReadAction(new MetadataModelAction<JsfModel, List<String>>() {
-
-                @Override
-                public List<String> run(JsfModel metadata) throws Exception {
-                    List<Application> applications = metadata.getElements(Application.class);
-                    List<String> result = new ArrayList<String>();
-                    for (Application application : applications) {
-                        for (ResourceBundle bundle : application.getResourceBundles()) {
-                            result.add(bundle.getBaseName());
-                        }
-                    }
-                    return result;
-                }
-            });
-        } catch (MetadataModelException ex) {
-            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ex);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ex);
-        } catch (IllegalStateException ise) {
-            // thrown from xdm (underlying the jsf model) when the model is broken
-            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ise);
-        }
-        return Collections.emptyList();
+        return webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase()) : Collections.<String>emptyList();
     }
-
+     
     private Map<String, java.util.ResourceBundle> getBundlesMap() {
         if (bundlesMap == null) {
             bundlesMap = initResourceBundleMap();

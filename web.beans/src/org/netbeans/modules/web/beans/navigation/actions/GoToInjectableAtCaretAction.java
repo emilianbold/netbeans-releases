@@ -62,7 +62,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesPopup;
@@ -140,7 +140,7 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
             StatusDisplayer.getDefault().setStatusText(e.getMessage(),
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
         }
-        final Result result = model.getInjectable(var, null);
+        final DependencyInjectionResult result = model.lookupInjectables(var, null);
         if (result == null) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,
@@ -148,16 +148,16 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return;
         }
-        if (result instanceof Result.Error) {
+        if (result instanceof DependencyInjectionResult.Error) {
             StatusDisplayer.getDefault().setStatusText(
-                    ((Result.Error) result).getMessage(),
+                    ((DependencyInjectionResult.Error) result).getMessage(),
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
         }
-        if (result.getKind() == Result.ResultKind.DEFINITION_ERROR) {
+        if (result.getKind() == DependencyInjectionResult.ResultKind.DEFINITION_ERROR) {
             return;
         }
-        if (result.getKind() == Result.ResultKind.INJECTABLE_RESOLVED) {
-            Element injectable = ((Result.InjectableResult) result)
+        if (result.getKind() == DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED) {
+            Element injectable = ((DependencyInjectionResult.InjectableResult) result)
                     .getElement();
             final ElementHandle<Element> handle = ElementHandle
                     .create(injectable);
@@ -165,12 +165,13 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
                     .getCompilationController().getClasspathInfo();
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     ElementOpen.open(classpathInfo, handle);
                 }
             });
         }
-        else if (result.getKind() == Result.ResultKind.RESOLUTION_ERROR) {
+        else if (result.getKind() == DependencyInjectionResult.ResultKind.RESOLUTION_ERROR) {
             final CompilationController controller = model
                     .getCompilationController();
             if (SwingUtilities.isEventDispatchThread()) {
@@ -187,26 +188,26 @@ public final class GoToInjectableAtCaretAction extends AbstractInjectableAction 
         }
     }
 
-    private void showPopup( Result result , CompilationController controller, 
+    private void showPopup( DependencyInjectionResult result , CompilationController controller, 
             MetadataModel<WebBeansModel> model ,JTextComponent target ) 
     {
-        if ( !(result instanceof Result.ApplicableResult)){
+        if ( !(result instanceof DependencyInjectionResult.ApplicableResult)){
             return;
         }
-        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
-        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((DependencyInjectionResult.ApplicableResult)result).getTypeElements();
+        Set<Element> productions = ((DependencyInjectionResult.ApplicableResult)result).getProductions();
         if ( typeElements.size() +productions.size() == 0 ){
             return;
         }
-        List<ElementHandle<Element>> handles  = new ArrayList<ElementHandle<Element>>(
-                typeElements.size() +productions.size()); 
+        List<ElementHandle<? extends Element>> handles  = new ArrayList<
+            ElementHandle<? extends Element>>(typeElements.size() +productions.size()); 
         for (Element element : typeElements) {
-            if ( !((Result.ApplicableResult)result).isDisabled(element)){
+            if ( !((DependencyInjectionResult.ApplicableResult)result).isDisabled(element)){
                 handles.add( ElementHandle.create( element ));
             }
         }
         for (Element element : productions) {
-            if ( !((Result.ApplicableResult)result).isDisabled(element)){
+            if ( !((DependencyInjectionResult.ApplicableResult)result).isDisabled(element)){
                 handles.add( ElementHandle.create( element ));
             }
         }

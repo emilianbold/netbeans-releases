@@ -45,6 +45,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
+import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -54,6 +55,7 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -207,6 +209,18 @@ public class SuiteUtilsTest extends TestBase {
         Project modulecopy = ProjectManager.getDefault().findProject(copy.getFileObject("suiteComponent"));
         assertNotNull(modulecopy);
         assertNull(SuiteUtils.findSuite(modulecopy));
+    }
+
+    public void testAddModulesNoModulesProp() throws Exception { // #198490
+        SuiteProject suite = generateSuite("suite");
+        EditableProperties props = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        props.remove(SuiteUtils.MODULES_PROPERTY);
+        suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        SubprojectProvider spp = suite.getLookup().lookup(SubprojectProvider.class);
+        assertEquals(Collections.emptySet(), spp.getSubprojects());
+        NbModuleProject module = generateStandaloneModule("module");
+        SuiteUtils.addModule(suite, module);
+        assertEquals(Collections.singleton(module), spp.getSubprojects());
     }
 
 }

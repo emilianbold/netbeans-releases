@@ -172,7 +172,7 @@ public interface NbModuleProvider {
      * module project cannot be chained into another suite in such case.
      * @return location of built module JAR
      */
-    File getModuleJarLocation();
+    @CheckForNull File getModuleJarLocation();
 
     /**
      * May get invoked before accessing some other methods from this interface to

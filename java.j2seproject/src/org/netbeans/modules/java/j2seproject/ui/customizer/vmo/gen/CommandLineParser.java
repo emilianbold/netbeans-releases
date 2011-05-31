@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 12:02:23 /Users/tom/Downloads/CommandLine.g 2010-12-08 16:45:37
+// $ANTLR 3.3 Nov 30, 2010 12:45:30 /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g 2011-03-17 11:56:36
 
 package org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen;
 
@@ -21,14 +21,16 @@ import org.antlr.runtime.tree.*;
 
 public class CommandLineParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "WS", "TEXT", "LETTER", "'-'", "'='"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "WS", "TEXT", "LETTER", "'-'", "'='", "'\\''", "'\"'"
     };
-    public static final int WS=4;
-    public static final int LETTER=6;
-    public static final int TEXT=5;
     public static final int EOF=-1;
-    public static final int T__8=8;
     public static final int T__7=7;
+    public static final int T__8=8;
+    public static final int T__9=9;
+    public static final int T__10=10;
+    public static final int WS=4;
+    public static final int TEXT=5;
+    public static final int LETTER=6;
 
     // delegates
     // delegators
@@ -52,7 +54,7 @@ public class CommandLineParser extends Parser {
     }
 
     public String[] getTokenNames() { return CommandLineParser.tokenNames; }
-    public String getGrammarFileName() { return "/Users/tom/Downloads/CommandLine.g"; }
+    public String getGrammarFileName() { return "/Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g"; }
 
 
 
@@ -254,7 +256,7 @@ public class CommandLineParser extends Parser {
     };
 
     // $ANTLR start "vmOptions"
-    // /Users/tom/Downloads/CommandLine.g:249:1: vmOptions : ( ( WS )? option )* ( WS )? -> ( option )* ;
+    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:251:1: vmOptions : ( ( WS )? option )* ( WS )? -> ( option )* ;
     public final CommandLineParser.vmOptions_return vmOptions() throws RecognitionException {
         CommandLineParser.vmOptions_return retval = new CommandLineParser.vmOptions_return();
         retval.start = input.LT(1);
@@ -271,10 +273,10 @@ public class CommandLineParser extends Parser {
         RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
         RewriteRuleSubtreeStream stream_option=new RewriteRuleSubtreeStream(adaptor,"rule option");
         try {
-            // /Users/tom/Downloads/CommandLine.g:250:2: ( ( ( WS )? option )* ( WS )? -> ( option )* )
-            // /Users/tom/Downloads/CommandLine.g:250:4: ( ( WS )? option )* ( WS )?
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:2: ( ( ( WS )? option )* ( WS )? -> ( option )* )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:4: ( ( WS )? option )* ( WS )?
             {
-            // /Users/tom/Downloads/CommandLine.g:250:4: ( ( WS )? option )*
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:4: ( ( WS )? option )*
             loop2:
             do {
                 int alt2=2;
@@ -296,9 +298,9 @@ public class CommandLineParser extends Parser {
 
                 switch (alt2) {
             	case 1 :
-            	    // /Users/tom/Downloads/CommandLine.g:250:5: ( WS )? option
+            	    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:5: ( WS )? option
             	    {
-            	    // /Users/tom/Downloads/CommandLine.g:250:5: ( WS )?
+            	    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:5: ( WS )?
             	    int alt1=2;
             	    int LA1_0 = input.LA(1);
 
@@ -307,7 +309,7 @@ public class CommandLineParser extends Parser {
             	    }
             	    switch (alt1) {
             	        case 1 :
-            	            // /Users/tom/Downloads/CommandLine.g:250:5: WS
+            	            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:5: WS
             	            {
             	            WS1=(Token)match(input,WS,FOLLOW_WS_in_vmOptions75);  
             	            stream_WS.add(WS1);
@@ -333,7 +335,7 @@ public class CommandLineParser extends Parser {
                 }
             } while (true);
 
-            // /Users/tom/Downloads/CommandLine.g:250:16: ( WS )?
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:16: ( WS )?
             int alt3=2;
             int LA3_0 = input.LA(1);
 
@@ -342,7 +344,7 @@ public class CommandLineParser extends Parser {
             }
             switch (alt3) {
                 case 1 :
-                    // /Users/tom/Downloads/CommandLine.g:250:16: WS
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:16: WS
                     {
                     WS3=(Token)match(input,WS,FOLLOW_WS_in_vmOptions80);  
                     stream_WS.add(WS3);
@@ -366,9 +368,9 @@ public class CommandLineParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 250:20: -> ( option )*
+            // 252:20: -> ( option )*
             {
-                // /Users/tom/Downloads/CommandLine.g:250:23: ( option )*
+                // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:252:23: ( option )*
                 while ( stream_option.hasNext() ) {
                     adaptor.addChild(root_0, stream_option.nextTree());
 
@@ -404,7 +406,7 @@ public class CommandLineParser extends Parser {
     };
 
     // $ANTLR start "option"
-    // /Users/tom/Downloads/CommandLine.g:252:1: option : ( '-' switchOption -> switchOption | nonSwitchOption -> nonSwitchOption );
+    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:254:1: option : ( '-' switchOption -> switchOption | nonSwitchOption -> nonSwitchOption );
     public final CommandLineParser.option_return option() throws RecognitionException {
         CommandLineParser.option_return retval = new CommandLineParser.option_return();
         retval.start = input.LT(1);
@@ -422,7 +424,7 @@ public class CommandLineParser extends Parser {
         RewriteRuleSubtreeStream stream_switchOption=new RewriteRuleSubtreeStream(adaptor,"rule switchOption");
         RewriteRuleSubtreeStream stream_nonSwitchOption=new RewriteRuleSubtreeStream(adaptor,"rule nonSwitchOption");
         try {
-            // /Users/tom/Downloads/CommandLine.g:252:8: ( '-' switchOption -> switchOption | nonSwitchOption -> nonSwitchOption )
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:254:8: ( '-' switchOption -> switchOption | nonSwitchOption -> nonSwitchOption )
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -440,7 +442,7 @@ public class CommandLineParser extends Parser {
             }
             switch (alt4) {
                 case 1 :
-                    // /Users/tom/Downloads/CommandLine.g:252:10: '-' switchOption
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:254:10: '-' switchOption
                     {
                     char_literal4=(Token)match(input,7,FOLLOW_7_in_option95);  
                     stream_7.add(char_literal4);
@@ -464,7 +466,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 252:27: -> switchOption
+                    // 254:27: -> switchOption
                     {
                         adaptor.addChild(root_0, stream_switchOption.nextTree());
 
@@ -474,7 +476,7 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // /Users/tom/Downloads/CommandLine.g:253:3: nonSwitchOption
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:255:3: nonSwitchOption
                     {
                     pushFollow(FOLLOW_nonSwitchOption_in_option107);
                     nonSwitchOption6=nonSwitchOption();
@@ -495,7 +497,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 253:20: -> nonSwitchOption
+                    // 255:20: -> nonSwitchOption
                     {
                         adaptor.addChild(root_0, stream_nonSwitchOption.nextTree());
 
@@ -530,7 +532,7 @@ public class CommandLineParser extends Parser {
     };
 
     // $ANTLR start "switchOption"
-    // /Users/tom/Downloads/CommandLine.g:255:1: switchOption : ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' t2= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS t2= TEXT -> | t= TEXT ->);
+    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:257:1: switchOption : ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' eText -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS eText -> | t= TEXT ->);
     public final CommandLineParser.switchOption_return switchOption() throws RecognitionException {
         CommandLineParser.switchOption_return retval = new CommandLineParser.switchOption_return();
         retval.start = input.LT(1);
@@ -538,30 +540,32 @@ public class CommandLineParser extends Parser {
         CommonTree root_0 = null;
 
         Token t=null;
-        Token t2=null;
         Token char_literal7=null;
-        Token WS8=null;
+        Token WS9=null;
+        CommandLineParser.eText_return eText8 = null;
+
+        CommandLineParser.eText_return eText10 = null;
+
 
         CommonTree t_tree=null;
-        CommonTree t2_tree=null;
         CommonTree char_literal7_tree=null;
-        CommonTree WS8_tree=null;
+        CommonTree WS9_tree=null;
         RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
         RewriteRuleTokenStream stream_TEXT=new RewriteRuleTokenStream(adaptor,"token TEXT");
         RewriteRuleTokenStream stream_8=new RewriteRuleTokenStream(adaptor,"token 8");
-
+        RewriteRuleSubtreeStream stream_eText=new RewriteRuleSubtreeStream(adaptor,"rule eText");
 
         	int index = 0;
         	String name = null;
         	String value = null;
 
         try {
-            // /Users/tom/Downloads/CommandLine.g:261:2: ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' t2= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS t2= TEXT -> | t= TEXT ->)
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:263:2: ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' eText -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS eText -> | t= TEXT ->)
             int alt5=10;
             alt5 = dfa5.predict(input);
             switch (alt5) {
                 case 1 :
-                    // /Users/tom/Downloads/CommandLine.g:261:4: {...}? =>t= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:263:4: {...}? =>t= TEXT
                     {
                     if ( !((switchOptions.contains(input.LT(1).getText()))) ) {
                         throw new FailedPredicateException(input, "switchOption", "switchOptions.contains(input.LT(1).getText())");
@@ -582,7 +586,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 261:78: ->
+                    // 263:78: ->
                     {
                         adaptor.addChild(root_0, new SwitchNode(t));
 
@@ -592,7 +596,7 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // /Users/tom/Downloads/CommandLine.g:262:3: {...}? =>t= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:264:3: {...}? =>t= TEXT
                     {
                     if ( !((VERBOSE.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERBOSE+':'))) ) {
                         throw new FailedPredicateException(input, "switchOption", "VERBOSE.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERBOSE+':')");
@@ -613,7 +617,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 262:107: ->
+                    // 264:107: ->
                     {
                         adaptor.addChild(root_0, new SwitchNode(t));
 
@@ -623,7 +627,7 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // /Users/tom/Downloads/CommandLine.g:263:3: {...}? =>t= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:265:3: {...}? =>t= TEXT
                     {
                     if ( !((VERSION.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERSION+':'))) ) {
                         throw new FailedPredicateException(input, "switchOption", "VERSION.equals(input.LT(1).getText()) || input.LT(1).getText().startsWith(VERSION+':')");
@@ -645,7 +649,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 263:304: ->
+                    // 265:304: ->
                     {
                         adaptor.addChild(root_0,  index < 0 ? new SwitchNode(t) : new ParametrizedNode(t, name, ":", value));
 
@@ -655,7 +659,7 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // /Users/tom/Downloads/CommandLine.g:264:3: {...}? =>t= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:266:3: {...}? =>t= TEXT
                     {
                     if ( !((input.LT(1).getText().startsWith(XSHARE+':'))) ) {
                         throw new FailedPredicateException(input, "switchOption", "input.LT(1).getText().startsWith(XSHARE+':')");
@@ -676,7 +680,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 264:60: ->
+                    // 266:60: ->
                     {
                         adaptor.addChild(root_0, new SwitchNode(t));
 
@@ -686,7 +690,7 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 5 :
-                    // /Users/tom/Downloads/CommandLine.g:265:3: {...}? =>t= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:267:3: {...}? =>t= TEXT
                     {
                     if ( !((input.LT(1).getText().startsWith(XCJNI+':'))) ) {
                         throw new FailedPredicateException(input, "switchOption", "input.LT(1).getText().startsWith(XCJNI+':')");
@@ -707,7 +711,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 265:61: ->
+                    // 267:61: ->
                     {
                         adaptor.addChild(root_0, new SwitchNode(t));
 
@@ -717,7 +721,7 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 6 :
-                    // /Users/tom/Downloads/CommandLine.g:266:3: {...}? =>t= TEXT '=' t2= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:268:3: {...}? =>t= TEXT '=' eText
                     {
                     if ( !((input.LT(1).getText().charAt(0) == 'D')) ) {
                         throw new FailedPredicateException(input, "switchOption", "input.LT(1).getText().charAt(0) == 'D'");
@@ -728,9 +732,12 @@ public class CommandLineParser extends Parser {
                     char_literal7=(Token)match(input,8,FOLLOW_8_in_switchOption237);  
                     stream_8.add(char_literal7);
 
-                    t2=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption241);  
-                    stream_TEXT.add(t2);
+                    pushFollow(FOLLOW_eText_in_switchOption239);
+                    eText8=eText();
 
+                    state._fsp--;
+
+                    stream_eText.add(eText8.getTree());
 
 
                     // AST REWRITE
@@ -744,9 +751,9 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 266:69: ->
+                    // 268:67: ->
                     {
-                        adaptor.addChild(root_0, new UserPropertyNode(t, t2, (t!=null?t.getCharPositionInLine():0)));
+                        adaptor.addChild(root_0, new UserPropertyNode(t, (eText8!=null?input.toString(eText8.start,eText8.stop):null), (t!=null?t.getCharPositionInLine():0)));
 
                     }
 
@@ -754,12 +761,12 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 7 :
-                    // /Users/tom/Downloads/CommandLine.g:267:3: {...}? =>t= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:269:3: {...}? =>t= TEXT
                     {
                     if ( !((isParamOption(input.LT(1).getText()))) ) {
                         throw new FailedPredicateException(input, "switchOption", "isParamOption(input.LT(1).getText())");
                     }
-                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption259);  
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption257);  
                     stream_TEXT.add(t);
 
                     index = t.getText().indexOf(':'); if (index > 0) {name=t.getText().substring(0,index); value = (index+1) == t.getText().length() ? "" : t.getText().substring(index+1);}
@@ -776,7 +783,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 267:227: ->
+                    // 269:227: ->
                     {
                         adaptor.addChild(root_0, new ParametrizedNode(t, name, ":", value));
 
@@ -786,12 +793,12 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 8 :
-                    // /Users/tom/Downloads/CommandLine.g:268:3: {...}? =>t= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:270:3: {...}? =>t= TEXT
                     {
                     if ( !((memOptions.matcher(input.LT(1).getText()).matches())) ) {
                         throw new FailedPredicateException(input, "switchOption", "memOptions.matcher(input.LT(1).getText()).matches()");
                     }
-                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption276);  
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption274);  
                     stream_TEXT.add(t);
 
 
@@ -807,7 +814,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 268:69: ->
+                    // 270:69: ->
                     {
                         adaptor.addChild(root_0, new ParametrizedNode(t, 3));
 
@@ -817,20 +824,23 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 9 :
-                    // /Users/tom/Downloads/CommandLine.g:269:3: {...}? =>t= TEXT WS t2= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:271:3: {...}? =>t= TEXT WS eText
                     {
                     if ( !((CLASSPATH.equals(input.LT(1).getText()) || CLASSPATH_LONG.equals(input.LT(1).getText()))) ) {
                         throw new FailedPredicateException(input, "switchOption", "CLASSPATH.equals(input.LT(1).getText()) || CLASSPATH_LONG.equals(input.LT(1).getText())");
                     }
-                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption293);  
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption291);  
                     stream_TEXT.add(t);
 
-                    WS8=(Token)match(input,WS,FOLLOW_WS_in_switchOption295);  
-                    stream_WS.add(WS8);
+                    WS9=(Token)match(input,WS,FOLLOW_WS_in_switchOption293);  
+                    stream_WS.add(WS9);
 
-                    t2=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption299);  
-                    stream_TEXT.add(t2);
+                    pushFollow(FOLLOW_eText_in_switchOption295);
+                    eText10=eText();
 
+                    state._fsp--;
+
+                    stream_eText.add(eText10.getTree());
 
 
                     // AST REWRITE
@@ -844,9 +854,9 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 269:114: ->
+                    // 271:112: ->
                     {
-                        adaptor.addChild(root_0, new ParametrizedNode(t, " ", t2, false));
+                        adaptor.addChild(root_0, new ParametrizedNode(t, " ", (eText10!=null?input.toString(eText10.start,eText10.stop):null), false));
 
                     }
 
@@ -854,9 +864,9 @@ public class CommandLineParser extends Parser {
                     }
                     break;
                 case 10 :
-                    // /Users/tom/Downloads/CommandLine.g:270:3: t= TEXT
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:272:3: t= TEXT
                     {
-                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption311);  
+                    t=(Token)match(input,TEXT,FOLLOW_TEXT_in_switchOption307);  
                     stream_TEXT.add(t);
 
 
@@ -872,7 +882,7 @@ public class CommandLineParser extends Parser {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (CommonTree)adaptor.nil();
-                    // 270:10: ->
+                    // 272:10: ->
                     {
                         adaptor.addChild(root_0, new UnrecognizedOption(t));
 
@@ -901,13 +911,141 @@ public class CommandLineParser extends Parser {
     }
     // $ANTLR end "switchOption"
 
+    public static class eText_return extends ParserRuleReturnScope {
+        CommonTree tree;
+        public Object getTree() { return tree; }
+    };
+
+    // $ANTLR start "eText"
+    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:274:1: eText : ( '\\'' TEXT '\\'' | '\"' TEXT '\"' | TEXT );
+    public final CommandLineParser.eText_return eText() throws RecognitionException {
+        CommandLineParser.eText_return retval = new CommandLineParser.eText_return();
+        retval.start = input.LT(1);
+
+        CommonTree root_0 = null;
+
+        Token char_literal11=null;
+        Token TEXT12=null;
+        Token char_literal13=null;
+        Token char_literal14=null;
+        Token TEXT15=null;
+        Token char_literal16=null;
+        Token TEXT17=null;
+
+        CommonTree char_literal11_tree=null;
+        CommonTree TEXT12_tree=null;
+        CommonTree char_literal13_tree=null;
+        CommonTree char_literal14_tree=null;
+        CommonTree TEXT15_tree=null;
+        CommonTree char_literal16_tree=null;
+        CommonTree TEXT17_tree=null;
+
+        try {
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:274:7: ( '\\'' TEXT '\\'' | '\"' TEXT '\"' | TEXT )
+            int alt6=3;
+            switch ( input.LA(1) ) {
+            case 9:
+                {
+                alt6=1;
+                }
+                break;
+            case 10:
+                {
+                alt6=2;
+                }
+                break;
+            case TEXT:
+                {
+                alt6=3;
+                }
+                break;
+            default:
+                NoViableAltException nvae =
+                    new NoViableAltException("", 6, 0, input);
+
+                throw nvae;
+            }
+
+            switch (alt6) {
+                case 1 :
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:275:3: '\\'' TEXT '\\''
+                    {
+                    root_0 = (CommonTree)adaptor.nil();
+
+                    char_literal11=(Token)match(input,9,FOLLOW_9_in_eText324); 
+                    char_literal11_tree = (CommonTree)adaptor.create(char_literal11);
+                    adaptor.addChild(root_0, char_literal11_tree);
+
+                    TEXT12=(Token)match(input,TEXT,FOLLOW_TEXT_in_eText326); 
+                    TEXT12_tree = (CommonTree)adaptor.create(TEXT12);
+                    adaptor.addChild(root_0, TEXT12_tree);
+
+                    char_literal13=(Token)match(input,9,FOLLOW_9_in_eText328); 
+                    char_literal13_tree = (CommonTree)adaptor.create(char_literal13);
+                    adaptor.addChild(root_0, char_literal13_tree);
+
+
+                    }
+                    break;
+                case 2 :
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:276:4: '\"' TEXT '\"'
+                    {
+                    root_0 = (CommonTree)adaptor.nil();
+
+                    char_literal14=(Token)match(input,10,FOLLOW_10_in_eText333); 
+                    char_literal14_tree = (CommonTree)adaptor.create(char_literal14);
+                    adaptor.addChild(root_0, char_literal14_tree);
+
+                    TEXT15=(Token)match(input,TEXT,FOLLOW_TEXT_in_eText335); 
+                    TEXT15_tree = (CommonTree)adaptor.create(TEXT15);
+                    adaptor.addChild(root_0, TEXT15_tree);
+
+                    char_literal16=(Token)match(input,10,FOLLOW_10_in_eText338); 
+                    char_literal16_tree = (CommonTree)adaptor.create(char_literal16);
+                    adaptor.addChild(root_0, char_literal16_tree);
+
+
+                    }
+                    break;
+                case 3 :
+                    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:277:8: TEXT
+                    {
+                    root_0 = (CommonTree)adaptor.nil();
+
+                    TEXT17=(Token)match(input,TEXT,FOLLOW_TEXT_in_eText347); 
+                    TEXT17_tree = (CommonTree)adaptor.create(TEXT17);
+                    adaptor.addChild(root_0, TEXT17_tree);
+
+
+                    }
+                    break;
+
+            }
+            retval.stop = input.LT(-1);
+
+            retval.tree = (CommonTree)adaptor.rulePostProcessing(root_0);
+            adaptor.setTokenBoundaries(retval.tree, retval.start, retval.stop);
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+    	retval.tree = (CommonTree)adaptor.errorNode(input, retval.start, input.LT(-1), re);
+
+        }
+        finally {
+        }
+        return retval;
+    }
+    // $ANTLR end "eText"
+
     public static class nonSwitchOption_return extends ParserRuleReturnScope {
         CommonTree tree;
         public Object getTree() { return tree; }
     };
 
     // $ANTLR start "nonSwitchOption"
-    // /Users/tom/Downloads/CommandLine.g:272:1: nonSwitchOption : t= TEXT ->;
+    // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:279:1: nonSwitchOption : t= TEXT ->;
     public final CommandLineParser.nonSwitchOption_return nonSwitchOption() throws RecognitionException {
         CommandLineParser.nonSwitchOption_return retval = new CommandLineParser.nonSwitchOption_return();
         retval.start = input.LT(1);
@@ -920,10 +1058,10 @@ public class CommandLineParser extends Parser {
         RewriteRuleTokenStream stream_TEXT=new RewriteRuleTokenStream(adaptor,"token TEXT");
 
         try {
-            // /Users/tom/Downloads/CommandLine.g:273:2: (t= TEXT ->)
-            // /Users/tom/Downloads/CommandLine.g:273:4: t= TEXT
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:280:2: (t= TEXT ->)
+            // /Users/tom/Projects/netbeans/jet-main/java.j2seproject/src/org/netbeans/modules/java/j2seproject/ui/customizer/vmo/gen/CommandLine.g:280:4: t= TEXT
             {
-            t=(Token)match(input,TEXT,FOLLOW_TEXT_in_nonSwitchOption327);  
+            t=(Token)match(input,TEXT,FOLLOW_TEXT_in_nonSwitchOption359);  
             stream_TEXT.add(t);
 
 
@@ -939,7 +1077,7 @@ public class CommandLineParser extends Parser {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 273:11: ->
+            // 280:11: ->
             {
                 adaptor.addChild(root_0, new UnknownOption(t));
 
@@ -1027,7 +1165,7 @@ public class CommandLineParser extends Parser {
             this.transition = DFA5_transition;
         }
         public String getDescription() {
-            return "255:1: switchOption : ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' t2= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS t2= TEXT -> | t= TEXT ->);";
+            return "257:1: switchOption : ({...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT '=' eText -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT -> | {...}? =>t= TEXT WS eText -> | t= TEXT ->);";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -1085,14 +1223,21 @@ public class CommandLineParser extends Parser {
     public static final BitSet FOLLOW_TEXT_in_switchOption203 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_TEXT_in_switchOption218 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_TEXT_in_switchOption235 = new BitSet(new long[]{0x0000000000000100L});
-    public static final BitSet FOLLOW_8_in_switchOption237 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_TEXT_in_switchOption241 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TEXT_in_switchOption259 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TEXT_in_switchOption276 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TEXT_in_switchOption293 = new BitSet(new long[]{0x0000000000000010L});
-    public static final BitSet FOLLOW_WS_in_switchOption295 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_TEXT_in_switchOption299 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TEXT_in_switchOption311 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TEXT_in_nonSwitchOption327 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_8_in_switchOption237 = new BitSet(new long[]{0x0000000000000620L});
+    public static final BitSet FOLLOW_eText_in_switchOption239 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption257 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption274 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption291 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_WS_in_switchOption293 = new BitSet(new long[]{0x0000000000000620L});
+    public static final BitSet FOLLOW_eText_in_switchOption295 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_switchOption307 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_9_in_eText324 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_TEXT_in_eText326 = new BitSet(new long[]{0x0000000000000200L});
+    public static final BitSet FOLLOW_9_in_eText328 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_10_in_eText333 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_TEXT_in_eText335 = new BitSet(new long[]{0x0000000000000400L});
+    public static final BitSet FOLLOW_10_in_eText338 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_eText347 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TEXT_in_nonSwitchOption359 = new BitSet(new long[]{0x0000000000000002L});
 
 }

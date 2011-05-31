@@ -1,0 +1,52 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+import com.tangosol.util.InvocableMap.EntryAggregator;
+import com.tangosol.util.aggregator.AbstractAggregator;
+import java.util.Collection;
+import java.util.Set;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends AbstractAggregator {
+
+    @Override
+    protected void init(boolean bln) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected void process(Object o, boolean bln) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected Object finalizeResult(boolean bln) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public EntryAggregator getParallelAggregator() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Object aggregateResults(Collection clctn) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Object aggregate(Set set) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+}

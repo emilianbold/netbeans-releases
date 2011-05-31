@@ -71,7 +71,13 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
     }
 
     public static ForStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        return new ForStatementImpl(ast, file, scope);
+        ForStatementImpl stmt = new ForStatementImpl(ast, file, scope);
+        stmt.init(ast);
+        return stmt;
+    }
+    
+    private void init(AST ast) {
+        render(ast);
     }
     
     @Override
@@ -86,25 +92,21 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
 
     @Override
     public CsmExpression getIterationExpression() {
-        renderIfNeed();
         return iteration;
     }
 
     @Override
     public CsmStatement getInitStatement() {
-        renderIfNeed();
         return init;
     }
 
     @Override
     public CsmCondition getCondition() {
-        renderIfNeed();
         return condition;
     }
 
     @Override
     public CsmStatement getBody() {
-        renderIfNeed();
         return body;
     }
 
@@ -125,18 +127,11 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         }        
     }
 
-    private void renderIfNeed() {
-        if( ! rendered ) {
-            rendered = true;
-            render();
-        }
-    }
-    
-    private void render() {
+    private void render(AST ast) {
         
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile());
         
-        for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
             case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
                 AST child = AstRenderer.getFirstChildSkipQualifiers(token);

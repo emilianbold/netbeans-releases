@@ -91,7 +91,7 @@ class CleaningAnnotationProcessorImpl implements Runnable {
                 return;
             }
 
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Attempting to workaround 6512707");
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Attempting to workaround javac bug #6512707");
 
             final Trees t = Trees.instance(processingEnv);
             final Collection<JCTree> toClean = new LinkedList<JCTree>();

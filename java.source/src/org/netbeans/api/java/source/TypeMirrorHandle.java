@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
@@ -50,6 +51,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.code.Types.DefaultTypeVisitor;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
@@ -159,13 +161,25 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 break;
             case DECLARED:
                 DeclaredType dt = (DeclaredType)tm;
-                TypeElement te = (TypeElement)dt.asElement();
-                element = ElementHandle.create(te);
-                Element encl = te.getEnclosingElement();
-                boolean genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty() && !te.getModifiers().contains(Modifier.STATIC);
-                if (te.getTypeParameters().isEmpty() && !genericOuter)
-                    break;
-                List<? extends TypeMirror> targs = dt.getTypeArguments();
+                boolean compoundType = ((Type) tm).tsym != null && (((Type) tm).tsym.flags_field & Flags.COMPOUND) != 0;
+                boolean genericOuter;
+                List<? extends TypeMirror> targs;
+                if (!compoundType) {
+                    TypeElement te = (TypeElement)dt.asElement();
+                    element = ElementHandle.create(te);
+                    Element encl = te.getEnclosingElement();
+                    genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty() && !te.getModifiers().contains(Modifier.STATIC);
+                    if (te.getTypeParameters().isEmpty() && !genericOuter)
+                        break;
+                    targs = dt.getTypeArguments();
+                } else {
+                    genericOuter = false;
+                    TypeElement fakeClass = (TypeElement) dt.asElement();
+                    List<TypeMirror> temp = new ArrayList<TypeMirror>(fakeClass.getInterfaces().size() + 1);
+                    temp.add(fakeClass.getSuperclass());
+                    temp.addAll(fakeClass.getInterfaces());
+                    targs = temp;
+                }
                 if (!targs.isEmpty()) {
                     TypeMirror targ = targs.get(0);
                     if (targ.getKind() == TypeKind.TYPEVAR) {
@@ -248,6 +262,19 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
             case NULL:
                 return (T)info.getTypes().getNullType();
             case DECLARED:
+                if (element == null) {
+                    //compound type:
+                    com.sun.tools.javac.util.List<Type> resolvedBounds = com.sun.tools.javac.util.List.nil();
+                    for (TypeMirrorHandle bound : typeMirrors) {
+                        TypeMirror resolved = bound.resolve(info, map);
+                        if (resolved == null) {
+                            return null;
+                        }
+                        resolvedBounds = resolvedBounds.prepend((Type) resolved);
+                    }
+
+                    return (T) Types.instance(info.impl.getJavacTask().getContext()).makeCompoundType(resolvedBounds.reverse());
+                }
                 TypeElement te = (TypeElement)element.resolve(info);
                 if (te == null)
                     return null;

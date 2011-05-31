@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,6 +43,7 @@ package org.netbeans.modules.db.mysql.actions;
 
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseServer.ServerState;
 import org.netbeans.modules.db.mysql.impl.StopManager;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
@@ -66,10 +67,12 @@ public class StopAction extends CookieAction {
         return false;
     }
 
+    @Override
     public String getName() {
         return Utils.getBundle().getString("LBL_StopAction");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(StopAction.class);
     }
@@ -81,10 +84,15 @@ public class StopAction extends CookieAction {
         }
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+        if (server == null) {
+            return false;
+        }
+        
+        ServerState state = server.getState();
 
         // Don't be too picky about when to enable stop, as we really don't have
         // 100% certainty about what exactly is up with the server
-        return server != null && !StopManager.getDefault().isStopRequested();
+        return state != ServerState.DISCONNECTED && !StopManager.getDefault().isStopRequested();
     }
 
     @Override

@@ -48,6 +48,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -93,7 +94,7 @@ public class HighlightsView extends EditorView {
     @Override
     public float getPreferredSpan(int axis) {
         float span = (axis == View.X_AXIS)
-            ? TextLayoutUtils.getWidth(layout(), length)
+            ? Math.abs(TextLayoutUtils.getWidth(layout(), length)) // Could be negative
             : TextLayoutUtils.getHeight(layout());
         return ViewUtils.ceilFractions(span);
     }
@@ -173,13 +174,32 @@ public class HighlightsView extends EditorView {
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
+        return modelToViewChecked(offset, alloc, bias, -1);
+    }
+
+    public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias, int index) {
         Shape ret;
         int relOffset = Math.max(0, offset - getStartOffset());
         Object layout = layout();
         if (layout instanceof TextLayoutPart) {
             TextLayoutPart part = (TextLayoutPart) layout;
-            ret = HighlightsViewUtils.indexToView(part, part.offsetShift() + relOffset, bias,
-                    part.offsetShift() + getLength(), alloc);
+            ParagraphView paragraphView = getParagraphView();
+            if (paragraphView != null) {
+                if (index == -1) {
+                    index = paragraphView.getViewIndex(getStartOffset());
+                }
+                int layoutStartViewIndex = index - part.index();
+                Rectangle2D.Double textLayoutBounds = ViewUtils.shape2Bounds(alloc);
+                double relX = paragraphView.getViewVisualOffset(index) -
+                        paragraphView.getViewVisualOffset(layoutStartViewIndex);
+                textLayoutBounds.x -= relX;
+                textLayoutBounds.width = part.textLayoutWidth();
+                ret = HighlightsViewUtils.indexToView(part.textLayout(), textLayoutBounds,
+                        part.offsetShift() + relOffset, bias,
+                        part.offsetShift() + getLength(), alloc);
+            } else {
+                ret = alloc;
+            }
         } else { // TextLayoutPart
             TextLayout textLayout = (TextLayout) layout;
             ret = HighlightsViewUtils.indexToView(textLayout, null, relOffset, bias, 
@@ -190,12 +210,30 @@ public class HighlightsView extends EditorView {
 
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn) {
+        return viewToModelChecked(x, y, alloc, biasReturn, -1);
+    }
+
+    public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn, int index) {
         int offset;
         Object layout = layout();
         if (layout instanceof TextLayoutPart) {
             TextLayoutPart part = (TextLayoutPart) layout;
-            offset = HighlightsViewUtils.viewToIndex(part, x, alloc, biasReturn) +
-                    getStartOffset() - part.offsetShift();
+            ParagraphView paragraphView = getParagraphView();
+            if (paragraphView != null) {
+                if (index == -1) {
+                    index = paragraphView.getViewIndex(getStartOffset());
+                }
+                int layoutStartViewIndex = index - part.index();
+                Rectangle2D.Double textLayoutBounds = ViewUtils.shape2Bounds(alloc);
+                double relX = paragraphView.getViewVisualOffset(index) -
+                        paragraphView.getViewVisualOffset(layoutStartViewIndex);
+                textLayoutBounds.x -= relX;
+                textLayoutBounds.width = part.textLayoutWidth();
+                offset = HighlightsViewUtils.viewToIndex(part.textLayout(), x, textLayoutBounds, biasReturn) +
+                        getStartOffset() - part.offsetShift();
+            } else {
+                offset = getStartOffset();
+            }
         } else { // TextLayoutPart
             TextLayout textLayout = (TextLayout) layout;
             offset = HighlightsViewUtils.viewToIndex(textLayout, x, alloc, biasReturn) +

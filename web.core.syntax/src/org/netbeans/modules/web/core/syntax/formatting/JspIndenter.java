@@ -160,7 +160,7 @@ public class JspIndenter extends MarkupAbstractIndenter<JspTokenId> {
     @Override
     protected int getPreservedLineInitialIndentation(JoinedTokenSequence<JspTokenId> ts)
             throws BadLocationException {
-        int index = ts.index();
+        int[] index = ts.index();
         boolean found = false;
         do {
             if (ts.token().id() == JspTokenId.COMMENT) {

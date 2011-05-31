@@ -50,6 +50,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import java.io.File;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 import org.openide.text.Line;
 import org.openide.text.CloneableEditorSupport;
@@ -71,6 +72,9 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 /**
  * A bridge to the NB editor.
@@ -176,7 +180,7 @@ public final class EditorBridge {
 	return op[0];
     }
 
-    private static DataObject dataObjectForLine(Line l) {
+    public static DataObject dataObjectForLine(Line l) {
 	// 6502318
 	if (l == null)
 	    return null;
@@ -195,7 +199,15 @@ public final class EditorBridge {
 	DataObject dao = dataObjectForLine(l);
 	if (dao == null)
 	    return null;
-	return FileUtil.toFile(dao.getPrimaryFile()).getPath();
+        FileObject fo = dao.getPrimaryFile();
+        File file = FileUtil.toFile(fo);
+        // it would be s better to leave just fo.getPath(), 
+        // but I'm not quite sure about '\\' vs '/' issue
+        if (file == null) {
+            return fo.getPath();
+        } else {
+            return file.getPath();
+        }
     }
 
     public static Line getCurrentLine() {
@@ -277,17 +289,47 @@ public final class EditorBridge {
 	}
 	throw new Exception();
     }
+    
+    public static FileObject findFileObject(String fileName, NativeDebugger debugger) {
+        return findFileObject(fileName, getSourceFileSystem(debugger));
+    }
+    
+    private static FileObject findFileObject(String fileName, FileSystem fs) {
+        CndUtils.assertAbsolutePathInConsole(fileName);
+        String normPath = FileSystemProvider.normalizeAbsolutePath(fileName, fs);
+        return CndFileUtils.toFileObject(fs, normPath);
+    }
+    
+    public static FileSystem getSourceFileSystem(NativeDebugger debugger) {
+        if (debugger != null) {
+            NativeDebuggerInfo ndi = debugger.getNDI();
+            if (ndi != null) {
+                Configuration conf = ndi.getConfiguration();
+                if (conf instanceof MakeConfiguration) {
+                    return ((MakeConfiguration)conf).getSourceFileSystem();
+                }
+            }
+        }
+        return CndFileUtils.getLocalFileSystem();
+    }
 
     /**
      * Find the Line object for the given file:line pair
      */
 
-    public static Line getLine(String fileName, int lineNumber) {
+    public static Line getLine(String fileName, int lineNumber, NativeDebugger debugger) {
+	return getLine(findFileObject(fileName, debugger), lineNumber);
+    }
+    
+    public static Line getLine(String fileName, int lineNumber, FileSystem fs) {
+	return getLine(findFileObject(fileName, fs), lineNumber);
+    }
+
+    private static Line getLine(FileObject fo, int lineNumber) {
 
 	if (Log.Editor.debug)
-	    System.out.printf("getline(\"%s\", %d)\n", fileName, lineNumber); // NOI18N
+	    System.out.printf("getline(\"%s\", %d)\n", fo.getPath(), lineNumber); // NOI18N
 
-	FileObject fo = IpeUtils.findFileObject(fileName);
 	DataObject dao = dataObjectFor(fo);
 	if (dao == null) {
 	    if (Log.Editor.debug)
@@ -332,21 +374,12 @@ public final class EditorBridge {
 	} catch (Exception e) {
 	}
     }
-
-    public static void showInEditor(String fileName, int lineNumber) {
-	if (Log.Editor.debug) {
-	    System.out.printf("showInEditor(\"%s\", %d)\n", // NOI18N
-		              fileName, lineNumber);
-	}
-	showInEditor(getLine(fileName, lineNumber));
-    }
-
+    
     /**
      * Force the editor to save the given filename.
      */
-    public static boolean saveFile(String fileName) {
-
-        FileObject fo = IpeUtils.findFileObject(fileName);
+    public static boolean saveFile(String fileName, NativeDebugger debugger) {
+        FileObject fo = findFileObject(fileName, debugger);
         DataObject dao = dataObjectFor(fo);
         if (dao == null)
             return false;
@@ -406,13 +439,10 @@ public final class EditorBridge {
      * @param pathname
      * @return
      */
-    public static StyledDocument documentFor(String pathname) {
+    public static StyledDocument documentFor(String pathname, NativeDebugger debugger) {
 	if (IpeUtils.isEmpty(pathname))
 	    return null;
-	File docFile = new File(pathname);
-	if (!docFile.exists())
-	    return null;
-	FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(docFile));
+	FileObject fo = findFileObject(pathname, debugger);
 	if (fo == null || !fo.isValid())
 	    return null;
 	DataObject dob = null;

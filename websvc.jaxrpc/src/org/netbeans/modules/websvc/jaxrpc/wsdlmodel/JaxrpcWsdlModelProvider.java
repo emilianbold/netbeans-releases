@@ -70,8 +70,12 @@ import org.openide.filesystems.FileUtil;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModelProvider.class)
 public class JaxrpcWsdlModelProvider implements WsdlModelProvider {
-     private String packageName;
-    public org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel getWsdlModel(URL url, String packageName, URL catalog) {
+    
+    private String packageName;
+    
+    public org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel getWsdlModel(
+            URL url, String packageName, URL catalog, boolean forceReload) 
+    {
         this.packageName = packageName;
         WsdlModeler modeler = new WsdlModeler(url, packageName);
         WsdlModel model = modeler.getAndWaitForWsdlModel();

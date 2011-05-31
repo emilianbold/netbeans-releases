@@ -252,8 +252,22 @@ public final class GCCErrorParser extends ErrorParser {
         if (GCC_ERROR_SCANNER.contains(m.pattern())) {
             Results res = new Results();
             try {
-                String file = m.group(1);
-                Integer lineNumber = Integer.valueOf(m.group(2));
+                String file = null;
+                if(m.groupCount() == 5) {
+                    file = m.group(4);
+                }                
+                Integer lineNumber;
+                String description = null;
+                if(file == null || !file.matches(".*\\.pc")) { // NOI18N 
+                    file = m.group(1);
+                    lineNumber = Integer.valueOf(m.group(2));
+                    if (m.groupCount()<= 4) {
+                        description = m.group(4);
+                    }
+                } else {
+                    lineNumber = Integer.valueOf(m.group(2));
+                    description = m.group(1);
+                }
                 FileObject relativeDir = relativesTo.peek();
                 if (relativeDir != null) {
                     //FileObject fo = relativeDir.getFileObject(file);
@@ -270,10 +284,6 @@ public final class GCCErrorParser extends ErrorParser {
                             }
                         }
                         errorInludes.clear();
-                        String description = null;
-                        if (m.groupCount()<= 4) {
-                            description = m.group(4);
-                        }
                         res.add(line, listenerFactory.register(fo, lineNumber.intValue() - 1, important, description));
                         return res;
                     }

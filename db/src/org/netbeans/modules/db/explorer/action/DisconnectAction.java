@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,8 +46,9 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -66,6 +67,7 @@ public class DisconnectAction extends BaseAction {
         return new HelpCtx(DisconnectAction.class);
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 0) { 
             return false;
@@ -87,9 +89,11 @@ public class DisconnectAction extends BaseAction {
         return true;
     }
     
+    @Override
     public void performAction (final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(
             new Runnable() {
+                @Override
                 public void run() {
                     for (int i = 0; i < activatedNodes.length; i++) {
                         Lookup lookup = activatedNodes[i].getLookup();
@@ -99,7 +103,7 @@ public class DisconnectAction extends BaseAction {
                             try {
                                 connection.disconnect();
                             } catch (DatabaseException dbe) {
-                                Exceptions.printStackTrace(dbe);
+                                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(dbe.getLocalizedMessage()));
                             }
                         }
                     }

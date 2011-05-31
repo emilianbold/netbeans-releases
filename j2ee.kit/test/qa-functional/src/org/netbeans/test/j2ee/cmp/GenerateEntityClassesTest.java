@@ -41,17 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.cmp;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Set;
+import junit.framework.AssertionFailedError;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.junit.NbModuleSuite;
@@ -69,131 +68,145 @@ import org.netbeans.test.j2ee.multiview.DDTestCase;
 import org.openide.actions.SaveAllAction;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
+import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 
 /**
  *
- * @author jhorvath
+ * @author jhorvath, Jiri Skrivanek
  */
 public class GenerateEntityClassesTest extends DDTestCase {
+
     public static File EJB_PROJECT_FILE;
 
-
-    
     /** Creates a new instance of GenerateEntityClassesTest */
     public GenerateEntityClassesTest(String testName) {
         super(testName);
     }
 
-    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
     }
-    
+
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(GenerateEntityClassesTest.class);
-        conf = addServerTests(Server.GLASSFISH,conf,"testOpenProject");
-        if (isRegistered(Server.GLASSFISH))
-            conf = addServerTests(conf, "testGenerateBeans");
+        conf = addServerTests(Server.GLASSFISH, conf, "testOpenProject", "testGenerateBeans");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        TestRunner.run(suite());
-    }
-    
-    /*
-     * Method open project
-     *
-     */
-    public void testOpenProject() throws Exception{
+
+    public void testOpenProject() throws Exception {
         EJB_PROJECT_FILE = new File(getDataDir(), "projects/TestGenerateEntity");
-        project = (Project)J2eeProjectSupport.openProject(EJB_PROJECT_FILE);
+        project = (Project) J2eeProjectSupport.openProject(EJB_PROJECT_FILE);
         assertNotNull("Project is null.", project);
-        Thread.sleep(1000);
-       /* 
-        EjbJarProject ejbJarProject = (EjbJarProject)project;
-        ddFo = ejbJarProject.getAPIEjbJar().getDeploymentDescriptor();  // deployment descriptor
-        assertNotNull("ejb-jar.xml FileObject is null.", ddFo);
-        
-        ejbJar = DDProvider.getDefault().getDDRoot(ddFo);
-        
-        ddObj = (EjbJarMultiViewDataObject)DataObject.find(ddFo); //MultiView Editor
-        assertNotNull("MultiViewDO is null.",ddObj);
-        
-        EditCookie edit = (EditCookie)ddObj.getCookie(EditCookie.class);
-        edit.edit();
-        Thread.sleep(1000);
-        Utils.waitForAWTDispatchThread();
-        **/
     }
-    
-    public void testGenerateBeans() throws Exception{
+
+    public void testGenerateBeans() throws Exception {
         ProgressPanel progressPanel;
-        Thread.sleep(4000);
         PersistenceGenerator generator = new JavaPersistenceGenerator();
-        FileObject config=project.getProjectDirectory().getFileObject("/src/conf/");
-        
-        RelatedCMPHelper relatedCMPHelper=new RelatedCMPHelper(project, config, generator);
-        FileObject schemaFo=project.getProjectDirectory().getFileObject("/src/conf/testSchema.dbschema");        
-        SchemaElement se=SchemaElementUtil.forName(schemaFo);
-        
+        FileObject config = project.getProjectDirectory().getFileObject("/src/conf/");
+
+        RelatedCMPHelper relatedCMPHelper = new RelatedCMPHelper(project, config, generator);
+        FileObject schemaFo = project.getProjectDirectory().getFileObject("/src/conf/testSchema.dbschema");
+        SchemaElement se = SchemaElementUtil.forName(schemaFo);
+
         relatedCMPHelper.setTableSource(se, schemaFo);
         relatedCMPHelper.setPackageName("test");
-        
-        TableProvider tableProvider = new DBSchemaTableProvider(se, generator);    
+
+        TableProvider tableProvider = new DBSchemaTableProvider(se, generator);
         TableClosure tableClosure = new TableClosure(tableProvider);
         tableClosure.setClosureEnabled(false);
         tableClosure.addAllTables();
         Set selected = tableClosure.getSelectedTables();
-        System.err.println("*** selected "+selected.size());
+        System.err.println("*** selected " + selected.size());
 
         Set available = tableClosure.getAvailableTables();
-        System.err.println("*** available "+available.size());
+        System.err.println("*** available " + available.size());
         relatedCMPHelper.setTableClosure(tableClosure);
-        
+
         SourceGroup sourceGroup = ProjectUtils.getSources(project).getSourceGroups("java")[0];
         relatedCMPHelper.setLocation(sourceGroup);
-        SelectedTables selectedTables=new SelectedTables(generator, tableClosure, sourceGroup, "test");
+        SelectedTables selectedTables = new SelectedTables(generator, tableClosure, sourceGroup, "test");
         relatedCMPHelper.setSelectedTables(selectedTables);
-        
+
         ProgressContributor contrib = AggregateProgressFactory.createProgressContributor("test");
         progressPanel = new ProgressPanel();
         contrib.start(5);
         relatedCMPHelper.buildBeans();
         generator.generateBeans(progressPanel, relatedCMPHelper, schemaFo, contrib);
         Set created = generator.createdObjects();
-        System.err.println("*** created size: "+created.size());
-            
+        System.err.println("*** created size: " + created.size());
+
         contrib.finish();
         Thread.sleep(4000);
-        
+
         // save all created files
-        SaveAllAction a = (SaveAllAction)SaveAllAction.get(SaveAllAction.class);
+        SaveAllAction a = (SaveAllAction) SaveAllAction.get(SaveAllAction.class);
         a.performAction();
-        
-     
+
+
         org.netbeans.test.j2ee.lib.Utils utils = new org.netbeans.test.j2ee.lib.Utils(this);
-        
+
         File dbBeansDir = new File(EJB_PROJECT_FILE, "src/java/test");
         String beanFiles[] = dbBeansDir.list(new FilenameFilter() {
+
+            @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".java");
             }
         });
-        //if (beanFiles.length != 12)
-        //    fail("12 generated db bean files are expected in "+dbBeansDir);
-        utils.assertFiles(dbBeansDir, beanFiles, getName()+"_");
-        
+        assertFiles(dbBeansDir, beanFiles, getName() + "_");
     }
-    
-    
+
+    private void assertFiles(File dir, String fileNames[], String goldenFilePrefix) throws Exception {
+        AssertionFailedError firstExc = null;
+        for (String fileName : fileNames) {
+            File file = new File(dir, fileName);
+            try {
+                File goldenFile = getGoldenFile(goldenFilePrefix + "TableN.java");
+                assertFile("File " + file.getAbsolutePath() + " is different than golden file " + goldenFile.getAbsolutePath() + ".",
+                        file,
+                        goldenFile,
+                        new File(getWorkDir(), fileName + ".diff"),
+                        new EntityClassLineDiff(fileName));
+            } catch (AssertionFailedError e) {
+                if (firstExc == null) {
+                    firstExc = e;
+                }
+                File copy = new File(getWorkDirPath(), goldenFilePrefix + fileName);
+                copyFile(file, copy);
+            }
+        }
+        if (firstExc != null) {
+            throw firstExc;
+        }
+    }
+
+    /** Replaces placeholder table number in golden file template by exact table number. */
+    private static class EntityClassLineDiff extends FilteringLineDiff {
+
+        private String tableNumber;
+        
+        public EntityClassLineDiff(String fileName) {
+            super(false, false);
+            this.tableNumber = fileName.replace("Table", "").replace(".java", "");
+        }
+
+        /**
+         * @param line1 first line to compare
+         * @param line2 second line to compare
+         * @return true if lines equal
+         */
+        @Override
+        protected boolean compareLines(String line1, String line2) {
+            line1 = line1.replace("TABLEN", "TABLE" + tableNumber);
+            line1 = line1.replace("TableN", "Table" + tableNumber);
+            return super.compareLines(line1, line2);
+        }
+    }
 }

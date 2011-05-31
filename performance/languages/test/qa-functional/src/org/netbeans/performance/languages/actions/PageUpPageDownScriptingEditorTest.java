@@ -137,22 +137,6 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         EditorOperator.closeDiscardAll();        
     }
 
-    public void testPgUp_In_RBEditor() {
-        testProject = Projects.RUBY_PROJECT;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";        
-        pgup = true;
-        doMeasurement();
-    }
-
-    public void testPgDn_In_RBEditor() {
-        testProject = Projects.RUBY_PROJECT;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";        
-        pgup = false;        
-        doMeasurement();
-    }
-
     public void testPgUp_In_PHPEditor() {
         testProject = Projects.PHP_PROJECT;
         fileName = "php20kb.php";
@@ -165,38 +149,6 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         testProject = Projects.PHP_PROJECT;
         fileName = "php20kb.php";
         nodePath = "Source Files";
-        pgup = false;
-        doMeasurement();
-    }
-
-    public void testPgUp_In_RHTMLEditor() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Test Files|unit";
-        pgup = true;
-        doMeasurement();
-    }
-
-    public void testPgDn_In_RHTMLEditor() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Test Files|unit";
-        pgup = false;        
-        doMeasurement();
-    }
-
-    public void testPgUp_In_YMLEditor() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "yaml20kb.yml";
-        nodePath = "Test Files|unit";
-        pgup = true;
-        doMeasurement();
-    }
-
-    public void testPgDn_In_YMLEditor() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "yaml20kb.yml";
-        nodePath = "Test Files|unit";
         pgup = false;
         doMeasurement();
     }

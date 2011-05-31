@@ -176,7 +176,7 @@ public class FileName implements FileNaming {
         }
     }
 
-    final void recordCleanup() {
+    final void recordCleanup(String msg) {
         Throwable ex = null;
         if (this.currentName instanceof Creation) {
             ex = ((Creation)this.currentName);
@@ -185,7 +185,7 @@ public class FileName implements FileNaming {
             while (ex.getCause() != null) {
                 ex = ex.getCause();
             }
-            ex.initCause(new Exception("Reference cleanup")); // NOI18N
+            ex.initCause(new Exception("Reference cleanup: " + msg)); // NOI18N
         }
     }
     

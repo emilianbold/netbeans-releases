@@ -1,10 +1,15 @@
 #Signature file v4.1
-#Version 1.28
+#Version 1.32.1
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
 cons protected init(java.lang.String,int)
@@ -37,6 +42,32 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
+
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
@@ -68,6 +99,7 @@ meth public final java.lang.String getResourceName(org.openide.filesystems.FileO
 meth public final java.lang.String getResourceName(org.openide.filesystems.FileObject,char,boolean)
 meth public final java.util.List<org.openide.filesystems.FileObject> findAllResources(java.lang.String)
 meth public final org.openide.filesystems.FileObject findOwnerRoot(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public final org.openide.filesystems.FileObject findResource(java.lang.String)
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
@@ -76,6 +108,9 @@ meth public java.lang.String toString(org.netbeans.api.java.classpath.ClassPath$
 meth public java.util.List<org.netbeans.api.java.classpath.ClassPath$Entry> entries()
 meth public org.openide.filesystems.FileObject[] getRoots()
 meth public static org.netbeans.api.java.classpath.ClassPath getClassPath(org.openide.filesystems.FileObject,java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds EMPTY_REF,LOG,caller,entriesCache,impl,implementations,invalidEntries,invalidRoots,pListener,propSupport,refClassLoader,root2Filter,rootsCache,rootsListener,weakPListeners
 hcls RootsListener,SPIListener
@@ -94,7 +129,7 @@ meth public java.net.URL getURL()
 meth public org.netbeans.api.java.classpath.ClassPath getDefiningClassPath()
 meth public org.openide.filesystems.FileObject getRoot()
 supr java.lang.Object
-hfds filter,lastError,root,url
+hfds filter,isDataResult,lastError,root,url
 
 CLSS public final static !enum org.netbeans.api.java.classpath.ClassPath$PathConversionMode
  outer org.netbeans.api.java.classpath.ClassPath
@@ -224,9 +259,25 @@ supr java.lang.Object
 hfds changeSupport,delegate,spiListener
 
 CLSS public org.netbeans.api.java.queries.SourceLevelQuery
+innr public final static Result
 meth public static java.lang.String getSourceLevel(org.openide.filesystems.FileObject)
+meth public static org.netbeans.api.java.queries.SourceLevelQuery$Result getSourceLevel2(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds LOGGER,SOURCE_LEVEL,implementations
+hfds EMPTY_RESULT,LOGGER,SOURCE_LEVEL,implementations,implementations2
+
+CLSS public final static org.netbeans.api.java.queries.SourceLevelQuery$Result
+ outer org.netbeans.api.java.queries.SourceLevelQuery
+meth public boolean supportsChanges()
+meth public java.lang.String getSourceLevel()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public void addChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void removeChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds cs,delegate,spiListener
 
 CLSS public org.netbeans.api.java.queries.UnitTestForSourceQuery
 meth public static java.net.URL findSource(org.openide.filesystems.FileObject)
@@ -323,7 +374,21 @@ intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
 meth public abstract boolean preferSources()
 
 CLSS public abstract interface org.netbeans.spi.java.queries.SourceLevelQueryImplementation
+ anno 0 java.lang.Deprecated()
 meth public abstract java.lang.String getSourceLevel(org.openide.filesystems.FileObject)
+
+CLSS public abstract interface org.netbeans.spi.java.queries.SourceLevelQueryImplementation2
+innr public abstract interface static Result
+meth public abstract org.netbeans.spi.java.queries.SourceLevelQueryImplementation2$Result getSourceLevel(org.openide.filesystems.FileObject)
+
+CLSS public abstract interface static org.netbeans.spi.java.queries.SourceLevelQueryImplementation2$Result
+ outer org.netbeans.spi.java.queries.SourceLevelQueryImplementation2
+meth public abstract java.lang.String getSourceLevel()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation
 meth public abstract java.net.URL findSource(org.openide.filesystems.FileObject)

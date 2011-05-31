@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -73,6 +73,7 @@ public class ForeignKeyNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public ForeignKeyNodeProvider createInstance(Lookup lookup) {
                 ForeignKeyNodeProvider provider = new ForeignKeyNodeProvider(lookup);
                 return provider;
@@ -83,6 +84,7 @@ public class ForeignKeyNodeProvider extends NodeProvider {
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Table> tableHandle;
 
+    @SuppressWarnings("unchecked")
     private ForeignKeyNodeProvider(Lookup lookup) {
         super(lookup, new ForeignKeyComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
@@ -99,6 +101,7 @@ public class ForeignKeyNodeProvider extends NodeProvider {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             Table table = (Table)tableHandle.resolve(metaData);
                             if (table != null) {
@@ -131,8 +134,9 @@ public class ForeignKeyNodeProvider extends NodeProvider {
 
     static class ForeignKeyComparator implements Comparator<Node> {
 
+        @Override
         public int compare(Node model1, Node model2) {
-            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
+            return model1.getDisplayName().compareTo(model2.getDisplayName());
         }
 
     }

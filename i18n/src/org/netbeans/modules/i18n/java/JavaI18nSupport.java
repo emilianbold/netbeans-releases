@@ -697,7 +697,7 @@ public class JavaI18nSupport extends I18nSupport {
                             // find the end of line
                             int idx = hcString.getEndPosition().getOffset() + 1;
                             String text = document.getText(idx, document.getLength() - idx);
-                            for (; idx < text.length() && text.charAt(idx) != '\n' ; idx++);
+                            for (int i = idx; idx-i < text.length() && text.charAt(idx-i) != '\n' ; idx++);
 
                             document.insertString(idx, " //NOI18N", null); //NOI18N
                         } catch (BadLocationException ble) {

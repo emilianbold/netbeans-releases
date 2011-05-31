@@ -228,6 +228,15 @@ public class ToolsManagerPanel extends PanelWithApply {
         return tool;
     }
 
+    public DLightTool getSelectedTool() {
+        int row = toolsTable.getSelectedRow();
+        if (row < 0) {
+            return null;
+        }
+        DLightToolUIWrapper wrapper = getSelectedDLightToolWrapper();
+        return wrapper.getDLightTool();
+    }
+
     private class MySelectionListener implements ListSelectionListener {
 
         @Override
@@ -244,6 +253,7 @@ public class ToolsManagerPanel extends PanelWithApply {
     private static String getString(String key, String... params) {
         return NbBundle.getMessage(ToolsManagerPanel.class, key, params);
     }
+    private static final String datailsLabelDefaultText = "Details:"; // NOI18N - to avoid late UI changes
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -256,9 +266,12 @@ public class ToolsManagerPanel extends PanelWithApply {
 
         profileConfigurationLabel = new javax.swing.JLabel();
         profileConfigurationComboBox = new javax.swing.JComboBox();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        leftPanel = new javax.swing.JPanel();
         toolsLabel = new javax.swing.JLabel();
         toolsList = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
+        rightPanel = new javax.swing.JPanel();
         detailsLabel = new javax.swing.JLabel();
         scrollPane = new javax.swing.JScrollPane();
         descriptionArea = new javax.swing.JTextArea();
@@ -266,6 +279,7 @@ public class ToolsManagerPanel extends PanelWithApply {
         profileConfigurationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dlight/toolsui/Bundle").getString("ProfilerConfiguration_MN").charAt(0));
         profileConfigurationLabel.setLabelFor(profileConfigurationComboBox);
         profileConfigurationLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.profileConfigurationLabel.text")); // NOI18N
+        profileConfigurationLabel.setFocusable(false);
 
         profileConfigurationComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -273,14 +287,42 @@ public class ToolsManagerPanel extends PanelWithApply {
             }
         });
 
+        jSplitPane1.setBorder(null);
+        jSplitPane1.setDividerSize(5);
+        jSplitPane1.setResizeWeight(0.5);
+        jSplitPane1.setDividerLocation(0.5);
+
+        leftPanel.setPreferredSize(new java.awt.Dimension(100, 100));
+        leftPanel.setLayout(new java.awt.BorderLayout());
+
         toolsLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dlight/toolsui/Bundle").getString("TOOLS_MN").charAt(0));
         toolsLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.toolsLabel.text")); // NOI18N
+        toolsLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 1));
+        toolsLabel.setFocusable(false);
+        leftPanel.add(toolsLabel, java.awt.BorderLayout.NORTH);
 
         toolsList.setOpaque(false);
+        toolsList.setPreferredSize(new java.awt.Dimension(100, 100));
 
         jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jList1.setOpaque(false);
+        jList1.setPreferredSize(new java.awt.Dimension(100, 100));
         toolsList.setViewportView(jList1);
+
+        leftPanel.add(toolsList, java.awt.BorderLayout.CENTER);
+
+        jSplitPane1.setLeftComponent(leftPanel);
+
+        rightPanel.setPreferredSize(new java.awt.Dimension(100, 100));
+        rightPanel.setLayout(new java.awt.BorderLayout());
+
+        detailsLabel.setLabelFor(descriptionArea);
+        detailsLabel.setText(datailsLabelDefaultText);
+        detailsLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 1));
+        detailsLabel.setFocusable(false);
+        rightPanel.add(detailsLabel, java.awt.BorderLayout.NORTH);
+
+        scrollPane.setPreferredSize(new java.awt.Dimension(100, 100));
 
         descriptionArea.setColumns(20);
         descriptionArea.setEditable(false);
@@ -288,7 +330,13 @@ public class ToolsManagerPanel extends PanelWithApply {
         descriptionArea.setRows(5);
         descriptionArea.setWrapStyleWord(true);
         descriptionArea.setFocusable(false);
+        descriptionArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
+        descriptionArea.setPreferredSize(new java.awt.Dimension(100, 100));
         scrollPane.setViewportView(descriptionArea);
+
+        rightPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
+
+        jSplitPane1.setRightComponent(rightPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -297,38 +345,27 @@ public class ToolsManagerPanel extends PanelWithApply {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(profileConfigurationLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(profileConfigurationComboBox, 0, 491, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(toolsList, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
-                            .addComponent(detailsLabel)))
-                    .addComponent(toolsLabel))
+                        .addGap(12, 12, 12)
+                        .addComponent(profileConfigurationComboBox, 0, 388, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(profileConfigurationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(profileConfigurationLabel))
-                .addGap(1, 1, 1)
-                .addComponent(toolsLabel)
+                    .addComponent(profileConfigurationLabel)
+                    .addComponent(profileConfigurationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(toolsList, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
-                    .addComponent(detailsLabel))
-                .addGap(21, 21, 21))
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed
+    private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         Object item = profileConfigurationComboBox.getSelectedItem();
         if (item instanceof String && ((String) item).equals(manageConfigurations)) {
             profileConfigurationComboBox.hidePopup();
@@ -360,7 +397,7 @@ public class ToolsManagerPanel extends PanelWithApply {
             assert false;
         }
         lastSelectedIndex = profileConfigurationComboBox.getSelectedIndex();
-    }//GEN-LAST:event_profileConfigurationComboBoxActionPerformed
+    }
 
     private class MyListEditorPanel extends ListEditorPanel<DLightConfigurationUIWrapper> {
 
@@ -478,8 +515,11 @@ public class ToolsManagerPanel extends PanelWithApply {
     private javax.swing.JTextArea descriptionArea;
     private javax.swing.JLabel detailsLabel;
     private javax.swing.JList jList1;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JPanel leftPanel;
     private javax.swing.JComboBox profileConfigurationComboBox;
     private javax.swing.JLabel profileConfigurationLabel;
+    private javax.swing.JPanel rightPanel;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel toolsLabel;
     private javax.swing.JScrollPane toolsList;

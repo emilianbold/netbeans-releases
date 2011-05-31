@@ -51,6 +51,21 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="NetworkSettings">
+        <api name="util"/>
+        <summary><code>NetworkSettings</code> added</summary>
+        <version major="8" minor="13"/>
+        <date day="1" month="2" year="2011"/>
+        <author login="jrechtacek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added new useful methods for getting Network Proxy for specified URI.
+            </p>
+        </description>
+        <class package="org.openide.util" name="NetworkSettings"/>
+        <issue number="194530"/>
+    </change>
     <change id="ImageUtilities.URL">
         <api name="util"/>
         <summary>ImageUtilities support "url" attribute</summary>

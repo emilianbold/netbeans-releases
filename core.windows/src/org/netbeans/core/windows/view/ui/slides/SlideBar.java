@@ -161,6 +161,8 @@ public final class SlideBar extends Box implements ComplexListDataListener,
                 setBorder(BorderFactory.createEmptyBorder(1, 4, 0, 0));
             }
         }
+        if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+            setOpaque( false );
     }
     
     public SlideBarDataModel getModel() {

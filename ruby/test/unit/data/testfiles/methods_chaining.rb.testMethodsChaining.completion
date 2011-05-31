@@ -1,6 +1,0 @@
-Code completion result for source line:
-puts greeting.cap|italize
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     capitalize                                 String
-METHOD     capitalize!                                String
-CALL       puts(obj)                                  Kernel

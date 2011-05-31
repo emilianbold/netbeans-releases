@@ -85,6 +85,10 @@ public abstract class Crawler {
         this.cancelRequest = cancelRequest;
     }
 
+    public static boolean listenOnVisibility() {
+        return listenOnVisibility;
+    }
+
     public final @NonNull Collection<IndexableImpl> getResources() throws IOException {
         init ();        
         return resources;
@@ -133,6 +137,14 @@ public abstract class Crawler {
         return cancelRequest.isRaised();
     }
 
+    /**
+     * Used by subclasses and unit tests to simulate restart
+     * @param value
+     */
+    static void setListenOnVisibility(final boolean value) {
+        listenOnVisibility = value;
+    }
+
     protected abstract boolean collectResources(@NonNull Collection<IndexableImpl> resources, @NonNull Collection<IndexableImpl> allResources);
 
     // -----------------------------------------------------------------------
@@ -151,6 +163,8 @@ public abstract class Crawler {
     private boolean finished;
     private boolean changed;
     private boolean initialized;
+    
+    private static volatile boolean listenOnVisibility;
 
     private void init () throws IOException {
         if (!initialized) {

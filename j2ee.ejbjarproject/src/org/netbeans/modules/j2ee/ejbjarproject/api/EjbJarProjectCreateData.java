@@ -163,5 +163,9 @@ public final class EjbJarProjectCreateData {
     public void setCDIEnabled(boolean cdiEnabled) {
         this.cdiEnabled = cdiEnabled;
     }
+    
+    public boolean skipTests() {
+        return testFolders == null || testFolders.length == 0;
+    }
 
 }

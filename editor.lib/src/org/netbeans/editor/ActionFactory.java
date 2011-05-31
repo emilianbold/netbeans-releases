@@ -68,6 +68,7 @@ import javax.swing.ButtonModel;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TextUI;
@@ -88,6 +89,7 @@ import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
@@ -1480,15 +1482,26 @@ public class ActionFactory {
         }
     }
 
-    @EditorActionRegistration(name = BaseKit.reindentLineAction)
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.reindentLineAction),
+        @EditorActionRegistration(name = BaseKit.reformatLineAction)
+    })        
     public static class ReindentLineAction extends LocalBaseAction {
 
+        private boolean reindent;
+        
         static final long serialVersionUID =1L;
 
         public ReindentLineAction() {
             // TODO: figure out what these flags are all about
             super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
             //putValue ("helpID", ReindentLineAction.class.getName ());
+        }
+
+        @Override
+        protected void actionNameUpdate(String actionName) {
+            super.actionNameUpdate(actionName);
+            this.reindent = BaseKit.reindentLineAction.equals(actionName);
         }
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
@@ -1503,8 +1516,13 @@ public class ActionFactory {
                 final GuardedDocument gdoc = (doc instanceof GuardedDocument)
                                        ? (GuardedDocument)doc : null;
 
-                final Indent indenter = Indent.get(doc);
-                indenter.lock();
+                final Indent indenter = reindent ? Indent.get(doc) : null;
+                final Reformat reformat = reindent ? null : Reformat.get(doc);
+                if (reindent) {
+                    indenter.lock();
+                } else {
+                    reformat.lock();
+                }
                 try {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
@@ -1535,7 +1553,11 @@ public class ActionFactory {
                                     }
 
                                     Position stopPosition = doc.createPosition(stopPos);
-                                    indenter.reindent(pos, stopPos);
+                                    if (reindent) {
+                                        indenter.reindent(pos, stopPos);
+                                    } else {
+                                        reformat.reformat(pos, stopPos);
+                                    }
                                     pos = pos + Math.max(stopPosition.getOffset() - pos, 1);
 
                                     if (gdoc != null) { // adjust to end of current block
@@ -1550,7 +1572,11 @@ public class ActionFactory {
                         }
                     });
                 } finally {
-                    indenter.unlock();
+                    if (reindent) {
+                        indenter.unlock();
+                    } else {
+                        reformat.unlock();
+                    }
                 }
             }
         }
@@ -1642,9 +1668,6 @@ public class ActionFactory {
                 final BaseDocument doc = Utilities.getDocument(target);
                 if (doc == null)
                     return;
-                final GuardedDocument gdoc = (doc instanceof GuardedDocument)
-                                       ? (GuardedDocument)doc : null;
-                
                 // Set hourglass cursor
                 final Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1658,10 +1681,10 @@ public class ActionFactory {
                         formatter.lock();
                         try {
                             if (canceled.get()) return;
-                            doc.runAtomicAsUser (new Runnable () {
-                                public void run () {
-                                    try {
+                            doc.runAtomicAsUser(new Runnable() {
 
+                                public void run() {
+                                    try {
                                         int startPos, endPos;
                                         if (Utilities.isSelectionShowing(caret)) {
                                             startPos = target.getSelectionStart();
@@ -1671,46 +1694,11 @@ public class ActionFactory {
                                             endPos = doc.getLength();
                                         }
 
-                                        int pos = startPos;
-                                        if (gdoc != null) {
-                                            pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                                        }
-                                        
-                                        LinkedList<PositionRegion> regions = new LinkedList<PositionRegion>();
-                                        while (pos < endPos) {
-                                            int stopPos = endPos;
-                                            if (gdoc != null) { // adjust to start of the next guarded block
-                                                stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-                                                if (stopPos == -1 || stopPos > endPos) {
-                                                    stopPos = endPos;
-                                                }
-                                            }
-
-                                            if (pos < stopPos) {
-                                                regions.addFirst(new PositionRegion(doc, pos, stopPos));
-                                                pos = stopPos;
-                                            } else {
-                                                pos++; //ensure to make progress
-                                            }
-
-                                            if (gdoc != null) { // adjust to end of current block
-                                                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                                            }
-                                        }
-                                        
-                                        if (canceled.get()) return;
-                                        // Once we start formatting, the task can't be canceled
-
-                                        for (PositionRegion region : regions) {
-                                            formatter.reformat(region.getStartOffset(), region.getEndOffset());
-                                        }
-                                        
+                                        reformat(formatter, doc, startPos, endPos, canceled);
                                     } catch (GuardedException e) {
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {
                                         Utilities.annotateLoggable(e);
-                                    } finally {
-                                        target.setCursor(origCursor);
                                     }
                                 }
                             });
@@ -1722,11 +1710,52 @@ public class ActionFactory {
                 } catch (Exception e) {
                     // not sure about this, but was getting j.l.Exception that the operation is too slow - wtf?
                     Logger.getLogger(FormatAction.class.getName()).log(Level.FINE, null, e);
+                } finally {
+                    target.setCursor(origCursor);
                 }
             }
         }
     }
 
+    static void reformat(Reformat formatter, Document doc, int startPos, int endPos, AtomicBoolean canceled) throws BadLocationException {
+        final GuardedDocument gdoc = (doc instanceof GuardedDocument)
+                ? (GuardedDocument) doc : null;
+
+        int pos = startPos;
+        if (gdoc != null) {
+            pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+        }
+
+        LinkedList<PositionRegion> regions = new LinkedList<PositionRegion>();
+        while (pos < endPos) {
+            int stopPos = endPos;
+            if (gdoc != null) { // adjust to start of the next guarded block
+                stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
+                if (stopPos == -1 || stopPos > endPos) {
+                    stopPos = endPos;
+                }
+            }
+
+            if (pos < stopPos) {
+                regions.addFirst(new PositionRegion(doc, pos, stopPos));
+                pos = stopPos;
+            } else {
+                pos++; //ensure to make progress
+            }
+
+            if (gdoc != null) { // adjust to end of current block
+                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+            }
+        }
+
+        if (canceled.get()) return;
+        // Once we start formatting, the task can't be canceled
+
+        for (PositionRegion region : regions) {
+            formatter.reformat(region.getStartOffset(), region.getEndOffset());
+        }
+    }
+    
     @EditorActionRegistrations({
         @EditorActionRegistration(name = BaseKit.firstNonWhiteAction),
         @EditorActionRegistration(name = BaseKit.selectionFirstNonWhiteAction)
@@ -2312,6 +2341,9 @@ public class ActionFactory {
                 hierarchy.lock();
                 try {
                     /*DEBUG*/System.err.println("FOLD HIERARCHY DUMP:\n" + hierarchy); // NOI18N
+                    TokenHierarchy<?> th = TokenHierarchy.get(adoc);
+                    /*DEBUG*/System.err.println("TOKEN HIERARCHY DUMP:\n" + (th != null ? th : "<NULL-TH>")); // NOI18N
+
                 } finally {
                     hierarchy.unlock();
                 }

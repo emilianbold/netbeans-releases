@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.awt.Color;
-import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -69,14 +68,17 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -185,19 +187,27 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
             log.log(Level.FINEST, "Done check for {0} - the path is empty", path);
             showError(NbBundle.getMessage(getClass(), "BASE_EMPTY"));
             return;
+        }        
+        if (!FileSystemProvider.isAbsolute(csm.getExecutionEnvironment(), path)) {
+            showError(NbBundle.getMessage(getClass(), "BASE_RELATIVE"));
+            return;
+        }
+        FileObject fileObject = FileSystemProvider.getFileObject(csm.getExecutionEnvironment(), path);
+        if (fileObject == null || !fileObject.isValid() || !fileObject.isFolder()) {
+            showError(NbBundle.getMessage(getClass(), "REMOTEBASE_INVALID_FOLDER", path));
+            return;
         }
         if (local) {
-            List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(new File(path).getAbsolutePath(), csm.getPlatform());
-            if (flavors.isEmpty() && new File(path).exists()) {
+            List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(path, csm.getPlatform());
+            if (flavors.isEmpty() && CndFileUtils.createLocalFile(path).exists()) {
                 CompilerFlavor flavor = CompilerFlavor.getUnknown(csm.getPlatform());
                 if (flavor != null) {
                     flavors = Collections.<CompilerFlavor>singletonList(flavor);
                 }
             }
             if (flavors.size() > 0) {
-                String baseDirectory = getBaseDirectory();
                 String compilerSetName = getCompilerSetName().trim();
-                CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavors.get(0), compilerSetName);
+                CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(path, flavors.get(0), compilerSetName);
                 ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
                 synchronized (lastFoundLock) {
                     lastFoundRemoteCompilerSet = cs;
@@ -230,7 +240,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
                 if (flavor != null) {
                     String baseDirectory = getBaseDirectory();
                     String compilerSetName = getCompilerSetName().trim();
-                    CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
+                    CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(baseDirectory, flavor, compilerSetName);
                     synchronized (lastFoundLock) {
                         lastFoundRemoteCompilerSet = cs;
                     }

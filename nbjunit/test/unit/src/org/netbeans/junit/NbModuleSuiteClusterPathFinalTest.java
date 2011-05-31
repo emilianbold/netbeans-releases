@@ -77,7 +77,7 @@ public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
         final File ideCluster = clusters.get(0);
         System.setProperty("cluster.path.final", ideCluster.getPath() + ":" + new File(ideCluster.getParent(), "nonexistent"));
         Configuration conf = NbModuleSuite.createConfiguration(NbModuleSuiteClusterPath.class).gui(false).clusters(".*");
-        Test test = NbModuleSuite.create(conf);
+        Test test = conf.suite();
         test.run(new TestResult());
         String val = System.getProperty("my.clusters");
         assertNotNull("The test was running", clusters);

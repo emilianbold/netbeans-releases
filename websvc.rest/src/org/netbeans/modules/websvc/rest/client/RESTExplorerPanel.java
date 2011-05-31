@@ -76,13 +76,21 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
     private ExplorerManager manager;
     private BeanTreeView treeView;
     private Node selectedResourceNode;
+    private ProjectNodeFactory factory;
+    
+    private final static ProjectNodeFactory REST_FACTORY = new RestProjectNodeFactory();
     
     public RESTExplorerPanel() {
+        this( REST_FACTORY );
+    }
+    
+    public RESTExplorerPanel( ProjectNodeFactory factory) {
         manager = new ExplorerManager();
         selectedResourceNode = null;
         
         initComponents();
         initUserComponents();
+        this.factory = factory;
     }
     
     /** This method is called from within the constructor to
@@ -144,14 +152,9 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
         AbstractNode explorerResourcesRoot = new AbstractNode(rootChildren);
         List<Node> projectNodeList = new ArrayList<Node>();
         for (Project prj : projects) {
-            LogicalViewProvider logicalProvider = (LogicalViewProvider)prj.getLookup().lookup(LogicalViewProvider.class);
-            if (logicalProvider!=null) {
-                Node rootNode = logicalProvider.createLogicalView();
-                Node restResourcesNode = RESTResourcesView.createRESTResourcesView(prj);
-                if (restResourcesNode != null) {
-                    projectNodeList.add(new ProjectNode(
-                            new FilterNode.Children(restResourcesNode), rootNode));
-                }
+            Node node = factory.createNode(prj);
+            if ( node != null ){
+                projectNodeList.add(node);
             }
         }
         Node[] projectNodes = new Node[projectNodeList.size()];
@@ -184,7 +187,7 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
                 Node nodes[] = manager.getSelectedNodes();
                 if(nodes != null && nodes.length > 0 ) {
                     Node node = nodes[0];
-                    if(node.getLookup().lookup(RestServiceDescription.class) != null) {
+                    if( factory.canSelect(node)) {
                         // This is a resource node.
                         selectedResourceNode = node;
                         descriptor.setValid(true);
@@ -198,7 +201,43 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
         }
     }
     
-    private class ProjectNode extends AbstractNode {
+    public static interface ProjectNodeFactory {
+        Node createNode( Project project );
+        boolean canSelect( Node node );
+    }
+    
+    private static class RestProjectNodeFactory implements ProjectNodeFactory {
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.websvc.rest.client.RESTExplorerPanel.ProjectNodeFactory#createNode(org.netbeans.api.project.Project)
+         */
+        @Override
+        public Node createNode( Project project ) {
+            LogicalViewProvider logicalProvider = (LogicalViewProvider)project.
+                getLookup().lookup(LogicalViewProvider.class);
+            if (logicalProvider!=null) {
+                Node rootNode = logicalProvider.createLogicalView();
+                Node restResourcesNode = RESTResourcesView.
+                createRESTResourcesView(project);
+                if (restResourcesNode != null) {
+                    return new ProjectNode(
+                            new FilterNode.Children(restResourcesNode), rootNode);
+                }
+            }
+            return null;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.websvc.rest.client.RESTExplorerPanel.ProjectNodeFactory#canSelect(org.openide.nodes.Node)
+         */
+        @Override
+        public boolean canSelect( Node node ) {
+            return node.getLookup().lookup(RestServiceDescription.class) != null;
+        }
+        
+    }
+    
+    private static class ProjectNode extends AbstractNode {
         private Node rootNode;
         
         ProjectNode(Children children, Node rootNode) {

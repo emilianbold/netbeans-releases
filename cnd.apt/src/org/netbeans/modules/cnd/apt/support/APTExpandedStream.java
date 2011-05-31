@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.antlr.RecognitionException;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
@@ -58,6 +59,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTSystemMacroMap;
+import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -105,8 +107,9 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
      */
     @Override
     public APTToken nextToken() {
+        APTToken token;
+        boolean switchMacroExpanding;
         for (;;) {
-            APTToken token;
             try {
                 token = (APTToken) selector.nextToken();
             } catch (TokenStreamException ex) {
@@ -120,19 +123,25 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             } else {
                 // get token from selector and check for ID tokens
                 // only ID tokens are candidates for macro expanding               
-                boolean switchMacroExpanding = false;
+                switchMacroExpanding = false;
                 if (APTUtils.isID(token)) {
-                    // check if ID needs macro expanding
-                    // but prevent recursive re expanding
-                    APTMacro macro = callback.getMacro(token);
-                    if ((macro != null) && !callback.isExpanding(token)) {
-                        try {
+                    // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator  
+                    if (!callback.popPPDefined()) {
+                        // check if ID needs macro expanding
+                        // but prevent recursive re expanding
+                        APTMacro macro = callback.getMacro(token);
+                        if ((macro != null) && !callback.isExpanding(token)) {
                             // start macro expanding
                             switchMacroExpanding = pushMacroExpanding(token, macro);
-                        } catch (TokenStreamException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
-                            switchMacroExpanding = false;
-                        }
+                        } else if ((macro == null) && isExpandingPPExpression() && "defined".contentEquals(token.getTextID())) { // NOI18N
+                            if (callback.pushPPDefined()) {
+                                token = new APTBaseLanguageFilter.FilterToken(token, APTTokenTypes.DEFINED);
+                            } else {
+                                APTUtils.LOG.log(Level.SEVERE, "not handled 'defined' operator on expanding {0}\n", token); // NOI18N
+                            }
+                        } 
+                    } else {
+                        token = new APTBaseLanguageFilter.FilterToken(token, APTTokenTypes.ID_DEFINED);
                     }
                 } else if (APTUtils.isEOF(token)) {
                     // we got EOF on non empty selector => current stream should be poped
@@ -151,7 +160,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         return expandPPExpression;
     }
     
-    private boolean pushMacroExpanding(APTToken token, APTMacro macro) throws TokenStreamException {
+    private boolean pushMacroExpanding(APTToken token, APTMacro macro) {
         boolean res = true;
         try {
             APTTokenStream expanded = createMacroBodyWrapper(token, macro);
@@ -164,7 +173,10 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         } catch (RecognitionException ex) {
             APTUtils.LOG.log(Level.SEVERE, "error on expanding {0}\n{1}", new Object[] {token, ex.getMessage()}); // NOI18N
             res = false;
-        }    
+        } catch (TokenStreamException ex) {
+            APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
+            res = false;
+        }
         return res;
     }
     

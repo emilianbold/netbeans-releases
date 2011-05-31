@@ -71,8 +71,43 @@ public class SPICompilerAccesor {
 
     public void applySystemIncludesAndDefines(List<List<String>> pair) {
         if (compiler instanceof CCCCompiler) {
+            List<Integer> user = merge(((CCCCompiler) compiler).getSystemIncludeDirectories(), pair.get(0));
             ((CCCCompiler) compiler).setSystemIncludeDirectories(pair.get(0));
+            setUserAdded(user, ((CCCCompiler) compiler).getSystemIncludeDirectories());
+
+            user = merge(((CCCCompiler) compiler).getSystemPreprocessorSymbols(), pair.get(1));
             ((CCCCompiler) compiler).setSystemPreprocessorSymbols(pair.get(1));
+            setUserAdded(user, ((CCCCompiler) compiler).getSystemPreprocessorSymbols());
+        }
+    }
+    
+    private List<Integer> merge(List<String> old, List<String> newList) {
+        List<Integer> user = new ArrayList<Integer>();
+        if (old instanceof CCCCompiler.CompilerDefinition) {
+            CCCCompiler.CompilerDefinition def = (CCCCompiler.CompilerDefinition) old;
+            for (int i = 0; i < def.size(); i++) {
+                if (def.isUserAdded(i)) {
+                    int j = newList.indexOf(def.get(i));
+                    if (j < 0) {
+                        j = newList.size();
+                        newList.add(def.get(i));
+                    }
+                    user.add(j);
+                }
+            }
+        }
+        return user;
+    }
+    
+    private void setUserAdded(List<Integer> user, List<String> newList) {
+        if (newList instanceof CCCCompiler.CompilerDefinition) {
+            CCCCompiler.CompilerDefinition def = (CCCCompiler.CompilerDefinition) newList;
+            for(int i = 0; i < def.size(); i++) {
+                def.setUserAdded(false, i);
+            }
+            for(Integer i : user) {
+                def.setUserAdded(true, i);
+            }
         }
     }
 }

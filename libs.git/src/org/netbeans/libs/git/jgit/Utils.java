@@ -47,16 +47,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.RefComparator;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -64,6 +70,7 @@ import org.eclipse.jgit.treewalk.filter.NotTreeFilter;
 import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.openide.util.NbBundle;
@@ -76,7 +83,7 @@ public final class Utils {
     private Utils () {
     }
 
-    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
+    public static Repository getRepositoryForWorkingDir (File workDir) throws IOException, IllegalArgumentException {
          return new FileRepositoryBuilder().setGitDir(getMetadataFolder(workDir)).readEnvironment().findGitDir().build();
     }
 
@@ -85,7 +92,7 @@ public final class Utils {
     }
 
     public static boolean checkExecutable (Repository repository) {
-        return repository.getConfig().getBoolean("core", null, "filemode", true); //NOI18N
+        return repository.getConfig().getBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
     }
     
     public static Collection<PathFilter> getPathFilters (File workDir, File[] roots) {
@@ -177,7 +184,7 @@ public final class Utils {
             }
             return new RevWalk(repository).parseCommit(commitId);
         } catch (MissingObjectException ex) {
-            throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
+            throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT, ex);
         } catch (IncorrectObjectTypeException ex) {
             throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", revision)); //NOI18N
         } catch (IOException ex) {
@@ -188,8 +195,24 @@ public final class Utils {
     public static ObjectId parseObjectId (Repository repository, String objectId) throws GitException {
         try {
             return repository.resolve(objectId);
+        } catch (RevisionSyntaxException ex) {
+            throw new GitException.MissingObjectException(objectId, GitObjectType.COMMIT, ex);
         } catch (AmbiguousObjectException ex) {
             throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", objectId), ex); //NOI18N
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+    }
+
+    public static RevObject findObject (Repository repository, String objectId) throws GitException.MissingObjectException, GitException {
+        try {
+            ObjectId commitId = parseObjectId(repository, objectId);
+            if (commitId == null) {
+                throw new GitException.MissingObjectException(objectId, GitObjectType.UNKNOWN);
+            }
+            return new RevWalk(repository).parseAny(commitId);
+        } catch (MissingObjectException ex) {
+            throw new GitException.MissingObjectException(objectId, GitObjectType.UNKNOWN, ex);
         } catch (IOException ex) {
             throw new GitException(ex);
         }
@@ -223,5 +246,59 @@ public final class Utils {
             }
         }
         return name;
+    }
+
+    /**
+     * Transforms references into GitBranches
+     * @param allRefs all references found
+     * @param prefix prefix denoting heads amongst references
+     * @return 
+     */
+    public static Map<String, GitBranch> refsToBranches (Collection<Ref> allRefs, String prefix) {
+        Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
+        
+        // try to find the head first - it usually is the active remote branch
+        Ref head = null;
+        for (final Ref ref : allRefs) {
+            if (ref.getLeaf().getName().equals(Constants.HEAD)) {
+                head = ref;
+                break;
+            }
+        }
+        
+        // get all refs/heads
+        for (final Ref ref : RefComparator.sort(allRefs)) {
+            String refName = ref.getLeaf().getName();
+            if (refName.startsWith(prefix)) {
+                String name = refName.substring(prefix.length());
+                branches.put(
+                    name, 
+                    new JGitBranch(
+                        name, 
+                        false, 
+                        head != null && ref.getObjectId().equals(head.getObjectId()), 
+                        ref.getLeaf().getObjectId()));
+            }
+        }
+        return branches;
+    }
+
+    /**
+     * Transforms references into pairs of tag name/id
+     * @param allRefs all references found
+     * @return 
+     */
+    public static Map<String, String> refsToTags (Collection<Ref> allRefs) {
+        Map<String, String> tags = new HashMap<String, String>();
+        
+        // get all refs/tags
+        for (final Ref ref : RefComparator.sort(allRefs)) {
+            String refName = ref.getLeaf().getName();
+            if (refName.startsWith(Constants.R_TAGS)) {
+                String name = refName.substring(Constants.R_TAGS.length());
+                tags.put(name, ObjectId.toString(ref.getLeaf().getObjectId()));
+            }
+        }
+        return tags;
     }
 }

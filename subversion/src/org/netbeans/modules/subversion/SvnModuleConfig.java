@@ -87,6 +87,7 @@ public class SvnModuleConfig {
     public static final String KEY_PASSWORD = "versioning.subversion."; //NOI18N
     public static final String KEY_CERT_PASSWORD = "versioning.subversion.cert."; //NOI18N
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
+    private static final String PROP_GET_REMOTE_LOCKS = "getRemoteLocks"; //NOI18N
     private static final String PREFIX_REPOSITORY_PATH = "prefixRepositoryPath"; //NOI18N
     private static final String SEPARATOR = "###"; //NOI18N
     private static final String KEY_SORTING = "sortingStatus."; //NOI18N
@@ -272,11 +273,11 @@ public class SvnModuleConfig {
                 if(getUrlCredentials().containsKey(rc.getUrl())) {
                     Object[] creds = getUrlCredentials().get(rc.getUrl());
                     if(creds.length < 3) continue; //skip garbage
-                    rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), (char[])creds[2]);
+                    rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), (char[])creds[2], rc.getSshPortNumber());
                 } else if (!EventQueue.isDispatchThread()) {
                     char[] password = rc.getSavePassword() ? KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString()) : null;
                     char[] certPassword = rc.getCertFile().isEmpty() ? null : KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl().toString());
-                    rc = new RepositoryConnection(rc.getUrl(), rc.getUsername(), password, rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), certPassword);
+                    rc = new RepositoryConnection(rc.getUrl(), rc.getUsername(), password, rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), certPassword, rc.getSshPortNumber());
                 }
                 ret.add(rc);
             }
@@ -406,6 +407,14 @@ public class SvnModuleConfig {
         } else {
             getPreferences().remove(KEY_SORTING + panel);
         }
+    }
+
+    public boolean isGetRemoteLocks () {
+        return getPreferences().getBoolean(PROP_GET_REMOTE_LOCKS, false);
+    }
+
+    public void setGetRemoteLocks (boolean flag) {
+        getPreferences().putBoolean(PROP_GET_REMOTE_LOCKS, flag);
     }
 
     // private methods ~~~~~~~~~~~~~~~~~~

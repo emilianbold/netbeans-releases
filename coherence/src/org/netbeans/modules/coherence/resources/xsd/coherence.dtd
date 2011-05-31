@@ -1,0 +1,2181 @@
+<!--
+Copyright (c) 2000, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademarks of Oracle Corporation and/or its affiliates.
+
+This software is the confidential and proprietary information of
+Oracle Corporation. You shall not disclose such confidential and
+proprietary information and shall use it only in accordance with the
+terms of the license agreement you entered into with Oracle.
+
+This notice may not be removed or altered.
+-->
+
+<!--
+This is the XML DTD for the tangosol-coherence.xml configuration file.
+The configuration file must include a DOCTYPE of the following form:
+
+  <!DOCTYPE coherence SYSTEM "coherence.dtd">
+-->
+
+<!--
+The coherence element is the root element of the tangosol-coherence descriptor.
+
+Used in: n/a
+-->
+<!ELEMENT coherence
+  (cluster-config, logging-config, configurable-cache-factory-config,
+  cache-factory-builder-config, management-config, security-config?,
+  license-config?)>
+
+<!--
+The instance entity defines the selection of an implementation class
+or class-factory name and init-params.
+-->
+<!ENTITY % instance
+  "((class-name | (class-factory-name, method-name)), init-params?)">
+
+<!--
+The instance element defines the selection of an implementation class
+or class-factory name and init-params.
+-->
+<!ELEMENT instance
+  (%instance;)>
+
+<!--
+The cluster-config element contains the cluster configuration info.
+
+Used in: coherence
+-->
+<!ELEMENT cluster-config
+  (member-identity?, unicast-listener, multicast-listener, tcp-ring-listener,
+  shutdown-listener, service-guardian, packet-speaker, packet-publisher,
+  incoming-message-handler, outgoing-message-handler, authorized-hosts,
+  services, filters, serializers, socket-providers, cluster-quorum-policy?)>
+
+<!--
+The member-identity element contains detailed identity information that is
+useful for defining the location and role of the cluster member.
+
+Used in: cluster-config
+-->
+<!ELEMENT member-identity
+  (cluster-name?, site-name?, rack-name?, machine-name?, process-name?,
+  member-name?, role-name?, priority?)>
+
+<!--
+The unicast-listener element contains the unicast listener
+configuration info.
+
+Used in: cluster-config
+-->
+<!ELEMENT unicast-listener
+  (socket-provider?, well-known-addresses?, machine-id?, address, port,
+  port-auto-adjust, packet-buffer, priority)>
+
+<!--
+The well-known-addresses element contains a list of "well known" addresses
+(WKA) that are used by the cluster discovery protocol in place of multicast
+broadcast or an address provider (factory) that would generate those addresses.
+If the well-known-addresses element is specified, for a member to join the
+cluster it will either have to be a WKA or there will have to be at least one
+WKA member running. Additionally, all cluster communication will be performed
+using unicast.
+
+Used in: unicast-listener
+-->
+<!ELEMENT well-known-addresses
+  (socket-address* | address-provider?)>
+
+<!--
+The multicast-listener element contains the multicast related
+configuration info.
+
+Used in: cluster-config
+-->
+<!ELEMENT multicast-listener
+  (interface?, address, port, time-to-live, packet-buffer, priority,
+   join-timeout-milliseconds, multicast-threshold-percent)>
+
+<!--
+The tcp-ring-listener element contains the tcp ring related configuration info.
+
+Used in: cluster-config
+-->
+<!ELEMENT tcp-ring-listener
+  (enabled?, ip-timeout?, listen-backlog?, priority)>
+
+<!--
+The ip-timeout element specifies the timeout to use for determining that a
+machine hosting cluster members has become unreachable, and that those cluster
+members should be removed. The value should be high enough to insulate against
+allowable temporary network outages.
+
+Note: This feature relies upon the java.net.InetAddress.isReachable mechanism,
+see http://java.sun.com/j2se/1.5.0/docs/api/java/net/InetAddress.html#isReachable(int)
+for a description of how it will identify reachability.
+
+Legal values are strings representing time intervals.  A timeout of 0 will
+disable machine level monitoring and is not recommended.
+
+Default value is "15s".
+
+Used in: tcp-ring-listener
+-->
+<!ELEMENT ip-timeout (#PCDATA)>
+
+<!--
+The value of the listen-backlog element is used to configure the size of the
+TCP/IP server socket backlog queue.
+
+Valid values are positive integers.
+
+Default value is O/S dependent.
+
+Used in: tcp-ring-listener
+-->
+<!ELEMENT listen-backlog (#PCDATA)>
+
+<!--
+The shutdown-listener element contains the JVM shutdown hook configuration info.
+Valid values of the "enabled" element are "none" (same as "false"), "force"
+(same as "true") and "graceful".
+The "force" option causes the shutdown hook to perform a "hard-stop" of cluster
+services by calling Cluster.stop(). The "graceful" option will initiate
+a normal shutdown procedure by calling Cluster.shutdown().
+
+Used in: cluster-config
+-->
+<!ELEMENT shutdown-listener
+  (enabled)>
+
+<!--
+The service-guardian element contains service guardian related configuration info.
+
+Used in: cluster-config
+-->
+<!ELEMENT service-guardian
+  (service-failure-policy?, timeout-milliseconds?)>
+
+<!--
+The service-failure-policy element contains the configuration info for how to
+respond an abnormally behaving service.
+
+Legal values are: "exit-cluster", "exit-process", "logging", or configuration
+info for a class that implements the com.tangosol.net.ServiceFailurePolicy interface.
+
+The pre-defined policies are:
+  "exit-cluster"
+     This option will attempt to recover threads that appear be unresponsive,
+     and failing that, attempt to stop the associated service.  If the associated
+     service cannot be stopped, this policy will cause the local node to stop
+     the cluster services
+
+  "exit-process"
+     This option will attempt to recover threads that appear be unresponsive,
+     and failing that, attempt to stop the associated service.  If the associated
+     service cannot be stopped, this policy will cause the local node to exit the
+     JVM to terminate abruptly
+
+  "logging"
+     This option will cause any detected problems to be logged, but no corrective
+     action will be taken
+
+Default value is "exit-cluster".
+
+Used in: service-guardian
+-->
+<!ELEMENT service-failure-policy (#PCDATA | instance)*>
+
+<!--
+The packet-speaker element contains the packet speaker related
+configuration info.
+
+Used in: cluster-config
+-->
+<!ELEMENT packet-speaker
+  (volume-threshold?, priority)>
+
+<!--
+The packet-publisher element contains the packet publisher related
+configuration info.
+
+Used in: cluster-config
+-->
+<!ELEMENT packet-publisher
+  (packet-size?, packet-pool, packet-delivery, notification-queueing,
+   traffic-jam, packet-buffer, priority, enabled?)>
+
+<!--
+The packet-size element contains the packet size related
+configuration info.
+
+Used in: packet-publisher
+-->
+<!ELEMENT packet-size
+  (maximum-length, preferred-length)>
+
+<!--
+The packet-delivery element contains the packet delivery related
+configuration info.
+
+Used in: packet-publisher
+-->
+<!ELEMENT packet-delivery
+  (resend-milliseconds, timeout-milliseconds, heartbeat-milliseconds,
+   flow-control?, packet-bundling?)>
+
+<!--
+The notification-queueing element contains the notification queue related
+configuration info.
+
+Used in: packet-publisher
+-->
+<!ELEMENT notification-queueing
+  (ack-delay-milliseconds, nack-delay-milliseconds)>
+
+<!--
+The packet-buffer element contains information on how many packets the OS
+will be requested to buffer for incoming (listeners) and outgoing (publisher).
+
+Used in: unicast-listener, multicast-listener, packet-publisher
+-->
+<!ELEMENT packet-buffer
+  (maximum-packets)>
+
+<!--
+The packet-pool element contains information on how many packets will be
+buffered between Coherence network daemons. There are two packet pools: one
+for publishing and one for receiving. The pool of packets allows for faster
+socket-layer processing at the expense of increased memory usage.
+
+Used in: incoming-message-handler, packet-publisher
+-->
+<!ELEMENT packet-pool
+  (size)>
+
+<!--
+The message-pool element contains information on how many message buffers
+will be pooled for message transmission. The message pool of buffers
+relieves the pressure on the JVM garbage collector by pooling the memory
+resources needed for messaging.
+
+Used in: outgoing-message-handler
+-->
+<!ELEMENT message-pool
+  (segments?, segment-size?, min-buffer-size?, growth-factor?)>
+
+<!--
+The traffic-jam element contains the configuration for how to deal with client
+threads during a publisher-clogged condition.
+
+Used in: packet-publisher
+-->
+<!ELEMENT traffic-jam
+  (maximum-packets, pause-milliseconds)>
+
+<!--
+The volume-threshold element specifies the minimum outgoing packet volume
+which must exist for the speaker daemon to be activated.  When the volume is
+relatively low it may be more efficient for the speaker's operations to be
+performed on the publisher's thread.
+
+Used in: packet-speaker
+-->
+<!ELEMENT volume-threshold
+  (minimum-packets)>
+
+<!--
+The incoming-message-handler element contains the incoming message handler
+(also known as a receiver) related configuration info.
+
+Used in: cluster-config
+-->
+<!ELEMENT incoming-message-handler
+  (maximum-time-variance, packet-pool, use-nack-packets, priority)>
+
+<!--
+The outgoing-message-handler element contains the outgoing message handler
+related configuration info.
+
+Used in: cluster-config
+-->
+<!ELEMENT outgoing-message-handler
+  (message-pool?, use-filters?)>
+
+<!--
+The authorized-hosts element contains the collection of IP addresses of the
+unicast listeners for the cluster nodes that are allowed to join the cluster.
+If this collection is empty no constraints are imposed.
+
+Used in: cluster-config
+-->
+<!ELEMENT authorized-hosts
+  (host-address*, host-range, host-filter?)>
+
+<!--
+The host-range element describes a range of IP addresses.
+
+Used in: authorized-hosts
+-->
+<!ELEMENT host-range
+  (from-address, to-address)>
+
+<!--
+The host-filter element contains the class configuration info for a
+com.tangosol.util.Filter implementation that is used by the cluster to
+determine whether to accept a new cluster member. The evaluate()
+method will be passed the java.net.InetAddress of the client. Implementations
+should return "true" to allow the new member to join the cluster.
+
+Used in: authorized-hosts
+-->
+<!ELEMENT host-filter
+  (class-name, init-params?)>
+
+<!--
+The socket-address element contains an IP address and port combination
+that a Socket could be bound to.
+
+Used in: well-known-addresses
+-->
+<!ELEMENT socket-address
+  (address, port)>
+
+<!--
+The address-provider element contains the configuration info for an address
+factory that implements the com.tangosol.util.AddressProvider interface.
+
+Used in: well-known-addresses
+-->
+<!ELEMENT address-provider
+  (%instance;)>
+
+<!--
+The services element contains the declarative data for each service.
+
+Used in: cluster-config
+-->
+<!ELEMENT services
+  (service*)>
+
+<!--
+The service element contains the declarative data of a particular
+service.
+
+Used in: services
+-->
+<!ELEMENT service
+  (service-type, service-component, use-filters?, init-params?)>
+
+<!--
+The use-filters element contains the list of filter names to be used
+by this service.
+
+Used in: service, outgoing-message-handler
+-->
+<!ELEMENT use-filters
+  (filter-name*)>
+
+<!--
+The filters element contains the declarative data for each filter.
+
+Used in: cluster-config
+-->
+<!ELEMENT filters
+  (filter*)>
+
+<!--
+The filter element contains the declarative data of a particular
+filter.
+
+Used in: filters
+-->
+<!ELEMENT filter
+  (filter-name?, filter-class, init-params?)>
+
+<!--
+The cluster-quorum-policy configuration element contains the configuration
+info for the quorum-based action policy for the cluster service.
+
+Used in: cluster-config
+-->
+<!ELEMENT cluster-quorum-policy (timeout-survivor-quorum* | %instance;)>
+
+<!--
+The timeout-survivor-quorum configuration element specifies the minimum number
+of cluster members in a given role that must remain in order to terminate one or
+more cluster members due to a detected network timeout, irrespective of the root
+cause.  Role-specific quorum values can be specified using the "role" attribute,
+e.g.:
+  <timeout-survivor-quorum role="Server">50</timeout-survivor-quorum>
+
+Valid values are non-negative integers.
+
+Used in: cluster-quorum-policy
+-->
+<!ELEMENT timeout-survivor-quorum (#PCDATA)>
+
+<!--
+The serializers element contains the declarative data for each serializer.
+
+Used in: cluster-config
+-->
+<!ELEMENT serializers
+  (serializer*)>
+
+<!--
+The serializer element contains the declarative data of a particular
+serializer.
+
+Used in: serializers
+-->
+<!ELEMENT serializer
+  (%instance;)>
+
+<!--
+The init-params element contains the initialization parameters for a
+service or a filter.
+
+Used in: service, filter, address-provider,
+         configurable-cache-factory-config, access-controller, callback-handler, host-filter
+-->
+<!ELEMENT init-params
+  (init-param*)>
+
+<!--
+The init-param element is a single initialization parameter for a service
+or a filter.
+
+All services support the following parameters:
+
+  thread-count
+    Specifies the number of daemon threads. Usage of the daemon threads
+    varies for different service types.
+
+    If zero, all relevant tasks are performed on the service thread.
+
+  task-hung-threshold
+    Specifies the amount of time in milliseconds that a task can execute
+    before it is considered "hung". Note that a posted task that has not
+    yet started is never considered as hung.
+
+    This attribute is applied only if the thread pool is used
+    (the "thread-count" value is positive).
+
+  task-timeout
+    Specifies the default timeout value for tasks that can be timed-out
+    (e.g. implement the com.tangosol.net.PriorityTask interface), but don't
+    explicitly specify the task execution timeout value. The task execution
+    time is measured on the server side and does not include the time spent
+    waiting in a service [backlog] queue before being started.
+
+    This attribute is applied only if the thread pool is used
+    (the "thread-count" value is positive).
+
+  request-timeout
+    Specifies the default timeout value for requests that can time-out
+    (e.g. implement the com.tangosol.net.PriorityTask interface), but don't
+    explicitly specify the request timeout value. The request time is measured
+    on the client side as the time elapsed from the moment a request is sent
+    for execution to the corresponding server node(s) and includes the
+    following: (1) the time it takes to deliver the request to an executing node
+    (server); (2) the interval between the time the task is received and placed
+    into a service queue until the execution starts; (3) the task execution time;
+    (4) the time it takes to deliver a result back to the client.
+
+  guardian-timeout
+    Specifies the guardian timeout value to use for guarding the service and any
+    dependant threads.  If the guardian-timeout is not specified for a given
+    service, the default guardian timeout (as specified by the operational
+    config element "service-guardian/timeout-milliseconds") is used.
+
+    An explicitly specified timeout of 0 will prevent the service (and any
+    dependant threads) from being guarded.
+
+  member-listener
+    Specifies the configuration info for a class that implements the
+    com.tangosol.net.MemberListener interface. This implementation
+    must have a public default constructor.
+
+The replicated cache service supports the following parameters:
+
+  standard-lease-milliseconds
+    Specifies the duration of the standard lease in milliseconds. Once a lease
+    has aged past this number of milliseconds, the lock will automatically be
+    released. Set this value to zero to specify a lease that never expires.
+    The purpose of this setting is to avoid deadlocks or blocks caused by stuck
+    threads; the value should be set higher than the longest expected lock
+    duration (e.g. higher than a transaction timeout). It's also recommended
+    to set this value higher then packet-delivery/timeout-milliseconds value.
+
+  lease-granularity
+    Specifies the lease ownership granularity.
+
+    Valid values are "thread" and "member". A value of "thread" means that
+    locks are held by a thread that obtained them and can only be released by
+    that thread. A value of "member" means that locks are held by a cluster
+    node and any thread running on the cluster node that obtained the lock can
+    release it.
+
+    Default value is "thread".
+
+  mobile-issues
+    Specifies whether or not the lease issues should be transferred to the most
+    recent lock holders. Valid values are "true" or "false".
+
+The partitioned cache service supports the following parameters:
+
+  lease-granularity
+    Specifies the lease ownership granularity.
+
+    Valid values are "thread" and "member". A value of "thread" means that
+    locks are held by a thread that obtained them and can only be released by
+    that thread. A value of "member" means that locks are held by a cluster
+    node and any thread running on the cluster node that obtained the lock can
+    release it.
+
+    Default value is "thread".
+
+  local-storage
+    Specifies whether or not this member of the partitioned cache service enables
+    the local storage.
+
+    Valid values are "true" or "false". A value of false means that the cluster
+    member will not store any of the data locally. A value of true means that
+    the cluster member will store its fair share of the data.
+
+    Default value is true.
+
+  partition-count
+    Specifies the number of partitions that a partitioned (distributed) cache will
+    be "chopped up" into.  Each member running the partitioned cache service that
+    has the local-storage option set to true will manage a "fair" (balanced) number
+    of partitions.
+
+    The number of partitions should be a prime number and sufficiently large such
+    that a given partition is expected to be no larger than 50MB in size.
+
+    Good defaults for example service storage sizes are provided below:
+
+    service storage       parition-count
+    _______________       ______________
+       100M                    257
+         1G                    509
+        10G                   2039
+        50G                   4093
+       100G                   8191
+
+    A list of first 1,000 primes can be found at
+    http://www.utm.edu/research/primes/lists/small/1000.txt
+
+    Valid values are positive integers.
+
+    Default value is the value specified in the tangosol-coherence.xml descriptor.
+
+  transfer-threshold
+    Specifies the threshold for the primary partition distribution in kilo-bytes.
+    When a new node joins the partitioned cache service or when a member of
+    the service leaves, the remaining nodes perform a task of partition ownership
+    re-distribution. During this process, the existing data gets re-balanced
+    along with the ownership information. This parameter indicates a preferred
+    message size for data transfer communications. Setting this value lower will
+    make the distribution process take longer, but will reduce network bandwidth
+    utilization during this activity.
+
+    Default value is 512 (0.5MB).
+
+  backup-count
+    Specifies the number of members of the partitioned cache service that hold
+    the backup data for each unit of storage in the cache.
+
+    Value of 0 means that in the case of abnormal termination, some portion
+    of the data in the cache will be lost. Value of N means that if up to N
+    cluster nodes terminate at once, the cache data will be preserved.
+
+    To maintain the partitioned cache of size M, the total memory usage in the
+    cluster does not depend on the number of cluster nodes and will be in the
+    order of M*(N+1).
+
+    Recommended values are 0, 1 or 2.
+    Default value is 0.
+
+  backup-storage/type
+    Specifies the type of the storage used to hold the backup data.
+
+    Valid values are "on-heap", "off-heap", "file-mapped", "custom" or "scheme".
+    The corresponding implementations classes are
+      - java.util.HashMap,
+      - com.tangosol.io.nio.BinaryMap using com.tangosol.io.nio.DirectBufferManager,
+      - com.tangosol.io.nio.BinaryMap using com.tangosol.io.nio.MappedBufferManager,
+      - the class specified by the backup-storage/class-name element,
+      - the map returned by the ConfigurableCacheFactory for the scheme referred to
+        by the backup-storage/scheme-name element
+
+    The "off-heap" and "file-mapped" options are only available with JDK 1.4 and later.
+    Default value is "on-heap".
+
+  backup-storage/initial-size
+    Only applicable with the "off-heap" and "file-mapped" types.
+
+    Specifies the initial buffer size in megabytes.
+
+    Valid values are positive integers between 1 and 2048.
+    Default value is 1.
+
+  backup-storage/maximum-size
+    Only applicable with the "off-heap" and "file-mapped" types.
+
+    Specifies the maximum buffer size in megabytes.
+
+    Valid values are positive integers between 1 and 2048.
+    Default value is 1024.
+
+  backup-storage/directory
+    Only applicable with the "file-mapped" type.
+
+    Specifies the pathname for the directory to use by
+    com.tangosol.io.nio.MappedBufferManager.  If not specified or specifies
+    a non-existent directory, a temporary file in the default location is used.
+
+  backup-storage/class-name
+    Only applicable with the "custom" type.
+
+    Specifies a class name for the custom storage implementation.
+    If the class implements com.tangosol.run.xml.XmlConfigurable interface
+    then upon construction the setConfig method is called passing the
+    entire "backup-storage" XmlElement.
+
+  backup-storage/scheme-name
+    Only applicable with the "scheme" type.
+
+    Specifies a scheme name for the ConfigurableCacheFactory.
+
+  key-associator/class-name
+    Specifies a class name that implements
+      com.tangosol.net.partition.KeyAssociator interface.
+    This implementation must have a public default constructor.
+
+    If this value is not specified,
+      com.tangosol.net.partition.DefaultKeyAssociator
+    will be used.
+
+  key-partitioning/class-name
+    Specifies a class name that implements
+      com.tangosol.net.partition.KeyPartitioningStrategy interface.
+    This implementation must have a public default constructor.
+
+  partition-listener/class-name
+    Specifies a class name that implements
+      com.tangosol.net.partition.PartitionListener interface.
+    This implementation must have a public default constructor.
+
+The local cache service supports the following parameters:
+
+  lock-enforce
+    Specifies whether or not the locking is enforced for put, remove
+    and clear operations.
+
+    Valid values are "true" or "false". A value of if true means that
+    the locking is enforced for put, remove and clear operations.
+    The value of false means that a client is responsible for calling
+    lock and unlock explicitly.
+
+  lock-wait
+    If locking enforcement is required then this parameter specifies
+    the number of milliseconds to continue trying to obtain a lock.
+
+    The value of -1 means that the calling thread will be blocked
+    indefinitely until the lock could be obtained.
+
+The compression filter (com.tangosol.net.CompressionFilter) supports
+the following parameters (see java.util.zip.Deflater for details):
+
+  buffer-length
+    Valid values are non-negative integers.  Default value is zero.
+
+  strategy
+    Valid values are "gzip", "huffman-only", "filtered", "default".
+    Default value is "gzip".
+
+  level
+    Valid values are "default", "compression", "speed", "none".
+    Default value is "default".
+
+The symmetric encryption filter supports the following parameters, see
+com.tangosol.net.security.PasswordBasedEncryptionFilter for details:
+
+  password
+    Required, no default value.
+
+  salt
+    Default value is "nosecret".
+
+  iterations
+    Default value is 32.
+
+  algorithm
+    Default value is "PBEWithMD5AndDES".
+
+The PKCS encryption filter supports the following parameters, see
+com.tangosol.net.security.ClusterEncryptionFilter for details:
+
+  keyAlias
+    Required, no default value.
+
+  keyPassword
+    Required, no default value.
+
+  storeType
+    Default value is "JKS".
+
+  store
+    Default value is ".keystore".
+
+  storePassword
+    If unspecified value of keyPassword parameter will be used.
+
+  transformation
+    Default value is "RSA/NONE/PKCS1Padding".
+
+  sharedKeyType
+    Default value is "DESede".
+
+  sharedKeySize
+    Default value is 112.
+
+  asymmetricFilterClassName
+    Default value is "com.tangosol.net.security.AsymmetricEncryptionFilter".
+
+Used in: init-params
+-->
+<!ELEMENT init-param
+  ((param-name | param-type), param-value, description?)>
+
+<!--
+The logging-config element contains the configuration info
+for the logging facility.
+
+Used in: coherence
+-->
+<!ELEMENT logging-config
+  (destination, logger-name?, severity-level, message-format, character-limit)>
+
+<!--
+The configurable-cache-factory-config element contains the configuration info
+for the configurable cache factory.
+
+Used in: coherence
+-->
+<!ELEMENT configurable-cache-factory-config
+    (class-name, init-params?)>
+
+<!--
+The cache-factory-builder-config element contains the configuration info for
+contructing an instance of com.tangosol.net.CacheFactoryBuilder.
+CacheFactoryBuilder provides a pluggable interface for building and managing
+multiple cache factory configurations cross multiple class loaders.
+
+Used in: coherence
+-->
+<!ELEMENT cache-factory-builder-config
+    (class-name, init-params?)>
+
+<!--
+The management-config element contains the configuration information
+for the Coherence Management Framework.
+
+Used in: coherence
+-->
+<!ELEMENT management-config
+    (managed-nodes, allow-remote-management, refresh-policy?,
+     refresh-expiry?, refresh-timeout?, read-only?, default-domain-name?,
+     service-name?, server-factory?, mbeans?, mbean-filter?, reporter?)>
+
+<!--
+The server-factory element contains the configuration info for the MBeanServer
+factory that implements the com.tangosol.net.management.MBeanServerFinder
+interface.
+
+Used in: management-config
+-->
+<!ELEMENT server-factory
+    (class-name, init-params?)>
+
+<!--
+The reporter element contains the configuration parameters for the reporter.
+
+Used in:management-config
+-->
+<!ELEMENT reporter
+    (configuration, autostart, distributed)>
+
+<!--
+The configuration element is contains the location for the Reporter Batch XML.
+
+Used in: reporter
+-->
+<!ELEMENT configuration (#PCDATA)>
+
+<!--
+The autostart element is contains a boolean to determine if the Reporter starts
+automatically.
+
+Used in: reporter
+-->
+<!ELEMENT autostart (#PCDATA)>
+
+<!--
+The distributed element specifies whether or not the reporter runs on multiple
+management nodes.
+
+Default value is false.
+
+Used in: reporter
+-->
+<!ELEMENT distributed (#PCDATA)>
+
+<!--
+The mbeans element contains a list of MBeans to be registered when a node joins
+the cluster.
+
+Used in: management-config
+-->
+<!ELEMENT mbeans
+    (mbean*)>
+
+<!--
+The mbean element contains the information required to register an MBean.
+
+Used in: mbeans
+-->
+<!ELEMENT mbean
+    ((mbean-class | mbean-factory | mbean-query), mbean-server-domain?,
+    mbean-accessor?, mbean-name, local-only?, enabled?, extend-lifecycle?)>
+
+<!--
+The mbean-filter element contains the declarative data for a class used to
+reduce the number of MBeans registered with the Coherence JMX framework. The
+specified class needs to implement the com.tangosol.util.Filter interface
+and is passed MBean names (note that the names may not include the domain name).
+Evaluation of "false" will prevent the corresponding MBean registration.
+
+Used in: management-config
+-->
+<!ELEMENT mbean-filter %instance;>
+
+<!--
+The mbean-class element contains the name of a class to instantiate and
+register with the Coherence Management Framework.
+
+Used in: mbean
+-->
+<!ELEMENT mbean-class (#PCDATA)>
+
+<!--
+The mbean-factory element contains the name of a class factory used to obtain
+MBeans to register with the Coherence Management Framework.
+
+Used in: mbean
+-->
+<!ELEMENT mbean-factory (#PCDATA)>
+
+<!--
+The mbean-query element contains an MBean query string used to obtain MBeans
+from a local MBean server to register with the Coherence Management Framework.
+
+Used in: mbean
+-->
+<!ELEMENT mbean-query (#PCDATA)>
+
+<!--
+The mbean-server-domain element contains the name of a default domain for the
+source MBeanServer.  This is used to locate the MBeanServer where the
+mbean-query should be executed.
+
+Used in: mbean
+-->
+<!ELEMENT mbean-server-domain (#PCDATA)>
+
+<!--
+The local-only element controls the MBean visibility across the cluster.
+If set to true, the MBean is registered only with a local MBeanServer and is
+not accessible by other cluster nodes; otherwise the "nodeId=..." key attribute
+is added to its name and the MBean will be visible from any of the "managing"
+nodes (the ones that have the "managed-nodes" element set to values of "all" or
+"remote-only").
+
+Default value is false.
+
+Used in: mbean
+-->
+<!ELEMENT local-only (#PCDATA)>
+
+<!--
+The mbean-accessor element contains the method name on the factory class used to
+obtain an MBean.
+
+Used in: mbean
+-->
+<!ELEMENT mbean-accessor (#PCDATA)>
+
+<!--
+The mbean-name element contains the name of the MBean as it will be registered
+with the Coherence Management Framework.
+
+Used in: mbean
+-->
+<!ELEMENT mbean-name (#PCDATA)>
+
+<!--
+The extend-lifecycle element contains a flag controling the MBean life cycle.
+If set to true, the MBean life cycle extends to the life cycle of the JVM;
+Otherwise, it coinsides with the the cluster node life cycle.
+
+Default value is false.
+
+Used in: mbean
+-->
+<!ELEMENT extend-lifecycle (#PCDATA)>
+
+<!--
+The security-config element contains the configuration info
+for the Coherence Security Framework.
+
+For details please refer to the Coherence Security Framework guide at
+http://www.tangosol.com/downloads/SecurityFramework.pdf
+
+Used in: coherence
+-->
+<!ELEMENT security-config
+    (enabled, login-module-name, access-controller, callback-handler?,
+    identity-asserter?, identity-transformer?, subject-scope?)>
+
+<!--
+The access-controller element contains the configuration info for the
+class that implements the com.tangosol.net.security.AccessController interface,
+which will be used by the Coherence Security Framework to check access right
+and encrypt/decrypt node-to-node communications.
+
+Used in: security-config
+-->
+<!ELEMENT access-controller
+    (class-name, init-params?)>
+
+<!--
+The callback-handler element contains the configuration info for the
+class that implements the CallbackHandler interface which will be called
+if an attempt is made to access a protected clustered resource when
+there is no identity associated with the caller.
+
+Used in: security-config
+-->
+<!ELEMENT callback-handler
+    (class-name, init-params?)>
+
+<!--
+The identity-asserter element contains the configuration info for the
+class that implements the com.tangosol.net.security.IdentityAsserter interface
+which will be called to validate an identity token in order to establish a
+user's identity.
+
+Used in: security-config
+-->
+<!ELEMENT identity-asserter
+    (%instance;)>
+
+<!--
+The identity-transformer element contains the configuration info for the
+class that implements the com.tangosol.net.security.IdentityTransformer
+interface which will be called to transforms a Subject to a token that asserts
+identity.
+
+Used in: security-config
+-->
+<!ELEMENT identity-transformer
+    (%instance;)>
+
+<!--
+The subject-scope element defines whether the remote cache or service
+reference is shared by subject. The setting of "true" means that remote
+references are not globally shared; each subject will get a different reference.
+
+Valid values are "true" or "false".
+
+Default value is "false".
+
+Used in: security-config
+-->
+<!ELEMENT subject-scope (#PCDATA)>
+
+<!--
+The license-config element contains the location of the license repository
+and the details of the license that this member will utilize.
+
+Used in: coherence
+-->
+<!ELEMENT license-config
+  (edition-name?, license-mode?)>
+
+<!--
+The cluster-name element contains the name of the cluster.  In order to join
+the cluster all members must specify the same cluster name.
+
+It is strongly suggested that cluster-name be specified for production
+systems, thus preventing accidental cluster discovery among applications.
+
+Used in: member-identity
+-->
+<!ELEMENT cluster-name (#PCDATA)>
+
+<!--
+The site-name element contains the name of the geographic site that the
+member is hosted at. For WAN clustering, this value identifies the datacenter
+within which the member is located, and can be used as the basis for
+intelligent routing, load balancing and disaster recovery planning (i.e.
+the explicit backing up of data on separate geographic sites). The name is
+also useful for displaying management information (e.g. JMX) and interpreting
+log entries. Coherence currently does not make use of this element in making
+decisions about data backup location.
+
+It is optional to provide a value for this element. Deployments that spread
+across more than one geographic site should specify a site-name value.
+
+Used in: member-identity
+-->
+<!ELEMENT site-name (#PCDATA)>
+
+<!--
+The rack-name element contains the name of the location within a geographic
+site that the member is hosted at. This is often a cage, rack or bladeframe
+identifier, and can be used as the basis for intelligent routing, load
+balancing and disaster recovery planning (i.e. the explicit backing up of
+data on separate bladeframes). The name is also useful for displaying
+management information (e.g. JMX) and interpreting log entries. Coherence
+currently does not make use of this element in making decisions about data
+backup location.
+
+It is optional to provide a value for this element. Large scale deployments
+should always specify a rack-name value.
+
+Used in: member-identity
+-->
+<!ELEMENT rack-name (#PCDATA)>
+
+<!--
+The machine-name element contains the name of the physical server that the
+member is hosted on. This is often the same name as the server identifies
+itself as (e.g. its HOSTNAME, or its name as it appears in a DNS entry).
+If provided, the machine-name is used as the basis for creating a machine-id,
+which in turn is used to guarantee that data are backed up on different
+physical machines to prevent single points of failure (SPOFs). The name is
+also useful for displaying management information (e.g. JMX) and interpreting
+log entries.
+
+It is optional to provide a value for this element. However, it is strongly
+encouraged that a name always be provided.
+
+Used in: member-identity
+-->
+<!ELEMENT machine-name (#PCDATA)>
+
+<!--
+The process-name element contains the name of the process (JVM) that the
+member is hosted on. This name makes it possible to easily differentiate
+among multiple JVMs running on the same machine. The name is also useful for
+displaying management information (e.g. JMX) and interpreting log entries.
+
+It is optional to provide a value for this element. Often, a single member
+will exist per JVM, and in that situation this name would be redundant.
+
+Used in: member-identity
+-->
+<!ELEMENT process-name (#PCDATA)>
+
+<!--
+The member-name element contains the name of the member itself. This name
+makes it possible to easily differentiate among members, such as when
+multiple members run on the same machine (or even within the same JVM).
+The name is also useful for displaying management information (e.g. JMX) and
+interpreting log entries.
+
+It is optional to provide a value for this element. However, it is strongly
+encouraged that a name always be provided.
+
+Used in: member-identity
+-->
+<!ELEMENT member-name (#PCDATA)>
+
+<!--
+The role-name element contains the name of the member role. This name allows
+an application to organize members into specialized roles, such as cache
+servers and cache clients.
+
+The name is also useful for displaying management information (e.g. JMX) and
+interpreting log entries.
+
+It is optional to provide a value for this element. However, it is strongly
+encouraged that a name always be provided.
+
+Used in: member-identity
+-->
+<!ELEMENT role-name (#PCDATA)>
+
+<!--
+The edition-name element specifies the product edition that the member will
+utilize. This allows multiple product editions to be used within the same
+cluster, with each member specifying the edition that it will be using.
+
+Valid values are:
+ - "GE"  or "grid"       - Grid Edition
+ - "EE"  or "enterprise" - Enterprise Edition
+ - "SE"  or "standard"   - Standard Edition
+ - "RTC" or "realtime"   - Real-Time Client
+ - "DC"  or "client"     - Data Client
+
+It is optional to provide a value for this element.
+
+Used in: license-config
+-->
+<!ELEMENT edition-name (#PCDATA)>
+
+<!--
+The license-mode element specifies whether the product is being used in a
+development or production mode. Note that this property may be specified either
+in the base operational configuraiton file, or via system-properties, but may
+not be configured via an override file, as it is used is selecting the override
+file.
+
+Valid values are "prod" (Production), and "dev" (Development).
+
+It is optional to provide a value for this element.
+
+Used in: license-config
+-->
+<!ELEMENT license-mode (#PCDATA)>
+
+<!--
+The login-module-name element specifies the name of the JAAS LoginModule that
+should be used to authenticate the caller. This name should match a module in
+a configuration file will be used by the JAAS (for example specified via the
+"-Djava.security.auth.login.config" Java command line attribute).
+
+For details please refer to the LoginModule Developer's Guide at
+http://java.sun.com/j2se/1.4.2/docs/guide/security/jaas/JAASLMDevGuide.html
+
+Used in: security-config
+-->
+<!ELEMENT login-module-name (#PCDATA)>
+
+<!--
+The managed-nodes element specifies whether or not a cluster node's JVM has
+an [in-process] MBeanServer and if so, whether or not this node allows
+management of other nodes' managed objects.
+
+Legal values are: none, local-only, remote-only or all.
+
+Used in: management-config
+-->
+<!ELEMENT managed-nodes (#PCDATA)>
+
+<!--
+The allow-remote-management element specifies whether or not this cluster
+node exposes its managed objects to remote MBeanServer(s).
+
+Legal values are: true or false.
+
+Used in: management-config
+-->
+<!ELEMENT allow-remote-management (#PCDATA)>
+
+<!--
+The refresh-policy element specifies the method which is used to refresh
+remote management information.
+
+Legal values are: refresh-ahead, refresh-behind and refresh-expired.
+
+Default value is "refresh-expired".
+
+Used in: management-config
+-->
+<!ELEMENT refresh-policy (#PCDATA)>
+
+<!--
+The refresh-expiry element specifies the time interval (in milliseconds) after
+which a remote MBean information will be invalidated on the management node.
+
+Legal values are strings representing time intervals.
+
+Default value is "1s".
+
+Used in: management-config
+-->
+<!ELEMENT refresh-expiry (#PCDATA)>
+
+<!--
+The refresh-timeout element specifies the duration which the management node
+will wait for a response from a remote node when refreshing MBean information.
+This value must be less than the refresh-expiry interval.
+
+Legal values are strings representing time intervals.
+
+Default value is "250ms".
+
+Used in: management-config
+-->
+<!ELEMENT refresh-timeout (#PCDATA)>
+
+<!--
+The read-only element specifies whether or not the managed objects exposed
+by this cluster node allow operations that modify run-time attributes.
+
+Legal values are true or false.
+
+Used in: management-config
+-->
+<!ELEMENT read-only (#PCDATA)>
+
+<!--
+The default-domain-name element specifies the default domain name for the
+MBeanServer used to register MBeans exposed by the Coherence management framework.
+
+This value is only used by the cluster nodes that have in-process MBeanServer and
+allow management of local or other node's managed objects.
+
+If this value is not specified, the first existing MBeanServer will be used.
+
+Used in: management-config
+-->
+<!ELEMENT default-domain-name (#PCDATA)>
+
+<!--
+The service-name element specifies the name of the Invocation service name
+used for remote management. This element is used only if
+allow-remote-management is set to true.
+
+Default value is "Management".
+
+Used in: management-config
+-->
+<!ELEMENT service-name (#PCDATA)>
+
+<!--
+The machine-id is an identifier that should uniquely identify each
+server machine. If not specified, a default value is generated from
+the machine-name, or lacking that, from the address of the default network
+interface.
+
+The machine id for each machine in the cluster can be used by cluster
+services to plan for failover by making sure that each member is backed
+up by a member running on a different machine.
+
+As of Coherence 3.2, the machine-id setting is deprecated. It will eventually
+become a read-only property, and will be automatically configured as part of
+the discovery process. Instead of setting machine-id, it is suggested that
+machine-name (and rack-name and site-name) be specified.
+
+Used in: unicast-listener
+-->
+<!ELEMENT machine-id (#PCDATA)>
+
+<!--
+The interface element specifies the IP address that a multicast Socket
+will be bound to. By default the interface of the unicast-listener IP
+address is used for the multicast Socket; this option allows the interface
+to be specified. Setting this address to "0.0.0.0" will allow the OS
+to use the unicast routing table to select the interface automatically.
+
+Note: Regarding networking, the term "interface" is often used to mean "NIC".
+
+WARNING: With rare exception, use of this particular option is strongly
+discouraged, as it can lead to a condition known as "partial failure".
+Partial failure occurs when some portion of the cluster communication is
+working and other cluster communication has failed. Partial failure can
+occur when using this option, because the interface (and thus network) used
+for multicast traffic can be different from the interface (and thus network)
+used for unicast (UDP/IP) and TCP-ring (TCP/IP) traffic. If one interface
+(or network) fails, some communication can continue to succeed, while other
+communication will fail, which may cause failover to take longer to occur.
+Since clustering handles node (and thus interface) failure, it is preferable
+to have all communication fail together, and thus the use of this option is
+strongly discouraged.
+
+Used in: multicast-listener
+-->
+<!ELEMENT interface (#PCDATA)>
+
+<!--
+The address element specifies the IP address that a Socket will listen or
+publish on.
+
+Used in: unicast-listener, multicast-listener, socket-address
+-->
+<!ELEMENT address (#PCDATA)>
+
+<!--
+The port element specifies a port that a Socket will listen or publish on.
+
+Valid values are from 1 to 65535.
+
+Used in: unicast-listener, multicast-listener, socket-address
+-->
+<!ELEMENT port (#PCDATA)>
+
+<!--
+The port-auto-adjust element specifies whether or not the unicast port
+will be automatically be incremented if the specified port cannot be
+bound to because it is already in use.
+
+Valid values are "true" or "false".
+
+Used in: unicast-listener
+-->
+<!ELEMENT port-auto-adjust (#PCDATA)>
+
+<!--
+The socket-providers element contains the declarative data for each
+socket-provider.
+
+Used in: cluster-config
+-->
+<!ELEMENT socket-providers
+  (socket-provider*)>
+
+<!--
+The socket-provider element contains the configuration info for a socket and
+channel factory that implements the com.tangosol.net.SocketProvider interface.
+
+In addition to defining a socket-provider, it is also acceptable and in fact
+preferred to provide the name of a provider from the socket-providers
+configuration.
+
+Used in: unicast-listener, socket-providers
+-->
+<!ELEMENT socket-provider
+  (#PCDATA | system | tcp | ssl | instance)*>
+
+<!--
+The ssl element contains the configuration info for a socket provider that
+produces socket and channel implementations which utilize SSL.
+
+When configured for the unicast-listener, the listener must also be set to use
+well-known-addresses.
+
+Used in: socket-provider
+-->
+<!ELEMENT ssl
+  (protocol?, provider?, executor?, identity-manager?, trust-manager?,
+  hostname-verifier?)>
+
+<!--
+The provider element contains the configuration info for a security provider
+that extends the java.security.Provider class.
+
+Used in: ssl, identity-manager, trust-manager
+-->
+<!ELEMENT provider
+  (name | %instance;)>
+
+<!--
+The executor element contains the configuration info for a
+java.util.concurrent.Executor instance.
+
+Used in: ssl
+-->
+<!ELEMENT executor %instance;>
+
+<!--
+The identity-manager element contains the configuration info for initializing
+a javax.net.ssl.KeyManager instance.
+
+The manager provides the key material used to authenticate the local
+connection to its peer. If no key material is available, the connection will
+be unable to present authentication credentials.
+
+Used in: ssl
+-->
+<!ELEMENT identity-manager
+  (algorithm?, provider?, key-store?, password)>
+
+<!--
+The trust-manager element contains the configuration info for initializing a
+javax.net.ssl.TrustManager instance.
+
+A TrustManager is responsible for managing the trust material that is used
+when making trust decisions, and for deciding whether credentials presented
+by a peer should be accepted.
+
+A valid trust-manager configuration will contain at least one child element.
+
+Used in: ssl
+-->
+<!ELEMENT trust-manager
+  (algorithm?, provider?, key-store?)>
+
+<!--
+The hostname-verifier element contains the configuration info for a
+javax.net.ssl.HostnameVerifier instance.
+
+During SSL handshaking, if the URL's hostname and the server's identification
+hostname mismatch, the verification mechanism will call back to this instance
+to determine if the connection should be allowed.
+
+Used in: ssl
+-->
+<!ELEMENT hostname-verifier
+  (%instance;)>
+
+<!--
+The key-store element contains the configuration info for a
+java.security.KeyStore instance.
+
+Used in: identity-manager, trust-manager
+-->
+<!ELEMENT key-store
+  (url, password?, type?)>
+
+<!--
+The system element specifies a SocketProvider implementation that produces
+instances of the JVM's default socket and channel implementations.
+
+Used in: socket-provider
+-->
+<!ELEMENT system EMPTY>
+
+<!--
+The tcp element specifies a SocketProvider implementation that produces TCP
+based sockets and channel implementations.
+
+Used in: socket-provider
+-->
+<!ELEMENT tcp EMPTY>
+
+<!--
+The protocol element specifies the name of the protocol used by the socket
+and channel implementations produced by the SSL SocketProvider.
+
+Default value is "TLS".
+
+Used in: ssl
+-->
+<!ELEMENT protocol (#PCDATA)>
+
+<!--
+The name element contains the name of a security provider that extends the
+java.security.Provider class.
+
+Used in: provider
+-->
+<!ELEMENT name (#PCDATA)>
+
+<!--
+The protocol element specifies the name of a key or trust management
+algorithm.
+
+Default value is "SunX509".
+
+Used in: identity-manager, trust-manager
+-->
+<!ELEMENT algorithm (#PCDATA)>
+
+<!--
+The password element specifies the name of a private key or key store
+password.
+
+Used in: identity-manager, key-store
+-->
+<!ELEMENT password (#PCDATA)>
+
+<!--
+The url element contains a Uniform Resource Locator (URL) string.
+
+Used in: key-store
+-->
+<!ELEMENT url (#PCDATA)>
+
+<!--
+The type element specifies the type of a java.security.KeyStore instance.
+
+Defaut value is "JKS".
+
+Used in: key-store
+-->
+<!ELEMENT type (#PCDATA)>
+
+<!--
+The priority element specifies a priority of the corresponding member or
+thread.
+
+In the member-identity element, the priority is used as the basis for
+determining tie-breakers between members. If a condition occurs in which one
+of two members will be ejected from the cluster, and in the rare case that it
+is not possible to objectively determine which of the two is at fault and
+should be ejected, then the member with the lower priority will be ejected.
+
+For all other elements, the priority is a Java Thread priority.
+
+Valid values are from 1 to 10.
+
+Used in: unicast-listener, multicast-listener, packet-speaker, packet-publisher,
+         tcp-ring-listener, incoming-message-handler, member-identity
+-->
+<!ELEMENT priority (#PCDATA)>
+
+<!--
+The time-to-live element specifies a time-to-live setting for the multicast.
+
+Valid values are from 0 to 255.
+
+Used in: multicast-listener
+-->
+<!ELEMENT time-to-live (#PCDATA)>
+
+<!--
+The join-timeout-milliseconds element specifies the number of milliseconds
+that a new member will wait without finding any evidence of a cluster before
+starting its own cluster and electing itself as the senior cluster member.
+
+Valid values are from 1 to 1000000.
+
+Used in: multicast-listener
+-->
+<!ELEMENT join-timeout-milliseconds (#PCDATA)>
+
+<!--
+The group threshold is used to determine whether a packet will be sent via
+unicast or multicast. It is a percentage value and is in the range of 1%
+to 100%. In a cluster of "n" nodes, a particular node sending a packet to
+a set of other (i.e. not counting self) destination nodes of size "d" (in
+the range of 0 to n-1), the packet will be sent multicast if and only if
+the following both hold true:
+
+  1) The packet is being sent over the network to more than one other node:
+       (d > 1)
+
+  2) The number of nodes is greater than the threshold:
+       (d > (n-1) * (threshold/100))
+
+Setting this value to 1 will allow the implementation to use multicast for
+for basically all multi-point traffic. Setting it to 100 will force the
+implementation to use unicast for all multi-point traffic except for
+explicit broadcast traffic (e.g. cluster heartbeat and discovery.)
+
+Note: This element is only used if the well-known-addresses element is empty.
+
+Valid values are from 1 to 100.
+
+Used in: multicast-listener
+-->
+<!ELEMENT multicast-threshold-percent (#PCDATA)>
+
+<!--
+The enabled element specifies whether or not the corresponding
+feature is enabled (turned on).
+
+Valid values are "true" or "false".
+
+Used in: tcp-ring-listener, shutdown-listener, security-config,
+         packet-publisher, flow-control
+-->
+<!ELEMENT enabled (#PCDATA)>
+
+<!--
+The maximum-length element specifies the maximum size, in bytes,
+of the DatagramPacket objects that will be sent and received on
+the unicast and multicast sockets.
+
+This value should be at least 512, and should be sized to fit evenly into
+network packet(s).
+
+Recommended values are 32 bytes less then the network MTU for UDP, and
+52 bytes less then the MTU for TCP. The default value is based upon the
+standard ethernet MTU of 1500 bytes, resulting in 1468 bytes for UDP, or
+1448 bytes for TCP.
+
+Used in: packet-size
+-->
+<!ELEMENT maximum-length (#PCDATA)>
+
+<!--
+The preferred-length element specifies the preferred size, in bytes,
+of the DatagramPacket objects that will be sent and received on
+the unicast and multicast sockets.
+
+This value should be at least 512 and cannot be greater than the
+maximum-length value; it is recommended to set the value to the same as
+the maximum-length value. If unspecified the value will be set to the value
+of maximum-length.
+
+Used in: packet-size
+-->
+<!ELEMENT preferred-length (#PCDATA)>
+
+<!--
+The resend-milliseconds element specifies the minimum amount of time,
+in milliseconds, before a packet's data is resent across the network
+if the packet has the ConfirmationRequired option set and the packet
+has not been acknowledged by a Receipt packet.
+
+Used in: packet-delivery
+-->
+<!ELEMENT resend-milliseconds (#PCDATA)>
+
+<!--
+For packet-delivery: The maximum amount of time, in milliseconds, that a
+packet's data will be resent across the network if the packet has the
+ConfirmationRequired option set and the packet has not been acknowledged by a
+Receipt Packet.
+
+For service-guardian: The timeout value used to guard against deadlocked or
+unresponsive services.  It is recommended that
+service-guardian/timeout-milliseconds be set equal to or greater than the
+packet-delivery/timeout-milliseconds value.  A timeout of zero will disable
+service guardians.
+
+Used in: packet-delivery, service-guardian
+-->
+<!ELEMENT timeout-milliseconds (#PCDATA)>
+
+<!--
+The heartbeat-milliseconds element specifies the interval between
+heartbeats. Each member issues a unicast heartbeat, and the most senior
+member issues the cluster heartbeat, which is a broadcast message.
+
+Used in: packet-delivery
+-->
+<!ELEMENT heartbeat-milliseconds (#PCDATA)>
+
+<!--
+The ack-delay-milliseconds element specifies the number of milliseconds
+that the packet publisher will delay before sending an Ack packet.
+
+Used in: notification-queueing
+-->
+<!ELEMENT ack-delay-milliseconds (#PCDATA)>
+
+<!--
+The nack-delay-milliseconds element specifies the number of milliseconds
+that the packet publisher will delay before sending a Nack packet.
+
+Used in: notification-queueing
+-->
+<!ELEMENT nack-delay-milliseconds (#PCDATA)>
+
+<!--
+The flow-control element contains configuration information related to
+packet throttling and remote GC detection.
+
+Used in: packet-delivery
+-->
+<!ELEMENT flow-control
+  (enabled?, pause-detection?, outstanding-packets?)>
+
+<!--
+The packet-bundling element contains configuration information related to
+the bundling of multiple small packets into a single larger packet in order
+to reduce the load on the network switching infrastructure.
+-->
+<!ELEMENT packet-bundling
+    (maximum-deferral-time?, aggression-factor?)>
+
+<!--
+Defines the maximum number of packets that will be resent to an unresponsive
+cluster node before assuming that the node is paused, for example due to a
+full GC. Once a node is marked as paused, packets will be sent at a lower rate
+until the node resumes responding. This is used as a form of remote GC detection
+to avoid flooding a node while it is incapable of responding.
+
+Used in: flow-control
+-->
+<!ELEMENT pause-detection
+    (maximum-packets?)>
+
+<!--
+Defines the number of unconfirmed packets that will be sent to a
+cluster node before packets addressed to that node will be deferred. This
+helps to prevent the sender from flooding the recipient's network buffers.
+The value is specified as a range by using the maximum-packets and
+minimum-packets elements, from which the runtime setting will be dynamically
+adjusted based on network statistics.
+
+Used in: flow-control
+-->
+<!ELEMENT outstanding-packets
+    (maximum-packets?, minimum-packets?)>
+
+<!--
+For traffic-jam: The maximum number of packets in the send plus resend
+queues that the Publisher will tolerate before determining that it is
+clogged and must slow down client requests (requests from local non-
+system threads). Zero means no limit. This property prevents most
+unexpected out-of-memory conditions by limiting the size of the resend
+queue. Suggested default value is 8192.
+
+For packet-buffer: The number of packets of maximum size that the
+datagram socket will be asked to size itself to buffer.
+See java.net.SocketOptions#SO_RCVBUF and java.net.SocketOptions#SO_SNDBUF.
+Defaults are 32 for publishing, 64 for multicast listening, and 1428 for
+unicast listening.  Actual buffer sizes may be smaller if the underlying socket
+implementation cannot support more than a certain size.
+
+For pause-detection: The maximum number of packets that will be resent
+to an unresponsive cluster node before assuming that the node is paused.
+Specifying a value of 0 will disable pause detection.  Default is 16.
+
+For outstanding-packets: The maximum number of unconfirmed packets that will
+be sent to a cluster node before packets addressed to that node will be
+deferred. It is recommended that this value not be set below 256.
+Default is 4096.
+
+Used in: packet-buffer, packet-pool, traffic-jam, outstanding-packets
+-->
+<!ELEMENT maximum-packets (#PCDATA)>
+
+<!--
+For packet-pool: The maximum size of the pool of reusable packets to be utilized
+by the services responsible for publishing and receiving described in bytes.
+The pools are initially empty, and will grow on demand up to the specified limits.
+
+Defaults is 16MB for transmitting and receiving.
+
+Used in: packet-pool
+-->
+<!ELEMENT size (#PCDATA)>
+
+<!--
+For message-pool: The maximum size of a single pool segment. The maximum size
+of the entire pool is the number of segments times the maximum size of a
+segment. The size is described in number of bytes.
+
+Default is 16MB per defined segment.
+
+Used in: message-pool
+-->
+<!ELEMENT segment-size (#PCDATA)>
+
+<!--
+For message-pool: The number of segments used by the message pool. Each
+segment will store buffers of a specific size. The size difference between
+two segments are specified by the growth factor.
+
+Defaults are 4 segments.
+
+Used in: message-pool
+-->
+<!ELEMENT segments (#PCDATA)>
+
+<!--
+For message-pool: The smallest available buffer size as in bytes. This value
+must be a multiple of 1024, and the smallest possible buffer is hence 1024 bytes.
+
+Default value is 1024 bytes.
+
+Used in: message-pool
+-->
+<!ELEMENT min-buffer-size (#PCDATA)>
+
+<!--
+For message-pool: The growth factor indicates the rate of growth between
+successive segments.
+
+Defaults are 2.
+
+Used in: message-pool
+-->
+<!ELEMENT growth-factor (#PCDATA)>
+
+<!--
+For volume-threshold: Specifies the minimum number of packets which must be
+ready to be sent for the speaker daemon to be activated.  A value of 0 will
+force the speaker to always be used, while a very high value will cause it to
+never be used. If unspecified Coherence will auto adjust the threshold to find
+the maximum sustainable volume.
+
+For outstanding-packets: The lower bound on the range for the number of
+unconfirmed packets that will be sent to a cluster node before packets
+addressed to that node will be deferred.  Default is 64.
+
+Used in: volume-threshold
+-->
+<!ELEMENT minimum-packets (#PCDATA)>
+
+<!--
+For traffic-jam: Number of milliseconds that the Publisher will pause a
+client thread that is trying to send a message when the Publisher is
+clogged. The Publisher will not allow the message to go through until
+the clog is gone, and will repeatedly sleep the thread for the duration
+specified by this property. Default value is 10.
+
+Used in: traffic-jam
+-->
+<!ELEMENT pause-milliseconds (#PCDATA)>
+
+<!--
+The maximum amount of time to defer a packet while waiting for additional
+packets to bundle. A value of zero will result in the algorithm not waiting,
+and only bundling the readily accessible packets. A value greater than zero
+will cause some transmission deferral while waiting for additional packets to
+become available. This value is typically set below 250 microseconds to avoid
+a detrimental throughput impact. If the units are not specified, nanoseconds
+are assumed. Default value is 1us (microsecond).
+
+Used in: packet-bundling
+-->
+<!ELEMENT maximum-deferral-time (#PCDATA)>
+
+<!--
+Specifies the aggressiveness of the packet deferral algorithm. Where as the
+maximum-deferral-time element defines the upper limit on the deferral time, the
+aggression-factor influences the average deferral time. The higher the
+aggression value, the longer the Publisher may wait for additional packets.
+Default value is zero.
+
+Used in: packet-bundling
+-->
+<!ELEMENT aggression-factor (#PCDATA)>
+
+<!--
+The maximum-time-variance element specifies the maximum time
+variance between sending and receiving broadcast Messages when trying
+to determine the difference between a new cluster Member's system time
+and the cluster time.
+
+The smaller the variance, the more certain one can be that the cluster time
+will be closer between multiple systems running in the cluster;
+however, the process of joining the cluster will be extended until
+an exchange of Messages can occur within the specified variance.
+
+Normally, a value as small as 20 milliseconds is sufficient,
+but with heavily loaded clusters and multiple network hops
+it is possible that a larger value would be necessary.
+
+Used in: incoming-message-handler
+-->
+<!ELEMENT maximum-time-variance (#PCDATA)>
+
+<!--
+The use-nack-packets element specifies whether the packet receiver will use
+negative acknowledgements (packet requests) to pro-actively respond to known
+missing packets.
+
+Valid values are "true" or "false".
+
+Used in: incoming-message-handler
+-->
+<!ELEMENT use-nack-packets (#PCDATA)>
+
+<!--
+The host-address element specifies a host IP address.
+
+Used in: authorized-hosts
+-->
+<!ELEMENT host-address (#PCDATA)>
+
+<!--
+The from-address element specifies the starting IP address
+for a range of hosts.
+
+Used in: host-range
+-->
+<!ELEMENT from-address (#PCDATA)>
+
+<!--
+The to-address element specifies the ending IP address (inclusive)
+for a range of hosts.
+
+Used in: host-range
+-->
+<!ELEMENT to-address (#PCDATA)>
+
+<!--
+The service-type element contains the canonical name of the
+service. This name is unique within the cluster.
+
+Used in: service
+-->
+<!ELEMENT service-type (#PCDATA)>
+
+<!--
+The service-component element contains either the fully qualified class name
+of the service or the relocatable component name relative to the base Service
+component.
+
+Used in: service
+-->
+<!ELEMENT service-component (#PCDATA)>
+
+<!--
+The filter-name element contains the canonical name of the
+filter. This name is unique within the cluster.
+
+Used in: filter
+-->
+<!ELEMENT filter-name (#PCDATA)>
+
+<!--
+The filter-class element contains the class name of the filter implementation.
+This class must have a public default constructor and must implement the
+com.tangosol.util.WrapperStreamFactory interface; optionally it may implement
+the com.tangosol.run.xml.XmlConfigurable interface.
+
+Used in: filter
+-->
+<!ELEMENT filter-class (#PCDATA)>
+
+<!--
+The class-name element specifies the name of a Java class.
+
+Used in: configurable-cache-factory-config, access-controller, callback-handler, instance, host-filter
+-->
+<!ELEMENT class-name (#PCDATA)>
+
+<!--
+The class-factory-name element specifies a fully specified name of a Java
+class that will be used as an instance factory.
+
+Used in: instance
+-->
+<!ELEMENT class-factory-name (#PCDATA)>
+
+<!--
+The method-name element specifies a fully specified name of a static factory
+method that will be used as an instance factory.
+
+Used in: instance
+-->
+<!ELEMENT method-name (#PCDATA)>
+
+<!--
+The param-name element specifies the name of the initialization parameter.
+
+Used in: init-param
+-->
+<!ELEMENT param-name (#PCDATA)>
+
+<!--
+The param-type element specifies the Java type of initialization parameter.
+
+Used in: init-param
+-->
+<!ELEMENT param-type (#PCDATA)>
+
+<!--
+The param-value element specifies a value of the initialization parameter.
+
+The value is in a format specific to the type of the parameter.
+
+Used in: init-param
+-->
+<!ELEMENT param-value (#PCDATA)>
+
+<!--
+The description element is used to provide text describing the parent
+element.
+
+Used in: param
+-->
+<!ELEMENT description (#PCDATA)>
+
+<!--
+The destination element specifies the output device used by the logging system.
+
+Valid values are "stdout", "stderr", "jdk", "log4j", or a file name; the default
+is "stderr".
+
+If "jdk" is specified as the destination, Coherence must be run using JDK 1.4
+or later; likewise, if "log4j" is specified, the Log4j libraries must be in
+the classpath. In both cases, the appropriate logging configuration mechanism
+(system properties, property files, etc.) should be used to configure the
+JDK/Log4j logging libraries.
+
+Used in: logging-config
+-->
+<!ELEMENT destination (#PCDATA)>
+
+<!--
+The logger-name element allows to specify a logger name within chosen logging
+system that should be used to log Coherence related messages.
+
+This value is only used by the "jdk" and "log4j" logging systems.
+
+Default value is "Coherence".
+
+Used in: logging-config
+-->
+<!ELEMENT logger-name (#PCDATA)>
+
+<!--
+The severity-level element specifies which logged messages will be output to the
+log destination.
+
+Valid values are:
+  0     only output without a logging severity level specified will be logged
+  1     all the above plus errors
+  2     all the above plus warnings
+  3     all the above plus informational messages
+  4..9  all the above plus internal debugging messages (the higher the number, the more the messages)
+  -1    no messages
+
+Used in: logging-config
+-->
+<!ELEMENT severity-level (#PCDATA)>
+
+<!--
+The message-format element specifies how messages that have a logging level specified
+will be formatted before passing them to the log destination.
+
+The value of the message-format element is static text with the following
+replaceable parameters:
+  {date}    the date/time format (to a millisecond) at which the message was logged
+  {version} the Oracle Coherence exact version and build details
+  {level}   the logging severity level of the message
+  {thread}  the thread name that logged the message
+  {member}  the cluster member id (if the cluster is currently running)
+  {text}    the text of the message
+
+Used in: logging-config
+-->
+<!ELEMENT message-format (#PCDATA)>
+
+<!--
+The character-limit element specifies the maximum number of characters that the logger
+daemon will process from the message queue before discarding all remaining messages
+in the queue. Note that the message that caused the total number of characters to
+exceed the maximum will NOT be truncated, and all messages that are discarded will
+be summarized by the logging system with a single log entry detailing the number
+of messages that were discarded and their total size. The truncation of the logging
+is only temporary, since once the queue is processed (emptied), the logger is reset
+so that subsequent messages will be logged.
+
+The purpose of this setting is to avoid a situation where logging can itself prevent
+recovery from a failing condition. For example, with tight timings, logging can
+actually change the timings, causing more failures and probably more logging, which
+becomes a vicious cycle. A limit on the logging being done at any one point in time
+is a "pressure valve" that prevents such a vicious cycle from occurring. Note that
+logging occurs on a dedicated low-priority thread to even further reduce its impact
+on the critical portions of the system.
+
+The value is a positive integer or zero. Zero implies no limit.
+
+Used in: logging-config
+-->
+<!ELEMENT character-limit (#PCDATA)>
+
+<!--
+The xml-override mechanism allows the content of certain elements be fully
+or partially overridden with XML documents that are external to the base
+document.  The value of this attribute is the resource name of such an
+override document that should be accessible using the
+ClassLoader.getResourceAsStream(String name) by the classes contained
+in coherence.jar library.  In general that means that resource name
+should be prefixed with '/' and located in the classpath.
+
+The override XML document referred by this attribute does not have to exist.
+However, if it does exist then its root element must have the same name as
+the element it overrides.
+
+In case when there are multiple elements with the same name (e.g. "service")
+the 'id' attribute should be used to identify the base element that will be
+overridden as well as the override element itself. The elements of the override
+document that do not have a match in the base document are just appended to
+the base.
+-->
+<!ATTLIST coherence                         xml-override CDATA #IMPLIED>
+<!ATTLIST cluster-config                    xml-override CDATA #IMPLIED>
+<!ATTLIST logging-config                    xml-override CDATA #IMPLIED>
+<!ATTLIST configurable-cache-factory-config xml-override CDATA #IMPLIED>
+<!ATTLIST cache-factory-builder-config      xml-override CDATA #IMPLIED>
+<!ATTLIST security-config                   xml-override CDATA #IMPLIED>
+<!ATTLIST unicast-listener                  xml-override CDATA #IMPLIED>
+<!ATTLIST multicast-listener                xml-override CDATA #IMPLIED>
+<!ATTLIST tcp-ring-listener                 xml-override CDATA #IMPLIED>
+<!ATTLIST shutdown-listener                 xml-override CDATA #IMPLIED>
+<!ATTLIST service-failure-policy            xml-override CDATA #IMPLIED>
+<!ATTLIST packet-speaker                    xml-override CDATA #IMPLIED>
+<!ATTLIST packet-publisher                  xml-override CDATA #IMPLIED>
+<!ATTLIST incoming-message-handler          xml-override CDATA #IMPLIED>
+<!ATTLIST outgoing-message-handler          xml-override CDATA #IMPLIED>
+<!ATTLIST authorized-hosts                  xml-override CDATA #IMPLIED>
+<!ATTLIST mbeans                            xml-override CDATA #IMPLIED>
+<!ATTLIST timeout-survivor-quorum           role CDATA #IMPLIED>
+<!ATTLIST host-address                      id NMTOKEN #IMPLIED>
+<!ATTLIST host-range                        id NMTOKEN #IMPLIED>
+<!ATTLIST socket-address                    id NMTOKEN #IMPLIED>
+<!ATTLIST services                          xml-override CDATA #IMPLIED>
+<!ATTLIST service                           xml-override CDATA #IMPLIED id NMTOKEN #IMPLIED>
+<!ATTLIST filter                            xml-override CDATA #IMPLIED id NMTOKEN #IMPLIED>
+<!ATTLIST filter-name                       id NMTOKEN #IMPLIED>
+<!ATTLIST serializer                        xml-override CDATA #IMPLIED id NMTOKEN #IMPLIED>
+<!ATTLIST init-param                        id NMTOKEN #IMPLIED>
+<!ATTLIST mbean                             id NMTOKEN #IMPLIED>
+<!ATTLIST socket-provider                   id NMTOKEN #IMPLIED>
+
+<!--
+The system-property mechanism allows the value of certain elements be replaced
+with values passed into a JVM using the system properties specified in a Java
+command line using the -D<name>=<value> option.
+-->
+<!ATTLIST cluster-name                      system-property CDATA #IMPLIED>
+<!ATTLIST site-name                         system-property CDATA #IMPLIED>
+<!ATTLIST rack-name                         system-property CDATA #IMPLIED>
+<!ATTLIST machine-name                      system-property CDATA #IMPLIED>
+<!ATTLIST process-name                      system-property CDATA #IMPLIED>
+<!ATTLIST member-name                       system-property CDATA #IMPLIED>
+<!ATTLIST role-name                         system-property CDATA #IMPLIED>
+<!ATTLIST edition-name                      system-property CDATA #IMPLIED>
+<!ATTLIST license-mode                      system-property CDATA #IMPLIED>
+<!ATTLIST login-module-name                 system-property CDATA #IMPLIED>
+<!ATTLIST managed-nodes                     system-property CDATA #IMPLIED>
+<!ATTLIST allow-remote-management           system-property CDATA #IMPLIED>
+<!ATTLIST read-only                         system-property CDATA #IMPLIED>
+<!ATTLIST default-domain-name               system-property CDATA #IMPLIED>
+<!ATTLIST service-name                      system-property CDATA #IMPLIED>
+<!ATTLIST machine-id                        system-property CDATA #IMPLIED>
+<!ATTLIST interface                         system-property CDATA #IMPLIED>
+<!ATTLIST address                           system-property CDATA #IMPLIED>
+<!ATTLIST port                              system-property CDATA #IMPLIED>
+<!ATTLIST port-auto-adjust                  system-property CDATA #IMPLIED>
+<!ATTLIST priority                          system-property CDATA #IMPLIED>
+<!ATTLIST time-to-live                      system-property CDATA #IMPLIED>
+<!ATTLIST join-timeout-milliseconds         system-property CDATA #IMPLIED>
+<!ATTLIST multicast-threshold-percent       system-property CDATA #IMPLIED>
+<!ATTLIST enabled                           system-property CDATA #IMPLIED>
+<!ATTLIST maximum-length                    system-property CDATA #IMPLIED>
+<!ATTLIST preferred-length                  system-property CDATA #IMPLIED>
+<!ATTLIST resend-milliseconds               system-property CDATA #IMPLIED>
+<!ATTLIST timeout-milliseconds              system-property CDATA #IMPLIED>
+<!ATTLIST heartbeat-milliseconds            system-property CDATA #IMPLIED>
+<!ATTLIST ack-delay-milliseconds            system-property CDATA #IMPLIED>
+<!ATTLIST nack-delay-milliseconds           system-property CDATA #IMPLIED>
+<!ATTLIST maximum-packets                   system-property CDATA #IMPLIED>
+<!ATTLIST minimum-packets                   system-property CDATA #IMPLIED>
+<!ATTLIST pause-milliseconds                system-property CDATA #IMPLIED>
+<!ATTLIST maximum-time-variance             system-property CDATA #IMPLIED>
+<!ATTLIST use-nack-packets                  system-property CDATA #IMPLIED>
+<!ATTLIST use-daemon                        system-property CDATA #IMPLIED>
+<!ATTLIST host-address                      system-property CDATA #IMPLIED>
+<!ATTLIST from-address                      system-property CDATA #IMPLIED>
+<!ATTLIST to-address                        system-property CDATA #IMPLIED>
+<!ATTLIST service-type                      system-property CDATA #IMPLIED>
+<!ATTLIST service-component                 system-property CDATA #IMPLIED>
+<!ATTLIST filter-name                       system-property CDATA #IMPLIED>
+<!ATTLIST filter-class                      system-property CDATA #IMPLIED>
+<!ATTLIST class-name                        system-property CDATA #IMPLIED>
+<!ATTLIST param-name                        system-property CDATA #IMPLIED>
+<!ATTLIST param-type                        system-property CDATA #IMPLIED>
+<!ATTLIST param-value                       system-property CDATA #IMPLIED>
+<!ATTLIST description                       system-property CDATA #IMPLIED>
+<!ATTLIST destination                       system-property CDATA #IMPLIED>
+<!ATTLIST logger-name                       system-property CDATA #IMPLIED>
+<!ATTLIST severity-level                    system-property CDATA #IMPLIED>
+<!ATTLIST message-format                    system-property CDATA #IMPLIED>
+<!ATTLIST character-limit                   system-property CDATA #IMPLIED>
+<!ATTLIST refresh-policy                    system-property CDATA #IMPLIED>
+<!ATTLIST refresh-expiry                    system-property CDATA #IMPLIED>
+<!ATTLIST refresh-timeout                   system-property CDATA #IMPLIED>
+<!ATTLIST configuration                     system-property CDATA #IMPLIED>
+<!ATTLIST autostart                         system-property CDATA #IMPLIED>
+<!ATTLIST distributed                       system-property CDATA #IMPLIED>
+<!ATTLIST socket-provider                   system-property CDATA #IMPLIED>
+<!ATTLIST url                               system-property CDATA #IMPLIED>
+<!ATTLIST password                          system-property CDATA #IMPLIED>

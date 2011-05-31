@@ -45,6 +45,7 @@
 package org.netbeans.core.ui.warmup;
 
 import java.awt.dnd.DragSource;
+import org.openide.util.lookup.ServiceProvider;
 
 /** DnD pre-heat task. Initializes drag and drop by calling
  * DragSource.getDefaultDragSource();, which is expensive because of loading
@@ -54,10 +55,12 @@ import java.awt.dnd.DragSource;
  *
  * @author  Dafe Simonek
  */
+@ServiceProvider(service=Runnable.class, path="WarmUp")
 public final class DnDWarmUpTask implements Runnable {
 
     /** Performs DnD pre-heat.
      */
+    @Override
     public void run() {
         DragSource.getDefaultDragSource();
     }

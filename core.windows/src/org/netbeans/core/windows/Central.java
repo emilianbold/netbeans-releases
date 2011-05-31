@@ -2014,6 +2014,19 @@ final class Central implements ControllerHandler {
         if ((recentTc != null) && wasTcClosed) {
             recentTc.requestActive();
         }
+        //#177986 - repaint the main window when closing the last tc
+        if( TopComponent.getRegistry().getOpened().isEmpty() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    java.awt.Frame f = getMainWindow();
+                    if( null != f && f.isVisible() ) {
+                        f.invalidate();
+                        f.repaint();
+                    }
+                }
+            });
+        }
     }
     
     private TopComponent findTopComponentToActivateAfterClose( ModeImpl editorMode, TopComponent tcBeingClosed ) {

@@ -45,7 +45,9 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
@@ -73,11 +75,15 @@ public class CustomJavac extends Javac {
         usingExplicitIncludes = true;
     }
 
+    private File generatedClassesDir;
+
     @Override
     public void execute() throws BuildException {
+        generatedClassesDir = new File(getDestdir().getParentFile(), getDestdir().getName() + "-generated");
         if (!usingExplicitIncludes) {
             cleanUpStaleClasses();
         }
+        cleanUpDependDebris();
         super.execute();
     }
 
@@ -88,7 +94,6 @@ public class CustomJavac extends Javac {
             createCompilerArg().setPath(processorPath);
         }
         createCompilerArg().setValue("-implicit:class");
-        File generatedClassesDir = new File(getDestdir().getParentFile(), getDestdir().getName() + "-generated");
         if (generatedClassesDir.isDirectory() || generatedClassesDir.mkdirs()) {
             createCompilerArg().setValue("-s");
             createCompilerArg().setFile(generatedClassesDir);
@@ -114,10 +119,12 @@ public class CustomJavac extends Javac {
         if (!d.isDirectory()) {
             return;
         }
-        String[] _sources = getSrcdir().list();
-        File[] sources = new File[_sources.length];
-        for (int i = 0; i < _sources.length; i++) {
-            sources[i] = new File(_sources[i]);
+        List<File> sources = new ArrayList<File>();
+        for (String s : getSrcdir().list()) {
+            sources.add(new File(s));
+        }
+        if (generatedClassesDir.isDirectory()) {
+            sources.add(generatedClassesDir);
         }
         FileSet classes = new FileSet();
         classes.setDir(d);
@@ -180,6 +187,32 @@ public class CustomJavac extends Javac {
     @Override
     public void setFork(boolean f) {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * See issue #196556. Sometimes {@code <depend>} leaves behind individual
+     * class files for nested classes when their enclosing classes do not exist.
+     * This can cause javac to try to read the nested classes and fail.
+     */
+    private void cleanUpDependDebris() {
+        File d = getDestdir();
+        if (!d.isDirectory()) {
+            return;
+}
+        FileSet classes = new FileSet();
+        classes.setDir(d);
+        classes.setIncludes("**/*$*.class");
+        for (String clazz : classes.getDirectoryScanner(getProject()).getIncludedFiles()) {
+            int i = clazz.indexOf('$');
+            File enclosing = new File(d, clazz.substring(0, i) + ".class");
+            if (!enclosing.isFile()) {
+                File enclosed = new File(d, clazz);
+                log(clazz + " will be deleted since " + enclosing.getName() + " is missing", Project.MSG_VERBOSE);
+                if (!enclosed.delete()) {
+                    throw new BuildException("could not delete " + enclosed, getLocation());
+                }
+            }
+        }
     }
 
 }

@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.cnd.modelimpl.fsm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
@@ -72,12 +72,12 @@ public final class DummyParametersListImpl extends ParameterListImpl<DummyParame
     ////////////////////////////////////////////////////////////////////////////
     // persistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
     @SuppressWarnings("unchecked")
-    public DummyParametersListImpl(DataInput input) throws IOException {
+    public DummyParametersListImpl(RepositoryDataInput input) throws IOException {
         super(input);
     }
 

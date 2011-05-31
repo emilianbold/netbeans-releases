@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.gizmo.options;
 
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
 
@@ -52,8 +53,9 @@ public class GizmoOptionsProvider implements ConfigurationAuxObjectProvider {
     /**
      * Creates an instance of the auxiliary information object
      */
-    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs) {
-        GizmoOptionsImpl gizmoOptions = new GizmoOptionsImpl(baseDir, pcs);
+    @Override
+    public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration) {
+        GizmoOptionsImpl gizmoOptions = new GizmoOptionsImpl(pcs);
         return gizmoOptions;
     }
 }

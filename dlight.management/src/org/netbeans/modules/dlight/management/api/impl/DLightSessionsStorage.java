@@ -51,6 +51,7 @@ import org.netbeans.modules.dlight.management.api.DLightSession;
  */
 public final class DLightSessionsStorage {
 
+
     private static class DLightSessionsStorageHolder {
         public static DLightSessionsStorage instance = new DLightSessionsStorage();
     }
@@ -63,7 +64,7 @@ public final class DLightSessionsStorage {
         return DLightSessionsStorageHolder.instance;
     }
 
-    public final DLightSession openSession(String filePath){
+    public final DLightSession openSession(String pathToFolder){
         //it will open the session and set its state to analyze
         return null;
     }

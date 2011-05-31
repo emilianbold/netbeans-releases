@@ -43,7 +43,7 @@ Boolean element ()
 
 <%-- For Each Loop --%>
 <%--CC
-<% for (Boolean b : list)  b.|
+<% for (Boolean b : list)  b.F|
 Boolean FALSE
 <% for (Boolean b : list)  b.FALSE
 --%>

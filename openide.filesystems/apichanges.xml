@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="to.parent">
+            <api name="filesystems"/>
+            <summary>FileObject.getFileObject accepts ".."</summary>
+            <version major="7" minor="45"/>
+            <date day="27" month="1" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Semantic of 
+                    <a href="@TOP@/org/openide/filesystems/FileObject.html#getFileObject(java.lang.String)">
+                    getFileObject
+                    </a> method has been clarified to accept "..".
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="194418"/>
+        </change>
         <change id="attribute.methodvalue">
             <api name="filesystems"/>
             <summary>setAttribute("methodvalue:attrname", method) and "newvalue:"</summary>

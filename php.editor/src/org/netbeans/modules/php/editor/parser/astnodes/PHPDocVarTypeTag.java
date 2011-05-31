@@ -52,7 +52,7 @@ public class PHPDocVarTypeTag extends PHPDocTypeTag {
     private final PHPDocNode variable;
 
     public PHPDocVarTypeTag(int start, int end, PHPDocTag.Type kind, String value,
-            List<PHPDocNode> types, PHPDocNode variable) {
+            List<PHPDocTypeNode> types, PHPDocNode variable) {
         super(start, end, kind, value, types);
         this.variable = variable;
     }
@@ -64,6 +64,18 @@ public class PHPDocVarTypeTag extends PHPDocTypeTag {
     public PHPDocNode getVariable() {
         return variable;
     }
+
+    @Override
+    public String getDocumentation() {
+        if (documentation == null) {
+            int index = getValue().indexOf(variable.getValue());
+            if (index > -1) {
+                documentation = getValue().substring(index + variable.getValue().length()).trim();
+            }
+        }
+        return documentation;
+    }
+    
     
     @Override
     public void accept(Visitor visitor) {

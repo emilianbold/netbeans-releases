@@ -46,6 +46,8 @@ package org.netbeans.modules.projectimport.jbuilder.ui;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.projectimport.j2seimport.AbstractProject;
 import org.netbeans.modules.projectimport.j2seimport.ui.BasicWizardIterator;
 import org.openide.filesystems.FileUtil;
 
@@ -60,7 +62,7 @@ public class JBWizardData extends BasicWizardIterator.BasicDataModel {
     
     private File projectFile = null;
     private File destinationDir = null;
-    private Collection projectDefinition = null;
+    private Collection<AbstractProject> projectDefinition = Collections.emptySet();
     private boolean includeDependencies;
     
     
@@ -80,11 +82,11 @@ public class JBWizardData extends BasicWizardIterator.BasicDataModel {
         this.projectFile = projectFile;
     }
     
-    public Collection/*<AbstractProject>*/ getProjectDefinition() {
+    public Collection<AbstractProject> getProjectDefinition() {
         return projectDefinition;
     }
     
-    void setProjectDefinition(Collection/*<AbstractProject>*/ projectDefinition) {
+    void setProjectDefinition(Collection<AbstractProject> projectDefinition) {
         this.projectDefinition = projectDefinition;
     }
     

@@ -87,4 +87,13 @@ made subject to such option by the copyright holder.
             <netbeans.run.params>--reload ${module}</netbeans.run.params>
         </properties>
     </action>
+    <action>
+        <actionName>test</actionName>
+        <packagings>
+            <packaging>nbm-application</packaging>
+        </packagings>
+        <goals>
+            <goal>integration-test</goal>
+        </goals>
+    </action>
 </actions>

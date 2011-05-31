@@ -94,6 +94,7 @@ public class RemoteServerRecord implements ServerRecord {
 
     HostInfo.OSFamily cachedOsFamily = null;
     HostInfo.CpuFamily cachedCpuFamily = null;
+    String cachedOsVersion = null;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -453,6 +454,11 @@ public class RemoteServerRecord implements ServerRecord {
                         }
                     }
                 }
+                if (arr.length > 6) {
+                    if (arr[5].length() > 0) {
+                        record.cachedOsVersion = arr[6];
+                    }
+                }
             }
         }
 
@@ -470,19 +476,26 @@ public class RemoteServerRecord implements ServerRecord {
 
             HostInfo.CpuFamily cpuFamily = record.getCpuFamily();
             HostInfo.OSFamily osFamily = record.getOsFamily();
+            String osVersion = record.getOsVersion();
 
             String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR +
                     ((displayName == null) ? "" : displayName) + SERVER_RECORD_SEPARATOR +
                     record.getSyncFactory().getID()  + SERVER_RECORD_SEPARATOR +
                     record.getX11Forwarding() + SERVER_RECORD_SEPARATOR +
                     ((osFamily == null) ? "" : osFamily.name()) + SERVER_RECORD_SEPARATOR +
-                    ((cpuFamily == null) ? "" : cpuFamily.name());
+                    ((cpuFamily == null) ? "" : cpuFamily.name()) + SERVER_RECORD_SEPARATOR +
+                    ((osVersion == null) ? "" : osVersion);
+
             result.append(preferencesKey);
 
         }
         return result.toString();
     }
 
+    public String getOsVersion() {
+        return cachedOsVersion;
+    }
+    
     public HostInfo.CpuFamily getCpuFamily() {
         return cachedCpuFamily;
     }
@@ -491,15 +504,17 @@ public class RemoteServerRecord implements ServerRecord {
         return cachedOsFamily;
     }
 
-    /*package-local*/ void checkHostInfo() {
+    /*package-local*/ final void checkHostInfo() {
         if (HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
                 HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
-                if (!osFamily.equals(cachedOsFamily) || !cpuFamily.equals(cachedCpuFamily) ) {
+                String osVersion = hostInfo.getOS().getVersion();
+                if (!osFamily.equals(cachedOsFamily) || !cpuFamily.equals(cachedCpuFamily) || !osVersion.equals(cachedOsVersion)) {
                     cachedOsFamily = osFamily;
                     cachedCpuFamily = cpuFamily;
+                    cachedOsVersion = osVersion;
                     if (executionEnvironment.isRemote() && !syncFactory.isApplicable(executionEnvironment)) {
                         for (RemoteSyncFactory newFactory : RemoteSyncFactory.getFactories()) {
                             if (newFactory.isApplicable(executionEnvironment)) {

@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.actions.ModelActionStrategy.InspectActionId;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -82,9 +83,16 @@ public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
     public InspectCDIAtCaretAction( ) {
         super(NbBundle.getMessage(InspectCDIAtCaretAction.class, 
                 INSPECT_CDI_AT_CARET));
-        myStrategies = new ArrayList<ModelActionStrategy>( 3 );
+        myStrategies = new ArrayList<ModelActionStrategy>( 4 );
+        /*
+         *  The order is important !
+         *  EventsActionStartegy should be after InjectablesActionStrategy 
+         *  because it cares about several action ids.
+         */
         myStrategies.add( new ObserversActionStrategy());
         myStrategies.add( new InjectablesActionStrategy());
+        myStrategies.add( new DecoratoresActionStrategy());
+        myStrategies.add( new InterceptorsActionStrategy());
         myStrategies.add( new EventsActionStartegy());
     }
 
@@ -160,13 +168,19 @@ public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
         if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
                 subject , false ) && !WebBeansActionHelper.
                 getContextEventInjectionAtDot( component, subject  ) &&
-                    !WebBeansActionHelper.getMethodAtDot(component, subject))
+                    !WebBeansActionHelper.getMethodAtDot(component, subject) && 
+                        !WebBeansActionHelper.getClassAtDot(component, subject))
         {
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(
+                            WebBeansActionHelper.class, 
+                    "LBL_NoCdiContext"));
             return;
         }
         try {
             metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
 
+                @Override
                 public Void run( WebBeansModel model ) throws Exception {
                     modelAcessAction(model, metaModel, subject, component, 
                             fileObject);

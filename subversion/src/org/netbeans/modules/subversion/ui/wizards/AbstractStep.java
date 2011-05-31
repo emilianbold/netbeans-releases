@@ -67,7 +67,7 @@ import org.netbeans.modules.subversion.Subversion;
  */
 public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
 
-    private List<ChangeListener> listeners = new LinkedList<ChangeListener>();
+    private final List<ChangeListener> listeners = new LinkedList<ChangeListener>();
     private boolean valid;
     private JComponent panel;
     private volatile boolean underConstruction;

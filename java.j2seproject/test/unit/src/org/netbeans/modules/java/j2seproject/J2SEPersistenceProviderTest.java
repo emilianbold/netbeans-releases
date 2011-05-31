@@ -84,13 +84,6 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
         super(testName);
     }
 
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
-
     protected @Override int timeOut() {
         return 300000;
     }
@@ -107,7 +100,7 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
             public Void run() throws Exception{
                 J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.5"));
-                J2SEProjectGenerator.createProject(FileUtil.toFile(projdir), "proj", "foo.Main", "manifest.mf", null);
+                J2SEProjectGenerator.createProject(FileUtil.toFile(projdir), "proj", "foo.Main", "manifest.mf", null, false);
                 J2SEProjectGenerator.setDefaultSourceLevel(null);
                 return null;
             }

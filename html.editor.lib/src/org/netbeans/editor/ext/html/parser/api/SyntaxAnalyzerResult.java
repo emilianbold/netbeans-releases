@@ -41,6 +41,8 @@
  */
 package org.netbeans.editor.ext.html.parser.api;
 
+import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import java.util.Collection;
 import java.util.HashSet;
@@ -78,7 +80,7 @@ public class SyntaxAnalyzerResult {
      * of tags with undeclared namespace.
      */
     private SyntaxAnalyzer analyzer;
-    private Declaration declaration;
+    private AtomicReference<Declaration> declaration;
     private HtmlVersion detectedHtmlVersion;
 
     private HtmlParseResult htmlParseResult;
@@ -450,17 +452,29 @@ public class SyntaxAnalyzerResult {
 
     public synchronized Declaration getDoctypeDeclaration() {
         if (declaration == null) {
-            for (SyntaxElement e : getElements().items()) {
+            Declaration declarationElement = null;
+            //typically the doctype is at the very first line of the document
+            //so limit the doctype search so we do not iterate over the whole file
+            //if there's no doctype
+            int limitCountdown = 20;
+            Iterator<SyntaxElement> elementsIterator = analyzer.elementsIterator();
+            while(elementsIterator.hasNext()) {
+                if(limitCountdown-- == 0 ) {
+                    break;
+                }
+                SyntaxElement e = elementsIterator.next();
                 if (e.type() == SyntaxElement.TYPE_DECLARATION) {
                     Declaration decl = (Declaration)e;
                     if(decl.isValidDoctype()) {
-                        declaration = (Declaration) e;
-                        break;
+                        declarationElement = (Declaration) e;
                     }
+                    break;
                 }
             }
+            declaration = new AtomicReference<Declaration>(declarationElement);
+            
         }
-        return declaration;
+        return declaration.get();
     }
 
     /** Returns a map of namespace URI to prefix used in the document
@@ -496,10 +510,17 @@ public class SyntaxAnalyzerResult {
     }
 
     public String getHtmlTagDefaultNamespace() {
-        for (SyntaxElement se : getElements().items()) {
-            if(se.type() == SyntaxElement.TYPE_TAG) {
-                SyntaxElement.Tag tag = (SyntaxElement.Tag)se;
-                if(tag.getName().equalsIgnoreCase("html")) { //NOI18N
+        //typically the html root element is at the beginning of the file
+        int limitCountdown = 20;
+        Iterator<SyntaxElement> elementsIterator = analyzer.elementsIterator();
+        while (elementsIterator.hasNext()) {
+            if (limitCountdown-- == 0) {
+                break;
+            }
+            SyntaxElement se = elementsIterator.next();
+            if (se.type() == SyntaxElement.TYPE_TAG) {
+                SyntaxElement.Tag tag = (SyntaxElement.Tag) se;
+                if (tag.getName().equalsIgnoreCase("html")) { //NOI18N
                     SyntaxElement.TagAttribute xmlns = tag.getAttribute("xmlns");
                     return xmlns != null ? dequote(xmlns.getValue()) : null;
                 } else {

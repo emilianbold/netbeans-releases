@@ -260,7 +260,7 @@ public class CompletionContextImpl extends CompletionContext {
     private boolean isTagAttributeRequired(TokenSequence tokenSequence) {
         int caretPos = completionAtOffset;
 
-        tokenSequence.move(caretPos);
+        int diff = tokenSequence.move(caretPos);
         tokenSequence.moveNext();
 
         Token tok = tokenSequence.token();
@@ -276,7 +276,13 @@ public class CompletionContextImpl extends CompletionContext {
                                  tokID.equals(XMLTokenId.WS),
             isTagLastCharFound = tokID.equals(XMLTokenId.TAG) &&
                                  (CompletionUtil.isTagLastChar(tok) ||
-                                  CompletionUtil.isEndTagSuffix(tok));
+                                  CompletionUtil.isEndTagSuffix(tok)),
+            //this may happen when there's a lexical error inside the tag itself,
+            //for example in this valid case: <tag att|> or in something errorneous
+            //like: <tag att|#$#$#>
+            isJustBeforeTagErrorToken 
+                                = tokID.equals(XMLTokenId.ERROR) && diff == 0;
+        
         while (true) {
             if (tokID.equals(XMLTokenId.TAG)) {
                 if (CompletionUtil.isEndTagPrefix(tok)) break;
@@ -287,7 +293,7 @@ public class CompletionContextImpl extends CompletionContext {
                             tagNameEndPos = tokOffset + CompletionUtil.TAG_FIRST_CHAR.length() +
                                             tagName.length();
                         if ((tagNameEndPos < caretPos) && 
-                            (isAttributeOrSpace || isTagLastCharFound)) {
+                            (isAttributeOrSpace || isTagLastCharFound || isJustBeforeTagErrorToken)) {
                             return true;
                         }
                     }
@@ -312,6 +318,7 @@ public class CompletionContextImpl extends CompletionContext {
         try {
             if (isTagAttributeRequired(tokenSequence)) {
                 completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                typedChars = token.getTokenID().equals(XMLDefaultTokenContext.WS) ? null : token.getImage();
                 pathFromRoot = getPathFromRoot(element);
                 return true;
             }

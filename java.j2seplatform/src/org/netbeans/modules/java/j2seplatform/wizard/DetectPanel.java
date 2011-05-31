@@ -84,6 +84,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 
 /**
  * This Panel launches autoconfiguration during the New J2SE Platform sequence.
@@ -130,30 +131,28 @@ public class DetectPanel extends javax.swing.JPanel {
         super.addNotify();        
     }    
 
-    private void postInitComponents () {
-        this.jdkName.getDocument().addDocumentListener (new DocumentListener () {
-
+    private void postInitComponents () {        
+        final DocumentListener docListener = new DocumentListener () {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                handleNameChange ();
+                cs.fireChange();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                handleNameChange ();
+                cs.fireChange();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                handleNameChange ();
+                cs.fireChange();
             }
-        });                
+        };
+        this.jdkName.getDocument().addDocumentListener(docListener);
+        this.javadoc.getDocument().addDocumentListener(docListener);
+        this.sources.getDocument().addDocumentListener(docListener);
         this.progressLabel.setVisible(false);
         this.progressPanel.setVisible(false);
-    }
-
-    private void handleNameChange () {
-        cs.fireChange();
     }
 
     /** This method is called from within the constructor to
@@ -326,20 +325,55 @@ public class DetectPanel extends javax.swing.JPanel {
     }
 
     public String getPlatformName() {
-	    return jdkName.getText();
+	    return jdkName.getText().trim();
     }
     
-    String getSources () {
-        String val = this.sources.getText();
-        return val.length() == 0 ? null : val;
+    List<? extends PathResourceImplementation> getSources (boolean dieOnError) {
+        final String val = this.sources.getText();
+        final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        if (val.trim().length()>0) {
+            final File f = new File (val);
+            if (f.exists()) {
+                try {
+                    URL url = f.toURI().toURL();
+                    if (FileUtil.isArchiveFile(url)) {
+                        url = FileUtil.getArchiveRoot(url);
+                        FileObject fo = URLMapper.findFileObject(url);
+                        if (fo != null) {
+                            fo = fo.getFileObject("src");   //NOI18N
+                            if (fo != null) {
+                                url = fo.getURL();
+                            }
+                        }
+                        result.add (ClassPathSupport.createResource(url));
+                    } else {
+                        result.add (ClassPathSupport.createResource(url));
+                    }
+                } catch (IllegalArgumentException mue) {
+                    if (dieOnError) {
+                        throw new IllegalStateException();
+                    }
+                } catch (MalformedURLException mue) {
+                    if (dieOnError) {
+                        throw new IllegalStateException();
+                    }
+                } catch (FileStateInvalidException e) {
+                    if (dieOnError) {
+                        throw new IllegalStateException();
+                    }
+                }
+            } else if (dieOnError) {
+                throw new IllegalStateException();
+            }
+        }
+        return result;
     }
 
     void setSources (String sources) {
         this.sources.setText (sources == null ? "" : sources);      //NOI18N
     }
 
-    //todo: User friendly error handling
-    List<URL> getJavadoc () {
+    List<URL> getJavadoc (boolean dieOnError) {
         final String val = this.javadoc.getText();
         final List<URL> result = new ArrayList<URL>();
         final StringTokenizer tk = new StringTokenizer(val,PATH_SEPARATOR);
@@ -348,7 +382,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 final String token =  tk.nextToken().trim();
                 if (token.startsWith(HTTP) || token.startsWith(HTTPS)) {
                     //Http(s) URL add directly
-                    result.add(URI.create(token).toURL());                
+                    result.add(new URI(token).toURL());
                 } else {
                     //File or folder
                     //1st) /jdk/docs/
@@ -359,17 +393,29 @@ public class DetectPanel extends javax.swing.JPanel {
                         final String outherPath = token.substring(0, index);
                         final String innerPath = index+2 == token.length() ? "" : token.substring(index+2);
                         final File f = new File (outherPath);
-                        result.add (new URL (FileUtil.getArchiveRoot(f.toURI().toURL()).toExternalForm() + innerPath));                    
+                        if (f.exists()) {
+                            result.add (new URL (FileUtil.getArchiveRoot(f.toURI().toURL()).toExternalForm() + innerPath));
+                        } else if (dieOnError) {
+                            throw new IllegalStateException();
+                        }
                     } else {
                         final File f = new File(token);
                         final URL url = FileUtil.urlForArchiveOrDir(f);
                         if (url != null) {
                             result.add(url);
+                        } else if (dieOnError) {
+                            throw new IllegalStateException();
                         }
                     }
                 }
             } catch (MalformedURLException e) {
-                Exceptions.printStackTrace(e);
+                if (dieOnError) {
+                    throw new IllegalStateException();
+                }
+            } catch (URISyntaxException e) {
+                if (dieOnError) {
+                    throw new IllegalStateException();
+                }
             }
         }
         return result;
@@ -438,6 +484,11 @@ public class DetectPanel extends javax.swing.JPanel {
         JFileChooser chooser = new JFileChooser ();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        if (Utilities.isMac()) {
+            //New JDKs and JREs are bundled into package, allow JFileChooser to navigate in
+            chooser.putClientProperty("JFileChooser.packageIsTraversable", "always");   //NOI18N
+        }
+        chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter (new FileFilter () {
             @Override
             public boolean accept(File f) {
@@ -600,32 +651,8 @@ public class DetectPanel extends javax.swing.JPanel {
         public void storeSettings(WizardDescriptor settings) {
             if (isValid()) {                                
                 String name = component.getPlatformName();                
-                List<PathResourceImplementation> src = new ArrayList<PathResourceImplementation>();
-                String srcPath = this.component.getSources();
-                if (srcPath!=null) {
-                    File f = new File (srcPath);
-                    try {
-                        URL url = f.toURI().toURL();
-                        if (FileUtil.isArchiveFile(url)) {
-                            url = FileUtil.getArchiveRoot(url);
-                            FileObject fo = URLMapper.findFileObject(url);
-                            if (fo != null) {
-                                fo = fo.getFileObject("src");   //NOI18N
-                                if (fo != null) {
-                                    url = fo.getURL();
-                                }
-                            }
-                            src.add (ClassPathSupport.createResource(url));
-                        }
-                        else {
-                            src.add (ClassPathSupport.createResource(url));
-                        }
-                    } catch (IllegalArgumentException mue) {
-                    } catch (MalformedURLException mue) {
-                    } catch (FileStateInvalidException e) {
-                    }
-                }
-                List<URL> jdoc = this.component.getJavadoc();                                
+                final List<? extends PathResourceImplementation> src = this.component.getSources(false);
+                final List<URL> jdoc = this.component.getJavadoc(false);
                 NewJ2SEPlatform platform = this.iterator.getPlatform();
                 platform.setDisplayName (name);
                 platform.setAntName (createAntName (name));
@@ -681,27 +708,41 @@ public class DetectPanel extends javax.swing.JPanel {
 
         private void checkValid () {
             this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
-            String name = this.component.getPlatformName ();            
-            boolean validDisplayName = name.length() > 0;            
-            boolean usedDisplayName = false;            
-            if (!detected) {                
+            final String name = this.component.getPlatformName ();
+            boolean vld = detected;
+            if (!vld) {
                 this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_NoSDKRegistry"));         //NOI18N
             }
-            else if (!validDisplayName) {
+            if (vld && name.length() == 0) {
+                vld = false;
                 this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_InvalidDisplayName"));    //NOI18N
             }
-            else {                
-                JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();                
-                for (int i=0; i<platforms.length; i++) {
-                    if (name.equals (platforms[i].getDisplayName())) {
-                        usedDisplayName = true;
+            if (vld) {
+                for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                    if (name.equals (platform.getDisplayName())) {
+                        vld = false;
                         this.wiz.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_UsedDisplayName"));    //NOI18N
                         break;
                     }
-                }                
+                }
             }
-            boolean v = detected && validDisplayName && !usedDisplayName;
-            setValid(v);            
+            if (vld) {
+                try {
+                    component.getSources(true);
+                } catch (IllegalStateException ise) {
+                    this.wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_Sources"));
+                    vld = false;
+                }
+            }
+            if (vld) {
+                try {
+                    component.getJavadoc(true);
+                } catch (IllegalStateException ise) {
+                    this.wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,NbBundle.getMessage(DetectPanel.class,"ERROR_Javadoc"));
+                    vld = false;
+                }
+            }
+            setValid(vld);
         }
 
         private static String createAntName (String name) {

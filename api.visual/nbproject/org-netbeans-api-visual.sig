@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.23
+#Version 2.27.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -912,6 +912,8 @@ meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> or
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createHierarchicalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean,boolean,int,int)
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createOrthogonalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean)
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createTreeGraphLayout(int,int,int,int,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createTreeGraphLayout(int,int,int,int,boolean,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createTreeGraphLayout(int,int,int,int,boolean,boolean,org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment)
 supr java.lang.Object
 
 CLSS public abstract interface org.netbeans.api.visual.graph.layout.GraphLayoutListener<%0 extends java.lang.Object, %1 extends java.lang.Object>
@@ -922,6 +924,8 @@ meth public abstract void nodeLocationChanged(org.netbeans.api.visual.graph.layo
 CLSS public org.netbeans.api.visual.graph.layout.GraphLayoutSupport
 cons public init()
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> void setTreeGraphLayoutProperties(org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>,int,int,int,int,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> void setTreeGraphLayoutProperties(org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>,int,int,int,int,boolean,boolean)
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> void setTreeGraphLayoutProperties(org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>,int,int,int,int,boolean,boolean,org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment)
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> void setTreeGraphLayoutRootNode(org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>,{%%0})
 supr java.lang.Object
 
@@ -943,6 +947,14 @@ meth public final void layout({org.netbeans.api.visual.graph.layout.TreeGraphLay
 supr org.netbeans.api.visual.graph.layout.GraphLayout
 hfds horizontalGap,originX,originY,scene,vertical,verticalGap
 hcls Node
+
+CLSS public final !enum org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment
+fld public final static org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment BOTTOM
+fld public final static org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment CENTER
+fld public final static org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment TOP
+meth public static org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment valueOf(java.lang.String)
+meth public static org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment[] values()
+supr java.lang.Enum<org.netbeans.api.visual.graph.layout.TreeGraphLayoutAlignment>
 
 CLSS public abstract org.netbeans.api.visual.graph.layout.UniversalGraph<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons public init()

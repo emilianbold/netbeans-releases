@@ -270,7 +270,7 @@ public final class QuerySupport {
                                     LOG.log(Level.WARNING, null, ex);
                                 }
                             }
-                            IndexingManager.getDefault().refreshIndexAndWait(root, list);
+                            IndexingManager.getDefault().refreshIndexAndWait(root, list, true, true);
                         }
                     }
                     final List<IndexResult> result = new LinkedList<IndexResult>();

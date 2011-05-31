@@ -52,6 +52,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.web.common.api.Constants;
 
 /**
  * Parser for Expression Language, uses {@link com.sun.el.parser.ELParser} underneath.
@@ -59,6 +60,9 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
  * @author Erno Mononen
  */
 public final class ELParser extends Parser {
+    
+    //XXX hack
+    private static final String ATTRIBUTE_EL_MARKER = "A"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(ELParser.class.getName());
     private final Document document;
@@ -83,7 +87,12 @@ public final class ELParser extends Parser {
      * @return the root AST node
      * @throws {@link javax.el.ELException} if the given expression is not valid EL.
      */
-    public static Node parse(String expr) {
+    public static Node parse(ELPreprocessor expr) {
+        return com.sun.el.parser.ELParser.parse(expr.getPreprocessedExpression());
+    }
+    
+    //for unit tests
+    static Node parse(String expr) {
         return com.sun.el.parser.ELParser.parse(expr);
     }
 
@@ -91,22 +100,35 @@ public final class ELParser extends Parser {
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         this.result = new ELParserResult(snapshot);
 
-        // XXX: defined in XhtmlElEmbeddingProvider.GENERATED_CODE 
-        // that is not currently exposed via API. This is
-        // pretty hacky
-        final String expressionSeparator = "@@@"; //NOI18N
+       final String expressionSeparator = Constants.LANGUAGE_SNIPPET_SEPARATOR; //NOI18N
        String[] sources = snapshot.getText().toString().split(expressionSeparator); //NOI18N
        int embeddedOffset = 0;
        for (String expression : sources) {
            int startOffset = embeddedOffset;
            int endOffset = startOffset + expression.length();
            embeddedOffset += (expression.length() + expressionSeparator.length());
+           
+           ELPreprocessor elPreprocessor;
+           //hack - we need to distinguish EL inside and outside of attribute values
+           //since there's no API in parsing.api how to set some metadata to the virtual source
+           //it is done this ugly way
+           if(expression.endsWith(ATTRIBUTE_EL_MARKER)) {
+               //inside attribute
+               endOffset--;
+               expression = expression.substring(0, expression.length() - 1);
+               elPreprocessor = new ELPreprocessor(expression, 
+                       ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE, 
+                       ELPreprocessor.ESCAPED_CHARACTERS);
+           } else {
+               elPreprocessor = new ELPreprocessor(expression, 
+                       ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);               
+           }
            OffsetRange embeddedRange = new OffsetRange(startOffset, endOffset);
            try {
-               Node node = parse(expression);
-               result.addValidElement(node, expression, embeddedRange);
+               Node node = parse(elPreprocessor);
+               result.addValidElement(node, elPreprocessor, embeddedRange);
            } catch (ELException ex) {
-               result.addErrorElement(ex, expression, embeddedRange);
+               result.addErrorElement(ex, elPreprocessor, embeddedRange);
            }
        }
 

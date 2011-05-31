@@ -121,7 +121,7 @@ public class MiscellaneousTest extends AbstractTestCase {
             "xsi:schemaLocation=http://www.camera.com camera.xsd"
         };
         
-        setupCompletion("resources/camera.xml", null);
+        setupCompletion("resources/Camera.xml", null);
         DocRoot root = CompletionUtil.getDocRoot(getDocument());
         assert("c:camera".equals(root.getName()));
         List<DocRootAttribute> attributes = root.getAttributes();
@@ -137,7 +137,7 @@ public class MiscellaneousTest extends AbstractTestCase {
      * Tests to see if the document declares any DOCTYPE.
      */
     public void testIsDTDBasedDocument1() throws Exception {
-        setupCompletion("resources/Doctype.xml", null);
+        setupCompletion("resources/DocType.xml", null);
         assert(CompletionUtil.isDTDBasedDocument(instanceDocument));
     }
     

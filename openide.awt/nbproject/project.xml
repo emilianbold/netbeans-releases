@@ -99,6 +99,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.actions</package>
+                <package>org.netbeans.spi.actions</package>
                 <package>org.openide.awt</package>
             </public-packages>
         </data>

@@ -48,11 +48,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -64,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,10 +79,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
 import org.netbeans.Module;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
@@ -96,6 +101,7 @@ import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
 import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
 import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.ModuleUpdater;
+import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterInternal;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -121,6 +127,7 @@ public class InstallSupportImpl {
     private int wasDownloaded = 0;
     
     private Future<Boolean> runningTask;
+    private final Object LOCK = new Object();
     
     private static enum STEP {
         NOTSTARTED,
@@ -149,13 +156,15 @@ public class InstallSupportImpl {
     public boolean doDownload (final ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
         this.isGlobal = isGlobal;
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
-                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
-                synchronized(this) {
+                final OperationContainer<InstallSupport> container = support.getContainer ();
+                assert container.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + container.listInvalid () + " container: " + container;
+                synchronized(LOCK) {
                     currentStep = STEP.DOWNLOAD;
                 }
 
-                infos = support.getContainer ().listAll ();
+                infos = container.listAll ();
                 List <OperationInfo<?>> newInfos = new ArrayList <OperationInfo<?>>();
                 for(OperationInfo <?> i : infos) {
                     if(i.getUpdateUnit().getInstalled()!=null &&
@@ -241,13 +250,15 @@ public class InstallSupportImpl {
     public boolean doValidate (final Validator validator, final ProgressHandle progress/*or null*/) throws OperationException {
         assert validator != null;
         Callable<Boolean> validationCallable = new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
-                synchronized(this) {
+                synchronized(LOCK) {
                     assert currentStep != STEP.FINISHED;
                     if (currentStep == STEP.CANCEL) return false;
                     currentStep = STEP.VALIDATION;
                 }
-                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
+                final OperationContainer<InstallSupport> container = support.getContainer();
+                assert container.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + container.listInvalid () + "\ncontainer: " + container;
 
                 // start progress
                 if (progress != null) {
@@ -305,8 +316,9 @@ public class InstallSupportImpl {
     public Boolean doInstall (final Installer installer, final ProgressHandle progress/*or null*/) throws OperationException {
         assert installer != null;
         Callable<Boolean> installCallable = new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
-                synchronized(this) {
+                synchronized(LOCK) {
                     assert currentStep != STEP.FINISHED : currentStep + " != STEP.FINISHED";
                     if (currentStep == STEP.CANCEL) return false;
                     currentStep = STEP.INSTALLATION;
@@ -344,7 +356,7 @@ public class InstallSupportImpl {
                 List <UpdaterInfo> updaterFiles = new ArrayList <UpdaterInfo> ();
                 
                 for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
-                    synchronized(this) {
+                    synchronized(LOCK) {
                         if (currentStep == STEP.CANCEL) {
                             if (progress != null) progress.finish ();
                             return false;
@@ -416,7 +428,7 @@ public class InstallSupportImpl {
                     }
 
                     if (! needsRestart) {
-                        synchronized(this) {
+                        synchronized(LOCK) {
                             if (currentStep == STEP.CANCEL) {
                                 if (progress != null) progress.finish ();
                                 return false;
@@ -523,7 +535,7 @@ public class InstallSupportImpl {
     }
 
     public void doRestart (Restarter restarter, ProgressHandle progress/*or null*/) throws OperationException {
-        synchronized(this) {
+        synchronized(LOCK) {
             assert currentStep != STEP.FINISHED;
             currentStep = STEP.RESTART;
         }        
@@ -642,7 +654,7 @@ public class InstallSupportImpl {
     }
 
     public void doCancel () throws OperationException {
-        synchronized(this) {
+        synchronized(LOCK) {
             currentStep = STEP.CANCEL;
         }
         if (runningTask != null && ! runningTask.isDone () && ! runningTask.isCancelled ()) {
@@ -741,6 +753,48 @@ public class InstallSupportImpl {
                 downloadedFiles.add(normalized);
             }
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
+            JarFile nbm = new JarFile(dest);
+            try {
+                Enumeration<JarEntry> en = nbm.entries();
+                while (en.hasMoreElements()) {
+                    JarEntry jarEntry = en.nextElement();
+                    if (jarEntry.getName().endsWith(".external")) {
+                        InputStream is = nbm.getInputStream(jarEntry);
+                        try {
+                            AtomicLong crc = new AtomicLong();
+                            InputStream real = externalDownload(is, crc, jarEntry.getName());
+                            if (crc.get() == -1L) {
+                                throw new IOException(jarEntry.getName() + " does not contain CRC: line!");
+                            }
+                            byte[] arr = new byte[4096];
+                            CRC32 check = new CRC32();
+                            File external = new File(dest.getPath() + "." + Long.toHexString(crc.get()));
+                            FileOutputStream fos = new FileOutputStream(external);
+                            try {
+                                for (;;) {
+                                    int len = real.read(arr);
+                                    if (len == -1) {
+                                        break;
+                                    }
+                                    check.update(arr, 0, len);
+                                    fos.write(arr, 0, len);
+                                }
+                            } finally {
+                                fos.close();
+                            }
+                            real.close();
+                            if (check.getValue() != crc.get()) {
+                                external.delete();
+                                throw new IOException("Wrong CRC for " + jarEntry.getName());
+                            }
+                        } finally {
+                            is.close();
+                        }
+                    }
+                }
+            } finally {
+                nbm.close();
+            }
         } catch (UnknownHostException x) {
             LOG.log (Level.INFO, x.getMessage (), x);
             throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());
@@ -794,7 +848,17 @@ public class InstallSupportImpl {
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
-        assert dest.exists () : dest.getAbsolutePath();        
+        if (!dest.exists()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Cannot find ").append(dest).append("\n");
+            sb.append("Parent directory contains:").append(Arrays.toString(dest.getParentFile().list())).append("\n");
+            for (File f : UpdateTracking.clusters(true)) {
+                sb.append("Trying to find result in ").append(f).append(" = ");
+                File alt = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
+                sb.append(alt).append(" exists ").append(alt.exists()).append("\n");
+            }
+            throw new OperationException(OperationException.ERROR_TYPE.INSTALL, sb.toString());
+        }
         
         int wasVerified = 0;
 
@@ -1171,7 +1235,50 @@ public class InstallSupportImpl {
         }
         return es;
     }
-        private static class UpdaterInfo {
+    
+    // copied from nbbuild/antsrc/org/netbeans/nbbuild/AutoUpdate.java:
+    private static InputStream externalDownload(InputStream is, AtomicLong crc, String pathTo) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        URLConnection conn;
+        crc.set(-1L);
+        for (;;) {
+            String line = br.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("CRC:")) {
+                crc.set(Long.parseLong(line.substring(4).trim()));
+            }
+            if (line.startsWith("URL:")) {
+                String url = line.substring(4).trim();
+                for (;;) {
+                    int index = url.indexOf("${");
+                    if (index == -1) {
+                        break;
+                    }
+                    int end = url.indexOf("}", index);
+                    String propName = url.substring(index + 2, end);
+                    final String propVal = System.getProperty(propName);
+                    if (propVal == null) {
+                        throw new IOException("Can't find property " + propName);
+                    }
+                    url = url.substring(0, index) + propVal + url.substring(end + 1);
+                }
+                LOG.log(Level.INFO, "Trying external URL: {0}", url);
+                try {
+                    conn = new URL(url).openConnection();
+                    conn.connect();
+                    return conn.getInputStream();
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, "Cannot connect to {0}", url);
+                    LOG.log(Level.INFO, "Details", ex);
+                }
+            }
+        }
+        throw new FileNotFoundException("Cannot resolve external reference to " + pathTo);
+    }
+    
+    private static class UpdaterInfo {
         private JarEntry updaterJarEntry;
         private JarFile updaterJarFile;
         private File updaterTargetCluster;

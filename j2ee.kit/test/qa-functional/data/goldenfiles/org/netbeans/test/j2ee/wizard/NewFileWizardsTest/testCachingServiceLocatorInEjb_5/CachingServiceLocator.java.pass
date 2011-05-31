@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package locator.cache;
 
 import java.util.HashMap;
@@ -22,32 +21,31 @@ import javax.mail.Session;
 
 /**
  *
- * @author lukas
+ * @author jskrivanek
  */
 public class CachingServiceLocator {
-
+    
     private InitialContext ic;
-    private Map<String,Object> cache;
-
+    private Map<String, Object> cache;
     private static CachingServiceLocator me;
-
+    
     static {
         try {
             me = new CachingServiceLocator();
-        } catch(NamingException se) {
+        } catch (NamingException se) {
             throw new RuntimeException(se);
         }
     }
-
-    private CachingServiceLocator() throws NamingException  {
+    
+    private CachingServiceLocator() throws NamingException {
         ic = new InitialContext();
-        cache = Collections.synchronizedMap(new HashMap<String,Object>());
+        cache = Collections.synchronizedMap(new HashMap<String, Object>());
     }
-
+    
     public static CachingServiceLocator getInstance() {
         return me;
     }
-
+    
     private Object lookup(String jndiName) throws NamingException {
         Object cachedObj = cache.get(jndiName);
         if (cachedObj == null) {
@@ -75,7 +73,7 @@ public class CachingServiceLocator {
      */
     public EJBHome getRemoteHome(String jndiHomeName, Class className) throws NamingException {
         Object objref = lookup(jndiHomeName);
-        return (EJBHome) PortableRemoteObject.narrow(objref, className);
+        return (EJBHome) PortableRemoteObject.narrow(objref, className);        
     }
 
     /**
@@ -95,7 +93,7 @@ public class CachingServiceLocator {
     }
 
     /**
-     * This method obtains the datasource
+     * This method obtains the datasource 
      * @return the DataSource corresponding to the name parameter
      */
     public DataSource getDataSource(String dataSourceName) throws NamingException {
@@ -103,7 +101,7 @@ public class CachingServiceLocator {
     }
 
     /**
-     * This method obtains the mail session
+     * This method obtains the mail session 
      * @return the Session corresponding to the name parameter
      */
     public Session getSession(String sessionName) throws NamingException {
@@ -136,4 +134,3 @@ public class CachingServiceLocator {
         return (String) lookup(envName);
     }
 }
-

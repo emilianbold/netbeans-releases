@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.db.explorer;
 
+import java.awt.Dialog;
+import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
@@ -62,6 +64,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 import org.netbeans.lib.ddl.CommandNotSupportedException;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -75,10 +80,13 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.ddl.impl.Specification;
 
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.action.ConnectAction;
+import org.netbeans.modules.db.explorer.dlg.ConnectProgressDialog;
 import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.netbeans.modules.db.explorer.node.DDLHelper;
 import org.netbeans.modules.db.explorer.node.RootNode;
@@ -94,9 +102,11 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 
@@ -585,29 +595,131 @@ public final class DatabaseConnection implements DBConnection {
     public void setConnectionFileName(String connectionFileName) {
         this.connectionFileName = connectionFileName;
     }
-
-    private synchronized void restorePassword() {
+    
+    private void restorePassword() {
         if (this.connectionFileName == null) {
             LOGGER.log(Level.FINE, "No connectionFileName for " + this);
             pwd = "";
             rpwd = false;
             return ;
         }
-        // If the password was saved, then it means the user checked
-        // the box to say the password should be remembered.
-        char[] chars = Keyring.read(this.connectionFileName);
-        if (chars != null) {
-            LOGGER.log(Level.FINE, "A password read for " + this.connectionFileName);
-            pwd = String.valueOf(chars);
-            rpwd = true;
-        } else {
-            LOGGER.log(Level.FINE, "No password read for " + this.connectionFileName);
-            pwd = "";
-            rpwd = false;
-        }
-
+        final String key = this.connectionFileName;
+        waitForReading(new Runnable() {
+            @Override
+            public void run() {
+                // If the password was saved, then it means the user checked
+                // the box to say the password should be remembered.
+                char[] chars = Keyring.read(key);
+                if (chars != null) {
+                    LOGGER.log(Level.FINE, "A password read for " + key);
+                    pwd = String.valueOf(chars);
+                    rpwd = true;
+                } else {
+                    LOGGER.log(Level.FINE, "No password read for " + key);
+                    pwd = "";
+                    rpwd = false;
+                }
+            }
+            
+        });
     }
 
+    public static void storePassword(final String key, final char[] pwd) {
+        Parameters.notNull("key", key);
+        Parameters.notNull("pwd", pwd);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                LOGGER.log(Level.FINE, "Storing password for " + key);
+                Keyring.save(key,
+                        pwd,
+                        NbBundle.getMessage(DatabaseConnectionConvertor.class,
+                            "DatabaseConnectionConvertor.password_description", key)); //NOI18N
+            }
+        });
+    }
+    
+    private void waitForReading(final Runnable toRun) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            showWaitingDialog(toRun);
+        } else {
+            if (keyringTask != null && ! keyringTask.isFinished()) {
+                keyringTask.waitFinished();
+                toRun.run();
+                return ;
+            }            
+            final Object lock = new Object();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    showWaitingDialog(toRun);
+                    synchronized (lock) {
+                        lock.notifyAll();
+                    }
+                }
+            });
+            try {
+                synchronized (lock) {
+                    lock.wait();
+                }
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, ex.getMessage(), ex);
+            }
+        }
+    }
+    
+    private RequestProcessor.Task keyringTask = null;
+    
+    private void showWaitingDialog(final Runnable toRun) {
+        assert SwingUtilities.isEventDispatchThread();
+
+        ProgressHandle progress = ProgressHandleFactory.createHandle("keyring");
+        JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
+        progressComponent.setPreferredSize(new Dimension(350, 20));
+        ConnectProgressDialog panel = new ConnectProgressDialog(progressComponent,
+                NbBundle.getMessage(DatabaseConnection.class, "DatabaseConnection_PleaseWaitMessage")); // NOI18N);
+        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectAction.class, "ACS_ConnectingDialogTextA11yDesc")); // NOI18N
+        final Dialog d = new JDialog(WindowManager.getDefault().getMainWindow(),
+                                NbBundle.getMessage(DatabaseConnection.class, "DatabaseConnection_PleaseWaitTitle"), // NOI18N
+                                true);
+        d.add(panel);
+        keyringTask = RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    toRun.run();
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (d != null) {
+                                d.setVisible(false);
+                                d.dispose();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        d.setVisible(true);
+    }
+    
+    public static void deletePassword(final String key) {
+        Parameters.notNull("key", key);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                LOGGER.log(Level.FINE, "Deleting password for " + key);
+                Keyring.delete(key);
+            }
+        });
+    }
+    
     /** Returns if password should be remembered */
     @Override
     public boolean rememberPassword() {
@@ -637,7 +749,7 @@ public final class DatabaseConnection implements DBConnection {
         }
         return pwd;
     }
-
+    
     /** Sets password
      * Fires propertychange event.
      * @param password New password
@@ -852,7 +964,7 @@ public final class DatabaseConnection implements DBConnection {
             }
         };
 
-        Task task = RequestProcessor.getDefault().post(runnable, 0);
+        Task task = RP.post(runnable, 0);
         return task;
     }
 
@@ -1085,7 +1197,8 @@ public final class DatabaseConnection implements DBConnection {
 
     public void showConnectionDialog() {
         try {
-            final ConnectionNode cni = findConnectionNode(getName());
+            final ConnectionNode cni = findConnectionNode(getDisplayName());
+            assert cni != null : "DatabaseConnection node found for " + this;
             if (cni != null && cni.getDatabaseConnection().getConnector().isDisconnected()) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     @Override

@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -83,7 +84,6 @@ import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -315,11 +315,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                     //        js = Source.forFileObject(fo);
                     //}
                     if (source != null) {
-                        if (IndexingManager.getDefault().isIndexing()) {
-                            resultSet.setWaitText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                        }
-                        
-                        ParserManager.parse (
+                        final Future<Void> f = ParserManager.parseWhenScanFinished(
                             Collections.<Source> singleton (source),
                             new UserTask () {
 
@@ -345,6 +341,10 @@ public class GsfCompletionProvider implements CompletionProvider {
                                 public void cancel() {
                                 }
                         });
+                        if (!f.isDone()) {
+                            component.putClientProperty("completion-active", Boolean.FALSE);    //NOI18N
+                            resultSet.setWaitText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
+                        }
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null)
                                 resultSet.addAllItems(results);

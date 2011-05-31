@@ -80,6 +80,7 @@ public final class TerminalContainerTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     private static final String ICON_PATH = "org/netbeans/modules/dlight/terminal/ui/term.png";// NOI18N
     private static final String PREFERRED_ID = "TerminalContainerTopComponent";// NOI18N
+    public final static String AUTO_OPEN_LOCAL_PROPERTY = "AutoOpenLocalTerminal"; // NOI18N
     private final TerminalContainer tc;
 
     public TerminalContainerTopComponent() {
@@ -90,7 +91,8 @@ public final class TerminalContainerTopComponent extends TopComponent {
         setName(title);
         setToolTipText(NbBundle.getMessage(TerminalContainerTopComponent.class, "HINT_TerminalContainerTopComponent"));// NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        putClientProperty(TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, Boolean.TRUE);
+        // do not use PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, see #187391
+//        putClientProperty(TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, Boolean.TRUE);
         tc = TerminalContainer.create(TerminalContainerTopComponent.this, title);
         add(tc);
     }
@@ -188,7 +190,7 @@ public final class TerminalContainerTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         JComponent selectedTerminal = getIOContainer().getSelected();
-        if (selectedTerminal == null) {
+        if (selectedTerminal == null && (this.getClientProperty(AUTO_OPEN_LOCAL_PROPERTY) != Boolean.FALSE)) {
             for (Action action : getToolbarActions()) {
                 if (action.getValue(Action.NAME).toString().startsWith(LOCAL_TERMINAL_PREFIX)
                         && action.isEnabled()) {
@@ -201,9 +203,13 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        JComponent selected = getIOContainer().getSelected();
+        while (selected != null) {
+            getIOContainer().remove(selected);
+            selected = getIOContainer().getSelected();
+        }
     }
-
+    
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles

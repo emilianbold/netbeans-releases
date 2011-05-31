@@ -234,12 +234,7 @@ class GdbVariable extends Variable {
 
     // interface Variable
     public Action[] getActions(boolean isWatch) {
-	VariableModel.OutputFormatAction outputFormatAction =
-	    (VariableModel.OutputFormatAction) VariableModel.Action_OUTPUT_FORMAT;
-	outputFormatAction.setVar(this);
-
 	if (isWatch) {
-
 	    return new Action[] {
                 WatchModel.NEW_WATCH_ACTION,
 		null,
@@ -247,7 +242,7 @@ class GdbVariable extends Variable {
 		null,
 		// LATER VariableModel.Action_INHERITED_MEMBERS,
 		// LATER VariableModel.Action_DYNAMIC_TYPE,
-		outputFormatAction,
+		VariableModel.getOutputFormatAction(this),
 		// LATER SystemAction.get(MaxObjectAction.class),
 		null
 	    };
@@ -256,7 +251,7 @@ class GdbVariable extends Variable {
             return new Action[] {
 		// LATER VariableModel.Action_INHERITED_MEMBERS,
                 // LATER VariableModel.Action_DYNAMIC_TYPE,
-                outputFormatAction,
+                VariableModel.getOutputFormatAction(this),
                 null,
             };
 

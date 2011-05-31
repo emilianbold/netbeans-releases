@@ -84,6 +84,7 @@ final class LocaleVariants implements Stamps.Updater {
                     }
                     arr.add(fws);
                 }
+                arr = arr.isEmpty() ? Collections.<FileWithSuffix>emptyList() : arr;
                 tmp.put(new File(file), arr);
             }
             is.close();
@@ -218,6 +219,7 @@ final class LocaleVariants implements Stamps.Updater {
             }
             res = l;
         }
+        res = res.isEmpty() ? Collections.<FileWithSuffix>emptyList() : res;
         synchronized (map) {
             map.put(f, res);
         }

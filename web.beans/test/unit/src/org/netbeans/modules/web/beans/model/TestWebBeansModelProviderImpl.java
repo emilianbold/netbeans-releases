@@ -47,7 +47,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
+import org.netbeans.modules.web.beans.impl.model.ResultLookupStrategy;
+import org.netbeans.modules.web.beans.impl.model.SingleResultLookupStrategy;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
 
@@ -58,40 +60,100 @@ import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
  *
  */
 public class TestWebBeansModelProviderImpl extends WebBeansModelProviderImpl {
+    
+    private static final ResultLookupStrategy SINGLE_STRATEGY = new TestResultStrategy(null);
 
     TestWebBeansModelProviderImpl(TestWebBeansModelImpl testWebBeansModelImpl )
     {
-        myModelImpl = testWebBeansModelImpl;
+        super( testWebBeansModelImpl );
+    }
+    
+    @Override
+    protected TestWebBeansModelImpl getModel() {
+        return (TestWebBeansModelImpl)super.getModel();
     }
 
-    protected Result findParameterInjectable( VariableElement element,
-            DeclaredType parentType)
+    @Override
+    protected DependencyInjectionResult findParameterInjectable( VariableElement element,
+            DeclaredType parentType, ResultLookupStrategy strategy )
     {
-        return super.findParameterInjectable(element, parentType, myModelImpl);
+        return super.findParameterInjectable(element, parentType, strategy);
     }
 
-    protected Result doFindVariableInjectable( VariableElement element,
+    @Override
+    protected DependencyInjectionResult doFindVariableInjectable( VariableElement element,
             TypeMirror elementType, boolean injectRequired )
     {
-        return super.doFindVariableInjectable(element, elementType, myModelImpl,
+        return super.doFindVariableInjectable(element, elementType,
                 injectRequired);
     }
 
-    protected Result findVariableInjectable( VariableElement element,
+    @Override
+    protected DependencyInjectionResult findVariableInjectable( VariableElement element,
+            DeclaredType parentType, ResultLookupStrategy strategy )
+    {
+        return super.findVariableInjectable(element, parentType, strategy );
+    }
+
+    protected DependencyInjectionResult findParameterInjectable( VariableElement element,
             DeclaredType parentType)
     {
-        return super.findVariableInjectable(element, parentType, myModelImpl);
+        return findParameterInjectable(element, parentType, SINGLE_STRATEGY);
+    }
+
+    protected DependencyInjectionResult findVariableInjectable( VariableElement element, 
+            DeclaredType parentType )
+    {
+        return findVariableInjectable(element, parentType, SINGLE_STRATEGY);
     }
     
-    protected Result getResult( Result result ,WebBeansModelImplementation model ){
-        if ( myModelImpl.isFull() ){
-            return super.getResult(result, model);
+}
+
+class TestResultStrategy extends SingleResultLookupStrategy implements ResultLookupStrategy {
+    
+    TestResultStrategy( ResultLookupStrategy delegate ){
+        myStartegy = delegate;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.SingleResultLookupStrategy#getResult(org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation, org.netbeans.modules.web.beans.api.model.Result)
+     */
+    @Override
+    public DependencyInjectionResult getResult( WebBeansModelImplementation model, DependencyInjectionResult result ){
+        if ( myStartegy != null && ((TestWebBeansModelImpl)model).isFull() ){
+            return myStartegy.getResult(model,result);
         }
         else {
-            filterBeans(result);
+            filterBeans(result , model );
             return result;
         }
     }
-
-    private TestWebBeansModelImpl myModelImpl;
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.SingleResultLookupStrategy#getType(org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation, javax.lang.model.type.DeclaredType, javax.lang.model.element.VariableElement)
+     */
+    @Override
+    public TypeMirror getType( WebBeansModelImplementation model,
+            DeclaredType parent, VariableElement element )
+    {
+        if ( myStartegy != null ){
+            return myStartegy.getType(model, parent, element);
+        }
+        return super.getType(model, parent, element);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.SingleResultLookupStrategy#getType(org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation, javax.lang.model.type.TypeMirror)
+     */
+    @Override
+    public TypeMirror getType( WebBeansModelImplementation model,
+            TypeMirror typeMirror )
+    {
+        if ( myStartegy != null ){
+            return myStartegy.getType(model, typeMirror);
+        }
+        return super.getType(model, typeMirror);
+    }
+    
+    private ResultLookupStrategy myStartegy ;
 }

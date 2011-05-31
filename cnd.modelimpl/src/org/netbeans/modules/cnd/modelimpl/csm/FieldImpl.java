@@ -45,12 +45,12 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * CsmVariable + CsmMember implementation
@@ -102,12 +102,12 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);
     }
 
-    public FieldImpl(DataInput input) throws IOException {
+    public FieldImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.visibility = PersistentUtils.readVisibility(input);
     }

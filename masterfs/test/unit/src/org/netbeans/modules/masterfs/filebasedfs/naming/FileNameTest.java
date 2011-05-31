@@ -149,7 +149,7 @@ public class FileNameTest extends NbTestCase {
         FileNaming cache = NamingFactory.fromFile(f);
         assertEquals("Is file name too", FileName.class, cache.getClass());
         
-        String dump = NamingFactory.dump(f.hashCode(), f);
+        String dump = NamingFactory.dump(Utils.hashCode(f), f);
         if (!dump.contains("References: 1")) {
             fail("We expect just one reference:\n" + dump);
         }

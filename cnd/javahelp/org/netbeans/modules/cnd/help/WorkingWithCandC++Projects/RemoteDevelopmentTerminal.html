@@ -1,58 +1,78 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
+Copyright &copy; 2009, 2011 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
-    <title>Connecting a Terminal Emulator to a Remote Development Host</title>
+    <title>Opening a Terminal Window for a Development Host</title>
   </head>
   <body>
     <h2>
-       Connecting a Terminal Emulator to a Remote Development Host
+       Opening a Terminal Window for a Development Host
     </h2>
     <p>
        <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
     <p>
-     You can connect the IDE's terminal emulator to a remote host. This remote host
+     You can open a terminal window in the IDE for a local or remote host. A remote host
      does not need to be set up in advance for the IDE, but must be running the SSH daemon.
-     
-
-   
-    <p><b>To connect a terminal emulator to the remote development host:</b></p>
-
-    <ol>
-        <li>Select Window &gt; Output &gt; Terminal from the main menu to open the Terminal window
-        near the Output window.</li>
-         
-         <li>Click the Create New Remote Terminal icon <img src="../images/remote-terminal-icon.png"> in the
-           left margin of the Terminal window.</li>
-         <li>When prompted, enter the user name, host name, and SSH port to connect.</li>
-         <li>Specify the authentication type to use, password or SSH key, and click OK.</li>
-         <li>Enter your password if prompted.</li>
-         <li>When you are successfully authenticated to the remote host using your password or ssh key, a
-         new tab opens in the Terminal window.  This tab runs the user shell for your account on the remote
-         host.</li>
-         <p class="notes">You can also start a terminal session on the local host by clicking the Create
-             New Local Terminal icon: <img src="../images/terminal-icon.png"></p>
+    <p><b>If you are connected to the remote host, then to open a terminal window for the host:</b></p>
+<ol>
+<li>Open the Services window by choosing Window &gt; Services.</li>
+<li>In the Services window, expand the C/C++ Development Hosts node.</li>
+<li>Right-click the remote host and choose Open Terminal.
+</li>
+<li>Select one of the following:
+<ul>
+<li>Home Folder - Opens a terminal window in the IDE with the directory set 
+to the current directory on the remote host</li>
+<li>Remote Mirror of Local Files - Opens a terminal window in 
+the IDE set to the remote mirror of local files, if one exists</li>
+<li>Root Folder - Opens a terminal window in the IDE with the directory set 
+to the root directory on the remote host</li>
+</ul>
+</li>
+</li>A new tab opens in the Terminal window with a shell prompt 
+for your account on the remote host
+</li>
+</ol>
+<p><b>If you are not connected to the remote host, then to open a terminal 
+window for the host:</b></p>
+<ol>
+<li>Open the Terminal window by choosing Window &gt; 
+Output &gt; Terminal.</li>
+ <li>Click the Create New Remote Terminal button 
+<img src="../images/remote-terminal-icon.png" 
+alt="New Remote terminal button"> in the left margin.</li>
+<li>In the SSH Connection dialog box, select a host from 
+the Known Hosts drop-down list, or select Other Host, and 
+enter your user name, host name, and 
+SSH port. Click OK.</li>
+<li>If the Authentication Type dialog box opens, pecify the authentication type to use, password or 
+SSH key, and click OK.</li>
+<li>Enter your password if prompted.</li>
+<li>When you are successfully authenticated to the remote 
+host using your password or ssh key, you are connected to the 
+host and a new tab opens in 
+the Terminal window with a shell prompt for 
+your account on the remote host.</li>
        </ol>
-
-    <p><b>To access your remote project files:</b></p>
-     <ul>
-         <li>If you have used the remote host account for remote development of your C/C++/Fortran projects in the IDE,
-         you can go to your <tt>~/.netbeans/remote</tt> subdirectory and access the source files
-         and build products of projects you have built remotely.</li>
-     </ul>
-
-
-<p><b>To end the terminal session:</b></p>
-     <ul> <li>End the terminal emulator session by typing <tt>exit</tt>, or by closing the tab.</li></ul>
-
-     
-    
+<p><b>You can start a terminal session on the local host by:</b></p>
+<ul>
+<li>Right-clicking localhost in the C/C++ Development Hosts node 
+in the Services window, choosing Open Terminal, and selecting 
+Home Folder or Root Folder.</li>
+<li>Clicking the Create New Local Terminal button 
+<img src="../images/terminal-icon.png" alt="New Local Terminal icon">&nbsp;
+in the Terminal window.
+</li>
+</ul>
+<p><b>To end a terminal session:</b></p>
+     <ul> <li>Type <tt>exit</tt> at the shell prompt 
+or close the tab.</li>
+</ul>
     <table>
       <tr>
         <th colspan="2" align="left">
@@ -65,22 +85,14 @@ Use is subject to license terms.
         </td>
         <td>
             <a href="RemoteDevelopment.html">Overview of C/C++ Remote Development</a><br>
-          <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
+          <a href="RemoteDevelopmentManaging.html">Managing Development Hosts</a><br>
+           <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
            <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
-               <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                    <param name="content" value="http://www.netbeans.org/kb/docs/cnd/remotedev-tutorial.html">
-                    <param name="text" value="<html><u>C/C++ Remote
-          Development tutorial (Web document)</u></html>">
-                    <param name="textFontSize" value="medium">
-                    <param name="textColor" value="blue">
-                </object>
         </td>
       </tr>
     </table>
     <hr>
-    <p>
        <small><a href="../credits.html">Legal Notices</a></small>
-    </p>
     <table border="0" cellpadding="20">
       <tr>
         <td>

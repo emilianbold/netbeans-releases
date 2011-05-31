@@ -406,17 +406,25 @@ import org.openide.util.NbBundle;
         selectionEndMark.paint(g);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
-        repaint();
+        refreshInEDT();
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+    private void refreshInEDT() {
         //repaint in UI thread
         UIThread.invoke(new Runnable() {
+
+            @Override
             public void run() {
                 repaint();
             }
         });
+    }
+
+    @Override
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        refreshInEDT();
     }
 
     /**
@@ -432,10 +440,12 @@ import org.openide.util.NbBundle;
             limits = originalState.getLimits().extend(viewport);
         }
 
+        @Override
         public Range<Long> getLimits() {
             return limits;
         }
 
+        @Override
         public Range<Long> getViewport() {
             return viewport;
         }

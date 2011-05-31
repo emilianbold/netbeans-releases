@@ -17,16 +17,19 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
+import javax.swing.JToggleButton;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbPreferences;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.ActionInvoker;
 
@@ -256,7 +259,7 @@ implements PropertyChangeListener, ContextAwareAction {
     }
 
     static final class CheckBox extends AlwaysEnabledAction
-            implements Presenter.Menu, Presenter.Popup, PreferenceChangeListener, LookupListener
+            implements Presenter.Menu, Presenter.Popup, Presenter.Toolbar, PreferenceChangeListener, LookupListener
     {
 
         private static final long serialVersionUID = 1L;
@@ -270,6 +273,8 @@ implements PropertyChangeListener, ContextAwareAction {
         private JCheckBoxMenuItem menuItem;
 
         private JCheckBoxMenuItem popupItem;
+
+        private WeakSet<AbstractButton> toolbarItems;
 
         private Preferences preferencesNode;
 
@@ -311,6 +316,17 @@ implements PropertyChangeListener, ContextAwareAction {
             return popupItem;
         }
 
+        public AbstractButton getToolbarPresenter() {
+            if(toolbarItems == null) {
+                toolbarItems = new WeakSet<AbstractButton>(4);
+            }
+            AbstractButton b = new DefaultIconToggleButton();
+            toolbarItems.add(b);
+            b.setSelected(isPreferencesSelected());
+            Actions.connect(b, this);
+            return b;
+        }
+
         public void preferenceChange(PreferenceChangeEvent pce) {
             updateItemsSelected();
         }
@@ -350,6 +366,11 @@ implements PropertyChangeListener, ContextAwareAction {
             }
             if (popupItem != null) {
                 popupItem.setSelected(selected);
+            }
+            if (toolbarItems != null) {
+                for(AbstractButton b : toolbarItems) {
+                    b.setSelected(selected);
+                }
             }
         }
 
@@ -421,6 +442,27 @@ implements PropertyChangeListener, ContextAwareAction {
             }
         }
 
+    }
+
+    /**
+     * A button that provides a default icon when no text and no custom icon have been set.
+     * Copied from Toolbar.java and made a toggle button.
+     */
+    static class DefaultIconToggleButton extends JToggleButton {
+        private Icon unknownIcon;
+
+        @Override
+        public Icon getIcon() {
+            Icon retValue = super.getIcon();
+            if( null == retValue && (null == getText() || getText().isEmpty()) ) {
+                if (unknownIcon == null) {
+                    unknownIcon = ImageUtilities.loadImageIcon("org/openide/awt/resources/unknown.gif", false); //NOI18N
+                    //unknownIcon = ImageUtilities.loadImageIcon("org/openide/loaders/unknown.gif", false); //NOI18N
+                }
+                retValue = unknownIcon;
+            }
+            return retValue;
+        }
     }
 
 }

@@ -90,7 +90,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         synchronized(lock) {
             filtersCopy = new ArrayList<DataFilter>(filters);
         }
-        if (functionDescription.getOffsetColumn() == null) {
+        if (functionDescription.getOffsetColumnName() == null) {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
             List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeExclusiveMetric, filtersCopy, Integer.MAX_VALUE));
             for (FunctionCallTreeTableNode node : nodes) {

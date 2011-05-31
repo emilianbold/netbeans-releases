@@ -136,7 +136,6 @@ public class ConnectManager {
         private boolean propertyChangeNeedsReconnect(PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
             if (property.equals(MySQLOptions.PROP_ADMINUSER) ||
-                property.equals(MySQLOptions.PROP_ADMINPWD)   ||
                 property.equals(MySQLOptions.PROP_HOST)       ||
                 property.equals(MySQLOptions.PROP_PORT)) {
                     return true;

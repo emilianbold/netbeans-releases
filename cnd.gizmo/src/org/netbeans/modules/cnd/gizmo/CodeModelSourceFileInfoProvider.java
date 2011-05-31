@@ -61,7 +61,10 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -82,7 +85,15 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             if (projectFolderName == null) {
                 return null;
             }
-            Project prj = ProjectManager.getDefault().findProject(CndFileUtils.toFileObject(projectFolderName));
+            String projectHost = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_HOST);
+            if (projectHost == null) {
+                return null;
+            }
+            FileObject projectFolderFO = RemoteFileUtil.getFileObject(projectFolderName, ExecutionEnvironmentFactory.fromUniqueID(projectHost));
+            if (projectFolderFO == null) {
+                return null;
+            }
+            Project prj = ProjectManager.getDefault().findProject(projectFolderFO);
             if (prj.getLookup().lookup(NativeProject.class) == null) {
                 return null;
             }

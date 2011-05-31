@@ -61,9 +61,6 @@ class CppTypeDescriptor extends TypeDescriptor {
     private String contextName;
     private String filePath; // we need this to eliminate duplication
 
-    private static String contextNameFormat = ' ' + NbBundle.getMessage(CppTypeDescriptor.class, "CONTEXT_NAME_FORMAT");
-    private static String typeNameFormat = ' ' + NbBundle.getMessage(CppTypeDescriptor.class, "TYPE_NAME_FORMAT");
-    
     @SuppressWarnings("unchecked")
     public CppTypeDescriptor(CsmClassifier classifier) {
 	uid = UIDs.get(classifier);
@@ -76,52 +73,60 @@ class CppTypeDescriptor extends TypeDescriptor {
                 filePath = file.getAbsolutePath().toString();
 	    }
 	}
-	simpleName = classifier.getName().toString();
+        if (CsmKindUtilities.isClass(classifier) && CsmKindUtilities.isTemplate(classifier)) {
+            simpleName = ((CsmTemplate)classifier).getDisplayName().toString();
+        } else {
+            simpleName = classifier.getName().toString();
+        }
 	typeName = simpleName;
 	
 	contextName = ContextUtil.getContextName(classifier);
 	CsmScope scope = classifier.getScope();
 	if( CsmKindUtilities.isClass(scope) ) {
 	    CsmClass cls = ((CsmClass) scope);
-	    typeName = String.format(typeNameFormat, simpleName, ContextUtil.getClassFullName(cls));
+	    typeName = NbBundle.getMessage(CppTypeDescriptor.class, "TYPE_NAME_FORMAT", simpleName, ContextUtil.getClassFullName(cls));
 	}	
 	if( contextName != null && contextName.length() > 0 ) {
-            contextName = String.format(contextNameFormat, contextName);
+            contextName = NbBundle.getMessage(CppTypeDescriptor.class, "CONTEXT_NAME_FORMAT", contextName);
 	}
     }
     
-    private final CsmClassifier getClassifier() {
-	return uid.getObject();
-    }
-    
+    @Override
     public String getSimpleName() {
 	return simpleName;
     }
 
+    @Override
     public String getOuterName() {
 	return contextName;
     }
 
+    @Override
     public String getTypeName() {
         return typeName;
     }
 
+    @Override
     public String getContextName() {
         return contextName;
     }
 
+    @Override
     public Icon getIcon() {
         return CsmImageLoader.getIcon(kind, modifiers);
     }
 
+    @Override
     public String getProjectName() {
         return project.getName().toString();
     }
 
+    @Override
     public Icon getProjectIcon() {
 	return CsmImageLoader.getIcon(project);
     }
 
+    @Override
     public FileObject getFileObject() {
 	CsmClassifier cls = uid.getObject();
 	if( CsmKindUtilities.isOffsetable(cls) ) {
@@ -131,10 +136,12 @@ class CppTypeDescriptor extends TypeDescriptor {
 	return null;
     }
 
+    @Override
     public int getOffset() {
         return 0;
     }
 
+    @Override
     public void open() {
         CsmUtilities.openSource(uid.getObject());
     }

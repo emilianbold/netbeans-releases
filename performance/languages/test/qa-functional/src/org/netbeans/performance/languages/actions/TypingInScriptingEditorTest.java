@@ -129,20 +129,6 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         
         return projectsTab.getProjectRootNode(projectName);
     }
-    
-    public void test_RB_EditorTyping() {
-        testProject = Projects.RUBY_PROJECT;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";
-        doMeasurement();
-    }
-
-    public void test_RHTML_EditorTyping() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Test Files|unit";
-        doMeasurement();
-    }
 
     public void test_JScript_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
@@ -169,13 +155,6 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "css20kB.css";
         nodePath = "Web Pages";
-        doMeasurement();
-    }
-
-    public void test_YML_EditorTyping() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "yaml20kB.yml";
-        nodePath = "Test Files|unit";
         doMeasurement();
     }
 

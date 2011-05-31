@@ -196,6 +196,8 @@ public class NbMessageEmitter extends MessageEmitter {
             return ProblemDescription.WARNING;
         } else if(type == MessageType.FATAL) {
             return ProblemDescription.FATAL;
+        } else if(type == MessageType.INTERNAL) {
+            return ProblemDescription.INTERNAL_ERROR;
         } else {
             return ProblemDescription.ERROR;
         }

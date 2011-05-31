@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git;
 
+import org.eclipse.jgit.lib.RefUpdate.Result;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,6 +73,12 @@ public class GitException extends Exception {
             this.objectType = objectType;
         }
 
+        public MissingObjectException (String objectName, GitObjectType objectType, Throwable ex) {
+            super(NbBundle.getMessage(GitException.class, "MSG_Exception_ObjectDoesNotExist", new Object[] { objectType.toString(), objectName }), ex); //NOI18N
+            this.objectName = objectName;
+            this.objectType = objectType;
+        }
+
         public String getObjectName () {
             return objectName;
         }
@@ -84,9 +91,13 @@ public class GitException extends Exception {
     public static class CheckoutConflictException extends GitException {
         private final String[] conflicts;
 
-        public CheckoutConflictException (String[] conflicts) {
-            super(NbBundle.getMessage(GitException.class, "MSG_Exception_CheckoutConflicts"));
+        public CheckoutConflictException (String[] conflicts, Throwable cause) {
+            super(NbBundle.getMessage(GitException.class, "MSG_Exception_CheckoutConflicts"), cause);
             this.conflicts = conflicts;
+        }
+
+        public CheckoutConflictException (String[] conflicts) {
+            this(conflicts, null);
         }
 
         public String[] getConflicts () {
@@ -94,4 +105,54 @@ public class GitException extends Exception {
         }
     }
 
+    public static class AuthorizationException extends GitException {
+        private final String repositoryUrl;
+
+        public AuthorizationException (String repositoryUrl, String message, Throwable t) {
+            super(message, t);
+            this.repositoryUrl = repositoryUrl;
+        }
+
+        public AuthorizationException (String message, Throwable t) {
+            this(null, message, t);
+        }
+
+        /**
+         * May be null
+         * @return 
+         */
+        public String getRepositoryUrl () {
+            return repositoryUrl;
+        }
+    }
+
+    public static class RefUpdateException extends GitException {
+        private final GitRefUpdateResult result;
+
+        public RefUpdateException (String message, Result result) {
+            super(message);
+            this.result = remapResult(result);
+        }
+
+        public GitRefUpdateResult getResult () {
+            return result;
+        }
+
+        private GitRefUpdateResult remapResult (Result result) {
+            return GitRefUpdateResult.valueOf(result.name());
+        }
+    }
+
+    public static class NotMergedException extends GitException {
+        private final String unmergedRevision;
+
+        public NotMergedException (String unmergedRevision) {
+            super(unmergedRevision + " has not been fully merged yet");
+            this.unmergedRevision = unmergedRevision;
+        }
+        
+        public String getUnmergedRevision () {
+            return unmergedRevision;
+        }
+    }
 }

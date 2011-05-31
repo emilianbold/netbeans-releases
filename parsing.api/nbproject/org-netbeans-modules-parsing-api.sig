@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.33.0
+#Version 1.39.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -161,7 +161,7 @@ meth public org.openide.filesystems.FileObject getFileObject()
 meth public static org.netbeans.modules.parsing.api.Source create(javax.swing.text.Document)
 meth public static org.netbeans.modules.parsing.api.Source create(org.openide.filesystems.FileObject)
 supr java.lang.Object
-hfds LOG,cache,cachedParser,document,eventId,fileObject,flags,instances,mimeType,schedulerEvents,sourceModificationEvent,support,taskCount,unspecifiedSourceModificationEvent
+hfds LOG,cache,cachedParser,document,eventId,fileObject,flags,instances,mimeType,schedulerEvents,sourceModificationEvent,support,suppressListening,taskCount,unspecifiedSourceModificationEvent
 hcls ASourceModificationEvent,MySourceAccessor
 
 CLSS public abstract org.netbeans.modules.parsing.api.Task
@@ -183,6 +183,9 @@ meth public static org.netbeans.modules.parsing.api.indexing.IndexingManager get
 meth public void refreshAllIndices(java.lang.String)
 meth public void refreshIndex(java.net.URL,java.util.Collection<? extends java.net.URL>)
 meth public void refreshIndex(java.net.URL,java.util.Collection<? extends java.net.URL>,boolean)
+meth public void refreshIndex(java.net.URL,java.util.Collection<? extends java.net.URL>,boolean,boolean)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
 meth public void refreshIndexAndWait(java.net.URL,java.util.Collection<? extends java.net.URL>)
 meth public void refreshIndexAndWait(java.net.URL,java.util.Collection<? extends java.net.URL>,boolean)
 supr java.lang.Object
@@ -212,13 +215,27 @@ supr java.lang.Exception
 CLSS public abstract org.netbeans.modules.parsing.spi.Parser
 cons public init()
 innr public abstract static Result
+innr public final static !enum CancelReason
 meth public abstract org.netbeans.modules.parsing.spi.Parser$Result getResult(org.netbeans.modules.parsing.api.Task) throws org.netbeans.modules.parsing.spi.ParseException
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
-meth public abstract void cancel()
 meth public abstract void parse(org.netbeans.modules.parsing.api.Snapshot,org.netbeans.modules.parsing.api.Task,org.netbeans.modules.parsing.spi.SourceModificationEvent) throws org.netbeans.modules.parsing.spi.ParseException
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
+meth public void cancel()
+ anno 0 java.lang.Deprecated()
+meth public void cancel(org.netbeans.modules.parsing.spi.Parser$CancelReason,org.netbeans.modules.parsing.spi.SourceModificationEvent)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
 hcls MyAccessor
+
+CLSS public final static !enum org.netbeans.modules.parsing.spi.Parser$CancelReason
+ outer org.netbeans.modules.parsing.spi.Parser
+fld public final static org.netbeans.modules.parsing.spi.Parser$CancelReason PARSER_RESULT_TASK
+fld public final static org.netbeans.modules.parsing.spi.Parser$CancelReason SOURCE_MODIFICATION_EVENT
+fld public final static org.netbeans.modules.parsing.spi.Parser$CancelReason USER_TASK
+meth public static org.netbeans.modules.parsing.spi.Parser$CancelReason valueOf(java.lang.String)
+meth public static org.netbeans.modules.parsing.spi.Parser$CancelReason[] values()
+supr java.lang.Enum<org.netbeans.modules.parsing.spi.Parser$CancelReason>
 
 CLSS public abstract static org.netbeans.modules.parsing.spi.Parser$Result
  outer org.netbeans.modules.parsing.spi.Parser
@@ -271,9 +288,13 @@ supr org.netbeans.modules.parsing.api.Task
 
 CLSS public org.netbeans.modules.parsing.spi.SourceModificationEvent
 cons protected init(java.lang.Object)
+ anno 0 java.lang.Deprecated()
+cons protected init(java.lang.Object,boolean)
+meth public boolean sourceChanged()
 meth public java.lang.String toString()
 meth public org.netbeans.modules.parsing.api.Source getModifiedSource()
 supr java.util.EventObject
+hfds sourceChanged
 
 CLSS public abstract org.netbeans.modules.parsing.spi.TaskFactory
 cons public init()
@@ -356,9 +377,12 @@ CLSS public final org.netbeans.modules.parsing.spi.indexing.Indexable
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getMimeType()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.lang.String getRelativePath()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.lang.String toString()
 meth public java.net.URL getURL()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 supr java.lang.Object
 hfds delegate
 hcls MyAccessor

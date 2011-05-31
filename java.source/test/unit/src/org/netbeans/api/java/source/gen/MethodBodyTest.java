@@ -68,7 +68,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Pavel Flaska
  */
-public class MethodBodyTest extends GeneratorTest {
+public class MethodBodyTest extends GeneratorTestBase {
     
     /** Creates a new instance of MethodBodyTest */
     public MethodBodyTest(String name) {

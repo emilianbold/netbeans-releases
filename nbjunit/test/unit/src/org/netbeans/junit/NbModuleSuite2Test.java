@@ -73,7 +73,7 @@ public class NbModuleSuite2Test extends TestCase {
     
     public void testServices() throws Exception{
         Configuration conf = NbModuleSuite.createConfiguration(NbModuleSuiteMeta.class).gui(false);
-        Test test = NbModuleSuite.create(conf);
+        Test test = conf.suite();
         test.run(new TestResult());
         assertNotNull("The test was running", System.getProperty("meta"));
         assertEquals("result" + System.getProperty("meta"), "ok", System.getProperty("meta"));
@@ -81,7 +81,7 @@ public class NbModuleSuite2Test extends TestCase {
 
     public void testRun() {
         System.setProperty("t.one", "no");
-        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false));
+        Test instance = NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false).suite();
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
@@ -91,7 +91,7 @@ public class NbModuleSuite2Test extends TestCase {
     public void testRunEmptyConfig() {
         System.setProperty("t.one", "no");
         
-        Test instance = NbModuleSuite.create(NbModuleSuite.emptyConfiguration().gui(false));
+        Test instance = NbModuleSuite.emptyConfiguration().gui(false).suite();
         junit.textui.TestRunner.run(instance);
         
         assertEquals("nothing has been executed", "no", System.getProperty("t.one"));
@@ -101,7 +101,7 @@ public class NbModuleSuite2Test extends TestCase {
     public void testRunEmptyConfigWithOneAdd() {
         System.setProperty("t.one", "no");
         
-        Test instance = NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(NbModuleSuiteT.class).gui(false));
+        Test instance = NbModuleSuite.emptyConfiguration().addTest(NbModuleSuiteT.class).gui(false).suite();
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));
@@ -118,9 +118,9 @@ public class NbModuleSuite2Test extends TestCase {
     }
 
     public void testTestCount() throws Exception{
-        Test test  = NbModuleSuite.create(NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false));
+        Test test  = NbModuleSuite.createConfiguration(NbModuleSuiteT.class).gui(false).suite();
         assertEquals(0, test.countTestCases());
         test.run(new TestResult());
-        assertEquals(2, test.countTestCases());
+        assertEquals("one+fullhack+startuparg", 3, test.countTestCases());
     }
 }

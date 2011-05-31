@@ -44,11 +44,14 @@
 
 package org.netbeans.modules.editor.lib;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.undo.CompoundEdit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.InvalidMarkException;
 import org.netbeans.editor.Mark;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
 
@@ -89,5 +92,6 @@ public abstract class EditorPackageAccessor {
     public abstract MarkVector BaseDocument_getMarksStorage(BaseDocument doc);
     public abstract Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark);
     public abstract void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException;
+    public abstract void ActionFactory_reformat(Reformat formatter, Document doc, int startPos, int endPos, AtomicBoolean canceled) throws BadLocationException;
 
 }

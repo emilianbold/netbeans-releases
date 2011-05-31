@@ -116,8 +116,8 @@ is the proper place.
             <compatibility binary="compatible" source="compatible" addition="yes"/>
             <description>
                 The modufication is necessary for fixing issue #166177.
-                The old method {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List)}
-                is marked as deprecated and a new one {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List, java.util.List)} is created.
+                The old method <code>AbstractDocumentModel.prepareChangeInfo(List)</code>
+                is marked as deprecated and a new one <code>AbstractDocumentModel.prepareChangeInfo(List, List)</code> is created.
                 The new one contains additional parameter <code>nsContextPathToRoot</code>, which
                 is necessary for correct calculation of namespace context after
                 deletion of namespace prefix. See the issue for details. 

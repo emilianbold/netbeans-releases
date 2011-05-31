@@ -85,9 +85,12 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        addFile(projectDirectory, MakeConfiguration.NBPROJECT_FOLDER, files); // NOI18N
-        addFile(projectDirectory, pdp.getConfigurationDescriptor().getProjectMakefileName(), files); // NOI18N
-
+        addFile(projectDirectory, MakeConfiguration.NBPROJECT_FOLDER, files);
+        if (project.getActiveConfiguration() != null && project.getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
+            if (!pdp.getConfigurationDescriptor().getProjectMakefileName().isEmpty()) {
+                addFile(projectDirectory, pdp.getConfigurationDescriptor().getProjectMakefileName(), files);
+            }
+        }
         return files;
     }
 
@@ -120,7 +123,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyDeleted() throws IOException {
         LOGGER.log(Level.FINE, "notify Deleted MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.getAntProjectHelper().notifyDeleted();
+        project.getMakeProjectHelper().notifyDeleted();
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject instanceof NativeProjectProvider) {
             ((NativeProjectProvider) nativeProject).fireProjectDeleted();
@@ -173,7 +176,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyMoving() throws IOException {
         LOGGER.log(Level.FINE, "notify Moving MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
-        project.markDeleted();
+        project.setDeleted();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
@@ -182,7 +185,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyMoved(Project original, File originalPath, String nueName) {
         if (original == null) {
-            project.getAntProjectHelper().notifyDeleted();
+            project.getMakeProjectHelper().notifyDeleted();
             return;
         }
         // Update all external relative paths

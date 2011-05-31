@@ -49,7 +49,7 @@ import org.netbeans.api.java.source.WorkingCopy;
  * <code>cat test/unit/data/test/Test.java | tr '\n' ' ' | tr '\t' ' ' | sed -E 's| +| |g' | sed 's|"|\\"|g'</code>
  * @author Samuel Halliday
  */
-public class SwitchTest extends GeneratorTest {
+public class SwitchTest extends GeneratorTestBase {
 
     public SwitchTest(String name) {
         super(name);

@@ -66,9 +66,9 @@ import org.openide.util.NbBundle;
 public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private JList exeList;
-    private FileFilterFactory.FileAndFileObjectFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
-    private FileFilterFactory.FileAndFileObjectFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
-    private FileFilterFactory.FileAndFileObjectFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
+    private FileFilterFactory.AbstractFileAndFileObjectFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
+    private FileFilterFactory.AbstractFileAndFileObjectFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
+    private FileFilterFactory.AbstractFileAndFileObjectFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private final MakeConfiguration conf;
@@ -175,7 +175,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     }
 
     private String[] findAllExecutables(FileObject root) {
-        if (!root.isValid() || !root.isFolder()) {
+        if (root == null || !root.isValid() || !root.isFolder()) {
             // Something is wrong
             return new String[]{};
         }

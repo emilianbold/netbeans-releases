@@ -74,7 +74,7 @@ abstract class TerminalAction extends AbstractAction implements Presenter.Toolba
         if (term != null) {
             final ExecutionEnvironment env = getEnvironment();
             if (env != null) {
-                TerminalSupportImpl.openTerminalImpl(ioContainer, env, null, TerminalContainerTopComponent.SILENT_MODE_COMMAND.equals(e.getActionCommand()));
+                TerminalSupportImpl.openTerminalImpl(ioContainer, env.getDisplayName(), env, null, TerminalContainerTopComponent.SILENT_MODE_COMMAND.equals(e.getActionCommand()));
             }
         }
     }

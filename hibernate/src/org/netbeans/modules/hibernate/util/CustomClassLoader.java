@@ -55,6 +55,8 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +94,8 @@ public class CustomClassLoader extends URLClassLoader {
        // logger.info("Load class request : " + name);
         if(name == null) {
             throw new IllegalArgumentException("class name cannot be null");
+        } else if(name.indexOf("NestedExc")>-1){
+            System.out.println("NESTED: "+name);
         }
         Class clazz = findLoadedClass(name);
         if (clazz != null) {
@@ -260,5 +264,18 @@ public class CustomClassLoader extends URLClassLoader {
     private InputStream getHibernateProperties() {
         ByteArrayInputStream bIn = new ByteArrayInputStream("hibernate.connection.provider_class=org.netbeans.modules.hibernate.util.CustomJDBCConnectionProvider".getBytes());
         return bIn;
+    }
+    @Override
+    public URL findResource(String name) {
+        return name.startsWith("META-INF/services") ? null : super.findResource(name); //NOI18N
+    }
+
+    @Override
+    public Enumeration<URL> findResources(String name) throws IOException {
+        if (name.startsWith("META-INF/services")) { //NOI18N
+            return Collections.enumeration(Collections.<URL>emptyList());
+        } else {
+            return super.findResources(name);
+        }
     }
 }

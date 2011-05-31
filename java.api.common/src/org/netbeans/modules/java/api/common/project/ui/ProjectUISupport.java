@@ -46,6 +46,8 @@ package org.netbeans.modules.java.api.common.project.ui;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -86,9 +88,21 @@ public final class ProjectUISupport{
      * the node should not have Remove Classpath action
      * @return filter node
      */
-    public static FilterNode createFilteredLibrariesNode(Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs, ReferenceHelper rh) {
-        return  ActionFilterNode.create(original, helper, classPathId, entryId, webModuleElementName, cs, rh);
+    public static FilterNode createFilteredLibrariesNode(
+            @NonNull Node original,
+            @NullAllowed UpdateHelper helper,
+            @NullAllowed String classPathId,
+            @NullAllowed String entryId,
+            @NullAllowed String webModuleElementName,
+            @NullAllowed ClassPathSupport cs,
+            @NullAllowed ReferenceHelper rh) {
+        if (helper == null) {
+            assert classPathId == null;
+            assert entryId == null;
+            return ActionFilterNode.forPackage(original);
+        } else {
+            return  ActionFilterNode.forRoot(original, helper, classPathId, entryId, webModuleElementName, cs, rh);
+        }
     }
 
     /**

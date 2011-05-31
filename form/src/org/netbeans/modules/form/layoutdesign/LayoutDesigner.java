@@ -4107,7 +4107,7 @@ public class LayoutDesigner implements LayoutConstants {
                     it = parent.getSubIntervals();
                     while (it.hasNext()) {
                         LayoutInterval li = it.next();
-                        if (li != group && !li.isParentOf(group)) {
+                        if (li != group && !li.isParentOf(group) && !li.isEmptySpace()) {
                             LayoutRegion neighborSpace = li.getCurrentSpace();
                             if (LayoutRegion.overlap(neighborSpace, groupSpace, dimension^1, 0)
                                     && LayoutRegion.overlap(neighborSpace, groupSpace, dimension, 0)

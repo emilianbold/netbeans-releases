@@ -41,172 +41,267 @@
  */
 package org.netbeans.modules.websvc.rest.codegen;
 
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
+import java.util.Set;
+
+import javax.lang.model.element.Modifier;
+
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SpringHelper;
+import org.openide.filesystems.FileObject;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ModifiersTree;
 
 /**
  *
- * @author PeterLiu
+ * @author ads
  */
 public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
-
-    /** Creates a new instance of EntityRESTServicesCodeGenerator */
-    public SpringEntityResourcesGenerator( boolean hasAop) {
-        injectEntityManager = true;
-	// Fix for BZ#193626 -  RESTful WS from DB ( or entities ) doesn't work with Spring 3
-	hasAopAlliance = hasAop;
+    
+    SpringEntityResourcesGenerator( boolean hasAopAlliance ){
+        this.hasAopAlliance = hasAopAlliance;
     }
 
     @Override
     protected void configurePersistence() {
-        new SpringHelper(project, persistenceUnit).configure();
+        new SpringHelper(getProject(), getPersistenceUnit()).configure();
     }
-
+    
     @Override
-    protected List<String> getAdditionalContainerResourceImports(EntityResourceBean bean) {
-        List<String> imports = new ArrayList<String>();
-        
-        imports.add(RestConstants.SINGLETON);
-        imports.add(SpringConstants.AUTOWIRE);
-        imports.add(SpringConstants.TRANSACTIONAL);
-        imports.add(RestConstants.RESOURCE_CONTEXT);
-
-        return imports;
+    protected void createFolders() {
+        createFolders( false );
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator#generateInfrastracture(java.util.Set, java.lang.String, org.openide.filesystems.FileObject)
+     */
     @Override
-    protected List<String> getAdditionalItemResourceImports(EntityResourceBean bean) {
-        List<String> imports = new ArrayList<String>();
-
-        imports.add(SpringConstants.AUTOWIRE);
-        imports.add(SpringConstants.TRANSACTIONAL);
-        imports.add(RestConstants.RESOURCE_CONTEXT);
-
-        return imports;
-    }
-
-    @Override
-    protected String[] getAdditionalContainerResourceAnnotations() {
-        if ( hasAopAlliance ){
-        return new String[] {
-                RestConstants.SINGLETON_ANNOTATION,
-                SpringConstants.AUTOWIRE_ANNOTATION };
-	}
-	else {
-        return new String[] {
-                RestConstants.SINGLETON_ANNOTATION,
-                SpringConstants.AUTOWIRE_ANNOTATION,
-                "Error"                 // NOI18N
+    protected boolean generateInfrastracture( Set<FileObject> createdFiles,
+            String entitySimpleName, FileObject facade ) throws IOException
+    {
+        // Inject EntityManager
+        JavaSource javaSource = JavaSource.forFileObject( facade );
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            @Override
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree tree = workingCopy.getCompilationUnit();
+                
+                
+                String[] annotations ;
+                Object[] values ;
+                if ( hasAopAlliance ){
+                    annotations = new String[]{Constants.PERSISTENCE_CONTEXT_ANNOTATION};
+                    values = new Object[]{JavaSourceHelper.createAssignmentTree(
+                            workingCopy, "unitName",                    // NOI18N
+                            getPersistenceUnit().getName())};
+                }
+                else {
+                    annotations = new String[]{Constants.PERSISTENCE_CONTEXT_ANNOTATION,
+                            "Error"};                                   // NOI18N
+                    values = new Object[]{JavaSourceHelper.createAssignmentTree(
+                            workingCopy, "unitName",                    // NOI18N
+                            getPersistenceUnit().getName()),
+                            "Please fix your project manually, for instructions see " +
+                            "http://wiki.netbeans.org/SpringWithAopalliance"    // NOI18N
+                            };
+                }
+                
+                ClassTree classTree = (ClassTree)tree.getTypeDecls().get(0);
+                ClassTree newTree = JavaSourceHelper.addField(workingCopy, classTree, 
+                        new Modifier[]{Modifier.PROTECTED},
+                        annotations , values , "entityManager", 
+                        Constants.ENTITY_MANAGER_TYPE);  //NOI18N
+                workingCopy.rewrite(classTree, newTree);
+            }
         };
-	}
+        javaSource.runModificationTask(task).commit();
+        return true;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator#getRestFacadeMethodOptions(java.lang.String, java.lang.String)
+     */
     @Override
-    protected Object[] getAdditionalContainerResourceAnnotationAttrs() {
-        if ( hasAopAlliance ){
-            return new Object[] {null, null };
-	}
-	else {
-            return new Object[] {null, null, 
-		"Please fix your project manually, for instructions see "
-		    +"http://wiki.netbeans.org/SpringWithAopalliance"}; //NOI18N
-	}
+    protected List<RestGenerationOptions> getRestFacadeMethodOptions(
+            String entityFQN, String idClass )
+    {
+        List<RestGenerationOptions> original = super.getRestFacadeMethodOptions(
+                entityFQN, idClass);
+        List<RestGenerationOptions> result = new ArrayList<RestGenerationOptions>(
+                original.size() + 1);
+        result.addAll( original );
+        RestGenerationOptions option = new RestGenerationOptions();
+        RestMethod method = new FindMethod();
+        option.setRestMethod(method);
+        option.setParameterNames(new String[]{"all", "maxResults", "firstResult"});// NOI18N
+        option.setParameterTypes(new String[]{"boolean" , "int", "int"});       // NOI18N    
+        StringBuilder returnType = new StringBuilder(List.class.getCanonicalName());
+        returnType.append('<');
+        returnType.append(JavaIdentifiers.unqualify(entityFQN));
+        returnType.append('>');
+        option.setReturnType(returnType.toString());
+        StringBuilder body = new StringBuilder("try { ");                       // NOI18N
+        body.append("Query query = entityManager.createQuery(");                // NOI18N
+        body.append('"');
+        body.append("SELECT object(0) FROM ");                                  // NOI18N
+        body.append(getModel().getEntityInfo(entityFQN).getName());
+        body.append(" AS o\");");                                               // NOI18N
+        body.append("if (!all) {");                                             // NOI18N
+        body.append(" query.setMaxResults(maxResults);");                       // NOI18N
+        body.append(" query.setFirstResult(firstResult);}");                    // NOI18N
+        body.append(" return  query.getResultList();");                         // NOI18N
+        body.append("} finally { entityManager.close();}");                     // NOI18N
+        option.setBody(body.toString());
+        result.add(option);
+        return result ;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator#addRestMethodAnnotations(org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils, org.netbeans.api.java.source.TreeMaker, org.netbeans.modules.websvc.rest.codegen.RestGenerationOptions, com.sun.source.tree.ModifiersTree)
+     */
     @Override
-    protected String[] getAdditionalItemResourceAnnotations() {
-        if ( hasAopAlliance ){
-            return new String[] {SpringConstants.AUTOWIRE_ANNOTATION };
-	}
-	else {
-            return new String[] {SpringConstants.AUTOWIRE_ANNOTATION,
-	         "Error"					// NOI18N
-	};
-	}
+    protected ModifiersTree addRestMethodAnnotations( GenerationUtils genUtils,
+            TreeMaker maker, RestGenerationOptions option,
+            ModifiersTree modifiers )
+    {
+        ModifiersTree tree = super.addRestMethodAnnotations(genUtils, maker, 
+                option, modifiers);
+        if ( option.getRestMethod().getMethod() != null ){
+            tree = maker.addModifiersAnnotation(tree, genUtils.createAnnotation(
+                    SpringConstants.TRANSACTIONAL));
+        }
+        return tree;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator#getResourceImports(java.lang.String)
+     */
+    @Override
+    protected List<String> getResourceImports( String entityFqn ) {
+        List<String> original = super.getResourceImports(entityFqn);
+        List<String> result = new ArrayList<String>( original.size() +1 );
+        result.addAll( original );
+        result.add("javax.persistence.Query");                  // NOI18N
+        result.add(Constants.PERSISTENCE_CONTEXT);
+        return result;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator#addResourceAnnotation(java.lang.String, com.sun.source.tree.ClassTree, org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils, org.netbeans.api.java.source.TreeMaker)
+     */
     @Override
-    protected Object[] getAdditionalItemResourceAnnotationAttrs() {
-        if ( hasAopAlliance ){
-	    return new Object[] {null};
-	}
-	else {
-	    return new Object[] {null,
-		"Please fix your project manually, for instructions see "
-		+"http://wiki.netbeans.org/SpringWithAopalliance"}; //NOI18N
-	}
+    protected ModifiersTree addResourceAnnotation( String entityFQN,
+            ClassTree classTree, GenerationUtils genUtils, TreeMaker maker )
+    {
+        ModifiersTree tree = super.addResourceAnnotation(entityFQN, classTree, 
+                genUtils, maker);
+        
+        tree = maker.addModifiersAnnotation( tree, genUtils.createAnnotation(
+                RestConstants.SINGLETON));
+        tree = maker.addModifiersAnnotation( tree, genUtils.createAnnotation(
+                SpringConstants.AUTOWIRE));
+        return tree;
     }
     
-    private String[] getTransactionalAnnotation() {
-        return new String[]{SpringConstants.TRANSACTIONAL_ANNOTATION};
-    }
-
-    private Object[] getTransactionalAnnotationAttr() {
-        return new Object[]{null};
-    }
-
-    @Override
-    protected String[] getAdditionalContainerGetMethodAnnotations() {
-        return getTransactionalAnnotation();
-    }
-
-    @Override
-    protected Object[] getAdditionalContainerGetMethodAnnotationAttrs() {
-        return getTransactionalAnnotationAttr();
-    }
-
-    @Override
-    protected String[] getAdditionalContainerPostMethodAnnotations() {
-        return getTransactionalAnnotation();
-    }
-
-    @Override
-    protected Object[] getAdditionalContainerPostMethodAnnotationAttrs() {
-        return getTransactionalAnnotationAttr();
-    }
-
-    @Override
-    protected String[] getAdditionalItemGetMethodAnnotations() {
-        return getTransactionalAnnotation();
-    }
-
-    @Override
-    protected Object[] getAdditionalItemGetMethodAnnotationAttrs() {
-        return getTransactionalAnnotationAttr();
-    }
-
-    @Override
-    protected String[] getAdditionalItemPutMethodAnnotations() {
-        return getTransactionalAnnotation();
-    }
-
-    @Override
-    protected Object[] getAdditionalItemPutMethodAnnotationAttrs() {
-        return getTransactionalAnnotationAttr();
-    }
-
-    @Override
-    protected String[] getAdditionalItemDeleteMethodAnnotations() {
-        return getTransactionalAnnotation();
-    }
-
-    @Override
-    protected Object[] getAdditionalItemDeleteMethodAnnotationAttrs() {
-        return getTransactionalAnnotationAttr();
+    protected RestGenerationOptions getGenerationOptions(
+            RestFacadeMethod method, String entityFQN, String paramArg,
+            String idType )
+    {
+        String entitySimpleName = JavaIdentifiers.unqualify(entityFQN);
+        RestGenerationOptions options = super.getGenerationOptions(method, 
+                entityFQN, paramArg, idType);
+        StringBuilder builder ;
+        switch ( method ){
+            case CREATE:
+                builder = new StringBuilder("entityManager.persist(entity);");  // NOI18N
+                builder.append("return Response.created(");                     // NOI18N
+                builder.append("URI.create(");                                  // NOI18N
+                builder.append(getIdFieldToUriStmt(getModel().getEntityInfo(entityFQN).
+                        getIdFieldInfo()));        
+                builder.append(".toString())).build();");                       // NOI18N
+                options.setBody(builder.toString());
+                return options;
+            case EDIT:
+                options.setReturnType("void");                                  // NOI18N
+                builder = new StringBuilder("entityManager.merge(entity);");    // NOI18N
+                options.setBody(builder.toString());
+                return options;
+            case REMOVE:
+                options.setReturnType("void");                                  // NOI18N
+                builder = new StringBuilder(entitySimpleName);
+                builder.append(" entity = entityManager.getReference(");        // NOI18N
+                builder.append(entitySimpleName);
+                builder.append(".class, ");                                     // NOI18N
+                builder.append(paramArg);
+                builder.append(");");                                           // NOI18N
+                builder.append("entityManager.remove(entity);");                // NOI18N
+                options.setBody(builder.toString());
+                return options;
+            case FIND:
+                builder = new StringBuilder("return entityManager.find(");      // NOI18N
+                builder.append(entitySimpleName);   
+                builder.append(".class, ");                                     // NOI18N
+                builder.append(paramArg);
+                builder.append(");");                                           // NOI18N
+                options.setBody(builder.toString());
+                return options;
+            case FIND_ALL:
+                options.setBody("return find(true , -1 , -1);");                // NOI18N
+                return options;
+            case FIND_RANGE:
+                options.setBody("return find( false , max, first)");            // NOI18N
+                return options;
+            case COUNT:
+                builder = new StringBuilder("try {");                           // NOI18N
+                builder.append("Query query = entityManager.createQuery(");     // NOI18N
+                builder.append('"');
+                builder.append("SELECT count(o) FROM ");                        // NOI18N
+                builder.append(getModel().getEntityInfo( entityFQN).getName());
+                builder.append(" AS o\");");                                    // NOI18N
+                builder.append("return query.getSingleResult().toString();");   // NOI18N
+                builder.append("} finally { entityManager.close(); }");         // NOI18N
+                options.setBody( builder.toString());
+                return options;
+        }
+        return null;
     }
     
-    @Override
-    protected String[] getAdditionalItemGetResourceMethodAnnotations() {
-        return getTransactionalAnnotation();
-    }
-    
-    @Override
-    protected Object[] getAdditionalItemGetResourceMethodAnnotationAttrs() {
-        return getTransactionalAnnotationAttr();
+    private final class FindMethod implements RestMethod {
+
+        @Override
+        public boolean overrides() {
+            return false;
+        }
+
+        @Override
+        public String getUriPath() {
+            return null;
+        }
+
+        @Override
+        public String getMethodName() {
+            return "find";                          // NOI18N
+        }
+
+        @Override
+        public String getMethod() {
+            return null;
+        }
     }
 
     private boolean hasAopAlliance;

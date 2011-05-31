@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -60,9 +61,10 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProgress;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
-import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -106,7 +108,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     public void apply(Map<String, Object> map, Project project) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
-        DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
+        DiscoveryProjectGeneratorImpl generator = new DiscoveryProjectGeneratorImpl(descriptor);
         generator.makeProject();
     }
 
@@ -115,7 +117,12 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         progress.start(0);
         try {
             List<String> errors = new  ArrayList<String>();
-            DiscoveryExtensionInterface.Applicable applicable = isApplicableDwarfExecutable(descriptor);
+            DiscoveryExtensionInterface.Applicable applicable;
+            applicable = isApplicableExecLog(descriptor);
+            if (applicable.isApplicable()){
+                return applicable;
+            }
+            applicable = isApplicableDwarfExecutable(descriptor);
             if (applicable.isApplicable()){
                 return applicable;
             }
@@ -217,7 +224,34 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                 if (canAnalyze.getErrors().size() > 0) {
                     return ApplicableImpl.getNotApplicable(canAnalyze.getErrors());
                 } else {
-                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeFolder",rootFolder))); // NOI18N
+                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeBuildLog",logFile))); // NOI18N
+                }
+            }
+        }
+        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
+    }
+    
+    private DiscoveryExtensionInterface.Applicable  isApplicableExecLog(DiscoveryDescriptor descriptor){
+        String rootFolder = descriptor.getRootFolder();
+        if (rootFolder == null) {
+            return ApplicableImpl.getNotApplicable(null);
+        }
+        String logFile = descriptor.getExecLog();
+        ProjectProxy proxy = new ProjectProxyImpl(descriptor);
+        DiscoveryProvider provider = findProvider("exec-log"); // NOI18N
+        if (provider != null) {
+            provider.getProperty("exec-log-file").setValue(logFile); // NOI18N
+            if (provider.isApplicable(proxy)){
+                Applicable canAnalyze = provider.canAnalyze(proxy);
+                if (canAnalyze.isApplicable()){
+                    descriptor.setProvider(provider);
+                    return canAnalyze;
+                } else {
+                    if (canAnalyze.getErrors().size() > 0) {
+                        return ApplicableImpl.getNotApplicable(canAnalyze.getErrors());
+                    } else {
+                        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeBuildLog",logFile))); // NOI18N
+                    }
                 }
             }
         }
@@ -261,6 +295,9 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         } else if ("make-log".equals(provider.getID())){ // NOI18N
             //String rootFolder = descriptor.getRootFolder();
             //provider.getProperty("folder").setValue(rootFolder); // NOI18N
+        } else if ("exec-log".equals(provider.getID())){ // NOI18N
+            //String rootFolder = descriptor.getRootFolder();
+            //provider.getProperty("folder").setValue(rootFolder); // NOI18N
         } else {
             return false;
         }
@@ -277,7 +314,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         return canApply(descriptor);
     }
     
-    /*package-local*/ static DiscoveryProvider findProvider(String providerID){
+    public static DiscoveryProvider findProvider(String providerID){
         for(DiscoveryProvider provider : Lookup.getDefault().lookupAll(DiscoveryProvider.class)){
             if (providerID.equals(provider.getID())) {
                 provider.clean();
@@ -293,6 +330,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         if (lastSelectedProject != null) {
             importer.process(this);
         }
+    }
+
+    @Override
+    public void discoverHeadersByModel(Project project) {
+        DiscoveryManagerImpl.discoverHeadersByModel(project);
     }
 
     private static class ProjectProxyImpl implements ProjectProxy {
@@ -331,6 +373,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         @Override
         public String getWorkingFolder() {
             return null;
+        }
+
+        @Override
+        public boolean mergeProjectProperties() {
+            return false;
         }
     };
 

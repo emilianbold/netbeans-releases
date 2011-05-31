@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 
@@ -71,7 +72,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
 
     public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag, Kind kind) {
         List<PhpDocTypeTagInfo> retval = new ArrayList<PhpDocTypeTagInfo>();
-        List<PHPDocNode> types = typeTag.getTypes();
+        List<PHPDocTypeNode> types = typeTag.getTypes();
         if (!types.isEmpty()) {
             for (PHPDocNode docNode : types) {
                 retval.add(new PhpDocTypeTagInfo(typeTag, docNode, docNode.getValue(), Kind.CLASS));

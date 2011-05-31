@@ -42,25 +42,25 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.openide.util.CharSequences;
 
 /**
  * A key for CsmParameterList objects (file and offset -based)
  * @author Vladimir Voskresensky
  */
-/*package*/final class ParamListKey extends OffsetableKey {
+/*package*/ final class ParamListKey extends OffsetableKey {
     ParamListKey(CsmParameterList obj) {
         super(obj, Utils.getCsmParamListKindKey(), CharSequences.empty()); // NOI18N
     }
 
-    /*package*/ ParamListKey(DataInput aStream) throws IOException {
+    /*package*/ ParamListKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
     }
 

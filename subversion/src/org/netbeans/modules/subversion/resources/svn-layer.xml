@@ -49,16 +49,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Actions">
         <folder name="Subversion">
-            <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.OpenVersioningAction"/>
-            </file>
-
-            <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.checkout.CheckoutAction"/>
-            </file>
-            <file name="org-netbeans-modules-subversion-ui-project-ImportAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.project.ImportAction"/>
-            </file>
+           
             <file name="org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.update.UpdateWithDependenciesAction"/>
             </file>
@@ -124,16 +115,6 @@ made subject to such option by the copyright holder.
              </file>
         </folder>
     </folder>
-    <folder name="Menu"> 
-        <folder name="Window">
-            <folder name="Versioning">            
-                <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 
     <folder name="Services">
         <folder name="JavaHelp">
@@ -184,15 +165,6 @@ made subject to such option by the copyright holder.
             <folder name="Subversion">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle"/>
 
-                <file name="OpenVersioning.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
-                </file>
-                <file name="CheckoutAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
-                </file>
-                <file name="ImportAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance"/>
-                </file>
                 <file name="UpdateWithDependenciesAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.instance"/>
                 </file>

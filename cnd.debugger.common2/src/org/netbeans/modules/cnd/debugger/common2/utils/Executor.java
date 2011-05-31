@@ -114,7 +114,7 @@ public abstract class Executor {
     public abstract int startShellCmd(String engine_argv[]);
 
     public abstract int startEngine(String engine_path, String engine_argv[], Map<String, String> additionalEnv,
-			            TermComponent console, boolean usePty, boolean disableEcho);
+                                    String workDir, TermComponent console, boolean usePty, boolean disableEcho);
 
     public abstract String getStartError();
 

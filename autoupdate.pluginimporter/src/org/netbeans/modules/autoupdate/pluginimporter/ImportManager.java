@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -106,6 +106,7 @@ public class ImportManager extends java.awt.Panel {
     private JButton bNo;    
 
     /** Creates new form ImportManager */
+    @SuppressWarnings("LeakingThisInConstructor")
     public ImportManager (File src, File dest, PluginImporter importer) {
         this.srcCluster = src;
         this.dest = dest;
@@ -121,6 +122,7 @@ public class ImportManager extends java.awt.Panel {
     private void initialize() {
         toInstall = new ArrayList<UpdateElement> (importer.getPluginsAvailableToInstall ());
         Collections.sort (toInstall, new Comparator<UpdateElement> () {
+            @Override
             public int compare (UpdateElement o1, UpdateElement o2) {
                 return o1.getDisplayName ().compareTo (o2.getDisplayName ());
             }
@@ -129,6 +131,7 @@ public class ImportManager extends java.awt.Panel {
 
         toImport = new ArrayList<UpdateElement> (importer.getPluginsToImport ());
         Collections.sort (toImport, new Comparator<UpdateElement> () {
+            @Override
             public int compare (UpdateElement o1, UpdateElement o2) {
                 return o1.getDisplayName ().compareTo (o2.getDisplayName ());
             }
@@ -183,6 +186,7 @@ public class ImportManager extends java.awt.Panel {
             Mnemonics.setLocalizedText (bNoButton, NbBundle.getMessage (ImportManager.class, "ImportNotifier_bNo"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             ImportManager ui = ImportManager.getInstance ();
             ui.getPluginImporter().reinspect();
@@ -203,6 +207,7 @@ public class ImportManager extends java.awt.Panel {
             if (bImportButton.equals (dd.getValue ()) || bNoButton.equals (dd.getValue ())) {
                 ui.dontRemind ();
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         if( null != notification ) {
                             notification.clear();
@@ -220,6 +225,7 @@ public class ImportManager extends java.awt.Panel {
         this.bNo = bNo;
         bImport.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Object source = e.getSource();
                 if (source instanceof JButton) {
@@ -227,10 +233,12 @@ public class ImportManager extends java.awt.Panel {
                     button.setEnabled(false);
                     RequestProcessor.getDefault().post(new Runnable() {
 
+                        @Override
                         public void run() {
                             try {
                                 final boolean res = doImport();
                                 SwingUtilities.invokeAndWait(new Runnable() {
+                                    @Override
                                     public void run() {
                                         if (res) {
                                             doClose();
@@ -298,6 +306,7 @@ public class ImportManager extends java.awt.Panel {
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
 
+                        @Override
                         public void run() {
                             detailLabel.setVisible(false);
                             progressComp.setVisible(false);
@@ -333,6 +342,7 @@ public class ImportManager extends java.awt.Panel {
                     final List <Object> list = new ArrayList <Object>();
                     SwingUtilities.invokeAndWait(new Runnable() {
 
+                        @Override
                         public void run() {
                             boolean wizardFinished = PluginManager.openInstallWizard(oc);
                             if (wizardFinished) {
@@ -356,6 +366,7 @@ public class ImportManager extends java.awt.Panel {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
 
+                    @Override
                     public void run() {
                         tToInstall.setModel(getModel(toInstall, checkedToInstall));
                         refreshUI();
@@ -377,6 +388,7 @@ public class ImportManager extends java.awt.Panel {
             setProgressComponentInAwt (detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     setProgressComponentInAwt (detail, progressComponent);
                 }
@@ -408,14 +420,17 @@ public class ImportManager extends java.awt.Panel {
 
     private TableModel getModel (final List<UpdateElement> plugins, final List<Boolean> checked) {
         return new AbstractTableModel () {
+            @Override
             public int getRowCount () {
                 return plugins.size ();
             }
 
+            @Override
             public int getColumnCount () {
                 return 2;
             }
 
+            @Override
             public Object getValueAt (int rowIndex, int columnIndex) {
                 switch (columnIndex) {
                     case 0 :
@@ -521,6 +536,7 @@ public class ImportManager extends java.awt.Panel {
         lBroken.setLabelFor(tpBroken);
         org.openide.awt.Mnemonics.setLocalizedText(lBroken, org.openide.util.NbBundle.getMessage(ImportManager.class, "ImportManager.lBroken.text")); // NOI18N
 
+        tpBroken.setEditable(false);
         tpBroken.setEnabled(false);
         tpBroken.setOpaque(false);
         jScrollPane4.setViewportView(tpBroken);
@@ -546,7 +562,7 @@ public class ImportManager extends java.awt.Panel {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
-                    .addComponent(lBroken, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 565, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lBroken, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

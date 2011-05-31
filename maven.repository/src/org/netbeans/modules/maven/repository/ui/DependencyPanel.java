@@ -79,14 +79,12 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.maven.repository.M2RepositoryBrowserTopComponent;
 
 /**
  *
  * @author mkleint
  */
 public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener {
-    private MultiViewElementCallback callback;
     private Lookup.Result<DependencyNode> result;
     private final static Icon dirIcon;
     private final static Icon trIcon;
@@ -126,6 +124,10 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             jPanel1.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
+    }
+
+    public @Override int getPersistenceType() {
+        return PERSISTENCE_NEVER;
     }
 
     /** This method is called from within the constructor to
@@ -243,7 +245,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
 
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new M2RepositoryBrowserTopComponent.EditorToolbar();
+            toolbar = new JToolBar();
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());
@@ -298,20 +300,15 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         super.componentDeactivated();
     }
 
-
-    public void setMultiViewCallback(MultiViewElementCallback callback) {
-        this.callback = callback;
-    }
+    public @Override void setMultiViewCallback(MultiViewElementCallback callback) {}
 
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
     }
 
     private void populateFields() {
-        boolean loading = true;
         Iterator<? extends DependencyNode> iter = result.allInstances().iterator();
         if (iter.hasNext()) {
-            loading = false;
             final DependencyNode root = iter.next();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

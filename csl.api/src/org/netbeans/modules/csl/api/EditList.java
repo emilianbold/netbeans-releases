@@ -179,7 +179,7 @@ public class EditList {
                 }
             });
 
-            if (edit.format) {
+            if (edit.format && edit.offset <= fEnd[0]) {
                 final Reformat r = Reformat.get(doc);
                 r.lock();
                 try {
@@ -202,21 +202,23 @@ public class EditList {
         if (formatAll) {
             final int firstOffset = edits.get(edits.size() - 1).offset;
             final int lastOffset = lastPos[0].getOffset();
-            final Reformat r = Reformat.get(doc);
-            r.lock();
-            try {
-                doc.runAtomic(new Runnable() {
-                    public void run() {
-                        try {
-                            r.reformat(firstOffset, lastOffset);
-                            LOG.fine("Formatting all: <" + firstOffset + ", " + lastOffset + ">"); //NOI18N
-                        } catch (BadLocationException ble) {
-                            Exceptions.printStackTrace(ble);
+            if (firstOffset <= lastOffset) {
+                final Reformat r = Reformat.get(doc);
+                r.lock();
+                try {
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            try {
+                                r.reformat(firstOffset, lastOffset);
+                                LOG.fine("Formatting all: <" + firstOffset + ", " + lastOffset + ">"); //NOI18N
+                            } catch (BadLocationException ble) {
+                                Exceptions.printStackTrace(ble);
+                            }
                         }
-                    }
-                });
-            } finally {
-                r.unlock();
+                    });
+                } finally {
+                    r.unlock();
+                }
             }
         }
     }

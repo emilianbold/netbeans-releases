@@ -120,7 +120,6 @@ public class ExeLoader extends UniFileLoader {
 //	}
 
 	if (MIMENames.EXE_MIME_TYPE.equals(mime) ||
-                    MIMENames.DLL_MIME_TYPE.equals(mime) ||
                     MIMENames.ELF_EXE_MIME_TYPE.equals(mime) ||
 		    MIMENames.ELF_CORE_MIME_TYPE.equals(mime) ||
 		    MIMENames.ELF_SHOBJ_MIME_TYPE.equals(mime) ||

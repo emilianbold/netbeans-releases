@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.libs.httpunit/1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/httpunit/Bundle.properties
-OpenIDE-Module-Implementation-Version: 162

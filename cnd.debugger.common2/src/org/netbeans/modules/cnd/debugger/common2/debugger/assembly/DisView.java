@@ -238,7 +238,7 @@ public class DisView {
 		
 		// OLD start = start;
 		from_address = true;
-		controller.requestDis(start, 100);	// NOI18N
+		controller.requestDis(start, 100, true);	// NOI18N
 	    }
 	}
     }
@@ -253,7 +253,7 @@ public class DisView {
 		new ImageIcon("open.gif"));			// NOI18N
 	}
 	public void actionPerformed(ActionEvent ev) {
-	    controller.goToSource();
+	    //controller.goToSource();
 	}
     }
 
@@ -1260,10 +1260,8 @@ public class DisView {
 
 	StringBuilder sb = new StringBuilder();
 
-	int k = model.size();
-	String line = null;
-	for (int i = 0; i < k; i++) {
-	    line = model.getItem(i);
+	for (DisFragModel.Line srcLine : model) {
+	    String line = srcLine.toString();
 
 	    // build modelToViewMap as we go along
 	    String addr = addrFromLine(line);
@@ -1357,7 +1355,7 @@ public class DisView {
 
 	    if (stateModel.getPC() != 0) {
 		String start = Address.toHexString0x(stateModel.getPC(), true);
-		controller.requestDis(start, 100);
+		controller.requestDis(start, 100, true);
 	    }
 	}
 

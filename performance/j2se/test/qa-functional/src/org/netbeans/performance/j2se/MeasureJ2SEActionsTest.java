@@ -88,7 +88,7 @@ public class MeasureJ2SEActionsTest {
 // to fix        .addTest(ShiftCodeInEditorTest.class)
 // to fix                .addTest(SwitchToFileTest.class)
 // to fix                .addTest(SwitchViewTest.class)
-                .addTest(ShowClassMembersInNavigatorTest.class)
+// to fix                .addTest(ShowClassMembersInNavigatorTest.class)
 // TODO move to scenarios              .addTest(RefactorFindUsagesTest.class)*/
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
  

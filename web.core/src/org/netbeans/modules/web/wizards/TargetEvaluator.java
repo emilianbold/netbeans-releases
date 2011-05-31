@@ -54,7 +54,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 
-class TargetEvaluator extends Evaluator {
+public class TargetEvaluator extends Evaluator {
 
     private List<String> pathItems = null;
     private DeployData deployData = null;

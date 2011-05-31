@@ -114,7 +114,7 @@ public class MainMenuTest extends JellyTestCase {
                   "testWindow_ProfilingSubMenu",
                   "testWindow_VersioningSubMenu"
                   );
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     /** Use for execution inside IDE */

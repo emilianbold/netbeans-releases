@@ -67,10 +67,11 @@ import org.netbeans.modules.form.actions.TestAction;
  * @author Tomas Pavek
  */
 
-class FormToolBar extends JToolBar {
+final class FormToolBar {
 
     private FormDesigner formDesigner;
 
+    private JToolBar toolbar;
     private JToggleButton selectionButton;
     private JToggleButton connectionButton;
     private JToggleButton paletteButton;
@@ -80,15 +81,13 @@ class FormToolBar extends JToolBar {
 
     private Listener listener;
 
-    public FormToolBar(FormDesigner designer) {
-        // Proper initialization of aqua toolbar ui, see commit dbd66075827a
-        super("editorToolbar"); // NOI18N
-        formDesigner = designer;
-
-        // the toolbar should have roll-over buttons and no handle for dragging
-        setFloatable(false);
-        setRollover(true);
-        setBorder(new EmptyBorder(0, 0, 0, 0));
+    public FormToolBar(FormDesigner designer, JToolBar toolbar) {
+        this.formDesigner = designer;
+        if (toolbar == null) {
+            toolbar = new ToolBar();
+        }
+        this.toolbar = toolbar;
+        toolbar.putClientProperty("isPrimary", Boolean.TRUE); // for JDev // NOI18N
 
         listener = new Listener();
 
@@ -134,7 +133,7 @@ class FormToolBar extends JToolBar {
         addLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
 
         // popup menu
-        addMouseListener(listener);
+        toolbar.addMouseListener(listener);
 
         // a11y
         connectionButton.getAccessibleContext().setAccessibleName(connectionButton.getToolTipText());
@@ -145,8 +144,6 @@ class FormToolBar extends JToolBar {
         paletteButton.getAccessibleContext().setAccessibleDescription(FormUtils.getBundleString("ACSD_AddMode")); // NOI18N
 
         // adding the components to the toolbar
-        JToolBar.Separator separator1 = new JToolBar.Separator();
-        separator1.setOrientation(JSeparator.VERTICAL);
         JToolBar.Separator separator2 = new JToolBar.Separator();
         separator2.setOrientation(JSeparator.VERTICAL);
         JToolBar.Separator separator3 = new JToolBar.Separator();
@@ -157,30 +154,32 @@ class FormToolBar extends JToolBar {
         testButton.addMouseListener(listener);
         initButton(testButton);
 
-        add(Box.createHorizontalStrut(4));
-        add(separator1);
-        add(Box.createHorizontalStrut(6));
-        add(selectionButton);
-        add(connectionButton);
-        add(paletteButton);
-        add(Box.createHorizontalStrut(6));
-        add(testButton);
-        add(Box.createHorizontalStrut(4));
-        add(separator2);
-        add(Box.createHorizontalStrut(4));
+        toolbar.add(Box.createHorizontalStrut(6));
+        toolbar.add(selectionButton);
+        toolbar.add(connectionButton);
+        toolbar.add(paletteButton);
+        toolbar.add(Box.createHorizontalStrut(6));
+        toolbar.add(testButton);
+        toolbar.add(Box.createHorizontalStrut(4));
+        toolbar.add(separator2);
+        toolbar.add(Box.createHorizontalStrut(4));
         installDesignerActions();
-        add(Box.createHorizontalStrut(4));
-        add(separator3);
-        add(Box.createHorizontalStrut(4));
+        toolbar.add(Box.createHorizontalStrut(4));
+        toolbar.add(separator3);
+        toolbar.add(Box.createHorizontalStrut(4));
         installResizabilityActions();
 
         // Add "addLabel" at the end of the toolbar
-        add(Box.createHorizontalGlue());
-        add(addLabel);
+        toolbar.add(Box.createHorizontalGlue());
+        toolbar.add(addLabel);
 
         if (!FormLoaderSettings.getInstance().isPaletteInToolBar()) {
             showPaletteButton(false);
         }
+    }
+
+    JToolBar getToolBar() {
+        return toolbar;
     }
 
     void installDesignerActions() {
@@ -188,25 +187,23 @@ class FormToolBar extends JToolBar {
         Iterator iter = actions.iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();
-            JButton button = add(action);
+            JButton button = toolbar.add(action);
             initButton(button);
         }
     }
 
     void installResizabilityActions() {
-        Collection actions = formDesigner.getResizabilityActions();
-        Iterator iter = actions.iterator();
+        Action[] actions = formDesigner.getResizabilityActions();
         JToggleButton[] resButtons = new JToggleButton[2];
-        for (int i=0; i < actions.size(); i++) {
-            Action action = (Action)iter.next();
+        for (int i=0; i < actions.length; i++) {
+            Action action = actions[i];
             JToggleButton button = new JToggleButton();
             button.setAction(action);
             initButton(button);
             resButtons[i] = button;
-            add(button);
-            add(Box.createHorizontalStrut(2));        
+            toolbar.add(button);
+            toolbar.add(Box.createHorizontalStrut(2));        
         }
-        formDesigner.setResizabilityButtons(resButtons);
     }
     
     // --------
@@ -264,7 +261,7 @@ class FormToolBar extends JToolBar {
         Point p = paletteButton.getLocation();
         p.y += paletteButton.getHeight() + 2;
 
-        paletteMenuView.getPopupMenu().show(this, p.x, p.y);
+        paletteMenuView.getPopupMenu().show(toolbar, p.x, p.y);
     }
 
     private void showVisibilityPopupMenu(Point p) {
@@ -280,17 +277,7 @@ class FormToolBar extends JToolBar {
             }
         });
         menu.add(item);
-        menu.show(this, p.x, p.y);
-    }
-    
-    @Override
-    public String getUIClassID() {
-        // For GTK and Aqua look and feels, we provide a custom toolbar UI
-        if (UIManager.get("Nb.Toolbar.ui") != null) { // NOI18N
-            return "Nb.Toolbar.ui"; // NOI18N
-        } else {
-            return super.getUIClassID();
-        }
+        menu.show(toolbar, p.x, p.y);
     }
 
     // -------
@@ -357,6 +344,30 @@ class FormToolBar extends JToolBar {
             if (SwingUtilities.isRightMouseButton(e)
                   && formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT)
                 showVisibilityPopupMenu(e.getPoint());
+        }
+    }
+
+    private static class ToolBar extends JToolBar {
+        ToolBar() {
+            // Proper initialization of aqua toolbar ui, see commit dbd66075827a
+            super("editorToolbar"); // NOI18N
+            // the toolbar should have roll-over buttons and no handle for dragging
+            setFloatable(false);
+            setRollover(true);
+            setBorder(new EmptyBorder(0, 0, 0, 0));
+
+            add(Box.createHorizontalStrut(4));
+            addSeparator();
+        }
+
+        @Override
+        public String getUIClassID() {
+            // For GTK and Aqua look and feels, we provide a custom toolbar UI
+            if (UIManager.get("Nb.Toolbar.ui") != null) { // NOI18N
+                return "Nb.Toolbar.ui"; // NOI18N
+            } else {
+                return super.getUIClassID();
+            }
         }
     }
 }

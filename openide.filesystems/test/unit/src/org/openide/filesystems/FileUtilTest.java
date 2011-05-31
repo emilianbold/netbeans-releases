@@ -47,9 +47,11 @@ package org.openide.filesystems;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
@@ -62,6 +64,7 @@ import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
@@ -511,6 +514,10 @@ public class FileUtilTest extends NbTestCase {
         final AtomicInteger concurrencyCounter = new AtomicInteger(0);
         final AtomicInteger maxConcurrency = new AtomicInteger(0);
         final AtomicInteger calledCounter = new AtomicInteger(0);
+        
+        final RequestProcessor RP = new RequestProcessor("testRefreshConcurrency", 20);
+        final List<RequestProcessor.Task> waitFor = new ArrayList<RequestProcessor.Task>();
+        
         logger.addHandler(new Handler() {
 
             private boolean concurrentStarted = false;
@@ -522,13 +529,12 @@ public class FileUtilTest extends NbTestCase {
                     concurrencyCounter.incrementAndGet();
                     if (!concurrentStarted) {
                         concurrentStarted = true;
-                        new Thread("Concurrent refresh") {
-
+                        waitFor.add(RP.post(new Runnable() {
                             @Override
                             public void run() {
                                 FileUtil.refreshAll();
                             }
-                        }.start();
+                        }));
                         synchronized (this) {
                             try {
                                 wait(500);
@@ -560,6 +566,9 @@ public class FileUtilTest extends NbTestCase {
             }
         });
         FileUtil.refreshAll();
+        for (RequestProcessor.Task task : waitFor) {
+            task.waitFinished();
+        }
         assertEquals("FileUtil.refreshAll should not be called concurrently.", 0, maxConcurrency.get());
         assertEquals("FileUtil.refreshAll not called.", 2, calledCounter.get());
     }

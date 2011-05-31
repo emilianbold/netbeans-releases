@@ -68,12 +68,11 @@ public class URLStreamHandlerRegistrationProcessor extends AbstractServiceProvid
 
     protected @Override boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element el : roundEnv.getElementsAnnotatedWith(URLStreamHandlerRegistration.class)) {
-            TypeElement clazz = (TypeElement) el;
-            URLStreamHandlerRegistration r = clazz.getAnnotation(URLStreamHandlerRegistration.class);
+            URLStreamHandlerRegistration r = el.getAnnotation(URLStreamHandlerRegistration.class);
             TypeMirror type = processingEnv.getTypeUtils().getDeclaredType(
                     processingEnv.getElementUtils().getTypeElement(URLStreamHandler.class.getName()));
             for (String protocol : r.protocol()) {
-                register(clazz, URLStreamHandlerRegistration.class, type,
+                register(el, URLStreamHandlerRegistration.class, type,
                         REGISTRATION_PREFIX + protocol, r.position(), new String[0]);
             }
         }

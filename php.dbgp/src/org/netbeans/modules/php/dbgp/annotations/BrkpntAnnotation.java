@@ -99,24 +99,26 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                 TokenHierarchy th = TokenHierarchy.get(document);
                 TokenSequence<TokenId> ts = th.tokenSequence();
                 boolean isValid = false;
-                ts.move(startOffset);
-                boolean moveNext = ts.moveNext();
-                for (; moveNext && !isValid && ts.offset() < endOffset;) {
-                    TokenId id = ts.token().id();
-                    if (id == PHPTokenId.PHPDOC_COMMENT
-                            || id == PHPTokenId.PHPDOC_COMMENT_END
-                            || id == PHPTokenId.PHPDOC_COMMENT_START
-                            || id == PHPTokenId.PHP_LINE_COMMENT
-                            || id == PHPTokenId.PHP_COMMENT_START
-                            || id == PHPTokenId.PHP_COMMENT_END
-                            || id == PHPTokenId.PHP_COMMENT                            
-                            ) {
-                        break;
-                    }
+                if (ts != null) {
+                    ts.move(startOffset);
+                    boolean moveNext = ts.moveNext();
+                    for (; moveNext && !isValid && ts.offset() < endOffset;) {
+                        TokenId id = ts.token().id();
+                        if (id == PHPTokenId.PHPDOC_COMMENT
+                                || id == PHPTokenId.PHPDOC_COMMENT_END
+                                || id == PHPTokenId.PHPDOC_COMMENT_START
+                                || id == PHPTokenId.PHP_LINE_COMMENT
+                                || id == PHPTokenId.PHP_COMMENT_START
+                                || id == PHPTokenId.PHP_COMMENT_END
+                                || id == PHPTokenId.PHP_COMMENT                            
+                                ) {
+                            break;
+                        }
 
-                    isValid = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
-                    if (!ts.moveNext()) {
-                        break;
+                        isValid = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
+                        if (!ts.moveNext()) {
+                            break;
+                        }
                     }
                 }
                 if (!isValid) {

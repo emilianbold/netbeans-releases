@@ -265,7 +265,7 @@ class AppFrameworkSupport {
 
         if (appClassName != null && !searched) { // verify cached class name
             ClassPath cp = ClassPath.getClassPath(cpRep, ClassPath.SOURCE);
-            if (cp.findResource(appClassName.replace('.', '/') + ".java") == null) { // NOI18N
+            if ((cp != null) && (cp.findResource(appClassName.replace('.', '/') + ".java") == null)) { // NOI18N
                 appClassName = findApplicationClass(cpRep);
                 searched = true;
             }

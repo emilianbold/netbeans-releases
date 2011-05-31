@@ -44,9 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,6 +71,8 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
@@ -112,7 +113,7 @@ import org.openide.util.CharSequences;
         put();
     }
 
-    public ClassifierContainer(DataInput input) throws IOException {
+    public ClassifierContainer(RepositoryDataInput input) throws IOException {
         super(input);
         int collSize = input.readInt();
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
@@ -156,13 +157,15 @@ import org.openide.util.CharSequences;
         try {
             declarationsLock.readLock().lock();
             inh = inheritances.get(name);
+            if (inh != null) {
+                inh = new ArrayList<CsmUID<CsmInheritance>>(inh);
+            } else {
+                return Collections.<CsmInheritance>emptyList();
+            }
         } finally {
             declarationsLock.readLock().unlock();
         }
-        if (inh != null) {
-            return UIDCsmConverter.<CsmInheritance>UIDsToInheritances(inh);
-        }
-        return Collections.<CsmInheritance>emptyList();
+        return UIDCsmConverter.<CsmInheritance>UIDsToInheritances(inh);
     }
 
 
@@ -365,7 +368,7 @@ import org.openide.util.CharSequences;
     }
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         try {
             declarationsLock.readLock().lock();

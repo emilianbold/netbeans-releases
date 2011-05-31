@@ -63,14 +63,15 @@ any of the following: </p>
 </ul>
 <p><b>Notes:</b></p>
 <ul>
-  <li>By default, all libraries on the compilation classpath are packaged with 
+  <li><!--By default, all libraries on the compilation classpath are packaged with
     the EJB JAR file for deployment. 
-    By default, all items that are on the classpath are packaged in the WAR file. 
-    Deselect the Package checkbox for each classpath item that you want to exclude from the JAR file.
-    If the EJB module is deployed as a stand-alone 
-    module, the IDE includes the JAR files in the EJB module JAR file. If the 
-    EJB module is deployed as part of an enterprise application, the IDE includes 
-    the JAR files in the application EAR file. </li>
+    By default, all items that are on the classpath are packaged in the WAR file. -->
+    By default, if the EJB module is deployed as a stand-alone module,
+    the IDE does not include the library JAR files in the EJB module JAR file.
+    If the EJB module is deployed as part of an enterprise application, the IDE includes
+    the JAR files that are on the classpath of the EJB module in the application EAR file.
+    Deselect the Package checkbox for each classpath item that you want to exclude from the EAR file.
+  </li>
   <li>If a JAR file is registered in the Library Manager and has attached source 
     code and Javadoc documentation, you can just add the JAR file to the classpath 
     and the IDE finds the Javadoc documentation and source code automatically. 

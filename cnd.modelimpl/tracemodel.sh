@@ -50,6 +50,7 @@ AWK=${AWK-"nawk"}
 function classpath() {
 
     local nbdist=${NBDIST-"../nbbuild/netbeans"}
+    local dlightdist="${nbdist}/dlight"
     local cnddist="${nbdist}/cnd"
 
     CP=""
@@ -114,6 +115,8 @@ function classpath() {
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-project-libraries.jar
     CP=${CP}${path_sep}${ide}/modules/org-openidex-util.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-xml-catalog.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-dlight-nativeexecution.jar
+
     CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
     CP=${CP}${path_sep}${platform}/lib/org-openide-util-lookup.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-dialogs.jar
@@ -130,6 +133,8 @@ function classpath() {
     CP=${CP}${path_sep}${platform}/modules/org-openide-windows.jar
     CP=${CP}${path_sep}${platform}/modules/org-netbeans-modules-editor-mimelookup.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-awt.jar
+
+    CP=${CP}${path_sep}${dlightdist}/modules/org-netbeans-modules-dlight-libs-common.jar
 
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar
@@ -297,6 +302,7 @@ function main() {
 
     local nbdist=${NBDIST-"../nbbuild/netbeans"}
     local cnddist=${CNDDIST-"${nbdist}/cnd"}
+    local dlightdist=${cnddist}/../dlight
 
     JAVA="${JAVA-`which java`}"
     DEFS=""
@@ -304,7 +310,7 @@ function main() {
     
     DBGPORT=${DBGPORT-5858}
 
-    DEFS="${DEFS} -Dnetbeans.dirs=${nbdist}:${cnddist}"
+    DEFS="${DEFS} -Dnetbeans.dirs=${nbdist}:${cnddist}:${dlightdist}"
     DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform"
     DEFS="${DEFS} -Dnetbeans.user=/tmp/${USER}/cnd-userdir"
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"

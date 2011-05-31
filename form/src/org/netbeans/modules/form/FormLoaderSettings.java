@@ -445,7 +445,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     }
 
     private static final boolean USE_STORED_SEARCH_PATH = Boolean.getBoolean("nb.form.useStoredSearchPath"); // Issue 163705
-    private static final String DEFAULT_EDITOR_SEARCH_PATH = "org.netbeans.modules.form.editors2 , org.netbeans.modules.swingapp"; // NOI18N
+    private static final String DEFAULT_EDITOR_SEARCH_PATH = ""; // NOI18N
     
     /**
      * Getter for the editorSearchPath option.

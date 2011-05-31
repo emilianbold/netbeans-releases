@@ -229,6 +229,9 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openide.util.lookup</code-name-base>
                         <compile-dependency/>
                         <test/>

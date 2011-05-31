@@ -52,17 +52,17 @@ import test.pkg.not.in.junit.NbModuleSuiteTimestamps;
 public class NbModuleSuiteStampTest extends TestCase {
     public void testTestReuseUsedir(){
         NbTestSuite instance = new NbTestSuite();
-        instance.addTest(NbModuleSuite.create(
+        instance.addTest(
             NbModuleSuite.emptyConfiguration().gui(false)
             .addTest(NbModuleSuiteTimestamps.class)
             .enableClasspathModules(false)
-        ));
-        instance.addTest(NbModuleSuite.create(
+        .suite());
+        instance.addTest(
             NbModuleSuite.emptyConfiguration().gui(false)
             .addTest(NbModuleSuiteTimestamps.class)
             .reuseUserDir(true)
             .enableClasspathModules(false)
-        ));
+        .suite());
         TestResult res = junit.textui.TestRunner.run(instance);
         assertEquals("Two tests started", 2, res.runCount());
         assertEquals("No failures", 0, res.failureCount());

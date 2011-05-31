@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
@@ -66,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.Log;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -168,6 +170,12 @@ public final class WatchProjects {
         }
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
+                TopComponent tc = new TopComponent();
+                tc.setLayout(new FlowLayout());
+                tc.add(new JTextArea());
+                tc.open();
+                tc.requestVisible();
+                tc.requestActive();
                 try {
                     cleanWellKnownStaticFields();
                 } catch (Exception ex) {
@@ -197,6 +205,18 @@ public final class WatchProjects {
         };
         OpenProjects.getDefault().open(new Project[] { p }, false);
         OpenProjects.getDefault().setMainProject(p);
+        
+        for (int i = 0; i < 10; i++) {
+            EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+            }
+        });
+        }
 
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {

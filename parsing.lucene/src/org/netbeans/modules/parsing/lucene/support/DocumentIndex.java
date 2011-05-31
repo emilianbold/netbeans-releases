@@ -69,11 +69,13 @@ public interface DocumentIndex {
     void removeDocument (@NonNull String primaryKey);
 
     /**
-     * Checks the validity of the index, see {@link Index#isValid(boolean)} for details
-     * @return true if index exists and is not broken
+     * Checks the validity of the index, see {@link Index#getStatus(boolean)} for details
+     * @return {@link Status#INVALID} when the index is broken, {@link Status#EMPTY}
+     * when the index does not exist or {@link  Status#VALID} if the index is valid
      * @throws IOException in case of IO error
+     * @since 2.1
      */
-    public boolean isValid() throws IOException;
+    public Index.Status getStatus() throws IOException;
     
     /**
      * Closes the index.

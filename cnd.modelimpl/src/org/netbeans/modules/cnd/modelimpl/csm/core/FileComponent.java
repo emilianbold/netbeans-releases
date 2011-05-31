@@ -42,12 +42,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -62,7 +62,7 @@ public abstract class FileComponent implements Persistent, SelfPersistent {
         this.key = key;
     }
 
-    public FileComponent(DataInput in) throws IOException {
+    public FileComponent(RepositoryDataInput in) throws IOException {
         key = KeyFactory.getDefaultFactory().readKey(in);
     }
 
@@ -75,7 +75,7 @@ public abstract class FileComponent implements Persistent, SelfPersistent {
     }
 
     @Override
-    public void write(DataOutput out) throws IOException {
+    public void write(RepositoryDataOutput out) throws IOException {
         KeyFactory.getDefaultFactory().writeKey(key, out);
     }
 }

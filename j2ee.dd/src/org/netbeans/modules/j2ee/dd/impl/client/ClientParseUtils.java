@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.dd.impl.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.impl.common.ParseUtils;
@@ -68,6 +69,17 @@ public class ClientParseUtils {
      */
     public static String getVersion(java.io.InputStream is) throws java.io.IOException, SAXException {
         return ParseUtils.getVersion(is, new VersionHandler(), DDResolver.getInstance());
+    }
+
+    /** Parsing just for detecting the version  SAX parser used
+     */
+    public static String getVersion(FileObject fo) throws java.io.IOException, SAXException {
+        InputStream inputStream = fo.getInputStream();
+        try {
+            return ParseUtils.getVersion(inputStream, new VersionHandler(), DDResolver.getInstance());
+        } finally {
+            inputStream.close();
+        }
     }
     
     /** Parsing just for detecting the version  SAX parser used
@@ -129,8 +141,12 @@ public class ClientParseUtils {
 
     public static SAXParseException parse(FileObject fo)
     throws org.xml.sax.SAXException, java.io.IOException {
-        // no need to close the stream, will be closed by the parser, see @org.xml.sax.InputSource
-        return parse(new InputSource(fo.getInputStream()));
+        InputStream inputStream = fo.getInputStream();
+        try {
+            return parse(new InputSource(inputStream));
+        } finally {
+            inputStream.close();
+        }
     }
     
     public static SAXParseException parse (InputSource is) 

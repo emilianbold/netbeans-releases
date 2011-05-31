@@ -55,7 +55,7 @@ import org.netbeans.junit.NbTestSuite;
  * Overall sanity check suite for IDE before commit.<br>
  * Look at IDEValidation.java for test specification and implementation.
  *
- * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
+ * @author Jiri Skrivanek, mrkam@netbeans.org
  */
 public class IDECommitValidationTest extends IDEValidation {
 
@@ -78,13 +78,12 @@ public class IDECommitValidationTest extends IDEValidation {
         conf = conf.addTest("testReflectionUsage");
          */
         conf = conf.addTest("testWriteAccess");
-        conf = conf.addTest("testInitGC");
+        //conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
         conf = conf.addTest("testHelp");
         conf = conf.addTest("testOptions");
         conf = conf.addTest("testNewProject");
-        // sample project must exist before testShortcuts
-        conf = conf.addTest("testShortcuts");
+        conf = conf.addTest("testShortcuts"); // sample project must exist before testShortcuts
         conf = conf.addTest("testNewFile");
         conf = conf.addTest("testCVSLite");
         conf = conf.addTest("testProjectsView");
@@ -92,16 +91,13 @@ public class IDECommitValidationTest extends IDEValidation {
         conf = conf.addTest("testEditor");
         conf = conf.addTest("testBuildAndRun");
         conf = conf.addTest("testDebugging");
-        conf = conf.addTest("testJUnit");
+        //conf = conf.addTest("testPlugins"); //not in commit suite because it needs net connectivity
+        //conf = conf.addTest("testJUnit");  //needs JUnit installed in testPlugins
         conf = conf.addTest("testXML");
         conf = conf.addTest("testDb");
         conf = conf.addTest("testWindowSystem");
 //        conf = conf.addTest("testGCDocuments");
 //        conf = conf.addTest("testGCProjects");
-        // not in commit suite because it needs net connectivity
-        // suite.addTest(new IDEValidation("testPlugins"));
-//        conf = conf.addTest("testReflectionUsageAtTheEnd");
-        /* */
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(conf));
         suite.addTest(new IDECommitValidationTest("testPostRunCheck"));

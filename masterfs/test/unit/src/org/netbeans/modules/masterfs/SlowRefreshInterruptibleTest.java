@@ -54,7 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RefreshSlowTest;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -63,6 +63,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 public class SlowRefreshInterruptibleTest extends NbTestCase {
+    static {
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
+    }
     private Logger LOG;
     private FileObject testFolder;
 
@@ -119,14 +122,14 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
         assertGC("File Object can disappear", ref);
 
         class L extends FileChangeAdapter {
-            int cnt;
-            FileEvent event;
+            volatile int cnt;
+            volatile FileEvent event;
 
             @Override
             public void fileChanged(FileEvent fe) {
-                LOG.log(Level.INFO, "file change {0}", fe.getFile());
                 cnt++;
                 event = fe;
+                LOG.log(Level.INFO, "file change {0} cnt: {1}", new Object[]{fe.getFile(), cnt});
             }
         }
         L listener = new L();
@@ -142,7 +145,7 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
             fail("New modification time shall be at last 50ms after the original one: " + (file.lastModified() - lm));
         }
 
-        Object obj = RefreshSlowTest.findSlowRefresh(testFolder);
+        Object obj = TestUtils.findSlowRefresh(testFolder);
         assertNotNull("Refresh attribute found", obj);
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 
@@ -199,6 +202,5 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
         LOG.info("Refresh finished");
 
         assertEquals("Just one file checked: " + counter.files, 1, counter.files.size());
-        assertEquals("No change detected", 0, listener.cnt);
     }
 }

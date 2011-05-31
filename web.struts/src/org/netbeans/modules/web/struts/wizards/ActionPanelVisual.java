@@ -46,6 +46,7 @@ package org.netbeans.modules.web.struts.wizards;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -57,7 +58,10 @@ import org.openide.util.HelpCtx;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
+import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.xml.sax.InputSource;
 
 public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ActionListener, DocumentListener {
     
@@ -67,7 +71,7 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
     static final String LOOKUP_DISPATCH_ACTION = "org.apache.struts.actions.LookupDispatchAction"; //NOI18N
 
     private static final String[] SUPERCLASS_LIST = {DEFAULT_ACTION, DISPATCH_ACTION, MAPPING_DISPATCH_ACTION, LOOKUP_DISPATCH_ACTION};
-    
+    private final WebModule webModule;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
     /** Creates new form ActionPanelVisual */
@@ -76,9 +80,9 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         jComboBoxSuperclass.setModel(new javax.swing.DefaultComboBoxModel(SUPERCLASS_LIST));
         jComboBoxSuperclass.getEditor().addActionListener( this );
         Project proj = panel.getProject();
-        WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
-        if (wm != null){
-            String[] configFiles = StrutsConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
+        webModule = WebModule.getWebModule(proj.getProjectDirectory());
+        if (webModule != null){
+            String[] configFiles = StrutsConfigUtilities.getConfigFiles(webModule.getDeploymentDescriptor());
             jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
         }
         jComboBoxConfigFile.getEditor().addActionListener( this );
@@ -194,7 +198,30 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
                     NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoConfFileSelectedForAction"));//NOI18N
             // don't check the action path, when the configuration file is not needed. 
             return true;
+        } else if (webModule != null) {
+            FileObject fo = webModule.getDocumentBase().getFileObject(configFile);
+            if (fo == null || !fo.isValid()) {
+                // Check for valid path for struts-config.xml #123610
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoConfFileSelectedForAction"));   //NOI18N
+                return false;
+            } else {
+                try {
+                    // Check for valid struts-config.xml document #123610
+                    ValidateXMLSupport validator = new ValidateXMLSupport(new InputSource(fo.getInputStream()));
+                    if (!validator.validateXML(null)) {
+                        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            NbBundle.getMessage(ActionPanelVisual.class, "MSG_ConfFileWithErrors"));   //NOI18N
+                        return false;
+                    }
+                } catch (FileNotFoundException ex) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoConfFileSelectedForAction"));   //NOI18N
+                    return false;
+                }
+            }
         }
+
         // check Action path
         String actionPath = jTextFieldPath.getText();
         if (actionPath == null || actionPath.trim().equals("") || actionPath.trim().equals("/")){//NOI18N

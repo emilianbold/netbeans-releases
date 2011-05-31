@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -76,18 +75,18 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
     private final L legend;
     private final JComponent hAxis;
     private final JComponent vAxis;
-    private final JButton button;
-    private final List<Action> actions = new ArrayList<Action>();
+    private final List<Action> buttonActions = new ArrayList<Action>();
+    private final List<Action> popupActions = new ArrayList<Action>();
     private final JComponent graphPanel;
     private JComponent overlay;
 
-    public GraphPanel(String title, G graph, L legend, JComponent hAxis, JComponent vAxis, JButton button) {
+    public GraphPanel(String title, G graph, L legend, JComponent hAxis, JComponent vAxis, List<Action> actions) {
         this.graph = graph;
         this.legend = legend;
         this.hAxis = hAxis;
         this.vAxis = vAxis;
-        this.button = button;
-        this.graphPanel = createGraphPanel(title, graph, legend, hAxis, vAxis, button);
+        this.buttonActions.addAll(actions);
+        this.graphPanel = createGraphPanel(title, graph, legend, hAxis, vAxis, buttonActions);
         graphPanel.addMouseListener(new PopupMenuListener());
         setOpaque(true); // otherwise background is white
         setMinimumSize(graphPanel.getMinimumSize());
@@ -96,9 +95,9 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
     }
 
     public void setPopupActions(List<Action> actions) {
-        this.actions.clear();
+        this.popupActions.clear();
         if (actions != null) {
-            this.actions.addAll(actions);
+            this.popupActions.addAll(actions);
         }
     }
 
@@ -113,21 +112,33 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
     }
 
     private static JPanel createGraphPanel(String title, JComponent graph,
-            JComponent legend, JComponent hAxis, JComponent vAxis, JButton button) {
+            JComponent legend, JComponent hAxis, JComponent vAxis, List<Action> actions) {
         JPanel graphPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c;
 
-        JPanel topPanel = new JPanel(new BorderLayout());
+        /* Create top panel with label and set of buttons (one button per action) ...  */
+        JPanel topPanel = new JPanel(new GridBagLayout());
         JLabel label = new JLabel(title);
         label.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_TITLE_FONT));
         label.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_TITLE_FONT_COLOR));
-        c = new GridBagConstraints();
-        topPanel.add(label, BorderLayout.CENTER);
+        label.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        label.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
 
-        if (button != null) {
-            topPanel.add(button, BorderLayout.EAST);
+        c = new GridBagConstraints();
+        c.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        c.anchor = java.awt.GridBagConstraints.WEST;
+        c.weightx = 1.0;
+        c.insets = new java.awt.Insets(0, 3, 0, 3);
+        topPanel.add(label, c);
+
+        for (Action action : actions) {
+            JButton btn = new JButton(action);
+            c = new java.awt.GridBagConstraints();
+            c.insets = new java.awt.Insets(0, 3, 0, 3);
+            topPanel.add(btn, c);
         }
 
+        c = new GridBagConstraints();
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 1.0;
@@ -172,18 +183,16 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
             graphPanel.add(hAxis, c);
         }
 
-
-
         return graphPanel;
     }
 
     private JPopupMenu createPopupMenu() {
-        if (actions.isEmpty()) {
+        if (popupActions.isEmpty()) {
             return null;
         }
 
         JPopupMenu pm = new JPopupMenu();
-        for (Action action : actions) {
+        for (Action action : popupActions) {
             JMenuItem menuItem = new JMenuItem();
             Actions.connect(menuItem, action, true); // Actions.connect() takes care of mnemonics
             pm.add(menuItem);
@@ -261,9 +270,11 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         if (hAxis != null) {
             hAxis.setEnabled(enabled);
         }
-        if (button != null) {
-            button.setEnabled(enabled);
+
+        for (Action action : buttonActions) {
+            action.setEnabled(enabled);
         }
+
         super.setEnabled(enabled);
     }
 

@@ -176,18 +176,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="hgversioning.settings" url="hgversioning.xml"/>
-        </folder>        
-        <folder name="Modes">
-            <folder name="output">
-                <file name="hgversioning.wstcref" url="hg_wstcref.xml">
-                    <attr name="position" intvalue="2950"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
     <folder name="Menu">
         <folder name="Window">
             <folder name="Versioning">

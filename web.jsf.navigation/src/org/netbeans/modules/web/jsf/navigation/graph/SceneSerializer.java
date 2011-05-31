@@ -173,8 +173,11 @@ public class SceneSerializer {
                     FileLock lock = file.lock();
                     OutputStream fos = file.getOutputStream(lock);
                     try {
-                        XMLUtil.write(document, fos, "UTF-8"); // NOI18N
-                        fos.close();
+                        try {
+                            XMLUtil.write(document, fos, "UTF-8"); // NOI18N
+                        } finally {
+                            fos.close();
+                        }
                     } finally {
                         lock.releaseLock();
                     }

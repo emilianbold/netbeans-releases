@@ -46,6 +46,8 @@ package org.netbeans.modules.websvc.core.jaxws.nodes;
 import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -123,6 +125,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -148,7 +151,8 @@ import org.openide.util.lookup.Lookups;
 public class JaxWsNode extends AbstractNode implements
         WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
-    private static final RequestProcessor rp = new RequestProcessor("JaxWsNode-request-processor");
+    private static final RequestProcessor rp = 
+        new RequestProcessor("JaxWsNode-request-processor");            // NOI18N
     Service service;
     FileObject srcRoot;
     JaxWsModel jaxWsModel;
@@ -213,9 +217,24 @@ public class JaxWsNode extends AbstractNode implements
 
             @Override
             public void run() {
-                JaxWsNode.this.setValue("wsdl-url", getWsdlURL());
+                JaxWsNode.this.setValue("wsdl-url", getWsdlURL());      // NOI18N
+                setShortDescription(getWsdlURL());
             }
         });
+        try {
+            DataObject dataObject = DataObject.find(implBeanClass);
+            dataObject.addPropertyChangeListener( new PropertyChangeListener() {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ( DataObject.PROP_MODIFIED.equals( evt.getPropertyName())){
+                        setShortDescription(getWsdlURL());
+                    }
+                }
+            });
+        } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
 
     private boolean isWebProject() {
@@ -238,10 +257,10 @@ public class JaxWsNode extends AbstractNode implements
         }
     }
 
-    @Override
+    /*@Override
     public String getShortDescription() {
         return getWsdlURL();
-    }
+    }*/
     private static final String WAITING_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"; // NOI18N
     private static final String ERROR_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"; //NOI18N
     private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.png"; //NOI18N

@@ -62,7 +62,7 @@ import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
-import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.modules.web.core.api.JspContextInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileAttributeEvent;

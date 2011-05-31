@@ -48,6 +48,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
@@ -86,8 +88,8 @@ public class Html5Parser implements HtmlParser {
     private static final String TEMPLATING_MARKS_MASK = "   "; //NOI18N
 
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
+        String code = maskTemplatingMarks(source.getSourceCode().toString());
         try {
-            String code = maskTemplatingMarks(source.getSourceCode().toString());
             InputSource is = new InputSource(new StringReader(code));
             final AstNodeTreeBuilder treeBuilder = new AstNodeTreeBuilder(AstNodeFactory.shared().createRootNode(0, code.length()));
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
@@ -103,6 +105,23 @@ public class Html5Parser implements HtmlParser {
             throw new ParseException(ex);
         } catch (IOException ex) {
             throw new ParseException(ex);
+        } catch (AssertionError e) {
+            //issue #194037 handling - under some circumstances the parser may throw assertion error
+            //in these cases the problem is more likely in the parser itself than in netbeans
+            //To minimalize the user impact on non-fcs version (assertions enabled), 
+            //just log the assertion error and return fake parser result
+            
+            StringBuilder msg = new StringBuilder();
+            msg.append("An internal parser error occured"); //NOI18N
+            if(source.getSourceFileObject() != null) {
+                msg.append(" when parsing "); //NOI18N
+                msg.append(source.getSourceFileObject().getPath());
+            }
+            
+            Logger.getAnonymousLogger().log(Level.INFO, msg.toString(), e);
+            
+            return new Html5ParserResult(source, AstNodeFactory.shared().createRootNode(0, code.length()), 
+                    Collections.<ProblemDescription>emptyList(), preferedVersion);
         }
     }
 
@@ -192,9 +211,13 @@ public class Html5Parser implements HtmlParser {
             //end tags
             do {
                 if(!node.isVirtual()) {
-                    HtmlTag tag = HtmlTagProvider.getTagForElement(node.getNameWithoutPrefix());
+                    HtmlTag tag = HtmlTagProvider.getTagForElement(node.name());
                     if (!tag.isEmpty()) {
                         possible.add(tag);
+                    }
+                    if(!tag.hasOptionalEndTag()) {
+                        //since the end tag is required, the parent elements cannot be closed here
+                        break;
                     }
                 }
             } while ((node = node.parent()) != null && !node.isRootNode());

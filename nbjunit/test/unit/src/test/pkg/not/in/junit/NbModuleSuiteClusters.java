@@ -17,7 +17,7 @@ public class NbModuleSuiteClusters extends TestCase {
         String sep = "";
         for (String d : dirs.replace(File.separatorChar, '/').split(File.pathSeparator)) {
             String sd = d.replaceFirst(".*/", "");
-            if (sd.matches("platform|harness")) {
+            if (sd.matches("platform|harness|extra")) { // extra for libs.junit4
                 continue;
             }
             sb.append(sep).append(sd);

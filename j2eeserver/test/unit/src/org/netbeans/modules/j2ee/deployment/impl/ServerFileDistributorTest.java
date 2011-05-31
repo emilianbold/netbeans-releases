@@ -50,7 +50,7 @@ import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
@@ -123,7 +123,7 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
 
 
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(URL);
-        DeploymentTargetImpl dtarget = new DeploymentTargetImpl(provider, null);
+        DeploymentTarget dtarget = new DeploymentTarget(provider, null);
         TargetServer server = new TargetServer(dtarget);
 
         ProgressUI ui = new ProgressUI("test", true);

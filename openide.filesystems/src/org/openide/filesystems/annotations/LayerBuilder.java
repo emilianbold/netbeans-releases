@@ -97,6 +97,9 @@ public final class LayerBuilder {
      * @return a file builder
      */
     public File file(String path) {
+        if (!path.matches("[^/]+(/[^/]+)*")) {
+            throw new IllegalArgumentException(path);
+        }
         File f = new File(path, false);
         unwrittenFiles.add(f);
         return f;

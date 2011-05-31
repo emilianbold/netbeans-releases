@@ -91,7 +91,8 @@ public class AddBeanPanel {
             String name = getClassName();
             if (name == null)
                 return null;
-            id = name.substring(name.lastIndexOf(".")+1);
+            name = name.substring(name.lastIndexOf(".")+1);
+            id = name.substring(0, 1).toLowerCase() + name.substring(1);
         }
         return id;
     }

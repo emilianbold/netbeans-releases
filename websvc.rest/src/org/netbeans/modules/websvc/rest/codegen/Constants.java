@@ -202,7 +202,6 @@ public class Constants {
         }
     }
     
-    public static final String REST_JMAKI_DIR = "resources"; //NOI18N
     public static final String REST_STUBS_DIR = "rest"; //NOI18N
     
     public static final String PASSWORD = "password"; //NOI18N

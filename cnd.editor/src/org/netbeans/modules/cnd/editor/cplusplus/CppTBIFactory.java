@@ -54,6 +54,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
@@ -191,6 +192,14 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
                         }
                         caret.setDot(dotPos);
                     }
+                    return true;
+                }
+            } catch (BadLocationException ex) {
+            }
+        }
+        if (context != null) {
+            try {
+                if (new CppIndentTask(context).doxyGen()) {
                     return true;
                 }
             } catch (BadLocationException ex) {

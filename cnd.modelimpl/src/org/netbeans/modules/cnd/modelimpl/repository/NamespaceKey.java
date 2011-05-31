@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
@@ -54,9 +52,10 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
-/*package*/
-class NamespaceKey extends ProjectNameBasedKey {
+/*package*/ class NamespaceKey extends ProjectNameBasedKey {
 
     private final CharSequence fqn;
     private final int hashCode; // cashed hash code
@@ -111,13 +110,13 @@ class NamespaceKey extends ProjectNameBasedKey {
     }
 
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         assert fqn != null;
         PersistentUtils.writeUTF(fqn, aStream);
     }
 
-    /*package*/ NamespaceKey(DataInput aStream) throws IOException {
+    /*package*/ NamespaceKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
         fqn = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager());
         assert fqn != null;

@@ -64,7 +64,6 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VersioningInfo;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -182,7 +181,7 @@ public final class VersioningInfoAction extends ContextAction {
                 }
                 fileProps.put(getMessage("LBL_VersioningInfo_Property_RepositoryUrl"), status.getUrlString()); //NOI18N
                 fileProps.put(getMessage("LBL_VersioningInfo_Property_RepositoryRootUrl"), repositoryRootUrl); //NOI18N
-                if (status.getRevision().getNumber() > 0) {
+                if (status.getRevision() != null && status.getRevision().getNumber() > 0) {
                     fileProps.put(getMessage("LBL_VersioningInfo_Property_Revision"), status.getRevision().toString()); //NOI18N
                 }
                 if (!"".equals(binaryString)) { //NOI18N
@@ -192,10 +191,31 @@ public final class VersioningInfoAction extends ContextAction {
                     fileProps.put(getMessage("LBL_VersioningInfo_Property_Branch"), stickyString); //NOI18N
                 }
                 if ((fi.getStatus() & FileInformation.STATUS_IN_REPOSITORY) != 0) {
+                    boolean lockedLocally = status.getLockOwner() != null;
+                    if (lockedLocally) {
+                        fileProps.put(getMessage("LBL_VersioningInfo_Property_Lock"), getMessage("LBL_VersioningInfo_Property_LockPresent")); //NOI18N
+                        fileProps.put(getMessage("LBL_VersioningInfo_Property_LockOwner"), status.getLockOwner()); //NOI18N
+                        if (status.getLockCreationDate() != null) {
+                            fileProps.put(getMessage("LBL_VersioningInfo_Property_LockCreationDate"), DateFormat.getDateTimeInstance().format(status.getLockCreationDate())); //NOI18N
+                        }
+                        if (status.getLockComment() != null) {
+                            fileProps.put(getMessage("LBL_VersioningInfo_Property_LockComment"), status.getLockComment()); //NOI18N
+                        }
+                    }
                     try {
                         SvnClient client = Subversion.getInstance().getClient(file);
                         ISVNInfo info = client.getInfo(status.getUrl());
                         if (info != null) {
+                            if (!lockedLocally && info.getLockOwner() != null) {
+                                fileProps.put(getMessage("LBL_VersioningInfo_Property_Lock"), getMessage("LBL_VersioningInfo_Property_LockRemote")); //NOI18N
+                                fileProps.put(getMessage("LBL_VersioningInfo_Property_LockOwner"), info.getLockOwner()); //NOI18N
+                                if (info.getLockCreationDate() != null) {
+                                    fileProps.put(getMessage("LBL_VersioningInfo_Property_LockCreationDate"), DateFormat.getDateTimeInstance().format(info.getLockCreationDate())); //NOI18N
+                                }
+                                if (info.getLockComment() != null) {
+                                    fileProps.put(getMessage("LBL_VersioningInfo_Property_LockComment"), info.getLockComment()); //NOI18N
+                                }
+                            }
                             fileProps.put(getMessage("LBL_VersioningInfo_Property_LastChangedAuthor"), info.getLastCommitAuthor()); //NOI18N
                             fileProps.put(getMessage("LBL_VersioningInfo_Property_LastChangedDate"), DateFormat.getDateTimeInstance().format(info.getLastChangedDate())); //NOI18N
                             fileProps.put(getMessage("LBL_VersioningInfo_Property_LastChangedRevision"), info.getLastChangedRevision().toString()); //NOI18N

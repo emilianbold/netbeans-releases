@@ -1,6 +1,0 @@
-Code completion result for source line:
-ARGV.del|
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     delete(obj)                                Array
-METHOD     delete_at(index)                           Array
-METHOD     delete_if { }                              Array

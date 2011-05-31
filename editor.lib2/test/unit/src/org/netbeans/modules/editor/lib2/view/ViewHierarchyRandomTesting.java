@@ -79,6 +79,10 @@ public class ViewHierarchyRandomTesting {
         pane.putClientProperty("text-line-wrap", "words"); // SimpleValueNames.TEXT_LINE_WRAP
         return container;
     }
+    
+    public static void setDirectViewRebuild(boolean directViewRebuild) {
+        ViewUpdates.setDirectViewRebuild(directViewRebuild);
+    }
 
     public static void disableHighlighting(RandomTestContainer container) throws Exception {
         final JEditorPane pane = EditorPaneTesting.getEditorPane(container);
@@ -153,7 +157,7 @@ public class ViewHierarchyRandomTesting {
                 public void run() {
                     JEditorPane pane = EditorPaneTesting.getEditorPane(context);
                     DocumentView docView = DocumentView.get(pane);
-                    docView.checkIntegrity();
+                    docView.checkIntegrityIfLoggable();
                     // View hierarchy dump
 //                    System.err.println("\nView Hierarchy Dump:\n" + docView.toStringDetail() + "\n");
                 }

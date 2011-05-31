@@ -1,1 +1,0 @@
-CREATE DATABASE LINK $linkName ( DRIVER='$jdbcDriver' URL='$jdbcUrl' USERNAME='$userName' PASSWORD='$password' $otherProperties )

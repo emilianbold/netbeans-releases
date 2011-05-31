@@ -95,22 +95,27 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.navigation.JavaElement#isDisabled()
      */
+    @Override
     public boolean isDisabled() {
         return isDisabled;
     }
 
+    @Override
     public FileObject getFileObject() {
         return myFileObject;
     }
 
+    @Override
     public String getName() {
         return myName;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         return myModifiers;
     }
     
+    @Override
     public ElementKind getElementKind() {
         return myElementKind;
     }
@@ -119,18 +124,22 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
         myName = name;
     }
 
+    @Override
     public String getLabel() {
         return myLabel;
     }
 
+    @Override
     public String getFQNLabel() {
         return myFQNlabel;
     }
 
+    @Override
     public String getTooltip() {
         return myTooltip;
     }
 
+    @Override
     public Icon getIcon() {
         return myIcon;
     }
@@ -183,14 +192,17 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
         myJavaDoc = javaDoc;
     }
 
+    @Override
     public ElementHandle<T> getElementHandle() {
         return myElementHandle;
     }
 
+    @Override
     public void gotoElement() {
         openElementHandle();
     }
     
+    @Override
     public String toString() {
         return (WebBeansNavigationOptions.isShowFQN()? getFQNLabel() : getLabel());
     }

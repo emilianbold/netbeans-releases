@@ -50,6 +50,9 @@ import java.awt.Dimension;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import org.netbeans.modules.editor.lib2.view.DocumentView;
 
 /**
  * Component that displays a collapsed fold preview.
@@ -62,7 +65,7 @@ public class FoldToolTip extends JPanel {
 
     private int editorPaneWidth;
 
-    public FoldToolTip(JEditorPane editorPane, JEditorPane foldPreviewPane) {
+    public FoldToolTip(JEditorPane editorPane, final JEditorPane foldPreviewPane) {
         this.foldPreviewPane = foldPreviewPane;
 
         setLayout(new BorderLayout());
@@ -71,6 +74,31 @@ public class FoldToolTip extends JPanel {
 //        scrollPane.setColumnHeaderView(lineGutter);
         add(foldPreviewPane, BorderLayout.CENTER);
         putClientProperty("tooltip-type", "fold-preview"); // Checked in NbToolTip
+        addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+                // Deactivate the view hierarchy immediately for foldPreviewPane
+                final DocumentView docView = DocumentView.get(foldPreviewPane);
+                if (docView != null) {
+                    docView.runTransaction(new Runnable() {
+                        @Override
+                        public void run() {
+                            docView.updateLengthyAtomicEdit(+100); // Effectively disable any VH updates
+                        }
+                    });
+                }
+                // Remove the listener
+                FoldToolTip.this.removeAncestorListener(this);
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent event) {
+            }
+        });
 
         editorPaneWidth = editorPane.getSize().width;
 

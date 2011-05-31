@@ -71,7 +71,6 @@ public final class MySQLOptions {
     public static final String PROP_HOST = "host"; // NO18N
     public static final String PROP_PORT = "port"; // NO18N
     public static final String PROP_ADMINUSER = "adminuser"; // NO18N
-    public static final String PROP_ADMINPWD = "adminpwd"; // NO18N
     public static final String PROP_SAVEPWD = "savepwd"; // NO18N
     public static final String PROP_DBDIR = "dbdir"; // NO18N
     public static final String PROP_CONN_REGISTERED = "conn-registered"; // NOI18N
@@ -118,12 +117,12 @@ public final class MySQLOptions {
         String oldval;
         synchronized(this) {
             oldval = getProperty(key);
-            if (value != null) {
-                NbPreferences.forModule(MySQLOptions.class).put(key, value);
-            } else {
-                NbPreferences.forModule(MySQLOptions.class).remove(key);
+                if (value != null) {
+                    NbPreferences.forModule(MySQLOptions.class).put(key, value);
+                } else {
+                    NbPreferences.forModule(MySQLOptions.class).remove(key);
+                }
             }
-        }
         notifyPropertyChange(key, oldval, value);
     }
 
@@ -197,17 +196,19 @@ public final class MySQLOptions {
 
     public synchronized String getAdminPassword() {
         // read old settings
-        String pwd = NbPreferences.forModule(MySQLOptions.class).get(PROP_ADMINPWD, null);
+        String pwd = NbPreferences.forModule(MySQLOptions.class).get("adminpwd", null); // NOI18N
+        // don't store a password anymore
+        NbPreferences.forModule(MySQLOptions.class).remove("adminpwd"); // NOI18N
         if (pwd != null) {
+            // store using Keyring API
             Keyring.save(MySQLOptions.class.getName(), pwd.toCharArray(), NbBundle.getMessage(MySQLOptions.class, "MySQLOptions_AdminPassword")); // NOI18N
         }
         if ( isSavePassword() ) {
             LOGGER.log(Level.FINE, "Reading a Admin Password from Keyring.");
             char[] chars = Keyring.read(MySQLOptions.class.getName());
-            return chars == null ? "" : String.copyValueOf(chars);
-        } else {
-            return adminPassword;
+            adminPassword = chars == null ? "" : String.copyValueOf(chars);
         }
+        return adminPassword;
     }
 
     public synchronized void setAdminPassword(String adminPassword) {
@@ -231,7 +232,8 @@ public final class MySQLOptions {
     }
     
     public void clearAdminPassword() {
-        clearProperty(PROP_ADMINPWD);
+        LOGGER.log(Level.FINE, "Removing a Admin Password from Keyring.");
+        Keyring.delete(MySQLOptions.class.getName());
     }
 
     public boolean isSavePassword() {
@@ -244,10 +246,15 @@ public final class MySQLOptions {
         // Clear the password from the persistent file if saving
         // passwords is turned off; save the password to the persistent
         // file if saving passwords is turned on
+        if (adminPassword == null) {
+            // nothing for save
+            return ;
+        }
         if ( ! savePassword ) {
             clearAdminPassword();
         } else {
-            putProperty(PROP_ADMINPWD, adminPassword);
+            LOGGER.log(Level.FINE, "Storing a Admin Password to Keyring.");
+            Keyring.save(MySQLOptions.class.getName(), adminPassword.toCharArray(), NbBundle.getMessage(MySQLOptions.class, "MySQLOptions_AdminPassword")); // NOI18N
         }
     }
     

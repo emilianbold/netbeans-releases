@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Jan Lahoda and Pavel Flaska
  */
-public class NewClassTreeTest extends GeneratorTest {
+public class NewClassTreeTest extends GeneratorTestBase {
     
     /** Creates a new instance of TryTest */
     public NewClassTreeTest(String name) {

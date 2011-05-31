@@ -45,9 +45,7 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import org.netbeans.api.lexer.Language;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.modules.cnd.utils.MIMENames;
 
 public class HKit extends CCKit {
@@ -64,10 +62,5 @@ public class HKit extends CCKit {
     @Override
     protected Language<CppTokenId> getLanguage() {
         return CppTokenId.languageHeader();
-    }
-
-    @Override
-    protected Filter<CppTokenId> getFilter() {
-        return CndLexerUtilities.getHeaderFilter();
     }
 }

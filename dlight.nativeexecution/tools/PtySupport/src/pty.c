@@ -28,7 +28,10 @@ static void set_noecho(int);
 int main(int argc, char** argv) {
     int noecho = 0;
     int master_fd = -1;
-    int status;
+    int status = 0;
+    int envnum = 0;
+    int envsize = 0;
+    char **envvars = NULL;
     char *pty = NULL;
 
     pid_t pid, w;
@@ -45,6 +48,25 @@ int main(int argc, char** argv) {
                     exit(-1);
                 }
                 pty = argv[idx];
+                nopt += 2;
+            } else if (strcmp(argv[idx], "--env") == 0) {
+                idx++;
+                if (argv[idx] == NULL || argv[idx][0] == '\0') {
+                    printf("ERROR missing variable=value pair after --env\n");
+                    exit(-1);
+                }
+
+                // Cannot put environment here as in case of fork these 
+                // variables will affect us... 
+                // Will do this only before real execv
+                // putenv(argv[idx]);
+
+                if (envsize == envnum) {
+                    envsize += 10;
+                    envvars = realloc(envvars, sizeof (char*) * envsize);
+                }
+
+                envvars[envnum++] = argv[idx];
                 nopt += 2;
             } else if (strcmp(argv[idx], "-e") == 0) {
                 noecho = 1;
@@ -63,7 +85,12 @@ int main(int argc, char** argv) {
     /* now argv points to the executable */
 
     if (argc == 0) {
-        err_quit("usage: pty_start [-e] [-p pts_name] program [ arg ... ]");
+        //  -e          turned echoing off
+        //  -p          defines pts_name to use instead of opening a new one
+        // --env        passes additional environment variable to a program
+        //              in NAME=VALUE form. For multiple variables multiple
+        //              --env options should be used.
+        err_quit("usage: pty_start [-e] [-p pts_name] [[--env NAME=VALUE] ...] program [ arg ... ]");
         exit(-1);
     }
 
@@ -86,11 +113,22 @@ int main(int argc, char** argv) {
             set_noecho(STDIN_FILENO);
         }
 
+        // Set passed environment variables
+        
+        for (int i = 0; i < envnum; i++) {
+            putenv(envvars[i]);
+        }
+                
         if (execvp(argv[0], argv) < 0) {
             err_sys("can't execute: %s", argv[0]);
         }
     }
 
+
+    if (envvars != NULL) {
+        free(envvars);
+    }
+    
     /* parent */
 
     int loop_result = 0;

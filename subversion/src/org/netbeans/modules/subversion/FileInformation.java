@@ -150,6 +150,11 @@ public class FileInformation implements Serializable {
      */
     public static final int STATUS_VERSIONED_CONFLICT_TREE = 16384;
     public static final int STATUS_VERSIONED_CONFLICT = STATUS_VERSIONED_CONFLICT_CONTENT | STATUS_VERSIONED_CONFLICT_TREE;
+
+    /**
+     * The file is locked elsewhere
+     */
+    public static final int STATUS_LOCKED_REMOTELY = 32768;
     
     public static final int STATUS_ALL = ~0;
 
@@ -334,41 +339,53 @@ public class FileInformation implements Serializable {
     public String getStatusText(int displayStatuses) {
         int status = this.status & displayStatuses;
         ResourceBundle loc = NbBundle.getBundle(FileInformation.class);
+        String retval;
         if (status == FileInformation.STATUS_UNKNOWN) {
-            return loc.getString("CTL_FileInfoStatus_Unknown");            
+            retval = loc.getString("CTL_FileInfoStatus_Unknown");            
         } else if (match(status, FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            return loc.getString("CTL_FileInfoStatus_Excluded");
+            retval = loc.getString("CTL_FileInfoStatus_Excluded");
         } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_NewLocally");
+            retval = loc.getString("CTL_FileInfoStatus_NewLocally");
         } else if (match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             if (entry != null && entry.isCopied()) {
-                return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied");
+                retval = loc.getString("CTL_FileInfoStatus_AddedLocallyCopied");
             }
-            return loc.getString("CTL_FileInfoStatus_AddedLocally");
+            retval = loc.getString("CTL_FileInfoStatus_AddedLocally");
         } else if (match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
-            return loc.getString("CTL_FileInfoStatus_UpToDate");
+            retval = loc.getString("CTL_FileInfoStatus_UpToDate");
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {
-            return loc.getString("CTL_FileInfoStatus_TreeConflict");
+            retval = loc.getString("CTL_FileInfoStatus_TreeConflict");
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            return loc.getString("CTL_FileInfoStatus_Conflict");
+            retval = loc.getString("CTL_FileInfoStatus_Conflict");
         } else if (match(status, FileInformation.STATUS_VERSIONED_MERGE)) {
-            return loc.getString("CTL_FileInfoStatus_Merge");            
+            retval = loc.getString("CTL_FileInfoStatus_Merge");            
         } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_DeletedLocally");
+            retval = loc.getString("CTL_FileInfoStatus_DeletedLocally");
         } else if (match(status, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_RemovedLocally");
+            retval = loc.getString("CTL_FileInfoStatus_RemovedLocally");
         } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_ModifiedLocally");
-
+            retval = loc.getString("CTL_FileInfoStatus_ModifiedLocally");
         } else if (match(status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
-            return loc.getString("CTL_FileInfoStatus_NewInRepository");
+            retval = loc.getString("CTL_FileInfoStatus_NewInRepository");
         } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY)) {
-            return loc.getString("CTL_FileInfoStatus_ModifiedInRepository");
+            retval = loc.getString("CTL_FileInfoStatus_ModifiedInRepository");
         } else if (match(status, FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY)) {
-            return loc.getString("CTL_FileInfoStatus_RemovedInRepository");
+            retval = loc.getString("CTL_FileInfoStatus_RemovedInRepository");
         } else {
-            return "";   // NOI18N                     
+            retval = "";   // NOI18N                     
         }
+        if ((this.status & STATUS_LOCKED) != 0) {
+            if (!retval.isEmpty()) {
+                retval += "/"; //NOI18N
+            }
+            retval += loc.getString("CTL_FileInfoStatus_LockedLocally");
+        } else if ((this.status & STATUS_LOCKED_REMOTELY) != 0) {
+            if (!retval.isEmpty()) {
+                retval += "/"; //NOI18N
+            }
+            retval += loc.getString("CTL_FileInfoStatus_LockedRemotely");
+        }
+        return retval;
     }    
 
     /**

@@ -44,12 +44,11 @@
 
 package org.netbeans.modules.subversion.ui.project;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.commit.CommitAction;
-import org.openide.util.actions.NodeAction;
-import org.openide.util.*;
-import org.openide.nodes.Node;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -57,39 +56,50 @@ import org.openide.loaders.DataShadow;
 import org.netbeans.api.project.*;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Petr Kuzel
  */
-public final class ImportAction extends NodeAction {
+@ActionID(id = "org.netbeans.modules.subversion.ui.project.ImportAction", category = "Subversion")
+@ActionRegistration(displayName = "#BK0006", popupText="#CTL_PopupMenuItem_Import", menuText="#BK0006")
+@ActionReferences({
+   @ActionReference(path="Versioning/Subversion/Actions/Unversioned", position=1)
+})
+public final class ImportAction implements ActionListener {
     
-    public ImportAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    private VCSContext ctx;
+
+    public ImportAction(VCSContext ctx) {
+        this.ctx = ctx;
     }
 
-    public String getName() {
-        return NbBundle.getMessage(ImportAction.class, "BK0006"); // NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    protected boolean enable(Node[] nodes) {
-        if (nodes.length == 1) {
+    protected boolean isEnabled() {
+        
+        Set<File> roots = ctx.getRootFiles();
+        if (roots.size() == 1) {
+            if(!isCacheReady()) {
+                return false;
+            }
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            File dir = lookupImportDirectory(nodes[0]);
+            File dir = lookupImportDirectory(roots.iterator().next());
             if (dir != null && dir.isDirectory()) {
                 FileInformation status = cache.getCachedStatus(dir);
                 // mutually exclusive enablement logic with commit
@@ -101,27 +111,41 @@ public final class ImportAction extends NodeAction {
                         return true;
                     }
                     FileObject projectDir = p.getProjectDirectory();
-                    return FileUtil.isParentOf(projectDir, fo) == false;
+                    boolean b = FileUtil.isParentOf(projectDir, fo) == false;
+                    if(!b) {
+                        notifyImportImpossible(NbBundle.getMessage(ImportAction.class, "MSG_NoSubproject"));            
+                    } 
+                    return b;
                 }
             }
+        } else {
+            notifyImportImpossible(NbBundle.getMessage(ImportAction.class, "MSG_TooManyRoots"));            
         }
         return false;
     }
 
-    protected boolean asynchronous() {
-        return false;
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        performAction();
     }
 
-    protected void performAction(Node[] nodes) {
+    protected void performAction() {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }
 
-        Utils.logVCSActionEvent("SVN");
+        if(!isEnabled()) {
+            return;
+        }
+          
+        Utils.logVCSActionEvent("SVN");                                 
 
-        if (nodes.length == 1) {
-            final File importDirectory = lookupImportDirectory(nodes[0]);
+        Set<File> roots = ctx.getRootFiles();
+        assert roots.size() == 1; // ensured through isEnabled
+        
+        if (roots.size() == 1) {
+            final File importDirectory = lookupImportDirectory(roots.iterator().next());
             if (importDirectory != null) {
 
                 List<File> list = new ArrayList<File>(1);
@@ -130,16 +154,23 @@ public final class ImportAction extends NodeAction {
                 ImportWizard wizard = new ImportWizard(context);
                 wizard.show(); // wizard starts all neccessary task (import, commit)
             }
+        } else {
+            Subversion.LOG.warning("too many roots in selection.");             // NOI18N
         }
     }
 
-    public boolean cancel() {
-        return true;
-    }
+    private File lookupImportDirectory(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        Project project = null;
+        try {
+            project = ProjectManager.getDefault().findProject(fo);
+        } catch (IOException ex) {
+            Subversion.LOG.log(Level.WARNING, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Subversion.LOG.log(Level.WARNING, null, ex);
+        }
     
-    private File lookupImportDirectory(Node node) {
         File importDirectory = null;
-        Project project = (Project) node.getLookup().lookup(Project.class);
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -150,18 +181,17 @@ public final class ImportAction extends NodeAction {
                 importDirectory = FileUtil.toFile(project.getProjectDirectory());
             }
         } else {
-            FileObject fo = null;
-            Collection<? extends FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template<FileObject>(FileObject.class)).allInstances();
-            if (fileObjects.size() > 0) {
-                fo = fileObjects.iterator().next();
-            } else {
-                DataObject dataObject = node.getCookie(DataObject.class);
-                if (dataObject instanceof DataShadow) {
-                    dataObject = ((DataShadow) dataObject).getOriginal();
-                }
-                if (dataObject != null) {
-                    fo = dataObject.getPrimaryFile();
-                }
+            DataObject dataObject = null;
+            try {
+                dataObject = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                Subversion.LOG.log(Level.WARNING, null, ex);
+            }
+            if (dataObject instanceof DataShadow) {
+                dataObject = ((DataShadow) dataObject).getOriginal();
+            }
+            if (dataObject != null) {
+                fo = dataObject.getPrimaryFile();
             }
 
             if (fo != null) {
@@ -174,4 +204,46 @@ public final class ImportAction extends NodeAction {
         return importDirectory;
     }
     
+    private void notifyImportImpossible(String msg) {
+        NotifyDescriptor nd =
+            new NotifyDescriptor(
+                msg,
+                NbBundle.getMessage(ImportAction.class, "MSG_ImportNotAllowed"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
+    }
+
+    private boolean isCacheReady() {
+        final DialogDescriptor dd = 
+                new DialogDescriptor(
+                        NbBundle.getMessage(ImportAction.class,"MSG_CacheNotReady"), // NOI18N
+                        NbBundle.getMessage(ImportAction.class,"MSG_InitRunning"),   // NOI18N
+                        true, 
+                        new Object[]{
+                            NbBundle.getMessage(ImportAction.class,"LBL_CancelAction")}, // NOI18N
+                            null, 0, null, null);
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        final FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if(!cache.ready()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    while(!cache.ready()) {
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ex) {
+                            break;
+                        }
+                    }
+                    dialog.setVisible(false);
+                }
+            });
+            dialog.setVisible(!cache.ready());
+            return cache.ready();
+        }
+        return true;
+    }
 }

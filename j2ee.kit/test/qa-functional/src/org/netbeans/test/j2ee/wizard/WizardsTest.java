@@ -47,10 +47,11 @@ import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.j2ee.wizard.NewProjectWizardsTest.NewProjectWizardsTest4;
 
-/**
+/** Tests new file wizard for Java EE 1.4 projects.
  *
- * @author jungi
+ * @author jungi, Jiri Skrivanek
  */
 public class WizardsTest extends J2eeTestCase {
 
@@ -60,18 +61,19 @@ public class WizardsTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
-        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest4.class, "testEJBModWizard");
+        if (isRegistered(Server.GLASSFISH)) {
+            conf = conf.addTest(Suite.class);
+        }
         conf = conf.enableModules(".*").clusters(".*");
-        return isRegistered(Server.GLASSFISH)
-                ? NbModuleSuite.create(conf.addTest(Suite.class))
-                : NbModuleSuite.create(conf.addTest(J2eeTestCase.class));
+        return NbModuleSuite.create(conf);
     }
 
     public static class Suite extends NbTestSuite {
-        
+
         public Suite() {
             super();
-            addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard", "1.4"));
+            // EJB project
             addTest(new NewFileWizardsTest("testLocalSessionBean", "1.4"));
             addTest(new NewFileWizardsTest("testRemoteSessionBean", "1.4"));
             addTest(new NewFileWizardsTest("testLocalRemoteSessionBean", "1.4"));
@@ -84,21 +86,19 @@ public class WizardsTest extends J2eeTestCase {
             addTest(new NewFileWizardsTest("testQueueMdbBean", "1.4"));
             addTest(new NewFileWizardsTest("testTopicMdbBean", "1.4"));
             addTest(new NewFileWizardsTest("testServiceLocatorInEjb", "1.4"));
-//            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "1.4"));
+            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "1.4"));
             addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod", "1.4"));
-
-            addTest(new NewProjectWizardsTest("testNewEJBModWizard", "1.4"));
+            // new files are uncompilable
             addTest(new NewFileWizardsTest("testLocalBeanEntityBean", "1.4"));
             addTest(new NewFileWizardsTest("testRemoteBeanEntityBean", "1.4"));
             addTest(new NewFileWizardsTest("testLocalRemoteBeanEntityBean", "1.4"));
-
-            addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard", "1.4"));
+            // web project
+            addTest(new NewProjectWizardsTest("testWebModWizard", "1.4"));
             addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "1.4"));
-//            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "1.4"));
-
+            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "1.4"));
             addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "1.4"));
-
-            addTest(new NewProjectWizardsTest("testDefaultNewJ2eeAppWizard", "1.4"));
+            // EAR project
+            addTest(new NewProjectWizardsTest("testEnterpriseAppWizard", "1.4"));
             addTest(new NewProjectWizardsTest("closeProjects", "1.4"));
         }
     }

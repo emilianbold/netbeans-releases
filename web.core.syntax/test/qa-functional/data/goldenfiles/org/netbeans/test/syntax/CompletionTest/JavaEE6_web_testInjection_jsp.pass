@@ -1,6 +1,8 @@
 [${|}, NamedWithName beruska, ${beruska}, 361]
 NamedWithName beruska
 ConversationImpl javax.enterpr
+javax.faces.context.FacesConte
+javax.faces.component.UIViewRo
 Model model
 MyManagedBean myManagedBean
 NamedBean namedBean
@@ -12,12 +14,28 @@ facesContext
 headerValues[]
 header[]
 initParam[]
-pageContext
+javax.servlet.jsp.PageContext 
 pageScope[]
 paramValues[]
 param[]
 requestScope[]
 sessionScope[]
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 End cursor position = 371
 [${|}, MyManagedBean myManagedBean, ${myManagedBean}, 425]
 NamedWithName beruska
@@ -25,6 +43,7 @@ ConversationImpl javax.enterpr
 Model model
 MyManagedBean myManagedBean
 NamedBean namedBean
+javax.faces.context.FacesConte
 ManagedBeanWithName slunicko
 applicationScope[]
 cc
@@ -33,12 +52,29 @@ facesContext
 headerValues[]
 header[]
 initParam[]
-pageContext
+javax.servlet.jsp.PageContext 
 pageScope[]
 paramValues[]
 param[]
 requestScope[]
 sessionScope[]
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 End cursor position = 441
 [${|}, NamedBean namedBean, ${namedBean}, 476]
 NamedWithName beruska
@@ -47,6 +83,24 @@ Model model
 MyManagedBean myManagedBean
 NamedBean namedBean
 ManagedBeanWithName slunicko
+javax.faces.context.FacesConte
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 applicationScope[]
 cc
 cookie[]
@@ -54,7 +108,7 @@ facesContext
 headerValues[]
 header[]
 initParam[]
-pageContext
+javax.servlet.jsp.PageContext
 pageScope[]
 paramValues[]
 param[]
@@ -68,6 +122,7 @@ Model model
 MyManagedBean myManagedBean
 NamedBean namedBean
 ManagedBeanWithName slunicko
+javax.faces.context.FacesConte
 applicationScope[]
 cc
 cookie[]
@@ -75,10 +130,27 @@ facesContext
 headerValues[]
 header[]
 initParam[]
-pageContext
+javax.servlet.jsp.PageContext 
 pageScope[]
 paramValues[]
 param[]
 requestScope[]
 sessionScope[]
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 End cursor position = 546

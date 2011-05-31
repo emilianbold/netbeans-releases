@@ -1,1 +1,0 @@
-#if($aliasName != "")${tableName} ${aliasName}#else${tableName}#end

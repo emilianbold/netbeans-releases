@@ -79,6 +79,8 @@ import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlExcep
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.ProgressReporter;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.ProgressReporterDelegate;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -92,10 +94,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
-import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
@@ -192,6 +191,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final ProgressPanel progressPanel = new ProgressPanel();
         final JComponent progressComponent = AggregateProgressFactory.createProgressComponent(handle);
         
+        final ProgressReporter reporter = new ProgressReporterDelegate( 
+                progressContributor, progressPanel ); 
+        
         final Runnable r = new Runnable() {
 
             public void run() {
@@ -207,12 +209,15 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                             FileObject jpaControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, jpaControllerPkg.replace('.', '/'));
                             if(genSessionBean)
                             {
-                                EjbFacadeWizardIterator.generateSessionBeans(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, false, false, true);
+                                EjbFacadeWizardIterator.generateSessionBeans(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, false, false, null, null, true);
                             }
                             else
                             {
 //                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
-                                JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, false);
+                                JpaControllerIterator.generateJpaControllers(reporter, 
+                                        entities, project, jpaControllerPkg, 
+                                        jpaControllerPackageFileObject, 
+                                        embeddedPkSupport, false);
                             }
                             FileObject jsfControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, controllerPkg.replace('.', '/'));
                             if (jsf2Generator || "Facelets".equals(preferredLanguage)) {
@@ -876,6 +881,17 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 return false;
             }
 
+            // check that target server supports full JEE6 platform if Java EE 6 sources
+            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+            if (wm.getJ2eeProfile() == Profile.JAVA_EE_6_FULL || wm.getJ2eeProfile() == Profile.JAVA_EE_6_WEB) {            
+                J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
+                if (cap == null || !cap.isJsf2Included()) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            NbBundle.getMessage(PersistenceClientIterator.class, "ERR_J2ee6AndNotSufficientJ2eeServer")); // NOI18N
+                    return false;
+                }
+            }
+            
             return super.isValid();
         }
     }

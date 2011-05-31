@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.api.support;
 
 /**
@@ -47,29 +46,32 @@ package org.netbeans.modules.dlight.core.stack.api.support;
  * @author mt154047
  */
 public final class FunctionDatatableDescription {
-    private final String nameColumn;
-    private final String offsetColumn;
 
-    private final String uniqueColumnName;
+    private final String functionIDColumnName;
+    private final String functionNameColumnName;
+    private final String offsetColumnName;
+    private final String contextIDColumnName;
 
-
-    public FunctionDatatableDescription(String nameColumn, String offsetColumn, String uniqueColumnName) {
-        this.nameColumn = nameColumn;
-        this.offsetColumn = offsetColumn;
-        this.uniqueColumnName = uniqueColumnName;
+    public FunctionDatatableDescription(String functionIDColumnName, String functionNameColumnName, String offsetColumnName, String contextIDColumnName) {
+        this.functionIDColumnName = functionIDColumnName;
+        this.functionNameColumnName = functionNameColumnName;
+        this.offsetColumnName = offsetColumnName;
+        this.contextIDColumnName = contextIDColumnName;
     }
 
-
-    public String getOffsetColumn() {
-        return offsetColumn;
+    public String getFunctionIDColumnName() {
+        return functionIDColumnName;
     }
 
-    public String getUniqueColumnName() {
-        return uniqueColumnName;
+    public String getFunctionNameColumnName() {
+        return functionNameColumnName;
     }
 
-    public String getNameColumn(){
-        return nameColumn;
+    public String getOffsetColumnName() {
+        return offsetColumnName;
     }
 
+    public String getContextIDColumnName() {
+        return contextIDColumnName;
+    }
 }

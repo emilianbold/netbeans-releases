@@ -51,9 +51,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -111,7 +110,11 @@ public class OptionalEE7APIsHint extends AbstractHint {
         if (el == null) {
             return null;
         }
-        String name = el.asType().toString();
+        TypeMirror type = el.asType();
+        if (type == null) {
+            return null;
+        }
+        String name = type.toString();
         if (!(name.startsWith("javax.xml.rpc") || name.startsWith("javax.xml.registry") || name.startsWith("javax.enterprise.deploy"))) { // NOI18N
             return null;
         }

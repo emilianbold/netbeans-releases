@@ -46,6 +46,9 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -53,6 +56,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileLock;
+import org.openide.util.Exceptions;
 
 
 
@@ -123,9 +127,11 @@ public class ExeElfObject extends ExeObject {
 	return fob;
     }
 
-    private void setExecutionFlags(FileObject fob) throws IOException {
-	if (fob != null) {
-            Runtime.getRuntime().exec("/bin/chmod +x " + CndFileUtils.toFile(fob).getPath()); // NOI18N
+    private void setExecutionFlags(FileObject fob) {
+	if (fob != null && fob.isValid()) {
+            ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fob);
+            String path = CndFileUtils.normalizePath(fob);
+            ProcessUtils.execute(env, "/bin/chmod", "755", path); // NOI18N
         }
     }
 }

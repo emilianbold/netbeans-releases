@@ -1,3 +1,0 @@
-puts |>MARK_OCCURRENCES:$^!<|
-puts "Second: #{|>MARK_OCCURRENCES:$!<|}"
-puts "Third: #{|>MARK_OCCURRENCES:$!<|}"

@@ -45,8 +45,11 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -196,6 +199,48 @@ public class FreeformSourcesTest extends TestBase {
         assertEquals("ignored{file} relevant{included{file}}", expand(gs[0]));
         assertEquals(Collections.singleton(SourceGroup.PROP_CONTAINERSHIP), l.changed);
     }
+
+    public void testNonExistentRoot() throws Exception {
+        clearWorkDir();
+        final File d = getWorkDir();
+        final File proj = new File (d,"proj");
+        final File extSrcDir = new File (d,"ext");
+        proj.mkdir();
+        AntProjectHelper helper = FreeformProjectGenerator.createProject(proj, proj, "prj", null);
+        Project p = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+
+        Element data = Util.getPrimaryConfigurationData(helper);
+        Document doc = data.getOwnerDocument();
+        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), XMLUtil.findElement(data, "view", Util.NAMESPACE)).
+                appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources"));
+        sf.appendChild(doc.createElementNS(Util.NAMESPACE, "location")).appendChild(doc.createTextNode("../ext"));
+        Util.putPrimaryConfigurationData(helper, data);
+        ProjectManager.getDefault().saveProject(p);
+
+        final Sources src = ProjectUtils.getSources(p);
+        SourceGroup[] sgs = src.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals(1,sgs.length);
+        assertEquals(p.getProjectDirectory(), sgs[0].getRootFolder());
+        final FileObject extFo = FileUtil.createFolder(extSrcDir);
+        sgs = src.getSourceGroups(Sources.TYPE_GENERIC);
+        assertSourceGroupsEquals(new FileObject[] {p.getProjectDirectory(), extFo}, sgs);
+        assertEquals(p, FileOwnerQuery.getOwner(extFo));
+    }
+
+    private void assertSourceGroupsEquals(final FileObject[] expected, final SourceGroup[] sgs) {
+        assertEquals(
+            "Roots: " + Arrays.toString(expected) + " SourceGroups: " + Arrays.toString(sgs),
+            expected.length,
+            sgs.length);
+        final Set<FileObject> fos = new HashSet<FileObject>(Arrays.asList(expected));
+        for (SourceGroup sg : sgs) {
+            assertTrue(
+                "Roots: " + Arrays.toString(expected) + " SourceGroups: " + Arrays.toString(sgs),
+                fos.remove(sg.getRootFolder()));
+        }
+    }
+
     private static String expand(SourceGroup g) {
         return expand(g, g.getRootFolder());
     }

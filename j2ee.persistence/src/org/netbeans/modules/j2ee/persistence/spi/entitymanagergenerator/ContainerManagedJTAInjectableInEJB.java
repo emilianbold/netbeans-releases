@@ -90,7 +90,8 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
         if(!em.isExisting()){
             modifiedClazz = createEntityManager(Initialization.INJECT);
         }
-        if(!isEJB){
+        boolean simple = GenerationOptions.Operation.GET_EM.equals(getGenerationOptions().getOperation());//if simple (or with return etc) - no transactions
+        if(!(isEJB || simple)){
             modifiedClazz = getTreeMaker().insertClassMember(modifiedClazz, getIndexForField(modifiedClazz), createUserTransaction());
         }
         

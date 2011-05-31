@@ -35,6 +35,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -97,7 +98,11 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
         });
 
         FileObject target = df.getPrimaryFile().getFileObject(targetName, "xhtml");
-        return Collections.singleton(DataObject.find(target));
+        DataObject dob = DataObject.find(target);
+        if (dob != null) {
+            JSFPaletteUtilities.reformat(dob);
+        }
+        return Collections.singleton(dob);
     }
     
     public void initialize(TemplateWizard wiz) {

@@ -64,6 +64,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -126,15 +127,21 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
     /**
      * Register a service.
      * If the class does not have an appropriate signature, an error will be printed and the registration skipped.
-     * @param clazz the service implementation type
+     * @param clazz the service implementation type (an error will be reported if not a {@link TypeElement})
      * @param annotation the (top-level) annotation registering the service, for diagnostic purposes
      * @param type the type to which the implementation must be assignable
      * @param path a path under which to register, or "" if inapplicable
      * @param position a position at which to register, or {@link Integer#MAX_VALUE} to skip
      * @param supersedes possibly empty list of implementation to supersede
+     * @since 8.8
      */
-    protected final void register(TypeElement clazz, Class<? extends Annotation> annotation,
+    protected final void register(Element el, Class<? extends Annotation> annotation,
             TypeMirror type, String path, int position, String[] supersedes) {
+        if (el.getKind() != ElementKind.CLASS) {
+            processingEnv.getMessager().printMessage(Kind.ERROR, annotation.getName() + " is not applicable to a " + el.getKind(), el);
+            return;
+        }
+        TypeElement clazz = (TypeElement) el;
         Boolean verify = verifiedClasses.get(clazz);
         if (verify == null) {
             verify = verifyServiceProviderSignature(clazz, annotation);
@@ -291,6 +298,12 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                 }
             }
         }
+    }
+
+    @Deprecated
+    protected final void register(TypeElement el, Class<? extends Annotation> annotation,
+            TypeMirror type, String path, int position, String[] supersedes) {
+        register((Element) el, annotation, type, path, position, supersedes);
     }
 
 }

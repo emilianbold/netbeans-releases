@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -232,11 +232,20 @@ public final class StartManager {
         return pd.displayDialog();
     }
 
-    @SuppressWarnings("SleepWhileHoldingLock")
+    @SuppressWarnings({"SleepWhileHoldingLock", "SleepWhileInLoop"})
     private boolean waitForStart() throws DatabaseException {
         int tries = 0;
         while (tries <= 5 && !stopWaiting) {
             tries++;
+
+            try {
+                // wait for perform start command first
+                Thread.sleep(2000);
+            } catch (InterruptedException ie) {
+                LOGGER.log(Level.INFO, "Interrupted waiting for server to start", ie);
+                Thread.currentThread().interrupt();
+                return false;
+            }
 
             try {
                 server.reconnect();
@@ -250,14 +259,6 @@ public final class StartManager {
             } catch (TimeoutException te) {
                 errorMessage = te.getMessage();
                 LOGGER.log(Level.INFO, null, te);
-            }
-
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ie) {
-                LOGGER.log(Level.INFO, "Interrupted waiting for server to start", ie);
-                Thread.currentThread().interrupt();
-                return false;
             }
 
         }

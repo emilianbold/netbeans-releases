@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,25 +47,44 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 import org.openide.ErrorManager;
 
 /**
  *
  * @author vbk
  */
-public class ModConFactory implements ModuleConfigurationFactory {
+public class ModConFactory implements ModuleConfigurationFactory2 {
     
     /** Creates a new instance of ModConFactory */
     public ModConFactory() {
     }
     
+    @Override
     public ModuleConfiguration create(J2eeModule module) {
         ModuleConfiguration retVal = null;
         try {
-            retVal = new ModuleConfigurationImpl(module);
+            retVal = new ModuleConfigurationImpl(module, null);
         } catch (ConfigurationException ce) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+        }
+        return retVal;
+    }
+
+    @Override
+    public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
+        ModuleConfiguration retVal = null;
+        try {
+            SunDeploymentManager sunDm =
+                    (SunDeploymentManager) (new SunDeploymentFactory()).getDisconnectedDeploymentManager(instanceUrl);
+                retVal = new ModuleConfigurationImpl(j2eeModule, sunDm);
+        } catch (ConfigurationException ce) {
+            throw ce;
+        } catch (Exception ex) {
+            throw new ConfigurationException(j2eeModule.toString(), ex);
         }
         return retVal;
     }

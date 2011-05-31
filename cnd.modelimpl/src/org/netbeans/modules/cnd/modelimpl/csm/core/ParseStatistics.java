@@ -75,7 +75,7 @@ public class ParseStatistics {
     
     private boolean enabled = false;
 
-    public static final ParseStatistics getInstance() {
+    public static ParseStatistics getInstance() {
         return instance;
     }
     
@@ -85,26 +85,32 @@ public class ParseStatistics {
         }
     }
 
-    public synchronized void setEnabled(boolean on) {
+    public final void setEnabled(boolean on) {
         if (on != this.enabled) {
-            this.enabled = on;
-            if (on) {
-                projectMaps = new HashMap<CsmUID<CsmProject>, Map<CsmUID<CsmFile>, Entry> >();
-            } else {
-                projectMaps = null;
+            synchronized(this) {
+                this.enabled = on;
+                if (on) {
+                    projectMaps = new HashMap<CsmUID<CsmProject>, Map<CsmUID<CsmFile>, Entry> >();
+                } else {
+                    projectMaps = null;
+                }
             }
         }
     }
 
-    public synchronized void fileParsed(FileImpl file, APTPreprocHandler preprocHandler) {
+    public void fileParsed(FileImpl file, APTPreprocHandler preprocHandler) {
         if (enabled) {
-            getEntry(file).cnt++;
+            synchronized(this) {
+                getEntry(file).cnt++;
+            }
         }
     }
 
-    public synchronized int getParseCount(FileImpl file) {
+    public int getParseCount(FileImpl file) {
         if (enabled) {
-            return getEntry(file).cnt;
+            synchronized(this) {
+                return getEntry(file).cnt;
+            }
         } else {
             return 0;
         }
@@ -129,40 +135,48 @@ public class ParseStatistics {
         return map;
     }
 
-    public synchronized void clear() {
+    public void clear() {
         if (enabled) {
-            projectMaps.clear();
+            synchronized(this) {
+                projectMaps.clear();
+            }
         }
     }
     
-    public synchronized void clear(CsmProject project) {
+    public void clear(CsmProject project) {
         if (enabled) {
-            projectMaps.remove(UIDs.get(project));
+            synchronized(this) {
+                projectMaps.remove(UIDs.get(project));
+            }
         }
     }
     
-    public synchronized void printResults(CsmProject project) {
+    public void printResults(CsmProject project) {
         printResults(project, new PrintWriter(System.out));
     }
     
-    public synchronized void printResults(CsmProject project, PrintWriter out) {
+    public void printResults(CsmProject project, PrintWriter out) {
         if (enabled) {
-            printResults(UIDs.get(project), out);
+            synchronized(this) {
+                printResults(UIDs.get(project), out);
+            }
         } else {
             out.printf("Statistics is disabled"); //NOI18N
         }
         out.flush();
     }
     
-    public synchronized void printResults() {
+    public void printResults() {
         printResults(new PrintWriter(System.out));
     }
 
-    public synchronized void printResults(PrintWriter out) {
+    public void printResults(PrintWriter out) {
         out.printf("\nPARSING STATISTICS\n"); //NOI18N
         if (enabled) {
-            for (CsmUID<CsmProject> projectUID : projectMaps.keySet()) {
-                printResults(projectUID, out);
+            synchronized(this) {
+                for (CsmUID<CsmProject> projectUID : projectMaps.keySet()) {
+                    printResults(projectUID, out);
+                }
             }
         } else {
             out.printf("Statistics is disabled"); //NOI18N
@@ -177,6 +191,7 @@ public class ParseStatistics {
         }
         out.printf("\nPARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
         Collections.sort(entries, new Comparator<Map.Entry<CsmUID<CsmFile>, Entry>>() {
+            @Override
             public int compare(Map.Entry<CsmUID<CsmFile>, Entry> e1, Map.Entry<CsmUID<CsmFile>, Entry> e2) {
                 return e1.getValue().cnt - e2.getValue().cnt;
             }
@@ -187,7 +202,7 @@ public class ParseStatistics {
             out.printf("\t%6d %s\n", cnt, UIDUtilities.getFileName(entry.getKey())); //NOI18N
             sum += cnt;
         }
-        float avg = (entries.size() == 0) ? 0f : ((float)sum / (float)entries.size());
+        float avg = entries.isEmpty() ? 0f : ((float)sum / (float)entries.size());
         out.printf("\t%6.1f avg", avg); //NOI18N
         out.printf("\nEND OF PARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
     }

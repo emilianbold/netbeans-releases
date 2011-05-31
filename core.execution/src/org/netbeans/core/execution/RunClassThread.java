@@ -73,7 +73,7 @@ final class RunClassThread extends Thread implements IOThreadIfc {
     TaskThreadGroup mygroup;
     
     /** Is finalized? */
-    boolean finalized;
+    private boolean finalized;
 
     /**
     * @param base is a ThreadGroup we want to be in
@@ -95,7 +95,6 @@ final class RunClassThread extends Thread implements IOThreadIfc {
         this.engine = engine;
         this.task = task;
         this.run = run;
-        this.finalized = false;
         // #33789 - this thread must not be daemon otherwise it is immediately destroyed
         setDaemon(false);
         this.start();
@@ -192,13 +191,10 @@ final class RunClassThread extends Thread implements IOThreadIfc {
         return io;
     }
     
-    public synchronized boolean waitForEnd() throws InterruptedException {
-        if (finalized) {
-            return true;
+    public synchronized void waitForEnd(long timeout) throws InterruptedException {
+        if (!finalized) {
+            wait(timeout);
         }
-        
-        this.wait(1000);
-        return finalized;
     }
     
     static String generateName() {

@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
     <!--
     The disconnected-string element contains the String parameter to DeploymentFactory.getDisconnectedDeploymentManager()
     -->
-    <disconnected-string>tomcat:jakarta-tomcat-5.0.x</disconnected-string>
+    <disconnected-string>tomcat-any:jakarta-tomcat-generic</disconnected-string>
 
     <container-limitation><war-deploy/></container-limitation>
 

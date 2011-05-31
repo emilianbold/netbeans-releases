@@ -158,7 +158,7 @@ public final class CompletorUtils {
         try {
             String prefix = doc.getText(anchorOffset, caretOffset - anchorOffset);
             for (SpringXMLConfigCompletionItem item : cachedItems) {
-                if (item.getInsertPrefix().toString().startsWith(prefix)) {
+                if (item.getInsertPrefix().toString().regionMatches(!OptionCodeCompletionSettings.isCaseSensitive(), 0, prefix, 0, caretOffset - anchorOffset)) {
                     filteredItems.add(item);
                 }
             }

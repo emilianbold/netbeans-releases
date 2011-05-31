@@ -67,6 +67,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -79,7 +80,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     
     static VersioningAnnotationProvider instance;
     private static final Logger LOG = Logger.getLogger(VersioningAnnotationProvider.class.getName());
-    private static final int CACHE_SIZE = getMaxCacheSize();
+    private static final int CACHE_INITIAL_SIZE = 500;
     private static final long CACHE_ITEM_MAX_AGE = getMaxAge();
     private static final boolean ANNOTATOR_ASYNC = !"false".equals(System.getProperty("versioning.asyncAnnotator", "true")); //NOI18N
     private static final Image EMPTY_ICON = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
@@ -119,6 +120,13 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     public Action[] actions(Set files) {
         if (files.isEmpty()) return new Action[0];
 
+        if(!VersioningManager.isInitialized()) {
+            return new Action[] {
+                SystemAction.get(InitVersioningSystemAction.class),
+                SystemAction.get(InitLHSystemAction.class)
+            };
+        }
+        
         List<Action> actions = new ArrayList<Action>();
         LocalHistoryActions localHistoryAction = null;
 
@@ -172,6 +180,34 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     }
 
     public static class LocalHistoryActions extends AbstractVersioningSystemActions {
+    }
+    
+    public static class InitLHSystemAction extends InitVersioningSystemAction {
+        public InitLHSystemAction() {
+            super();
+        }
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(VersioningAnnotationProvider.class, "CTL_MenuItem_LocalHistory");
+        }
+    }
+    
+    public static class InitVersioningSystemAction extends SystemAction implements Presenter.Popup {
+
+        @Override
+        public void actionPerformed(ActionEvent ae) { }
+        @Override
+        public JMenuItem getPopupPresenter() {
+            return InitMenuItem.create(getName());            
+        }
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(VersioningAnnotationProvider.class, "CTL_MenuItem_VersioningMenu");
+        }
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
     }
     
     public abstract static class AbstractVersioningSystemActions extends SystemAction implements ContextAwareAction {
@@ -467,22 +503,11 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         private static final String ANNOTATION_TYPE_ICON = "IconCache"; //NOI18N
         private static final String ANNOTATION_TYPE_LABEL = "LabelCache"; //NOI18N
 
-        private final LinkedHashMap<ItemKey<T, KEY>, Item<T>> cachedValues = new LinkedHashMap<ItemKey<T, KEY>, Item<T>>(CACHE_SIZE) {
-            @Override
-            protected boolean removeEldestEntry(Entry<ItemKey<T, KEY>, Item<T>> eldest) {
-                if (size() >= CACHE_SIZE) {
-                    if (LOG.isLoggable(Level.FINER)) {
-                        // TODO: remove after fix
-                        LOG.log(Level.FINER, "{0}.removeEldestEntry(): {1}", new Object[]{type, eldest.getKey().getFiles()}); //NOI18N
-                    }
-                    removeFromIndex(eldest.getKey());
-                    return true;
-                }
-                return false;
-            }
-        };
         private final Object writeLock = new Object();
-        private final WeakHashMap<FileObject, Set<ItemKey<T, KEY>>> index = new WeakHashMap<FileObject, Set<ItemKey <T, KEY>>>(CACHE_SIZE);
+        private final Object LOCK_VALUES = new Object();
+        private int peekCount;
+        private LinkedHashMap<ItemKey<T, KEY>, Item<T>> cachedValues = new LinkedHashMap<ItemKey<T, KEY>, Item<T>>(CACHE_INITIAL_SIZE);
+        private WeakHashMap<FileObject, Set<ItemKey<T, KEY>>> index = new WeakHashMap<FileObject, Set<ItemKey <T, KEY>>>(CACHE_INITIAL_SIZE);
         private final LinkedHashSet<ItemKey<T, KEY>> filesToAnnotate;
         private final RequestProcessor.Task annotationRefreshTask;
         private final String type;
@@ -508,7 +533,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             }
             T cachedValue;
             boolean itemCached = false;
-            synchronized (cachedValues) {
+            synchronized (LOCK_VALUES) {
                 Item<T> cachedItem = cachedValues.get(key);
                 cachedValue = cachedItem == null ? null : cachedItem.getValue();
                 if (cachedValue != null || cachedValues.containsKey(key)) {
@@ -547,8 +572,9 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     // TODO: remove after fix
                     LOG.log(Level.FINEST, "{0}.setValue(): inserting for {1}:{2}", new Object[]{type, key.getFiles(), value}); //NOI18N
                 }
-                synchronized (cachedValues) {
+                synchronized (LOCK_VALUES) {
                     cachedValues.put(key, new Item(value));
+                    peekCount = Math.max(peekCount, cachedValues.size() + 1);
                 }
                 // reference to the key must be added to index for every file in the set
                 // so the key can be quickly found when refresh annotations event comes
@@ -578,7 +604,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                         LOG.log(Level.FINER, "{0}.removeOldValues(): {1}", new Object[]{type, e.getKey().getFiles()}); //NOI18N
                     }
                     removeFromIndex(e.getKey());
-                    synchronized (cachedValues) {
+                    synchronized (LOCK_VALUES) {
                         it.remove();
                     }
                 } else {
@@ -586,6 +612,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     break;
                 }
             }
+            shrinkMaps();
         }
 
         /**
@@ -676,7 +703,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                             // TODO: remove after fix
                             LOG.log(Level.FINER, "{0}.removeAllFor(): remove from cache: {1}", new Object[]{type, key.getFiles()}); //NOI18N
                         }
-                        synchronized (cachedValues) {
+                        synchronized (LOCK_VALUES) {
                             cachedValues.remove(key);
                         }
                     }
@@ -689,6 +716,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                         removeFromIndex(key);
                     }
                 }
+                shrinkMaps();
             }
         }
 
@@ -711,10 +739,23 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         private void removeAll() {
             synchronized (writeLock) {
                 allCleared = true;
-                synchronized (cachedValues) {
+                synchronized (LOCK_VALUES) {
                     cachedValues.clear();
                 }
                 index.clear();
+                shrinkMaps();
+            }
+        }
+
+        private void shrinkMaps () {
+            assert Thread.holdsLock(writeLock);
+            if (peekCount > CACHE_INITIAL_SIZE && peekCount > cachedValues.size() * 4) {
+                LOG.log(Level.FINER, "{0}.shrinkMaps(): last peek was {1}", new Object[] { type, peekCount }); //NOI18N
+                synchronized (LOCK_VALUES) {
+                    cachedValues = new LinkedHashMap<ItemKey<T, KEY>, Item<T>>(cachedValues);
+                    index = new WeakHashMap<FileObject, Set<ItemKey<T, KEY>>>(index);
+                    peekCount = cachedValues.size();
+                }
             }
         }
 
@@ -825,24 +866,6 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
     }
 
-    private static int getMaxCacheSize () {
-        String cacheSizeProp = System.getProperty("versioning.annotator.cacheSize", "0"); //NOI18N
-        int cacheSize = 0;
-        try {
-            if (cacheSizeProp != null) {
-                cacheSize = Integer.parseInt(cacheSizeProp);
-            }
-        } catch (NumberFormatException ex) {
-            LOG.log(Level.INFO, "Max cache size: " + cacheSizeProp, ex); //NOI18N
-            cacheSize = 0;
-        }
-        if (cacheSize < 250) {
-            cacheSize = 500;
-        }
-        LOG.log(Level.FINE, "getMaxCacheSize(): " + cacheSize);         //NOI18N
-        return cacheSize;
-    }
-
     private static long getMaxAge () {
         String cacheItemAgeProp = System.getProperty("versioning.annotator.cacheItem.maxAge", "600000"); //NOI18N - 10 minutes is the default value
         long cacheItemAge = 0;
@@ -857,7 +880,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         if (cacheItemAge != -1 && cacheItemAge < 60000) { // 1 minute is the minimal value
             cacheItemAge = 10 * 60 * 1000; // 10 minutes as default
         }
-        LOG.log(Level.FINE, "getMaxAge(): " + cacheItemAge);            //NOI18N
+        LOG.log(Level.FINE, "getMaxAge(): {0}", cacheItemAge); //NOI18N
         return cacheItemAge;
     }
 

@@ -97,6 +97,29 @@ public class HideFieldTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
 
+    public void testDisabled() throws Exception {
+        HideField hint = new HideField();
+        String origSetting = hint.getPreferences(null).get(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, null);
+        try {
+            hint.getPreferences(null).putBoolean(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, false);
+            
+            String code = "package test; class Test {" +
+                "  public static int HH;" +
+                "}" +
+                "class Test2 extends Test {" +
+                "  public static int H|H;" +
+                "}";
+
+            performAnalysisTest("test/Test.java", code);
+        } finally {
+            if (origSetting == null) {
+                hint.getPreferences(null).remove(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS);
+            } else {
+                hint.getPreferences(null).put(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, origSetting);
+            }
+        }
+    }
+
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return new HideField().run(info, path);

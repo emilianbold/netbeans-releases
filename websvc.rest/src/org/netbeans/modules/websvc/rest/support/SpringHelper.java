@@ -114,7 +114,7 @@ public class SpringHelper {
         }
         helper = new DOMHelper(fobj);
 
-        Element emfElement = helper.findElementById(EMF_ID);
+        Element emfElement = helper.findElement(BEAN_TAG, ID_ATTR, EMF_ID);
 
         if (emfElement != null) {
             return;
@@ -156,7 +156,7 @@ public class SpringHelper {
     private FileObject getApplicationContextXml(Project project) {
         RestSupport rs = RestUtils.getRestSupport(project);
         if (rs != null) {
-            return ((WebProjectRestSupport) rs).getApplicationContextXml();
+            return rs.getApplicationContextXml();
         }
         return null;
     }

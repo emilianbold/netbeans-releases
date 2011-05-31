@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
-import java.lang.String;
 import java.util.HashMap;
 
 public interface StateModel {

@@ -86,12 +86,9 @@ import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
-import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.codegen.RestGenerationOptions;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
-import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -234,14 +231,6 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + REST_FACADE_SUFFIX, null);
         createdFiles.add(facade);
 
-        // generate methods for the facade
-        EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
-        List<GenerationOptions> methodOptions = getMethodOptions(entityFQN, variableName);
-        for (GenerationOptions each : methodOptions){
-            generator.generate(each, ContainerManagedJTAInjectableInEJB.class);
-        }
-        modifyEntityManager( methodOptions, facade);
-
         // create the interfaces
         final String localInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_LOCAL_SUFFIX, targetFolder);
         final String remoteInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_REMOTE_SUFFIX, targetFolder);
@@ -292,10 +281,10 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 for(RestGenerationOptions option: restGenerationOptions) {
 
                     ModifiersTree modifiersTree =
-                            maker.addModifiersAnnotation(publicModifiers, genUtils.createAnnotation(option.getOperation().getMethod()));
+                            maker.addModifiersAnnotation(publicModifiers, genUtils.createAnnotation(option.getRestMethod().getMethod()));
 
                      // add @Path annotation
-                    String uriPath = option.getOperation().getUriPath();
+                    String uriPath = option.getRestMethod().getUriPath();
                     if (uriPath != null) {
                         ExpressionTree annArgument = maker.Literal(uriPath);
                         modifiersTree =
@@ -304,7 +293,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
 
                     }
                     
-                    if ( option.getOperation().overrides() ){
+                    if ( option.getRestMethod().overrides() ){
                         modifiersTree =
                             maker.addModifiersAnnotation(modifiersTree,
                             genUtils.createAnnotation(Override.class.getCanonicalName()));
@@ -374,7 +363,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                     members.add(
                                 maker.Method(
                                 modifiersTree,
-                                option.getOperation().getMethodName(),
+                                option.getRestMethod().getMethodName(),
                                 returnType,
                                 Collections.EMPTY_LIST,
                                 vars,
@@ -392,11 +381,6 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 modifiersTree =
                         maker.addModifiersAnnotation(modifiersTree, genUtils.createAnnotation(RestConstants.PATH, Collections.<ExpressionTree>singletonList(annArgument)));
                 
-                if ( Util.isCDIEnabled(project)){
-                    modifiersTree =maker.addModifiersAnnotation(modifiersTree,
-                            genUtils.createAnnotation(Constants.FQN_REQUESTED_SCOPE));
-                }
-
                 ClassTree newClassTree = maker.Class(
                         modifiersTree,
                         classTree.getSimpleName(),
@@ -419,6 +403,14 @@ public class EjbFacadeGenerator implements FacadeGenerator {
             }
         }
         JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
+        
+        // generate methods for the facade
+        EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
+        List<GenerationOptions> methodOptions = getMethodOptions(entityFQN, variableName);
+        for (GenerationOptions each : methodOptions){
+            generator.generate(each, ContainerManagedJTAInjectableInEJB.class);
+        }
+        modifyEntityManager( methodOptions, facade);
 
         return createdFiles;
     }
@@ -643,7 +635,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         String idType = "id".equals(paramArg) ? idClass : "java.lang.String"; //NOI18N
 
         RestGenerationOptions createOptions = new RestGenerationOptions();
-        createOptions.setOperation(RestGenerationOptions.Operation.CREATE);
+        createOptions.setRestMethod(Operation.CREATE);
         createOptions.setReturnType("void"); //NOI18N
         createOptions.setParameterNames(new String[]{"entity"}); //NOI18N
         createOptions.setParameterTypes(new String[]{entityFQN});
@@ -651,7 +643,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         createOptions.setBody("super.create(entity);"); //NOI18N
 
         RestGenerationOptions editOptions = new RestGenerationOptions();
-        editOptions.setOperation(RestGenerationOptions.Operation.EDIT);
+        editOptions.setRestMethod(Operation.EDIT);
         editOptions.setReturnType("void");//NOI18N
         editOptions.setParameterNames(new String[]{"entity"}); //NOI18N
         editOptions.setParameterTypes(new String[]{entityFQN}); //NOI18N
@@ -659,7 +651,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         editOptions.setBody("super.edit(entity);"); //NOI18N
 
         RestGenerationOptions destroyOptions = new RestGenerationOptions();
-        destroyOptions.setOperation(RestGenerationOptions.Operation.REMOVE);
+        destroyOptions.setRestMethod(Operation.REMOVE);
         destroyOptions.setReturnType("void");//NOI18N
         destroyOptions.setParameterNames(new String[]{"id"}); //NOI18N
         destroyOptions.setParameterTypes(new String[]{idType}); //NOI18N
@@ -667,7 +659,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         destroyOptions.setBody("super.remove(super.find("+paramArg+"));"); //NOI18N
 
         RestGenerationOptions findOptions = new RestGenerationOptions();
-        findOptions.setOperation(RestGenerationOptions.Operation.FIND);
+        findOptions.setRestMethod(Operation.FIND);
         findOptions.setReturnType(entityFQN);//NOI18N
         findOptions.setProduces(new String[]{"application/xml", "application/json"}); //NOI18N
         findOptions.setParameterNames(new String[]{"id"}); //NOI18N
@@ -676,13 +668,13 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         findOptions.setBody("return super.find("+paramArg+");"); //NOI18N
 
         RestGenerationOptions findAllOptions = new RestGenerationOptions();
-        findAllOptions.setOperation(RestGenerationOptions.Operation.FIND_ALL);
+        findAllOptions.setRestMethod(Operation.FIND_ALL);
         findAllOptions.setReturnType("java.util.List<" + entityFQN + ">");//NOI18N
         findAllOptions.setProduces(new String[]{"application/xml", "application/json"});
         findAllOptions.setBody("return super.findAll();");
 
         RestGenerationOptions findSubOptions = new RestGenerationOptions();
-        findSubOptions.setOperation(RestGenerationOptions.Operation.FIND_RANGE);
+        findSubOptions.setRestMethod(Operation.FIND_RANGE);
         findSubOptions.setReturnType("java.util.List<" + entityFQN + ">");//NOI18N
         findSubOptions.setProduces(new String[]{"application/xml", "application/json"}); //NOI18N
         findSubOptions.setParameterNames(new String[]{"from", "to"}); //NOI18N
@@ -691,7 +683,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         findSubOptions.setBody("return super.findRange(new int[] {from, to});"); //NOI18N
 
         RestGenerationOptions countOptions = new RestGenerationOptions();
-        countOptions.setOperation(RestGenerationOptions.Operation.COUNT);
+        countOptions.setRestMethod(Operation.COUNT);
         countOptions.setReturnType("java.lang.String");//NOI18N
         countOptions.setProduces(new String[]{"text/plain"}); //NOI18N
         countOptions.setBody("return String.valueOf(super.count());"); //NOI18N

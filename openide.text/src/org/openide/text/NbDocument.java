@@ -482,8 +482,11 @@ public final class NbDocument extends Object {
         }
     }
 
-    /** Add annotation to the document. For annotation of whole line
+    /**
+     * Add annotation to the document. For annotation of whole line
      * the length parameter can be ignored (specify value -1).
+     * <br/>
+     * Note: since 6.35 the requests (delegated to document) are no longer replanned to EDT.
      * @param doc the document which will be annotated
      * @param startPos position which represent begining
      * of the annotated text
@@ -498,21 +501,13 @@ public final class NbDocument extends Object {
         if (!(doc instanceof Annotatable)) {
             return;
         }
-
-        if (SwingUtilities.isEventDispatchThread()) {
-            ((Annotatable) doc).addAnnotation(startPos, length, annotation);
-        } else {
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                    public void run() {
-                        ((Annotatable) doc).addAnnotation(startPos, length, annotation);
-                    }
-                }
-            );
-        }
+        ((Annotatable) doc).addAnnotation(startPos, length, annotation);
     }
 
-    /** Removal of added annotation.
+    /**
+     * Removal of added annotation.
+     * <br/>
+     * Note: since 6.35 the requests (delegated to document) are no longer replanned to EDT.
      * @param doc the annotated document
      * @param annotation annotation which is going to be removed
      * @since 1.20
@@ -521,18 +516,7 @@ public final class NbDocument extends Object {
         if (!(doc instanceof Annotatable)) {
             return;
         }
-
-        if (SwingUtilities.isEventDispatchThread()) {
-            ((Annotatable) doc).removeAnnotation(annotation);
-        } else {
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                    public void run() {
-                        ((Annotatable) doc).removeAnnotation(annotation);
-                    }
-                }
-            );
-        }
+        ((Annotatable) doc).removeAnnotation(annotation);
     }
 
     /** Specialized version of document that knows how to lock the document

@@ -85,7 +85,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
     protected void setUp() throws Exception {
         MockLookup.setLayersAndInstances();
         clearWorkDir();
-        d = J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null).getProjectDirectory();
+        d = J2SEProjectGenerator.createProject(getWorkDir(), "test", null, null, null, false).getProjectDirectory();
         p = (J2SEProject) ProjectManager.getDefault().findProject(d);
         pcp = p.getLookup().lookup(ProjectConfigurationProvider.class);
         assertNotNull(pcp);

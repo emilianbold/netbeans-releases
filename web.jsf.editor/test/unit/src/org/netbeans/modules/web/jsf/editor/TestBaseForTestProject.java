@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -48,6 +49,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import java.util.prefs.PreferencesFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
@@ -81,9 +84,10 @@ public class TestBaseForTestProject extends TestBase {
 
         //disable info exceptions from j2eeserver
         Logger.getLogger("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry").setLevel(Level.SEVERE);
-
-        //so InstalledFileLocatorImpl finds the jsf "modules/ext/jsf-2_0/jsf-impl.jar"
-        System.setProperty("netbeans.dirs", "/Volumes/Mercurial/web-main/nbbuild/netbeans/enterprise");
+        
+        //the InstalledFileLocatorImpl needs the netbeans.dirs properly set 
+        //so it can find the jsf "modules/ext/jsf-2_0/jsf-impl.jar"
+        assertNotNull("the netbeans.dirs property must be specified!", System.getProperty("netbeans.dirs"));
 
         this.projectFo = getTestFile("testWebProject");
         assertNotNull(projectFo);

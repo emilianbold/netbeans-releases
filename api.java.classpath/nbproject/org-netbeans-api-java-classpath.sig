@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.25
+#Version 1.28.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -68,6 +68,7 @@ meth public final java.lang.String getResourceName(org.openide.filesystems.FileO
 meth public final java.lang.String getResourceName(org.openide.filesystems.FileObject,char,boolean)
 meth public final java.util.List<org.openide.filesystems.FileObject> findAllResources(java.lang.String)
 meth public final org.openide.filesystems.FileObject findOwnerRoot(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public final org.openide.filesystems.FileObject findResource(java.lang.String)
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
@@ -76,6 +77,9 @@ meth public java.lang.String toString(org.netbeans.api.java.classpath.ClassPath$
 meth public java.util.List<org.netbeans.api.java.classpath.ClassPath$Entry> entries()
 meth public org.openide.filesystems.FileObject[] getRoots()
 meth public static org.netbeans.api.java.classpath.ClassPath getClassPath(org.openide.filesystems.FileObject,java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds EMPTY_REF,LOG,caller,entriesCache,impl,implementations,invalidEntries,invalidRoots,pListener,propSupport,refClassLoader,root2Filter,rootsCache,rootsListener,weakPListeners
 hcls RootsListener,SPIListener
@@ -94,7 +98,7 @@ meth public java.net.URL getURL()
 meth public org.netbeans.api.java.classpath.ClassPath getDefiningClassPath()
 meth public org.openide.filesystems.FileObject getRoot()
 supr java.lang.Object
-hfds filter,lastError,root,url
+hfds filter,isDataResult,lastError,root,url
 
 CLSS public final static !enum org.netbeans.api.java.classpath.ClassPath$PathConversionMode
  outer org.netbeans.api.java.classpath.ClassPath

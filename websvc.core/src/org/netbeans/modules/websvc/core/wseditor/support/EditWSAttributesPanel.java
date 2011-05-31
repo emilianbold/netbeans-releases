@@ -49,6 +49,7 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
+import org.netbeans.modules.websvc.api.wseditor.InvalidDataException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -70,7 +71,7 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
         description = new StringBuffer("");
     }
     
-    public void addTabs(Set<WSEditor> editors, Node node){
+    public void addTabs(Set<WSEditor> editors, Node node) throws InvalidDataException {
         jTabbedPane1.removeAll();
         treeMap.clear();
         

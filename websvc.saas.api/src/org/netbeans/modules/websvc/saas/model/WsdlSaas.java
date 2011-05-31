@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -139,18 +140,33 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     }
 
     @Override
-    public void toStateReady(boolean synchronous) {
+    public void toStateReady(final boolean synchronous) {
+        if ( synchronous ){
+            doToStateReady(synchronous);
+        }
+        else {
+            new RequestProcessor( WsdlSaas.class).post( new Runnable() {
+                
+                @Override
+                public void run() {
+                    doToStateReady(synchronous);
+                }
+            });
+        }
+    }
+
+    private void doToStateReady(boolean waitReady ) {
         if (getState() == State.REMOVED) {
             return;
         }
         if (wsData == null) {
             String serviceName = getDefaultServiceName();
-            wsData = WsdlUtil.getWsdlData(getUrl(), serviceName, synchronous); //NOI18N
+            wsData = WsdlUtil.getWsdlData(getUrl(), serviceName, true); //NOI18N
 
             // first-time the call will return null
             if (wsData == null) {
                 wsData = WsdlUtil.addWsdlData(getUrl(), getPackageName());
-                if (wsData != null && synchronous) {
+                if (wsData != null && waitReady ) {
                     int count = 0;
                     while (!wsData.isReady() && count < 100) {
                         try {

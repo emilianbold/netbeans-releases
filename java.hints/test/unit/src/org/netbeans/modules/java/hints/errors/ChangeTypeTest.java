@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -138,7 +139,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
     public void testCapturedWildcard1() throws Exception {
         performFixTest("test/Test.java",
                 "package test; import java.util.List; public class Test {private void test() {String o = |test1();} private List<? extends CharSequence> test1() {return null;}}",
-                "Change type of o to List<? extends CharSequence>",
+                "Change type of o to List&lt;? extends CharSequence>",
                 "package test; import java.util.List; public class Test {private void test() { List<? extends CharSequence> o = test1();} private List<? extends CharSequence> test1() {return null;}}");
     }
 
@@ -184,6 +185,13 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void foo(Object[] it) { for (Object o : it) { } } }");
     }
 
+    public void testGenericsEscaped() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; import java.util.*; public class Test {public void foo() { List<Number> l = |new ArrayList<String>(); } }",
+                       "Change type of l to ArrayList&lt;String>",
+                       "package test; import java.util.*; public class Test {public void foo() { ArrayList<String> l = new ArrayList<String>(); } }");
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
         List<Fix> fixes = new ChangeType().run(info, null, pos, path, null);
         List<Fix> result=  new LinkedList<Fix>();
@@ -201,4 +209,8 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
         return ((ChangeTypeFix) f).getText();
     }
     
+    static {
+        NbBundle.setBranding("test");
+    }
+
 }

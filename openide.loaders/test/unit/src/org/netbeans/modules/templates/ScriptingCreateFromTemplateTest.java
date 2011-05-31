@@ -84,13 +84,12 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
-        os.write("${encoding}".getBytes());
+        os.write("print(encoding)".getBytes());
         os.close();
         assertEquals("content/unknown", fo.getMIMEType());
         fo.setAttribute ("template", Boolean.TRUE);
         assertEquals("content/unknown", fo.getMIMEType());
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
-        assertEquals("text/x-freemarker", fo.getMIMEType());
+        fo.setAttribute("javax.script.ScriptEngine", "js");
         
         DataObject obj = DataObject.find(fo);
         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
@@ -116,10 +115,10 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject template = FileUtil.createData(root, "simple.pl");
         OutputStream os = template.getOutputStream();
-        os.write("#!/usr/bin/perl\n# ${license}\n# ${name} in ${nameAndExt}\n".getBytes());
+        os.write("println('#!/usr/bin/perl'); print('# ');println(license);print('# ');print(name);print(' in ');println(nameAndExt);".getBytes());
         os.close();
         template.setAttribute("template", true);
-        template.setAttribute("javax.script.ScriptEngine", "freemarker");
+        template.setAttribute("javax.script.ScriptEngine", "js");
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("license", "GPL");
         parameters.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
@@ -164,7 +163,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         os.write("test".getBytes());
         os.close();
         fo.setAttribute ("template", Boolean.TRUE);
-        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        fo.setAttribute("javax.script.ScriptEngine", "js");
 
         MockServices.setServices(MockMimeLookup.class);
         MockMimeLookup.setInstances(MimePath.parse("content/unknown"), new TestEditorKit());

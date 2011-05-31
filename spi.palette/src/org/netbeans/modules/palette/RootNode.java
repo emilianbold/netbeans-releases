@@ -204,6 +204,11 @@ public final class RootNode extends FilterNode {
         protected Node copyNode(Node node) {
             return new CategoryNode( node, lkp );
         }
+
+        @Override
+        public int getNodesCount(boolean optimalResult) {
+            return getNodes(optimalResult).length;
+        }
         
         @Override
         protected Node[] createNodes(Node key) {

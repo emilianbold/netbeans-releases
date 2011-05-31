@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.api;
 
-import java.awt.Component;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * 
@@ -50,5 +49,5 @@ import java.util.List;
  */
 public interface VisualizerToolbarComponentsProvider {
 
-    public List<Component> getToolbarComponents();
+    public Collection<VisualizerToolbarComponent> getToolbarComponents();
 }

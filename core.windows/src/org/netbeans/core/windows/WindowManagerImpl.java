@@ -110,6 +110,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** flag that prevents calling Exclusive.run on each main window repaint */
     private boolean exclusivesCompleted = false;
+    /** possibly stacktrace of creator */
+    private Throwable createdBy;
 
     /** Default constructor. Don't use directly, use getDefault()
      * instead.
@@ -118,7 +120,16 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         synchronized(LOCK_INIT) {
             // a static object to synchronize on
             if(defaultInstance != null) {
-                throw new IllegalStateException("Instance already exists"); // NOI18N
+                IllegalStateException ex = new IllegalStateException("Instance already exists"); // NOI18N
+                if (createdBy != null) {
+                    ex.initCause(createdBy);
+                }
+                throw ex;
+            }
+            boolean on = false;
+            assert on = true;
+            if (on) {
+                createdBy = new Exception("createdBy");
             }
             defaultInstance = this;
         }

@@ -232,9 +232,6 @@ public class L10nTask extends Task {
                     
                     File oneFile = new File(tmpDir, file);
                     zipFileSet.setSrc(oneFile);
-                    file = file.replaceAll("^visualweb","vw");
-                    file = file.replaceAll("visualweb-","vw-");
-                    file = file.replaceAll("ravehelp-rave_nbpack","rh");
                     file = file.replaceAll("org-netbeans-modules-", "");
                     file = file.replaceAll("/netbeans/modules/", "/");
                     file = file.replaceAll("\\.nbm/", "/");

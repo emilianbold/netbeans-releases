@@ -78,6 +78,9 @@ namespace {
     
         string s;
         getline(cin, s);
+        if (cin.eof() || cin.fail()) {
+            exit(EXIT_FAILURE);
+        }
         int amount = strtol(s.c_str(), 0, 10);
     
         cout << endl;
@@ -102,6 +105,9 @@ namespace {
     
         string s;
         getline(cin, s);
+        if (cin.eof() || cin.fail()) {
+            exit(EXIT_FAILURE);
+        }
     
         cout << endl;
     
@@ -121,6 +127,9 @@ int main(int argc, char** argv) {
         outCustomersList();
         cout << "Enter customer name: ";
         getline(cin, customerName);
+        if (cin.eof() || cin.fail()) {
+            exit(EXIT_FAILURE);
+        }
         discount = getDiscountFor(customerName);
         
         if (discount == -1) {

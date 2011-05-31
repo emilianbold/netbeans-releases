@@ -67,9 +67,10 @@ cd "$NETBEANS_INSTALL_DIR"
 "$dirname"/perm.sh
 
 #Fix for 151681
-#Go to the /Application/NetBeans folder to change its permissions
+#Go to the /Application/NetBeans folder to change its permissions and ownership
 cd ../
 chmod g+w .
+chown root:wheel .
 
 #add Product ID
 "$dirname"/addproduct_id.sh "NB"

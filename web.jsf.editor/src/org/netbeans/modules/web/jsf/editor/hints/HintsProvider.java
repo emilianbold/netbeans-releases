@@ -55,6 +55,10 @@ import org.netbeans.modules.csl.api.RuleContext;
  * @author marekfukala
  */
 public abstract class HintsProvider {
+    
+    protected boolean requiresDocument() {
+        return true;
+    }
 
     public abstract List<Hint> compute(RuleContext context);
 

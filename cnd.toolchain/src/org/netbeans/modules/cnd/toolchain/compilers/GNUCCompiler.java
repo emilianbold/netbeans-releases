@@ -64,8 +64,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     public GNUCCompiler createCopy(CompilerFlavor flavor) {
         GNUCCompiler copy = new GNUCCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
-            copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
-            copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+            copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
         }
         return copy;
     }

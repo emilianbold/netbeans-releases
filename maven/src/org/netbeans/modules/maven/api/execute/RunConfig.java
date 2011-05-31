@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
@@ -104,7 +105,7 @@ public interface RunConfig {
      * 
      * @return
      */
-    Properties getProperties();
+    @NonNull Properties getProperties();
 
     /**
      * use the properties in the parameter for execution. Will not necessarily use the

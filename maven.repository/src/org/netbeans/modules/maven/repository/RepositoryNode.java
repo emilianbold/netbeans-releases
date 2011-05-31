@@ -45,6 +45,7 @@ import java.awt.Image;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -54,6 +55,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.repository.register.RepositoryRegisterUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
@@ -130,7 +132,7 @@ public class RepositoryNode extends AbstractNode {
 
     @Override
     public boolean canDestroy() {
-        return !info.isLocal();
+        return !info.getId().equals("local");
     }
 
     @Override
@@ -221,7 +223,13 @@ public class RepositoryNode extends AbstractNode {
                     });
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (rrui.getButton() == ret) {
-                RepositoryInfo info = rrui.getRepositoryInfo();
+                RepositoryInfo info;
+                try {
+                    info = rrui.getRepositoryInfo();
+                } catch (URISyntaxException x) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    return;
+                }
                 RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
                 RepositoryNode.this.info = info;
                 setDisplayName(info.getName());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -228,8 +228,18 @@ public final class Utils {
     }
     
     public static String getInstanceReleaseID(J2eeModuleProvider jmp) {
-        return jmp.getServerInstanceID().
-                replaceFirst(".*\\]deployer:","").replaceFirst("\\:.*$", ""); // NOI18N
+        String retVal = "bogusID";
+        try {
+            String sid = jmp.getServerInstanceID();
+
+            if (null != sid) {
+                retVal = sid.replaceFirst(".*\\]deployer:", "").replaceFirst("\\:.*$", ""); // NOI18N
+            }
+        } catch (NullPointerException npe) {
+            Logger.getLogger("glassfish").log(Level.WARNING,
+                    "could not get valid InstanceReleaseID from {0}", jmp.getServerInstanceID());
+        }
+        return retVal;
     }
 
 }

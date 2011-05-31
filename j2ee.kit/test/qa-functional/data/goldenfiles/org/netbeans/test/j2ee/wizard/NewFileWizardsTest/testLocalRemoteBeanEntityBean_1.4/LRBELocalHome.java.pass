@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ejbs.entity.bean;
 
 import javax.ejb.EJBLocalHome;
@@ -10,10 +9,9 @@ import javax.ejb.FinderException;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 public interface LRBELocalHome extends EJBLocalHome {
-
-    ejbs.entity.bean.LRBELocal findByPrimaryKey(java.lang.Long key) throws FinderException;
     
+    ejbs.entity.bean.LRBELocal findByPrimaryKey(java.lang.Long key) throws FinderException;
 }

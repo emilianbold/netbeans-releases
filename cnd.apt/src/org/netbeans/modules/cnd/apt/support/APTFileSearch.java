@@ -73,4 +73,11 @@ public final class APTFileSearch {
     public String searchInclude(String include, CharSequence basePath) {
         return impl.searchInclude(include, basePath);
     }
+
+    @Override
+    public String toString() {
+        return "APTFileSearch{" + "impl=" + impl + '}'; // NOI18N
+    }
+    
+    
 }

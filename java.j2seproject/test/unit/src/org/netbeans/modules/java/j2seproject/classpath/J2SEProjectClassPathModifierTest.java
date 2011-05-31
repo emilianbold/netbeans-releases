@@ -101,7 +101,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         scratch = FileUtil.toFileObject(getWorkDir());
         FileObject projdir = scratch.createFolder("proj");  //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        this.helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null); //NOI18N
+        this.helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false); //NOI18N
         this.eval = this.helper.getStandardPropertyEvaluator();
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         this.prj = FileOwnerQuery.getOwner(projdir);
@@ -142,7 +142,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
     public void testAddRemoveArtifact () throws Exception {
         FileObject projdir = scratch.createFolder("libPrj");  //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        AntProjectHelper h = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"libProj",null,null,null); //NOI18N
+        AntProjectHelper h = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"libProj",null,null,null, false); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         Project libPrj = FileOwnerQuery.getOwner(projdir);
         assertNotNull (this.prj);

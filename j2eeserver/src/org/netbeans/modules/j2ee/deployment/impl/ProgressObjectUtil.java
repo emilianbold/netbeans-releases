@@ -46,10 +46,10 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
@@ -80,7 +80,7 @@ public class ProgressObjectUtil {
      * 
      * @throws TimedOutException when the task times out.
      */
-    public static boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) throws TimedOutException {
+    public static boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) throws TimeoutException {
         assert po != null;
         assert ui != null;
         // There may be a problem if server reports RELEASED as final state
@@ -119,7 +119,7 @@ public class ProgressObjectUtil {
                         } else {
                             progressFinished.await(timeout, TimeUnit.MILLISECONDS);
                             if (progressFinished.getCount() > 0) {
-                                throw new TimedOutException();
+                                throw new TimeoutException();
                             }
                         }
                     } catch (InterruptedException e) {

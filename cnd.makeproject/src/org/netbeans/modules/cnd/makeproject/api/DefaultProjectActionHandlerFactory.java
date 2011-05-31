@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -60,9 +61,11 @@ public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerF
      *          <code>true</code> otherwise
      */
     @Override
-    public boolean canHandle(ProjectActionEvent.Type type, Configuration configuration) {
+    public boolean canHandle(ProjectActionEvent.Type type, Lookup context, Configuration configuration) {
         if (type == PredefinedType.DEBUG ||
-            type == PredefinedType.DEBUG_STEPINTO) {
+            type == PredefinedType.DEBUG_STEPINTO ||
+            type == PredefinedType.DEBUG_TEST ||
+            type == PredefinedType.DEBUG_STEPINTO_TEST) {
             return false;
         } else {
             return type instanceof PredefinedType;
@@ -76,7 +79,7 @@ public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerF
 
     @Override
     public boolean canHandle(ProjectActionEvent pae) {
-        return canHandle(pae.getType(), pae.getConfiguration());
+        return canHandle(pae.getType(), pae.getContext(), pae.getConfiguration());
     }
 
 }

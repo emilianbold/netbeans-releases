@@ -49,6 +49,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.modules.spring.beans.completion.OptionCodeCompletionSettings;
 
 /**
  * Finds all simple bean properties starting with a specified prefix on the specified type
@@ -134,6 +135,6 @@ public class PropertyFinder {
     
     private boolean match(String propName) {
         int length = matchType == MatchType.PREFIX ? matchText.length() : Math.max(propName.length(), matchText.length());
-        return propName.regionMatches(0, matchText, 0, length);
+        return propName.regionMatches(!OptionCodeCompletionSettings.isCaseSensitive(), 0, matchText, 0, length);
     }
 }

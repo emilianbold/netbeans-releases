@@ -61,14 +61,12 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -87,7 +85,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -95,7 +92,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
@@ -147,7 +143,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject, Project project) {
         if (project == null) {
-            project = findInOpenedProject(fileObject);
+            project = FileOwnerQuery.getOwner(fileObject);
         }
         ExecutionEnvironment developmentHost = null;
         if (project != null) {
@@ -166,24 +162,6 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         return developmentHost;
-    }
-
-    private static Project findInOpenedProject(FileObject fileObject) {
-        // First platform provider uses simplified algorithm for search that finds project in parent folder.
-        // Fixed algorithm try to find opened project by second make project provider.
-        //return FileOwnerQuery.getOwner(fileObject);
-        Collection<? extends FileOwnerQueryImplementation> instances = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
-        for (FileOwnerQueryImplementation provider : instances) {
-            Project project = provider.getOwner(fileObject);
-            if (project != null) {
-                for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                    if (project == p) {
-                        return project;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private static Project findProject(Node node) {
@@ -217,7 +195,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             project = findProject(node);
         }
         if (project == null) {
-            project = findInOpenedProject(fileObject);
+            project = FileOwnerQuery.getOwner(fileObject);
         }
         CompilerSet set = null;
         if (project != null) {
@@ -493,17 +471,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             return null;
         }
         if (execEnv.isRemote()) {
-            RemoteProject remoteProject = null;
-            if (project != null) {
-                remoteProject = project.getLookup().lookup(RemoteProject.class);
-            }
-            PathMap mapper;
-            if (remoteProject != null) {
-                mapper = remoteProject.getSyncFactory().getPathMap(execEnv);
-            } else {
-                mapper = HostInfoProvider.getMapper(execEnv);
-            }
-            return mapper.getRemotePath(localDir, false);
+            return RemoteSyncSupport.getPathMap(execEnv, project).getRemotePath(localDir, false);
         }
         return localDir;
     }

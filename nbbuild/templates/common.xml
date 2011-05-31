@@ -161,7 +161,7 @@ made subject to such option by the copyright holder.
             <pathelement path="${cp.extra}"/>
         </path>
         <path id="processor.cp">
-            <pathelement path="${module.run.classpath}"/>
+            <pathelement path="${module.processor.classpath}"/>
             <pathelement path="${cp.extra}"/>
         </path>
         <!-- Unlike ${module.classpath}, this does not use publicPackageJarDir, since processors need not be in public packages. -->
@@ -455,10 +455,6 @@ made subject to such option by the copyright holder.
                 <property name="build.test.@{test.type}.classes.dir" location="${build.test.@{test.type}.dir}/classes"/>
                 <property name="build.test.@{test.type}.results.dir" location="${build.test.@{test.type}.dir}/results"/>
                 <property name="build.test.@{test.type}.work.dir" location="${build.test.@{test.type}.dir}/work"/>
-                <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/>
-                <!-- if project.xml doesn't contain test dependencies -->
-                <property name="test.@{test.type}.folder" location="${build.dir}/test/@{test.type}/dist"/>
-                <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
                 <property name="test-@{test.type}-sys-prop.cluster.path.final" value="${cluster.path.final}:${cluster}"/> <!-- #153178, 176019 -->
                 <property name="test.@{test.type}.cp.extra" value=""/>
                 <path id="test.@{test.type}.cp">
@@ -481,12 +477,6 @@ made subject to such option by the copyright holder.
                     <!-- for compatibility with property based classpath-->
                     <pathelement path="${module.run.classpath}"/>
                     <pathelement path="${test.@{test.type}.run.cp.extra}"/>
-                    <pathelement path="${test.@{test.type}.cp.extra}"/>
-                </path>
-                <path id="test.@{test.type}.processor.cp">
-                    <path refid="processor.cp"/>
-                    <pathelement location="${cluster}/${module.jar}"/>
-                    <pathelement path="${test.@{test.type}.runtime.cp}"/>
                     <pathelement path="${test.@{test.type}.cp.extra}"/>
                 </path>
                 <!-- path reference used in both compiler and executor -->
@@ -515,7 +505,7 @@ made subject to such option by the copyright holder.
         <test-init test.type="qa-functional"/>
     </target>
 
-    <target name="test-build" depends="netbeans,test-dep-build,do-test-build,test-build-datajar" description="Compile and package all tests."/>
+    <target name="test-build" depends="netbeans,test-dep-build,do-test-build" description="Compile and package all tests."/>
 
     <macrodef name="test-dep-build">
         <attribute name="test.type"/>
@@ -547,7 +537,6 @@ made subject to such option by the copyright holder.
                 </condition>
             </fail>
             <mkdir dir="${build.test.@{test.type}.classes.dir}"/>
-            <mkdir dir="${test.dist.dir}"/>
             <depend srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" cache="${build.test.@{test.type}.dir}/depcache">
                 <classpath refid="test.@{test.type}.cp"/>
             </depend>
@@ -557,7 +546,7 @@ made subject to such option by the copyright holder.
                    source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
                 <classpath refid="test.@{test.type}.cp"/>
                 <compilerarg line="${javac.compilerargs}"/>
-                <processorpath refid="test.@{test.type}.processor.cp"/>
+                <processorpath refid="test.@{test.type}.cp"/>
             </nb-javac>
             <copy todir="${build.test.@{test.type}.classes.dir}">
                 <fileset dir="${test.@{test.type}.src.dir}">
@@ -570,24 +559,6 @@ made subject to such option by the copyright holder.
                     <include name="data/**"/>
                 </fileset>
             </copy>
-
-            <available file="${test.@{test.type}.data.dir}" type="dir" property="exists.test.@{test.type}.data"/>
-            <!-- test distribution -->
-            <mkdir dir="${extra.test.libs.dir}"/>
-            <mkdir dir="${test.@{test.type}.out.folder}"/>
-            <jar destfile="${test.@{test.type}.out.folder}/tests.jar" basedir="${build.test.@{test.type}.classes.dir}" filesetmanifest="merge"/>
-            <!-- create properties -->
-            <shorterpaths inref="test.@{test.type}.run.cp"
-                          out="test.@{test.type}.run.cp.short"
-                          extralibs="extra.test.libs.short"
-                          extralibsdir="${extra.test.libs.dir}"
-                          testproperties="${test.@{test.type}.out.folder}/test.properties">
-                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/> <!-- for pre-7.0 and NB.org projects -->
-                <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
-                <!-- XXX this will not be right on Macs: -->
-                <replacement dir="${nbjdk.home}/jre" name="java.home"/>
-                <replacement dir="${nbjdk.home}" name="java.home.parent"/>
-            </shorterpaths>
         </sequential>
     </macrodef>
     <target name="do-unit-test-build" depends="init,test-init" if="exists.test.unit.src.dir">
@@ -597,14 +568,6 @@ made subject to such option by the copyright holder.
         <do-test-build test.type="qa-functional"/>
     </target>
     <target name="do-test-build" depends="do-unit-test-build,do-qa-functional-test-build"/>
-
-    <target name="test-unit-build-datajar" depends="do-test-build" if="exists.test.unit.data">
-        <zip destfile="${test.unit.out.folder}/data.zip" basedir="${test.unit.data.dir}"/>
-    </target>
-    <target name="test-qa-functional-build-datajar" depends="do-test-build" if="exists.test.qa-functional.data">
-        <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.data.dir}"/>
-    </target>
-    <target name="test-build-datajar" depends="test-unit-build-datajar,test-qa-functional-build-datajar"/>
 
     <target name="compile-test-single" depends="init,test-init,jar">
         <macrodef name="compile-test-single">
@@ -622,7 +585,7 @@ made subject to such option by the copyright holder.
                        source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
                     <classpath refid="test.@{test.type}.cp"/>
                     <compilerarg line="${javac.compilerargs}"/>
-                    <processorpath refid="test.@{test.type}.processor.cp"/>
+                    <processorpath refid="test.@{test.type}.cp"/>
                 </nb-javac>
                 <copy todir="${build.test.@{test.type}.classes.dir}">
                     <fileset dir="${test.@{test.type}.src.dir}">
@@ -758,6 +721,7 @@ made subject to such option by the copyright holder.
                         <fileset dir="${ant.home}" includes="patches/*.jar"/>
                         <pathelement location="${ant.home}/lib/ant.jar"/>
                         <pathelement location="${ant.home}/lib/ant-junit.jar"/>
+                        <pathelement location="${ant.home}/lib/ant-junit4.jar"/>
                     </classpath>
                     <jvmarg line="${test.bootclasspath.prepend.args}"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
@@ -971,7 +935,9 @@ made subject to such option by the copyright holder.
     <target name="-testuserdir-delete-init" depends="files-init">
         <property name="test.user.dir" location="${build.dir}/testuserdir"/>
         <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
-        <available property="app.running" file="${test.user.dir.lock}"/>
+        <condition property="app.running">
+            <islocked file="${test.user.dir.lock}"/>
+        </condition> 
     </target>
     <target name="-testuserdir-delete-ok" depends="-testuserdir-delete-init" unless="app.running">
         <delete dir="${test.user.dir}"/>
@@ -982,7 +948,7 @@ made subject to such option by the copyright holder.
     </target>
     <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail" description="Delete testing user directory (if the application is not running); clears any saved settings etc."/>
 
-    <target name="clean" depends="files-init,testuserdir-delete,test-clean">
+    <target name="clean" depends="files-init,testuserdir-delete">
         <delete failonerror="false" includeemptydirs="true">
             <fileset dir="${build.classes.dir}" />
             <fileset dir="${build.dir}">
@@ -994,24 +960,11 @@ made subject to such option by the copyright holder.
         <delete includeemptydirs="true" failonerror="false"> <!-- #59457: OK if cluster does not exist currently -->
             <fileset dir="${cluster}">
                 <patternset refid="module.files"/>
+                <exclude name="config/Modules/${code.name.base.dashes}.xml" if="${do.not.clean.module.config.xml}"/>
             </fileset>
         </delete>
         <delete file="${cluster}/update_tracking/${code.name.base.dashes}.xml"/>
 	<delete file="${netbeans.dest.dir}/${module.cluster.name}.built" failonerror="false"/>
-    </target>
-    <target name="test-clean" depends="basic-init,files-init">
-        <macrodef name="test-clean">
-            <attribute name="test.type"/>
-            <sequential>
-                <parseprojectxml project=".">
-                    <testtype name="@{test.type}" folder="test.@{test.type}.folder"/>
-                </parseprojectxml>
-                <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
-                <delete dir="${test.@{test.type}.out.folder}"/>
-            </sequential>
-        </macrodef>
-        <test-clean test.type="unit"/>
-        <test-clean test.type="qa-functional"/>
     </target>
 
     <target name="fix-dependencies" depends="basic-init" description="Removes unused compilation dependencies on other modules.">

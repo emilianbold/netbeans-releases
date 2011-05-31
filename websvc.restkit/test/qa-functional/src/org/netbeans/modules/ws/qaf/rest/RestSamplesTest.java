@@ -134,7 +134,7 @@ public class RestSamplesTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH_V3, NbModuleSuite.createConfiguration(RestSamplesTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestSamplesTest.class),
                 "testHelloWorldSample", //NOI18N
                 "testCustomerDBSample", //NOI18N
                 "testCustomerDBSpringSample", //NOI18N

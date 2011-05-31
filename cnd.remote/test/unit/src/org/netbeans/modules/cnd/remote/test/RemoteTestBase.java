@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.remote.test;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -126,40 +125,45 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         log.addHandler(new TestLogHandler(log));
     }
 
-
+    private Level oldRemoteLevel = null;
+    private Level oldExecutionLevel = null;
+    
     // we need this for tests which should run NOT for all environments
     public RemoteTestBase(String testName) {
         super(testName);
-        cleanUserDir();
-        setSysProps();        
+        cleanUserDir();        
     }
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
         cleanUserDir();
-        setSysProps();        
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")
-    private void setSysProps() {
-        try {
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.logger.level");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "nativeexecution.support.logger.level");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "socket.connection.timeout", "10000");
-            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")) {
-                Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
-                Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
+    private void setLoggers(boolean setup) {
+        final Logger remoteLogger = Logger.getLogger("cnd.remote.logger");
+        final Logger executionLogger = Logger.getLogger("nativeexecution.support.logger.level");
+        if (setup) {
+            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")
+                 || NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, getClass().getName() + ".logging.finest")) {
+                oldRemoteLevel = remoteLogger.getLevel();
+                remoteLogger.setLevel(Level.ALL);
+                oldExecutionLevel = executionLogger.getLevel();
+                executionLogger.setLevel(Level.FINEST);
             }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (FormatException ex) {
-            ex.printStackTrace();
+        } else {
+            if (oldRemoteLevel != null) {
+                remoteLogger.setLevel(oldRemoteLevel);
+            }
+            if (oldExecutionLevel != null) {
+                executionLogger.setLevel(oldExecutionLevel);
+            }
         }
     }
 
     @Override
     protected void setUp() throws Exception {
+        setLoggers(true);
         System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
         super.setUp();
         connectRemoteHost();
@@ -178,6 +182,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         super.tearDown();
         //ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
         System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
+        setLoggers(false);
     }
 
     private static Set<ExecutionEnvironment> hosts = new HashSet<ExecutionEnvironment>();
@@ -229,7 +234,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                             try {
                                 rc = Integer.parseInt(m.group(1));
                             } catch (NumberFormatException nfe) {
-                                nfe.printStackTrace();
+                                nfe.printStackTrace(System.err);
                             }
                         }
                         build_rc.set(rc);
@@ -281,11 +286,11 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         assertTrue("Failed to remove " + dirToRemove, isOk);
     }
 
-    protected void addPropertyFromRcFile(String section, String varName) throws IOException, FormatException {
+    protected static void addPropertyFromRcFile(String section, String varName) throws IOException, FormatException {
         addPropertyFromRcFile(section, varName, null);
-    }
+}
 
-    protected void addPropertyFromRcFile(String section, String varName, String defaultValue) throws IOException, FormatException {
+    protected static void addPropertyFromRcFile(String section, String varName, String defaultValue) throws IOException, FormatException {
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String value = rcFile.get(section, varName, defaultValue);
         if (value != null && value.length() > 0) {

@@ -113,7 +113,6 @@ public class CheckoutPanel extends JPanel {
         lblLocalFolder.setLabelFor(workdirTextField);
 
         workdirTextField.setColumns(30);
-        workingCopy.setHorizontalAlignment(SwingConstants.TRAILING);
 
         Mnemonics.setLocalizedText(lblSpecifyLocalFolders, getString("CTL_Checkout_LocalFolderHint")); // NOI18N
         Mnemonics.setLocalizedText(lblLocalFolder, getString("CTL_Checkout_LocalFolder")); // NOI18N
@@ -159,7 +158,7 @@ public class CheckoutPanel extends JPanel {
                                                 .add(workdirTextField)
                                                 .addPreferredGap(RELATED)
                                                 .add(browseWorkdirButton))
-                                        .add(workingCopy)))
+                                        .add(workingCopy, 0, DEFAULT_SIZE, Short.MAX_VALUE)))
                         .add(scanForProjectsCheckBox)
         );
         layout.setVerticalGroup(

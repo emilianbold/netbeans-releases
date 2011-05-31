@@ -1,6 +1,0 @@
-Code completion result for source line:
-puts num.abs|
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     abs                                        Fixnum
-METHOD     abs                                        Numeric
-CALL       puts(obj)                                  Kernel

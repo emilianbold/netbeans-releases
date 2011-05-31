@@ -74,8 +74,9 @@ public class PhpUnitTest extends NbTestCase {
         version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3x.1 by Sebastian Bergmann.");
         assertNull(version);
 
-        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1a by Sebastian Bergmann.");
-        assertNull(version);
+        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1RC by Sebastian Bergmann.");
+        assertNotNull(version);
+        assertTrue(Arrays.equals(new int[] {3, 3, 1}, version));
 
         version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1 by Sebastian Bergmann.");
         assertNotNull(version);

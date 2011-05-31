@@ -50,6 +50,7 @@ import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Collection;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -146,7 +147,11 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                                   "\nhandle: " + handles.iterator().next() + // NOI18N
                                   "\nclasspath: " + parameter.getClasspathInfo()); // NOI18N
                       }
-                      name[0] = resolvedElement.getSimpleName().toString();
+                      if (resolvedElement.getKind() == ElementKind.CONSTRUCTOR) {
+                          name[0] = resolvedElement.getEnclosingElement().getSimpleName().toString();
+                      } else {
+                          name[0] = resolvedElement.getSimpleName().toString();
+                      }
                   }
               }, true);
           } catch (IOException ioe) {

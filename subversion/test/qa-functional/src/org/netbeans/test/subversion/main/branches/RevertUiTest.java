@@ -109,7 +109,7 @@ public class RevertUiTest extends JellyTestCase{
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
 
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             RevertModificationsOperator rmo = RevertModificationsOperator.invoke(projNode);

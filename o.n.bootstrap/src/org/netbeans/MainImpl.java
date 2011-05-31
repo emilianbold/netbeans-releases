@@ -44,6 +44,7 @@
 
 package org.netbeans;
 
+import java.awt.GraphicsEnvironment;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +67,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JOptionPane;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -112,6 +114,7 @@ final class MainImpl extends Object {
         // Note that setDefaultUseCaches changes a static field
         // yet for some reason it is an instance method!
         new URLConnection(MainImpl.class.getResource("Main.class")) { // NOI18N
+            @Override
             public void connect() throws IOException {}
         }.setDefaultUseCaches(false);
 
@@ -159,7 +162,7 @@ final class MainImpl extends Object {
         }
 
         // Compute effective dynamic classpath (mostly lib/*.jar) for TopLogging, NbInstaller:
-        StringBuffer buf = new StringBuffer(1000);
+        StringBuilder buf = new StringBuilder(1000);
         for (File o : list) {
 	    String f = o.getAbsolutePath();
             if (buf.length() > 0) {
@@ -186,30 +189,41 @@ final class MainImpl extends Object {
         CLIHandler.Status result;
         result = CLIHandler.initialize(args, reader, writer, error, loader, true, false, loader);
         if (result.getExitCode () == CLIHandler.Status.CANNOT_CONNECT) {
-            int value = javax.swing.JOptionPane.showConfirmDialog (
-                null,
-                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"),
-                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
-                javax.swing.JOptionPane.OK_CANCEL_OPTION,
-                javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-            if (value == javax.swing.JOptionPane.OK_OPTION) {
+            int value = JOptionPane.CLOSED_OPTION;
+            
+            if (!GraphicsEnvironment.isHeadless()) {
+                value = JOptionPane.showConfirmDialog (
+                    null,
+                    ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"),
+                    ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                );
+            }
+            if (value == JOptionPane.OK_OPTION) {
                 result = CLIHandler.initialize(args, reader, writer, error, loader, true, true, loader);
+            } else {
+                return result.getExitCode();
             }
 
         }
         if (result.getExitCode () == CLIHandler.Status.CANNOT_WRITE) {
-            int value = javax.swing.JOptionPane.showConfirmDialog (
-                null,
-                MessageFormat.format(ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_CannotWrite"), user),
-                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_CannotWriteTitle"),
-                javax.swing.JOptionPane.OK_CANCEL_OPTION,
-                javax.swing.JOptionPane.WARNING_MESSAGE
-            );
-            if (value == javax.swing.JOptionPane.OK_OPTION) {
-                result = CLIHandler.initialize(args, reader, writer, error, loader, true, true, loader);
+            int value = JOptionPane.CLOSED_OPTION;
+            
+            if (!GraphicsEnvironment.isHeadless()) {
+                value = JOptionPane.showConfirmDialog (
+                    null,
+                    MessageFormat.format(ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_CannotWrite"), user),
+                    ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_CannotWriteTitle"),
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                );
             }
-
+            if (value == JOptionPane.OK_OPTION) {
+                result = CLIHandler.initialize(args, reader, writer, error, loader, true, true, loader);
+            } else {
+                return result.getExitCode();
+            }
         }
 
         if (methodToCall != null) {
@@ -228,9 +242,7 @@ final class MainImpl extends Object {
     public static void finishInitialization() {
         int r = CLIHandler.finishInitialization (false);
         if (r != 0) {
-            // Not much to do about it.
-            System.err.println ("Post-initialization command-line options could not be run."); // NOI18N
-            //System.err.println("r=" + r + " args=" + java.util.Arrays.asList(args.getArguments()));
+            TopSecurityManager.exit(r);
         }
     }
 
@@ -298,6 +310,7 @@ final class MainImpl extends Object {
 
         private boolean onlyRunRunOnce;
         /** Checks for new JARs in netbeans.user */
+        @Override
         public void run () {
             // do not call this method twice
             if (onlyRunRunOnce) return;

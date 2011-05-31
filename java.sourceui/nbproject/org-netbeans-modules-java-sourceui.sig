@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.13.0
+#Version 1.20.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -73,12 +73,15 @@ supr java.lang.Object
 
 CLSS public org.netbeans.api.java.source.ui.ElementJavadoc
 meth public final static org.netbeans.api.java.source.ui.ElementJavadoc create(org.netbeans.api.java.source.CompilationInfo,javax.lang.model.element.Element)
+meth public final static org.netbeans.api.java.source.ui.ElementJavadoc create(org.netbeans.api.java.source.CompilationInfo,javax.lang.model.element.Element,java.util.concurrent.Callable<java.lang.Boolean>)
 meth public java.lang.String getText()
 meth public java.net.URL getURL()
+meth public java.util.concurrent.Future<java.lang.String> getTextAsync()
 meth public javax.swing.Action getGotoSourceAction()
 meth public org.netbeans.api.java.source.ui.ElementJavadoc resolveLink(java.lang.String)
 supr java.lang.Object
-hfds API,CODE_TAG,DEPRECATED_TAG,INHERIT_DOC_TAG,LANGS,LINKPLAIN_TAG,LITERAL_TAG,PARAM_TAG,RETURN_TAG,SEE_TAG,SINCE_TAG,THROWS_TAG,VALUE_TAG,content,cpInfo,docURL,eu,goToSource,linkCounter,links,trees
+hfds API,CODE_TAG,DEPRECATED_TAG,INHERIT_DOC_TAG,LANGS,LINKPLAIN_TAG,LITERAL_TAG,PARAM_TAG,RETURN_TAG,RP,SEE_TAG,SINCE_TAG,THROWS_TAG,VALUE_TAG,content,cpInfo,docURL,goToSource,linkCounter,links
+hcls Now,RemoteJavadocException
 
 CLSS public final org.netbeans.api.java.source.ui.ElementOpen
 meth public static boolean open(org.netbeans.api.java.source.ClasspathInfo,javax.lang.model.element.Element)

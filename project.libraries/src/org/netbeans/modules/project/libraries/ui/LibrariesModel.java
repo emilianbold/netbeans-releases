@@ -152,7 +152,7 @@ public class LibrariesModel implements PropertyChangeListener {
 
     public LibraryImplementation createArealLibrary(String type, String name, LibraryStorageArea area) {
         LibraryImplementation impl = new DummyArealLibrary(type, name);
-        assert area2Storage.get(area) != null : "Creating library in unknown area: " + area +" known areas: " + area2Storage.keySet();
+        assert area2Storage.get(area) != null : unknownArea(area);
         library2Area.put(impl, area);
         return impl;
     }
@@ -338,6 +338,22 @@ public class LibrariesModel implements PropertyChangeListener {
         }
         actualLibraries.addAll(addedLibraries);
         LOG.log(Level.FINE, "computeLibraries: actualLibraries={0} library2Area={1}", new Object[] {actualLibraries, library2Area});
+    }
+
+    private String unknownArea(final LibraryStorageArea area) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Creating library in unknown area: ").    //NOI18N
+        append(area).
+        append(" known areas: ").                           //NOI18N
+        append(area2Storage.keySet()).
+        append(" created: ").
+        append(createdAreas);
+        getAreas();
+        sb.append(" known areas after reinit: ").
+        append(area2Storage.keySet()).
+        append(" providers: ").
+        append(Lookup.getDefault().lookupAll(ArealLibraryProvider.class));
+        return sb.toString();
     }
 
     private static class LibrariesComparator implements Comparator<LibraryImplementation> {

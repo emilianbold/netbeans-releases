@@ -97,7 +97,7 @@ public class UploadTestCase extends RemoteTestBase {
         out.close();
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
         String remoteFile = getRemoteTmpDir() + "/" + localFile.getName(); //NOI18N
-        int rc = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0770, null).get();
+        int rc = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0770).get().getExitCode();
         assertEquals("Upload RC for " + localFile.getAbsolutePath(), 0, rc);
         assert HostInfoProvider.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
         String catCommand = "cat " + remoteFile;
@@ -148,7 +148,7 @@ public class UploadTestCase extends RemoteTestBase {
                 assertTrue(localFile.exists());
                 String remoteFile = remoteDir + "/" + localFile.getName(); //NOI18N
                 long time = System.currentTimeMillis();
-                rc = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0770, null).get();
+                rc = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0770).get().getExitCode();
                 assertEquals("Upload RC for " + localFile.getAbsolutePath(), 0, rc);
                 time = System.currentTimeMillis() - time;
                 System.out.printf("File %s copied to %s:%s in %d ms\n", localFile, execEnv, remoteFile, time);

@@ -74,7 +74,7 @@ public class UndoRedoSupport {
     int redoableEdits;
     
     private UndoRedoSupport(FormModel model) {
-        FormEditor.getFormDesigner(model).getUndoRedo().addChangeListener(new ChangeListener() {
+        model.getUndoRedoManager().addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (undoInProgress) {

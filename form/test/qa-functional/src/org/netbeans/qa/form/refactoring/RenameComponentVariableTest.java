@@ -44,12 +44,10 @@
 
 package org.netbeans.qa.form.refactoring;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.qa.form.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -62,6 +60,9 @@ import org.netbeans.junit.NbModuleSuite;
  * and tests value and access rights of inherited properties
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 26 APRIL 2011 BUG #197860
  */
 public class RenameComponentVariableTest extends ExtJellyTestCase {
     private String FILE_NAME = "RenameComponentVariableTestFrame"; // NOI18N
@@ -78,9 +79,7 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    public void setUp() throws IOException{
-        openProject(_testProjectName);
-    }
+    
     
     
     /**
@@ -88,9 +87,12 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
      * @return nb test suite
      */
     public static Test suite() {
-       return NbModuleSuite.create(NbModuleSuite.createConfiguration(RenameComponentVariableTest.class)
-               .addTest("testRefactoring", "testChangesInJavaFile", "testChangesInFormFile", "testChangesInPropertiesFile")
-               .clusters(".*").enableModules(".*")
+       return NbModuleSuite.create(NbModuleSuite.createConfiguration(RenameComponentVariableTest.class).addTest(
+               "testRefactoring", 
+               "testChangesInJavaFile", 
+               "testChangesInFormFile", 
+               "testChangesInPropertiesFile"
+               ).clusters(".*").enableModules(".*")
                .gui(true));
     }
     

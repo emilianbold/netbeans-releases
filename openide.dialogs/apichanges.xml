@@ -50,7 +50,28 @@ made subject to such option by the copyright holder.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
-    
+
+    <change id="WizardMove_Next_Previous">
+        <api name="dialogs"/>
+        <summary>Public API to move wizard to its next/previous step</summary>
+        <version major="7" minor="19"/>
+        <date day="13" month="4" year="2011"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes"/>
+        <description>
+            This change makes four existing methods in
+            <a href="@TOP@/org/openide/WizardDescriptor.html">WizardDescriptor</a>
+            public: doNextClick(), doPreviousClick(), doFinishClick() and doCancelClick().
+            In previous version the methods were declared final and package
+            private.<br/>
+            Using these methods it will be possible to move to wizard's next step
+            without clicking the Next button for example when user double-clicks
+            some selected item in wizard's panel .
+        </description>
+        <class package="org.openide" name="WizardDescriptor"/>
+        <issue number="197697"/>
+    </change>
+
     <change id="Dialogs_NotificationLineSupport">
         <api name="dialogs"/>
         <summary>Simplify handling error/warning/info messages in dialogs</summary>

@@ -79,7 +79,7 @@ import org.netbeans.modules.form.codestructure.CodeVariable;
 public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEditor {
     
     public FontEditor() {
-        super(PropertyEditorManager.findEditor(Font.class));
+        super(FormPropertyEditorManager.findBasicEditor(Font.class));
     }
 
     @Override

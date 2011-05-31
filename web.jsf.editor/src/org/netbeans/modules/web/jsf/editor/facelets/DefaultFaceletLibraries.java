@@ -80,7 +80,7 @@ public class DefaultFaceletLibraries {
 
     private void init() {
         File jsfImplJar = InstalledFileLocator.getDefault().locate(
-                "modules/ext/jsf-2_0/jsf-impl.jar", //NOI18N
+                "modules/ext/jsf-2_1/jsf-impl.jar", //NOI18N
                 "org.netbeans.modules.web.jsf20", false); //NOI18N
         assert jsfImplJar != null;
 

@@ -121,6 +121,8 @@ made subject to such option by the copyright holder.
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="parsemanifest" classname="org.netbeans.nbbuild.ParseManifest"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <typedef name="islocked" classname="org.netbeans.nbbuild.IsLocked"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
@@ -167,7 +169,7 @@ made subject to such option by the copyright holder.
   
   <target name="-do-set-buildnumber" depends="init-tasks" unless="buildnumber">
     <tstamp>
-    	<format property="buildstamp" pattern="yyMMdd"/>
+    	<format property="buildstamp" pattern="yyyyMMdd"/>
     </tstamp>
     <tstamp>
     	<format property="buildday" pattern="d MMM yyyy" locale="en" />

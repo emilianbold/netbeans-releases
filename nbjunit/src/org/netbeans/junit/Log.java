@@ -247,11 +247,11 @@ public final class Log extends Handler {
 
 
 
-    static void configure(Level lev, NbTestCase current) {
+    static void configure(Level lev, String root, NbTestCase current) {
         IL il = new IL(false);
         
         String c = "handlers=" + Log.class.getName() + "\n" +
-                   ".level=" + lev.intValue() + "\n";
+                   root + ".level=" + lev.intValue() + "\n";
 
         ByteArrayInputStream is = new ByteArrayInputStream(c.getBytes());
         try {

@@ -121,7 +121,6 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -148,14 +147,20 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNK
  * @author Jesse Glick, et al.
  */
 @AntBasedProjectRegistration(
-    type=J2SEProjectType.TYPE,
+    type=J2SEProject.TYPE,
     iconResource="org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", // NOI18N
-    sharedName=J2SEProjectType.PROJECT_CONFIGURATION_NAME,
-    sharedNamespace= J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-    privateName=J2SEProjectType.PRIVATE_CONFIGURATION_NAME,
-    privateNamespace= J2SEProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+    sharedName=J2SEProject.PROJECT_CONFIGURATION_NAME,
+    sharedNamespace= J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,
+    privateName=J2SEProject.PRIVATE_CONFIGURATION_NAME,
+    privateNamespace= J2SEProject.PRIVATE_CONFIGURATION_NAMESPACE
 )
 public final class J2SEProject implements Project {
+
+    public static final String TYPE = "org.netbeans.modules.java.j2seproject"; // NOI18N
+    static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3"; // NOI18N
+    static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
+    static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project-private/1"; // NOI18N
 
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
@@ -401,7 +406,7 @@ public final class J2SEProject implements Project {
     public synchronized SourceRoots getSourceRoots() {
         if (this.sourceRoots == null) { //Local caching, no project metadata access
             this.sourceRoots = SourceRoots.create(updateHelper, evaluator(), getReferenceHelper(),
-                    J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
+                    J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
        }
         return this.sourceRoots;
     }
@@ -409,7 +414,7 @@ public final class J2SEProject implements Project {
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
             this.testRoots = SourceRoots.create(updateHelper, evaluator(), getReferenceHelper(),
-                    J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
+                    J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testRoots;
     }
@@ -430,7 +435,7 @@ public final class J2SEProject implements Project {
             public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                NodeList nl = data.getElementsByTagNameNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "name");
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -439,7 +444,7 @@ public final class J2SEProject implements Project {
                         nameEl.removeChild(deadKids.item(0));
                     }
                 } else {
-                    nameEl = data.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                    nameEl = data.getOwnerDocument().createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "name");
                     data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
@@ -658,7 +663,12 @@ public final class J2SEProject implements Project {
                     }
                     J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
                     if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
-                        BrokenReferencesSupport.showAlert();
+                        BrokenReferencesSupport.showAlert(
+                                helper,
+                                refHelper,
+                                eval,
+                                physicalViewProvider.getBreakableProperties(),
+                                physicalViewProvider.getPlatformProperties());
                     }
                 }
             });

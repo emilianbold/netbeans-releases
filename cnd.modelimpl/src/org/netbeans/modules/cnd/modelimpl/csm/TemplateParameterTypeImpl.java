@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -57,6 +55,8 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -181,12 +181,13 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
-    public void write(DataOutput output) throws IOException {
+    @Override
+    public void write(RepositoryDataOutput output) throws IOException {
         PersistentUtils.writeType(type, output);
         UIDObjectFactory.getDefaultFactory().writeUID(parameter, output);
     }  
     
-    public TemplateParameterTypeImpl(DataInput input) throws IOException {
+    public TemplateParameterTypeImpl(RepositoryDataInput input) throws IOException {
         type = PersistentUtils.readType(input);
         parameter = UIDObjectFactory.getDefaultFactory().readUID(input);
     }

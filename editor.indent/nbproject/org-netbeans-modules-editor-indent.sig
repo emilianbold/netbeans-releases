@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.19.0
+#Version 1.23.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -16,6 +16,7 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public final org.netbeans.modules.editor.indent.api.Indent
+meth public int indentNewLine(int) throws javax.swing.text.BadLocationException
 meth public static org.netbeans.modules.editor.indent.api.Indent get(javax.swing.text.Document)
 meth public void lock()
 meth public void reindent(int) throws javax.swing.text.BadLocationException
@@ -30,6 +31,7 @@ meth public static int indentLevelSize(javax.swing.text.Document)
 meth public static int lineIndent(javax.swing.text.Document,int) throws javax.swing.text.BadLocationException
 meth public static int lineStartOffset(javax.swing.text.Document,int) throws javax.swing.text.BadLocationException
 meth public static int tabSize(javax.swing.text.Document)
+meth public static java.lang.String createIndentString(int,boolean,int)
 meth public static java.lang.String createIndentString(javax.swing.text.Document,int)
 supr java.lang.Object
 hfds LOG,MAX_CACHED_INDENT,MAX_CACHED_TAB_SIZE,cachedSpacesStrings,cachedTabIndents
@@ -103,4 +105,12 @@ meth public abstract void reformat() throws javax.swing.text.BadLocationExceptio
 CLSS public abstract interface static org.netbeans.modules.editor.indent.spi.ReformatTask$Factory
  outer org.netbeans.modules.editor.indent.spi.ReformatTask
 meth public abstract org.netbeans.modules.editor.indent.spi.ReformatTask createTask(org.netbeans.modules.editor.indent.spi.Context)
+
+CLSS public final org.netbeans.modules.editor.indent.spi.support.AutomatedIndenting
+cons public init()
+meth public !varargs static org.netbeans.spi.editor.typinghooks.TypedTextInterceptor createHotCharsIndenter(java.util.regex.Pattern[])
+meth public static org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Factory createHotCharsIndenter(java.util.Map<java.lang.Object,java.lang.Object>)
+supr java.lang.Object
+hfds LOG
+hcls RegExBasedIndenter
 

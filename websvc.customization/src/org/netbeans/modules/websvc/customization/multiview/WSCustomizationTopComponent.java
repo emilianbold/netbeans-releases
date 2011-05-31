@@ -89,11 +89,14 @@ public class WSCustomizationTopComponent extends TopComponent {
     private void doInitialize() {
         initAccessibility();
 
-        ToolBarDesignEditor tb = new ToolBarDesignEditor();
-        panelFactory = new WSPanelFactory(tb, node, primaryDefinitions);
-        WSCustomizationView mview = new WSCustomizationView(panelFactory, models, primaryDefinitions, isLight);
-        tb.setContentView(mview);
-        add(tb);
+        if (primaryDefinitions != null) {
+            ToolBarDesignEditor tb = new ToolBarDesignEditor();
+            panelFactory = new WSPanelFactory(tb, node, primaryDefinitions);
+            WSCustomizationView mview = new WSCustomizationView(panelFactory,
+                    models, primaryDefinitions, isLight);
+            tb.setContentView(mview);
+            add(tb);
+        }
         setFocusable(true);
     }
 

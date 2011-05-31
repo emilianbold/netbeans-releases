@@ -120,12 +120,11 @@ public final class TimeSeriesDataContainer {
             bucket.put(newData);
         }
         if (plot != null) {
-            int oldLimit = plot.getUpperLimit();
-            int newLimit = plot.calculateUpperLimit(bucket.get());
-            while (oldLimit < newLimit) {
-                oldLimit *= 2;
+            int newLimit = (int) (plot.calculateUpperLimit(bucket.get()) * 1.1);
+            
+            if (plot.getUpperLimit() < newLimit) {
+                plot.setUpperLimit(newLimit);
             }
-            plot.setUpperLimit(oldLimit);
         }
     }
 
@@ -211,8 +210,9 @@ public final class TimeSeriesDataContainer {
                     break;
                 case AVERAGE:
                     for (int i = 0; i < data.length; ++i) {
-                        this.data[i] = (count * this.data[i] + data[i]) / ++count;
+                        this.data[i] = (count * this.data[i] + data[i]) / (count + 1);
                     }
+                    count++;
                     break;
                 case MAX:
                     for (int i = 0; i < data.length; ++i) {

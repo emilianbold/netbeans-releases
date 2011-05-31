@@ -110,7 +110,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
                 implementDescriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
             if (!implementDescriptions.isEmpty())
-                ret.add(new ImplementOverrideMethodGenerator(component, ElementNode.Description.create(implementDescriptions), true));
+                ret.add(new ImplementOverrideMethodGenerator(component, ElementHandle.create(typeElement), ElementNode.Description.create(implementDescriptions), true));
             map = new LinkedHashMap<Element, List<ElementNode.Description>>();
             ArrayList<Element> orderedElements = new ArrayList<Element>();
             for (ExecutableElement method : GeneratorUtils.findOverridable(controller, typeElement)) {
@@ -128,18 +128,20 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             for (Element e : orderedElements)
                 overrideDescriptions.add(ElementNode.Description.create(controller, e, map.get( e ), false, false));
             if (!overrideDescriptions.isEmpty())
-                ret.add(new ImplementOverrideMethodGenerator(component, ElementNode.Description.create(overrideDescriptions), false));
+                ret.add(new ImplementOverrideMethodGenerator(component, ElementHandle.create(typeElement), ElementNode.Description.create(overrideDescriptions), false));
             return ret;
         }
     }
 
     private JTextComponent component;
+    private ElementHandle<TypeElement> handle;
     private ElementNode.Description description;
     private boolean isImplement;
     
     /** Creates a new instance of OverrideMethodGenerator */
-    private ImplementOverrideMethodGenerator(JTextComponent component, ElementNode.Description description, boolean isImplement) {
+    private ImplementOverrideMethodGenerator(JTextComponent component, ElementHandle<TypeElement> handle, ElementNode.Description description, boolean isImplement) {
         this.component = component;
+        this.handle = handle;
         this.description = description;
         this.isImplement = isImplement;
     }
@@ -162,18 +164,22 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                            Element e = handle.resolve(copy);
+                            TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                            if (path == null)
-                                return;
-                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
-                            ArrayList<ExecutableElement> methodElements = new ArrayList<ExecutableElement>();
-                            for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods())
-                                methodElements.add((ExecutableElement)elementHandle.resolve(copy));
-                            if (isImplement)
-                                GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements, idx);
-                            else
-                                GeneratorUtils.generateMethodOverrides(copy, path, methodElements, idx);
+                            if (path == null) {
+                                String message = NbBundle.getMessage(ImplementOverrideMethodGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
+                                org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                            } else {
+                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
+                                ArrayList<ExecutableElement> methodElements = new ArrayList<ExecutableElement>();
+                                for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods())
+                                    methodElements.add((ExecutableElement)elementHandle.resolve(copy));
+                                if (isImplement)
+                                    GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements, idx);
+                                else
+                                    GeneratorUtils.generateMethodOverrides(copy, path, methodElements, idx);
+                            }
                         }
                     });
                     GeneratorUtils.guardedCommit(component, mr);

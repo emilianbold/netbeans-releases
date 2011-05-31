@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
@@ -87,7 +88,8 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                     // Query to the jboss4 server
                     ObjectName searchPattern;
                     String propertyName;
-                    if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
+                    if (abilitiesSupport.isRemoteManagementSupported()
+                            && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
                         searchPattern = new ObjectName("jboss.management.local:j2eeType=J2EEApplication,*"); // NOI18N
                         propertyName = "name"; // NOI18N
                     } else {
@@ -98,7 +100,9 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                     Object server = Util.getRMIServer(lookup);
                     Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
 
-                    Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
+                    Method method = server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class});
+                    method = Util.fixJava4071957(method);
+                    Set managedObj = (Set) method.invoke(server, new Object[] {searchPattern, null});
 
                     // Query results processing
                     for (Iterator it = managedObj.iterator(); it.hasNext();) {
@@ -106,7 +110,8 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                             ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
                             String name = elem.getKeyProperty(propertyName);
 
-                            if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
+                            if (abilitiesSupport.isRemoteManagementSupported()
+                                    && (abilitiesSupport.isJB4x() || abilitiesSupport.isJB6x())) {
                                 if (name.endsWith(".sar") || name.endsWith(".deployer")) { // NOI18N
                                     continue;
                                 }

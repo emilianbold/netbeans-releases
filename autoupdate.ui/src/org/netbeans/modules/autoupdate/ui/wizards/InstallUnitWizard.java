@@ -74,7 +74,11 @@ public class InstallUnitWizard {
     }
     
     public boolean invokeWizard (InstallUnitWizardModel model) {
-        WizardDescriptor.Iterator<WizardDescriptor> iterator = new InstallUnitWizardIterator (model);
+        return invokeWizard(model, true);
+    }
+    public boolean invokeWizard (InstallUnitWizardModel model, boolean allowRunInBackground) {
+        WizardDescriptor.Iterator<WizardDescriptor> iterator;
+        iterator = new InstallUnitWizardIterator (model, true, allowRunInBackground);
         return implInvokeWizard (iterator);
     }
     

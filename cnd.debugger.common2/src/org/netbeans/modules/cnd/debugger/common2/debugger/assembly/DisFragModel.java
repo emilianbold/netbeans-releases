@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
-public interface DisFragModel {
+public interface DisFragModel extends Iterable<DisFragModel.Line> {
     static interface Listener {
         public void fragUpdated();
     }
@@ -52,6 +52,34 @@ public interface DisFragModel {
     public void addListener(Listener listener);
     public void removeListener(Listener listener);
     public void clear() ;
-    public String getItem(int i);
+    public Line getItem(int i);
     public int size();
+    
+    static class Line implements Disassembly.DisLine {
+        private final String address;
+        private final String instruction;
+        private int idx;
+
+        public Line(String address, String instruction) {
+            this.address = address;
+            this.instruction = instruction;
+        }
+
+        public String getAddress() {
+            return address;
+        }
+
+        public int getIdx() {
+            return idx;
+        }
+
+        public void setIdx(int idx) {
+            this.idx = idx;
+        }
+
+        @Override
+        public String toString() {
+            return "   " + address + instruction + "\n"; // NOI18N
+        }
+    }
 }

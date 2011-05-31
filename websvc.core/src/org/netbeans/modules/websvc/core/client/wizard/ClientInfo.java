@@ -163,7 +163,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jLblClientType.setVisible(false);
         jCbxClientType.setVisible(false);
         jComboBoxJaxVersion.setRenderer(new CBRenderer());
-        jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(new String[]{ClientWizardProperties.JAX_WS, ClientWizardProperties.JAX_RPC}));
         initUserComponents();
     }
 
@@ -633,6 +632,22 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         this.wizardDescriptor = d;
         
         project = Templates.getProject(d);
+        
+        project = Templates.getProject(d);
+        
+        if(WebServicesClientSupport.getWebServicesClientSupport(
+                project.getProjectDirectory())==null) 
+        {
+            jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(
+                    new String[]{ClientWizardProperties.JAX_WS}));
+            jComboBoxJaxVersion.setVisible( false );
+            jLabelJaxVersion.setVisible( false );
+        }
+        else {
+            jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(
+                    new String[]{ClientWizardProperties.JAX_WS, 
+                            ClientWizardProperties.JAX_RPC}));
+        }
 
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {

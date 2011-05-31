@@ -37,4 +37,10 @@ made subject to such option by the copyright holder.
     <mapID target="org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel" url="new-project-frameworks.html"/>
         <!--CSH for PHP source editor-->
     <mapID target="text.x-php5" url="help-about.html" />
+        <!-- CSH for PHP Options -->
+    <mapID target="org.netbeans.modules.php.project.ui.options.PhpOptions" url="options-csh/general.html" />
+    <mapID target="org.netbeans.modules.php.project.phpunit.PhpUnit" url="options-csh/unit-testing.html" />
+    <mapID target="org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions" url="options-csh/phpdoc.html" />
+    <mapID target="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions" url="options-csh/symfony.html" />
+    <mapID target="org.netbeans.modules.php.zend.ui.options.ZendOptions" url="options-csh/zend.html" />
 </map>

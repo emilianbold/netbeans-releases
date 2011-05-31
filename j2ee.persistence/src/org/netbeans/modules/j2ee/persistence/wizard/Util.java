@@ -265,6 +265,30 @@ public class Util {
         return providers;
     }
 
+    /**
+     * check all available providers and return default/first/or ECLIPSELINK if prefereed
+     * @param project
+     * @return
+     */
+    public static Provider getPreferredProvider(Project project){
+        //choose default/first provider
+        ArrayList<Provider> providers = getProviders(project);
+        int defIndex = 0;
+        if(providers.size()>1){//if it's possible to select preferred jpa2.0 provider, we'll select instead of jpa1.0 default one
+            String defProviderVersion = ProviderUtil.getVersion((Provider) providers.get(0));
+            boolean specialCase = Util.isJPAVersionSupported(project, Persistence.VERSION_2_0) && (defProviderVersion == null || defProviderVersion.equals(Persistence.VERSION_1_0));//jpa 2.0 is supported by default (or first) is jpa1.0 or udefined version provider
+            if(specialCase){
+                for (int i = 1; i<providers.size() ; i++){
+                    if(ProviderUtil.ECLIPSELINK_PROVIDER.equals(providers.get(i))){//eclipselink jpa2.0 is preferred provider
+                        defIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+        return providers!=null && providers.size()>0 ? providers.get(defIndex) : null;
+    }
+
     public static boolean isDefaultProvider(Project project, Provider provider) {
         return provider != null && provider.equals(getDefaultProvider(project));
     }
@@ -423,14 +447,28 @@ public class Util {
      */
     public static PersistenceUnit buildPersistenceUnitUsingData(Project project, String puName,
             String preselectedDB, TableGeneration tableGeneration, Provider provider) {
+            return buildPersistenceUnitUsingData(project, puName, preselectedDB, tableGeneration, provider, null);
+    }
+    /**
+     * Builds a persistence unit using data passed as parameters. Does not save the created persistence unit
+     * nor create the persistence.xml file if it  does not exist.
+     * If some parameters are null, try to find default one or best match
+     * @param project the current project
+     * @param name name for pu, if null default will be used
+     * @param preselectedDB the name of the database connection that should be preselected in the wizard.
+     * @tableGeneration the table generation strategy that should be preselected in the wizard.
+     * @param puVersion pu will be created with passed as a parameter jpa version but will be limited by project/provider properties (can't create 2.0 in project and provider with 1.0 support only).
+     * @return the created PersistenceUnit or null if nothing was created, for example
+     * if wizard was cancelled.
+     */
+    public static PersistenceUnit buildPersistenceUnitUsingData(Project project, String puName,
+            String preselectedDB, TableGeneration tableGeneration, Provider provider, String puVersion) {
 
         boolean isContainerManaged = Util.isContainerManaged(project);
 
         if (provider == null) {
             //choose default/first provider
-            ArrayList<Provider> providers = getProviders(project);
-            //
-            provider = providers.get(0);
+            provider = getPreferredProvider(project);
         }
         //add necessary libraries before pu creation
         Library lib = null;
@@ -443,10 +481,11 @@ public class Util {
             //TODO: verify if don't need to add library here
             if (lib != null) {
                 addLibraryToProject(project, lib);
+                libIsAdded = true;
             }
         }
 
-        String version = (lib != null && libIsAdded) ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
+        String    version = (lib != null && libIsAdded) ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
         if (provider != null && version != null) {
             String provVersion = ProviderUtil.getVersion(provider);
             if (provVersion != null) {
@@ -454,6 +493,11 @@ public class Util {
                 if (Double.parseDouble(version) > Double.parseDouble(provVersion)) {
                     version = provVersion;
                 }
+            }
+        }
+        if(puVersion != null){
+            if (Double.parseDouble(version) > Double.parseDouble(puVersion)) {
+                version = puVersion;//if passed version less then supported we can use lower version.
             }
         }
         PersistenceUnit punit = null;
@@ -477,6 +521,10 @@ public class Util {
             if (!(provider instanceof DefaultProvider)) {
                 punit.setProvider(provider.getProviderClass());
             }
+            // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
+            // See issue 142575 - desc 10
+            // also it shouldn't change default behavior as default for containers should be the same
+            punit.setExcludeUnlistedClasses(false);
         } else {
             DatabaseConnection connection = null;
             if (preselectedDB != null && !preselectedDB.trim().equals("")) {
@@ -591,7 +639,9 @@ public class Util {
         }
         //need to add ap registration lib if exist
         if (libAdded && lib != null) {
-            double version = Math.max(Double.parseDouble(PersistenceUtils.getJPAVersion(lib)), Double.parseDouble(PersistenceUtils.getJPAVersion(project)));
+            String projVersion = PersistenceUtils.getJPAVersion(project);
+            if( projVersion == null )projVersion = "1.0";//NOI18N minimum version, will not affect
+            double version = Math.max(Double.parseDouble(PersistenceUtils.getJPAVersion(lib)), Double.parseDouble(projVersion));
             if (version > 1.0 && Util.isJPAVersionSupported(project, Double.toString(version))) {
                 Library mLib = LibraryManager.getDefault().getLibrary(lib.getName()+"modelgen");
                 if(mLib!=null) Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);//no real need to add modelgen to compile classpath

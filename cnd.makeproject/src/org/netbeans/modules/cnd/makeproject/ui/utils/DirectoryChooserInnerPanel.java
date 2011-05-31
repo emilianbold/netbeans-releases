@@ -153,7 +153,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
     }
 
     @Override
-    public void editAction(String o) {
+    public void editAction(String o, int i) {
         String s = o;
 
         NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
@@ -163,7 +163,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        replaceElement(o, newS);
+        replaceElement(o, newS, i);
     }
 
     private static String getString(

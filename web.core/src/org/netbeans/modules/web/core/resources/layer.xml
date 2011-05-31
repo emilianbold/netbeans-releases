@@ -280,7 +280,7 @@ made subject to such option by the copyright holder.
     </folder>
   </folder>
 
-  <folder name="J2EE">
+<!--  <folder name="J2EE">
     <folder name="JSPParser">
     </folder>
     <folder name="JSPCompilation">
@@ -299,7 +299,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-  </folder>
+  </folder>-->
   
   <folder name="Editors">
         <folder name="text">
@@ -664,6 +664,9 @@ made subject to such option by the copyright holder.
       </file>
       <file name="jsp-compilation.xml" url="jsp-compilation.xml">
         <attr name="displayName" bundlevalue="org/netbeans/modules/web/core/Bundle#jsp-compilation"/>
+      </file>
+      <file name="jsp-compilation-syscp.xml" url="jsp-compilation-syscp.xml">
+        <attr name="displayName" bundlevalue="org/netbeans/modules/web/core/Bundle#jsp-compilation-syscp"/>
       </file>
     </folder>
   </folder>

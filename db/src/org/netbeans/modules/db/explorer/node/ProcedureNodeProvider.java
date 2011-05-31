@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -151,7 +151,7 @@ public class ProcedureNodeProvider extends NodeProvider {
 
         @Override
         public int compare(Node model1, Node model2) {
-            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
+            return model1.getDisplayName().compareTo(model2.getDisplayName());
         }
 
     }

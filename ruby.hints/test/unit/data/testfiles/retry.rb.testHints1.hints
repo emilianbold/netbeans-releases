@@ -1,9 +1,0 @@
-retry #2
------
-HINT:Warning: "retry" must be inside a "rescue" statement in Ruby 1.9
-  retry #3
-  -----
-HINT:Warning: "retry" must be inside a "rescue" statement in Ruby 1.9
-  retry #4
-  -----
-HINT:Warning: "retry" must be inside a "rescue" statement in Ruby 1.9

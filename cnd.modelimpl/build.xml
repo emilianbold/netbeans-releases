@@ -83,6 +83,15 @@ made subject to such option by the copyright holder.
          <property name="open.fortran.parser.src.dir" location="external"/>
     </target>
     
+    <target name="check-up-to-date">
+        <uptodate property="antlr.up-to-date" targetfile="${antlr.output.dir}/APTTokenTypes.txt">
+            <srcfiles dir="${antlr.apt.output.dir}" includes="APTTokenTypes.txt"/>
+            <srcfiles dir="${antlr.grammar.dir}" includes="*.g"/>
+            <srcfiles dir="${antlr3.evaluator.grammar.dir}" includes="*.g"/>
+        </uptodate>
+        <echo message="antlr checkUptodate result: ${antlr.up-to-date}"/>
+    </target>
+    
     <target name="clean" depends="projectized-common.clean, init-antlr">
         <delete dir="${antlr.output.dir}"/>   
 		<!--
@@ -96,7 +105,7 @@ made subject to such option by the copyright holder.
         <delete dir="${antlr3.evaluator.output.dir}"/>
     </target>
     
-    <target name="antlr" depends="init-antlr" unless="up-to-date">
+    <target name="antlr" depends="init-antlr, check-up-to-date" unless="antlr.up-to-date">
         <mkdir dir="${antlr.output.dir}"/>
         <copy file="${antlr.apt.output.dir}/APTTokenTypes.txt"
                     todir="${antlr.output.dir}"

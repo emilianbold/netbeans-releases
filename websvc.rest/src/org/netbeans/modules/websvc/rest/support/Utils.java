@@ -43,28 +43,48 @@
  */
 package org.netbeans.modules.websvc.rest.support;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.swing.SwingUtilities;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.rest.nodes.TestRestServicesAction;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -172,7 +192,125 @@ public class Utils {
     }
 
     public static FileObject findBuildXml(Project project) {
-        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        return project.getProjectDirectory().getFileObject(
+                GeneratedFilesHelper.BUILD_XML_PATH);
+    }
+    
+    public static void testRestWebService(Project project) {
+        if ( project == null ){
+            return;
+        }
+        
+        TestRestTargetPanel panel = new TestRestTargetPanel(project);
+        DialogDescriptor descriptor = new DialogDescriptor(panel,
+                NbBundle.getMessage(Utils.class, 
+                        "TTL_SelectTarget"));
+        panel.setDescriptor( descriptor);
+        if ( !DialogDisplayer.getDefault().notify(descriptor).equals(
+                NotifyDescriptor.OK_OPTION)) 
+        {
+            return;
+        }
+        
+        if (panel.isRemote()) {
+            generateRemoteTester(project, panel.getProject());
+        }
+        else {
+            generateLocalTester(project);
+        }
+    }
+    
+    private static void generateRemoteTester( Project restProject, Project remoteProject ) {
+        RestSupport rs = remoteProject.getLookup().lookup(RestSupport.class);
+        RestSupport localSupport = restProject.getLookup().lookup(RestSupport.class);
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(remoteProject).
+            getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        SourceGroup sourceGroup = sourceGroups[0];
+        FileObject rootFolder = sourceGroup.getRootFolder();
+        try {
+            FileObject testFO = rs.generateTestClient(FileUtil.toFile( rootFolder ),
+                   localSupport.getBaseURL() );
+            localSupport.deploy();
+            rs.deploy();
+            URL url = new URL( rs.getContextRootURL()+testFO.getNameExt());
+            if (url != null) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(
+                        url);
+            }
+        }
+        catch(IOException e ){
+            Logger.getLogger( TestRestServicesAction.class.getName()).log( 
+                    Level.WARNING, null, e);
+        }
+    }
+
+    private static void generateLocalTester( Project prj ) {
+        FileObject buildFo = findBuildXml(prj);
+        if (buildFo != null) {
+            try {
+                Properties p = setupTestRestBeans(prj);
+                ActionUtils.runTarget(buildFo,
+                                new String[] { RestSupport.COMMAND_TEST_RESTBEANS },
+                                p);
+            }
+            catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        else {
+            // if there is a rest support (e.g. in Maven projects)
+            RestSupport rs = prj.getLookup().lookup(RestSupport.class);
+            if (rs != null) {
+                try {
+                    FileObject testFO = rs.generateTestClient(
+                            rs.getLocalTargetTestRest(), rs.getBaseURL());
+                    rs.deploy();
+                    if (testFO != null) {
+                        URL url = testFO.getURL();
+                        if (url != null) {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(
+                                    url);
+                        }
+                    }
+                }
+                catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        // logging usage of action
+        Object[] params = new Object[2];
+        params[0] = LogUtils.WS_STACK_JAXRS;
+        params[1] = "TEST REST"; // NOI18N
+        LogUtils.logWsAction(params);
+    }
+    
+    private static Properties setupTestRestBeans(Project project) throws IOException {
+        Properties p = new Properties();
+        p.setProperty(RestSupport.PROP_BASE_URL_TOKEN, RestSupport.BASE_URL_TOKEN);
+
+        RestSupport rs = project.getLookup().lookup(RestSupport.class);
+        if (rs != null) {
+            try {
+                String applicationPath = rs.getApplicationPath();
+                if (applicationPath != null) {
+                    if (!applicationPath.startsWith("/")) {
+                        applicationPath = "/"+applicationPath;
+                    }
+                    p.setProperty(RestSupport.PROP_APPLICATION_PATH, applicationPath);
+                }
+                File testdir = rs.getLocalTargetTestRest();
+                FileObject testFO = rs.generateTestClient(testdir);
+                p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, 
+                        testFO.getURL().toString());
+                p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, 
+                        FileUtil.toFile(testFO).getAbsolutePath());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return p;
     }
     
 }

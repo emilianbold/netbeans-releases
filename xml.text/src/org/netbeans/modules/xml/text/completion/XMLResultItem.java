@@ -49,15 +49,20 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.net.URL;
+import javax.swing.Action;
 import javax.swing.text.*;
 import javax.swing.Icon;
 
 import org.netbeans.editor.*;
 import javax.swing.JLabel;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 
 /**
@@ -290,6 +295,58 @@ class XMLResultItem implements CompletionItem {
     public CompletionTask createDocumentationTask() {
         return null; //no documentation supported for now
         //return new AsyncCompletionTask(new DocQuery(this));
+    }
+    
+    /**
+     * Helper method for result items providing documentation.
+     * @return 
+     */
+    protected CompletionTask doCreateDocumentationTask(final GrammarResult res) {
+        return new CompletionTask() {
+            public void query(CompletionResultSet resultSet) {
+                if (res != null && res.getDescription() != null) {
+                    resultSet.setDocumentation(new Docum(res.getDescription()));
+    
+                }
+                resultSet.finish();
+            }
+            public void refresh(CompletionResultSet resultSet) {
+                if (res != null && res.getDescription() != null) {
+                    resultSet.setDocumentation(new Docum(res.getDescription()));
+                }
+                resultSet.finish();
+            }
+            public void cancel() {}
+        };
+    }
+    
+    private static class Docum implements CompletionDocumentation {
+        private String doc;
+
+        private Docum(String doc) {
+            this.doc = doc;
+        }
+
+        @Override
+        public String getText() {
+            return doc;
+        }
+
+        @Override
+        public URL getURL() {
+            return null;
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
+            return null;
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return null;
+        }
+
     }
     
     public CompletionTask createToolTipTask() {

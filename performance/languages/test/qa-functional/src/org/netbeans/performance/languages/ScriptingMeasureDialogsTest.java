@@ -64,8 +64,6 @@ public class ScriptingMeasureDialogsTest {
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
         .addTest(ScriptingProjectsPropertiesDialogTest.class)
-        .addTest(RailsGeneratorDialogTest.class)
-        .addTest(RubyGemsDialogTest.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
                 
         return suite;

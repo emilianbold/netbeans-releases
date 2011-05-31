@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -73,6 +71,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 
@@ -114,7 +114,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         put();
     }
 
-    public FileComponentDeclarations(DataInput input) throws IOException {
+    public FileComponentDeclarations(RepositoryDataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.declarations = factory.readOffsetSortedToUIDMap(input, null);
@@ -452,7 +452,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         try {
@@ -517,18 +517,18 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
 
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             output.writeInt(start);
             output.writeInt(name);
         }
 
-        public OffsetSortedKey(DataInput input) throws IOException {
+        public OffsetSortedKey(RepositoryDataInput input) throws IOException {
             start = input.readInt();
             name = input.readInt();
         }
     }
 
-    public static class NameKey implements Comparable<NameKey> {
+    public static final class NameKey implements Comparable<NameKey> {
         private int start = 0;
         private CharSequence name;
         public NameKey(CsmUID<CsmOffsetableDeclaration> anUid) {

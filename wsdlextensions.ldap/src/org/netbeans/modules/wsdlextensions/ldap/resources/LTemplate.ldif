@@ -1,8 +1,0 @@
-##Enter ldap schema
-##this is sample, remove ## to use
-##objectClasses:  ( 2.16.840.1.113730.3.2.2 NAME 'inetOrgPerson' 
-##                   DESC 'Internet extended organizational person objectclass' 
-##                    SUP organizationalPerson 
-##                    MAY ( audio $ businessCategory $ carLicense $ departmentNumber $ displayName $ employeeType $ employeeNumber $ givenName $ homePhone $ homePostalAddress $ initials $ jpegPhoto $ labeledURI $ manager $ mobile $ pager $ photo $ preferredLanguage $ mail $ o $ roomNumber $ secretary $ uid $ x500uniqueIdentifier $ userCertificate $ userSMimeCertificate $ userPKCS12 ) 
-##                   X-ORIGIN 'inetOrgPerson Internet Draft' 
-##                )

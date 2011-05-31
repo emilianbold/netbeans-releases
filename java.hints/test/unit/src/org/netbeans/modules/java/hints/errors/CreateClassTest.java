@@ -251,6 +251,13 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "package test; class Undefined extends Exception { public Undefined() { } } ");
     }
 
+    public void testNPE195488() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; import test.Test.t|t; public class Test { }",
+                       "CreateInnerClass:test.Test.tt:[static]:CLASS",
+                       "package test; import test.Test.tt; public class Test { static class tt { public tt() { } } }");
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

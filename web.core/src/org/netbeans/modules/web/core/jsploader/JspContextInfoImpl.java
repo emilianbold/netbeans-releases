@@ -53,8 +53,8 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.core.syntax.spi.JspColoringData;
-import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.modules.web.core.api.JspColoringData;
+import org.netbeans.modules.web.core.api.JspContextInfo;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.loaders.DataObject;
 

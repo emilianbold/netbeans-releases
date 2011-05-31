@@ -61,6 +61,7 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,6 +74,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Element;
 import javax.swing.text.AttributeSet;
@@ -95,6 +97,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
@@ -129,10 +132,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final Logger LOG = Logger.getLogger(BaseDocument.class.getName());
 
     // -J-Dorg.netbeans.editor.BaseDocument.listener.level=FINE
-    private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + ".listener");
+    private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + "-listener");
 
     // -J-Dorg.netbeans.editor.BaseDocument.EDT.level=FINE - check that insert/remove only in EDT
-    private static final Logger LOG_EDT = Logger.getLogger(BaseDocument.class.getName() + ".EDT");
+    private static final Logger LOG_EDT = Logger.getLogger(BaseDocument.class.getName() + "-EDT");
 
     /**
      * Mime type of the document. This property can be used for determining
@@ -2549,6 +2552,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         @Override
         public void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException {
             mark.insert(doc, pos);
+        }
+
+        @Override
+        public void ActionFactory_reformat(Reformat formatter, Document doc, int startPos, int endPos, AtomicBoolean canceled) throws BadLocationException {
+            ActionFactory.reformat(formatter, doc, startPos, endPos, canceled);
         }
     }
 

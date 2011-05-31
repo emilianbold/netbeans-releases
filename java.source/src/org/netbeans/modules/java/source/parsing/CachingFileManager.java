@@ -68,7 +68,7 @@ import org.openide.util.WeakListeners;
 
 /** Implementation of file manager for given classpath.
  *
- * @author Petr Hrebejk
+ * @author Petr Hrebejk, Tomas Zezula
  */
 public class CachingFileManager implements JavaFileManager, PropertyChangeListener {
 
@@ -112,14 +112,13 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
 
     // FileManager implementation ----------------------------------------------
     
-    // XXX omit files not of given kind
+    @Override
     public Iterable<JavaFileObject> list( Location l, String packageName, Set<JavaFileObject.Kind> kinds, boolean recursive ) {
      
         if (recursive) {
             throw new UnsupportedOperationException ("Recursive listing is not supported in archives");
         }
         
-//        long start = System.currentTimeMillis();
         
         String folderName = FileObjects.convertPackage2Folder( packageName );
                         
@@ -154,10 +153,12 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         return Iterators.chained(idxs);
     }
 
+    @Override
     public javax.tools.FileObject getFileForInput( Location l, String pkgName, String relativeName ) {
         return findFile(pkgName, relativeName);
     }
 
+    @Override
     public JavaFileObject getJavaFileForInput (Location l, String className, JavaFileObject.Kind kind) {
         String[] namePair = FileObjects.getParentRelativePathAndName(className);
         if (namePair == null) {
@@ -183,6 +184,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     }
 
 
+    @Override
     public javax.tools.FileObject getFileForOutput( Location l, String pkgName, String relativeName, javax.tools.FileObject sibling ) 
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         if (!allowOutput) {
@@ -199,35 +201,41 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         return file;    //todo: wrap to make read only
     }
 
+    @Override
     public JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         throw new UnsupportedOperationException ();
     }        
     
+    @Override
     public void flush() throws IOException {
-        // XXX Do nothing?
     }
 
+    @Override
     public void close() throws IOException {
-        // XXX Do nothing?
     }
     
+    @Override
     public int isSupportedOption(String string) {
         return -1;
     }
     
+    @Override
     public boolean handleOption (final String head, final Iterator<String> tail) {
         return false;
     }
 
+    @Override
     public boolean hasLocation(Location location) {
         return true;
     }
     
+    @Override
     public ClassLoader getClassLoader (final Location l) {
         return null;
     }    
     
+    @Override
     public String inferBinaryName (Location l, JavaFileObject javaFileObject) {        
         if (javaFileObject instanceof FileObjects.Base) {
             final FileObjects.Base base = (FileObjects.Base) javaFileObject;
@@ -255,12 +263,14 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
        return result.toArray(new URL[result.size()]);
     }            
 
+    @Override
     public boolean isSameFile(FileObject fileObject, FileObject fileObject0) {        
         return fileObject instanceof FileObjects.FileBase 
                && fileObject0 instanceof FileObjects.FileBase 
                && ((FileObjects.FileBase)fileObject).getFile().equals(((FileObjects.FileBase)fileObject0).getFile());
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             provider.clear();
@@ -270,21 +280,15 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     private javax.tools.JavaFileObject findFile(final String pkgName, String relativeName) {
         assert pkgName != null;
         assert relativeName != null;
-        String folderName = FileObjects.convertPackage2Folder(pkgName);
-        if (relativeName.indexOf('/') != -1) {  //NOI18N
-            final String[] fbn = FileObjects.getFolderAndBaseName(relativeName, '/');   //NOI18N
-            folderName = FileObjects.getRelativePath(folderName,fbn[0]);
-            relativeName = fbn[1];
-        }
+        final String resourceName = FileObjects.getRelativePath(pkgName,relativeName);
+
         for( ClassPath.Entry root : this.cp.entries()) {
             try {
-                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
+                final Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 if (archive != null) {
-                    Iterable<JavaFileObject> files = archive.getFiles(folderName, ignoreExcludes?null:root, null, filter);
-                    for (JavaFileObject e : files) {
-                        if (relativeName.equals(e.getName())) {
-                            return e;
-                        }
+                    final JavaFileObject file = archive.getFile(resourceName);
+                    if (file != null) {
+                        return file;
                     }
                 }
             } catch (IOException e) {

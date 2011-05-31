@@ -48,7 +48,7 @@ package org.netbeans.modules.web.wizards;
  *
  * @author Ana von Klopp
  */
-class Editable {
+public class Editable {
 
     private String editable;
 

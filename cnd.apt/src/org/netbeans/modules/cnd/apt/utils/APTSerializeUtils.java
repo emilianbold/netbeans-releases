@@ -47,8 +47,6 @@ package org.netbeans.modules.cnd.apt.utils;
 import java.io.File;
 import java.io.BufferedOutputStream;
 import java.io.BufferedInputStream;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -69,6 +67,8 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -203,16 +203,16 @@ public class APTSerializeUtils {
     ////////////////////////////////////////////////////////////////////////////
     // persistence support
     
-    public static void writeSystemMacroMap(APTMacroMap macroMap, DataOutput output) throws IOException {
+    public static void writeSystemMacroMap(APTMacroMap macroMap, RepositoryDataOutput output) throws IOException {
         //throw new UnsupportedOperationException("Not yet supported"); // NOI18N
     }
     
-    public static APTMacroMap readSystemMacroMap(DataInput input) throws IOException {
+    public static APTMacroMap readSystemMacroMap(RepositoryDataInput input) throws IOException {
         //throw new UnsupportedOperationException("Not yet supported"); // NOI18N
         return null;
     }
     
-    public static void writeMacroMapState(APTMacroMap.State state, DataOutput output) throws IOException {
+    public static void writeMacroMapState(APTMacroMap.State state, RepositoryDataOutput output) throws IOException {
         assert state != null;
         if (state instanceof APTFileMacroMap.FileStateImpl) {
             output.writeInt(MACRO_MAP_FILE_STATE_IMPL);
@@ -224,7 +224,7 @@ public class APTSerializeUtils {
         }
     }
     
-    public static APTMacroMap.State readMacroMapState(DataInput input) throws IOException {
+    public static APTMacroMap.State readMacroMapState(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         APTMacroMap.State state;
         if (handler == MACRO_MAP_FILE_STATE_IMPL) {
@@ -236,18 +236,18 @@ public class APTSerializeUtils {
         return state;
     }
     
-    public static void writeIncludeState(APTIncludeHandler.State state, DataOutput output) throws IOException {
+    public static void writeIncludeState(APTIncludeHandler.State state, RepositoryDataOutput output) throws IOException {
         assert state != null;
         assert state instanceof APTIncludeHandlerImpl.StateImpl;
         ((APTIncludeHandlerImpl.StateImpl)state).write(output);
     }
     
-    public static APTIncludeHandler.State readIncludeState(FileSystem fs, DataInput input) throws IOException {
+    public static APTIncludeHandler.State readIncludeState(FileSystem fs, RepositoryDataInput input) throws IOException {
         APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(fs, input);
         return state;
     }    
 
-    public static void writePreprocState(APTPreprocHandler.State state, DataOutput output) throws IOException {
+    public static void writePreprocState(APTPreprocHandler.State state, RepositoryDataOutput output) throws IOException {
         assert state != null;
         if (state instanceof APTPreprocHandlerImpl.StateImpl) {
             output.writeInt(PREPROC_STATE_STATE_IMPL);
@@ -257,7 +257,7 @@ public class APTSerializeUtils {
         }        
     }
     
-    public static APTPreprocHandler.State readPreprocState(FileSystem fs, DataInput input) throws IOException {
+    public static APTPreprocHandler.State readPreprocState(FileSystem fs, RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         APTPreprocHandler.State out;
         switch (handler) {
@@ -273,7 +273,7 @@ public class APTSerializeUtils {
     ////////////////////////////////////////////////////////////////////////////
     // persist snapshots
     
-    public static void writeSnapshot(APTMacroMapSnapshot snap, DataOutput output) throws IOException {
+    public static void writeSnapshot(APTMacroMapSnapshot snap, RepositoryDataOutput output) throws IOException {
         // FIXUP: we do not support yet writing snapshots!
 //        if (snap == null) {
             output.writeInt(NULL_POINTER);
@@ -283,7 +283,7 @@ public class APTSerializeUtils {
 //        }
     }
 
-    public static APTMacroMapSnapshot readSnapshot(DataInput input) throws IOException {
+    public static APTMacroMapSnapshot readSnapshot(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         APTMacroMapSnapshot snap = null;
         if (handler != NULL_POINTER) {
@@ -293,7 +293,7 @@ public class APTSerializeUtils {
         return snap;
     }
 
-    public static void writeStringToMacroMap(Map<CharSequence, APTMacro> macros, DataOutput output) throws IOException {
+    public static void writeStringToMacroMap(Map<CharSequence, APTMacro> macros, RepositoryDataOutput output) throws IOException {
         assert macros != null;
         output.writeInt(macros.size());
         for (Entry<CharSequence, APTMacro> entry : macros.entrySet()) {
@@ -307,9 +307,9 @@ public class APTSerializeUtils {
         }
     }
 
-    public static void readStringToMacroMap(int collSize, Map<CharSequence, APTMacro> macros, DataInput input) throws IOException {
+    public static void readStringToMacroMap(int collSize, Map<CharSequence, APTMacro> macros, RepositoryDataInput input) throws IOException {
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = CharSequences.create(input.readUTF());
+            CharSequence key = CharSequences.create(input.readCharSequenceUTF());
             assert key != null;
             APTMacro macro = readMacro(input);
             assert macro != null;
@@ -317,7 +317,7 @@ public class APTSerializeUtils {
         }
     }
     
-    private static void writeMacro(APTMacro macro, DataOutput output) throws IOException {
+    private static void writeMacro(APTMacro macro, RepositoryDataOutput output) throws IOException {
         assert macro != null;
         if (macro == APTMacroMapSnapshot.UNDEFINED_MACRO) {
             output.writeInt(UNDEFINED_MACRO);
@@ -327,7 +327,7 @@ public class APTSerializeUtils {
         }
     }
     
-    private static APTMacro readMacro(DataInput input) throws IOException {
+    private static APTMacro readMacro(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
         APTMacro macro;
         if (handler == UNDEFINED_MACRO) {
