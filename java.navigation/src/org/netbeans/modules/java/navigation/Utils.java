@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.io.CharConversionException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +52,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.AnnotationValue;
-
 import javax.lang.model.element.Element;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -67,6 +67,8 @@ import static javax.lang.model.type.TypeKind.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -734,5 +736,15 @@ class Utils {
             }
             );
         }
+    }
+    
+    static String escape(String s) {
+        if (s != null) {
+            try {
+                return XMLUtil.toAttributeValue(s);
+            } catch (CharConversionException ex) {
+            }
+        }
+        return null;
     }
 }

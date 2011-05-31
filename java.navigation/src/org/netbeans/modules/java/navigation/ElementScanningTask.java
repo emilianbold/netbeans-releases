@@ -61,6 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -274,12 +275,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if( isInherited ) {
             sb.append( "<font color=" + INHERITED_COLOR + ">" ); // NOI18N
         }
-        if ( e.getKind() == ElementKind.CONSTRUCTOR ) {
-            sb.append(e.getEnclosingElement().getSimpleName());
-        }
-        else {
-            sb.append(e.getSimpleName());
-        }
+        Name name = e.getKind() == ElementKind.CONSTRUCTOR ? e.getEnclosingElement().getSimpleName() : e.getSimpleName();
+        sb.append(Utils.escape(name.toString()));        
         if ( isDeprecated ) {
             sb.append("</s>"); // NOI18N
         }
@@ -294,7 +291,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             sb.append(printArg(param.asType(),vararg));
             sb.append("</font>"); // NOI18N
             sb.append(" "); // NOI18N
-            sb.append(param.getSimpleName());
+            sb.append(Utils.escape(param.getSimpleName().toString()));
             if ( it.hasNext() ) {
                 sb.append(", "); // NOI18N
             }
@@ -326,7 +323,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if( isInherited ) {
             sb.append( "<font color=" + INHERITED_COLOR + ">" ); // NOI18N
         }
-        sb.append(e.getSimpleName());
+        sb.append(Utils.escape(e.getSimpleName().toString()));
         if ( isDeprecated ) {
             sb.append("</s>"); // NOI18N
         }
@@ -350,7 +347,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if( isInherited ) {
             sb.append( "<font color=" + INHERITED_COLOR + ">" ); // NOI18N
         }
-        sb.append(e.getSimpleName());
+        sb.append(Utils.escape(e.getSimpleName().toString()));
         if ( isDeprecated ) {
             sb.append("</s>"); // NOI18N
         }
@@ -364,7 +361,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
             for( Iterator<? extends TypeParameterElement> it = typeParams.iterator(); it.hasNext(); ) {
                 TypeParameterElement tp = it.next();
-                sb.append( tp.getSimpleName() );                    
+                sb.append( Utils.escape(tp.getSimpleName().toString()) );                    
                 try { // XXX Verry ugly -> file a bug against Javac?
                     List<? extends TypeMirror> bounds = tp.getBounds();
                     //System.out.println( tp.getSimpleName() + "   bounds size " + bounds.size() );
@@ -506,7 +503,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 }
                 return sb.toString();
             default:
-                return tm.toString();
+                return Utils.escape(tm.toString());
         }
     }
 }
