@@ -179,7 +179,7 @@ public class DelegatingVCS extends VersioningSystem {
             return annotator != null ? annotator.getActions(ctx, actionDestination) : new Action[0];
         } else {
             Action[] ia = getInitActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
-            Action[] ga = getGlobalActions(VCSAnnotator.ActionDestination.MainMenu);
+            Action[] ga = getGlobalActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
             
             List<Action> l = new ArrayList<Action>(ia.length + ga.length + 1); // +1 if separator needed
             
@@ -196,11 +196,19 @@ public class DelegatingVCS extends VersioningSystem {
         }        
     }
     
-    Action[] getGlobalActions(ActionDestination actionDestination) {
+    private Action[] getGlobalActions(VCSContext ctx, ActionDestination actionDestination) {
         assert !isAlive();
         String category = (String) map.get("actionsCategory");              // NOI18N
         List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Actions/Global"); // NOI18N
-        return l != null ? l.toArray(new Action[l.size()]) : new Action[0];
+        List<Action> ret = new ArrayList<Action>(l.size());
+        for (Action action : l) {
+            if(action instanceof ContextAwareAction) {
+                ret.add(((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(ctx)));
+            } else {
+                ret.add(action);
+            }
+        }        
+        return ret != null ? ret.toArray(new Action[ret.size()]) : new Action[0];
     }
     
     Action[] getInitActions(VCSContext ctx, ActionDestination actionDestination) {
@@ -210,6 +218,8 @@ public class DelegatingVCS extends VersioningSystem {
         for (Action action : l) {
             if(action instanceof ContextAwareAction) {
                 ret.add(((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(ctx)));
+            } else {
+                ret.add(action);
             }
         }
         return ret.toArray(new Action[ret.size()]);

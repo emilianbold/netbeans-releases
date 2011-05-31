@@ -65,14 +65,12 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.actions.ConnectAction;
 import org.netbeans.modules.git.ui.actions.DisconnectAction;
-import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.ignore.UnignoreAction;
-import org.netbeans.modules.git.ui.init.InitAction;
 import org.netbeans.modules.git.ui.menu.BranchMenu;
 import org.netbeans.modules.git.ui.menu.CheckoutMenu;
 import org.netbeans.modules.git.ui.menu.ExportMenu;
@@ -91,10 +89,13 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * TODO: handle annotations
@@ -136,9 +137,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 if (ca.isEnabled()) {
                     actions.add(ca);
                 } else {
-                    actions.add(SystemAction.get(InitAction.class));
-                    actions.add(null);
-                    actions.add(SystemAction.get(CloneAction.class));
+                    addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
+                    addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
                 }
                 actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
@@ -181,7 +181,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(null);
                 actions.add(SystemAction.get(ResetAction.class));
                 actions.add(null);
-                actions.add(SystemAction.get(CloneAction.class));
+                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
                 actions.add(new RemoteMenu(ActionDestination.MainMenu, null));
                 actions.add(SystemAction.get(SearchHistoryAction.class));
             }
@@ -191,7 +191,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 if (ca.isEnabled()) {
                     actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 } else {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(InitAction.class), NbBundle.getMessage(InitAction.class, "LBL_InitAction.popupName"), lkp));
+                    addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
                 }
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
@@ -231,13 +231,21 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 }
                 actions.add(null);
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CloneAction.class), NbBundle.getMessage(CloneAction.class, "LBL_CloneAction_PopupName"), lkp)); //NOI18N
+                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
                 actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName"), lkp)); //NOI18N
             }
         }
 
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    private void addAction(String name, VCSContext context, List<Action> actions) {
+        Action action = (Action) FileUtil.getConfigFile("Actions/Git/" + name + ".instance").getAttribute("instanceCreate");
+            if(action instanceof ContextAwareAction) {
+                action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(context));
+            }            
+        if(action != null) actions.add(action);
     }
 
     @Override

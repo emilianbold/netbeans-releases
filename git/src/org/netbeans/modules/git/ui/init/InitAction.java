@@ -44,6 +44,8 @@
 package org.netbeans.modules.git.ui.init;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,17 +56,21 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.libs.git.GitException;
-import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -73,58 +79,36 @@ import org.openide.util.HelpCtx;
  * Init action for git: 
  * git init - init a new repository in the given directory
  * 
- * @author John Rice
  * @author Tomas Stupka
  */
-public class InitAction extends GitAction {
+@ActionID(id = "org.netbeans.modules.git.ui.init.InitAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_InitAction_Name", popupText="#LBL_InitAction.popupName", menuText="#LBL_InitAction_Name")
+@ActionReferences({
+   @ActionReference(path="Versioning/Git/Actions/Unversioned", position=300)
+})
+public class InitAction implements ActionListener, HelpCtx.Provider {
 
     private static final Logger LOG = Logger.getLogger(InitAction.class.getName());
+    private final VCSContext ctx;
 
-    @Override
-    protected boolean enable(Node[] nodes) {
-        VCSContext context = getCurrentContext(nodes);
-        return !GitUtils.isFromGitRepository(context);
-    }
-
-    private File getCommonAncestor(File firstFile, File secondFile) {
-        if (firstFile.equals(secondFile)) return firstFile;
-
-        File tempFirstFile = firstFile;
-        while (tempFirstFile != null) {
-            File tempSecondFile = secondFile;
-            while (tempSecondFile != null) {
-                if (tempFirstFile.equals(tempSecondFile))
-                    return tempSecondFile;
-                tempSecondFile = tempSecondFile.getParentFile();
-            }
-            tempFirstFile = tempFirstFile.getParentFile();
-        }
-        return null;
-    }
-
-    private File getCommonAncestor(File[] files) {
-        File f1 = files[0];
-
-        for (int i = 1; i < files.length; i++) {
-            File f = getCommonAncestor(f1, files[i]);
-            if (f == null) {
-                LOG.log(Level.SEVERE, "Unable to get common parent of {0} and {1} ", // NOI18N
-                        new Object[] {f1.getAbsolutePath(), files[i].getAbsolutePath()});
-                // XXX not sure wat to do at this point
-            } else {
-                f1 = f;
-            }
-        }
-        return f1;
+    public InitAction(VCSContext ctx) {
+        this.ctx = ctx;
     }
 
     @Override
-    protected void performContextAction(Node[] nodes) {
-        final VCSContext context = getCurrentContext(nodes);
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.git.ui.init.InitAction");
+            }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(!isEnabled()) {
+            return;
+        }
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                performInit(context);
+                performInit(ctx);
             }
         });
     }
@@ -147,6 +131,9 @@ public class InitAction extends GitAction {
                     Git.getInstance().versionedFilesChanged();                       
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
+                } finally {
+                    Git.getInstance().clearAncestorCaches();
+                    VersioningSupport.versionedRootsChanged();
                 }
             }            
         };
@@ -283,4 +270,58 @@ public class InitAction extends GitAction {
         }
         return root;
     }
+    
+
+    private File getCommonAncestor(File firstFile, File secondFile) {
+        if (firstFile.equals(secondFile)) return firstFile;
+
+        File tempFirstFile = firstFile;
+        while (tempFirstFile != null) {
+            File tempSecondFile = secondFile;
+            while (tempSecondFile != null) {
+                if (tempFirstFile.equals(tempSecondFile))
+                    return tempSecondFile;
+                tempSecondFile = tempSecondFile.getParentFile();
+}
+            tempFirstFile = tempFirstFile.getParentFile();
+        }
+        return null;
+    }
+
+    private File getCommonAncestor(File[] files) {
+        File f1 = files[0];
+
+        for (int i = 1; i < files.length; i++) {
+            File f = getCommonAncestor(f1, files[i]);
+            if (f == null) {
+                LOG.log(Level.SEVERE, "Unable to get common parent of {0} and {1} ", // NOI18N
+                        new Object[] {f1.getAbsolutePath(), files[i].getAbsolutePath()});
+                // XXX not sure wat to do at this point
+            } else {
+                f1 = f;
+            }
+        }
+        return f1;
+    }
+
+    private boolean isEnabled() {
+        boolean ret = !GitUtils.isFromGitRepository(ctx);
+        if(!ret) {
+            notifyImportImpossible(NbBundle.getMessage(InitAction.class, "MSG_AlreadyVersioned"));            
+        }
+        return ret;
+    }
+
+    private void notifyImportImpossible(String msg) {
+        NotifyDescriptor nd =
+            new NotifyDescriptor(
+                msg,
+                NbBundle.getMessage(InitAction.class, "MSG_ImportNotAllowed"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
+    }    
+    
 }
