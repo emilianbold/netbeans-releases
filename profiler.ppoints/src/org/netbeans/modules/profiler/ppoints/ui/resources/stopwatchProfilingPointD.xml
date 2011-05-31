@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
     description_key='TT_DisabledStopwatchProfilePoint'
     localizing_bundle='org.netbeans.modules.profiler.ppoints.ui.Bundle'
     visible='true'
-    glyph='nbresloc:/org/netbeans/modules/profiler/ppoints/ui/resources/stopwatchProfilingPointD.png'
+    glyph='nbresloc:/org/netbeans/modules/profiler/ppoints/ui/icons/stopwatchProfilingPointD.png'
     highlight='0xDCDCD8'
     type='line'
     actions='PairedProfilePointActions'

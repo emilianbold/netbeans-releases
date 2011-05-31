@@ -51,9 +51,7 @@ import org.netbeans.lib.profiler.ui.components.table.JExtendedTablePanel;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointFactory;
 import org.netbeans.modules.profiler.ppoints.Utils;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -62,7 +60,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -74,6 +71,8 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.ProfilerIcons;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 
 
@@ -135,9 +134,9 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
                                                                                                                           // -----
     private static final String HELP_CTX_KEY = "PPointsWizardPanel1UI.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
-    private static final Icon MONITOR_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/telemetryWindow.png", false); // NOI18N
-    private static final Icon CPU_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/cpu.png", false); // NOI18N
-    private static final Icon MEMORY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/memory.png", false); // NOI18N
+    private static final Icon MONITOR_ICON = Icons.getIcon(ProfilerIcons.MONITORING);
+    private static final Icon CPU_ICON = Icons.getIcon(ProfilerIcons.CPU);
+    private static final Icon MEMORY_ICON = Icons.getIcon(ProfilerIcons.MEMORY);
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 

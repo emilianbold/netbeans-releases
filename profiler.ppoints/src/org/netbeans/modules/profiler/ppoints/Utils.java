@@ -88,6 +88,8 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.profiler.api.GeneralIcons;
+import org.netbeans.modules.profiler.api.Icons;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
@@ -220,7 +222,7 @@ public class Utils {
                 label.setIcon(((ProfilingPointFactory) value).getScopeIcon());
                 label.setEnabled(true);
             } else {
-                label.setIcon(EMPTY_ICON);
+                label.setIcon(Icons.getIcon(GeneralIcons.EMPTY));
                 label.setEnabled(true);
             }
         }
@@ -271,7 +273,7 @@ public class Utils {
                 }
             } else {
                 renderer.setText(rendererOrig.getText());
-                renderer.setIcon(EMPTY_ICON);
+                renderer.setIcon(Icons.getIcon(GeneralIcons.EMPTY));
             }
 
             return renderer;
@@ -339,7 +341,6 @@ public class Utils {
     private static final String PROJECT_DIRECTORY_MARK = "{$projectDirectory}"; // NOI18N
 
     // TODO: Move to more "universal" location
-    public static final ImageIcon EMPTY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/empty16.gif", false); // NOI18N
     private static final ProjectPresenterRenderer projectRenderer = new ProjectPresenterRenderer();
     private static final ProjectPresenterListRenderer projectListRenderer = new ProjectPresenterListRenderer();
     private static final EnhancedTableCellRenderer scopeRenderer = new ProfilingPointScopeRenderer();

@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
     description_key='TT_DisabledLoadGenProfilePoint'
     localizing_bundle='org.netbeans.modules.profiler.ppoints.ui.Bundle'
     visible='true'
-    glyph='nbresloc:/org/netbeans/modules/profiler/ppoints/ui/resources/loadgenProfilingPointD.png'
+    glyph='nbresloc:/org/netbeans/modules/profiler/ppoints/ui/icons/loadgenProfilingPointD.png'
     highlight='0xDCDCD8'
     type='line'
     actions='PairedProfilePointActions'

@@ -47,11 +47,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.profiler.ppoints.ui.TriggeredTakeSnapshotCustomizer;
 import org.openide.ErrorManager;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import java.text.MessageFormat;
 import java.util.Properties;
 import javax.swing.Icon;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 
 
 /**
@@ -71,7 +72,7 @@ public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPoi
     private static final String PP_DEFAULT_NAME = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPointFactory.class,
                                                                       "TriggeredTakeSnapshotProfilingPointFactory_PpDefaultName"); // NOI18N
                                                                                                                                    // -----
-    public static final Icon TAKE_SNAPSHOT_PP_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ppoints/ui/resources/triggeredTakeSnapshotProfilingPoint.png", false); // NOI18N
+    public static final Icon TAKE_SNAPSHOT_PP_ICON = Icons.getIcon(ProfilingPointsIcons.TAKE_SNAPSHOT_TRIGGERED);
     public static final String TAKE_SNAPSHOT_PP_TYPE = PP_TYPE;
     public static final String TAKE_SNAPSHOT_PP_DESCR = PP_DESCR;
     

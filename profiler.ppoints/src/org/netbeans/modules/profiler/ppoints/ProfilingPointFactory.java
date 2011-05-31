@@ -50,7 +50,6 @@ import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ImageUtilities;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -64,6 +63,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 
 
 /**
@@ -77,8 +78,8 @@ public abstract class ProfilingPointFactory {
     private static final String PROFILING_POINT_STORAGE_EXT = "pp"; // NOI18N
     public static final int SCOPE_CODE = 1; // Scope of the Profiling Point: Code (see CodeProfilingPoint)
     public static final int SCOPE_GLOBAL = 2; // Scope of the Profiling Point: Global (see GlobalProfilingPoint)
-    public static final Icon SCOPE_CODE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ppoints/ui/resources/codeProfilingPoint.png", false); // NOI18N
-    public static final Icon SCOPE_GLOBAL_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ppoints/ui/resources/globalProfilingPoint.png", false); // NOI18N
+    public static final Icon SCOPE_CODE_ICON = Icons.getIcon(ProfilingPointsIcons.CODE);
+    public static final Icon SCOPE_GLOBAL_ICON = Icons.getIcon(ProfilingPointsIcons.GLOBAL);
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 

@@ -57,7 +57,6 @@ import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
 import org.netbeans.modules.profiler.ppoints.Utils;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import java.awt.BorderLayout;
@@ -81,7 +80,7 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -97,6 +96,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -165,10 +166,10 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     private static final String NO_END_DEFINED_MSG = NbBundle.getMessage(ProfilingPointsWindowUI.class,
                                                                          "ProfilingPointsWindowUI_NoEndDefinedMsg"); // NOI18N
                                                                                                                      // -----
-    private static final ImageIcon PPOINT_ADD_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ppoints/ui/resources/ppointAdd.png", false); // NOI18N
-    private static final ImageIcon PPOINT_REMOVE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ppoints/ui/resources/ppointRemove.png", false); // NOI18N
-    private static final ImageIcon PPOINT_EDIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ppoints/ui/resources/ppointEdit.png", false); // NOI18N
-    private static final ImageIcon PPOINT_ENABLE_DISABLE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ppoints/ui/resources/ppointEnableDisable.png", false); // NOI18N
+    private static final Icon PPOINT_ADD_ICON = Icons.getIcon(ProfilingPointsIcons.ADD);
+    private static final Icon PPOINT_REMOVE_ICON = Icons.getIcon(ProfilingPointsIcons.REMOVE);
+    private static final Icon PPOINT_EDIT_ICON = Icons.getIcon(ProfilingPointsIcons.EDIT);
+    private static final Icon PPOINT_ENABLE_DISABLE_ICON = Icons.getIcon(ProfilingPointsIcons.ENABLE_DISABLE);
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
