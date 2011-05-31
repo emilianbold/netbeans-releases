@@ -192,13 +192,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             
-            // XXX #16761 Removing attr in MFO causes storing special-null value even in unneeded cases.
-            // When the issue is fixed remove this hack.
-            if("Windows2/Modes/debugger".equals(fo.getPath()) // NOI18N
-            || "Windows2/Modes/explorer".equals(fo.getPath())) { // NOI18N
-                continue;
-            }
-            
             if (
                 "Keymaps/NetBeans/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
                 "Keymaps/NetBeans55/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
