@@ -151,8 +151,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         suite.addTest(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
                 clusters("(?!ergonomics).*").enableClasspathModules(false).enableModules(".*").gui(false).suite());
         suite.addTest(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
-                clusters("platform|harness|ide|websvccommon|java|profiler|nb").enableClasspathModules(false).enableModules(".*").gui(false).suite());
-        suite.addTest(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
                 clusters("platform|ide").enableClasspathModules(false).enableModules(".*").gui(false).suite());
         return suite;
     }
