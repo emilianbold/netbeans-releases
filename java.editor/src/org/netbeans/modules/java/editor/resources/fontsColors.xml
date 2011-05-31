@@ -127,8 +127,14 @@ made subject to such option by the copyright holder.
     <fontcolor name="javadoc-tag" default="comment">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="html-tag" default="comment">
+    <fontcolor name="html-tag" default="comment" foreColor="9999FF">
         <font style="bold" />
+    </fontcolor>
+    <fontcolor name="javadoc-first-sentence" default="comment">
+        <font style="bold" />
+    </fontcolor>
+
+    <fontcolor name="javadoc-identifier" default="comment" foreColor="000000" >
     </fontcolor>
 
 <!-- XXX: should java module really define these colorings ??

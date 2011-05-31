@@ -50,10 +50,10 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
  * Lexical analyzer for javadoc language.
- *
  * @author Miloslav Metelka
  * @version 1.00
  */
@@ -66,14 +66,16 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
     
     private TokenFactory<JavadocTokenId> tokenFactory;
     
+    private Integer state = null;
+    
     public JavadocLexer(LexerRestartInfo<JavadocTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
-        assert (info.state() == null); // passed argument always null
+        this.state = (Integer) info.state();        
     }
     
     public Object state() {
-        return null;
+        return state;
     }
     
     public Token<JavadocTokenId> nextToken() {
@@ -89,6 +91,10 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                 ;
             
             input.backup(1);
+            if (state!=null) {
+                state = null;
+                return token(JavadocTokenId.IDENT, "javadoc-identifier"); //NOI18N
+            }
             return token(JavadocTokenId.IDENT);
         }
         
@@ -106,15 +112,22 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
         
         switch (ch) {
             case '@':
+                state = null;
+                String tag = "";
                 while (true) {
                     ch = input.read();
-                    
                     if (!Character.isLetter(ch)) {
+                        if ("param".equals(tag)) { //NOI18N
+                            state = 1;
+                        }
                         input.backup(1);
                         return tokenFactory.createToken(JavadocTokenId.TAG, input.readLength());
+                    } else {
+                        tag+=new String(Character.toChars(ch));
                     }
                 }
             case '<':
+                state = null;
                 int backupCounter = 0;
                 boolean newline = false;
                 boolean asterisk = false;
@@ -140,8 +153,10 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                     }
                 }
             case '.':
+                state = null;
                 return token(JavadocTokenId.DOT);
             case '#':
+                state = null;
                 return token(JavadocTokenId.HASH);
         } // end of switch (ch)
         
@@ -152,6 +167,19 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
 
     private Token<JavadocTokenId> token(JavadocTokenId id) {
         return tokenFactory.createToken(id);
+    }
+
+    private Token<JavadocTokenId> token(JavadocTokenId id, final Object property) {
+        return tokenFactory.createPropertyToken(id, input.readLength(), new TokenPropertyProvider<JavadocTokenId>() {
+
+        @Override
+        public Object getValue(Token<JavadocTokenId> token, Object key) {
+            if (property.equals(key)) 
+                return true; 
+            return null;
+        }
+        
+    });
     }
 
     public void release() {

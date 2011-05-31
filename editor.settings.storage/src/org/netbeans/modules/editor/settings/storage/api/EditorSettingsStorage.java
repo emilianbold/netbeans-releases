@@ -48,10 +48,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.SettingsType;
 import org.netbeans.modules.editor.settings.storage.StorageImpl;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -60,6 +64,8 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 public final class EditorSettingsStorage <K extends Object, V extends Object> {
 
     public static final String PROP_DATA = "EditorSettingsStorage.PROP_DATA"; //NOI18N
+    
+    private static RequestProcessor RP = new RequestProcessor(EditorSettingsStorage.class);
     
     public static <K extends Object, V extends Object> EditorSettingsStorage<K, V> get(String settingsTypeId) {
         EditorSettingsStorage<K, V> ess = EditorSettingsStorage.<K, V>find(settingsTypeId);
@@ -89,8 +95,21 @@ public final class EditorSettingsStorage <K extends Object, V extends Object> {
         return storageImpl.load(mimePath, profile, defaults);
     }
     
-    public void save(MimePath mimePath, String profile, boolean defaults, Map<K, V> data) throws IOException {
-        storageImpl.save(mimePath, profile, defaults, data);
+    public void save(final MimePath mimePath, final String profile, final boolean defaults, final Map<K, V> data) throws IOException {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        storageImpl.save(mimePath, profile, defaults, data);
+                    } catch (IOException ioe) {
+                        Logger.getLogger(EditorSettingsStorage.class.getName()).log(Level.WARNING, null, ioe);
+                    }
+                }
+            });
+        } else {
+            storageImpl.save(mimePath, profile, defaults, data);
+        }
     }
 
     public void delete(MimePath mimePath, String profile, boolean defaults) throws IOException {

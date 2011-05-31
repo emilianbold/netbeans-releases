@@ -33,6 +33,7 @@ package org.netbeans.modules.java.editor.semantic;
 import java.util.Map;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
@@ -47,31 +48,35 @@ public class LexerBasedHighlightSequence implements HighlightsSequence {
     private LexerBasedHighlightLayer layer;
     private Map<Token, Coloring> colorings;
     private TokenSequence ts;
-    private boolean started;
+    private TokenSequence java;
     
     public LexerBasedHighlightSequence(LexerBasedHighlightLayer layer, TokenSequence ts, Map<Token, Coloring> colorings) {
         this.layer = layer;
         this.ts = ts;
+        this.java = ts;
         this.colorings = colorings;
     }
     
-    private boolean moveNextImpl() {
-        if (started) {
-            return ts.moveNext();
-        } else {
-            started = true;
-            
-            return ts.moveNext();
+    public boolean moveNext() {
+        if (ts != java) {
+            while (ts.moveNext()) {
+                Token t = ts.token();
+                if (t.id() == JavadocTokenId.IDENT && t.getProperty("javadoc-identifier") != null) { //NOI18N
+                    return true;
         }
     }
-
-    public boolean moveNext() {
-        while (moveNextImpl()) {
+            ts = java;
+        }
+        while (ts.moveNext()) {
             Token t = ts.token();
-            if (t.id() == JavaTokenId.IDENTIFIER && colorings.containsKey(ts.token()))
+            if (t.id() == JavaTokenId.JAVADOC_COMMENT) {
+                ts = ts.embedded();
+                return moveNext();
+            }
+            if (t.id() == JavaTokenId.IDENTIFIER && colorings.containsKey(ts.token())) {
                 return true;
         }
-        
+        }
         return false;
     }
     
@@ -84,7 +89,9 @@ public class LexerBasedHighlightSequence implements HighlightsSequence {
     }
 
     public AttributeSet getAttributes() {
+        if (ts.token().id() == JavadocTokenId.IDENT) {
+            return layer.getColoring(ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.JAVADOC_IDENTIFIER));
+        }
         return layer.getColoring(colorings.get(ts.token()));
     }
-
 }
