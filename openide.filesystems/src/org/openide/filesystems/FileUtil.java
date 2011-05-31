@@ -1570,7 +1570,7 @@ public final class FileUtil extends Object {
      */
     public static boolean isParentOf(FileObject folder, FileObject fo) {
         Parameters.notNull("folder", folder);  //NOI18N
-        Parameters.notNull("fileObject", fo);  //NOI18N
+        Parameters.notNull("fo", fo);  //NOI18N
 
         if (folder.isData()) {
             return false;
