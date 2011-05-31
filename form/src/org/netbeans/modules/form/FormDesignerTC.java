@@ -64,6 +64,7 @@ import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.modules.form.assistant.AssistantView;
 import org.openide.actions.FileSystemAction;
 import org.openide.awt.StatusDisplayer;
+import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
@@ -233,6 +234,12 @@ public class FormDesignerTC extends TopComponent implements MultiViewElement {
         scrollPane.getHorizontalScrollBar().setUnitIncrement(5);
         add(scrollPane); // if not yet loaded, the canvas shows "Loading"
         setupAssistant(); // if not yet loaded, a blank placeholder panel is used
+    }
+
+    @Override
+    public UndoRedo getUndoRedo() {
+        UndoRedo.Provider provider = getLookup().lookup(UndoRedo.Provider.class);
+        return (provider == null) ? UndoRedo.NONE : provider.getUndoRedo();
     }
 
     private class PreLoadTask implements Runnable {
