@@ -103,7 +103,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeDelete(File file) {
-        Subversion.LOG.fine("beforeDelete " + file);
+        Subversion.LOG.log(Level.FINE, "beforeDelete {0}", file);
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping delete due to missing client");
             return false;
@@ -120,7 +120,7 @@ class FilesystemHandler extends VCSInterceptor {
      */
     @Override
     public void doDelete(File file) throws IOException {
-        Subversion.LOG.fine("doDelete " + file);
+        Subversion.LOG.log(Level.FINE, "doDelete {0}", file);
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
@@ -150,7 +150,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterDelete(final File file) {
-        Subversion.LOG.fine("afterDelete " + file);
+        Subversion.LOG.log(Level.FINE, "afterDelete {0}", file);
         if (file == null || SvnUtils.isPartOfSubversionMetadata(file)) return;
 
         // TODO the afterXXX events should not be triggered by the FS listener events
@@ -206,7 +206,7 @@ class FilesystemHandler extends VCSInterceptor {
             if (to.mkdir()) {
                 cache.refreshAsync(to);
             } else {
-                Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName() + ": Cannot create folder " + to);
+                Subversion.LOG.log(Level.WARNING, "{0}: Cannot create folder {1}", new Object[]{FilesystemHandler.class.getName(), to});
             }
         }
         File[] files = from.listFiles();
@@ -271,7 +271,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeMove(File from, File to) {
-        Subversion.LOG.fine("beforeMove " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[]{from, to});
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping move due to missing client");
             return false;
@@ -291,7 +291,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void doMove(final File from, final File to) throws IOException {
-        Subversion.LOG.fine("doMove " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[]{from, to});
         if (SwingUtilities.isEventDispatchThread()) {
             Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
         }
@@ -300,7 +300,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterMove(final File from, final File to) {
-        Subversion.LOG.fine("afterMove " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[]{from, to});
         File[] files;
         synchronized(movedFiles) {
             movedFiles.add(from);
@@ -312,14 +312,14 @@ class FilesystemHandler extends VCSInterceptor {
         File parent = to.getParentFile();
         if (parent != null) {
             if (from.equals(to)) {
-                Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());
+                Subversion.LOG.log(Level.WARNING, "Wrong (identity) rename event for {0}", from.getAbsolutePath());
             }
         }
     }
 
     @Override
     public boolean beforeCopy(File from, File to) {
-        Subversion.LOG.fine("beforeCopy " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "beforeCopy {0} -> {1}", new Object[]{from, to});
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping copy due to missing client");
             return false;
@@ -350,7 +350,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void doCopy(final File from, final File to) throws IOException {
-        Subversion.LOG.fine("doCopy " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "doCopy {0} -> {1}", new Object[]{from, to});
         if (SwingUtilities.isEventDispatchThread()) {
             Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
         }
@@ -359,7 +359,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterCopy(final File from, final File to) {
-        Subversion.LOG.fine("afterCopy " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "afterCopy {0} -> {1}", new Object[]{from, to});
         File[] files;
         synchronized(copiedFiles) {
             copiedFiles.add(from);
@@ -371,7 +371,7 @@ class FilesystemHandler extends VCSInterceptor {
         File parent = to.getParentFile();
         if (parent != null) {
             if (from.equals(to)) {
-                Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());
+                Subversion.LOG.log(Level.WARNING, "Wrong (identity) rename event for {0}", from.getAbsolutePath());
             }
         }
     }
@@ -490,7 +490,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeCreate(File file, boolean isDirectory) {
-        Subversion.LOG.fine("beforeCreate " + file);
+        Subversion.LOG.log(Level.FINE, "beforeCreate {0}", file);
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping create due to missing client");
             return false;
@@ -528,7 +528,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterCreate(final File file) {
-        Subversion.LOG.fine("afterCreate " + file);
+        Subversion.LOG.log(Level.FINE, "afterCreate {0}", file);
         Utils.post(new Runnable() {
             @Override
             public void run() {
@@ -581,7 +581,7 @@ class FilesystemHandler extends VCSInterceptor {
             Subversion.LOG.fine(" skipping afterChange due to missing client");
             return;
         }
-        Subversion.LOG.fine("afterChange " + file);
+        Subversion.LOG.log(Level.FINE, "afterChange {0}", file);
         Utils.post(new Runnable() {
             @Override
             public void run() {
