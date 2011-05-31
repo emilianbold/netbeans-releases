@@ -65,7 +65,6 @@ import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.RootsToFile;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -88,8 +87,7 @@ public final class Git {
     private RootsToFile rootsToFile;
     private GitVCS gitVCS;
     
-    public Git () {
-    }
+    private Git () {}
 
     public static synchronized Git getInstance () {
         if (instance == null) {
