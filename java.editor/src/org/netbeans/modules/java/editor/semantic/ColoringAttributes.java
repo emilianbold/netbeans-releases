@@ -82,7 +82,9 @@ public enum ColoringAttributes {
 
     UNDEFINED,
 
-    MARK_OCCURRENCES;
+    MARK_OCCURRENCES,
+    
+    JAVADOC_IDENTIFIER;
     
     public static Coloring empty() {
         return new Coloring();

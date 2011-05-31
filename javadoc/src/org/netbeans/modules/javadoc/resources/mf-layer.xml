@@ -117,7 +117,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.javadoc.hints.GenerateJavadocAction.create"/>
                 </file>
             </folder>
+            <folder name="x-java">
+                <file name="org-netbeans-modules-javadoc-highlighting-Factory.instance" />
+            </folder>
         </folder>
     </folder>
-    
 </filesystem>

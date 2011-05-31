@@ -73,20 +73,25 @@ public class JavadocLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@param");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "aaa");
+        assertTrue((Boolean) ts.token().getProperty("javadoc-identifier"));
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HTML_TAG, "<code>");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "aaa");
+        assertNull((Boolean) ts.token().getProperty("javadoc-identifier"));
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HTML_TAG, "</code>");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "xyz");
+        assertNull((Boolean) ts.token().getProperty("javadoc-identifier"));
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " {");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@link");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "org");
+        assertNull((Boolean) ts.token().getProperty("javadoc-identifier"));
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.DOT, ".");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "Aaa");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HASH, "#");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "aaa");
+        assertNull((Boolean) ts.token().getProperty("javadoc-identifier"));
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "()}");
     }
 
