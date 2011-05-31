@@ -119,5 +119,8 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Editors">
+        <file name="org-netbeans-modules-javadoc-highlighting-Factory.instance" />
+    </folder>
     
 </filesystem>
