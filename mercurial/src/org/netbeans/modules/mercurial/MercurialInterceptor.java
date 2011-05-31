@@ -92,9 +92,11 @@ public class MercurialInterceptor extends VCSInterceptor {
     private final HgFolderEventsHandler hgFolderEventsHandler;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
     private static final File userDir = new File(System.getProperty("netbeans.user")); //NOI18N;
+    private final Mercurial hg;
 
-    public MercurialInterceptor() {
-        cache = Mercurial.getInstance().getFileStatusCache();
+    MercurialInterceptor(Mercurial hg, FileStatusCache cache) {
+        this.cache = cache;
+        this.hg = hg;
         refreshTask = rp.create(new RefreshTask());
         lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         hgFolderEventsHandler = new HgFolderEventsHandler();
@@ -119,7 +121,6 @@ public class MercurialInterceptor extends VCSInterceptor {
         //     fo the parent or for a bunch of files at once. 
         Mercurial.LOG.fine("doDelete " + file);
         if (file == null) return;
-        Mercurial hg = Mercurial.getInstance();
         File root = hg.getRepositoryRoot(file);
         try {
             file.delete();
@@ -152,7 +153,6 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
         if (from == null || to == null || to.exists()) return true;
         
-        Mercurial hg = Mercurial.getInstance();
         if (hg.isManaged(from)) {
             return hg.isManaged(to);
         }
@@ -186,7 +186,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
-        final Mercurial hg = Mercurial.getInstance();
         final File root = hg.getRepositoryRoot(srcFile);
         final File dstRoot = hg.getRepositoryRoot(dstFile);
         if (root == null) return;
@@ -236,7 +235,6 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
         if (from == null || to == null || to.exists()) return true;
 
-        Mercurial hg = Mercurial.getInstance();
         return hg.isManaged(from) && hg.isManaged(to);
     }
 
@@ -245,7 +243,6 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("doCopy " + from + "->" + to);
         if (from == null || to == null || to.exists()) return;
 
-        Mercurial hg = Mercurial.getInstance();
         File root = hg.getRepositoryRoot(from);
         File dstRoot = hg.getRepositoryRoot(to);
 
@@ -288,7 +285,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
-            File root = Mercurial.getInstance().getRepositoryRoot(file);
+            File root = hg.getRepositoryRoot(file);
             FileInformation info = null;
             try {
                 Map<File, FileInformation> statusMap = HgCommand.getStatus(root, Arrays.asList(file));
@@ -299,7 +296,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             if (info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): LocallyDeleted: {0}", file); // NOI18N
                 if (root == null) return false;
-                final OutputLogger logger = Mercurial.getInstance().getLogger(root.getAbsolutePath());
+                final OutputLogger logger = hg.getLogger(root.getAbsolutePath());
                 try {
                     List<File> revertFiles = new ArrayList<File>();
                     revertFiles.add(file);
@@ -348,7 +345,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             return new Runnable() {
                 @Override
                 public void run() {
-                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+                    FileStatusCache cache = hg.getFileStatusCache();
                     cache.refresh(file);
                 }
             };
@@ -485,7 +482,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private Map<File, Set<File>> sortByRepository (Collection<File> files) {
         Map<File, Set<File>> sorted = new HashMap<File, Set<File>>(5);
         for (File f : files) {
-            File repository = Mercurial.getInstance().getRepositoryRoot(f);
+            File repository = hg.getRepositoryRoot(f);
             if (repository != null) {
                 Set<File> repoFiles = sorted.get(repository);
                 if (repoFiles == null) {
@@ -529,7 +526,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             public void run() {
                 Set<File> openFiles = Utils.getOpenFiles();
                 for (File file : openFiles) {
-                    Mercurial.getInstance().notifyFileChanged(file);
+                    hg.notifyFileChanged(file);
                 }
             }
         });
@@ -653,7 +650,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             File file = null;
             while ((file = getFileToInitialize()) != null) {
                 // select repository root for the file and finds it's .hg folder
-                File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                File repositoryRoot = hg.getRepositoryRoot(file);
                 if (repositoryRoot != null) {
                     File hgFolder = FileUtil.normalizeFile(HgUtils.getHgFolderForRoot(repositoryRoot));
                     File newlyAddedRoot = addSeenRoot(repositoryRoot, file);

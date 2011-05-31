@@ -97,8 +97,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     @Override
     public String getName() {
         if (name == null) {
-            MercurialVCS vcs = Lookup.getDefault().lookup(MercurialVCS.class);
-            name = (String)vcs.getProperty(MercurialVCS.PROP_DISPLAY_NAME);
+            name = MercurialVCS.getDisplayName();
         }
         return name;
     }
