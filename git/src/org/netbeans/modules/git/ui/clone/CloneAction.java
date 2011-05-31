@@ -42,9 +42,13 @@
 
 package org.netbeans.modules.git.ui.clone;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -63,14 +68,19 @@ import org.netbeans.libs.git.utils.Utils;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,19 +89,48 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.clone.CloneAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CloneAction_Name")
-public class CloneAction extends GitAction {
+@ActionReferences({
+   @ActionReference(path="Versioning/Git/Actions/Global", position=310)
+})
+public class CloneAction implements ActionListener, HelpCtx.Provider {
+    private final VCSContext ctx;
 
+    public CloneAction(VCSContext ctx) {
+        this.ctx = ctx;
+    }
+    
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.git.ui.clone.CloneAction");
     }
 
     @Override
-    protected void performContextAction(Node[] nodes) {
+    public void actionPerformed(ActionEvent e) {
         
         String cloneFromPath = null;
-        if(nodes.length == 1) {
-            Project project =  nodes[0].getLookup().lookup(Project.class);
+        if(ctx != null) {
+            Set<File> roots = ctx.getRootFiles();
+            if(roots.size() == 1) {
+                Lookup l = ctx.getElements();
+                Project project = null;
+                if(l != null) {
+                    Collection<? extends Node> nodes = l.lookupAll(Node.class);
+                    if(nodes != null && !nodes.isEmpty()) {
+                        project = nodes.iterator().next().getLookup().lookup(Project.class);
+                    }
+                }
+                if(project == null) {
+                    FileObject fo = FileUtil.toFileObject(roots.iterator().next());
+                    if(fo != null && fo.isFolder()) {
+                        try {
+                            project = ProjectManager.getDefault().findProject(fo);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IllegalArgumentException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
             if(project != null) {
                 FileObject fo = project.getProjectDirectory();
                 File file = FileUtil.toFile(fo);
@@ -102,7 +141,7 @@ public class CloneAction extends GitAction {
                 }
             }
         }
-        
+        }
         CloneWizard wiz = new CloneWizard(cloneFromPath);
         if (wiz.show()) {
             
