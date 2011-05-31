@@ -709,8 +709,8 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         TreePath path = e.getTreePath();
         int row = getLayout().getRowForPath(path);
         
-        int first = null == indices ? row : indices[0];
-        int last = null == indices ? row : indices[indices.length-1];
+        int first = null == indices ? row : row + 1 + indices[0];
+        int last = null == indices ? row : row + 1 + indices[indices.length-1];
         
         //TODO - does not need to be ALL_COLUMNS, but we need a way to determine
         //which column index is the tree
