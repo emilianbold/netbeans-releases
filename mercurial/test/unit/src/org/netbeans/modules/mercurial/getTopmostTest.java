@@ -59,12 +59,13 @@ public class getTopmostTest extends NbTestCase {
     MercurialVCS mvcs;
     public getTopmostTest(String arg0) {
         super(arg0);
-        mvcs = Lookup.getDefault().lookup(MercurialVCS.class);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
+        mvcs = new MercurialVCS();
         clearCachedValues();
     }
 
@@ -280,12 +281,12 @@ public class getTopmostTest extends NbTestCase {
     private Set<File> getKnownRoots() throws SecurityException, IllegalArgumentException, Exception, IllegalAccessException {
         Field f = null;
         try {
-            f = MercurialVCS.class.getDeclaredField("knownRoots");
+            f = Mercurial.class.getDeclaredField("knownRoots");
         } catch (Exception ex) {
             throw ex;
         }
         f.setAccessible(true);
-        Set<File> m = (Set<File>) f.get(mvcs);
+        Set<File> m = (Set<File>) f.get(Mercurial.getInstance());
         return m;
     }
 

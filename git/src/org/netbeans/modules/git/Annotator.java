@@ -65,33 +65,26 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.actions.ConnectAction;
 import org.netbeans.modules.git.ui.actions.DisconnectAction;
-import org.netbeans.modules.git.ui.branch.CreateBranchAction;
-import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
-import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
-import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
-import org.netbeans.modules.git.ui.checkout.SwitchBranchAction;
 import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
-import org.netbeans.modules.git.ui.diff.ExportCommitAction;
-import org.netbeans.modules.git.ui.diff.ExportUncommittedChangesAction;
-import org.netbeans.modules.git.ui.fetch.FetchAction;
-import org.netbeans.modules.git.ui.fetch.PullAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.ignore.UnignoreAction;
 import org.netbeans.modules.git.ui.init.InitAction;
+import org.netbeans.modules.git.ui.menu.BranchMenu;
+import org.netbeans.modules.git.ui.menu.CheckoutMenu;
+import org.netbeans.modules.git.ui.menu.ExportMenu;
+import org.netbeans.modules.git.ui.menu.RemoteMenu;
+import org.netbeans.modules.git.ui.menu.RevertMenu;
+import org.netbeans.modules.git.ui.menu.TagMenu;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
-import org.netbeans.modules.git.ui.push.PushAction;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.reset.ResetAction;
-import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.status.StatusAction;
-import org.netbeans.modules.git.ui.tag.CreateTagAction;
-import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -151,14 +144,11 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
-                actions.add(SystemAction.get(CheckoutPathsAction.class));
-                actions.add(SystemAction.get(RevertChangesAction.class));
-                actions.add(SystemAction.get(RevertCommitAction.class));
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(DiffAction.class));
-                actions.add(SystemAction.get(ExportUncommittedChangesAction.class));
-                actions.add(SystemAction.get(ExportCommitAction.class));
+                actions.add(new RevertMenu(ActionDestination.MainMenu, null));
+                actions.add(new ExportMenu(ActionDestination.MainMenu, null));
                 IgnoreAction ia = SystemAction.get(IgnoreAction.class);
                 UnignoreAction uia = SystemAction.get(UnignoreAction.class);
                 if (ia.isEnabled() || uia.isEnabled()) {
@@ -177,26 +167,22 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(SystemAction.get(DisconnectAction.class));
                 }
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(CreateBranchAction.class));
-                actions.add(SystemAction.get(CreateTagAction.class));
-                actions.add(SystemAction.get(ManageTagsAction.class));
-                actions.add(SystemAction.get(CheckoutRevisionAction.class));
-                actions.add(SystemAction.get(SwitchBranchAction.class));
-                actions.add(SystemAction.get(MergeRevisionAction.class));
-                actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
+                actions.add(null);
+                actions.add(new BranchMenu(ActionDestination.MainMenu, null));
+                actions.add(new TagMenu(ActionDestination.MainMenu, null));
+                actions.add(new CheckoutMenu(ActionDestination.MainMenu, null));
+                actions.add(SystemAction.get(MergeRevisionAction.class));
                 ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
                 if (a.isEnabled()) {
                     actions.add(null);
                     actions.add(a);
                 }
+                actions.add(null);
                 actions.add(SystemAction.get(ResetAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(CloneAction.class));
-                actions.add(SystemAction.get(FetchAction.class));
-                actions.add(SystemAction.get(PullAction.class));
-                actions.add(SystemAction.get(PushAction.class));
+                actions.add(new RemoteMenu(ActionDestination.MainMenu, null));
                 actions.add(SystemAction.get(SearchHistoryAction.class));
             }
         } else {
@@ -212,16 +198,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"), lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(ExportUncommittedChangesAction.class), NbBundle.getMessage(ExportUncommittedChangesAction.class, "LBL_ExportUncommittedChangesAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(ExportCommitAction.class), NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertCommitAction.class), NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName"), lkp));
-                SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp);
-                if (a.isEnabled()) {
-                    actions.add(null);
-                    actions.add(a);
-                }
+                actions.add(new ExportMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
                 SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
                 SystemActionBridge uia = SystemActionBridge.createAction(SystemAction.get(UnignoreAction.class), NbBundle.getMessage(UnignoreAction.class, "LBL_UnignoreAction_PopupName"), lkp);
                 if (ia.isEnabled() || uia.isEnabled()) {
@@ -234,12 +212,15 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     }
                 }
                 actions.add(null);
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(ManageTagsAction.class), NbBundle.getMessage(ManageTagsAction.class, "LBL_ManageTagsAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutRevisionAction.class), NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(SwitchBranchAction.class), NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_SwitchBranchAction_PopupName"), lkp)); //NOI18N
+                actions.add(new BranchMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(new TagMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(new CheckoutMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(MergeRevisionAction.class), NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName"), lkp)); //NOI18N
+                SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp);
+                if (a.isEnabled()) {
+                    actions.add(null);
+                    actions.add(a);
+                }
                 DisconnectAction da = SystemAction.get(DisconnectAction.class);
                 if (da.isEnabled()) {
                     actions.add(null);
@@ -250,11 +231,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 }
                 actions.add(null);
-                
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CloneAction.class), NbBundle.getMessage(CloneAction.class, "LBL_CloneAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(FetchAction.class), NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(PullAction.class), NbBundle.getMessage(PullAction.class, "LBL_PullAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(PushAction.class), NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName"), lkp)); //NOI18N
+                actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName"), lkp)); //NOI18N
             }
         }
