@@ -278,31 +278,32 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
         return result;
     }
     
-    private final List<WeakReference<ProblemListenerAdapter>> adapters = new ArrayList<WeakReference<ProblemListenerAdapter>>();    
+    private final List<ProblemListenerAdapter> adapters = new ArrayList<ProblemListenerAdapter>();
     
     @Override
     protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
-        ProblemListenerAdapter adapter = new ProblemListenerAdapter(listener);
+        ProblemListenerAdapter newAdapter = new ProblemListenerAdapter(listener);
         synchronized (adapters) {
-            for (Iterator<WeakReference<ProblemListenerAdapter>> it = adapters.iterator(); it.hasNext(); ) {
-                WeakReference<ProblemListenerAdapter> ref = it.next();
-                if (ref.get() == null) {
+            for (Iterator<ProblemListenerAdapter> it = adapters.iterator(); it.hasNext(); ) {
+                ProblemListenerAdapter adapter = it.next();
+                if (adapter.listenerRef.get() == null) {
                     it.remove();
                 }
             }
-            adapters.add(new WeakReference<ProblemListenerAdapter>(adapter));
+            adapters.add(newAdapter);
         }
-        FileSystemProvider.addFileSystemProblemListener(adapter, fileSystem);
+        FileSystemProvider.addFileSystemProblemListener(newAdapter, fileSystem);
     }
 
     @Override
     protected void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
         synchronized (adapters) {
-            for (Iterator<WeakReference<ProblemListenerAdapter>> it = adapters.iterator(); it.hasNext(); ) {
-                ProblemListenerAdapter adapter = it.next().get();
-                if (adapter == null) {
+            for (Iterator<ProblemListenerAdapter> it = adapters.iterator(); it.hasNext(); ) {
+                ProblemListenerAdapter adapter = it.next();
+                CndFileSystemProblemListener l = adapter.listenerRef.get();
+                if (l == null) {
                     it.remove();
-                } else if (adapter.delegate == listener) {
+                } else if (l == listener) {
                     FileSystemProvider.removeFileSystemProblemListener(adapter, fileSystem);
                     it.remove();
                 }                
@@ -312,20 +313,26 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 
     private static class ProblemListenerAdapter implements FileSystemProblemListener {
         
-        private final CndFileSystemProblemListener delegate;
+        private final WeakReference<CndFileSystemProblemListener> listenerRef;
 
-        public ProblemListenerAdapter(CndFileSystemProblemListener delegate) {
-            this.delegate = delegate;
+        public ProblemListenerAdapter(CndFileSystemProblemListener listener) {
+            listenerRef = new WeakReference<CndFileSystemProblemListener>(listener);
         }
 
         @Override
         public void problemOccurred(FileSystem fileSystem, String path) {
-            delegate.problemOccurred(new FSPath(fileSystem, path));
+            CndFileSystemProblemListener listener = listenerRef.get();
+            if (listener != null) {
+                listener.problemOccurred(new FSPath(fileSystem, path));
+            }
         }
 
         @Override
         public void recovered(FileSystem fileSystem) {
-            delegate.recovered(fileSystem);
+            CndFileSystemProblemListener listener = listenerRef.get();
+            if (listener != null) {
+                listener.recovered(fileSystem);
+            }
         }        
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,38 +34,67 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mercurial.ui.clone;
+
+package org.netbeans.modules.git.ui.menu;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.openide.util.actions.Presenter;
 
 /**
- * Clone action for mercurial: 
- * Clone an external repository. This invokes a wizard to determine the
- * location of the repository and the target location of the repository.
- * 
- * @author Padraig O'Briain
+ *
+ * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.ui.clone.CloneExternalAction", category = "Mercurial")
-@ActionRegistration(displayName = "#CTL_MenuItem_CloneExternal")
-@ActionReferences({
-   @ActionReference(path="Versioning/Mercurial/Actions/Global", position=301)
-})
-public class CloneExternalAction implements ActionListener {
+public abstract class DynamicMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
+    
+    public DynamicMenu (String name) {
+        super(name);
+    }
+
     @Override
-    public void actionPerformed(ActionEvent e) {
-        if (!Mercurial.getInstance().isAvailable(true)) {
-            return;
+    public JMenuItem getMenuPresenter() {
+        JMenu menu = createMenu();
+        org.openide.awt.Mnemonics.setLocalizedText(menu, menu.getText());
+        enableMenu(menu);
+        return menu;
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        JMenu menu = createMenu();
+        org.openide.awt.Mnemonics.setLocalizedText(menu, menu.getText());
+        enableMenu(menu);
+        return menu;
+    }
+
+    @Override
+    public boolean isEnabled () {
+        return true;
+    }
+
+    @Override
+    public final void actionPerformed (ActionEvent ev) {
+        // no operation
+    }
+
+    protected abstract JMenu createMenu ();
+    
+    protected static void enableMenu (JMenu menu) {
+        boolean enabled = false;
+        for (int i = 0; i < menu.getItemCount(); ++i) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null && item.isEnabled()) {
+                enabled = true;
+                break;
+            }
         }
-        CloneWizardAction wiz = CloneWizardAction.getInstance();
-        wiz.performAction();
+        menu.setEnabled(enabled);
     }
 }

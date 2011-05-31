@@ -522,7 +522,7 @@ public final class RunProfile implements ConfigurationAuxObject {
             FileObject baseFO = makeConfiguration.getBaseFSPath().getFileObject();
             if (baseFO != null) {
                 FileObject[] children = baseFO.getChildren();
-                if (children != null && children.length == 1 && children[0].getNameExt().equals("nbproject")) {
+                if (children != null && children.length == 1 && children[0].getNameExt().equals("nbproject")) { // NOI18N
                     MakefileConfiguration mc = makeConfiguration.getMakefileConfiguration();
                     if (mc != null) {
                         return mc.getAbsBuildCommandWorkingDir();

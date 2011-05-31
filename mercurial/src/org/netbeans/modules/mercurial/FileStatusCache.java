@@ -100,8 +100,8 @@ public class FileStatusCache {
     private final RequestProcessor rp = new RequestProcessor("Mercurial.cacheNG", 1, true);
     private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
 
-    FileStatusCache () {
-        this.hg = Mercurial.getInstance();
+    FileStatusCache (Mercurial hg) {
+        this.hg = hg;
         cachedFiles = new HashMap<File, FileInformation>();
     }
 
