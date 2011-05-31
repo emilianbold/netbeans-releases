@@ -52,10 +52,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -81,7 +81,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         project = proj;
         map = new HashMap<String, BinResult>();
         NbMavenProject.addPropertyChangeListener(proj, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
+            public @Override void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
                     synchronized (map) {
                         for (BinResult res : map.values()) {
@@ -104,7 +104,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
      * @param binaryRoot the class path root of Java class files
      * @return a list of source roots; may be empty but not null
      */
-    public SourceForBinaryQuery.Result findSourceRoots(URL url) {
+    public @Override SourceForBinaryQuery.Result findSourceRoots(URL url) {
         synchronized (map) {
             BinResult toReturn = map.get(url.toString());
             if (toReturn != null) {
@@ -138,7 +138,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
      * @return a result object encapsulating the roots and permitting changes to
      *         be listened to, or null if the binary root is not recognized
      */
-    public JavadocForBinaryQuery.Result findJavadoc(URL url) {
+    public @Override JavadocForBinaryQuery.Result findJavadoc(URL url) {
         if (checkURL(url) != -1) {
             return new DocResult(url);
         }
@@ -150,6 +150,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
      * 0 - source
      * 1 - test source
      */
+    @SuppressWarnings("DMI_BLOCKING_METHODS_ON_URL")
     private int checkURL(URL url) {
         if ("file".equals(url.getProtocol())) { //NOI18N
             // true for directories.
@@ -161,28 +162,26 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                 return -1;
             }
         }
-        if (!Boolean.getBoolean("mevenide.projectLinksDisable")) { //possible fix for MEVENIDE-535   //NOI18N
-            File file = FileUtil.archiveOrDirForURL(url);
-            if (file != null) {
-                String filepath = file.getAbsolutePath().replace('\\', '/'); //NOI18N
-                String path = project.getArtifactRelativeRepositoryPath();
-                int ret = path == null ? -1 : filepath.endsWith(path) ? 0 : -1;
-                if (ret == -1) {
-                    path = project.getTestArtifactRelativeRepositoryPath();
-                    ret = path == null ? -1 : filepath.endsWith(path) ? 1 : -1;
-                }
-                return ret;
+        if (Boolean.getBoolean("mevenide.projectLinksDisable")) { // #198951
+            return -1;
+        }
+        File file = FileUtil.archiveOrDirForURL(url);
+        if (file != null) {
+            String filepath = file.getAbsolutePath().replace('\\', '/'); //NOI18N
+            String path = project.getArtifactRelativeRepositoryPath();
+            int ret = path == null ? -1 : filepath.endsWith(path) ? 0 : -1;
+            if (ret == -1) {
+                path = project.getTestArtifactRelativeRepositoryPath();
+                ret = path == null ? -1 : filepath.endsWith(path) ? 1 : -1;
             }
+            return ret;
         }
         return -1;
     }
     
     private FileObject[] getSrcRoot() {
         Collection<FileObject> toReturn = new HashSet<FileObject>();
-        List srcRoots = project.getOriginalMavenProject().getCompileSourceRoots();
-        Iterator it = srcRoots.iterator();
-        while (it.hasNext()) {
-            String item = (String)it.next();
+        for (String item : project.getOriginalMavenProject().getCompileSourceRoots()) {
             FileObject fo = FileUtilities.convertStringToFileObject(item);
             if (fo != null) {
                 toReturn.add(fo);
@@ -228,10 +227,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     
     private FileObject[] getTestSrcRoot() {
         Collection<FileObject> toReturn = new HashSet<FileObject>();
-        List srcRoots = project.getOriginalMavenProject().getTestCompileSourceRoots();
-        Iterator it = srcRoots.iterator();
-        while (it.hasNext()) {
-            String item = (String)it.next();
+        for (String item : project.getOriginalMavenProject().getTestCompileSourceRoots()) {
             FileObject fo = FileUtilities.convertStringToFileObject(item);
             if (fo != null) {
                 toReturn.add(fo);
@@ -286,7 +282,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             listeners = new ArrayList<ChangeListener>();
         }
         
-        public FileObject[] getRoots() {
+        public @Override FileObject[] getRoots() {
             int xxx = checkURL(url);
             if (xxx == 0) {
                 results = getSrcRoot();
@@ -304,13 +300,13 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             return cached;
         }
         
-        public void addChangeListener(ChangeListener changeListener) {
+        public @Override void addChangeListener(ChangeListener changeListener) {
             synchronized (listeners) {
                 listeners.add(changeListener);
             }
         }
         
-        public void removeChangeListener(ChangeListener changeListener) {
+        public @Override void removeChangeListener(ChangeListener changeListener) {
             synchronized (listeners) {
                 listeners.remove(changeListener);
             }
@@ -337,13 +333,13 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             url = urlParam;
             listeners = new ArrayList<ChangeListener>();
         }
-        public void addChangeListener(ChangeListener changeListener) {
+        public @Override void addChangeListener(ChangeListener changeListener) {
             synchronized (listeners) {
                 listeners.add(changeListener);
             }
         }
         
-        public void removeChangeListener(ChangeListener changeListener) {
+        public @Override void removeChangeListener(ChangeListener changeListener) {
             synchronized (listeners) {
                 listeners.remove(changeListener);
             }
@@ -359,7 +355,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             }
         }
         
-        public java.net.URL[] getRoots() {
+        public @Override URL[] getRoots() {
             if (checkURL(url) != -1) {
                 results = getJavadocRoot();
             } else {
