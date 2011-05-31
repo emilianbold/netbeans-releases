@@ -88,6 +88,7 @@ public class SvnModuleConfig {
     public static final String KEY_CERT_PASSWORD = "versioning.subversion.cert."; //NOI18N
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
     private static final String PROP_GET_REMOTE_LOCKS = "getRemoteLocks"; //NOI18N
+    private static final String PROP_AUTO_LOCK = "autoLockFiles"; //NOI18N
     private static final String PREFIX_REPOSITORY_PATH = "prefixRepositoryPath"; //NOI18N
     private static final String SEPARATOR = "###"; //NOI18N
     private static final String KEY_SORTING = "sortingStatus."; //NOI18N
@@ -415,6 +416,14 @@ public class SvnModuleConfig {
 
     public void setGetRemoteLocks (boolean flag) {
         getPreferences().putBoolean(PROP_GET_REMOTE_LOCKS, flag);
+    }
+
+    public boolean isAutoLock () {
+        return getPreferences().getBoolean(PROP_AUTO_LOCK, false);
+    }
+
+    public void setAutoLock (boolean flag) {
+        getPreferences().putBoolean(PROP_AUTO_LOCK, flag);
     }
 
     // private methods ~~~~~~~~~~~~~~~~~~

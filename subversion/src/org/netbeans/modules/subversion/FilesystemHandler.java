@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.subversion;
 
+import java.awt.EventQueue;
+import java.util.Map.Entry;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -82,6 +84,13 @@ class FilesystemHandler extends VCSInterceptor {
     private final Set<File> copiedFiles = new HashSet<File>();
 
     private final Set<File> internalyDeletedFiles = new HashSet<File>();
+    private final Set<File> toLockFiles = Collections.synchronizedSet(new HashSet<File>());
+    private final Map<File, Boolean> readOnlyFiles = Collections.synchronizedMap(new LinkedHashMap<File, Boolean>() {
+        @Override
+        protected boolean removeEldestEntry (Entry<File, Boolean> eldest) {
+            return size() > 100;
+        }
+    });
 
     /**
      * Stores .svn folders that should be deleted ASAP.
@@ -618,8 +627,9 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void beforeEdit(File file) {
+    public void beforeEdit (final File file) {
         NotificationsManager.getInstance().scheduleFor(file);
+        ensureLocked(file);
     }
 
     @Override
@@ -633,7 +643,12 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean isMutable(File file) {
-        return SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
+        boolean mutable = SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
+        if (!mutable && SvnModuleConfig.getDefault().isAutoLock() && !readOnlyFiles.containsKey(file)) {
+            toLockFiles.add(file);
+            return true;
+        }
+        return mutable;
     }
 
     private String getRemoteRepository(File file) {
@@ -914,6 +929,61 @@ class FilesystemHandler extends VCSInterceptor {
             return false;
         }
         return true;
+    }
+
+    private void ensureLocked (final File file) {
+        if (toLockFiles.contains(file)) {
+            Runnable outsideAWT = new Runnable () {
+                @Override
+                public void run () {
+                    boolean readOnly = true;
+                    try {
+                        // unlock files that...
+                        // ... have svn:needs-lock prop set
+                        SvnClient client = Subversion.getInstance().getClient(false);
+                        boolean hasPropSet = false;
+                        for (ISVNProperty prop : client.getProperties(file)) {
+                            if ("svn:needs-lock".equals(prop.getName())) { //NOI18N
+                                hasPropSet = true;
+                                break;
+                            }
+                        }
+                        if (hasPropSet) {
+                            ISVNStatus status = client.getSingleStatus(file);
+                            // ... are not just added - lock does not make sense since the file is not in repo yet
+                            if (status != null && status.getTextStatus() != SVNStatusKind.ADDED) {
+                                SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
+                                if (url != null) {
+                                    client = Subversion.getInstance().getClient(url);
+                                    if (status.getLockOwner() != null) {
+                                        // the file is locked yet it's still read-only, it may be a result of:
+                                        // 1. svn lock A
+                                        // 2. svn move A B - B is new and read-only
+                                        // 3. move B A - A is now also read-only
+                                        client.unlock(new File[] { file }, false); //NOI18N
+                                    }
+                                    client.lock(new File[] { file }, "", false); //NOI18N
+                                    readOnly = false;
+                                }
+                            }
+                        }
+                    } catch (SVNClientException ex) {
+                        SvnClientExceptionHandler.notifyException(ex, true, false);
+                        readOnly = true;
+                    }
+                    if (readOnly) {
+                        // conditions to unlock failed, set the file to read-only
+                        readOnlyFiles.put(file, Boolean.TRUE);
+                    }
+                    toLockFiles.remove(file);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                Subversion.getInstance().getRequestProcessor().post(outsideAWT);
+            } else {
+                outsideAWT.run();
+            }
+        }
     }
 
 }

@@ -109,6 +109,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.annotationTextField.setText(SvnModuleConfig.getDefault().getAnnotationFormat());
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault().getAutoOpenOutput());
         panel.cbGetRemoteLocks.setSelected(SvnModuleConfig.getDefault().isGetRemoteLocks());
+        panel.cbAutoLockFiles.setSelected(SvnModuleConfig.getDefault().isAutoLock());
         annotationSettings.update();
         if (repository != null) {
             repository.refreshUrlHistory();
@@ -128,6 +129,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
         SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
         SvnModuleConfig.getDefault().setGetRemoteLocks(panel.cbGetRemoteLocks.isSelected());
+        SvnModuleConfig.getDefault().setAutoLock(panel.cbAutoLockFiles.isSelected());
         SvnModuleConfig.getDefault().setExcludeNewFiles(panel.excludeNewFiles.isSelected());
         SvnModuleConfig.getDefault().setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
 
