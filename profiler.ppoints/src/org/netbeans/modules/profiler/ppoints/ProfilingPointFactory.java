@@ -46,7 +46,6 @@ package org.netbeans.modules.profiler.ppoints;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
-// FIXXX import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -64,6 +63,7 @@ import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
 import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 
 
@@ -207,32 +207,28 @@ public abstract class ProfilingPointFactory {
 
     private FileObject getProfilingPointsStorage(Project project)
                                           throws IOException {
-// FIXXX 
-//        FileObject projectSettingsFolder = IDEUtils.getProjectSettingsFolder(project, false);
-//
-//        if (projectSettingsFolder == null) {
-//            return null;
-//        }
-//
-//        String profilingPointClassNameFull = getProfilingPointsClass().getName();
-//        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf(".") + 1); // NOI18N
-//        FileObject profilingPointsStorage = projectSettingsFolder.getFileObject(profilingPointClassName,
-//                                                                                PROFILING_POINT_STORAGE_EXT);
-//
-//        return profilingPointsStorage;
-        return null;
+        FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, false);
+
+        if (projectSettingsFolder == null) {
+            return null;
+        }
+
+        String profilingPointClassNameFull = getProfilingPointsClass().getName();
+        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf(".") + 1); // NOI18N
+        FileObject profilingPointsStorage = projectSettingsFolder.getFileObject(profilingPointClassName,
+                                                                                PROFILING_POINT_STORAGE_EXT);
+
+        return profilingPointsStorage;
     }
 
     private FileObject createProfilingPointsStorage(Project project)
                                              throws IOException {
-// FIXXX 
-//        FileObject projectSettingsFolder = IDEUtils.getProjectSettingsFolder(project, true);
-//        String profilingPointClassNameFull = getProfilingPointsClass().getName();
-//        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf(".") + 1); // NOI18N
-//        FileObject profilingPointsStorage = projectSettingsFolder.createData(profilingPointClassName, PROFILING_POINT_STORAGE_EXT);
-//
-//        return profilingPointsStorage;
-        return null;
+        FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
+        String profilingPointClassNameFull = getProfilingPointsClass().getName();
+        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf(".") + 1); // NOI18N
+        FileObject profilingPointsStorage = projectSettingsFolder.createData(profilingPointClassName, PROFILING_POINT_STORAGE_EXT);
+
+        return profilingPointsStorage;
     }
 
     private void deleteProfilingPointsStorage(Project project)

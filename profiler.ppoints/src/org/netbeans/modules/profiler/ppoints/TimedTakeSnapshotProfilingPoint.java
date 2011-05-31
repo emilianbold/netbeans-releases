@@ -55,7 +55,6 @@ import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 // FIXXXimport org.netbeans.modules.profiler.ResultsManager;
 import org.netbeans.modules.profiler.ppoints.ui.TimedTakeSnapshotCustomizer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -80,6 +79,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 // FIXXXimport org.netbeans.modules.profiler.utils.Utilities;
@@ -257,7 +257,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
                         if ((snapshotFile != null) && snapshotFile.exists()) {
                             String type = TimedTakeSnapshotProfilingPoint.this.getSnapshotType();
                             if (type.equals(TYPE_PROFDATA_KEY) || type.equals(TYPE_HEAPDUMP_KEY)) {
-// FIXXX                                Utilities.openSnapshot(snapshotFile);
+// FIXXX                                ResultsManager.openSnapshot(snapshotFile);
                             }
                         } else {
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -521,8 +521,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
     // ---
     FileObject getSnapshotDirectory() throws IOException {
         if (snapshotTarget.equals(TARGET_PROJECT_KEY)) {
-// FIXXX            return IDEUtils.getProjectSettingsFolder(getProject(), true);
-            return null;
+            return ProjectStorage.getSettingsFolder(getProject(), true);
         } else {
             File f = new File(snapshotFile);
             f.mkdirs();

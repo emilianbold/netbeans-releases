@@ -81,6 +81,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
 // FIXXXimport org.netbeans.modules.profiler.utils.Utilities;
+import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -300,7 +301,7 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
                         if ((snapshotFile != null) && snapshotFile.exists()) {
                             String type = TakeSnapshotProfilingPoint.this.getSnapshotType();
                             if (type.equals(TYPE_PROFDATA_KEY) || type.equals(TYPE_HEAPDUMP_KEY)) {
-// FIXXX                                Utilities.openSnapshot(snapshotFile);
+// FIXXX                                ResultsManager.openSnapshot(snapshotFile);
                             }
                         } else {
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -607,8 +608,7 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
 
     FileObject getSnapshotDirectory() throws IOException {
         if (snapshotTarget.equals(TARGET_PROJECT_KEY)) {
-// FIXXX             return IDEUtils.getProjectSettingsFolder(getProject(), true);
-            return null;
+            return ProjectStorage.getSettingsFolder(getProject(), true);
         } else {
             File f = new File(snapshotFile);
             f.mkdirs();
