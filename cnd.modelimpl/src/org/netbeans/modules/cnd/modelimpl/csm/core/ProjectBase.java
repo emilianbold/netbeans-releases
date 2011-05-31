@@ -125,6 +125,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
@@ -140,7 +141,8 @@ import org.openide.util.Parameters;
  * @author Dmitry Ivanov
  * @author Vladimir Kvashin
  */
-public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable {
+public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable, 
+        CndFileSystemProvider.CndFileSystemProblemListener {
     
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name) {
@@ -581,9 +583,41 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (projectListener == null) {
                 projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject, this);
             }
-            ((NativeProject) platformProject).addProjectItemsListener(projectListener);
+            NativeProject nativeProject = (NativeProject) platformProject;
+            nativeProject.addProjectItemsListener(projectListener);
+            for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
+                CndFileSystemProvider.addFileSystemProblemListener(this, fs);
+            }
         }
     }
+
+    private Set<FileSystem> getIncludesFileSystems(NativeProject nativeProject) {
+        Set<FileSystem> fileSystems = new HashSet<FileSystem>();
+        for (FSPath fsPath : nativeProject.getSystemIncludePaths()) {
+            fileSystems.add(fsPath.getFileSystem());
+        }
+        return fileSystems;
+    }
+    
+
+    @Override
+    public void problemOccurred(FSPath fsPath) {
+        synchronized (fileSystemProblemsLock) {
+            hasFileSystemProblems = true;
+        }
+    }
+
+    @Override
+    public void recovered(FileSystem fileSystem) {
+        boolean prev;
+        synchronized (fileSystemProblemsLock) {
+            prev = hasFileSystemProblems;
+            hasFileSystemProblems = false;
+        }
+        if (prev) {
+            ModelImpl.instance().scheduleReparse(Collections.<CsmProject>singleton(this));
+        }
+    }    
 
     public final synchronized void enableProjectListeners(boolean enable) {
         if (projectListener != null) {
@@ -594,7 +628,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected final synchronized void unregisterProjectListeners() {
         if (projectListener != null) {
             if (platformProject instanceof NativeProject) {
-                ((NativeProject) platformProject).removeProjectItemsListener(projectListener);
+                NativeProject nativeProject = (NativeProject) platformProject;
+                nativeProject.removeProjectItemsListener(projectListener);
+                for (FileSystem fs : getIncludesFileSystems(nativeProject)) {
+                    CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
+                }
             }
         }
     }
@@ -2733,6 +2771,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private volatile Object platformProject;
     private final FileSystem fileSystem;
 
+    private boolean hasFileSystemProblems;
+    private final Object fileSystemProblemsLock = new Object();
+    
     /**
      * Some notes concerning disposing and disposeLock fields.
      *
@@ -2813,6 +2854,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ProjectComponent.writeKey(classifierStorageKey, aStream);
 
         PersistentUtils.writeUTF(this.uniqueName, aStream);
+        aStream.writeBoolean(hasFileSystemProblems);
     }
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {
@@ -2865,6 +2907,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.model = (ModelImpl) CsmModelAccessor.getModel();
 
         this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
+        this.hasFileSystemProblems = aStream.readBoolean();
     }
 
     private final WeakContainer<DeclarationContainerProject> weakDeclarationContainer;
