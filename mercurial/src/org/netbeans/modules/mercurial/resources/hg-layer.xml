@@ -48,12 +48,6 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Actions">
         <folder name="Mercurial">
-            <file name="org-netbeans-modules-mercurial-ui-status-OpenVersioningAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.status.OpenVersioningAction"/>
-            </file>
-            <file name="org-netbeans-modules-mercurial-ui-create-CreateAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.create.CreateAction"/>
-            </file>
             <file name="org-netbeans-modules-mercurial-ui-status-StatusAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.status.StatusAction"/>
             </file>
@@ -83,9 +77,6 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org-netbeans-modules-mercurial-ui-clone-CloneAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.clone.CloneAction"/>
-            </file>
-            <file name="org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.clone.CloneExternalAction"/>
             </file>
             <file name="org-netbeans-modules-mercurial-ui-commit-ExcludeFromCommitAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction"/>
@@ -174,16 +165,6 @@ made subject to such option by the copyright holder.
             <file name="mercurial-helpset.xml" url="mercurial-helpset.xml">
                 <attr name="position" intvalue="3004"/>
             </file>
-        </folder>
-    </folder>
-    <folder name="Menu">
-        <folder name="Window">
-            <folder name="Versioning">
-                <file name="org-netbeans-modules-mercuriual-ui-status-OpenVersioningAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Mercurial/org-netbeans-modules-mercurial-ui-status-OpenVersioningAction.instance"/>
-                    <attr name="position" intvalue="400"/>
-                </file>
-            </folder>
         </folder>
     </folder>
     

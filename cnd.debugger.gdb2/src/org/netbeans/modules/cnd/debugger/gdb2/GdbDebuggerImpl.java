@@ -1209,6 +1209,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
     private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
+    private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 0); // NOI18N
     
     public void initializeGdb(FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
@@ -1237,6 +1238,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         //init global parameters
         send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
+        send("-gdb-set print elements " + PRINT_ELEMENTS); // NOI18N
         
         // set terminal mode on windows, see IZ 193220
         if (getHost().getPlatform() == Platform.Windows_x86 && getIOPack().isExternal()) {
@@ -2994,7 +2996,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         final MITList results = stopRecord.results();
         
         // detect first stop (in _start or main)
-        if (firstBreakpointId != null) {
+        if (session().getPid() <= 0 && firstBreakpointId != null) {
             MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
             if (bkptnoValue == null ||
                (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())))) {

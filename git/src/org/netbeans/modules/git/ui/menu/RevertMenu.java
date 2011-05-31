@@ -42,70 +42,52 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.mercurial.ui.status;
+package org.netbeans.modules.git.ui.menu;
 
-import org.openide.util.ImageUtilities;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
+import org.netbeans.modules.git.ui.revert.RevertCommitAction;
+import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.awt.Actions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
-
-import java.awt.event.ActionEvent;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Open the mercurial view. It focuses recently opened
- * view unless it's not initialized yet. For uninitialized
- * view it behaves like StatusProjectsAction without
- * on-open refresh.
+ * Container menu for export actions.
  *
- * @author Petr Kuzel
+ * @author Ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.ui.status.OpenVersioningAction", category = "Mercurial")
-@ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
-@ActionReferences({
-   @ActionReference(path="Menu/Window/Versioning", position=400),
-   @ActionReference(path="OptionsDialog/Actions/Mercurial")
-})
-public class OpenVersioningAction extends ShowAllChangesAction {
+public final class RevertMenu extends DynamicMenu {
+    private final ActionDestination dest;
+    private final Lookup lkp;
 
-    static final String ICON_BASE = "org/netbeans/modules/mercurial/resources/icons/versioning-view.png";
-    
-    public OpenVersioningAction() {
-        putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(ImageUtilities.loadImageIcon(ICON_BASE, false)); // NOI18N
+    public RevertMenu (ActionDestination dest, Lookup lkp) {
+        super(NbBundle.getMessage(RevertMenu.class, dest.equals(ActionDestination.MainMenu) ? "CTL_MenuItem_RevertMenu" : "CTL_MenuItem_RevertMenu.popup")); //NOI18N
+        this.dest = dest;
+        this.lkp = lkp;
     }
 
-    public String getName() {
-        return NbBundle.getMessage(OpenVersioningAction.class, "CTL_MenuItem_OpenVersioning"); // NOI18N
-    }
-
-    /**
-     * Window/Versioning should be always enabled.
-     * 
-     * @return true
-     */ 
-    public boolean isEnabled() {
-        return true;
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(OpenVersioningAction.class);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        
-        HgVersioningTopComponent stc = HgVersioningTopComponent.findInstance();
-        if (stc.hasContext() == false) {
-            super.actionPerformed(e);
+    @Override
+    protected JMenu createMenu () {
+        JMenu menu = new JMenu(this);
+        JMenuItem item;
+        if (dest.equals(ActionDestination.MainMenu)) {
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(RevertChangesAction.class), false);
+            menu.add(item);
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(RevertCommitAction.class), false);
+            menu.add(item);
         } else {
-            stc.open();
-            stc.requestActive();
-        }
-    }
-
-    protected boolean shouldPostRefresh() {
-        return false;
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertCommitAction.class), NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        }        
+        return menu;
     }
 }
