@@ -71,6 +71,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -83,7 +84,7 @@ import org.openide.util.RequestProcessor;
 @ActionReferences({
    @ActionReference(path="Versioning/Subversion/Actions/Unversioned", position=1)
 })
-public final class ImportAction implements ActionListener {
+public final class ImportAction implements ActionListener, HelpCtx.Provider {
     
     private VCSContext ctx;
 
@@ -91,6 +92,11 @@ public final class ImportAction implements ActionListener {
         this.ctx = ctx;
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.subversion.ui.project.ImportAction");
+    }
+    
     private boolean isEnabled() {
         
         Set<File> roots = ctx.getRootFiles();
