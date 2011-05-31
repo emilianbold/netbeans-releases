@@ -60,6 +60,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -73,9 +74,14 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 @ActionReferences({
    @ActionReference(path="Versioning/Subversion/Actions/Global", position=300 /*, separatorAfter=350*/)
 })
-public final class CheckoutAction implements ActionListener {
+public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
            
     public CheckoutAction() {
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.subversion.ui.checkout.CheckoutAction");
     }
           
     @Override

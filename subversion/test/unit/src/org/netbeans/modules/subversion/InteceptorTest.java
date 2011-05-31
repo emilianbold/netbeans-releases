@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -158,6 +159,12 @@ public class InteceptorTest extends NbTestCase {
         return suite;
     }
     
+    public static Test modifySuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("modifyFileOnDemandLock"));
+        return(suite);
+    }
+    
     public static Test getAttributeSuite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new InteceptorTest("getWrongAttribute"));
@@ -185,6 +192,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("createNewFile"));
         suite.addTest(new InteceptorTest("createNewFolder"));
         suite.addTest(new InteceptorTest("deleteA_CreateA"));
+        suite.addTest(new InteceptorTest("deleteA_CreateAOnDemandLocking"));
         suite.addTest(new InteceptorTest("deleteA_CreateA_RunAtomic"));
         suite.addTest(new InteceptorTest("afterDelete_AfterCreate_194998"));
         return(suite);
@@ -308,6 +316,32 @@ public class InteceptorTest extends NbTestCase {
         return(suite);
     }
     
+    public void modifyFileOnDemandLock () throws Exception {
+        // init
+        File file = new File(wc, "file");
+        file.createNewFile();
+        commit(wc);
+        getClient().propertySet(file, "svn:needs-lock", "true", false);
+        commit(file);
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
+
+        SvnModuleConfig.getDefault().setAutoLock(true);
+        // modify
+        OutputStream os = FileUtil.toFileObject(file).getOutputStream();
+        os.write(new byte[] { 'a', 0 });
+        os.close();
+
+        // test
+        assertTrue(file.exists());
+        assertEquals(SVNStatusKind.MODIFIED, getSVNStatus(file).getTextStatus());
+
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | FileInformation.STATUS_LOCKED);
+
+        commit(wc);
+
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());
+    }
+
     public void getWrongAttribute() throws Exception {
         File file = new File(wc, "attrfile");
         file.createNewFile();
@@ -679,6 +713,33 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
         
+    }
+
+    public void deleteA_CreateAOnDemandLocking() throws IOException, SVNClientException {
+        // init
+        File file = new File(wc, "A");
+        file.createNewFile();
+        commit(wc);
+        SvnModuleConfig.getDefault().setAutoLock(true);
+        getClient().propertySet(file, "svn:needs-lock", "true", false);
+        commit(file);
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
+        
+        // delete
+        FileObject fo = FileUtil.toFileObject(file);
+        fo.delete();
+
+        // test if deleted
+        assertFalse(file.exists());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
+
+        // create        
+        fo.getParent().createData(fo.getName());       
+        
+        // test 
+        assertTrue(file.exists());
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCKED, getStatus(file));                
     }
 
     public void deleteA_CreateA_RunAtomic() throws IOException, SVNClientException {

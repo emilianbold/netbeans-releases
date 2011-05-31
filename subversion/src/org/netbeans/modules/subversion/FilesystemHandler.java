@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.subversion;
 
+import java.awt.EventQueue;
+import java.util.Map.Entry;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -82,6 +84,13 @@ class FilesystemHandler extends VCSInterceptor {
     private final Set<File> copiedFiles = new HashSet<File>();
 
     private final Set<File> internalyDeletedFiles = new HashSet<File>();
+    private final Set<File> toLockFiles = Collections.synchronizedSet(new HashSet<File>());
+    private final Map<File, Boolean> readOnlyFiles = Collections.synchronizedMap(new LinkedHashMap<File, Boolean>() {
+        @Override
+        protected boolean removeEldestEntry (Entry<File, Boolean> eldest) {
+            return size() > 100;
+        }
+    });
 
     /**
      * Stores .svn folders that should be deleted ASAP.
@@ -94,7 +103,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeDelete(File file) {
-        Subversion.LOG.fine("beforeDelete " + file);
+        Subversion.LOG.log(Level.FINE, "beforeDelete {0}", file);
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping delete due to missing client");
             return false;
@@ -111,7 +120,7 @@ class FilesystemHandler extends VCSInterceptor {
      */
     @Override
     public void doDelete(File file) throws IOException {
-        Subversion.LOG.fine("doDelete " + file);
+        Subversion.LOG.log(Level.FINE, "doDelete {0}", file);
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
@@ -141,7 +150,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterDelete(final File file) {
-        Subversion.LOG.fine("afterDelete " + file);
+        Subversion.LOG.log(Level.FINE, "afterDelete {0}", file);
         if (file == null || SvnUtils.isPartOfSubversionMetadata(file)) return;
 
         // TODO the afterXXX events should not be triggered by the FS listener events
@@ -197,7 +206,7 @@ class FilesystemHandler extends VCSInterceptor {
             if (to.mkdir()) {
                 cache.refreshAsync(to);
             } else {
-                Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName() + ": Cannot create folder " + to);
+                Subversion.LOG.log(Level.WARNING, "{0}: Cannot create folder {1}", new Object[]{FilesystemHandler.class.getName(), to});
             }
         }
         File[] files = from.listFiles();
@@ -262,7 +271,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeMove(File from, File to) {
-        Subversion.LOG.fine("beforeMove " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[]{from, to});
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping move due to missing client");
             return false;
@@ -282,7 +291,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void doMove(final File from, final File to) throws IOException {
-        Subversion.LOG.fine("doMove " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[]{from, to});
         if (SwingUtilities.isEventDispatchThread()) {
             Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
         }
@@ -291,7 +300,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterMove(final File from, final File to) {
-        Subversion.LOG.fine("afterMove " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[]{from, to});
         File[] files;
         synchronized(movedFiles) {
             movedFiles.add(from);
@@ -303,14 +312,14 @@ class FilesystemHandler extends VCSInterceptor {
         File parent = to.getParentFile();
         if (parent != null) {
             if (from.equals(to)) {
-                Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());
+                Subversion.LOG.log(Level.WARNING, "Wrong (identity) rename event for {0}", from.getAbsolutePath());
             }
         }
     }
 
     @Override
     public boolean beforeCopy(File from, File to) {
-        Subversion.LOG.fine("beforeCopy " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "beforeCopy {0} -> {1}", new Object[]{from, to});
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping copy due to missing client");
             return false;
@@ -341,7 +350,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void doCopy(final File from, final File to) throws IOException {
-        Subversion.LOG.fine("doCopy " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "doCopy {0} -> {1}", new Object[]{from, to});
         if (SwingUtilities.isEventDispatchThread()) {
             Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
         }
@@ -350,7 +359,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterCopy(final File from, final File to) {
-        Subversion.LOG.fine("afterCopy " + from +  " -> " + to);
+        Subversion.LOG.log(Level.FINE, "afterCopy {0} -> {1}", new Object[]{from, to});
         File[] files;
         synchronized(copiedFiles) {
             copiedFiles.add(from);
@@ -362,7 +371,7 @@ class FilesystemHandler extends VCSInterceptor {
         File parent = to.getParentFile();
         if (parent != null) {
             if (from.equals(to)) {
-                Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());
+                Subversion.LOG.log(Level.WARNING, "Wrong (identity) rename event for {0}", from.getAbsolutePath());
             }
         }
     }
@@ -481,7 +490,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeCreate(File file, boolean isDirectory) {
-        Subversion.LOG.fine("beforeCreate " + file);
+        Subversion.LOG.log(Level.FINE, "beforeCreate {0}", file);
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping create due to missing client");
             return false;
@@ -519,7 +528,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterCreate(final File file) {
-        Subversion.LOG.fine("afterCreate " + file);
+        Subversion.LOG.log(Level.FINE, "afterCreate {0}", file);
         Utils.post(new Runnable() {
             @Override
             public void run() {
@@ -572,7 +581,7 @@ class FilesystemHandler extends VCSInterceptor {
             Subversion.LOG.fine(" skipping afterChange due to missing client");
             return;
         }
-        Subversion.LOG.fine("afterChange " + file);
+        Subversion.LOG.log(Level.FINE, "afterChange {0}", file);
         Utils.post(new Runnable() {
             @Override
             public void run() {
@@ -618,8 +627,9 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void beforeEdit(File file) {
+    public void beforeEdit (final File file) {
         NotificationsManager.getInstance().scheduleFor(file);
+        ensureLocked(file);
     }
 
     @Override
@@ -633,7 +643,12 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean isMutable(File file) {
-        return SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
+        boolean mutable = SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
+        if (!mutable && SvnModuleConfig.getDefault().isAutoLock() && !readOnlyFiles.containsKey(file)) {
+            toLockFiles.add(file);
+            return true;
+        }
+        return mutable;
     }
 
     private String getRemoteRepository(File file) {
@@ -914,6 +929,61 @@ class FilesystemHandler extends VCSInterceptor {
             return false;
         }
         return true;
+    }
+
+    private void ensureLocked (final File file) {
+        if (toLockFiles.contains(file)) {
+            Runnable outsideAWT = new Runnable () {
+                @Override
+                public void run () {
+                    boolean readOnly = true;
+                    try {
+                        // unlock files that...
+                        // ... have svn:needs-lock prop set
+                        SvnClient client = Subversion.getInstance().getClient(false);
+                        boolean hasPropSet = false;
+                        for (ISVNProperty prop : client.getProperties(file)) {
+                            if ("svn:needs-lock".equals(prop.getName())) { //NOI18N
+                                hasPropSet = true;
+                                break;
+                            }
+                        }
+                        if (hasPropSet) {
+                            ISVNStatus status = client.getSingleStatus(file);
+                            // ... are not just added - lock does not make sense since the file is not in repo yet
+                            if (status != null && status.getTextStatus() != SVNStatusKind.ADDED) {
+                                SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
+                                if (url != null) {
+                                    client = Subversion.getInstance().getClient(url);
+                                    if (status.getLockOwner() != null) {
+                                        // the file is locked yet it's still read-only, it may be a result of:
+                                        // 1. svn lock A
+                                        // 2. svn move A B - B is new and read-only
+                                        // 3. move B A - A is now also read-only
+                                        client.unlock(new File[] { file }, false); //NOI18N
+                                    }
+                                    client.lock(new File[] { file }, "", false); //NOI18N
+                                    readOnly = false;
+                                }
+                            }
+                        }
+                    } catch (SVNClientException ex) {
+                        SvnClientExceptionHandler.notifyException(ex, true, false);
+                        readOnly = true;
+                    }
+                    if (readOnly) {
+                        // conditions to unlock failed, set the file to read-only
+                        readOnlyFiles.put(file, Boolean.TRUE);
+                    }
+                    toLockFiles.remove(file);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                Subversion.getInstance().getRequestProcessor().post(outsideAWT);
+            } else {
+                outsideAWT.run();
+            }
+        }
     }
 
 }

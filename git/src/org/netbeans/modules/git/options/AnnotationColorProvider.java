@@ -94,12 +94,8 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
 
     @Override
     public String getName() {
-        if (name == null) {
-            GitVCS vcs = Lookup.getDefault().lookup(GitVCS.class);
-            name = (String)vcs.getProperty(GitVCS.PROP_DISPLAY_NAME);
+        return GitVCS.getDisplayName();
         }
-        return name;
-    }
 
     @Override
     protected Color getSavedColor (String key, Color defaultColor) {

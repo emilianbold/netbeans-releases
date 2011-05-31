@@ -49,7 +49,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +64,7 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.RootsToFile;
-import org.openide.util.Lookup;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -76,7 +78,6 @@ public final class Git {
     private FilesystemInterceptor interceptor;
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.git"); //NOI18N
     public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.git.status"); //NOI18N;
-    private GitVCS gitVCS;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private FileStatusCache fileStatusCache;
     private HashMap<File, RequestProcessor> processorsToUrl;
@@ -84,9 +85,9 @@ public final class Git {
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
 
     private RootsToFile rootsToFile;
+    private GitVCS gitVCS;
     
-    public Git () {
-    }
+    private Git () {}
 
     public static synchronized Git getInstance () {
         if (instance == null) {
@@ -100,9 +101,6 @@ public final class Git {
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator();
         interceptor = new FilesystemInterceptor();
-        gitVCS = Lookup.getDefault().lookup(GitVCS.class);
-        fileStatusCache.addPropertyChangeListener(gitVCS);
-        addPropertyChangeListener(gitVCS);
 
         int statisticsFrequency;
         String s = System.getProperty("git.root.stat.frequency", "0"); //NOI18N
@@ -119,9 +117,15 @@ public final class Git {
 
             @Override
             public File getTopmostManagedAncestor (File file) {
-                return gitVCS.getTopmostManagedAncestor(file, false);
+                return Git.this.getTopmostManagedAncestor(file, false);
             }
         }, Logger.getLogger("org.netbeans.modules.git.RootsToFile"), statisticsFrequency); //NOI18N
+    }
+
+    void registerGitVCS(GitVCS gitVCS) {
+        this.gitVCS = gitVCS;
+        fileStatusCache.addPropertyChangeListener(gitVCS);
+        addPropertyChangeListener(gitVCS);
     }
 
     public VCSAnnotator getVCSAnnotator() {
@@ -232,11 +236,13 @@ public final class Git {
     }
 
     public void headChanged (Set<File> files) {
+        assert gitVCS != null;
         gitVCS.refreshStatus(files);
     }
 
     public void versionedFilesChanged () {
         rootsToFile.clear();
+        clearAncestorCaches();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 
@@ -249,16 +255,19 @@ public final class Git {
     }
 
     public void connectRepository (File repository) {
+        assert gitVCS != null;
         gitVCS.connectRepository(repository);
         versionedFilesChanged();
     }
 
     public void disconnectRepository (File repository) {
+        assert gitVCS != null;
         gitVCS.disconnectRepository(repository);
         versionedFilesChanged();
     }
 
     public boolean isDisconnected (File repository) {
+        assert gitVCS != null;
         return gitVCS.isDisconnected(repository);
     }
 
@@ -270,4 +279,88 @@ public final class Git {
     public Set<File> getSeenRoots (File repositoryRoot) {
         return getVCSInterceptor().getSeenRoots(repositoryRoot);
     }
+    
+    private Set<File> knownRoots = Collections.synchronizedSet(new HashSet<File>());
+    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
+    
+    public File getTopmostManagedAncestor(File file) {
+        return getTopmostManagedAncestor(file, true);
+}
+
+    public File getTopmostManagedAncestor (File file, boolean skipDisconnectedRepositories) {
+        long t = System.currentTimeMillis();
+        LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            LOG.fine(" cached as unversioned");
+            return null;
+        }
+        LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        File parent = getKnownParent(file);
+        if(parent != null) {
+            if (skipDisconnectedRepositories && isDisconnected(parent)) {
+                LOG.log(Level.FINE, "  getTopmostManagedParent returning null, disconnected {0}", parent);
+                return null;
+            } else {
+                LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent {0}", parent);
+                return parent;
+            }
+        }
+
+        if (GitUtils.isPartOfGitMetadata(file)) {
+            for (;file != null; file = file.getParentFile()) {
+                if (GitUtils.isAdministrative(file)) {
+                    file = file.getParentFile();
+                    break;
+                }
+            }
+        }
+        Set<File> done = new HashSet<File>();
+        File topmost = null;
+        for (;file != null; file = file.getParentFile()) {
+            if(unversionedParents.contains(file)) {
+                LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                break;
+            }
+            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (GitUtils.repositoryExistsFor(file)){
+                LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
+                done.clear();   // all folders added before must be removed, they ARE in fact managed by git
+                topmost =  file;
+            } else {
+                LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                if(file.exists()) { // could be created later ...
+                    done.add(file);
+                }
+            }
+        }
+        if(done.size() > 0) {
+            LOG.log(Level.FINE, " storing unversioned");
+            unversionedParents.addAll(done);
+        }
+        if(LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });
+        }
+        if(topmost != null) {
+            knownRoots.add(topmost);
+        }
+
+        return topmost == null || skipDisconnectedRepositories && isDisconnected(topmost) ? null : topmost;
+    }
+    
+    private File getKnownParent(File file) {
+        File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
+        File knownParent = null;
+        for (File r : roots) {
+            if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+                knownParent = r;
+            }
+        }
+        return knownParent;
+    }
+
+    public void clearAncestorCaches() {
+        unversionedParents.clear();
+        knownRoots.clear();
+    }
+    
 }

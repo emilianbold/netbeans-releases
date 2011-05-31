@@ -134,6 +134,9 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbGetRemoteLocks, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbGetRemoteLocks.text")); // NOI18N
         cbGetRemoteLocks.setToolTipText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbGetRemoteLocks.TTtext")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbAutoLockFiles, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbAutoLockFiles.text")); // NOI18N
+        cbAutoLockFiles.setToolTipText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.cbAutoLockFiles.toolTipText")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -194,24 +197,27 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                 .add(cbGetRemoteLocks)
                 .addContainerGap(248, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(cbAutoLockFiles)
+                .addContainerGap(158, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(0, 0, 0)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel8)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(cbOpenOutputWindow)))
+                .add(jLabel8)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(excludeNewFiles)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(excludeNewFiles)
+                    .add(layout.createSequentialGroup()
+                        .add(prefixRepositoryPath)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 73, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(94, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(prefixRepositoryPath)
-                .addContainerGap(167, Short.MAX_VALUE))
+                .add(cbOpenOutputWindow)
+                .addContainerGap(208, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -263,16 +269,17 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                         .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbGetRemoteLocks)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbAutoLockFiles)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel8)
                     .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jLabel8))
-                    .add(layout.createSequentialGroup()
-                        .add(14, 14, 14)
+                        .add(6, 6, 6)
                         .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbOpenOutputWindow)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(12, 12, 12)
                 .add(excludeNewFiles)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(prefixRepositoryPath)
@@ -303,6 +310,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     final javax.swing.JButton addButton = new javax.swing.JButton();
     final javax.swing.JTextField annotationTextField = new javax.swing.JTextField();
     final javax.swing.JButton browseButton = new javax.swing.JButton();
+    final javax.swing.JCheckBox cbAutoLockFiles = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox cbGetRemoteLocks = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox cbOpenOutputWindow = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox excludeNewFiles = new javax.swing.JCheckBox();
