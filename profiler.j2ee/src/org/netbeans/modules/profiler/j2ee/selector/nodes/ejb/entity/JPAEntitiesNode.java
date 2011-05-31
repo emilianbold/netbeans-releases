@@ -58,7 +58,6 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -68,6 +67,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
@@ -110,7 +111,7 @@ public class JPAEntitiesNode extends ContainerNode {
                                             public void run(CompilationController controller)
                                                      throws Exception {
                                                 TypeElement type = controller.getElements().getTypeElement(entityBean.getClass2());
-                                                beanList.add(new EntityBeanNode(cpInfo, entityBean.getName(), Utils.CLASS_ICON, type, parent));
+                                                beanList.add(new EntityBeanNode(cpInfo, entityBean.getName(), Icons.getIcon(JavaEEIcons.CLASS), type, parent));
                                             }
                                         }, true);
                                 }
@@ -140,7 +141,7 @@ public class JPAEntitiesNode extends ContainerNode {
 
     /** Creates a new instance of SessionBeansNode */
     public JPAEntitiesNode(final ContainerNode parent) {
-        super(JPA_ENTITIES_STRING, Utils.PACKAGE_ICON, parent);
+        super(JPA_ENTITIES_STRING, Icons.getIcon(JavaEEIcons.PACKAGE), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

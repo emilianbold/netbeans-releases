@@ -41,8 +41,9 @@
  */
 package org.netbeans.modules.profiler.selector.java.project.nodes;
 
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.LanguageIcons;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.IconResource;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.openide.util.NbBundle;
 
@@ -56,7 +57,7 @@ class ProjectSourcesNode extends ContainerNode {
     private final boolean includeSubprojects;
 
     public ProjectSourcesNode(final boolean includeSubprojects, final ProjectNode parent) {
-        super(SOURCES_STRING, IconResource.PACKAGE_ICON, parent);
+        super(SOURCES_STRING, Icons.getIcon(LanguageIcons.PACKAGE), parent);
         this.includeSubprojects = includeSubprojects;
     }
 
