@@ -78,6 +78,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.UIException;
@@ -191,7 +192,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * @param obj the data object
      * @param entry the entry to read and write from
      * @param set cookie set to add remove additional cookies (currently only {@link org.openide.cookies.SaveCookie})
-     * @param paneFactory callback to create editor(s) for this support
+     * @param paneFactory callback to create editor(s) for this support (if null {@link CloneableEditor} will be created)
      * @return a subclass of DataEditorSupport that implements at least
      *   {@link org.openide.cookies.OpenCookie}, 
      *   {@link org.openide.cookies.EditCookie}, 
@@ -203,7 +204,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     public static CloneableEditorSupport create(
         DataObject obj, MultiDataObject.Entry entry, 
         org.openide.nodes.CookieSet set,
-        Callable<CloneableEditorSupport.Pane> paneFactory
+        @NullAllowed Callable<CloneableEditorSupport.Pane> paneFactory
     ) {
         return new SimpleES (obj, entry, set, paneFactory);
     }
