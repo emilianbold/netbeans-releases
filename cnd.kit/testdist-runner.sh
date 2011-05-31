@@ -49,6 +49,7 @@ if [ -n "${GET}" ]; then
 fi
 
 STABLE_ONLY=${STABLE_ONLY:-true}
+DISABLE_WATCHER=${DISABLE_WATCHER:-false}
 
 cd "${WORKSPACE}/unit"
 MODULES=${MODULES:-`ls -d dlight/* cnd/* ide/*terminal* ide/*nativeex* | paste -s -d : -`}
@@ -62,7 +63,7 @@ RUNSTR="${ANT:-ant} -f ${WORKSPACE}/all-tests.xml \
 -Dtest.dist.timeout=1000000 \
 -Dtest.run.args=\"-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx512m \
 -Dnetbeans.keyring.no.master=true \
--Dorg.netbeans.modules.masterfs.watcher.disable=true \
+-Dorg.netbeans.modules.masterfs.watcher.disable=${DISABLE_WATCHER} \
 -Djava.io.tmpdir=/var/tmp/hudson${EXECUTOR_NUMBER} \
 -Dcnd.remote.sync.root.postfix=hudson${EXECUTOR_NUMBER} \
 -Dignore.random.failures=${STABLE_ONLY} \
