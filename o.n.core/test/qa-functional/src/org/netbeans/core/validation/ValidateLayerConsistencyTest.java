@@ -939,6 +939,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
         for (FileObject f : NbCollections.iterable(FileUtil.getConfigRoot().getChildren(true))) {
             for (String attr : NbCollections.iterable(f.getAttributes())) {
+                if (attr.equals("instanceCreate")) {
+                    continue; // e.g. on Services/Hidden/org-netbeans-lib-jakarta_oro-antlibrary.instance prints stack trace
+                }
                 Object val = f.getAttribute(attr);
                 if (val instanceof URL) {
                     validateNbinstURL((URL) val, handler, f);
