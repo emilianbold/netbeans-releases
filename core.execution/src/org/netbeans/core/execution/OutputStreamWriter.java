@@ -67,7 +67,7 @@ final class OutputStreamWriter extends Writer {
     /** Check to make sure that the stream has not been closed */
     private void ensureOpen() throws IOException {
         if (out == null)
-            throw new IOException();
+            throw new IOException("Stream closed");
     }
     
     /**
@@ -92,6 +92,7 @@ final class OutputStreamWriter extends Writer {
      */
     public void write(char cbuf[], int off, int len) throws IOException {
         synchronized (lock) {
+            ensureOpen();
             if ((off == 0) && (len == cbuf.length)) {
                 out.print(cbuf);
             } else {
@@ -112,19 +113,20 @@ final class OutputStreamWriter extends Writer {
      * @exception  IOException  If an I/O error occurs
      */
     public void write(String str, int off, int len) throws IOException {
-        if (off == 0 && len == str.length()) {
-            out.print(str);
-        } else {
-            char[] chars = new char[len];
-            str.getChars(off, off + len, chars, 0);
-            out.print(chars);
+        synchronized (lock) {
+            ensureOpen();
+            if (off == 0 && len == str.length()) {
+                out.print(str);
+            } else {
+                char[] chars = new char[len];
+                str.getChars(off, off + len, chars, 0);
+                out.print(chars);
+            }
         }
     }
 
     /**
      * Flush the stream.
-     *
-     * @exception  IOException  If an I/O error occurs
      */
     public void flush() {
         synchronized (lock) {
@@ -136,8 +138,6 @@ final class OutputStreamWriter extends Writer {
 
     /**
      * Close the stream.
-     *
-     * @exception  IOException  If an I/O error occurs
      */
     public void close() {
         synchronized (lock) {
