@@ -91,6 +91,8 @@ public class ValuePresenter {
             TYPES.add("string &"); // NOI18N
             TYPES.add("std::string"); // NOI18N
             TYPES.add("std::string &"); // NOI18N
+            TYPES.add("std::locale::string"); // NOI18N
+            TYPES.add("std::locale::string &"); // NOI18N
         }
 
         public boolean acceptsType(String type) {
