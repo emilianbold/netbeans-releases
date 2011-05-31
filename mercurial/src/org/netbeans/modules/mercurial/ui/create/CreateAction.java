@@ -89,11 +89,16 @@ import org.openide.util.HelpCtx;
 @ActionReferences({
    @ActionReference(path="Versioning/Mercurial/Actions/Unversioned", position=2)
 })
-public class CreateAction implements ActionListener {
+public class CreateAction implements ActionListener, HelpCtx.Provider {
     private final VCSContext ctx;
 
     public CreateAction(VCSContext ctx) {
         this.ctx = ctx;
+    }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.mercurial.ui.create.CreateAction");
     }
     
     private boolean isEnabled() {
@@ -378,5 +383,5 @@ public class CreateAction implements ActionListener {
                 new Object[] {NotifyDescriptor.OK_OPTION},
                 NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notify(nd);
-    }    
+    }
 }

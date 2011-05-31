@@ -51,7 +51,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 
 /**
  * Clone action for mercurial: 
@@ -65,7 +65,7 @@ import org.openide.nodes.Node;
 @ActionReferences({
    @ActionReference(path="Versioning/Mercurial/Actions/Global", position=301)
 })
-public class CloneExternalAction implements ActionListener {
+public class CloneExternalAction implements ActionListener, HelpCtx.Provider {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (!Mercurial.getInstance().isAvailable(true)) {
@@ -73,5 +73,10 @@ public class CloneExternalAction implements ActionListener {
         }
         CloneWizardAction wiz = CloneWizardAction.getInstance();
         wiz.performAction();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.mercurial.ui.clone.CloneExternalAction");
     }
 }
