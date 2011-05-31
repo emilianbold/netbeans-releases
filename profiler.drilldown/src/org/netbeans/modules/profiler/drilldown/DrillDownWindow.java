@@ -45,7 +45,6 @@ package org.netbeans.modules.profiler.drilldown;
 
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -57,6 +56,8 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
+import org.netbeans.modules.profiler.api.GeneralIcons;
+import org.netbeans.modules.profiler.api.Icons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 
 
@@ -77,7 +78,7 @@ public final class DrillDownWindow extends TopComponent {
     private static final String HELP_CTX_KEY = "DrillDownWindow.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static final String PREFERRED_ID = "DrillDownWindow"; // NOI18N // for winsys persistence
-    private static final Image pieIcon = ImageUtilities.loadImage("org/netbeans/modules/profiler/resources/pie.png"); // NOI18N
+    private static final Image pieIcon = Icons.getImage(GeneralIcons.PIE);
     private static DrillDownWindow defaultInstance;
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------

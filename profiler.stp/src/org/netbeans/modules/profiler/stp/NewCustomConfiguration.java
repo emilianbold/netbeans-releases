@@ -76,6 +76,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.ProfilerIcons;
 import org.openide.DialogDisplayer;
 
 
@@ -137,9 +139,9 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
     private static NewCustomConfiguration defaultInstance;
 
     // --- UI components declaration ---------------------------------------------
-    private static final Icon ICON_MONITOR = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/stp/resources/monitorSmall.png", false); // NOI18N
-    private static final Icon ICON_CPU = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/stp/resources/cpuSmall.png", false); // NOI18N
-    private static final Icon ICON_MEMORY = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/stp/resources/memorySmall.png", false); // NOI18N
+    private static final Icon ICON_MONITOR = Icons.getIcon(ProfilerIcons.MONITORING);
+    private static final Icon ICON_CPU = Icons.getIcon(ProfilerIcons.CPU);
+    private static final Icon ICON_MEMORY = Icons.getIcon(ProfilerIcons.MEMORY);
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 

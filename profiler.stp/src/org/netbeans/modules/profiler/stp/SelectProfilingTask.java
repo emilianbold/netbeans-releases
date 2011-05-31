@@ -84,7 +84,11 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.GeneralIcons;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.ProfilerIcons;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.netbeans.modules.profiler.stp.icons.STPIcons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -218,12 +222,12 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private static SelectProfilingTask defaultInstance;
 
     // --- UI components declaration ---------------------------------------------
-    private static final Image BACKGROUND_IMAGE = UIUtils.isNimbus() ? null : ImageUtilities.loadImage("org/netbeans/modules/profiler/stp/resources/sptBar.png"); // NOI18N
-    private static final Icon MONITOR_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ui/resources/monitoring.png", false); // NOI18N
-    private static final Icon CPU_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ui/resources/cpu.png", false); // NOI18N
-    private static final Icon MEMORY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ui/resources/memory.png", false); // NOI18N
-    private static final Icon RUN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/actions/resources/runButton.gif", false); // NOI18N
-    private static final Icon ATTACH_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/actions/resources/attachButton.gif", false); // NOI18N
+    private static final Image BACKGROUND_IMAGE = UIUtils.isNimbus() ? null : Icons.getImage(STPIcons.STP_GRAPHICS);
+    private static final Icon MONITOR_ICON = Icons.getIcon(ProfilerIcons.MONITORING_32);
+    private static final Icon CPU_ICON = Icons.getIcon(ProfilerIcons.CPU_32);
+    private static final Icon MEMORY_ICON = Icons.getIcon(ProfilerIcons.MEMORY_32);
+    private static final Icon RUN_ICON = Icons.getIcon(GeneralIcons.BUTTON_RUN);
+    private static final Icon ATTACH_ICON = Icons.getIcon(GeneralIcons.BUTTON_ATTACH);
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
