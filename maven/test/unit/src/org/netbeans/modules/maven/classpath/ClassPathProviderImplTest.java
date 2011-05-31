@@ -165,7 +165,11 @@ public class ClassPathProviderImplTest extends NbTestCase {
         EndorsedClassPathImpl.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         String sha1 = RepositoryUtil.calculateSHA1Checksum(FileUtil.toFile(jar));
-        assertRoots(cp, FileUtil.toFileObject(FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), sha1 + ".jar"))));
+        File tmpJar = FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), sha1 + ".jar"));
+        FileUtil.refreshFor(tmpJar);
+        FileObject tmpJarFO = FileUtil.toFileObject(tmpJar);
+        assertNotNull(tmpJarFO);
+        assertRoots(cp, tmpJarFO);
         pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertTrue(bcp.toString(), bcp.toString().contains(sha1 + ".jar"));
         d.getFileObject("target").delete();
