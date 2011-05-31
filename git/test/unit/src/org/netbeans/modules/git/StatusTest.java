@@ -80,6 +80,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -94,6 +95,7 @@ public class StatusTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         Git.STATUS_LOG.setLevel(Level.ALL);
         setAutomaticRefreshEnabled(true);
     }

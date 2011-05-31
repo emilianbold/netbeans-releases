@@ -65,7 +65,7 @@ public class HistoryTest extends AbstractGitTestCase {
         File tmp = new File(repositoryLocation.getParentFile(), "tmp");
         write(f, read(getGoldenFile()));
         assertFile(getGoldenFile(), f);
-        GitVCS git = Lookup.getDefault().lookup(GitVCS.class);
+        GitVCS git = new GitVCS();
 
         git.getOriginalFile(f, tmp);
         assertEquals(0, tmp.length());

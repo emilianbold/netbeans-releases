@@ -56,6 +56,7 @@ import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  * @author ondra
@@ -73,6 +74,8 @@ public class ExternalChangesTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
+        
         System.setProperty("versioning.git.handleExternalEvents", "true");
         // create
         workdirFO = FileUtil.toFileObject(repositoryLocation);

@@ -242,6 +242,7 @@ public final class Git {
 
     public void versionedFilesChanged () {
         rootsToFile.clear();
+        clearAncestorCaches();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 
