@@ -42,7 +42,6 @@
 package org.netbeans.modules.profiler.j2ee.impl.icons;
 
 import java.awt.Image;
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.profiler.api.Icons;
 import org.netbeans.modules.profiler.spi.IconsProvider;
@@ -53,41 +52,12 @@ import org.openide.util.ImageUtilities;
  * @author Jiri Sedlacek
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.IconsProvider.class)
-public final class JavaEEIconsProviderImpl extends IconsProvider {
+public final class JavaEEIconsProviderImpl extends IconsProvider.Basic {
     
     private static final String JSP_FOLDER_BADGE = "JavaEEIconsProviderImpl.JspFolderBadge"; // NOI18N
 
-    private Map<String, String> images;
-
     @Override
-    public Image getImage(String key) {
-        String resource = getResource(key);
-        if (resource == null) return getDynamicImage(key);
-        else return ImageUtilities.loadImage(resource, true);
-    }
-    
-    @Override
-    public String getResource(String key) {
-        return getImageCache().get(key);
-    }
-    
-    private Map<String, String> getImageCache() {
-        synchronized (this) {
-            if (images == null) {
-                final String packagePrefix = getClass().getPackage().getName().
-                                             replace('.', '/') + "/"; // NOI18N
-                images = new HashMap<String, String>() {
-                    public String put(String key, String value) {
-                        return super.put(key, packagePrefix + value);
-                    }
-                };
-                initImageCache(images);
-            }
-        }
-        return images;
-    }
-    
-    private static void initImageCache(Map<String, String> cache) {
+    protected final void initStaticImages(Map<String, String> cache) {
         cache.put(JavaEEIcons.JAVAEE_PROJECTS, "j2eeProjects.png"); // NOI18N
         cache.put(JavaEEIcons.JSP, "jsp16.png"); // NOI18N
 //        cache.put(JavaEEIcons.JSP_FOLDER, null); // Generated dynamically
@@ -98,7 +68,8 @@ public final class JavaEEIconsProviderImpl extends IconsProvider {
         cache.put(JavaEEIcons.LISTENER, "servletObject.png"); // NOI18N
     }
     
-    private static Image getDynamicImage(String key) {
+    @Override
+    protected Image getDynamicImage(String key) {
         if (JavaEEIcons.JSP_FOLDER.equals(key)) {
             Image jspFolderBadge = Icons.getImage(JSP_FOLDER_BADGE);
             Image packageIcon = Icons.getImage(JavaEEIcons.PACKAGE);
