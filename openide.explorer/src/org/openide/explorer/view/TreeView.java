@@ -519,7 +519,7 @@ public abstract class TreeView extends JScrollPane {
         // activate / deactivate support according to the state
         dragActive = state;
 
-        if (dragSupport != null) {
+        if (dragSupport != null && !GraphicsEnvironment.isHeadless()) {
             dragSupport.activate(dragActive);
         }
     }
@@ -545,7 +545,7 @@ public abstract class TreeView extends JScrollPane {
         // activate / deactivate support according to the state
         dropActive = state;
 
-        if (dropSupport != null) {
+        if (dropSupport != null && !GraphicsEnvironment.isHeadless()) {
             dropSupport.activate(dropActive);
         }
     }
