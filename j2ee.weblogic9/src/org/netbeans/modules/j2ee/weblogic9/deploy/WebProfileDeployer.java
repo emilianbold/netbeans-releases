@@ -257,17 +257,25 @@ public final class WebProfileDeployer extends AbstractDeployer {
                                 ObjectName appRuntime = new ObjectName(
                                         "com.bea:ServerRuntime=" + target.getName() + ",Name=" + name + ",Type=ApplicationRuntime"); // NOI18N
                                 ObjectName[] componentRuntimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
+                                boolean isApp = false;
                                 for (ObjectName n: componentRuntimes) {
                                     // ModuleURI returns just "web"
-                                    String root = (String) connection.getAttribute(n, "ContextRoot"); // NOI18N
-                                    if (root != null) {
-                                        module.setContextURL(
-                                                "http://" + getDeploymentManager().getHost() // NOI18N
-                                                + ":" + getDeploymentManager().getPort() + root); // NOI18N
-                                        break;
+                                    String type = (String) connection.getAttribute(n, "Type"); // NOI18N
+                                    if ("WebAppComponentRuntime".equals(type)) { // NOI18N
+                                        // other component runtimes such as JDBC don't have ContextRoot
+                                        isApp = true;
+                                        String root = (String) connection.getAttribute(n, "ContextRoot"); // NOI18N
+                                        if (root != null) {
+                                            module.setContextURL(
+                                                    "http://" + getDeploymentManager().getHost() // NOI18N
+                                                    + ":" + getDeploymentManager().getPort() + root); // NOI18N
+                                            break;
+                                        }
                                     }
                                 }
-                                result.put(module, state);
+                                if (isApp) {
+                                    result.put(module, state);
+                                }
                             }
                         }
                     }
