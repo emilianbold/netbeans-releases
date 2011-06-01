@@ -56,10 +56,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="1" pref="730" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" pref="730" max="32767" attributes="0"/>
+          <Component id="separator" alignment="1" pref="734" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="734" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="headerField" pref="222" max="32767" attributes="0"/>
@@ -143,24 +143,32 @@
                                   <Component id="keywordsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                                   <Component id="statusWhiteboardWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="reportedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="blocksLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="qaContactLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="ccLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="resolutionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="duplicateLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="ccLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="qaContactLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="reportedField" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="reportedStatusLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                                      <Component id="modifiedLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Component id="ccField" alignment="0" max="32767" attributes="1"/>
-                                          <Component id="qaContactField" alignment="0" max="32767" attributes="1"/>
                                           <Component id="assignedField" alignment="0" max="32767" attributes="1"/>
                                           <Component id="statusCombo" alignment="0" max="32767" attributes="1"/>
                                           <Component id="resolutionField" alignment="0" max="32767" attributes="1"/>
@@ -179,6 +187,8 @@
                                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                                               <Component id="blocksButton" min="-2" max="-2" attributes="0"/>
                                           </Group>
+                                          <Component id="assignToDefaultCheckBox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="qaContactField" alignment="0" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
@@ -195,21 +205,12 @@
                                           <Component id="dependsOnWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="reportedField" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="reportedStatusLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                                      <Component id="modifiedLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                          </Group>
                           <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="summaryField" pref="530" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -222,7 +223,7 @@
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -266,26 +267,27 @@
                   <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="versionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="versionWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="assignToDefaultCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="platformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="platformCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="platformWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="osCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="osWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                   <Component id="qaContactLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="qaContactField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="qaContactWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="platformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="platformCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ccLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ccField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="platformWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="osCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ccWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="osWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="issueTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="issueTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="issueTypeWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="ccLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ccField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ccWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="dummyLabel1" linkSize="8" min="-2" max="-2" attributes="0"/>
@@ -360,8 +362,8 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="summaryWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -1110,6 +1112,13 @@
     <Component class="javax.swing.JLabel" name="statusWhiteboardWarning">
     </Component>
     <Component class="javax.swing.JLabel" name="issueTypeWarning">
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="assignToDefaultCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.assignToDefaultCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
