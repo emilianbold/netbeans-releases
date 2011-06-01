@@ -122,18 +122,21 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
 
         Problem p = null;
         if (getterDelegate != null) {
+            getterDelegate.setNewName(RetoucheUtils.getGetterName(refactoring.getNewName()));
             p = chainProblems(p, getterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (setterDelegate != null) {
+            setterDelegate.setNewName(RetoucheUtils.getSetterName(refactoring.getNewName()));
             p = chainProblems(p, setterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (parameterDelegate != null) {
+            parameterDelegate.setNewName(refactoring.getNewName());
             p = chainProblems(p, parameterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
