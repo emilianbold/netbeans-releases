@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools;
 
 import java.awt.Component;
@@ -80,73 +79,63 @@ import org.openide.util.Lookup;
  *      oto.close();
  * </pre>
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek 
  * @see OutputOperator
  */
 public class OutputTabOperator extends JComponentOperator {
 
     // operator of OutputPane component
     ComponentOperator outputPaneOperator;
-
     // actions used only in OutputTabOperator
-    private static final Action findNextAction = 
-        new Action(null,
-                   Bundle.getString("org.netbeans.core.output2.Bundle", 
-                                    "ACTION_FIND_NEXT"),
-                   null,
-                   KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
-    
-    private static final Action selectAllAction = 
-        new Action(null, null, null, 
-                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-                       KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_MASK) :
-                       KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK));
-
-    private static final Action wrapTextAction = 
-        new Action(null,
-                   Bundle.getString("org.netbeans.core.output2.Bundle", 
-                                    "ACTION_WRAP"),
-                   null,
-                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-                       KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_MASK) :
-                       KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_MASK));
-
-    private static final ActionNoBlock saveAsAction = 
-        new ActionNoBlock(null,
-                   Bundle.getString("org.netbeans.core.output2.Bundle", 
-                                    "ACTION_SAVEAS"),
-                   null,
-                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-                       KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.META_MASK) :
-                       KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK));
-    
-    private static final Action nextErrorAction = 
-        new Action(null, null, null, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
-
-    private static final Action previousErrorAction = 
-        new Action(null, null, null, KeyStroke.getKeyStroke(KeyEvent.VK_F12, InputEvent.SHIFT_MASK));
-
-    private static final Action closeAction = 
-        new Action(null,
-                   Bundle.getString("org.netbeans.core.output2.Bundle", 
-                                    "ACTION_CLOSE"),
-                   null,
-                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-                       KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.META_MASK) :
-                       KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.CTRL_MASK));
-
-    private static final Action clearAction = 
-        new Action(null,
-                   Bundle.getString("org.netbeans.core.output2.Bundle", 
-                                    "ACTION_CLEAR"),
-                   null,
-                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-                       KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.META_MASK) :
-                       KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_MASK));
-        
+    private static final Action findNextAction =
+            new Action(null,
+            Bundle.getString("org.netbeans.core.output2.Bundle",
+            "ACTION_FIND_NEXT"),
+            null,
+            KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
+    private static final Action selectAllAction =
+            new Action(null, null, null,
+            System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK));
+    private static final Action wrapTextAction =
+            new Action(null,
+            Bundle.getString("org.netbeans.core.output2.Bundle",
+            "ACTION_WRAP"),
+            null,
+            System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_MASK));
+    private static final ActionNoBlock saveAsAction =
+            new ActionNoBlock(null,
+            Bundle.getString("org.netbeans.core.output2.Bundle",
+            "ACTION_SAVEAS"),
+            null,
+            System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.META_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK));
+    private static final Action nextErrorAction =
+            new Action(null, null, null, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
+    private static final Action previousErrorAction =
+            new Action(null, null, null, KeyStroke.getKeyStroke(KeyEvent.VK_F12, InputEvent.SHIFT_MASK));
+    private static final Action closeAction =
+            new Action(null,
+            Bundle.getString("org.netbeans.core.output2.Bundle",
+            "ACTION_CLOSE"),
+            null,
+            System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.META_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.CTRL_MASK));
+    private static final Action clearAction =
+            new Action(null,
+            Bundle.getString("org.netbeans.core.output2.Bundle",
+            "ACTION_CLEAR"),
+            null,
+            System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.META_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_MASK));
     private static final CopyAction copyAction = new CopyAction();
     private static final FindAction findAction = new FindAction();
-
     /**
      * Buttons in the toolbar to the left of the currently active output tab.
      * They apply to depend on the currently open tab, so they're placed
@@ -163,22 +152,22 @@ public class OutputTabOperator extends JComponentOperator {
         // used in OutputOperator
         super(source);
     }
-    
+
     /** Waits for output tab with given name.
-     * It is activated by defalt.
+     * It is activated by default.
      * @param name name of output tab to look for
      */
     public OutputTabOperator(String name) {
         this(name, 0);
     }
-    
+
     /** Waits for index-th output tab with given name.
-     * It is activated by defalt.
+     * It is activated by default.
      * @param name name of output tab to look for
      * @param index index of requested output tab with given name
      */
     public OutputTabOperator(String name, int index) {
-        super((JComponent)new OutputOperator().waitSubComponent(new OutputTabSubchooser(name), index));
+        super((JComponent) new OutputOperator().waitSubComponent(new OutputTabSubchooser(name), index));
         makeComponentVisible();
     }
 
@@ -190,10 +179,8 @@ public class OutputTabOperator extends JComponentOperator {
      *
      * @return
      */
-    public JButtonOperator btnReRun()
-    {
-        if (btnReRun == null)
-        {
+    public JButtonOperator btnReRun() {
+        if (btnReRun == null) {
             ContainerOperator co = new ContainerOperator(this.getParent());
             btnReRun = new JButtonOperator(co);
         }
@@ -208,10 +195,8 @@ public class OutputTabOperator extends JComponentOperator {
      *
      * @return
      */
-    public JButtonOperator btnStop()
-    {
-        if (btnStop == null)
-        {
+    public JButtonOperator btnStop() {
+        if (btnStop == null) {
             ContainerOperator co = new ContainerOperator(this.getParent());
             btnStop = new JButtonOperator(co, 1);
         }
@@ -226,10 +211,8 @@ public class OutputTabOperator extends JComponentOperator {
      *
      * @return
      */
-    public JButtonOperator btnAntSettings()
-    {
-        if (btnAntSettings == null)
-        {
+    public JButtonOperator btnAntSettings() {
+        if (btnAntSettings == null) {
             ContainerOperator co = new ContainerOperator(this.getParent());
             btnAntSettings = new JButtonOperator(co, 2);
         }
@@ -240,11 +223,12 @@ public class OutputTabOperator extends JComponentOperator {
      * it is only tab in the Output top component, the Output top component 
      * is activated.
      */
-    public void makeComponentVisible() {
-        if(getParent() instanceof JTabbedPane) {
+    @Override
+    public final void makeComponentVisible() {
+        if (getParent() instanceof JTabbedPane) {
             super.makeComponentVisible();
             // output tab is a tab of JTabbedPane
-            new JTabbedPaneOperator((JTabbedPane)getParent()).setSelectedComponent(getSource());
+            new JTabbedPaneOperator((JTabbedPane) getParent()).setSelectedComponent(getSource());
         } else {
             // output tab is sub component of Output top component
             new OutputOperator().makeComponentVisible();
@@ -257,16 +241,19 @@ public class OutputTabOperator extends JComponentOperator {
     public int getLength() {
         // ((OutputTab)getSource()).getDocument().getLength();
         return runMapping(new MapIntegerAction("getLength") {
+
+            @Override
             public int map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Method getLengthMethod = getOutputDocumentClass().getDeclaredMethod("getLength", (Class[])null);
+                    Method getLengthMethod = getOutputDocumentClass().getDeclaredMethod("getLength", (Class[]) null);
                     getLengthMethod.setAccessible(true);
-                    return ((Integer)getLengthMethod.invoke(document, (Object[])null)).intValue();
+                    return ((Integer) getLengthMethod.invoke(document, (Object[]) null)).intValue();
                 } catch (Exception e) {
                     throw new JemmyException("getLength() by reflection failed.", e);
                 }
-            }});
+            }
+        });
     }
 
     /** Finds a line number by text.
@@ -275,36 +262,39 @@ public class OutputTabOperator extends JComponentOperator {
      */
     public int findLine(String lineText) {
         int lineCount = getLineCount();
-        if(lineCount < 1) {
+        if (lineCount < 1) {
             // no line yet
             return -1;
         }
-        for(int i = 0; i < lineCount; i++) {
-            if(getComparator().equals(getLine(i), lineText)) {
+        for (int i = 0; i < lineCount; i++) {
+            if (getComparator().equals(getLine(i), lineText)) {
                 return i;
             }
         }
         return -1;
     }
-    
+
     /** Returns text from this output tab.
      * @return text from this output tab.
      */
     public String getText() {
         final int length = getLength();
-        return (String)runMapping(new MapAction("getText") {
+        return (String) runMapping(new MapAction("getText") {
+
+            @Override
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Method getTextMethod = getOutputDocumentClass().getDeclaredMethod("getText", new Class[] {int.class, int.class});
+                    Method getTextMethod = getOutputDocumentClass().getDeclaredMethod("getText", new Class[]{int.class, int.class});
                     getTextMethod.setAccessible(true);
-                    return getTextMethod.invoke(document, new Object[] {Integer.valueOf(0), Integer.valueOf(length)}).toString();
+                    return getTextMethod.invoke(document, new Object[]{Integer.valueOf(0), Integer.valueOf(length)}).toString();
                 } catch (Exception e) {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
-            }});
+            }
+        });
     }
-    
+
     /** Get text between <code>startLine</code> and <code>endLine</code> from this output tab.
      * Both <code>startLine</code> and <code>endLine</code> are included.
      * @param startLine first line to be included (starting at 0)
@@ -312,51 +302,59 @@ public class OutputTabOperator extends JComponentOperator {
      * @return text between <code>startLine</code> and <code>endLine</code> from this output tab
      */
     public String getText(int startLine, int endLine) {
-        StringBuffer result = new StringBuffer();
-        for(int i = startLine; i <= endLine; i++) {
+        StringBuilder result = new StringBuilder();
+        for (int i = startLine; i <= endLine; i++) {
             result.append(getLine(i));
-            result.append('\n');;
+            result.append('\n');
         }
         return result.toString();
     }
-    
+
     /** Waits for text to be displayed in this output tab.
      * @param text text to wait for
      */
     public void waitText(final String text) {
-        getOutput().printLine("Wait \"" + text + "\" text in component \n    : "+toStringSource());
+        getOutput().printLine("Wait \"" + text + "\" text in component \n    : " + toStringSource());
         getOutput().printGolden("Wait \"" + text + "\" text");
         waitState(new ComponentChooser() {
+
+            @Override
             public boolean checkComponent(Component comp) {
                 return (findLine(text) > -1);
             }
+
+            @Override
             public String getDescription() {
-                return("\"" + text + "\" text");
+                return ("\"" + text + "\" text");
             }
         });
     }
-    
+
     /** Returns count of filled lines of this output tab.
      * @return count of filled lines of this output tab.
      */
     public int getLineCount() {
-        return ((Integer)runMapping(new MapAction("getLineCount") {
+        return ((Integer) runMapping(new MapAction("getLineCount") {
+
+            @Override
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Method getElementCountMethod = getOutputDocumentClass().getDeclaredMethod("getElementCount", (Class[])null);
+                    Method getElementCountMethod = getOutputDocumentClass().getDeclaredMethod("getElementCount", (Class[]) null);
                     getElementCountMethod.setAccessible(true);
-                    return (Integer)getElementCountMethod.invoke(document, (Object[])null);
+                    return (Integer) getElementCountMethod.invoke(document, (Object[]) null);
                 } catch (Exception e) {
                     throw new JemmyException("getElementCount() by reflection failed.", e);
                 }
-            }})).intValue();
+            }
+        })).intValue();
     }
 
-    private Class getOutputDocumentClass() throws ClassNotFoundException{
+    private Class getOutputDocumentClass() throws ClassNotFoundException {
         ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
         return Class.forName("org.netbeans.core.output2.OutputDocument", true, scl);
     }
+
     /** Returns operator for OutputPane component.
      * All events should be dispatched to this component.
      * @return operator for OutputPane component
@@ -364,42 +362,45 @@ public class OutputTabOperator extends JComponentOperator {
     public ComponentOperator outputPaneOperator() {
         // first make component visible because tab must be visible to dispatch events
         makeComponentVisible();
-        if(outputPaneOperator == null) {
+        if (outputPaneOperator == null) {
             outputPaneOperator = ComponentOperator.createOperator(outputPaneForTab(getSource()));
             outputPaneOperator.copyEnvironment(this);
         }
         return outputPaneOperator;
     }
-    
+
     /** Returns text from specified line.
      * @param line line number to get text from
      * @return text from the specified line (starting at 0)
      */
     public String getLine(final int line) {
-        return (String)runMapping(new MapAction("getText") {
+        return (String) runMapping(new MapAction("getText") {
+
+            @Override
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
                     Class clazz = getOutputDocumentClass();
-                    Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[] {int.class});
+                    Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[]{int.class});
                     getLineStartMethod.setAccessible(true);
-                    Integer lineStart = (Integer) getLineStartMethod.invoke(document, new Object[] {Integer.valueOf(line)});
-                    Method getLineEndMethod = clazz.getDeclaredMethod("getLineEnd", new Class[] {int.class});
+                    Integer lineStart = (Integer) getLineStartMethod.invoke(document, new Object[]{Integer.valueOf(line)});
+                    Method getLineEndMethod = clazz.getDeclaredMethod("getLineEnd", new Class[]{int.class});
                     getLineEndMethod.setAccessible(true);
-                    Integer lineEnd = (Integer)getLineEndMethod.invoke(document, new Object[] {Integer.valueOf(line)});
-                    if(lineStart.intValue() == lineEnd.intValue()) {
+                    Integer lineEnd = (Integer) getLineEndMethod.invoke(document, new Object[]{Integer.valueOf(line)});
+                    if (lineStart.intValue() == lineEnd.intValue()) {
                         // line is empty
                         return "";
                     }
-                    Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
+                    Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[]{int.class, int.class});
                     getTextMethod.setAccessible(true);
-                    return getTextMethod.invoke(document, new Object[] {lineStart, Integer.valueOf(lineEnd.intValue()-lineStart.intValue())}).toString();
+                    return getTextMethod.invoke(document, new Object[]{lineStart, Integer.valueOf(lineEnd.intValue() - lineStart.intValue())}).toString();
                 } catch (Exception e) {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
-            }});
+            }
+        });
     }
-    
+
     private static Component outputPaneForTab(Component tab) {
         try {
             return (Component) tab.getClass().getMethod("getOutputPane").invoke(tab);
@@ -416,63 +417,64 @@ public class OutputTabOperator extends JComponentOperator {
             throw new JemmyException("Reflection failed: " + x, x);
         }
     }
-    
+
     /** SubChooser to determine OutputTab component
      * Used in findTopComponent method.
      */
     protected static final class OutputTabSubchooser implements ComponentChooser {
-        
+
         /** Name of OutputTab to search for. */
         private String tabName = null;
-        
+
         public OutputTabSubchooser() {
         }
-        
+
         public OutputTabSubchooser(String tabName) {
             this.tabName = tabName;
         }
-        
+
+        @Override
         public boolean checkComponent(Component comp) {
-            if(comp.getClass().getName().endsWith("OutputTab")) {  // NOI18N
+            if (comp.getClass().getName().endsWith("OutputTab")) {  // NOI18N
                 return Operator.getDefaultStringComparator().equals(comp.getName(), tabName);
             } else {
                 return false;
             }
         }
-        
+
+        @Override
         public String getDescription() {
             return "org.netbeans.core.output2.OutputTab" + // NOI18N
                     ((tabName != null) ? " with \"" + tabName + "\" name" : "");  // NOI18N
         }
     }
-    
+
     /** Performs verification by accessing all sub-components */
     public void verify() {
         outputPaneOperator();
     }
-    
-    /****************************** Actions *****************************/
 
+    /****************************** Actions *****************************/
     /** Performs copy action. */
     public void copy() {
         copyAction.perform(outputPaneOperator());
     }
-    
+
     /** Performs find action. */
     public void find() {
         findAction.perform(outputPaneOperator());
     }
-    
+
     /** Performs find next action. */
     public void findNext() {
         findNextAction.perform(outputPaneOperator());
     }
-    
+
     /** Performs next error action. */
     public void nextError() {
         nextErrorAction.perform(outputPaneOperator());
     }
-    
+
     /** Performs next error action. */
     public void previousError() {
         previousErrorAction.perform(outputPaneOperator());
@@ -482,22 +484,22 @@ public class OutputTabOperator extends JComponentOperator {
     public void wrapText() {
         wrapTextAction.perform(outputPaneOperator());
     }
-    
+
     /** Performs save as action. */
     public void saveAs() {
         saveAsAction.perform(outputPaneOperator());
     }
-    
+
     /** Performs close action. */
     public void close() {
         closeAction.perform(outputPaneOperator());
     }
-    
+
     /** Performs clear action. */
     public void clear() {
         clearAction.perform(outputPaneOperator());
     }
-    
+
     /** Performs select all action. */
     public void selectAll() {
         selectAllAction.perform(outputPaneOperator());
