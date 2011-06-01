@@ -233,7 +233,9 @@ public abstract class CsmFileReferences {
    private static boolean hasTemplateBasedAncestors(CsmClass cls, int level) {
        if (cls != null) {
            if (level == 0) {
-               CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + cls.getContainingFile() + " class " + cls); //NOI18N
+               // No need for assertion it's ok to have infinite recursion in template constructions like 
+               // template <int t> class A : public A<t-1> {};
+               // CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + cls.getContainingFile() + " class " + cls); //NOI18N
                return false;
            }
            if (isActualInstantiation(cls)) {
