@@ -59,8 +59,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
@@ -69,6 +67,8 @@ import org.apache.tools.ant.taskdefs.Manifest.Section;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
 import org.apache.tools.zip.ZipOutputStream;
 
 /**
@@ -81,6 +81,8 @@ public class CopyLibs extends Jar {
     private static final String ATTR_CLASS_PATH = "Class-Path"; //NOI18N
     private static final String MANIFEST = "META-INF/MANIFEST.MF";  //NOI18N
     private static final String INDEX = "META-INF/INDEX.LIST";  //NOI18N
+    private static final String UTF_8 = "UTF-8";    //NOI18N
+    private static final String UTF8 = "UTF8";      //NOI18N
 
     Path runtimePath;
 
@@ -107,6 +109,17 @@ public class CopyLibs extends Jar {
     public void setRebase(final boolean rebase) {
         this.rebase = rebase;
     }
+
+    @Override
+    public void setEncoding(String encoding) {
+        if (!isUTF8(encoding)) {
+            getProject().log(
+            "It is not recommended to change encoding from UTF-8 as the created archive will be unreadable for Java. ", //NOI18N
+            Project.MSG_WARN);
+        }
+        super.setEncoding(encoding);
+    }
+
     
     @Override
     public void execute() throws BuildException {
@@ -187,14 +200,14 @@ public class CopyLibs extends Jar {
         }
         try {
             Manifest manifest = null;
-            final ZipFile zf = new ZipFile(source);
+            final ZipFile zf = new ZipFile(source, getEncoding());
             try {
                 if (zf.getEntry(INDEX) != null) {
                     return false;
                 }
                 final ZipEntry manifestEntry = zf.getEntry(MANIFEST);
                 if (manifestEntry != null) {
-                    final Reader in = new InputStreamReader(zf.getInputStream(manifestEntry), Charset.forName("UTF-8"));    //NOI18N
+                    final Reader in = new InputStreamReader(zf.getInputStream(manifestEntry), Charset.forName(UTF_8));    //NOI18N
                     try {
                         manifest = new Manifest(in);
                     } finally {
@@ -228,8 +241,12 @@ public class CopyLibs extends Jar {
                 if (!changed) {
                     return false;
                 }
-                final Enumeration<? extends ZipEntry> zent = zf.entries();
+                final Enumeration<? extends ZipEntry> zent = zf.getEntries();
                 final ZipOutputStream out = new ZipOutputStream(target);
+                out.setEncoding(getEncoding());   //NOI18N
+//                out.setUseLanguageEncodingFlag(getUseLanguageEnodingFlag());      requires Ant 1.8
+//                out.setCreateUnicodeExtraFields(getCreateUnicodeExtraFields().getPolicy());   requires Ant 1.8
+//                out.setFallbackToUTF8(getFallBackToUTF8());   requires Ant 1.8
                 try {
                     while (zent.hasMoreElements()) {
                         final ZipEntry entry = zent.nextElement();
@@ -237,14 +254,14 @@ public class CopyLibs extends Jar {
                         try {
                             
                             if (MANIFEST.equals(entry.getName())) {
-                                out.putNextEntry(new org.apache.tools.zip.ZipEntry(entry));
+                                out.putNextEntry(entry);
                                 mainSection.removeAttribute(ATTR_CLASS_PATH);
                                 mainSection.addAttributeAndCheck(new Manifest.Attribute(ATTR_CLASS_PATH, result.toString()));
-                                final PrintWriter manifestOut = new PrintWriter(new OutputStreamWriter(out, Charset.forName("UTF-8")));
+                                final PrintWriter manifestOut = new PrintWriter(new OutputStreamWriter(out, Charset.forName(UTF_8)));
                                 manifest.write(manifestOut);
                                 manifestOut.flush();
                             } else {
-                                out.putNextEntry(new org.apache.tools.zip.ZipEntry(entry));
+                                out.putNextEntry(entry);
                                 copy(in,out);
                             }
                         } finally {
@@ -287,5 +304,9 @@ public class CopyLibs extends Jar {
             }
             out.write(BUFFER, 0, len);
         }
+    }
+
+    private static boolean isUTF8(final String encoding) {
+        return UTF_8.equalsIgnoreCase(encoding) || UTF8.equalsIgnoreCase(encoding);
     }
 }
