@@ -196,7 +196,7 @@ public class DelegatingVCS extends VersioningSystem {
         }        
     }
     
-    private Action[] getGlobalActions(VCSContext ctx, ActionDestination actionDestination) {
+    Action[] getGlobalActions(VCSContext ctx, ActionDestination actionDestination) {
         assert !isAlive();
         String category = (String) map.get("actionsCategory");              // NOI18N
         List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Actions/Global"); // NOI18N
