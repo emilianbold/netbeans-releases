@@ -43,7 +43,6 @@
  */
 package org.netbeans.jellytools;
 
-import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -52,7 +51,6 @@ import org.netbeans.jellytools.actions.CompileJavaAction;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -108,7 +106,6 @@ public class OutputTabOperatorTest extends JellyTestCase {
     /** Compiles a source which opens output tab to test. */
     private static void initTab() {
         Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
-        Node sample2 = new Node(new SourcePackagesNode("SampleProject"), "sample1.sample2");  // NOI18N
         Node sampleClass1 = new Node(sample1, "SampleClass1.java");  // NOI18N
         CompileJavaAction compileAction = new CompileJavaAction();
         compileAction.perform(sampleClass1);
@@ -132,13 +129,14 @@ public class OutputTabOperatorTest extends JellyTestCase {
 
     /**
      * Tests presence and, where possible, functionality of buttons on the left
-     * side (toolbar) of the output tab.
+     * side (tool bar) of the output tab.
      */
     public void testToolbarButtons() {
         outputTabOperator.clear();
         outputTabOperator.btnReRun().push();
         outputTabOperator.waitText("BUILD SUCCESSFUL");
-
+        outputTabOperator.btnReRunWithDifferentParameters().pushNoBlock();
+        new NbDialogOperator("Run Ant Target").close();
         assertFalse("When there's no task running, the Stop button should be disabled!", outputTabOperator.btnStop().isEnabled());
         outputTabOperator.btnAntSettings().push();
         new OptionsOperator().close();
