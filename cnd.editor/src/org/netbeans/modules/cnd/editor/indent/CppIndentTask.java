@@ -48,6 +48,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
 import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Function;
@@ -245,6 +247,33 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         }
         TokenItem ppToken = moveToFirstLineImportantToken(new TokenItem(ts, false));
         if (isPreprocessorLine(ppToken)) {
+            if (doc instanceof BaseDocument) {
+                if (HotCharIndent.isTokenContinue((BaseDocument)doc, caretOffset)) {
+                    try {
+                        int rowStart = Utilities.getRowStart((BaseDocument)doc, caretOffset);
+                        if (rowStart > 1) {
+                            rowStart = Utilities.getRowStart((BaseDocument)doc, rowStart-1);
+                            String text = doc.getText(rowStart, caretOffset- rowStart);
+                            int indent = 0;
+                            for(int i = 0; i < text.length(); i++) {
+                                if (text.charAt(i) == ' ') {
+                                    indent++;
+                                } else if (text.charAt(i) == '\t') {
+                                    if (getTabSize() > 0) {
+                                        indent = (indent/getTabSize()+1)*getTabSize();
+                                    }
+                                } else {
+                                    break;
+                                }
+                            }
+                            return indent;
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return -1;
+                }
+            }
             if (codeStyle.sharpAtStartLine()) {
                 return 0;
             } else {
