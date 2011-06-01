@@ -899,11 +899,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return central.isVisible();
     }
     
-    /** Attaches TopComponent to one side of mode, it removes it from original one. */
-    public void attachTopComponentToSide(TopComponent tc, ModeImpl attachMode, String side) {
-        central.attachTopComponentsToSide(new TopComponent[] {tc}, attachMode, side);
-    }
-    
     // XXX
     public TopComponent getTopComponentForID(String tcID) {
         return PersistenceHandler.getDefault().getTopComponentForID(tcID,true);
