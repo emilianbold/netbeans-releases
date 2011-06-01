@@ -187,11 +187,17 @@ public final class Watcher extends AnnotationProvider {
                     } else {
                         // don't ask for nonexistent FOs
                         File file = new File(path);
-                        FileObject fo = FileObjectFactory.getInstance(file).getCachedOnly(file);
+                        final FileObjectFactory factory = FileObjectFactory.getInstance(file);
+                        FileObject fo = factory.getCachedOnly(file);
 
                         // may be null
                         if (map.containsKey(fo)) {
                             enqueue(fo);
+                        } else {
+                            fo = factory.getCachedOnly(file.getParentFile());
+                            if (map.containsKey(fo)) {
+                                enqueue(fo);
+                            }
                         }
                     }
                 } catch (ThreadDeath td) {
