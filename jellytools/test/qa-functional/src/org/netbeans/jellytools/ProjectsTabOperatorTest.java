@@ -44,48 +44,32 @@
 package org.netbeans.jellytools;
 
 import java.io.IOException;
-import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
+import junit.framework.Test;
 
 /** Test ProjectsTabOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class ProjectsTabOperatorTest extends JellyTestCase {
 
-    public static final String[] tests = new String[]
-    {"testInvoke", "testTree", "testGetProjectRootNode", "testVerify"};
-    
+    private static ProjectsTabOperator projectsOper;
+    public static final String[] tests = new String[]{"testInvoke", "testTree", "testGetProjectRootNode", "testVerify"};
+
     public ProjectsTabOperatorTest(java.lang.String testName) {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+    public static Test suite() {
+        return createModuleTest(ProjectsTabOperatorTest.class, tests);
     }
 
-    public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // suites have to be in particular order
-        suite.addTest(new ProjectsTabOperatorTest("testInvoke"));
-        suite.addTest(new ProjectsTabOperatorTest("testTree"));
-        suite.addTest(new ProjectsTabOperatorTest("testGetProjectRootNode"));
-        suite.addTest(new ProjectsTabOperatorTest("testVerify"));
-        return suite;
-         */
-        return (NbTest) createModuleTest(ProjectsTabOperatorTest.class, 
-                tests);
-    }
-    
     /** Print out test name. */
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
     }
-    
-    private static ProjectsTabOperator projectsOper;
-    
+
     /**
      * Test of invoke method.
      */
@@ -93,7 +77,7 @@ public class ProjectsTabOperatorTest extends JellyTestCase {
         ProjectsTabOperator.invoke().close();
         projectsOper = ProjectsTabOperator.invoke();
     }
-    
+
     /**
      * Test of tree method.
      */
@@ -102,14 +86,14 @@ public class ProjectsTabOperatorTest extends JellyTestCase {
         // has to make tab visible
         projectsOper.tree();
     }
-    
+
     /**
      * Test of getRootNode method.
      */
     public void testGetProjectRootNode() {
         projectsOper.getProjectRootNode("SampleProject");   // NOI18N
     }
-    
+
     /**
      * Test of verify method.
      */

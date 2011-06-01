@@ -7,8 +7,7 @@
             <minimum-ant-version>1.6</minimum-ant-version>
             <web-module-libraries>
                 <library dirs="200">
-                    <file>${file.reference.xercesImpl.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
+                    <file>${file.reference.xerces.jar}</file>
                 </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
