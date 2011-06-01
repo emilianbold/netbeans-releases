@@ -1290,27 +1290,6 @@ final class DefaultModel implements Model {
     // TopComponentGroup specific <<
     ////////////////////////////////////
     
-    
-    /////////////////////////
-    // Controller updates >>
-    public void setActiveModeForOriginator(ModelElement originator) {
-        synchronized(LOCK_MODES) {
-            ModeImpl mode = modesSubModel.getModeForOriginator(originator);
-            setActiveMode(mode);
-        }
-    }
-    
-    public void setModeSelectedTopComponentForOriginator(ModelElement originator, TopComponent tc) {
-        ModeImpl mode;
-        synchronized(LOCK_MODES) {
-            mode = modesSubModel.getModeForOriginator(originator);
-        }
-        
-        setModeSelectedTopComponent(mode, tc);
-
-
-    }
-    
     @Override
     public void setMainWindowBoundsUserSeparatedHelp(Rectangle bounds) {
         if(bounds == null) {
