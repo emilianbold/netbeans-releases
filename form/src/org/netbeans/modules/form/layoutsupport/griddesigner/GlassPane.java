@@ -78,7 +78,7 @@ import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsCh
 /**
  * Glass pane of the grid designer.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public class GlassPane extends JPanel implements GridActionPerformer {
     /** Color of the grid. */
@@ -281,7 +281,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 g.setColor(GridDesigner.SELECTION_COLOR);
                 g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
             }
-            paintConstraints(g);
+            if(!animation) paintConstraints(g);
             paintSelection(g);
         }
         if (animation && (animPhase == 1f)) {
@@ -402,15 +402,27 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      */
     private void paintConstraints(Graphics g) {
         Point shift = fromComponentPane(new Point());
-        Graphics gg = g.create();
-        gg.translate(shift.x, shift.y);
+        Graphics gClip = g.create();
+        Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
+        gClip.clipRect(paneRect.x, paneRect.y, paneRect.width, paneRect.height);
+        gClip.translate(shift.x, shift.y);
+        // derive the color for emphasizing from background
+        Color backColor = componentPane.getBackground();
+        Color emphColor;
+        int backBrightness = ( 30 * backColor.getRed() + 59 * backColor.getGreen() + 11 * backColor.getBlue() ) / 100;
+        if( backBrightness >= 128 ) {
+            emphColor = backColor.darker();
+        } else { // brightening a dark area seems visually less notable than darkening a bright area
+            emphColor = backColor.brighter().brighter();
+        }
         for (Component comp : componentPane.getComponents()) {
             if (GridUtils.isPaddingComponent(comp)) {
                 continue;
             }
             boolean selected = selection.contains(comp);
-            gridInfo.paintConstraints(gg, comp, selected);
+            gridInfo.paintConstraints(gClip, comp, selected, emphColor);
         }
+        gClip.dispose();
     }
 
     /**
@@ -422,7 +434,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         if (animation) return;
         Graphics gClip = g.create();
         Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
-        gClip.setClip(paneRect);
+        gClip.clipRect(paneRect.x, paneRect.y, paneRect.width, paneRect.height);
         for (Component selComp : selection) {
             Rectangle rect = fromComponentPane(selectionResizingBounds(selComp));
             Rectangle inner = fromComponentPane(selComp.getBounds());

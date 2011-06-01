@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,6 +84,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
     public static final String DEFAULT_MAC_MEM_OPTS = "-Xmx1024m -XX:PermSize=256m"; // NOI18N
 
+    public static final String DEFAULT_DWP_MEM_OPTS = "-Xmx512m -XX:PermSize=128m"; // NOI18N
+    
     /**
      * The parent wizard descriptor
      */
@@ -158,8 +161,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.FALSE.toString());
-        if (Utilities.isMac()) {
+        
+        boolean isWebProfile = WLPluginProperties.isWebProfile(new File(serverRoot));
+        if (Utilities.isMac() && !isWebProfile) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
+        // FIXME temporary hack WL guys should fix that
+        // https://bug.oraclecorp.com/pls/bug/webbug_print.show?c_rptno=12612642
+        } else if ((Utilities.isUnix() || Utilities.isMac()) && isWebProfile) {
+            props.put(WLPluginProperties.MEM_OPTS, DEFAULT_DWP_MEM_OPTS);
         }
 
         InstanceProperties ip = InstanceProperties.createInstanceProperties(
