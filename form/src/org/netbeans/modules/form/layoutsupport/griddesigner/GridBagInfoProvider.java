@@ -122,6 +122,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
         } catch (NoSuchFieldException nsfex) {
             FormUtils.LOGGER.log(Level.INFO, nsfex.getMessage(), nsfex);
         }
+        containerEmphColor = deriveEmphColor(container);
     }
 
     private GridBagLayout getLayout() {
@@ -299,9 +300,10 @@ public class GridBagInfoProvider implements GridInfoProvider {
     }
     
     @Override
-    public void paintConstraints(Graphics g, Component component, boolean selected, Color emphColor) {
+    public void paintConstraints(Graphics g, Component component, boolean selected) {
         assert g instanceof Graphics2D;
         Graphics2D gg = (Graphics2D) g.create();
+        Color emphColor = containerEmphColor;
 
         // component proxy position and size
         Rectangle inner = component.getBounds();
@@ -390,10 +392,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
         int hPad = getIPadX(component);
         int vPad = getIPadY(component);
         if( hPad > 0 || vPad > 0 ) {
-            // derive the emphasizing color from component background
-            Color backColor = component.getBackground();
-            int backBrightness = ( 30 * backColor.getRed() + 59 * backColor.getGreen() + 11 * backColor.getBlue() ) / 100;
-            Color padEmphColor = backBrightness >= 128 ? backColor.darker() : backColor.brighter();
+            Color padEmphColor = deriveEmphColor(component);
             gg.setColor(new Color(padEmphColor.getRed(), padEmphColor.getGreen(), padEmphColor.getBlue(), IPADDING_COLOR_ALPHA));
             int padTop = vPad / 2;
             int padBottom = vPad - padTop;
@@ -413,6 +412,20 @@ public class GridBagInfoProvider implements GridInfoProvider {
             }
         }
         gg.dispose();
+    }
+
+    private Color containerEmphColor;
+    private static Color deriveEmphColor(Component component) {
+        // derive the color for emphasizing from background
+        Color backColor = component.getBackground();
+        Color emphColor;
+        int backBrightness = (30*backColor.getRed()+59*backColor.getGreen()+11*backColor.getBlue())/100;
+        if (backBrightness >= 128) {
+            emphColor = backColor.darker();
+        } else { // brightening a dark area seems visually less notable than darkening a bright area
+            emphColor = backColor.brighter().brighter();
+        }
+        return emphColor;
     }
 
 }
