@@ -45,7 +45,6 @@
 package org.netbeans.core.windows.view;
 
 
-import java.awt.Dimension;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -94,19 +93,23 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
 
     // XXX
+    @Override
     public boolean isDragInProgress() {
         return hierarchy.isDragInProgress();
     }
     
     // XXX
+    @Override
     public Frame getMainWindow() {
         return hierarchy.getMainWindow().getFrame();
     }
     
+    @Override
     public Component getEditorAreaComponent() {
         return hierarchy.getEditorAreaComponent();
     }
     
+    @Override
     public String guessSlideSide (TopComponent comp) {
         String toReturn = Constants.LEFT;
         if (hierarchy.getMaximizedModeView() != null) {
@@ -136,6 +139,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         return toReturn;
     }
     
+    @Override
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot) {
 
         // Change to view understandable-convenient structure.
@@ -591,6 +595,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         // the window was not maximazed yet -> resulted in wrong calculation of splits and also bad reactions from the listeners
         // which considered the automated change to maximazed mode to be issued by the user.
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (DEBUG) {
                     debugLog("Installing main window listeners.");
@@ -615,6 +620,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     ////////////////////////////////////////////////////
     // Controller >>
+    @Override
     public void userActivatedModeView(ModeView modeView) {
         if(DEBUG) {
             debugLog("User activated mode view, mode=" + modeView); // NOI18N
@@ -625,6 +631,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userActivatedMode(mode);
     }
     
+    @Override
     public void userActivatedModeWindow(ModeView modeView) {
         if(DEBUG) {
             debugLog("User activated mode window, mode=" + modeView); // NOI18N
@@ -635,6 +642,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userActivatedModeWindow(mode);
     }
     
+    @Override
     public void userActivatedEditorWindow() {
         if(DEBUG) {
             debugLog("User activated editor window"); // NOI18N
@@ -643,6 +651,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userActivatedEditorWindow();
     }
     
+    @Override
     public void userSelectedTab(ModeView modeView, TopComponent selected) {
         if(DEBUG) {
             debugLog("User selected tab, tc=" + WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)); // NOI18N
@@ -653,6 +662,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userActivatedTopComponent(mode, selected);
     }
     
+    @Override
     public void userClosingMode(ModeView modeView) {
         if(DEBUG) {
             debugLog("User closing mode="+modeView); // NOI18N
@@ -668,6 +678,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         hierarchy.updateDesktop();
     }
     
+    @Override
     public void userResizedMainWindow(Rectangle bounds) {
         if(DEBUG) {
             debugLog("User resized main window"); // NOI18N
@@ -687,6 +698,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
     }
     
+    @Override
     public void userMovedMainWindow(Rectangle bounds) {
         if(DEBUG) {
             debugLog("User moved main window"); // NOI18N
@@ -698,6 +710,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
     }
     
+    @Override
     public void userResizedEditorArea(Rectangle bounds) {
         if(DEBUG) {
             debugLog("User resized editor area"); // NOI18N
@@ -706,6 +719,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userResizedEditorArea(bounds);
     }
     
+    @Override
     public void userResizedModeBounds(ModeView modeView, Rectangle bounds) {
         if(DEBUG) {
             debugLog("User resized mode"); // NOI18N
@@ -719,6 +733,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
     }
     
+    @Override
     public void userMovedSplit(SplitView splitView, ViewElement[] childrenViews, double[] splitWeights) {
         if(DEBUG) {
             debugLog("User moved split"); // NOI18N
@@ -736,6 +751,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 //        updateSeparateBoundsForView(splitView);
     }
     
+    @Override
     public void userClosedTopComponent(ModeView modeView, TopComponent tc) {
         if(DEBUG) {
             debugLog("User closed topComponent=" + tc); // NOI18N
@@ -746,6 +762,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userClosedTopComponent(mode, tc);
     }
     
+    @Override
     public void userChangedFrameStateMainWindow(int frameState) {
         if(DEBUG) {
             debugLog("User changed frame state main window"); // NOI18N
@@ -754,6 +771,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userChangedFrameStateMainWindow(frameState);
     }
     
+    @Override
     public void userChangedFrameStateEditorArea(int frameState) {
         if(DEBUG) {
             debugLog("User changed frame state editor area"); // NOI18N
@@ -761,6 +779,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userChangedFrameStateEditorArea(frameState);
     }
     
+    @Override
     public void userChangedFrameStateMode(ModeView modeView, int frameState) {
         if(DEBUG) {
             debugLog("User changed frame state mode"); // NOI18N
@@ -772,6 +791,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     // DnD
+    @Override
     public void userDroppedTopComponents(ModeView modeView, TopComponent[] tcs) {
         if(tcs.length == 0) {
             return;
@@ -786,6 +806,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponents(mode, tcs);
     }
     
+    @Override
     public void userDroppedTopComponents(ModeView modeView, TopComponent[] tcs, int index) {
         if(tcs.length == 0) {
             return;
@@ -807,6 +828,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponents(mode, tcs, index);
     }
     
+    @Override
     public void userDroppedTopComponents(ModeView modeView, TopComponent[] tcs, String side) {
         if(tcs.length == 0) {
             return;
@@ -821,6 +843,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponents(mode, tcs, side);
     }
 
+    @Override
     public void userDroppedTopComponentsIntoEmptyEditor(TopComponent[] tcs) {
         if(tcs.length == 0) {
             return;
@@ -833,6 +856,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponentsIntoEmptyEditor(tcs);
     }
     
+    @Override
     public void userDroppedTopComponentsAround(TopComponent[] tcs, String side) {
         if(tcs.length == 0) {
             return;
@@ -845,6 +869,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponentsAround(tcs, side);
     }
     
+    @Override
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side, int modeKind) {
         if(tcs.length == 0) {
             return;
@@ -857,6 +882,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userDroppedTopComponentsAroundEditor(tcs, side, modeKind);
     }
     
+    @Override
     public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int draggedKind) {
         if(tcs.length == 0) {
             return;
@@ -871,12 +897,14 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
     // Sliding
 
+    @Override
     public void userDisabledAutoHide(ModeView modeView, TopComponent tc) {
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
         controllerHandler.userDisabledAutoHide(tc, mode);
     }    
 
+    @Override
     public void userEnabledAutoHide(ModeView modeView, TopComponent tc) {
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
@@ -884,10 +912,12 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userEnabledAutoHide(tc, mode, side);
     }
     
+    @Override
     public void userTriggeredSlideIn(ModeView modeView, SlideOperation operation) {
         hierarchy.performSlideIn(operation);
     }    
     
+    @Override
     public void userTriggeredSlideOut(ModeView modeView, SlideOperation operation) {
         hierarchy.performSlideOut(operation);
         // restore focus if needed
@@ -906,14 +936,17 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
     }    
     
+    @Override
     public void userTriggeredSlideIntoDesktop(ModeView modeView, SlideOperation operation) {
         hierarchy.performSlideIntoDesktop(operation);
     }    
     
+    @Override
     public void userTriggeredSlideIntoEdge(ModeView modeView, SlideOperation operation) {
         hierarchy.performSlideIntoEdge(operation);
     }
     
+    @Override
     public void userResizedSlidingWindow(ModeView modeView, SlideOperation operation) {
         ((SlidingView)modeView).setSlideBounds(modeView.getSelectedTopComponent().getBounds());
         hierarchy.performSlideResize(operation);
@@ -989,18 +1022,22 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
     ///////////////
     // ViewAccessor
+    @Override
     public Set<Component> getModeComponents() {
         return hierarchy.getModeComponents();
     }
     
+    @Override
     public Set<Component> getSeparateModeFrames() {
         return hierarchy.getSeparateModeFrames();
     }
     
+    @Override
     public Controller getController() {
         return this;
     }
     
+    @Override
     public Component getSlidingModeComponent(String side) {
         return hierarchy.getSlidingModeComponent(side);
     }
