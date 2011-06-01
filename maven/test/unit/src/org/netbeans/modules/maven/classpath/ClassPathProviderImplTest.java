@@ -187,4 +187,26 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertEquals(roots, new LinkedHashSet<FileObject>(Arrays.asList(cp.getRoots())));
     }
 
+    public void testGeneratedSources() throws Exception { // #187595
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        FileObject gsrc = FileUtil.createFolder(d, "target/generated-sources/xjc");
+        gsrc.createData("Whatever.class");
+        FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
+        FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
+        gtsrc.createData("Whatever.class");
+        assertRoots(ClassPath.getClassPath(src, ClassPath.SOURCE), src, gsrc);
+        assertRoots(ClassPath.getClassPath(gsrc, ClassPath.SOURCE), src, gsrc);
+        assertRoots(ClassPath.getClassPath(tsrc, ClassPath.SOURCE), tsrc, gtsrc);
+        assertRoots(ClassPath.getClassPath(gtsrc, ClassPath.SOURCE), tsrc, gtsrc);
+    }
+
 }

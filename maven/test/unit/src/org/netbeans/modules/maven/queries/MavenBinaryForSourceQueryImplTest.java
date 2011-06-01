@@ -40,20 +40,19 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.classpath;
+package org.netbeans.modules.maven.queries;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
+import java.net.URL;
+import java.util.Arrays;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 
-public class MavenSourcesImplTest extends NbTestCase {
+public class MavenBinaryForSourceQueryImplTest extends NbTestCase {
 
-    public MavenSourcesImplTest(String name) {
+    public MavenBinaryForSourceQueryImplTest(String name) {
         super(name);
     }
 
@@ -61,51 +60,6 @@ public class MavenSourcesImplTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         d = FileUtil.toFileObject(getWorkDir());
-    }
-
-    public void testITSourceGroups() throws Exception {
-        TestFileUtils.writeFile(d,
-                "pom.xml",
-                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
-                "<modelVersion>4.0.0</modelVersion>" +
-                "<groupId>grp</groupId>" +
-                "<artifactId>art</artifactId>" +
-                "<packaging>jar</packaging>" +
-                "<version>1.0-SNAPSHOT</version>" +
-                "<name>Test</name>" +
-                "<build>" +
-                "<testSourceDirectory>src/it/java</testSourceDirectory>" +
-                "</build>" +
-                "</project>");
-        FileObject itsrc = FileUtil.createFolder(d, "src/it/java");
-        SourceGroup[] grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        assertEquals(1, grps.length);
-        assertEquals(itsrc, grps[0].getRootFolder());
-    }
-
-    public void testFragmentaryResourceDecl() throws Exception { // #195928
-        TestFileUtils.writeFile(d,
-                "pom.xml",
-                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
-                "<modelVersion>4.0.0</modelVersion>" +
-                "<groupId>grp</groupId>" +
-                "<artifactId>art</artifactId>" +
-                "<packaging>jar</packaging>" +
-                "<version>1.0-SNAPSHOT</version>" +
-                "<build>" +
-                "<resources>" +
-                "<resource>" +
-                "<directory>.</directory>" +
-                "<targetPath>META-INF</targetPath>" +
-                "<includes>" +
-                "<include>changelog.txt</include>" +
-                "</includes>" +
-                "</resource>" +
-                "</resources>" +
-                "</build>" +
-                "</project>");
-        SourceGroup[] grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        assertEquals(0, grps.length);
     }
 
     public void testGeneratedSources() throws Exception { // #187595
@@ -124,14 +78,10 @@ public class MavenSourcesImplTest extends NbTestCase {
         FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
         FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
         gtsrc.createData("Whatever.class");
-        SourceGroup[] grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        assertEquals(2, grps.length);
-        assertEquals(src, grps[0].getRootFolder());
-        assertEquals(tsrc, grps[1].getRootFolder());
-        grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(MavenSourcesImpl.TYPE_GEN_SOURCES);
-        assertEquals(2, grps.length);
-        assertEquals(gsrc, grps[0].getRootFolder());
-        assertEquals(gtsrc, grps[1].getRootFolder());
+        assertEquals(Arrays.asList(new URL(d.getURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.getURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.getURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gsrc.getURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.getURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tsrc.getURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.getURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gtsrc.getURL()).getRoots()));
     }
 
 }

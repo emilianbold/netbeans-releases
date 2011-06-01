@@ -81,14 +81,18 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation {
             //#128609 something in jar?
             return null;
         }
-        URI[] tests = project.getSourceRoots(true);
         URI uri = file.toURI();
         assert "file".equals(uri.getScheme());
         String goal = "compile"; //NOI18N
-        for (URI testuri : tests) {
+        for (URI testuri : project.getSourceRoots(true)) {
             if (uri.getPath().startsWith(testuri.getPath())) {
                 goal = "testCompile"; //NOI18N
-            } 
+            }
+        }
+        for (URI testuri : project.getGeneratedSourceRoots(true)) {
+            if (uri.getPath().startsWith(testuri.getPath())) {
+                goal = "testCompile"; //NOI18N
+            }
         }
         String sourceLevel = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
                                                               Constants.PLUGIN_COMPILER,  //NOI18N
