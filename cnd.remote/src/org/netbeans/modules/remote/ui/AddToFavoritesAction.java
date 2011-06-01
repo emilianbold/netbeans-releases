@@ -165,8 +165,10 @@ public class AddToFavoritesAction extends SingleHostAction {
                             ConnectionManager.getInstance().connectTo(env);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
+                            return;
                         } catch (CancellationException ex) {
-                            Exceptions.printStackTrace(ex);
+                            // don't report CancellationException
+                            return;
                         }
                         FileSystem fs = FileSystemProvider.getFileSystem(env);
                         final FileObject fo = getRoot(env, fs);
