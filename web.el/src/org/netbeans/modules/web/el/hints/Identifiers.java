@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
 import org.netbeans.modules.web.el.ELTypeUtilities;
@@ -91,9 +92,8 @@ public final class Identifiers extends ELRule {
     }
 
     @Override
-    protected void run(RuleContext ruleContext, final List<Hint> result) {
+    protected void run(final CompilationContext info, RuleContext ruleContext, final List<Hint> result) {
         final ELParserResult elResult = (ELParserResult)ruleContext.parserResult;
-        final ELTypeUtilities typeUtilities = ELTypeUtilities.create(this.context);
         for (final ELElement each : elResult.getElements()) {
             if (!each.isValid()) {
                 // broken AST, skip
@@ -110,14 +110,14 @@ public final class Identifiers extends ELRule {
                         return;
                     }
                     if (node instanceof AstIdentifier) {
-                        if (typeUtilities.resolveElement(each, node) == null) {
+                        if (ELTypeUtilities.resolveElement(info, each, node) == null) {
                             // currently we can't reliably resolve all identifiers, so 
                             // if we couldn't resolve the base identifier skip checking properties / methods
                             finished = true;
                         }
                     }
                     if (node instanceof AstPropertySuffix || node instanceof AstMethodSuffix) {
-                        Element resolvedElement = typeUtilities.resolveElement(each, node);
+                        Element resolvedElement = ELTypeUtilities.resolveElement(info, each, node);
                         if (resolvedElement == null) {
                             Hint hint = new Hint(Identifiers.this,
                                     getMsg(node),

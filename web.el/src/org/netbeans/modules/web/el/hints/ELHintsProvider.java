@@ -42,14 +42,22 @@
 
 package org.netbeans.modules.web.el.hints;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.web.el.CompilationContext;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Hints provider for Expression Language.
@@ -75,22 +83,40 @@ public final class ELHintsProvider implements HintsProvider {
     }
 
     @Override
-    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+    public void computeErrors(final HintsManager manager, final RuleContext context, final List<Hint> hints, List<Error> unhandled) {
         // parse errors are not handled here, so let the infrastructure just display
         // them as they are
         unhandled.addAll(context.parserResult.getDiagnostics());
         
         // computing the all hints - not just errors - due to #189590
         Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
-        List<? extends ELRule> ids = (List<? extends ELRule>) allHints.get(Kind.DEFAULT);
+        final List<? extends ELRule> ids = (List<? extends ELRule>) allHints.get(Kind.DEFAULT);
         if(ids == null) {
             return ;
         }
-        for (ELRule rule : ids) {
-            if (manager.isEnabled(rule)) {
-                rule.run(context, hints);
-            }
+        final FileObject file = context.parserResult.getSnapshot().getSource().getFileObject();
+        JavaSource jsource = JavaSource.create(
+                ClasspathInfo.create(file));
+        try {
+            jsource.runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationContext ccontext = CompilationContext.create(file, info);
+                    for (ELRule rule : ids) {
+                        if (manager.isEnabled(rule)) {
+                            rule.run(ccontext, context, hints);
+                        }
+                    }
+                    
+                }
+                
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
     }
 
     @Override

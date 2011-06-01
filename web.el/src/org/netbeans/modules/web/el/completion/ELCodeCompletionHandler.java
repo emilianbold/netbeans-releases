@@ -48,21 +48,22 @@ import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
-import com.sun.el.parser.Token;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
@@ -73,6 +74,7 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.el.AstPath;
+import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
 import org.netbeans.modules.web.el.ELTypeUtilities;
@@ -81,6 +83,7 @@ import org.netbeans.modules.web.el.ResourceBundles;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Code completer for Expression Language.
@@ -90,10 +93,10 @@ import org.openide.filesystems.FileObject;
 public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
     @Override
-    public CodeCompletionResult complete(CodeCompletionContext context) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(50);
+    public CodeCompletionResult complete(final CodeCompletionContext context) {
+        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(50);
         CodeCompletionResult result = new DefaultCompletionResult(proposals, false);
-        ELElement element = getElementAt(context.getParserResult(), context.getCaretOffset());
+        final ELElement element = getElementAt(context.getParserResult(), context.getCaretOffset());
         if (element == null || !element.isValid()) {
             return CodeCompletionResult.NONE;
         }
@@ -122,29 +125,47 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        ELTypeUtilities typeUtilities = ELTypeUtilities.create(getFileObject(context));
         Node previous = rootToNode.get(rootToNode.size() - 1);
+        final Node nodeToResolve = getNodeToResolve(target, previous);
+        
+        final FileObject file = context.getParserResult().getSnapshot().getSource().getFileObject();
+        JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
+        try {
+            jsource.runUserActionTask(new Task<CompilationController>() {
 
-        Node nodeToResolve = getNodeToResolve(target, previous);
-        Element resolved =
-                typeUtilities.resolveElement(element, nodeToResolve);
+                @Override
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationContext ccontext = CompilationContext.create(file, info);
+                    
+                    Element resolved =
+                            ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
 
-        if (typeUtilities.isRawObject(nodeToResolve)) {
-            proposeRawObjectProperties(context, prefixMatcher, element, nodeToResolve, typeUtilities, proposals);            
-        } else if(typeUtilities.isScopeObject(nodeToResolve)) {
-            // seems to be something like "sessionScope.^", so complete beans from the scope
-            proposeBeansFromScope(context, prefixMatcher, element, nodeToResolve, typeUtilities, proposals);
-        } else if(resolved == null) {
-            // not yet working properly
-            //proposeFunctions(context, prefix, element, prefix, typeUtilities, proposals);
-            proposeManagedBeans(context, prefixMatcher, element, typeUtilities, proposals);
-            proposeBundles(context, prefixMatcher, element, proposals);
-            proposeVariables(context, prefixMatcher, element, typeUtilities, proposals);
-            proposeImpicitObjects(context, prefixMatcher, element, typeUtilities, proposals);
-            proposeKeywords(context, prefixMatcher, element, typeUtilities, proposals);
-        } else {
-            proposeMethods(context, resolved, prefixMatcher, element, typeUtilities, proposals);
+                    if (ELTypeUtilities.isRawObject(ccontext, nodeToResolve)) {
+                        proposeRawObjectProperties(context, prefixMatcher, nodeToResolve, proposals);            
+                    } else if(ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
+                        // seems to be something like "sessionScope.^", so complete beans from the scope
+                        proposeBeansFromScope(ccontext, context, prefixMatcher, element, nodeToResolve, proposals);
+                    } else if(resolved == null) {
+                        // not yet working properly
+                        //proposeFunctions(context, prefix, element, prefix, typeUtilities, proposals);
+                        proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
+                        proposeBundles(context, prefixMatcher, element, proposals);
+                        proposeVariables(ccontext, context, prefixMatcher, element, proposals);
+                        proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
+                        proposeKeywords(context, prefixMatcher, proposals);
+                    } else {
+                        proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals);
+                    }
+                    
+                    
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        
+        
 
         return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
     }
@@ -206,10 +227,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return context.getParserResult().getSnapshot().getSource().getFileObject();
     }
 
-    private void proposeMethods(CodeCompletionContext context, Element resolved,
-            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+    private void proposeMethods(CompilationContext info, CodeCompletionContext context, Element resolved,
+            PrefixMatcher prefix, ELElement elElement,List<CompletionProposal> proposals) {
         
-        List<Element> allTypes = typeUtilities.getSuperTypesFor(resolved);
+        List<Element> allTypes = ELTypeUtilities.getSuperTypesFor(info, resolved);
         for(Element element : allTypes) {
             for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
                 //do not propose Object's members
@@ -226,7 +247,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }
-                ELJavaCompletionItem item = new ELJavaCompletionItem(enclosed, elElement, typeUtilities);
+                ELJavaCompletionItem item = new ELJavaCompletionItem(info, enclosed, elElement);
                 item.setSmart(true);
                 item.setAnchorOffset(context.getCaretOffset() - prefix.length());
                 proposals.add(item);
@@ -234,10 +255,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private void proposeImpicitObjects(CodeCompletionContext context,
-            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+    private void proposeImpicitObjects(CompilationContext info, CodeCompletionContext context,
+            PrefixMatcher prefix, List<CompletionProposal> proposals) {
 
-        for (org.netbeans.modules.web.el.spi.ImplicitObject implicitObject : typeUtilities.getImplicitObjects()) {
+        for (org.netbeans.modules.web.el.spi.ImplicitObject implicitObject : ELTypeUtilities.getImplicitObjects(info)) {
             if (prefix.matches(implicitObject.getName())) {
                 ELImplictObjectCompletionItem item = new ELImplictObjectCompletionItem(implicitObject.getName(), implicitObject.getClazz());
                 item.setAnchorOffset(context.getCaretOffset() - prefix.length());
@@ -248,7 +269,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeKeywords(CodeCompletionContext context,
-            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, List<CompletionProposal> proposals) {
 
         for (ELTokenId elToken : ELTokenId.values()) {
             if (!ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elToken)) {
@@ -266,26 +287,26 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private void proposeManagedBeans(CodeCompletionContext context,
-            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+    private void proposeManagedBeans(CompilationContext info, CodeCompletionContext context,
+            PrefixMatcher prefix, ELElement elElement, List<CompletionProposal> proposals) {
 
         for (VariableInfo bean : ELVariableResolvers.getManagedBeans(getFileObject(context))) {
             if (!prefix.matches(bean.name)) {
                 continue;
             }
-            Element element = typeUtilities.getElementForType(bean.clazz);
+            Element element = ELTypeUtilities.getElementForType(info, bean.clazz);
             if(element == null) {
                 continue; //unresolvable bean class name
             }
-            ELJavaCompletionItem item = new ELJavaCompletionItem(element, bean.name, elElement, typeUtilities);
+            ELJavaCompletionItem item = new ELJavaCompletionItem(info, element, bean.name, elElement);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
             proposals.add(item);
         }
     }
 
-    private void proposeBeansFromScope(CodeCompletionContext context,
-            PrefixMatcher prefix, ELElement elElement, Node scopeNode, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+    private void proposeBeansFromScope(CompilationContext info, CodeCompletionContext context,
+            PrefixMatcher prefix, ELElement elElement, Node scopeNode, List<CompletionProposal> proposals) {
 
         String scope = scopeNode.getImage();
         // this is ugly, but in the JSF model beans
@@ -300,8 +321,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             if (!prefix.matches(bean.name)) {
                 continue;
             }
-            Element element = typeUtilities.getElementForType(bean.clazz);
-            ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+            Element element = ELTypeUtilities.getElementForType(info, bean.clazz);
+            ELJavaCompletionItem item = new ELJavaCompletionItem(info, element, elElement);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
             proposals.add(item);
@@ -309,7 +330,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeRawObjectProperties(CodeCompletionContext context,
-            PrefixMatcher prefix, ELElement elElement, Node scopeNode, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, Node scopeNode, List<CompletionProposal> proposals) {
 
         for (VariableInfo property : ELVariableResolvers.getRawObjectProperties(scopeNode.getImage(), context.getParserResult().getSnapshot())) {
             if (!prefix.matches(property.name)) {
@@ -322,8 +343,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private void proposeVariables(CodeCompletionContext context,
-            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+    private void proposeVariables(CompilationContext info, CodeCompletionContext context,
+            PrefixMatcher prefix, ELElement elElement, List<CompletionProposal> proposals) {
 
         for (VariableInfo bean : ELVariableResolvers.getVariables(context.getParserResult().getSnapshot(), context.getCaretOffset())) {
             if (!prefix.matches(bean.name)) {
@@ -338,11 +359,11 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
             } else {
                 //resolved variable
-                Element element = typeUtilities.getElementForType(bean.clazz);
+                Element element = ELTypeUtilities.getElementForType(info, bean.clazz);
                 if (element == null) {
                     continue;
                 }
-                ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+                ELJavaCompletionItem item = new ELJavaCompletionItem(info, element, elElement);
                 item.setAnchorOffset(context.getCaretOffset() - prefix.length());
                 item.setSmart(true);
                 proposals.add(item);
