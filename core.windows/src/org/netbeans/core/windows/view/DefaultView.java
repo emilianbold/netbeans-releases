@@ -63,7 +63,6 @@ import org.openide.windows.TopComponent;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.WindowSystemSnapshot;
@@ -673,11 +672,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userClosedMode(mode);
     }
     
-    private void removeModeViewFromHierarchy(ModeView modeView) {
-        hierarchy.removeModeView(modeView);
-        hierarchy.updateDesktop();
-    }
-    
     @Override
     public void userResizedMainWindow(Rectangle bounds) {
         if(DEBUG) {
@@ -958,10 +952,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     private static ModeImpl getModeForModeAccessor(ModeAccessor accessor) {
         return accessor == null ? null : accessor.getMode();
-    }
-    
-    private static ModelElement getModelElementForAccessor(ElementAccessor accessor) {
-        return accessor == null ? null : accessor.getOriginator();
     }
     // Controller <<
     ////////////////////////////////////////////////////
