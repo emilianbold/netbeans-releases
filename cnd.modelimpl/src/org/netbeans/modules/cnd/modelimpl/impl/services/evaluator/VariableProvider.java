@@ -203,7 +203,7 @@ public class VariableProvider {
                 
                 CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
                 if (CsmKindUtilities.isTemplate(originalClassifier)) {
-                    CsmObject instantiate = InstantiationProviderImpl.getDefault().instantiate((CsmTemplate) originalClassifier, Collections.<CsmSpecializationParameter>emptyList(), mapping, decl.getContainingFile(), decl.getStartOffset());
+                    CsmObject instantiate = ((InstantiationProviderImpl)InstantiationProviderImpl.getDefault()).instantiate((CsmTemplate) originalClassifier, Collections.<CsmSpecializationParameter>emptyList(), mapping, decl.getContainingFile(), decl.getStartOffset());
                     if (CsmKindUtilities.isClassifier(instantiate)) {
                         originalClassifier = (CsmClassifier) instantiate;
                     }

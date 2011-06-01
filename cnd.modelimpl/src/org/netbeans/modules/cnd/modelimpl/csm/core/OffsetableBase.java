@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
@@ -95,12 +96,12 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     }
     
     @Override
-    public final int getStartOffset() {
+    public int getStartOffset() {
         return PositionManager.getOffset(fileUID, startPosition);
     }
     
     @Override
-    public final int getEndOffset() {
+    public int getEndOffset() {
         return endPosition != 0 ? PositionManager.getOffset(fileUID, endPosition) : PositionManager.getOffset(fileUID, startPosition);
     }
 
@@ -127,8 +128,15 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     public static int getEndOffset(AST node) {
         if( node != null ) {
             AST lastChild = AstUtil.getLastChildRecursively(node);
-            if( lastChild instanceof CsmAST ) {
+            if(lastChild.getType() != Token.EOF_TYPE && lastChild instanceof CsmAST) {
                 return ((CsmAST) lastChild).getEndOffset();
+            } else {
+                // #error directive broke parsing
+                // end offset should not be < start one
+                lastChild = AstUtil.getLastNonEOFChildRecursively(node);
+                if( lastChild instanceof CsmAST ) {
+                    return ((CsmAST) lastChild).getEndOffset();
+                }
             }
         }
         return 0;
