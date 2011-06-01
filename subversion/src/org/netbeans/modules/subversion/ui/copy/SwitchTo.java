@@ -134,6 +134,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
         return (SwitchToPanel) getPanel();
     }    
         
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {            
             boolean valid = ((Boolean)evt.getNewValue()).booleanValue();

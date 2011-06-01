@@ -47,7 +47,6 @@ package org.netbeans.modules.subversion.ui.copy;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.Callable;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -57,7 +56,6 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -80,16 +78,19 @@ public class SwitchToAction extends ContextAction {
     public SwitchToAction() {        
     }
 
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_MenuItem_Switch";    // NOI18N        
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
@@ -101,6 +102,7 @@ public class SwitchToAction extends ContextAction {
         return super.enable(nodes) && nodes.length == 1;
     }
 
+    @Override
     protected void performContextAction(final Node[] nodes) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -151,15 +153,18 @@ public class SwitchToAction extends ContextAction {
            return;
         }
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 if(!validateInput(roots[0], switchTo.getRepositoryFile())) {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             performSwitch(switchTo, rp, nodes, roots);
                         }
                     });
                 } else {
                     ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(SwitchToAction.this, nodes) {
+                        @Override
                         public void perform() {
                             for (File root : roots) {
                                 RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();

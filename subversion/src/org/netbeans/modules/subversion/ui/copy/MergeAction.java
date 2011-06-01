@@ -70,26 +70,31 @@ public class MergeAction extends ContextAction {
     public MergeAction() {        
     }
 
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_MenuItem_Merge";    // NOI18N        
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
+    @Override
     protected boolean enable(Node[] nodes) {
         return nodes != null && nodes.length == 1 &&  getCachedContext(nodes).getRoots().size() > 0;
     }   
     
+    @Override
     protected void performContextAction(final Node[] nodes) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -121,6 +126,7 @@ public class MergeAction extends ContextAction {
         final Merge merge = new Merge(repositoryRoot, interestingFile);
         if(merge.showDialog()) {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+                @Override
                 public void perform() {
                     for (File root : roots) {
                         performMerge(merge, repositoryRoot, root, this, roots.length > 1);
