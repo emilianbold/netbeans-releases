@@ -742,6 +742,17 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         if(ta != null) ta.setValue(user);
     }
 
+    
+    void assignToDefault() {
+        BugzillaAttribute key = BugzillaAttribute.SET_DEFAULT_ASSIGNEE;
+        TaskAttribute operationAttribute = data.getRoot().getAttribute(key.getKey());
+        if (operationAttribute == null) {
+            setOperation(BugzillaOperation.reassignbycomponent);
+        } else {
+            operationAttribute.setValue("1");                                   // NOI18N
+        }
+    }
+
     void verify() {
         setOperation(BugzillaOperation.verify);
     }
