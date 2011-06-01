@@ -422,7 +422,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         if (animation) return;
         Graphics gClip = g.create();
         Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
-        gClip.setClip(paneRect);
+        gClip.clipRect(paneRect.x, paneRect.y, paneRect.width, paneRect.height);
         for (Component selComp : selection) {
             Rectangle rect = fromComponentPane(selectionResizingBounds(selComp));
             Rectangle inner = fromComponentPane(selComp.getBounds());
