@@ -268,6 +268,10 @@ public interface Model {
     public int getModeFrameState(ModeImpl mode);
     /** Gets whether it is permanent. */
     public boolean isModePermanent(ModeImpl mode);
+    /** Make mode permanent
+     * @since 2.30
+     */
+    public void makeModePermanent( ModeImpl target );
     /** */
     public boolean isModeEmpty(ModeImpl mode);
     /** Indicates whether the mode contains the TopComponent. */
@@ -284,6 +288,15 @@ public interface Model {
     public List<String> getModeOpenedTopComponentsIDs(ModeImpl mode);
     public List<String> getModeClosedTopComponentsIDs(ModeImpl mode);
     public List<String> getModeTopComponentsIDs(ModeImpl mode);
+
+    /** @since 2.30 */
+    public boolean isModeMinimized(ModeImpl mode);
+    /** @since 2.30 */
+    public void setModeMinimized(ModeImpl mode, boolean minimized);
+    /** @since 2.30 */
+    public Collection<String> getModeOtherNames(ModeImpl mode);
+    /** @since 2.30 */
+    public void addModeOtherName(ModeImpl mode, String otherModeName);
     
     // Info about previous top component context, used by sliding kind of modes
     

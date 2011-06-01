@@ -804,6 +804,13 @@ final class DefaultModel implements Model {
         }
     }
     
+    @Override
+    public void makeModePermanent( ModeImpl mode ) {
+        ModeModel modeModel = getModelForMode(mode);
+        if(modeModel != null)
+            modeModel.makePermanent();
+    }
+    
     /** Indicates whether the mode is empty. */
     public boolean isModeEmpty(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
@@ -917,6 +924,35 @@ final class DefaultModel implements Model {
         return modeModel == null ? null : modeModel.getTopComponentPreviousIndex(tcID);
     }
     
+
+    @Override
+    public boolean isModeMinimized( ModeImpl mode ) {
+        ModeModel modeModel = getModelForMode(mode);
+        return modeModel == null ? false : modeModel.isMinimized();
+    }
+
+    @Override
+    public void setModeMinimized( ModeImpl mode, boolean minimized ) {
+        ModeModel modeModel = getModelForMode(mode);
+        if( null != modeModel )
+            modeModel.setMinimized( minimized );
+    }
+
+    @Override
+    public Collection<String> getModeOtherNames( ModeImpl mode ) {
+        ModeModel modeModel = getModelForMode(mode);
+        if( modeModel != null )
+            return modeModel.getOtherNames();
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void addModeOtherName( ModeImpl mode, String otherModeName ) {
+        ModeModel modeModel = getModelForMode(mode);
+        if( null != modeModel )
+            modeModel.addOtherName( otherModeName );
+    }
+
     // End of mode specific.
 
     

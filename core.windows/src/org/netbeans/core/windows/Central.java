@@ -53,6 +53,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -196,7 +197,7 @@ final class Central implements ControllerHandler {
         //#87843: Do not activate mode when it does not contain any opened TC
         if (activeMode != null) {
             List<TopComponent> l = activeMode.getOpenedTopComponents();
-            if (l.size() == 0) {
+            if (l.isEmpty()) {
                 return;
             }
         }
@@ -901,7 +902,7 @@ final class Central implements ControllerHandler {
         return model.getModeClosedTopComponentsIDs(mode);
     }
     // XXX
-    public List getModeTopComponentsIDs(ModeImpl mode) {
+    public List<String> getModeTopComponentsIDs(ModeImpl mode) {
         return model.getModeTopComponentsIDs(mode);
     }
     
@@ -1520,6 +1521,45 @@ final class Central implements ControllerHandler {
     /** Gets position of top component in given mode. */
     public int getModeTopComponentTabPosition(ModeImpl mode, TopComponent tc) {
         return model.getModeOpenedTopComponentTabPosition(mode, tc);
+    }
+
+    /**
+     * 
+     * @param mode
+     * @return True if the given mode is minimized.
+     * @since 2.30
+     */
+    boolean isModeMinimized( ModeImpl mode ) {
+        return model.isModeMinimized( mode );
+    }
+
+    /**
+     * Mark the given mode as minimized or docked.
+     * @param mode
+     * @param minimized True if the mode is minimized, false if docked.
+     * @since 2.30
+     */
+    void setModeMinimized( ModeImpl mode, boolean minimized ) {
+        model.setModeMinimized( mode, minimized );
+    }
+
+    /**
+     * @param mode
+     * @return List of Mode's additional names.
+     * @since 2.30
+     */
+    Collection<String> getModeOtherNames( ModeImpl mode ) {
+        return model.getModeOtherNames( mode );
+    }
+
+    /**
+     * Add another mode name.
+     * @param mode
+     * @param modeOtherName 
+     * @since 2.30
+     */
+    void addModeOtherName( ModeImpl mode, String modeOtherName ) {
+        model.addModeOtherName( mode, modeOtherName );
     }
     
     /// << Mode specific
@@ -2147,12 +2187,12 @@ final class Central implements ControllerHandler {
             // mode to dock to back isn't valid anymore, try constraints
             SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tcID);
             if (constraints != null) {
-                // create mode with the same constraints to dock topcomponent back into
-                dockTo = WindowManagerImpl.getInstance().createModeImpl(
-                        ModeImpl.getUnusedModeName(), modeKind, false);
-                model.addMode(dockTo, constraints);
+                    // create mode with the same constraints to dock topcomponent back into
+                    dockTo = WindowManagerImpl.getInstance().createModeImpl(
+                            ModeImpl.getUnusedModeName(), modeKind, false);
+                    model.addMode(dockTo, constraints);
+                }
             }
-        }
         
         if (dockTo == null) {
             // fallback, previous saved mode not found somehow, use default modes
@@ -2577,5 +2617,5 @@ final class Central implements ControllerHandler {
     
     private static void debugLog(String message) {
         Debug.log(Central.class, message);
-    }    
+    }
 }

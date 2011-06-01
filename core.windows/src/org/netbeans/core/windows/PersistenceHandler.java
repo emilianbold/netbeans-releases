@@ -336,6 +336,13 @@ final public class PersistenceHandler implements PersistenceObserver {
                 mc.name, mc.kind, mc.state, mc.permanent, mc.constraints);
         }
         name2mode.put(mc.name, mode);
+        if( mc.minimized )
+            mode.setMinimized( mc.minimized );
+        if( null != mc.otherNames ) {
+            for( String s : mc.otherNames ) {
+                mode.addOtherName( s );
+            }
+        }
         
         return mode;
     }
@@ -356,7 +363,8 @@ final public class PersistenceHandler implements PersistenceObserver {
                 while (it.hasNext()) {
                     ModeImpl md = (ModeImpl)it.next();
 
-                    if (tcRefConfig.previousMode.equals(md.getName())) {
+                    if (tcRefConfig.previousMode.equals(md.getName()) 
+                            || md.getOtherNames().contains( tcRefConfig.previousMode ) ) {
                         previous = md;
                         break;
                     }
@@ -391,7 +399,8 @@ final public class PersistenceHandler implements PersistenceObserver {
         while (it.hasNext()) {
             ModeImpl md = (ModeImpl) it.next();
 
-            if (tcRefConfig.previousMode.equals(md.getName())) {
+            if (tcRefConfig.previousMode.equals(md.getName())
+                    || md.getOtherNames().contains( tcRefConfig.previousMode ) ) {
                 previous = md;
                 break;
             }
@@ -409,6 +418,11 @@ final public class PersistenceHandler implements PersistenceObserver {
     
     private ModeImpl initModeFromConfig(ModeImpl mode, ModeConfig mc, boolean initPrevModes) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        if( null != mc.otherNames ) {
+            for( String s : mc.otherNames ) {
+                mode.addOtherName( s );
+            }
+        }
         for (int j = 0; j < mc.tcRefConfigs.length; j++) {
             TCRefConfig tcRefConfig = mc.tcRefConfigs[j];
             if(DEBUG) {
@@ -447,6 +461,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             relBounds.height / 100.0F);
         mode.setBounds(bounds);
         mode.setFrameState(mc.frameState);
+        mode.setMinimized( mc.minimized );
         
         return mode;
     }
@@ -707,6 +722,10 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
             modeCfg.previousSelectedTopComponentID = prevSelectedTCID;
         }
+        
+        modeCfg.minimized = mode.isMinimized();
+        
+        modeCfg.otherNames = mode.getOtherNames();
         
         // TopComponents:
         List<TCRefConfig> tcRefCfgList = new ArrayList<TCRefConfig>();

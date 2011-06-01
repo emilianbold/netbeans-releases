@@ -57,6 +57,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.util.Collection;
 
 
 /** This class is an implementation of Mode interface.
@@ -95,16 +96,39 @@ public final class ModeImpl implements Mode {
      * This name should be unique, as it is used to find modes etc.
      * Implements <code>Mode</code> interface method.
      * @return programmatic name of this mode */
+    @Override
     public String getName () {
         WindowManagerImpl.warnIfNotInEDT();
         
         return getCentral().getModeName(this);
     }
     
+    /**
+     * @return A list of Mode's additional names.
+     * @since 2.30
+     */
+    Collection<String> getOtherNames() {
+        WindowManagerImpl.warnIfNotInEDT();
+        
+        return getCentral().getModeOtherNames(this);
+    }
+    
+    /**
+     * Add another mode name.
+     * @param modeOtherName 
+     * @since 2.30
+     */
+    void addOtherName( String modeOtherName ) {
+        WindowManagerImpl.warnIfNotInEDT();
+        
+        getCentral().addModeOtherName(this, modeOtherName);
+    }
+    
     /** Gets display name of this mode.
      ** Implements <code>Mode</code> interface method.
      * @return Human presentable name of this mode implementation
      * @deprecated It is not used anymore. This impl delegated to {@link #getName} method.  */
+    @Override
     public String getDisplayName () {
         WindowManagerImpl.warnIfNotInEDT();
         
@@ -115,6 +139,7 @@ public final class ModeImpl implements Mode {
      * Implements <code>Mode</code> interface method. 
      * @return null
      * @deprecated It is not used anymore. */
+    @Override
     public Image getIcon () {
         WindowManagerImpl.warnIfNotInEDT();
         
@@ -125,6 +150,7 @@ public final class ModeImpl implements Mode {
      * into this <code>Mode</code>.
      * Implements <code>Mode</code> interface method. 
      * @return <code>true</code> */
+    @Override
     public boolean canDock(TopComponent tc) {
         WindowManagerImpl.warnIfNotInEDT();
         
@@ -139,6 +165,7 @@ public final class ModeImpl implements Mode {
      * @param tc top component to dock into this mode
      * @return true if top component was succesfully docked to this
      * mode, false otherwise */
+    @Override
     public boolean dockInto(TopComponent tc) {
         WindowManagerImpl.warnIfNotInEDT();
         
@@ -148,6 +175,7 @@ public final class ModeImpl implements Mode {
     /** Sets bounds of this mode.
      * Implements <code>Mode</code> interface method.
      * @param rect bounds for the mode */
+    @Override
     public void setBounds (Rectangle bounds) {
         WindowManagerImpl.warnIfNotInEDT();
         
@@ -158,6 +186,7 @@ public final class ModeImpl implements Mode {
      * Implements <code>Mode</code> interface method.
      * @return the bounds of the mode
      */
+    @Override
     public Rectangle getBounds () {
         WindowManagerImpl.warnIfNotInEDT();
         
@@ -170,6 +199,7 @@ public final class ModeImpl implements Mode {
      * @return The workspace instance to which is this mode asociated.
      * @deprecated XXX Don't use anymore.
      */
+    @Override
     public Workspace getWorkspace () {
         WindowManagerImpl.warnIfNotInEDT();
         
@@ -183,6 +213,7 @@ public final class ModeImpl implements Mode {
      * docked in this mode. May return empty array if no top component
      * is docked in this mode.
      */
+    @Override
     public TopComponent[] getTopComponents() {
         WindowManagerImpl.warnIfNotInEDT();
         
@@ -191,12 +222,14 @@ public final class ModeImpl implements Mode {
 
     /** Adds listener to the property changes.
      * Implements <code>Mode</code> interface support. */
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener pchl) {
         changeSupport.addPropertyChangeListener(pchl);
     }
 
     /** Removes listener to the property changes.
      * Implements <code>Mode</code> interface method. */
+    @Override
     public void removePropertyChangeListener (PropertyChangeListener pchl) {
         changeSupport.removePropertyChangeListener(pchl);
     }
@@ -346,7 +379,7 @@ public final class ModeImpl implements Mode {
         return getCentral().getModeClosedTopComponentsIDs(this);
     }
     
-    public List getTopComponentsIDs() {
+    public List<String> getTopComponentsIDs() {
         return getCentral().getModeTopComponentsIDs(this);
     }
     
@@ -412,6 +445,23 @@ public final class ModeImpl implements Mode {
         return WindowManagerImpl.getInstance().getModeConstraints(this);
     }
     
+    /**
+     * @return True if this mode is minimized.
+     * @since 2.30
+     */
+    boolean isMinimized() {
+        return getCentral().isModeMinimized( this );
+    }
+    
+    /**
+     * Mark this mode as minimized or docked.
+     * @param minimized 
+     * @since 2.30
+     */
+    void setMinimized( boolean minimized ) {
+        getCentral().setModeMinimized( this, minimized );
+    }
+    
     /** Removes TopComponent from this mode. */
     public void removeTopComponent(TopComponent tc) {
         getCentral().removeModeTopComponent(this, tc);
@@ -459,6 +509,7 @@ public final class ModeImpl implements Mode {
             changeSupport.firePropertyChange(propName, oldValue, newValue);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     changeSupport.firePropertyChange(propName, oldValue, newValue);
                 }
@@ -467,6 +518,7 @@ public final class ModeImpl implements Mode {
     }
     
     /** @return string description of this mode */
+    @Override
     public String toString () {
         // #42995 - don't scream when toString called from non-AWT thread
         return super.toString () + "[" + getCentral().getModeName(this) + "]"; // NOI18N
