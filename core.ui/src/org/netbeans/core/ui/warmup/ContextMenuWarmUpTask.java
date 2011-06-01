@@ -56,6 +56,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 
@@ -64,6 +65,7 @@ import org.openide.windows.TopComponent;
  *
  * @author  Tomas Pavek, Peter Zavadsky
  */
+@ServiceProvider(service=Runnable.class, path="WarmUp")
 public final class ContextMenuWarmUpTask implements Runnable {
 
     public void run() {

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.git;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -588,7 +587,7 @@ public class FileStatusCache {
             }
         }
         for (File root : indexRoots) {
-            FileInformation fi = getStatus(root);
+            FileInformation fi = getInfo(root);
             if (fi != null && fi.containsStatus(includeStatus) && (addExcluded || !GitModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath()))) {
                 return true;
             }
@@ -605,8 +604,8 @@ public class FileStatusCache {
             if(recursively) {
                 ret.addAll(listFilesIntern(getIndexValues(root, includeStatus), includeStatus, recursively));
             }
-            FileInformation fi = getStatus(root);
-            if (fi != null && !fi.containsStatus(includeStatus)) {
+            FileInformation fi = getInfo(root);
+            if (fi == null || !fi.containsStatus(includeStatus)) {
                 continue;
             }
             ret.add(root);
@@ -689,7 +688,7 @@ public class FileStatusCache {
      * @param files set of files to be ignore-tested.
      */
     private void handleIgnoredFiles(final Set<File> files) {
-        Runnable outOfAWT = new Runnable() {
+        Runnable async = new Runnable() {
             @Override
             public void run() {
                 for (File f : files) {
@@ -708,12 +707,7 @@ public class FileStatusCache {
                 }
             }
         };
-        // always run outside of AWT, SQ inside isIgnored can last a long time
-        if (EventQueue.isDispatchThread()) {
-            rp.post(outOfAWT);
-        } else {
-            outOfAWT.run();
-        }
+        rp.post(async);
     }
 
     private static File getSyncRepository (File repository) {

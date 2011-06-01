@@ -7,7 +7,6 @@ cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
 export BUILD_DESC=trunk-nightly
 source init.sh
-export JAVAFX_PATH=/net/smetiste.czech/space/${BASE_FOR_JAVAFX}
 
 rm -rf $DIST
 
@@ -89,6 +88,35 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
+###################################################################
+#
+# Sign Windows installers
+#
+###################################################################
+
+if [ -z $SIGN_CLIENT ]; then
+    echo "ERROR: SIGN_CLIENT not defined - Signing failed"
+    exit 1;
+fi
+
+if [ -z $SIGN_USR ]; then
+    echo "ERROR: SIGN_USR not defined - Signing failed"
+    exit 1;
+fi
+
+if [ -z $SIGN_PASS ]; then
+    echo "ERROR: SIGN_PASS not defined - Signing failed"
+    exit 1;
+fi
+
+find $DIST/bundles -name "netbeans-*-windows.exe" | xargs -t -I [] java -Xmx1024m -jar $SIGN_CLIENT/Client.jar -file_to_sign [] -user $SIGN_USR -pass $SIGN_PASS -signed_location $DIST/bundles -sign_method microsoft
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Signing failed"
+    exit $ERROR_CODE;
+fi
+
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
@@ -104,10 +132,6 @@ if [ $UPLOAD_ML == 1 ]; then
     mv $DIST/jnlp $DIST/ml/
     mv $DIST/javadoc $DIST/ml/
 fi
-
-#XXX Remove any javafx related files before upload to public site
-#cd $DIST
-#find . -name "*javafx*" -exec rm {} \;
 
 if [ -z $DIST_SERVER ]; then
     exit 0;

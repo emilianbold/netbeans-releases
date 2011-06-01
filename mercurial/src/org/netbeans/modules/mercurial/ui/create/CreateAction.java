@@ -44,6 +44,8 @@
 package org.netbeans.modules.mercurial.ui.create;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Calendar;
 import java.util.logging.Level;
@@ -60,15 +62,18 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -79,26 +84,38 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class CreateAction extends ContextAction {
+@ActionID(id = "org.netbeans.modules.mercurial.ui.create.CreateAction", category = "Mercurial")
+@ActionRegistration(displayName = "#CTL_MenuItem_Create", popupText="#CTL_PopupMenuItem_Create", menuText="#CTL_MenuItem_Create")
+@ActionReferences({
+   @ActionReference(path="Versioning/Mercurial/Actions/Unversioned", position=2)
+})
+public class CreateAction implements ActionListener, HelpCtx.Provider {
+    private final VCSContext ctx;
 
-    @Override
-    protected boolean enable(Node[] nodes) {
-        VCSContext context = HgUtils.getCurrentContext(nodes);
-        // If it is not a mercurial managed repository enable action
-        File root = HgUtils.getRootFile(context);
-        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        if ( files == null || files.length == 0) 
-            return false;
-        
-        if (root == null)
-            return true;
-        else
-            return false;
+    public CreateAction(VCSContext ctx) {
+        this.ctx = ctx;
     }
-
+    
     @Override
-    protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_Create"; // NOI18N
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.mercurial.ui.create.CreateAction");
+    }
+    
+    private boolean isEnabled() {
+        // If it is not a mercurial managed repository enable action
+        File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
+        if ( files == null || files.length == 0) {
+            notifyImportImpossible(NbBundle.getMessage(CreateAction.class, "MSG_WrongSelection"));            
+            return false;
+        }
+        
+        File root = HgUtils.getRootFile(ctx);
+        if (root == null) {
+            return true;
+        } else {
+            notifyImportImpossible(NbBundle.getMessage(CreateAction.class, "MSG_AlreadyVersioned"));            
+            return false;
+        }
     }
 
     private File getCommonAncestor(File firstFile, File secondFile) {
@@ -132,18 +149,21 @@ public class CreateAction extends ContextAction {
         }
         return f1;
     }
-
+    
     @Override
-    protected void performContextAction(Node[] nodes) {
-        final VCSContext context = HgUtils.getCurrentContext(nodes);
+    public void actionPerformed(ActionEvent e) {
+        if(!isEnabled()) {
+            return;
+        }
+        
         Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                performCreate(context);
+                performCreate(ctx);
             }
         });
     }
-
+    
     private void performCreate (VCSContext context) {
         final Mercurial hg = Mercurial.getInstance();
         if (!hg.isAvailable(true)) {
@@ -177,6 +197,9 @@ public class CreateAction extends ContextAction {
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
+                } finally {
+                    Mercurial.getInstance().clearAncestorCaches();
+                    VersioningSupport.versionedRootsChanged();
                 }
             }
         };
@@ -348,5 +371,17 @@ public class CreateAction extends ContextAction {
             }
         }
         return root;
+    }
+    
+    private void notifyImportImpossible(String msg) {
+        NotifyDescriptor nd =
+            new NotifyDescriptor(
+                msg,
+                NbBundle.getMessage(CreateAction.class, "MSG_ImportNotAllowed"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
     }
 }

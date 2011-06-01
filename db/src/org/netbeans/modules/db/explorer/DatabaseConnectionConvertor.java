@@ -64,7 +64,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.keyring.Keyring;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -82,7 +81,6 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
-import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -399,14 +397,10 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             }
             if (instance.rememberPassword() ) {
                 char[] password = instance.getPassword() == null ? new char[0] : instance.getPassword().toCharArray();
-
-                // use Keyring API instead Base64.byteArrayToBase64
-                assert name != null : "The parameter name cannot be null.";
-                LOGGER.log(Level.FINE, "Storing password for " + name);
-                Keyring.save(name, password, NbBundle.getMessage(DatabaseConnectionConvertor.class, "DatabaseConnectionConvertor.password_description", name)); //NOI18N
+                
+                DatabaseConnection.storePassword(name, password);
             } else {
-                LOGGER.log(Level.FINE, "Deleting password for " + name);
-                Keyring.delete(name);
+                DatabaseConnection.deletePassword(name);
             }
             pw.println("</connection>"); //NOI18N
         }        
@@ -477,11 +471,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 }
                 if (bytes != null) {
                     try {
-                        // use Keyring API instead Base64.byteArrayToBase64
                         LOGGER.log(Level.FINE, "Reading old settings from " + connectionFileName);
-                        Keyring.save(connectionFileName,
-                                decodePassword(bytes).toCharArray(),
-                                NbBundle.getMessage(DatabaseConnectionConvertor.class, "DatabaseConnectionConvertor.password_description", connectionFileName)); //NOI18N
+                        DatabaseConnection.storePassword(connectionFileName, decodePassword(bytes).toCharArray());
                     } catch (CharacterCodingException e) {
                         LOGGER.log(Level.WARNING,
                                 "Illegal UTF-8 bytes in password for connection " 

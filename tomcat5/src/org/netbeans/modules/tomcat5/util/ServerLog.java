@@ -53,9 +53,17 @@ package org.netbeans.modules.tomcat5.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.BufferedReader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.InputReaderTask;
+import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -70,17 +78,20 @@ import org.openide.util.Exceptions;
  * Tomcat server log reads from the Tomcat standard and error output and 
  * writes to output window.
  */ 
-class ServerLog extends Thread {
+class ServerLog {
     private final InputOutput io;
     private final OutputWriter writer;
     private final OutputWriter errorWriter;
-    private final BufferedReader inReader;
-    private final BufferedReader errReader;
+    private final InputReaderTask inReader;
+    private final InputReaderTask errReader;
     private final boolean autoFlush;
     private final boolean takeFocus;
-    private volatile boolean done = false;
     private final ServerLogSupport logSupport;
     private final TomcatManager tomcatManager;
+    private final AtomicInteger runningTasks = new AtomicInteger(2);
+
+    /* GuardedBy("this") */
+    private ExecutorService service;
 
     /**
      * Tomcat server log reads from the Tomcat standard and error output and 
@@ -96,10 +107,11 @@ class ServerLog extends Thread {
      */
     public ServerLog(TomcatManager tomcatManager, String displayName, Reader in, Reader err, boolean autoFlush,
             boolean takeFocus) {
-        super(displayName + " ServerLog - Thread"); // NOI18N
-        setDaemon(true);
-        inReader = new BufferedReader(in);
-        errReader = new BufferedReader(err);
+        inReader = InputReaderTask.newDrainingTask(InputReaders.forReader(in),
+                InputProcessors.bridge(new AnalyzingLineProcessor()));
+
+        errReader = InputReaderTask.newDrainingTask(InputReaders.forReader(err),
+                InputProcessors.bridge(new AnalyzingLineProcessor()));
         this.autoFlush = autoFlush;
         this.takeFocus = takeFocus;
         this.tomcatManager = tomcatManager;
@@ -116,85 +128,11 @@ class ServerLog extends Thread {
         logSupport = new ServerLogSupport();
     }
 
-    private void processLine(String line) {
-        ServerLogSupport.LineInfo lineInfo = logSupport.analyzeLine(line);
-        if (lineInfo.isError()) {
-            if (lineInfo.isAccessible()) {
-                try {
-                    errorWriter.println(line, logSupport.getLink(lineInfo.message() , lineInfo.path(), lineInfo.line()));
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                errorWriter.println(line);
-            }
-        } else {
-            writer.println(line);
-            if (line.startsWith("SEVERE: WSSERVLET11: failed to parse runtime descriptor: java.lang.LinkageError:")) { // NOI18N
-                File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
-                File jaxbApi  = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
-                File endoresedDir = tomcatManager.getTomcatProperties().getJavaEndorsedDir();
-                if (jaxwsApi != null && jaxbApi != null) {
-                    writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11", jaxwsApi.getParent(), jaxbApi.getParent(), endoresedDir));
-                } else {
-                    writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11_NOJAR", endoresedDir));
-                }
-            }
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            while(!done) {                    
-                boolean isInReaderReady = false;
-                boolean isErrReaderReady = false;
-                boolean updated = false;
-                int count = 0;
-                // take a nap after 1024 read cycles, this should ensure responsiveness
-                // even if log file is growing fast
-                while (((isInReaderReady = inReader.ready()) || (isErrReaderReady = errReader.ready())) 
-                        && count++ < 1024) {
-                    if (done) {
-                        return;
-                    }
-                    updated = true;
-                    if (isInReaderReady) {
-                        String line = inReader.readLine();
-                        // finish, if we have reached the end of the stream
-                        if (line == null) {
-                            return;
-                        }
-                        processLine(line);
-                    }
-                    if (isErrReaderReady) {
-                        String line = errReader.readLine();
-                        // finish, if we have reached the end of the stream
-                        if (line == null) {
-                            return;
-                        }
-                        processLine(line);
-                    }
-                }
-                if (updated) {
-                    if (autoFlush) {
-                        writer.flush();
-                        errorWriter.flush();
-                    }
-                    if (takeFocus) {
-                        io.select();
-                    }
-                }
-                sleep(100); // take a nap
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(ServerLog.class.getName()).log(Level.INFO, null, ex);
-        } catch (InterruptedException e) {
-            // no op - the thread was interrupted 
-        } finally {
-            logSupport.detachAnnotation();
-            writer.close();
-            errorWriter.close();
+    public void start() {
+        synchronized (this) {
+            service = Executors.newFixedThreadPool(2);
+            service.submit(inReader);
+            service.submit(errReader);
         }
     }
     
@@ -205,7 +143,9 @@ class ServerLog extends Thread {
      *         otherwise.
      */
     public boolean isRunning() {
-        return !(done);
+        synchronized (this) {
+            return !service.isShutdown();
+        }
     }
     
     /**
@@ -215,9 +155,16 @@ class ServerLog extends Thread {
         io.select();
     }
 
-    public void interrupt() {
-        super.interrupt();
-        done = true;
+    public void stop() {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+            public Void run() {
+                synchronized (ServerLog.this) {
+                    service.shutdownNow();
+                }
+                return null;
+            }
+        });
     }
     
     /**
@@ -320,6 +267,59 @@ class ServerLog extends Thread {
                 prevMessage = logLine;
             }
             return new LineInfo(path, line, message, error, accessible);
+        }
+    }
+    
+    private class AnalyzingLineProcessor implements LineProcessor {
+
+        @Override
+        public void processLine(String line) {
+            ServerLogSupport.LineInfo lineInfo = logSupport.analyzeLine(line);
+            if (lineInfo.isError()) {
+                if (lineInfo.isAccessible()) {
+                    try {
+                        errorWriter.println(line, logSupport.getLink(lineInfo.message() , lineInfo.path(), lineInfo.line()));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    errorWriter.println(line);
+                }
+            } else {
+                writer.println(line);
+                if (line.startsWith("SEVERE: WSSERVLET11: failed to parse runtime descriptor: java.lang.LinkageError:")) { // NOI18N
+                    File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+                    File jaxbApi  = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
+                    File endoresedDir = tomcatManager.getTomcatProperties().getJavaEndorsedDir();
+                    if (jaxwsApi != null && jaxbApi != null) {
+                        writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11", jaxwsApi.getParent(), jaxbApi.getParent(), endoresedDir));
+                    } else {
+                        writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11_NOJAR", endoresedDir));
+                    }
+                }
+            }
+            if (autoFlush) {
+                writer.flush();
+                errorWriter.flush();
+            }
+            if (takeFocus) {
+                io.select();
+            }
+        }
+
+        @Override
+        public void close() {
+            int running = runningTasks.decrementAndGet();
+            if (running == 0) {
+                logSupport.detachAnnotation();
+                writer.close();
+                errorWriter.close();                    
+            }
+        }
+        
+        @Override
+        public void reset() {
+            // noop
         }
     }
 }

@@ -50,7 +50,6 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.ErrorManager;
 import org.netbeans.junit.*;
 
 public class RequestProcessorTest extends NbTestCase {
@@ -58,33 +57,29 @@ public class RequestProcessorTest extends NbTestCase {
         System.setProperty("org.openide.util.Lookup", "org.openide.util.RequestProcessorTest$Lkp");
     }
 
-    private ErrorManager log;
+    private Logger log;
 
     public RequestProcessorTest(java.lang.String testName) {
         super(testName);
     }
 
     @Override
-    protected void setUp () throws Exception {
-        super.setUp();
-        
-        log = ErrorManager.getDefault().getInstance("TEST-" + getName());
+    protected int timeOut() {
+        return 30000;
     }
 
     @Override
-    protected void runTest() throws Throwable {
-        assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
-        ErrManager.messages.setLength(0);
+    protected void setUp () throws Exception {
+        super.setUp();
         
-        try {
-            super.runTest();
-        } catch (Throwable ex) {
-            throw new junit.framework.AssertionFailedError (
-                ex.getMessage() + "\n" + ErrManager.messages.toString()
-            ).initCause(ex);
-        }
+        log = Logger.getLogger("test." + getName());
     }
 
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
     public void testNonParallelReSchedule() throws Exception {
         final AtomicInteger counter = new AtomicInteger();
         final AtomicInteger peek = new AtomicInteger();
@@ -962,35 +957,35 @@ class R extends Object implements Runnable {
             public synchronized void run () {
                 checkBefore = Thread.interrupted();
                 
-                log.log("in runnable " + name + " check before: " + checkBefore);
+                log.info("in runnable " + name + " check before: " + checkBefore);
                 
                 notifyAll ();
 
-                log.log("in runnable " + name + " after notify");
+                log.info("in runnable " + name + " after notify");
                 
                 try {
                     wait ();
-                    log.log("in runnable " + name + " after wait, not interrupted");
+                    log.info("in runnable " + name + " after wait, not interrupted");
                     interrupted = false;
                 } catch (InterruptedException ex) {
                     interrupted = true;
-                    log.log("in runnable " + name + " after wait, interrupted");
+                    log.info("in runnable " + name + " after wait, interrupted");
                 }
                 
                 notifyAll ();
                 
-                log.log("in runnable " + name + " after notifyAll");
+                log.info("in runnable " + name + " after notifyAll");
 
                 try {
                     wait ();
-                    log.log("in runnable " + name + " after second wait, not interrupted");
+                    log.info("in runnable " + name + " after second wait, not interrupted");
                     checkAfter = Thread.interrupted();
                 } catch (InterruptedException ex) {
-                    log.log("in runnable " + name + " after second wait, interrupted");
+                    log.info("in runnable " + name + " after second wait, interrupted");
                     checkAfter = true;
                 }
                 
-                log.log("in runnable " + name + " checkAfter: " + checkAfter);
+                log.info("in runnable " + name + " checkAfter: " + checkAfter);
                 
                 notifyAll ();
             }
@@ -1002,20 +997,20 @@ class R extends Object implements Runnable {
             t = rp.post (r);
             r.wait ();
             assertTrue ("The task is already running", !t.cancel ());
-            log.log("Main checkpoint1");
+            log.info("Main checkpoint1");
             r.wait ();
-            log.log("Main checkpoint2");
+            log.info("Main checkpoint2");
             r.notifyAll ();
-            log.log("Main checkpoint3");
+            log.info("Main checkpoint3");
             r.wait ();
-            log.log("Main checkpoint4");
+            log.info("Main checkpoint4");
             assertTrue ("The task has been interrupted", r.interrupted);
             assertTrue ("Not before", !r.checkBefore);
             assertTrue ("Not after - as the notification was thru InterruptedException", !r.checkAfter);
         }
-        log.log("Main checkpoint5");
+        log.info("Main checkpoint5");
         t.waitFinished();
-        log.log("Main checkpoint6");
+        log.info("Main checkpoint6");
         /*
         try {
             assertGC("no", new java.lang.ref.WeakReference(this));
@@ -1028,24 +1023,24 @@ class R extends Object implements Runnable {
         r = new R ("Second");
         synchronized (r) {
             t = rp.post (r);
-            log.log("Second checkpoint1");
+            log.info("Second checkpoint1");
             r.wait ();
             r.notifyAll ();
-            log.log("Second checkpoint2");
+            log.info("Second checkpoint2");
             r.wait ();
-            log.log("Second checkpoint3");
+            log.info("Second checkpoint3");
             assertTrue ("The task is already running", !t.cancel ());
-            log.log("Second checkpoint4");
+            log.info("Second checkpoint4");
             r.notifyAll ();
-            log.log("Second checkpoint5");
+            log.info("Second checkpoint5");
             r.wait ();
             assertTrue ("The task has not been interrupted by exception", !r.interrupted);
             assertTrue ("Not interupted before", !r.checkBefore);
             assertTrue ("But interupted after", r.checkAfter);
         }
-        log.log("Second checkpoint6");
+        log.info("Second checkpoint6");
         t.waitFinished();
-        log.log("Second checkpoint7");
+        log.info("Second checkpoint7");
     }
 
     public void testCancelDoesNotInterruptTheRunningThread () throws Exception {
@@ -1198,7 +1193,7 @@ class R extends Object implements Runnable {
                             interrex.printStackTrace();
                             fail ("No InterruptedException");
                         }
-                        log.log("wait for lock over");
+                        log.info("wait for lock over");
                     }
                 }
                 
@@ -1209,7 +1204,7 @@ class R extends Object implements Runnable {
                 
                 synchronized (this) {
                     checkAfter = Thread.interrupted();
-                    log.log("checkAfter: " + checkAfter);
+                    log.info("checkAfter: " + checkAfter);
                     notifyAll();
                 }
             }
@@ -1234,17 +1229,17 @@ class R extends Object implements Runnable {
         bigger.wait = smallerTask;
         
         synchronized (initLock) {
-            log.log("schedule 0");
+            log.info("schedule 0");
             biggerTask.schedule(0);
             initLock.wait();
             initLock.notifyAll();
-            log.log("doing cancel");
+            log.info("doing cancel");
             assertFalse ("Already running", biggerTask.cancel());
-            log.log("biggerTask cancelled");
+            log.info("biggerTask cancelled");
         }
 
         biggerTask.waitFinished();
-        log.log("waitFinished over");
+        log.info("waitFinished over");
         
         assertFalse("bigger not interrupted at begining", bigger.checkBefore);
         assertFalse("smaller not interrupted at all", smaller.checkBefore);
@@ -1255,8 +1250,9 @@ class R extends Object implements Runnable {
 
     @RandomlyFails // NB-Core-Build #1211
     public void testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon() throws Exception {
+        log.info("starting testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon");
         RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon", 1, true);
-        
+        log.info("rp created: " + rp);
         class Fail implements Runnable {
             public Fail(String n) {
                 name = n;
@@ -1274,7 +1270,7 @@ class R extends Object implements Runnable {
             public void run () {
                 synchronized (this) {
                     checkBefore = Thread.interrupted();
-                    log.log(name + " checkBefore: " + checkBefore);
+                    log.info(name + " checkBefore: " + checkBefore);
                     notifyAll();
                 }
                 if (lock != null) {
@@ -1291,17 +1287,17 @@ class R extends Object implements Runnable {
                     wait.waitFinished();
                     log(name + " waitFinished in task is over");
                     
-                    log.log(name + " slowing by using System.gc");
+                    log.info(name + " slowing by using System.gc");
                     while (!alreadyCanceled) {
                         System.gc ();
                     }
-                    log.log(name + " ended slowing");
+                    log.info(name + " ended slowing");
                     
                 }
                 
                 synchronized (this) {
                     checkAfter = Thread.interrupted();
-                    log.log(name + " checkAfter: " + checkAfter);
+                    log.info(name + " checkAfter: " + checkAfter);
                     notifyAll();
                 }
             }
@@ -1316,23 +1312,23 @@ class R extends Object implements Runnable {
         
         smallerTask = rp.create (smaller);
         biggerTask = rp.create (bigger);
-
+        log.info("tasks created. small: " + smallerTask + " big: " + biggerTask);
         
         bigger.lock = initLock;
         bigger.wait = smallerTask;
         
         synchronized (initLock) {
-            log.log("Do schedule");
+            log.info("Do schedule");
             biggerTask.schedule(0);
             initLock.wait();
-            log.log("do cancel");
+            log.info("do cancel");
             assertFalse ("Already running", biggerTask.cancel());
             bigger.alreadyCanceled = true;
-            log.log("cancel done");
+            log.info("cancel done");
         }
 
         biggerTask.waitFinished();
-        log.log("waitFinished is over");
+        log.info("waitFinished is over");
         
         assertFalse("bigger not interrupted at begining", bigger.checkBefore);
         assertFalse("smaller not interrupted at all", smaller.checkBefore);
@@ -1510,109 +1506,4 @@ class R extends Object implements Runnable {
             notifyAll();
         }
     }
-    
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        private ErrManager err = new ErrManager ();
-        private org.openide.util.lookup.InstanceContent ic;
-        
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (err);
-            this.ic = ic;
-        }
-        
-        public static void turn (boolean on) {
-            Lkp lkp = (Lkp)org.openide.util.Lookup.getDefault ();
-            if (on) {
-                lkp.ic.add (lkp.err);
-            } else {
-                lkp.ic.remove (lkp.err);
-            }
-        }
-    }
-    
-    //
-    // Manager to delegate to
-    //
-    public static final class ErrManager extends org.openide.ErrorManager {
-        public static final StringBuffer messages = new StringBuffer ();
-        
-        private String prefix;
-        
-        public ErrManager () {
-            this (null);
-        }
-        public ErrManager (String prefix) {
-            this.prefix = prefix;
-        }
-        
-        public static ErrManager get () {
-            return org.openide.util.Lookup.getDefault ().lookup (ErrManager.class);
-        }
-        
-        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations (Throwable t, org.openide.ErrorManager.Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations (Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance (String name) {
-            if (
-                name.startsWith ("org.openide.util.RequestProcessor") ||
-                name.startsWith("TEST")
-            ) {
-                return new ErrManager ('[' + name + ']');
-            } else {
-                // either new non-logging or myself if I am non-logging
-                return new ErrManager ();
-            }
-        }
-        
-        public void log (int severity, String s) {
-            lastSeverity = severity;
-            lastText = s;
-            if (this != get()) {
-                messages.append(prefix);
-                messages.append(s);
-                messages.append('\n');
-            }
-        }
-        
-        public void notify (int severity, Throwable t) {
-            lastThrowable = t;
-            lastSeverity = severity;
-        }
-        private static int lastSeverity;
-        private static Throwable lastThrowable;
-        private static String lastText;
-
-        public static void assertNotify (int sev, Throwable t) {
-            assertEquals ("Severity is same", sev, lastSeverity);
-            assertSame ("Throwable is the same", t, lastThrowable);
-            lastThrowable = null;
-            lastSeverity = -1;
-        }
-        
-        public static void assertLog (int sev, String t) {
-            assertEquals ("Severity is same", sev, lastSeverity);
-            assertEquals ("Text is the same", t, lastText);
-            lastText = null;
-            lastSeverity = -1;
-        }
-        
-    } 
-    
 }

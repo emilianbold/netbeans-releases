@@ -49,7 +49,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.openide.util.NbBundle;
 
-public class AllFileFilter extends SourceFileFilter {
+public class AllFileFilter extends FileAndFileObjectFilter {
 
     private static AllFileFilter instance = null;
     private static String[] suffixes = null;
@@ -63,9 +63,8 @@ public class AllFileFilter extends SourceFileFilter {
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_All_FILEFILTER"); // NOI18N
+        return NbBundle.getMessage(AllFileFilter.class, "FILECHOOSER_All_FILEFILTER"); // NOI18N
     }
-
 
     @Override
     public String[] getSuffixes() {

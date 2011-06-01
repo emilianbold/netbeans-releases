@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -63,6 +64,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -157,6 +159,12 @@ public class InteceptorTest extends NbTestCase {
         return suite;
     }
     
+    public static Test modifySuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new InteceptorTest("modifyFileOnDemandLock"));
+        return(suite);
+    }
+    
     public static Test getAttributeSuite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new InteceptorTest("getWrongAttribute"));
@@ -184,7 +192,9 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("createNewFile"));
         suite.addTest(new InteceptorTest("createNewFolder"));
         suite.addTest(new InteceptorTest("deleteA_CreateA"));
+        suite.addTest(new InteceptorTest("deleteA_CreateAOnDemandLocking"));
         suite.addTest(new InteceptorTest("deleteA_CreateA_RunAtomic"));
+        suite.addTest(new InteceptorTest("afterDelete_AfterCreate_194998"));
         return(suite);
     }
     
@@ -207,21 +217,21 @@ public class InteceptorTest extends NbTestCase {
     
     public static Test moveViaDataObjectSuite() {
 	TestSuite suite = new TestSuite();
-//        suite.addTest(new InteceptorTest("moveVersionedFile_DO"));
-//        suite.addTest(new InteceptorTest("moveUnversionedFile_DO"));
-//        suite.addTest(new InteceptorTest("moveUnversionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFile_DO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFile_DO"));
+        suite.addTest(new InteceptorTest("moveUnversionedFolder_DO"));
         suite.addTest(new InteceptorTest("moveAddedFile2UnversionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2A_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2C_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B2C2A_DO"));
-//        suite.addTest(new InteceptorTest("moveA2B_CreateA_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFolder_DO"));
-//        suite.addTest(new InteceptorTest("moveFileTree_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFile2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveVersionedFolder2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveFileTree2Repos_DO"));
-//        suite.addTest(new InteceptorTest("moveA2CB2A_DO"));
+        suite.addTest(new InteceptorTest("moveAddedFile2VersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2A_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2C_DO"));
+        suite.addTest(new InteceptorTest("moveA2B2C2A_DO"));
+        suite.addTest(new InteceptorTest("moveA2B_CreateA_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFolder_DO"));
+        suite.addTest(new InteceptorTest("moveFileTree_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFile2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveVersionedFolder2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveFileTree2Repos_DO"));
+        suite.addTest(new InteceptorTest("moveA2CB2A_DO"));
         return(suite);
     }
     
@@ -239,6 +249,7 @@ public class InteceptorTest extends NbTestCase {
         suite.addTest(new InteceptorTest("renameVersionedFolder_FO"));
         suite.addTest(new InteceptorTest("renameFileTree_FO"));
         suite.addTest(new InteceptorTest("renameA2CB2A_FO"));
+        suite.addTest(new InteceptorTest("renameA2a_FO"));
         return(suite);
     }
     
@@ -305,6 +316,32 @@ public class InteceptorTest extends NbTestCase {
         return(suite);
     }
     
+    public void modifyFileOnDemandLock () throws Exception {
+        // init
+        File file = new File(wc, "file");
+        file.createNewFile();
+        commit(wc);
+        getClient().propertySet(file, "svn:needs-lock", "true", false);
+        commit(file);
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
+
+        SvnModuleConfig.getDefault().setAutoLock(true);
+        // modify
+        OutputStream os = FileUtil.toFileObject(file).getOutputStream();
+        os.write(new byte[] { 'a', 0 });
+        os.close();
+
+        // test
+        assertTrue(file.exists());
+        assertEquals(SVNStatusKind.MODIFIED, getSVNStatus(file).getTextStatus());
+
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | FileInformation.STATUS_LOCKED);
+
+        commit(wc);
+
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());
+    }
+
     public void getWrongAttribute() throws Exception {
         File file = new File(wc, "attrfile");
         file.createNewFile();
@@ -609,6 +646,32 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
         assertCachedStatus(file, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
     }
+    
+    public void afterDelete_AfterCreate_194998 () throws Exception {
+        // init
+        File file = new File(wc, "file");
+        
+        // create
+        FileObject fo = FileUtil.toFileObject(wc);
+        fo.createData(file.getName());
+        add(file);
+        commit(file);
+        
+        // test 
+        assertTrue(file.exists());
+        
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
+        
+        file.delete();
+        FileUtil.refreshFor(file);
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
+        
+        TestKit.write(file, "modification");
+        FileUtil.refreshFor(file.getParentFile());
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
+        assertEquals(SVNStatusKind.MODIFIED, getSVNStatus(file).getTextStatus());
+    }
 
     public void createNewFolder() throws Exception {
         // init
@@ -650,6 +713,33 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());        
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));                
         
+    }
+
+    public void deleteA_CreateAOnDemandLocking() throws IOException, SVNClientException {
+        // init
+        File file = new File(wc, "A");
+        file.createNewFile();
+        commit(wc);
+        SvnModuleConfig.getDefault().setAutoLock(true);
+        getClient().propertySet(file, "svn:needs-lock", "true", false);
+        commit(file);
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
+        
+        // delete
+        FileObject fo = FileUtil.toFileObject(file);
+        fo.delete();
+
+        // test if deleted
+        assertFalse(file.exists());
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
+
+        // create        
+        fo.getParent().createData(fo.getName());       
+        
+        // test 
+        assertTrue(file.exists());
+        assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());        
+        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCKED, getStatus(file));                
     }
 
     public void deleteA_CreateA_RunAtomic() throws IOException, SVNClientException {
@@ -2602,6 +2692,31 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileC));
+    }
+    
+    public void renameA2a_FO() throws Exception {
+        // init
+        File fileA = new File(wc, "A");
+        fileA.createNewFile();
+        commit(wc);
+
+        File fileB = new File(wc, "a");
+
+        // move
+        renameFO(fileA, fileB);
+
+        // test
+        // test
+        if (!Utilities.isMac() && !Utilities.isWindows()) {
+            assertFalse(fileA.exists());
+        }
+        assertTrue(fileB.exists());
+
+        assertEquals(SVNStatusKind.DELETED, getSVNStatus(fileA).getTextStatus());
+        assertEquals(SVNStatusKind.ADDED, getSVNStatus(fileB).getTextStatus());
+
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getStatus(fileA));
+        assertEquals(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY, getStatus(fileB));
     }
     
     public void moveA2B2C2A_DO() throws Exception {

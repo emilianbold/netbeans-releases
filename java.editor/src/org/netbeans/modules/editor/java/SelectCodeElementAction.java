@@ -150,16 +150,18 @@ final class SelectCodeElementAction extends BaseAction {
         public void selectNext() {
             if (selectionInfos == null) {
                 final JavaSource js = JavaSource.forDocument(target.getDocument());
-                cancel = new AtomicBoolean();
-                ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                    public void run() {
-                        try {
-                            js.runUserActionTask(SelectionHandler.this, true);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                if (js != null) {
+                    cancel = new AtomicBoolean();
+                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        public void run() {
+                            try {
+                                js.runUserActionTask(SelectionHandler.this, true);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
-                    }
-                }, name, cancel, false);
+                    }, name, cancel, false);
+                }
             }            
             run();
         }
@@ -219,7 +221,7 @@ final class SelectCodeElementAction extends BaseAction {
         }
 
         public void run() {
-            if (selIndex < selectionInfos.length - 1) {
+            if (selectionInfos != null && selIndex < selectionInfos.length - 1) {
                 select(selectionInfos[++selIndex]);
             }
         }

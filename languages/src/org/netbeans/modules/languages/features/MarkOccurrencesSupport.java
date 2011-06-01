@@ -75,6 +75,7 @@ public class MarkOccurrencesSupport implements CaretListener {
     private RequestProcessor.Task       parsingTask;
     private List<Highlight>             highlights;
     private List<LanguagesAnnotation>   annotations;
+    private final RequestProcessor PROC = new RequestProcessor(MarkOccurrencesSupport.class.getName(), 1);
     
     
     public MarkOccurrencesSupport (JTextComponent editor) {
@@ -86,7 +87,7 @@ public class MarkOccurrencesSupport implements CaretListener {
         if (parsingTask != null) {
             parsingTask.cancel ();
         }
-        parsingTask = RequestProcessor.getDefault ().post (new Runnable () {
+        parsingTask = PROC.post (new Runnable () {
             public void run () {
                 refresh (e.getDot ());
             }

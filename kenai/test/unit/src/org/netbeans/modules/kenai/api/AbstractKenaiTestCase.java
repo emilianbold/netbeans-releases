@@ -62,7 +62,7 @@ public abstract class AbstractKenaiTestCase extends NbTestCase {
     
     private Kenai kenai;
     
-    private static String TEST_PROJECT = "nb-jnet-test";
+    protected static String TEST_PROJECT = "nb-jnet-test";
     private static String uname = null;
     private static String passw = null;
         

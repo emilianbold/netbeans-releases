@@ -60,20 +60,23 @@ import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRepositoryState;
+import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.actions.ConnectAction;
 import org.netbeans.modules.git.ui.actions.DisconnectAction;
-import org.netbeans.modules.git.ui.branch.CreateBranchAction;
-import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
-import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
-import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.ignore.UnignoreAction;
-import org.netbeans.modules.git.ui.init.InitAction;
+import org.netbeans.modules.git.ui.menu.BranchMenu;
+import org.netbeans.modules.git.ui.menu.CheckoutMenu;
+import org.netbeans.modules.git.ui.menu.ExportMenu;
+import org.netbeans.modules.git.ui.menu.RemoteMenu;
+import org.netbeans.modules.git.ui.menu.RevertMenu;
+import org.netbeans.modules.git.ui.menu.TagMenu;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
@@ -86,10 +89,13 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * TODO: handle annotations
@@ -131,16 +137,18 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 if (ca.isEnabled()) {
                     actions.add(ca);
                 } else {
-                    actions.add(SystemAction.get(InitAction.class));
+                    addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
+                    addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
                 }
+                actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
                 actions.add(SystemAction.get(StatusAction.class));
-                actions.add(SystemAction.get(CheckoutPathsAction.class));
-                actions.add(SystemAction.get(RevertChangesAction.class));
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(DiffAction.class));
+                actions.add(new RevertMenu(ActionDestination.MainMenu, null));
+                actions.add(new ExportMenu(ActionDestination.MainMenu, null));
                 IgnoreAction ia = SystemAction.get(IgnoreAction.class);
                 UnignoreAction uia = SystemAction.get(UnignoreAction.class);
                 if (ia.isEnabled() || uia.isEnabled()) {
@@ -159,18 +167,23 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(SystemAction.get(DisconnectAction.class));
                 }
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(CreateBranchAction.class));
-                actions.add(SystemAction.get(CheckoutRevisionAction.class));
-                actions.add(SystemAction.get(MergeRevisionAction.class));
-                actions.add(null);
                 actions.add(SystemAction.get(OpenOutputAction.class));
+                actions.add(null);
+                actions.add(new BranchMenu(ActionDestination.MainMenu, null));
+                actions.add(new TagMenu(ActionDestination.MainMenu, null));
+                actions.add(new CheckoutMenu(ActionDestination.MainMenu, null));
+                actions.add(SystemAction.get(MergeRevisionAction.class));
                 ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
                 if (a.isEnabled()) {
                     actions.add(null);
                     actions.add(a);
                 }
+                actions.add(null);
                 actions.add(SystemAction.get(ResetAction.class));
+                actions.add(null);
+                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
+                actions.add(new RemoteMenu(ActionDestination.MainMenu, null));
+                actions.add(SystemAction.get(SearchHistoryAction.class));
             }
         } else {
             Lookup lkp = context.getElements();
@@ -178,20 +191,15 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 if (ca.isEnabled()) {
                     actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 } else {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(InitAction.class), NbBundle.getMessage(InitAction.class, "LBL_InitAction.popupName"), lkp));
+                    addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
                 }
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"), lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp));
-                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp));
-                SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp);
-                if (a.isEnabled()) {
-                    actions.add(null);
-                    actions.add(a);
-                }
+                actions.add(new ExportMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
                 SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
                 SystemActionBridge uia = SystemActionBridge.createAction(SystemAction.get(UnignoreAction.class), NbBundle.getMessage(UnignoreAction.class, "LBL_UnignoreAction_PopupName"), lkp);
                 if (ia.isEnabled() || uia.isEnabled()) {
@@ -204,9 +212,15 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     }
                 }
                 actions.add(null);
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName"), lkp)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutRevisionAction.class), NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName"), lkp)); //NOI18N
+                actions.add(new BranchMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(new TagMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(new CheckoutMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(MergeRevisionAction.class), NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName"), lkp)); //NOI18N
+                SystemActionBridge a = SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp);
+                if (a.isEnabled()) {
+                    actions.add(null);
+                    actions.add(a);
+                }
                 DisconnectAction da = SystemAction.get(DisconnectAction.class);
                 if (da.isEnabled()) {
                     actions.add(null);
@@ -216,10 +230,22 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(null);
                     actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
                 }
+                actions.add(null);
+                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
+                actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName"), lkp)); //NOI18N
             }
         }
 
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    private void addAction(String name, VCSContext context, List<Action> actions) {
+        Action action = (Action) FileUtil.getConfigFile("Actions/Git/" + name + ".instance").getAttribute("instanceCreate");
+            if(action instanceof ContextAwareAction) {
+                action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(context));
+            }            
+        if(action != null) actions.add(action);
     }
 
     @Override
@@ -368,6 +394,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private final Map<RepositoryInfo, Set<File>> filesWithRepositoryAnnotations = new WeakHashMap<RepositoryInfo, Set<File>>(3);
     
     private String annotateFolderNameHtml (String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
+        boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
         String nameHtml = htmlEncode(name);
         if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
@@ -376,7 +403,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         String folderAnnotation = ""; //NOI18N
         Set<File> roots = context.getRootFiles();
         File repository = Git.getInstance().getRepositoryRoot(mostImportantFile);
-        if (roots.size() > 1 || mostImportantFile.equals(repository)) {
+        if (annotationsVisible && (roots.size() > 1 || mostImportantFile.equals(repository))) {
             // project node or repository root
             String branchLabel = ""; //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
@@ -385,8 +412,23 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             if (branch != null) {
                 branchLabel = branch.getName();
                 if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
-                    // not on a branch, show also commit id
-                    branchLabel += " " + branch.getId(); // NOI18N
+                    Map<String, GitTag> tags = info.getTags();
+                    StringBuilder tagLabel = new StringBuilder(); //NOI18N
+                    for (GitTag tag : tags.values()) {
+                        if (tag.getTaggedObjectId().equals(branch.getId())) {
+                            tagLabel.append(",").append(tag.getTagName());
+                        }
+                    }
+                    if (tagLabel.length() <= 1) {
+                        // not on a branch or tag, show at least part of commit id
+                        branchLabel = branch.getId();
+                        if (branchLabel.length() > 7) {
+                            branchLabel = branchLabel.substring(0, 7) + "..."; //NOI18N
+                        }
+                    } else {
+                        tagLabel.delete(0, 1);
+                        branchLabel = tagLabel.toString();
+                    }
                 }
             }
             GitRepositoryState repositoryState = info.getRepositoryState();
@@ -415,7 +457,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
 
     @Override
     public void propertyChange (final PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == RepositoryInfo.PROPERTY_ACTIVE_BRANCH || evt.getPropertyName() == RepositoryInfo.PROPERTY_STATE) {
+        if (evt.getPropertyName() == RepositoryInfo.PROPERTY_ACTIVE_BRANCH || evt.getPropertyName() == RepositoryInfo.PROPERTY_STATE
+                || evt.getPropertyName() == RepositoryInfo.PROPERTY_HEAD && ((GitBranch) evt.getNewValue()).getName() == GitBranch.NO_BRANCH) {
             Utils.post(new Runnable() {
                 @Override
                 public void run() {

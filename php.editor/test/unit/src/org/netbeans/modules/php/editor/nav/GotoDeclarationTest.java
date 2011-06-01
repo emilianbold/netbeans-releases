@@ -563,7 +563,21 @@ public class GotoDeclarationTest extends TestBase {
         //testfiles/gotodeclaration/testVardoc166660/testVardoc166660.php
         checkDeclaration(getTestPath(), "@var $test^Class TestClass", "$^testClass = new TestClass();");
     }
+    
+    public void testStaticConstant197239_01() throws Exception {
+        //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
+        checkDeclaration(getTestPath(), "echo static::LET^TER22;", "const ^LETTER22 = 'a';");
+    }
 
+    public void testStaticConstant197239_02() throws Exception {
+        //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
+        checkDeclaration(getTestPath(), "echo self::LETT^ER22;", "const ^LETTER22 = 'a';");
+    }
+    
+    public void testStaticConstant197239_03() throws Exception {
+        //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
+        checkDeclaration(getTestPath(), "echo AA::LETT^ER22;", "const ^LETTER22 = 'a';");
+    }
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(

@@ -45,15 +45,25 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.FollowFilter;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.revwalk.RevSort;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.AndRevFilter;
+import org.eclipse.jgit.revwalk.filter.AuthorRevFilter;
+import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter;
+import org.eclipse.jgit.revwalk.filter.CommitterRevFilter;
+import org.eclipse.jgit.revwalk.filter.MessageRevFilter;
+import org.eclipse.jgit.revwalk.filter.OrRevFilter;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
@@ -104,35 +114,46 @@ public class LogCommand extends GitCommand {
             RevCommit commit = Utils.findCommit(repository, revision);
             addRevision(new JGitRevisionInfo(commit, repository));
         } else {
-            org.eclipse.jgit.api.LogCommand cmd = new Git(repository).log();
+            RevWalk walk = new RevWalk(repository);
+            RevWalk fullWalk = new RevWalk(repository);
             try {
                 String revisionFrom = criteria.getRevisionFrom();
                 String revisionTo = criteria.getRevisionTo();
                 if (revisionTo != null && revisionFrom != null) {
-                    cmd.addRange(Utils.findCommit(repository, revisionFrom), Utils.findCommit(repository, revisionTo));
+                    for (RevCommit uninteresting : Utils.findCommit(repository, revisionFrom).getParents()) {
+                        walk.markUninteresting(walk.parseCommit(uninteresting));
+                    }
+                    walk.markStart(walk.lookupCommit(Utils.findCommit(repository, revisionTo)));
                 } else if (revisionTo != null) {
-                    cmd.add(Utils.findCommit(repository, revisionTo));
+                    walk.markStart(walk.lookupCommit(Utils.findCommit(repository, revisionTo)));
                 } else if (revisionFrom != null) {
-                    cmd.not(Utils.findCommit(repository, revisionFrom));
+                    for (RevCommit uninteresting : Utils.findCommit(repository, revisionFrom).getParents()) {
+                        walk.markUninteresting(walk.parseCommit(uninteresting));
+                    }
+                    walk.markStart(walk.lookupCommit(Utils.findCommit(repository, Constants.HEAD)));
                 } else {
                     ListBranchCommand branchCommand = new ListBranchCommand(repository, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
                     branchCommand.execute();
                     for (Map.Entry<String, GitBranch> e : branchCommand.getBranches().entrySet()) {
-                        cmd.add(Utils.findCommit(repository, e.getValue().getId()));
+                        walk.markStart(walk.lookupCommit(Utils.findCommit(repository, e.getValue().getId())));
                     }
                 }
+                applyCriteria(walk, criteria);
+                walk.sort(RevSort.TOPO);
+                walk.sort(RevSort.COMMIT_TIME_DESC, true);
                 int remaining = criteria.getLimit();
-                for (Iterator<RevCommit> it = cmd.call().iterator(); it.hasNext() && !monitor.isCanceled() && remaining != 0;) {
+                for (Iterator<RevCommit> it = walk.iterator(); it.hasNext() && !monitor.isCanceled() && remaining != 0;) {
                     RevCommit commit = it.next();
-                    if (applyCriteria(commit)) {
-                        addRevision(new JGitRevisionInfo(commit, repository));
-                        --remaining;
-                    }
+                    addRevision(new JGitRevisionInfo(fullWalk.parseCommit(commit), repository));
+                    --remaining;
                 }
             } catch (MissingObjectException ex) {
                 throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 throw new GitException(ex);
+            } finally {
+                walk.release();
+                fullWalk.release();
             }
         } 
     }
@@ -140,6 +161,9 @@ public class LogCommand extends GitCommand {
     @Override
     protected String getCommandDescription () {
         StringBuilder sb = new StringBuilder("git log --name-status "); //NOI18N
+        if (criteria != null && criteria.isFollow() && criteria.getFiles() != null && criteria.getFiles().length == 1) {
+            sb.append("--follow "); //NOI18N
+        }
         if (revision != null) {
             sb.append("--no-walk ").append(revision);
         } else if (criteria.getRevisionTo() != null && criteria.getRevisionFrom() != null) {
@@ -161,29 +185,42 @@ public class LogCommand extends GitCommand {
         listener.notifyRevisionInfo(info);
     }
 
-    private boolean applyCriteria (RevCommit commit) throws IOException {
-        boolean passed = true;
-        if (criteria.getFiles().length > 0 && !checkFiles(commit, criteria.getFiles())) {
-            passed = false;
-        }
-        return passed;
-    }
-
-    private boolean checkFiles (RevCommit commit, File[] files) throws IOException {
-        boolean result = true;
-        Collection<PathFilter> filters = Utils.getPathFilters(getRepository().getWorkTree(), files);
-        if (!filters.isEmpty()) {
-            TreeWalk walk = new TreeWalk(getRepository());
-            walk.reset();
-            walk.setRecursive(true);
-            walk.addTree(commit.getTree().getId());
-            for (RevCommit parentCommit : commit.getParents()) {
-                walk.addTree(parentCommit.getTree().getId());
+    private void applyCriteria (RevWalk walk, SearchCriteria criteria) {
+        File[] files = criteria.getFiles();
+        if (files.length > 0) {
+            Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getWorkTree(), files);
+            if (!pathFilters.isEmpty()) {
+                if (criteria.isFollow() && pathFilters.size() == 1) {
+                    walk.setTreeFilter(FollowFilter.create(pathFilters.iterator().next().getPath()));
+                } else {
+                    walk.setTreeFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilterGroup.create(pathFilters)));
+                }
             }
-            walk.setFilter(AndTreeFilter.create(PathFilterGroup.create(filters), AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF)));
-            result = walk.next();
-            walk.release();
         }
-        return result;
+        RevFilter filter;
+        if (criteria.isIncludeMerges()) {
+            filter = RevFilter.ALL;
+        } else {
+            filter = RevFilter.NO_MERGES;
+        }
+        
+        String username = criteria.getUsername();
+        if (username != null && !(username = username.trim()).isEmpty()) {
+            filter = AndRevFilter.create(filter, OrRevFilter.create(CommitterRevFilter.create(username), AuthorRevFilter.create(username)));
+        }
+        String message = criteria.getMessage();
+        if (message != null && !(message = message.trim()).isEmpty()) {
+            filter = AndRevFilter.create(filter, MessageRevFilter.create(message));
+        }
+        Date from  = criteria.getFrom();
+        Date to  = criteria.getTo();
+        if (from != null && to != null) {
+            filter = AndRevFilter.create(filter, CommitTimeRevFilter.between(from, to));
+        } else if (from != null) {
+            filter = AndRevFilter.create(filter, CommitTimeRevFilter.after(from));
+        } else if (to != null) {
+            filter = AndRevFilter.create(filter, CommitTimeRevFilter.before(to));
+        }
+        walk.setRevFilter(filter);
     }
 }

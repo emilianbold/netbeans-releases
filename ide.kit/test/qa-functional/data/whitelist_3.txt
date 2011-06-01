@@ -1,5 +1,7 @@
 #include whitelist_2.txt
 
+#include whitelist_bug_195029.txt
+
 #191731
 org.netbeans.modules.cnd.api.xml.XMLDecoder
 org.netbeans.modules.cnd.api.xml.XMLDocReader
@@ -140,7 +142,7 @@ javax.xml.transform.Transformer
 javax.xml.transform.TransformerFactory
 javax.xml.transform.stream.StreamResult
 
-#180262
+#187271
 org.netbeans.modules.web.jsf.editor.index.JsfBinaryIndexer
 org.netbeans.modules.web.jsf.editor.index.JsfBinaryIndexer$Factory
 org.netbeans.modules.web.jsf.editor.index.JsfIndexer$Factory
@@ -1865,3 +1867,33 @@ org.apache.lucene.util.Attribute
 org.apache.lucene.util.AttributeImpl
 org.apache.lucene.util.AttributeSource$AttributeFactory
 org.apache.lucene.util.AttributeSource$AttributeFactory$DefaultAttributeFactory
+
+# OK on May 5, 2011:
+org.apache.lucene.analysis.tokenattributes.OffsetAttributeImpl
+org.apache.lucene.analysis.tokenattributes.TermAttributeImpl
+org.apache.lucene.index.DocInverterPerThread$SingleTokenAttributeSource
+org.netbeans.core.GuiRunLevel$InitWinSys
+org.netbeans.core.execution.IOTable
+org.netbeans.modules.ide.ergonomics.WarmUp
+org.netbeans.modules.java.source.classpath.SourcePath$Function
+org.netbeans.modules.java.source.classpath.SourcePath$MapToAptCache
+org.netbeans.modules.java.source.classpath.SourcePath$MapToSources
+org.netbeans.modules.parsing.impl.TaskProcessor$CancelStrategy
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$FileListWork
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$IndexingState
+org.netbeans.modules.parsing.impl.indexing.errors.ErrorAnnotator$RootAddedDeletedListener
+org.netbeans.modules.parsing.lucene.DocumentIndexImpl
+org.netbeans.modules.parsing.lucene.DocumentIndexImpl$AddConvertor
+org.netbeans.modules.parsing.lucene.DocumentIndexImpl$QueryConvertor
+org.netbeans.modules.parsing.lucene.DocumentIndexImpl$RemoveConvertor
+org.netbeans.modules.parsing.lucene.support.DocumentIndex
+org.netbeans.modules.parsing.lucene.support.Index$Status
+org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher
+org.netbeans.modules.parsing.spi.Parser$CancelReason
+org.openide.explorer.view.VisualizerEvent$Destroyed
+org.openide.windows.TopComponent$Description
+org.netbeans.modules.versioning.FilesystemInterceptor$FileEx
+org.netbeans.modules.masterfs.ProvidedExtensionsAccessor
+org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport$1IOJob
+org.netbeans.spi.editor.mimelookup.MimeLocation
+org.netbeans.spi.project.support.LookupProviderSupport$DelegatingLookupImpl$UnmergedLookup

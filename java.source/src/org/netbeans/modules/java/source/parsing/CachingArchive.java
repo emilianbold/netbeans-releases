@@ -65,6 +65,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 public class CachingArchive implements Archive {
     
@@ -92,6 +93,7 @@ public class CachingArchive implements Archive {
    
     /** Gets all files in given folder
      */
+    @Override
     public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter ) throws IOException {
         Map<String, Folder> folders = doInit();
         Folder files = folders.get( folderName );        
@@ -101,50 +103,23 @@ public class CachingArchive implements Archive {
         else {
             assert !keepOpened || zipFile != null;
             List<JavaFileObject> l = new ArrayList<JavaFileObject>(files.idx / files.delta);
-            for (int i = 0; i < files.idx; i += files.delta){                
-                create(folderName, files, i, kinds, l);
+            final Predicate<String> predicate = kinds == null ? new Tautology() : new HasKind(kinds);
+            for (int i = 0; i < files.idx; i += files.delta){
+                final JavaFileObject fo = create(folderName, files, i, predicate);
+                if (fo != null) {
+                    l.add(fo);
+                }
             }
             return l;
         }
     }          
 
+    @Override
     public JavaFileObject create (final String relativePath, final JavaFileFilterImplementation filter) {
         throw new UnsupportedOperationException("Write into archives not supported");   //NOI18N
     }
-
-    private String getString(int off, int len) {
-        byte[] name = new byte[len];
-        System.arraycopy(names, off, name, 0, len);
-        try {
-            return new String(name, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new InternalError("No UTF-8");
-        }
-    }
-    
-    static long join(int higher, int lower) {
-        return (((long)higher) << 32) | (((long) lower) & 0xFFFFFFFFL);
-    }
-    
-    private void create(String pkg, Folder f, int off, Set<JavaFileObject.Kind> kinds, List<? super JavaFileObject> l) {
-        String baseName = getString(f.indices[off], f.indices[off+1]);
-        if (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(baseName)))) {
-            long mtime = join(f.indices[off+3], f.indices[off+2]);
-            if (zipFile == null) {
-                if (f.delta == 4) {
-                    l.add (FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime));
-                }
-                else {
-                    assert f.delta == 6;
-                    long offset = join(f.indices[off+5], f.indices[off+4]);
-                    l.add (FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime, offset));
-                }
-            } else {
-                l.add (FileObjects.zipFileObject( zipFile, pkg, baseName, mtime));
-            }
-        }
-    }
-    
+        
+    @Override
     public synchronized void clear () {
         folders = null;
         names = null;
@@ -169,22 +144,11 @@ public class CachingArchive implements Archive {
         }
         else {
             assert !keepOpened || zipFile != null;
+            final Predicate<String> predicate = new NameIs(sn);
             for (int i = 0; i < files.idx; i += files.delta){
-                final String baseName = getString(files.indices[i], files.indices[i+1]);
-                if (sn.equals(baseName)) {
-                    long mtime = join(files.indices[i+3], files.indices[i+2]);
-                    if (zipFile == null) {
-                        if (files.delta == 4) {
-                            return FileObjects.zipFileObject(archiveFile, folder, baseName, mtime);
-                        }
-                        else {
-                            assert files.delta == 6;
-                            long offset = join(files.indices[i+5], files.indices[i+4]);
-                            return FileObjects.zipFileObject(archiveFile, folder, baseName, mtime, offset);
-                        }
-                    } else {
-                        return FileObjects.zipFileObject( zipFile, folder, baseName, mtime);
-                    }
+                final JavaFileObject fo = create(folder, files, i, predicate);
+                if (fo != null) {
+                    return fo;
                 }
             }
             return null;
@@ -193,14 +157,14 @@ public class CachingArchive implements Archive {
                       
     // Private methods ---------------------------------------------------------
     
-    synchronized Map<String, Folder> doInit() {
+    /*test*/ synchronized Map<String, Folder> doInit() {
         if (folders == null) {
             try {
                 names = new byte[16384];
                 folders = createMap(archiveFile);
                 trunc();
             } catch (IOException e) {
-                LOGGER.warning("Broken zip file: " + archiveFile.getAbsolutePath());
+                LOGGER.log(Level.WARNING, "Broken zip file: {0}", archiveFile.getAbsolutePath());
                 LOGGER.log(Level.FINE, null, e);
                 names = new byte[0];
                 nameOffset = 0;
@@ -210,7 +174,7 @@ public class CachingArchive implements Archive {
                     try {
                         zipFile.close();
                     } catch (IOException ex) {
-                        LOGGER.warning("Cannot close archive: " + archiveFile.getAbsolutePath());
+                        LOGGER.log(Level.WARNING, "Cannot close archive: {0}", archiveFile.getAbsolutePath());
                         LOGGER.log(Level.FINE, null, ex);
                     }
                 }
@@ -260,7 +224,7 @@ public class CachingArchive implements Archive {
                 }
             } catch (IOException ioe) {
                 map = null;
-                Logger.getLogger(CachingArchive.class.getName()).warning("Fallback to ZipFile: " + file.getPath());       //NOI18N
+                Logger.getLogger(CachingArchive.class.getName()).log(Level.WARNING, "Fallback to ZipFile: {0}", file.getPath());       //NOI18N
             }
         }            
         if (map == null) {
@@ -301,10 +265,46 @@ public class CachingArchive implements Archive {
         }            
         return map;
     }
-    
-    // Innerclasses ------------------------------------------------------------
-    
-    int putName(byte[] name) {
+
+    private String getString(int off, int len) {
+        byte[] name = new byte[len];
+        System.arraycopy(names, off, name, 0, len);
+        try {
+            return new String(name, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalError("No UTF-8");
+        }
+    }
+
+    /*test*/ static long join(int higher, int lower) {
+        return (((long)higher) << 32) | (((long) lower) & 0xFFFFFFFFL);
+    }
+
+    private JavaFileObject create(
+            final @NonNull String pkg,
+            final @NonNull Folder f,
+            final @NonNull int off,
+            final @NonNull Predicate<String> predicate) {
+        String baseName = getString(f.indices[off], f.indices[off+1]);
+        if (predicate.apply(baseName)) {
+            long mtime = join(f.indices[off+3], f.indices[off+2]);
+            if (zipFile == null) {
+                if (f.delta == 4) {
+                    return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime);
+                }
+                else {
+                    assert f.delta == 6;
+                    long offset = join(f.indices[off+5], f.indices[off+4]);
+                    return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime, offset);
+                }
+            } else {
+                return FileObjects.zipFileObject( zipFile, pkg, baseName, mtime);
+            }
+        }
+        return null;
+    }    
+            
+    /*test*/ int putName(byte[] name) {
         int start = nameOffset;
 
         if ((start + name.length) > names.length) {
@@ -319,7 +319,8 @@ public class CachingArchive implements Archive {
         return start;
     }
 
-    
+
+    // Innerclasses ------------------------------------------------------------
     private static class Folder {
         int[] indices = EMPTY; // off, len, mtimeL, mtimeH
         int idx = 0;
@@ -349,7 +350,7 @@ public class CachingArchive implements Archive {
                 indices[idx++] = (int)(mtime & 0xFFFFFFFF);
                 indices[idx++] = (int)(mtime >> 32);
                 if (delta == 6) {
-                    indices[idx++] = (int)(offset & 0xFFFFFFFF);;
+                    indices[idx++] = (int)(offset & 0xFFFFFFFF);
                     indices[idx++] = (int)(offset >> 32);
                 }
             } catch (UnsupportedEncodingException e) {
@@ -364,6 +365,48 @@ public class CachingArchive implements Archive {
                 indices = newInd;
             }
         }
+    }
+
+    private static interface Predicate<T> {
+        boolean apply(@NonNull T value);
+    }
+
+    private static class HasKind implements Predicate<String> {
+
+        private final Set<JavaFileObject.Kind> kinds;
+
+        private HasKind(final @NonNull Set<JavaFileObject.Kind> kinds) {
+            Parameters.notNull("kinds", kinds); //NOI18N
+            this.kinds = kinds;
+        }
+
+        @Override
+        public boolean apply(final @NonNull String value) {
+            return kinds.contains(FileObjects.getKind(FileObjects.getExtension(value)));
+        }
+    }
+
+    private static class NameIs implements Predicate<String> {
+
+        private final String name;
+
+        private NameIs (final @NonNull String name) {
+            Parameters.notNull("name", name);   //NOI18N
+            this.name = name;
+        }
+
+        @Override
+        public boolean apply(final @NonNull String value) {
+            return name.equals(value);
+        }
+    }
+
+    private static class Tautology implements Predicate<String> {
+        @Override
+        public boolean apply(final @NonNull String value) {
+            return true;
+        }
+
     }
 
         

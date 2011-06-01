@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInclude.IncludeState;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -260,7 +261,11 @@ public class CsmDisplayUtilities {
             CsmInclude incl = (CsmInclude)item;
             CsmFile target = incl.getIncludeFile();
             if (target == null) {
-                tooltipText = getHtmlizedString("DSC_IncludeErrorTooltip", incl.getText());  // NOI18N
+                if (incl.getIncludeState() == IncludeState.Recursive) {
+                    tooltipText = getHtmlizedString("DSC_IncludeRecursiveTooltip", incl.getText());  // NOI18N
+                } else {
+                    tooltipText = getHtmlizedString("DSC_IncludeErrorTooltip", incl.getText());  // NOI18N
+                }
             } else {
                 if (target.getProject().isArtificial()) {
                     tooltipText = getHtmlizedString("DSC_IncludeLibraryTooltip", target.getAbsolutePath());// NOI18N

@@ -78,16 +78,25 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         super(token);
     }
 
+    /** Creates a new instance of APTMacroBaseNode for pragma once */
+    public APTMacroBaseNode(APTToken token, APTToken fileName) {
+        super(token);
+        macroName = fileName;
+    }
+
+    @Override
     public APT getFirstChild() {
         // #define/#undef doesn't have subtree
         return null;
     }
 
+    @Override
     public void setFirstChild(APT child) {
         // do nothing
         assert (false) : "define/undef doesn't support children"; // NOI18N        
     }
 
+    @Override
     public boolean accept(APTFile curFile,APTToken token) {
         if (APTUtils.isID(token)) {
             if (macroName != EMPTY_NAME) {

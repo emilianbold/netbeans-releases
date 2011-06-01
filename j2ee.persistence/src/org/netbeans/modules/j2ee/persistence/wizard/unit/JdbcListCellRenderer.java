@@ -45,9 +45,8 @@
 package org.netbeans.modules.j2ee.persistence.wizard.unit;
 
 import java.awt.Component;
-import javax.swing.JLabel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.openide.util.NbBundle;
 
@@ -55,15 +54,16 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
-public class JdbcListCellRenderer extends JLabel implements ListCellRenderer {
+public class JdbcListCellRenderer extends DefaultListCellRenderer {
     
     public JdbcListCellRenderer() {
-        setOpaque(false);
         setHorizontalAlignment(LEFT);
         setVerticalAlignment(CENTER);
     }
-    
+
+    @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         // values might be DatabaseConnections or Strings (for custom connections)
         String text = null;
         if(value == null || String.valueOf(value).length() == 0) {
@@ -71,23 +71,12 @@ public class JdbcListCellRenderer extends JLabel implements ListCellRenderer {
         } else {
             text = String.valueOf(value);
         }
-            
         if (value instanceof DatabaseConnection) {
             DatabaseConnection connection = (DatabaseConnection) value;
             text = connection.getName();
         }
-        
-        if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
-        } else {
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
-        }
-        
-        setFont(list.getFont());
+
         setText(text);
-        
         return this;
     }
     

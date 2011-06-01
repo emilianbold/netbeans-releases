@@ -42,8 +42,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -60,6 +58,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * parameter list of non K&R function
@@ -144,12 +144,12 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
     ////////////////////////////////////////////////////////////////////////////
     // persistent
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
     @SuppressWarnings("unchecked")
-    public FunctionParameterListImpl(DataInput input) throws IOException {
+    public FunctionParameterListImpl(RepositoryDataInput input) throws IOException {
         super(input);
     }
 
@@ -178,13 +178,13 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         ////////////////////////////////////////////////////////////////////////////
         // persistent
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             super.write(output);
             PersistentUtils.writeParameterList(this.krList, output);
         }
 
         @SuppressWarnings("unchecked")
-        public FunctionKnRParameterListImpl(DataInput input) throws IOException {
+        public FunctionKnRParameterListImpl(RepositoryDataInput input) throws IOException {
             super(input);
             this.krList = (ParameterListImpl<CsmParameterList<CsmKnRName>, CsmKnRName>) PersistentUtils.readParameterList(input);
         }

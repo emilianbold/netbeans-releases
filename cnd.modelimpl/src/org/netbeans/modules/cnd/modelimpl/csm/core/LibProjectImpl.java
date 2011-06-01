@@ -54,6 +54,8 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 
@@ -186,13 +188,13 @@ public final class LibProjectImpl extends ProjectBase {
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         assert this.includePath != null;
         PersistentUtils.writeUTF(includePath, aStream);
     }
 
-    public LibProjectImpl(DataInput aStream) throws IOException {
+    public LibProjectImpl(RepositoryDataInput aStream) throws IOException {
         super(aStream);
         this.includePath = PersistentUtils.readUTF(aStream, FilePathCache.getManager());
         assert this.includePath != null;

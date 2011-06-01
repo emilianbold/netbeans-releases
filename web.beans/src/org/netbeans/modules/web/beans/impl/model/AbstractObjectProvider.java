@@ -82,6 +82,7 @@ abstract class AbstractObjectProvider<T extends AbstractObjectProvider.Refreshab
                 getAnnotation(), 
                 EnumSet.of(ElementKind.CLASS, ElementKind.INTERFACE), 
                 new AnnotationHandler() {
+                        @Override
                         public void handleAnnotation(TypeElement type, 
                                 Element element, AnnotationMirror annotation) 
                         {
@@ -131,6 +132,7 @@ abstract class AbstractObjectProvider<T extends AbstractObjectProvider.Refreshab
                     annotationName, 
                     EnumSet.of(ElementKind.FIELD, ElementKind.METHOD), 
                     new AnnotationHandler() {
+                            @Override
                             public void handleAnnotation(TypeElement type, 
                                     Element element, AnnotationMirror annotation) 
                             {

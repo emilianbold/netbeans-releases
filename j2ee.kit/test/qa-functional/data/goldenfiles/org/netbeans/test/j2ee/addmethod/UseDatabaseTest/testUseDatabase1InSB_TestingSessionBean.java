@@ -1,14 +1,20 @@
 package test;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
  * This is the bean class for the TestingSessionBean enterprise bean.
  * Created 29.4.2005 15:24:25
  * @author lm97939
  */
-public class TestingSessionBean implements SessionBean, TestingSessionRemoteBusiness, TestingSessionLocalBusiness {
-    private SessionContext context;
+public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSessionRemoteBusiness, test.TestingSessionLocalBusiness {
+    private javax.ejb.SessionContext context;
     
     // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click the + sign on the left to edit the code.">
     // TODO Add code to acquire and use other enterprise resources (DataSource, JMS, enterprise bean, Web services)
@@ -16,7 +22,7 @@ public class TestingSessionBean implements SessionBean, TestingSessionRemoteBusi
     /**
      * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
      */
-    public void setSessionContext(SessionContext aContext) {
+    public void setSessionContext(javax.ejb.SessionContext aContext) {
         context = aContext;
     }
     
@@ -59,43 +65,27 @@ public class TestingSessionBean implements SessionBean, TestingSessionRemoteBusi
     // "EJB Methods > Add Business Method" or "Web Service > Add Operation")
 
     public String testBusinessMethod1() {
-        //TODO implement testBusinessMethod1
         return null;
     }
 
     public String testBusinessMethod2(String a, int b) throws Exception {
-        //TODO implement testBusinessMethod2
         return null;
     }
 
-    private test.TestingEntityLocalHome lookupTestingEntityBean() {
+    private TestingEntityLocalHome lookupTestingEntityBeanLocal() {
         try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            test.TestingEntityLocalHome rv = (test.TestingEntityLocalHome) c.lookup("java:comp/env/ejb/TestingEntityBean");
+            Context c = new InitialContext();
+            TestingEntityLocalHome rv = (TestingEntityLocalHome) c.lookup("java:comp/env/TestingEntityBean");
             return rv;
-        }
-        catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
+        } catch (NamingException ne) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", ne);
             throw new RuntimeException(ne);
         }
     }
 
-    private test.TestingEntityRemoteHome lookupMyTestingEntityBean() {
-        try {
-            javax.naming.Context c = new javax.naming.InitialContext();
-            Object remote = c.lookup("java:comp/env/ejb/MyTestingEntityBean");
-            test.TestingEntityRemoteHome rv = (test.TestingEntityRemoteHome) javax.rmi.PortableRemoteObject.narrow(remote, test.TestingEntityRemoteHome.class);
-            return rv;
-        }
-        catch(javax.naming.NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,"exception caught" ,ne);
-            throw new RuntimeException(ne);
-        }
-    }
-
-    private javax.sql.DataSource getMyTestingDatabase() throws javax.naming.NamingException {
-        javax.naming.Context c = new javax.naming.InitialContext();
-        return (javax.sql.DataSource) c.lookup("java:comp/env/jdbc/myTestingDatabase");
+    private DataSource getMyTestingDatabase() throws NamingException {
+        Context c = new InitialContext();
+        return (DataSource) c.lookup("java:comp/env/myTestingDatabase");
     }
     
     

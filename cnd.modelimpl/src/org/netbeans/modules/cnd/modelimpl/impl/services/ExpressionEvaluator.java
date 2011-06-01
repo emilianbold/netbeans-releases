@@ -62,14 +62,17 @@ import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenSource;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenBuffer;
+import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvider;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.parser.generated.EvaluatorParser;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
@@ -144,27 +147,35 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     }
 
     private Map<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
-        Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-        mapping.putAll(inst.getMapping());
-//        for (CsmTemplateParameter param : inst.getMapping().keySet()) {
-//            Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-//            CsmSpecializationParameter spec = inst.getMapping().get(param);
-//            if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
-//                Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapping);
-//                CsmSpecializationParameter newSpec = new ExpressionBasedSpecializationParameterImpl(o.toString(),
-//                        spec.getContainingFile(), spec.getStartOffset(), spec.getEndOffset());
-//                newMapping.put(param, newSpec);
-//            } else {
-//                newMapping.put(param, spec);
-//            }
-//            mapping.putAll(newMapping);
-//        }
-        if(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-            mapping.putAll(getMapping((CsmInstantiation) inst.getTemplateDeclaration()));
+        if (TraceFlags.EXPRESSION_EVALUATOR_RECURSIVE_CALC) {
+            Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+            mapping.putAll(inst.getMapping());
+            while(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                for (CsmTemplateParameter param : inst.getMapping().keySet()) {
+                    Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+                    CsmSpecializationParameter spec = inst.getMapping().get(param);
+                    if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
+                        Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapping);
+                        CsmSpecializationParameter newSpec = ExpressionBasedSpecializationParameterImpl.create(o.toString(),
+                                spec.getContainingFile(), spec.getStartOffset(), spec.getEndOffset());
+                        newMapping.put(param, newSpec);
+                    } else {
+                        newMapping.put(param, spec);
+                    }
+                    mapping.putAll(newMapping);
+                }
+            }
+            return mapping;
+        } else {
+            Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+            mapping.putAll(inst.getMapping());
+            if(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                mapping.putAll(getMapping((CsmInstantiation) inst.getTemplateDeclaration()));
+            }
+            return mapping;
         }
-        return mapping;
     }
-
 
     static private class MyToken implements Token {
 

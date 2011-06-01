@@ -42,6 +42,11 @@
 
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -53,6 +58,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -86,35 +92,55 @@ public final class WLConnectionSupport {
         String port = instanceProperties.getProperty(WLPluginProperties.PORT_ATTR);
         if ((host == null || host.trim().length() == 0
                 && (port == null || port.trim().length() == 0))) {
-            // getDomainProperties instantiate DocumentBuilderFactory
-            // if we would od it inside call such factory could be loaded
-            // from weblogic classes causing troubles, see #189483
-            Properties domainProperties = WLPluginProperties.getDomainProperties(
-                    instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
-            host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
-            port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
+            
+            if (!deploymentManager.isRemote()) {            
+                // getDomainProperties instantiate DocumentBuilderFactory
+                // if we would od it inside call such factory could be loaded
+                // from weblogic classes causing troubles, see #189483
+                Properties domainProperties = WLPluginProperties.getDomainProperties(
+                        instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
+                host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
+                port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
+            }
+            if ((host == null || host.trim().length() == 0
+                    && (port == null || port.trim().length() == 0))) {
+                String[] parts = deploymentManager.getUri().split(":"); // NOI18N
+                host = parts[3].substring(2);
+                port = parts[4] != null ? parts[4].trim() : parts[4];
+            }
         }
         
-        final String resolvedHost = host;
-        final String resolvedPort = port;
+        final String resolvedHost = host.trim();
+        final String resolvedPort = port.trim();
 
         return executeAction(new Callable<T>() {
 
             @Override
             public T call() throws Exception {
+                JMXServiceURL url = null;
+                if (deploymentManager.isWebProfile()) {
+                    String wpUrl = getWebProfileUrl(resolvedHost, resolvedPort);
+                    if (wpUrl != null) {
+                        url = new JMXServiceURL(wpUrl);
+                    }
+                }
+                if (url == null) {
+                    url = new JMXServiceURL("iiop", resolvedHost, // NOI18N
+                        Integer.parseInt(resolvedPort), action.getPath());
+                }
+                
+                String username = deploymentManager.getInstanceProperties().getProperty(
+                        InstanceProperties.USERNAME_ATTR).toString();
+                String password = deploymentManager.getInstanceProperties().getProperty(
+                        InstanceProperties.PASSWORD_ATTR).toString();
 
-                JMXServiceURL url = new JMXServiceURL("iiop", resolvedHost.trim(), // NOI18N
-                        Integer.parseInt(resolvedPort.trim()), action.getPath());
-
-                Map<String, String> env = new HashMap<String, String>();
+                Map<String, Object> env = new HashMap<String, Object>();
                 env.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES,
                              "weblogic.management.remote"); // NOI18N
-                env.put(javax.naming.Context.SECURITY_PRINCIPAL, deploymentManager.
-                        getInstanceProperties().getProperty(
-                                InstanceProperties.USERNAME_ATTR).toString());
-                env.put(javax.naming.Context.SECURITY_CREDENTIALS, deploymentManager.
-                        getInstanceProperties().getProperty(
-                                InstanceProperties.PASSWORD_ATTR).toString());
+                env.put(javax.naming.Context.SECURITY_PRINCIPAL, username);
+                env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
+                env.put("jmx.remote.credentials", // NOI18N
+                        new String[] {username, password});
 
                 JMXConnector jmxConnector = JMXConnectorFactory.newJMXConnector(url, env);
                 jmxConnector.connect();
@@ -166,6 +192,22 @@ public final class WLConnectionSupport {
         @Override
         public final String getPath() {
             return "/jndi/weblogic.management.mbeanservers.edit"; // NOI18N
+        }
+    }
+    
+    private String getWebProfileUrl(String host, String port) {
+        try {
+            URL httpURL = new URL("http://" + host + ":" + port + "/bea_wls_management_dwp_jmx_internal/get/url");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(httpURL.openStream()));
+            try {
+                return reader.readLine();
+            } finally {
+                reader.close();
+            }
+        } catch (MalformedURLException ex) {
+            return null;
+        } catch (IOException ex) {
+            return null;
         }
     }
 }

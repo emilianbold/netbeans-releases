@@ -57,7 +57,10 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -476,12 +479,27 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         set.setShortDescription(getString("ItemHint"));
         set.put(new StringRONodeProp(getString("NameTxt"), CndPathUtilitities.getBaseName(item.getPath())));
         set.put(new StringRONodeProp(getString("FilePathTxt"), item.getPath()));
-        String fullPath = CndPathUtilitities.toAbsolutePath(((MakeConfiguration) configuration).getBaseDir(), item.getPath());
         String mdate = ""; // NOI18N
-        File itemFile = new File(fullPath);
-        if (itemFile.exists()) {
-            mdate = DateFormat.getDateInstance().format(new Date(itemFile.lastModified()));
-            mdate += " " + DateFormat.getTimeInstance().format(new Date(itemFile.lastModified())); // NOI18N
+        String fullPath;
+        FileObject itemFO;
+        MakeConfiguration mc = (MakeConfiguration) configuration;
+        FileSystem sourceFS = mc.getSourceFileSystem();
+        if (sourceFS == null) {
+            sourceFS = CndFileUtils.getLocalFileSystem();
+        }
+        final String baseDir = mc.getSourceBaseDir();
+        FileObject baseDirFO = sourceFS.findResource(baseDir);
+        if (baseDirFO != null && baseDirFO.isValid()) {
+            fullPath = CndPathUtilitities.toAbsolutePath(baseDirFO, item.getPath());            
+            itemFO = sourceFS.findResource(FileSystemProvider.normalizeAbsolutePath(fullPath, sourceFS));
+        } else {
+            fullPath = CndPathUtilitities.toAbsolutePath(baseDir, item.getPath());
+            itemFO = null;
+        }
+        if (itemFO != null && itemFO.isValid()) {
+            Date lastModified = itemFO.lastModified();
+            mdate = DateFormat.getDateInstance().format(lastModified);
+            mdate += " " + DateFormat.getTimeInstance().format(lastModified); // NOI18N
         }
         set.put(new StringRONodeProp(getString("FullFilePathTxt"), fullPath));
         set.put(new StringRONodeProp(getString("LastModifiedTxt"), mdate));

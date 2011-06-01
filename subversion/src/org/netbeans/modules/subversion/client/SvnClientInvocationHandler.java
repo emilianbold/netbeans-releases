@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLKeyException;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClientFactory.ConnectionType;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.IndexingBridge;
@@ -98,21 +99,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private SvnProgressSupport support;
     private final int handledExceptions;
     private static boolean metricsAlreadyLogged = false;
+    private final ConnectionType connectionType;
     
-   /**
-     *
-     */
-    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, int handledExceptions) {
-        
-        assert adapter  != null;
-        assert desc     != null;
-        
-        this.adapter = adapter;
-        this.desc = desc;
-        this.handledExceptions = handledExceptions;
-    }
-
-    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
         
         assert adapter  != null;
         assert desc     != null;
@@ -133,6 +122,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 return true;
             }
         };
+        this.connectionType = connType;
     }
 
     private static String print(Object[] args) {
@@ -361,7 +351,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }            
             // save the proxy settings into the svn servers file                
             if(desc != null && desc.getSvnUrl() != null) {
-                SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl());
+                SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl(), connectionType);
             }
             logClientInvoked();
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
@@ -395,13 +385,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             throw t;
         }
 
-        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions, isCommandLine());
+        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions, connectionType);
         eh.setMethod(methodName);
         return eh.handleException();        
-    }
-
-    protected boolean isCommandLine () {
-        return false;
     }
     
 }

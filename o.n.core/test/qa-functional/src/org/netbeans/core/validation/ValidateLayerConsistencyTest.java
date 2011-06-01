@@ -148,12 +148,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
-                clusters("(?!ergonomics).*").enableClasspathModules(false).enableModules(".*").gui(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
-                clusters("platform|harness|ide|websvccommon|java|profiler|nb").enableClasspathModules(false).enableModules(".*").gui(false)));
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
-                clusters("platform|ide").enableClasspathModules(false).enableModules(".*").gui(false)));
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
+                clusters("(?!ergonomics).*").enableClasspathModules(false).enableModules(".*").gui(false).suite());
+        suite.addTest(NbModuleSuite.createConfiguration(ValidateLayerConsistencyTest.class).
+                clusters("platform|ide").enableClasspathModules(false).enableModules(".*").gui(false).suite());
         return suite;
     }
 
@@ -193,13 +191,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         Enumeration<? extends FileObject> files = Enumerations.concat(Enumerations.singleton(root), root.getChildren(true));
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
-            
-            // XXX #16761 Removing attr in MFO causes storing special-null value even in unneeded cases.
-            // When the issue is fixed remove this hack.
-            if("Windows2/Modes/debugger".equals(fo.getPath()) // NOI18N
-            || "Windows2/Modes/explorer".equals(fo.getPath())) { // NOI18N
-                continue;
-            }
             
             if (
                 "Keymaps/NetBeans/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
@@ -948,6 +939,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
         for (FileObject f : NbCollections.iterable(FileUtil.getConfigRoot().getChildren(true))) {
             for (String attr : NbCollections.iterable(f.getAttributes())) {
+                if (attr.equals("instanceCreate")) {
+                    continue; // e.g. on Services/Hidden/org-netbeans-lib-jakarta_oro-antlibrary.instance prints stack trace
+                }
                 Object val = f.getAttribute(attr);
                 if (val instanceof URL) {
                     validateNbinstURL((URL) val, handler, f);

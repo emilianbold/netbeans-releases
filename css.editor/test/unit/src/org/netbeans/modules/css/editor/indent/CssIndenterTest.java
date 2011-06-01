@@ -158,6 +158,10 @@ public class CssIndenterTest extends TestBase {
         reformatFileContents("testfiles/format2.html", new IndentPrefs(4,4));
     }
 
+    public void testTabCharacterHandling() throws Exception {
+        reformatFileContents("testfiles/format3.html", new IndentPrefs(4,4));
+    }
+
     public void testFormattingCase1() throws Exception {
         //#160344
         reformatFileContents("testfiles/case001.css", new IndentPrefs(4,4));

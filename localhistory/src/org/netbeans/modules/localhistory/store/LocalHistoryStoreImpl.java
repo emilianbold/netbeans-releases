@@ -69,6 +69,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.localhistory.LocalHistory;
+import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.modules.turbo.Turbo;
@@ -76,6 +77,7 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
@@ -785,9 +787,20 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 }
                 if(ts < now - ttl) {
                     if(labels.size() > 0) {
+                        if(LocalHistorySettings.getInstance().getCleanUpLabeled()) {
+                            // remove label and file
                         labels.remove(ts);
+                            f.delete();                            
+                        } else {
+                            if(!labels.containsKey(ts)) {
+                                // remove only if no label
+                                f.delete();
                     }
+                        }
+                    } else {
+                        // no labels => just remove
                     f.delete();
+                    }
                 } else {
                     skipped = true;
                 }
@@ -1164,7 +1177,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
      * @param source the file to be copied
      * @return the newly created copy
      */
-    private File fastCopyIfPosible(final File source) {
+    private File fastCopyIfPosible(File source) {
         LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} - start", new Object[]{source});
         if(!Utilities.isWindows() && source.canExecute()) {
             // some special access setting perhaps? looks like this is not typical 
@@ -1174,6 +1187,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         int i = 0;        
         while(true) {
+            try {
+                source = source.getCanonicalFile();
+            } catch (IOException ex) {
+                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                return null;
+            }
+            
             File target = new File(source.getParentFile(), source.getName() + "." + i++ + ".nblh~");
             if(!target.exists()) {
                 long ts = source.lastModified();
@@ -1191,7 +1211,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                     LocalHistory.LOG.log(Level.WARNING, "wasn't able to rename {0} into {1}", new Object[]{source, target});
                     return null;
                 }
-            }            
+            }
         }
     }
 

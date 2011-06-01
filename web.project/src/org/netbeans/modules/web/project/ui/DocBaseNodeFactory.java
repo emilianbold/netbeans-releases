@@ -90,6 +90,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
@@ -105,6 +106,8 @@ public final class DocBaseNodeFactory implements NodeFactory {
     public DocBaseNodeFactory() {
     }
 
+    private static RequestProcessor RP = new RequestProcessor();
+    
     public NodeList createNodes(Project p) {
         WebProject project = p.getLookup().lookup(WebProject.class);
         assert project != null;
@@ -196,7 +199,14 @@ public final class DocBaseNodeFactory implements NodeFactory {
 
         public void propertyChange(PropertyChangeEvent evt) {
             // The caller holds ProjectManager.mutex() read lock
-            SwingUtilities.invokeLater(new Runnable() {
+            
+            // #197171 - changeSupport used to fire change in AWT thread which
+            // does not work in following scenario: when project properties has
+            // been changed and are being saved the write lock on ProjectManager
+            // can be hold for long time. And that prevents getNodeFolders()
+            // method in this class from being executed (in response to change). Therefore I posted
+            // below fireChange to background thread rather then AWT thread:
+            RP.post(new Runnable() {
                 public void run() {
                     changeSupport.fireChange();
                 }

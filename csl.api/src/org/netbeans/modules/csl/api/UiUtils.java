@@ -77,6 +77,8 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -84,6 +86,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 
 /** 
@@ -251,7 +254,20 @@ public final class UiUtils {
             LineCookie lc = DataLoadersBridge.getDefault().getCookie(fo, LineCookie.class);
 
             if ((ec != null) && (lc != null) && (offset != -1)) {
-                StyledDocument doc = ec.openDocument();
+                StyledDocument doc = null;
+                try {
+                    doc = ec.openDocument();
+                } catch (UserQuestionException uqe) {
+                    final Object value = DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(),
+                            NbBundle.getMessage(UiUtils.class, "TXT_Question"),
+                            NotifyDescriptor.YES_NO_OPTION));
+                    if (value != NotifyDescriptor.YES_OPTION) {
+                        return false;
+                    }
+                    uqe.confirmed();
+                    doc = ec.openDocument();
+                }
 
                 if (doc != null) {
                     int line = NbDocument.findLineNumber(doc, offset);

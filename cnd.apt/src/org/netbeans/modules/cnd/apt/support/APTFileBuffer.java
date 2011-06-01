@@ -56,4 +56,10 @@ public interface APTFileBuffer {
     public CharSequence getAbsolutePath();
     public FileSystem getFileSystem();
     public char[] getCharBuffer() throws IOException;
+    public BufferType getType();
+    
+    enum BufferType {
+        INCLUDED,
+        START_FILE,
+    }
 }

@@ -440,6 +440,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
             if (component != null) {                
                 tabbedPane.addTab(file.getName(), component);
                 tabbedPane.setSelectedComponent(component);
+                tabbedPane.requestFocusInWindow();
                 newDiff = true;
             }
         }

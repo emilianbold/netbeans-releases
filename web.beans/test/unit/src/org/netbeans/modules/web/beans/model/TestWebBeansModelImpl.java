@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.model;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
@@ -80,10 +81,19 @@ public class TestWebBeansModelImpl extends WebBeansModelImplementation {
         return MetadataModelFactory.createMetadataModel( this );
     }
     
-    protected BeansModel getBeansModel() {
+    @Override
+    public BeansModel getBeansModel() {
         return myBeansModel;
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation#getHelper()
+     */
+    @Override
+    protected AnnotationModelHelper getHelper() {
+        return super.getHelper();
+    }
+    
    /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getProvider()
      */

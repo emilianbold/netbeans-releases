@@ -190,6 +190,14 @@ public class CsmKindUtilities {
         return (obj instanceof CsmExpressionBasedSpecializationParameter);
     }
     
+    public static boolean isFunctionExplicitInstantiation(CsmObject obj) {
+        if (isDeclaration(obj)) {
+            return ((CsmDeclaration)obj).getKind() == CsmDeclaration.Kind.FUNCTION_INSTANTIATION;
+        } else {
+            return false;
+        }
+    }
+    
     public static boolean isFunctionPointerType(CsmObject obj) {
         return (obj instanceof CsmFunctionPointerType);
     }

@@ -44,12 +44,9 @@
 package org.netbeans.modules.cnd.builds;
 
 import java.io.IOException;
-import java.io.File;
-import java.text.MessageFormat;
 import java.util.StringTokenizer;
 import java.util.ResourceBundle;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -76,13 +73,12 @@ public class MakeExecSupport extends ExecutionSupport {
     public final static String PROP_MAKE_TARGETS = "makeTargets"; // NOI18N
     private static final String PROP_ENVIRONMENT = "environment"; // NOI18N
     // The list of our properties
-    private PropertySupport buildDirectoryProperty = null;
-    private PropertySupport makeCommandProperty = null;
-    private PropertySupport makeOptionsProperty = null;
-    private PropertySupport makeTargetsProperty = null;
-    private PropertySupport makeEnvironmentProperty = null;;
+    private PropertySupport<String> buildDirectoryProperty = null;
+    private PropertySupport<String> makeCommandProperty = null;
+    private PropertySupport<String> makeOptionsProperty = null;
+    private PropertySupport<String> makeTargetsProperty = null;
+    private PropertySupport<String> makeEnvironmentProperty = null;;
     /** Store a File of the Build directory */
-    private File buildDir;
     private static ResourceBundle bundle = NbBundle.getBundle(MakeExecSupport.class);
 
     /** Constructor */
@@ -110,7 +106,7 @@ public class MakeExecSupport extends ExecutionSupport {
     }
 
     /**
-     *  Helper method that adds propertiesd to property sheet
+     *  Helper method that adds properties to property sheet
      *
      *  @param set sheet set to add properties to
      */
@@ -141,10 +137,12 @@ public class MakeExecSupport extends ExecutionSupport {
                 getString("PROP_BUILD_DIRECTORY"), // NOI18N
                 getString("HINT_BUILD_DIRECTORY")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getBuildDirectory();
             }
 
+            @Override
             public void setValue(String val) {
                 setBuildDirectory(val);
             }
@@ -211,10 +209,12 @@ public class MakeExecSupport extends ExecutionSupport {
         return new PropertySupport.ReadWrite<String>(PROP_MAKE_COMMAND, String.class,
                 getString("PROP_MAKE_COMMAND"), getString("HINT_MAKE_COMMAND")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getMakeCommand();
             }
 
+            @Override
             public void setValue(String val) {
                 setMakeCommand(val);
             }
@@ -281,10 +281,12 @@ public class MakeExecSupport extends ExecutionSupport {
         return new PropertySupport.ReadWrite<String>(PROP_MAKE_OPTIONS, String.class,
                 getString("PROP_MAKE_OPTIONS"), getString("HINT_MAKE_OPTIONS")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getMakeOptions(false);
             }
 
+            @Override
             public void setValue(String val) {
                 setMakeOptions(val);
             }
@@ -308,7 +310,7 @@ public class MakeExecSupport extends ExecutionSupport {
 
     /**
      *  Get the the command line options to invoke make with. These may
-     *  be flags recognised by make or variable definitions. They should
+     *  be flags recognized by make or variable definitions. They should
      *  bot be targets, although nothing prevents this misuse.
      *
      *  @return the options
@@ -319,7 +321,7 @@ public class MakeExecSupport extends ExecutionSupport {
 
     /**
      *  Get the the command line options to invoke make with. These may
-     *  be flags recognised by make or variable definitions. They should
+     *  be flags recognized by make or variable definitions. They should
      *  bot be targets, although nothing prevents this misuse.
      *
      *  @return the options
@@ -368,10 +370,12 @@ public class MakeExecSupport extends ExecutionSupport {
         return new PropertySupport.ReadWrite<String>(PROP_MAKE_TARGETS, String.class,
                 getString("PROP_MAKE_TARGETS"), getString("HINT_MAKE_TARGETS")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getMakeTargets();
             }
 
+            @Override
             public void setValue(String val) {
                 setMakeTargets(val);
             }
@@ -479,7 +483,7 @@ public class MakeExecSupport extends ExecutionSupport {
     }
 
     /**
-     *  Add a space separated list of targts to the target list
+     *  Add a space separated list of targets to the target list
      *
      *  @param newtargets the (space separated) target list
      */
@@ -503,10 +507,10 @@ public class MakeExecSupport extends ExecutionSupport {
 
     class TargetsPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private PropertySupport prop = null;
+        private PropertySupport<String> prop = null;
         private PropertyEnv env;
 
-        TargetsPropertyEditor(PropertySupport prop) {
+        TargetsPropertyEditor(PropertySupport<String> prop) {
             this.prop = prop;
         }
 
@@ -514,7 +518,7 @@ public class MakeExecSupport extends ExecutionSupport {
         public java.awt.Component getCustomEditor() {
             String val;
             try {
-                val = (String) prop.getValue();
+                val = prop.getValue();
             } catch (Exception e) {
                 val = "";
             }
@@ -526,6 +530,7 @@ public class MakeExecSupport extends ExecutionSupport {
             return true;
         }
 
+        @Override
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }

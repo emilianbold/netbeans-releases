@@ -46,6 +46,7 @@ package org.netbeans.modules.ant.freeform;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.Collections;
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.xml.XMLUtil;
@@ -70,31 +72,36 @@ import org.openide.xml.XMLUtil;
  * obtained from project lookup
  * 
  * @author Milan Kubec
+ * @author Tomas Zezula
  */
 public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementation 
         implements AntProjectListener, PropertyChangeListener {
     
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
-    private Map<FileObject,Charset> encodingsCache;
+    //@GuardedBy("this")
+    private Map<File,Charset> encodingsCache;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public FreeformFileEncodingQueryImpl(AntProjectHelper aph, PropertyEvaluator eval) {
         helper = aph;
         evaluator = eval;
         evaluator.addPropertyChangeListener(this);
     }
     
+    @Override
     public Charset getEncoding(final FileObject file) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Charset>() {
+            @Override
             public Charset run() {
                 Charset toReturn = null;
-                synchronized (this) {
+                synchronized (FreeformFileEncodingQueryImpl.this) {
                     if (encodingsCache == null) {
                         computeEncodingsCache();
                     }
                     if (encodingsCache.size() > 0) {
-                        Set<FileObject> roots = encodingsCache.keySet();
-                        FileObject parent = getNearestParent(roots, file);
+                        Set<File> roots = encodingsCache.keySet();
+                        File parent = getNearestParent(roots, FileUtil.toFile(file));
                         if (parent != null) {
                             toReturn = encodingsCache.get(parent);
                         }
@@ -105,18 +112,19 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
         });
     }
 
-    private FileObject getNearestParent(Set<FileObject> parents, FileObject file) {
+    private File getNearestParent(Set<File> parents, File file) {
         while (file != null) {
              if (parents.contains(file)) {
                  return file;
              }
-             file = file.getParent();
+             file = file.getParentFile();
          }
         return null;
     }
     
     private void computeEncodingsCache() {
-        Map<FileObject,Charset> cache = new HashMap<FileObject,Charset>(3);
+        assert Thread.holdsLock(this);
+        Map<File,Charset> cache = new HashMap<File,Charset>(3);
         Element data = Util.getPrimaryConfigurationData(helper);
         Element foldersEl = XMLUtil.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl != null) {
@@ -124,12 +132,12 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
                 if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                     continue;
                 }
-                FileObject srcRoot = null;
+                File srcRoot = null;
                 Element locationEl = XMLUtil.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
                 if (locationEl != null) {
                     String location = evaluator.evaluate(XMLUtil.findText(locationEl));
                     if (location != null) {
-                        srcRoot = helper.resolveFileObject(location);
+                        srcRoot = helper.resolveFile(location);
                     }
                 }
                 Element encodingEl = XMLUtil.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
@@ -150,28 +158,29 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
         if (cache.size() > 0) {
             encodingsCache = cache;
         } else {
-            encodingsCache = Collections.<FileObject,Charset>emptyMap();
+            encodingsCache = Collections.<File,Charset>emptyMap();
         }
     }
     
     // ---
     
+    @Override
     public void configurationXmlChanged(AntProjectEvent ev) {
         invalidateCache();
     }
     
+    @Override
     public void propertiesChanged(AntProjectEvent ev) {
         invalidateCache();
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         invalidateCache();
     }
     
     private synchronized void invalidateCache() {
-        synchronized (this) {
-            encodingsCache = null;
-        }
+        encodingsCache = null;
     }
     
 }

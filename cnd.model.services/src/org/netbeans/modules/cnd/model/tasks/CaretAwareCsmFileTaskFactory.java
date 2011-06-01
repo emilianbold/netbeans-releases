@@ -65,6 +65,7 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
     }
 
+    @Override
     public List<FileObject> getFileObjects() {
         List<FileObject> files = OpenedEditors.filterSupportedFiles(OpenedEditors.getDefault().getVisibleEditorsFiles());
 
@@ -94,6 +95,7 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
 
     private class ChangeListenerImpl implements ChangeListener {
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             List<JTextComponent> added = new ArrayList<JTextComponent>(OpenedEditors.getDefault().getVisibleEditors());
             List<JTextComponent> removed = new ArrayList<JTextComponent>(component2Listener.keySet());
@@ -127,6 +129,7 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
             this.component = component;
             rescheduleTask = WORKER.create(new Runnable() {
 
+                @Override
                 public void run() {
                     FileObject file = OpenedEditors.getFileObject(ComponentListener.this.component);
 
@@ -138,6 +141,7 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
             });
         }
 
+        @Override
         public void caretUpdate(CaretEvent e) {
             FileObject file = OpenedEditors.getFileObject(component);
 

@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.subversion.ui.checkout;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.subversion.util.CheckoutCompleted;
 import java.io.File;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -53,11 +55,13 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.wizards.*;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.CallableSystemAction;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -65,11 +69,27 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public final class CheckoutAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.modules.subversion.ui.checkout.CheckoutAction", category = "Subversion")
+@ActionRegistration(displayName = "#LBL_CheckoutAction_Name")
+@ActionReferences({
+   @ActionReference(path="Versioning/Subversion/Actions/Global", position=300 /*, separatorAfter=350*/)
+})
+public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
            
+    public CheckoutAction() {
+    }
+
     @Override
-    public void performAction() {
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.subversion.ui.checkout.CheckoutAction");
+    }
+          
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        perform();
+    }
         
+    public static void perform() {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }
@@ -102,27 +122,6 @@ public final class CheckoutAction extends CallableSystemAction {
         });
     }
     
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(CheckoutAction.class, "CTL_CheckoutAction"); // NOI18N
-    }
-    
-    @Override
-    protected void initialize() {
-        super.initialize();        
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
     public static RequestProcessor.Task performCheckout(
         final SVNUrl repository,
         final SvnClient client,

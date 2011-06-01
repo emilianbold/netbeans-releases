@@ -52,6 +52,7 @@ import java.io.File;
 import java.util.*;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
+import org.openide.util.Mutex.Privileged;
 
 /**
  *
@@ -139,9 +140,10 @@ public class ChildrenSupportTest extends NbTestCase {
         FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(wDir);
         assertNotNull(fo);
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
-        ChildrenCache chCache = fo.getChildrenCache();
-        assertNotNull(chCache);
-        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
+        ChildrenCache orig = fo.getChildrenCache();
+        assertNotNull(orig);
+        ChildrenSupport childrenSupport = (ChildrenSupport)orig;
+        MyCache chCache = new MyCache(orig);
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -184,15 +186,25 @@ public class ChildrenSupportTest extends NbTestCase {
         FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(wDir);
         assertNotNull(fo);
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
-        ChildrenCache chCache = fo.getChildrenCache();
-        assertNotNull(chCache);
+        ChildrenCache orig = fo.getChildrenCache();
+        assertNotNull(orig);
+        MyCache chCache = new MyCache(orig);
         assertEquals(0,chCache.getChildren(true).size());
-        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
+        ChildrenSupport childrenSupport = (ChildrenSupport)orig;
         assertEquals(0,childrenSupport.getCachedChildren().size());
         assertTrue(file.createNewFile());
         assertTrue(file2.createNewFile());
 
         assertEquals(2,chCache.refresh().size());
+        
+        Iterator<FileNaming> res = childrenSupport.getCachedChildren().iterator();
+        assertNotNull("Has one element", res.next());
+        
+        assertTrue("Third file created", new File(wDir, "testciao.f").createNewFile());
+        assertEquals("One additional file created", 1, chCache.refresh().size());
+        
+        assertNotNull("Can iterate to next", res.next());
+        assertFalse("And that was the last one", res.hasNext());
     }
 
 
@@ -202,9 +214,10 @@ public class ChildrenSupportTest extends NbTestCase {
         FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(wDir);
         assertNotNull(fo);
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
-        ChildrenCache chCache = fo.getChildrenCache();
-        assertNotNull(chCache);
-        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
+        ChildrenCache orig = fo.getChildrenCache();
+        assertNotNull(orig);
+        ChildrenSupport childrenSupport = (ChildrenSupport)orig;
+        MyCache chCache = new MyCache(orig);
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -247,9 +260,10 @@ public class ChildrenSupportTest extends NbTestCase {
         FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(wDir);
         assertNotNull(fo);
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
-        ChildrenCache chCache = fo.getChildrenCache();
-        assertNotNull(chCache);
-        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
+        ChildrenCache orig = fo.getChildrenCache();
+        assertNotNull(orig);
+        ChildrenSupport childrenSupport = (ChildrenSupport)orig;
+        MyCache chCache = new MyCache(orig);
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -284,7 +298,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertTrue(file.createNewFile());
         assertNull(chCache.getChild(file.getName(),false));
         assertTrue(chCache.getChildren(false).isEmpty());
-        m = childrenSupport.refresh(NamingFactory.fromFile(wDir));
+        m = refresh(childrenSupport, NamingFactory.fromFile(wDir));
         assertEquals(1, m.keySet().size());
         assertEquals(m.keySet().toArray()[0],NamingFactory.fromFile(file));
         assertEquals(m.values().toArray()[0],ChildrenCache.ADDED_CHILD);
@@ -293,6 +307,98 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(chCache.getChild(file.getName(),false),
                 chCache.getChildren(false).toArray()[0]);
         assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+    }
+
+    private Map refresh(ChildrenSupport childrenSupport, FileNaming fromFile) {
+        Runnable[] task = new Runnable[1];
+        Map<FileNaming, Integer> res = null;
+        while (res == null) {
+            if (task[0] != null) {
+                task[0].run();
+            }
+            res = childrenSupport.refresh(fromFile, task);
+        }
+        return res;
+        
+    }
+    private Set<FileNaming> getChildren(ChildrenSupport childrenSupport, FileNaming fromFile, boolean b) {
+        Runnable[] task = new Runnable[1];
+        Set<FileNaming> res = null;
+        while (res == null) {
+            if (task[0] != null) {
+                task[0].run();
+            }
+            res = childrenSupport.getChildren(fromFile, b, task);
+        }
+        return res;
+        
+    }
+    
+    private static class MyCache implements ChildrenCache {
+        ChildrenCache delegate;
+
+        public MyCache(ChildrenCache delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void removeChild(FileNaming childName) {
+            delegate.removeChild(childName);
+        }
+
+        @Override
+        public Map<FileNaming, Integer> refresh(Runnable[] task) {
+            return delegate.refresh(task);
+        }
+        public Map<FileNaming, Integer> refresh() {
+            Runnable[] task = new Runnable[1];
+            Map<FileNaming, Integer> res = null;
+            while (res == null) {
+                if (task[0] != null) {
+                    task[0].run();
+                }
+                res = delegate.refresh(task);
+            }
+            return res;
+        }
+
+        @Override
+        public boolean isCacheInitialized() {
+            return delegate.isCacheInitialized();
+        }
+
+        @Override
+        public Privileged getMutexPrivileged() {
+            return delegate.getMutexPrivileged();
+        }
+
+        @Override
+        public Set<FileNaming> getChildren(boolean rescan, Runnable[] task) {
+            return delegate.getChildren(rescan, task);
+        }
+        public Set<FileNaming> getChildren(boolean rescan) {
+            Runnable[] task = new Runnable[1];
+            Set<FileNaming> res = null;
+            while (res == null) {
+                if (task[0] != null) {
+                    task[0].run();
+                }
+                res = delegate.getChildren(rescan, task);
+            }
+            return res;
+        }
+
+        @Override
+        public FileNaming getChild(String childName, boolean rescan) {
+            return delegate.getChild(childName, rescan);
+        }
+
+        @Override
+        public Set<FileNaming> getCachedChildren() {
+            return delegate.getCachedChildren();
+        }
+        
+        
     }
 
 
@@ -309,7 +415,7 @@ public class ChildrenSupportTest extends NbTestCase {
      * Test of getChildren method, of class org.netbeans.modules.masterfs.children.FolderPathItems.
      */
     public void testGetChildrenPathItems() throws Exception{
-        Set childItems = folderItem.getChildren(folderName, true);
+        Set childItems = getChildren(folderItem, folderName, true);
         List lst = Arrays.asList(testFile.listFiles());
         Iterator it = childItems.iterator();
         while (it.hasNext()) {
@@ -323,7 +429,7 @@ public class ChildrenSupportTest extends NbTestCase {
      * Test of getFileName method, of class org.netbeans.modules.masterfs.children.FolderPathItems.
      */
     public void testGetChildItem() throws Exception{
-        folderItem.getChildren(folderName, true);
+        getChildren(folderItem, folderName, true);
         List lst = Arrays.asList(testFile.listFiles());
         Iterator it = lst.iterator();
         while (it.hasNext()) {
@@ -337,7 +443,7 @@ public class ChildrenSupportTest extends NbTestCase {
     public void testRefresh () throws Exception {
         FileNaming fpiName = NamingFactory.fromFile(fbase);
         ChildrenSupport fpi = new ChildrenSupport();
-        fpi.getChildren(fpiName, true);
+        getChildren(fpi, fpiName, true);
         assertTrue (removed1.delete());
         assertTrue (removed2.delete());
         assertTrue (added1.mkdirs());
@@ -346,7 +452,7 @@ public class ChildrenSupportTest extends NbTestCase {
         List added = Arrays.asList(new String[] {"added1", "added2"});
         List removed = Arrays.asList(new String[] {"removed1", "removed2"});
 
-        Map changes = fpi.refresh(fpiName);
+        Map changes = refresh(fpi, fpiName);
         Iterator it = changes.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
@@ -371,7 +477,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertTrue (added1.mkdirs());
         assertTrue (added2.mkdirs());
 
-        Map changes = fpi.refresh(fpiName);
+        Map changes = refresh(fpi, fpiName);
         Iterator it = changes.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
@@ -405,7 +511,7 @@ public class ChildrenSupportTest extends NbTestCase {
         ChildrenSupport fpi = new ChildrenSupport();
         assertNotNull(fpi.getChild("removed1", fpiName, false));
         assertNotNull(fpi.getChild("removed2", fpiName, false));
-        assertFalse("Children must not be deleted when File.listFiles() returns null.", fpi.getChildren(fpiName, true).isEmpty());
+        assertFalse("Children must not be deleted when File.listFiles() returns null.", getChildren(fpi, fpiName, true).isEmpty());
     }
 
 }

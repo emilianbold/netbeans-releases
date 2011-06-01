@@ -4,10 +4,10 @@
   <enterprise-beans>
         <session>
             <display-name>LocalSessionSB</display-name>
-            <ejb-name>LocalSessionBean</ejb-name>
+            <ejb-name>LocalSession</ejb-name>
             <local-home>multi.ejbs.local.LocalSessionLocalHome</local-home>
             <local>multi.ejbs.local.LocalSessionLocal</local>
-            <ejb-class>multi.ejbs.local.LocalSessionBean</ejb-class>
+            <ejb-class>multi.ejbs.local.LocalSession</ejb-class>
             <session-type>Stateless</session-type>
             <transaction-type>Container</transaction-type>
         </session>
@@ -15,7 +15,7 @@
     <assembly-descriptor>
         <container-transaction>
             <method>
-                <ejb-name>LocalSessionBean</ejb-name>
+                <ejb-name>LocalSession</ejb-name>
                 <method-name>*</method-name>
             </method>
             <trans-attribute>Required</trans-attribute>

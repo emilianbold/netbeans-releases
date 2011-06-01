@@ -43,8 +43,16 @@
 package org.netbeans.modules.bugzilla.commands;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
@@ -63,6 +71,7 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     public static final String EXCEPTION_HANDLER_CLASS_NAME = "org.netbeans.modules.bugzilla.commands.BugzillaExecutor$ExceptionHandler";
     private TaskRepositoryManager trm;
     private BugzillaRepositoryConnector brc;
+    private ProxySelector defaultPS;
     
     public ExceptionHandlerTest(String arg0) {
         super(arg0);
@@ -90,8 +99,18 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
 
         trm.addRepositoryConnector(brc);
         WebUtil.init();
+        
+        if (defaultPS == null) {
+            defaultPS = ProxySelector.getDefault();
+        }
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        ProxySelector.setDefault(defaultPS);         
+    }
+    
     public void testIsLoginHandler() throws Throwable {
         BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, "XXX", "XXX", null, null);
         assertHandler(repository, "LoginHandler");
@@ -107,7 +126,19 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     }
 
     public void testIsDefaultHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", null, null, null, null, null);
+        ProxySelector ps = new ProxySelector() {
+            @Override
+            public List<Proxy> select(URI uri) {
+                return Collections.singletonList(Proxy.NO_PROXY);
+            }
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        ProxySelector.setDefault(ps); 
+        
+        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", "dil://dil.com", null, null, null, null);
         assertHandler(repository, "DefaultHandler");
 
         repository = new BugzillaRepository("bgzll", "bgzll", "crap", null, null, null, null);

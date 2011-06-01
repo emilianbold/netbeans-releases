@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.subversion.client;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -50,6 +52,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 class JhlClientCallback extends SvnClientCallback {
 
+    private static final Logger LOG = Logger.getLogger("versioning.subversion.passwordCallback.javahl"); //NOI18N
+    
     public JhlClientCallback(SVNUrl repositoryUrl, int handledExceptions) {
         super(repositoryUrl, handledExceptions);
     }
@@ -62,6 +66,9 @@ class JhlClientCallback extends SvnClientCallback {
 
     @Override
     public boolean prompt(String realm, String username, boolean maySave) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "prompt for {0}, {1}", new Object[] { realm, username }); //NOI18N
+        }
         return true;
     }
 
@@ -73,16 +80,25 @@ class JhlClientCallback extends SvnClientCallback {
 
     @Override
     public boolean promptSSH(String realm, String username, int sshPort, boolean maySave) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "promptSSH for {0} [{1}]", new Object[] { realm, sshPort }); //NOI18N
+        }
         return true;
     }
 
     @Override
     public boolean promptSSL(String realm, boolean maySave) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "promptSSL for {0}", realm); //NOI18N
+        }
         return true;
     }
 
     @Override
     public boolean promptUser(String realm, String username, boolean maySave) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "promptUser for {0}, {1}", new Object[] { realm, username }); //NOI18N
+        }
         return true;
     }
 }

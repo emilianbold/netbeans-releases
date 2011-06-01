@@ -111,9 +111,7 @@ public class NbModuleTestingTest extends TestBase {
 //                "public class ModuleTest extends ATest {\n" +
 //                "  public ModuleTest(String n) { super(n); }\n" +
 //                "  public static Test suite() {\n" +
-//                "    return NbModuleSuite.create(" +
-//                "      NbModuleSuite.createConfiguration(ATest.class).gui(false)" +
-//                "    );\n" +
+//                "    return NbModuleSuite.createConfiguration(ATest.class).gui(false).suite();\n" +
 //                "  }\n" +
 //                "}\n"
 //        );

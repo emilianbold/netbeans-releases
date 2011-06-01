@@ -42,7 +42,6 @@
 package org.netbeans.modules.dlight.spi.support;
 
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
-import org.netbeans.modules.dlight.spi.support.TableDataProvider;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -57,7 +56,6 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.openide.util.Exceptions;
 
 /**
  * Implements default SQLTableDataProvider for {@link org.netbeans.modules.dlight.core.storage.model.SQLDataStorage}
@@ -98,6 +96,7 @@ public class SQLTableDataProvider implements TableDataProvider {
      * need to be displayed. See {@link org.netbeans.modules.dlight.core.model.DLightManager#openVisualizer(org.netbeans.modules.dlight.core.model.DLightTool, java.lang.String, org.netbeans.modules.dlight.core.visualizer.model.VisualizerConfiguration) } for more detailes
      * @param storage {@link org.netbeans.modules.dlight.core.storage.model.DataStorage}
      */
+    @Override
     public final void attachTo(DataStorage storage) {
         this.storage = (SQLDataStorage) storage;
     }
@@ -109,7 +108,7 @@ public class SQLTableDataProvider implements TableDataProvider {
 //  public DataProvider newInstance() {
 //    return new SQLTableDataProvider();
 //  }
-    private final <T extends DataFilter> Collection<T> getDataFilters(Class<T> clazz) {
+    private <T extends DataFilter> Collection<T> getDataFilters(Class<T> clazz) {
         Collection<T> result = new ArrayList<T>();
         synchronized (lock) {
             for (DataFilter f : filters) {
@@ -126,6 +125,7 @@ public class SQLTableDataProvider implements TableDataProvider {
      * @param tableMetadata table description to get data from
      * @return list of {@link org.netbeans.modules.dlight.core.storage.model.DataRow}
      */
+    @Override
     public List<DataRow> queryData(DataTableMetadata tableMetadata) {
         if (tableMetadata == null) {
             return null;
@@ -173,15 +173,17 @@ public class SQLTableDataProvider implements TableDataProvider {
             }
 
         } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
+            SQLExceptions.printStackTrace(storage, ex);
         }
         return result;
     }
 
+    @Override
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         this.serviceInfoStorage = serviceInfoDataStorage;
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         //we should keep them here
         if (isAdjusting) {

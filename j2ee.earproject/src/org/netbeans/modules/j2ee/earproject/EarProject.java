@@ -72,6 +72,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
@@ -414,7 +415,8 @@ public final class EarProject implements Project, AntProjectListener {
             }
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
 
             String servInstID = EarProject.this.getUpdateHelper().
@@ -432,10 +434,10 @@ public final class EarProject implements Project, AntProjectListener {
                         getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
                         getProperty(EarProjectProperties.J2EE_SERVER_TYPE);
                 if (serverType != null) {
-                    String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-                    if (servInstIDs.length > 0) {
-                        EarProjectProperties.setServerInstance(EarProject.this, EarProject.this.updateHelper, servInstIDs[0]);
-                        platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                    String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, Type.EAR, EarProject.this.getJ2eeProfile());
+                    if (instanceID != null) {
+                        EarProjectProperties.setServerInstance(EarProject.this, EarProject.this.updateHelper, instanceID);
+                        platform = Deployment.getDefault().getJ2eePlatform(instanceID);
                     }
                 }
                 if (platform == null) {

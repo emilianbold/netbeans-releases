@@ -90,8 +90,8 @@ public class JavadocEnv extends DocEnv {
 
     public static void preRegister(final Context context, final ClasspathInfo cpInfo) {
         context.put(docEnvKey, new Context.Factory<DocEnv>() {
-            public DocEnv make() {
-                return new JavadocEnv(context, cpInfo);
+            public DocEnv make(Context c) {
+                return new JavadocEnv(c, cpInfo);
             }
         });
     }

@@ -65,7 +65,7 @@ public class MakefileUtils {
         ConfigurationDescriptorProvider confDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (confDescriptorProvider != null) {
             MakeConfigurationDescriptor makeConfDescriptor = confDescriptorProvider.getConfigurationDescriptor();
-            if (makeConfDescriptor != null) {
+            if (makeConfDescriptor != null && !makeConfDescriptor.getProjectMakefileName().isEmpty()) {
                 return project.getProjectDirectory().getFileObject(makeConfDescriptor.getProjectMakefileName());
             }
         }

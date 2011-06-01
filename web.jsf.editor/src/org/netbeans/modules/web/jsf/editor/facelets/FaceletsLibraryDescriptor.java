@@ -64,6 +64,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -100,7 +101,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
         return tags;
     }
 
-    public static String parseNamespace(InputStream content) {
+    public static String parseNamespace(InputStream content) throws IOException {
         return parseNamespace(content, "facelet-taglib", "namespace"); //NOI18N
     }
 
@@ -117,7 +118,10 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
             InputSource is = new InputSource(content); //the ecoding should be autodetected
-            docBuilder.setEntityResolver(UserCatalog.getDefault().getEntityResolver()); //we count on TaglibCatalog from web.core module
+            EntityResolver resolver = UserCatalog.getDefault().getEntityResolver(); //we count on TaglibCatalog from web.core module
+            if(resolver != null) {
+                docBuilder.setEntityResolver(resolver); 
+            }
             Document doc = docBuilder.parse(is);
 
             //usually the default taglib prefix
@@ -163,7 +167,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
     }
     private static final String STOP_PARSING_MGS = "regularly_stopped"; //NOI18N
 
-    public static String parseNamespace(InputStream content, final String tagTagName, final String namespaceTagName) {
+    public static String parseNamespace(InputStream content, final String tagTagName, final String namespaceTagName) throws IOException {
         final String[] ns = new String[1];
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -206,14 +210,11 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
 
 
             parser.parse(content, new Handler());
-
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new IOException(ex);
         } catch (SAXException ex) {
             if (!STOP_PARSING_MGS.equals(ex.getMessage())) {
-                Exceptions.printStackTrace(ex);
+                throw new IOException(ex);
             }
         }
 

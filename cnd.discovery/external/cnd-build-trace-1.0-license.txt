@@ -1,0 +1,13 @@
+Name: cnd-build-trace
+Version: 1.0
+Description: binaries that catch "exec" system calls to create project with existing code
+License: TBD
+OSR: -
+Origin: -
+Files: cnd-build-trace-1.0.zip
+Source: -
+Comment: needed for cnd.discovery module to catch "exec" system calls at build time
+
+Use of cnd-build-trace version 1.0 is governed by the terms of the license below:
+
+TBD

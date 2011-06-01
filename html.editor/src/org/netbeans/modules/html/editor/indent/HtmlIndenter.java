@@ -204,7 +204,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     @Override
     protected int getPreservedLineInitialIndentation(JoinedTokenSequence<HTMLTokenId> ts)
             throws BadLocationException {
-        int index = ts.index();
+        int[] index = ts.index();
         boolean found = false;
         do {
             if (isBlockCommentToken(ts.token())) {
@@ -231,7 +231,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     }
 
     private boolean isOpeningTag(JoinedTokenSequence<HTMLTokenId> ts) {
-        int index = ts.index();
+        int[] index = ts.index();
         boolean found = false;
         while (ts.moveNext()) {
             if (isEndTagSymbol(ts.currentTokenSequence().token())) {

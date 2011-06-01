@@ -51,8 +51,8 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/web/jsf20/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_0/jsf-api.jar!/</resource>
-	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_0/jsf-impl.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_1/jsf-api.jar!/</resource>
+	<resource>jar:nbinst://org.netbeans.modules.web.jsf20/modules/ext/jsf-2_1/jsf-impl.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://download.java.net/maven/2/com/sun/faces/jsf-api/2.0.2-b10/jsf-api-2.0.2-b10.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/faces/jsf-impl/2.0.2-b10/jsf-impl-2.0.2-b10.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/faces/jsf-api/2.1.1-b04/jsf-api-2.1.1-b04.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/faces/jsf-impl/2.1.1-b04/jsf-impl-2.1.1-b04.pom</resource>
     </volume>
 </library>

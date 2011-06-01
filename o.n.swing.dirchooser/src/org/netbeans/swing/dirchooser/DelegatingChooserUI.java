@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.FileChooserUI;
 import javax.swing.plaf.metal.MetalFileChooserUI;
 import org.openide.util.Utilities;
 
@@ -94,7 +93,7 @@ public class DelegatingChooserUI extends ComponentUI {
             fc.putClientProperty(START_TIME, Long.valueOf(System.currentTimeMillis()));
         }
         
-        Class<? extends FileChooserUI> chooser = getCurChooser(fc);
+        Class<?> chooser = getCurChooser(fc);
         ComponentUI compUI;
         try {
             Method createUIMethod = chooser.getMethod("createUI", JComponent.class);
@@ -111,7 +110,7 @@ public class DelegatingChooserUI extends ComponentUI {
             fc.addPropertyChangeListener(
                     JFileChooser.FILE_SELECTION_MODE_CHANGED_PROPERTY,
                     new PropertyChangeListener () {
-                        public void propertyChange(PropertyChangeEvent evt) {
+                        public @Override void propertyChange(PropertyChangeEvent evt) {
                             JFileChooser fileChooser = (JFileChooser)evt.getSource();
                             fileChooser.updateUI();
                         }
@@ -125,7 +124,7 @@ public class DelegatingChooserUI extends ComponentUI {
     /** Returns dirchooser for DIRECTORIES_ONLY, default filechooser for other
      * selection modes.
      */
-    private static Class<? extends FileChooserUI> getCurChooser (JFileChooser fc) {
+    private static Class<?> getCurChooser (JFileChooser fc) {
         if (fc.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
             return DirectoryChooserUI.class;
         }

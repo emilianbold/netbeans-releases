@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 
 // registered in META-INF/debugger/netbeans-DbxDebuggerEngine
 // registered in META-INF/debugger/netbeans-GdbDebuggerEngine
@@ -69,7 +70,7 @@ public class StepOutActionProvider extends NativeActionsProvider {
 
     /* abstract in ActionsProviderSupport */
     public void doAction(Object action) {
-        if (inDis()) {
+        if (Disassembly.isInDisasm()) {
             getDebugger().stepOutInst();
         } else {
             getDebugger().stepOut();

@@ -45,12 +45,14 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.OutputStream;
 import java.security.Permission;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
@@ -329,6 +331,32 @@ public class TreePathHandleTest extends NbTestCase {
         tp = new TreePath(tp, info.getCompilationUnit().getTypeDecls().get(0));
         
         TreePathHandle handle   = TreePathHandle.create(tp, info);
+        TreePath       resolved = handle.resolve(info);
+
+        assertNotNull(resolved);
+
+        assertTrue(tp.getLeaf() == resolved.getLeaf());
+    }
+
+    public void testFromElementHandle() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+        String code = "package test;\n" +
+                      "public class Test {\n" +
+                      "    public static void test() {\n" +
+                      "    }\n" +
+                      "}";
+
+        writeIntoFile(file,code);
+
+        JavaSource js = JavaSource.forFileObject(file);
+        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+
+        ClassTree clazz = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+        MethodTree method = (MethodTree) clazz.getMembers().get(1);
+        TreePath tp = TreePath.getPath(info.getCompilationUnit(), method);
+        Element el = info.getTrees().getElement(tp);
+        ElementHandle<?> elHandle = ElementHandle.create(el);
+        TreePathHandle handle   = TreePathHandle.from(elHandle, info.getClasspathInfo());
         TreePath       resolved = handle.resolve(info);
 
         assertNotNull(resolved);

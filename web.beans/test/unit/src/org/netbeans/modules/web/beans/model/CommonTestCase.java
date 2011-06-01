@@ -46,16 +46,14 @@ package org.netbeans.modules.web.beans.model;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
@@ -76,6 +74,7 @@ public class CommonTestCase extends JavaSourceTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         initAnnotations();
@@ -124,6 +123,22 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface "+name+"  {} ");
+    }
+    
+    protected void createInterceptorBinding(String name ) throws IOException{
+        TestUtilities.copyStringToFileObject(srcFO, "foo/"+name+".java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.interceptor.*; "+
+                "@InterceptorBinding " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, TYPE}) "+
                 "public @interface "+name+"  {} ");
     }
     
@@ -220,8 +235,8 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Target({METHOD, FIELD }) "+          
                 "public @interface Produces  {}");
         
-        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Nonbinding.java",
-                "package javax.enterprise.inject; " +
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/util/Nonbinding.java",
+                "package javax.enterprise.util; " +
                 "import static java.lang.annotation.ElementType.METHOD; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import java.lang.annotation.*; "+
@@ -284,10 +299,141 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Target({ANNOTATION_TYPE}) "+          
                 "public @interface Stereotype  {}");
         
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/NormalScope.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.ANNOTATION_TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ANNOTATION_TYPE}) "+          
+                "public @interface NormalScope  {" +
+                " boolean passivating() default faslse ; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/inject/Scope.java",
+                "package javax.inject; " +
+                "import static java.lang.annotation.ElementType.ANNOTATION_TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ANNOTATION_TYPE}) "+          
+                "public @interface Scope  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/ApplicationScoped.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@NormalScope "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface ApplicationScoped  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/ConversationScoped.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@NormalScope(passivating=true) "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface ConversationScoped  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/Dependent.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "import javax.inject.Scope; "+
+                "@Retention(RUNTIME) "+
+                "@Scope "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface Dependent  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/RequestScoped.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@NormalScope "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface RequestScoped  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/context/SessionScoped.java",
+                "package javax.enterprise.context; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@NormalScope(passivating=true) "+
+                "@Inherited "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface SessionScoped  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Typed.java",
+                "package javax.enterprise.inject; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface Typed  {" +
+                " Class<?>[] value() ; "+
+                "}");
+        
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/event/Event.java",
                 "package javax.enterprise.event; " +
                 "public interface Event<T>  {" +
                 " void fire( T event ); "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/decorator/Delegate.java",
+                "package javax.decorator; " +
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({FIELD, PARAMETER}) "+          
+                "public @interface Delegate  {" +
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/decorator/Decorator.java",
+                "package javax.decorator; " +
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE}) "+      
+                "@javax.enterprise.inject.Stereotype "+
+                "public @interface Decorator  {" +
                 "}");
         
         TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Instance.java",
@@ -295,58 +441,97 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "public interface Instance<T>  extends java.lang.Iterable<T> {" +
                 " void fire( T event ); "+
                 "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/spi/Extension.java",
+                "package javax.enterprise.inject.spi; " +
+                "public interface Extension  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/interceptor/InterceptorBinding.java",
+                "package javax.interceptor; " +
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import static java.lang.annotation.ElementType.ANNOTATION_TYPE; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ANNOTATION_TYPE}) "+      
+                "public @interface InterceptorBinding  {" +
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/interceptor/Interceptor.java",
+                "package javax.interceptor; " +
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE}) "+      
+                "public @interface Interceptor  {" +
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/interceptor/Interceptors.java",
+                "package javax.interceptor; " +
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({TYPE,METHOD}) "+      
+                "public @interface Interceptors  {" +
+                " Class<?>[] value(); "+
+                "}");
     }
 
     public final void assertFindParameterResultInjectables(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
         assertResultInjectables(result, injectables);
     }
 
     public final void assertFindParameterResultProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
         assertResultProductions(result, injectables);
     }
 
     public final void assertFindParameterResultProductionsVar(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
         assertResultProductions(result, true, injectables);
     }
 
     public final void assertFindVariableResultInjectables(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
         assertResultInjectables(result, injectables);
     }
 
     public final void assertFindVariableResultProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
         assertResultProductions(result, injectables);
     }
 
     public final void assertFindVariableResultProductionsVar(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        Result result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
         assertResultProductions(result, true, injectables);
     }
 
-    public final void assertFindVariableResultAllProductions(VariableElement element,
+    public final void assertFindAllProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
-            String... injectables) {
-        Result result = provider.findVariableInjectable(element, null);
-        assertResultAllProductions(result, injectables);
+            String productionName , String enclosingClass ) {
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
+        assertResultAllProductions(result, productionName , enclosingClass );
     }
 
-    public final void assertResultInjectables(Result result, String... injectables) {
+    public final void assertResultInjectables(DependencyInjectionResult result, String... injectables) {
         assertNotNull(result);
         assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
 
@@ -365,11 +550,11 @@ public class CommonTestCase extends JavaSourceTestCase {
         }
     }
 
-    public final void assertResultProductions(Result result, String... producers) {
+    public final void assertResultProductions(DependencyInjectionResult result, String... producers) {
         assertResultProductions(result, false, producers);
     }
 
-    public final void assertResultProductions(Result result, boolean variable, String... producers) {
+    public final void assertResultProductions(DependencyInjectionResult result, boolean variable, String... producers) {
         assertNotNull(result);
         assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
 
@@ -395,23 +580,27 @@ public class CommonTestCase extends JavaSourceTestCase {
         }
     }
 
-    public final void assertResultAllProductions(Result result, String... injectables) {
+    public final void assertResultAllProductions(DependencyInjectionResult result, String productionName , 
+            String enclosingClass) 
+    {
         assertNotNull(result);
         assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
 
-        List<DeclaredType> typeElements = ((ResultImpl) result).getAllProductions().values().iterator().next();
-        if (injectables == null) {
-            assertEquals("no injectables expected, but found: "+typeElements, 0, typeElements.size());
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+        if (productionName == null) {
+            assertEquals("no injectables expected, but found production element", 0, 
+                    productions.size());
         }
-        assertTrue("number of injectables does not match: returned="+typeElements+" expected="+Arrays.asList(injectables), injectables.length == typeElements.size());
-        Set<String> set = new HashSet<String>();
-        for (DeclaredType injactable : typeElements) {
-            set.add(((TypeElement)injactable.asElement()).getQualifiedName().toString());
-        }
-        for (String inj : injectables) {
-            assertTrue("Result of typesafe resolution should contain " + inj
-                    + " class definition in "+set, set.contains(inj));
-        }
+        assertEquals( "Expected just one production element" , 1, productions.size() );
+        Element production = productions.iterator().next();
+        String name = production.getSimpleName().toString();
+        
+        assertEquals("Production element name should be "+productionName,productionName, name);
+        Element parent = production.getEnclosingElement();
+        assertTrue( parent instanceof TypeElement );
+        String parentName = ((TypeElement)parent).getQualifiedName().toString();
+        assertEquals( "Production enclosing class name should be "+enclosingClass,
+                enclosingClass , parentName);
     }
 
 

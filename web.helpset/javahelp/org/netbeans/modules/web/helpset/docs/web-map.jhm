@@ -109,6 +109,7 @@
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/framework/jsf/csh/file_ManagedBeanPanel.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplatePanel" url="web/framework/jsf/create-facelets-template.html"/>
+	<mapID target="org.netbeans.modules.web.jsf.wizards.TemplateClientPanel" url="web/framework/jsf/create-facelets-template.html"/>
     <!-- See Issue 176788 for below target (13/11/2009) -->
 	<mapID target="framework_jsf_fromentity" url="web/framework/jsf/pages-from-entities.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html"/>
@@ -145,7 +146,6 @@
 	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/framework/grails/NewGrailsArtifact.html"/>
 	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/framework/grails/NewGrailsArtifact.html"/>
 	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="propfiles.prop" url="ui_elements/editors/about_properties_editor.html"/>
 	<mapID target="servlet_create" url="web/create/servlet/servlet_create.html"/>
 	<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html"/>
 	<mapID target="servlet_run" url="web/create/servlet/servlet_run.html"/>
@@ -156,7 +156,6 @@
 	<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html"/>
         <mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html"/>
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
-	<mapID target="webapps_process_top" url="web/about/webapps_process.html#top"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
     

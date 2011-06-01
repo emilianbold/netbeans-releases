@@ -52,11 +52,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.ProjectConfiguration;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 public abstract class Configuration implements ProjectConfiguration {
-    private String baseDir;
+    private FSPath fsPath;
     private String name;
     private boolean defaultConfiguration;
 
@@ -68,17 +72,25 @@ public abstract class Configuration implements ProjectConfiguration {
     private Configuration cloneOf;
 
     protected Configuration(String baseDir, String name) {
-        this.baseDir = baseDir;
+        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name);
+    }
+    
+    protected Configuration(FSPath fsPath, String name) {
+        this.fsPath = fsPath;
         this.name = name;
         defaultConfiguration = false;
 
         // For change support
         pcs = new PropertyChangeSupport(this);
-
+    }
+    
+    // extracted from constructor to avoid leaking "this"
+    // MUST be called by descendant classes
+    protected final void initAuxObjects() {
         // Create and initialize auxiliary objects
         ConfigurationAuxObjectProvider[] auxObjectProviders = ConfigurationDescriptorProvider.getAuxObjectProviders();
         for (int i = 0; i < auxObjectProviders.length; i++) {
-            ConfigurationAuxObject pao = auxObjectProviders[i].factoryCreate(baseDir, pcs);
+            ConfigurationAuxObject pao = auxObjectProviders[i].factoryCreate(fsPath.getPath(), pcs, this); //XXX:fullRemote:fileSystem
             pao.initialize();
             //auxObjects.add(pao);
             String id = pao.getId();
@@ -87,7 +99,6 @@ public abstract class Configuration implements ProjectConfiguration {
             }
             auxObjectsMap.put(id,pao);
         }
-
     }
 
     public void setCloneOf(Configuration profile) {
@@ -108,13 +119,27 @@ public abstract class Configuration implements ProjectConfiguration {
 
     public String getBaseDir() {
         // this dir is possibly local directory (in remote mode)
-        return baseDir;
+        return fsPath.getPath();
     }
-
+    
+    public FileSystem getFileSystem() {
+        return fsPath.getFileSystem();
+    }
+    
+    //XXX:fullRemote:fileSystem - change with setFSPath
     public void setBaseDir(String baseDir) {
-        this.baseDir = baseDir;
+        CndUtils.assertTrue(CndFileUtils.isLocalFileSystem(fsPath.getFileSystem()), "Setting baseDir for non-local configuration?!"); //NOI18N
+        this.fsPath = new FSPath(fsPath.getFileSystem(), baseDir);
     }
 
+    public FSPath getBaseFSPath() {
+        return fsPath;
+    }
+
+    public void setBaseFSPath(FSPath fsPath) {
+        this.fsPath = fsPath;
+    }
+    
     @Override
     public String getDisplayName() {
             return getName();

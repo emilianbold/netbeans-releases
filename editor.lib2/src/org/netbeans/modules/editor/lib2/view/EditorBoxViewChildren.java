@@ -250,6 +250,9 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
             } else { // Not tabable view
                 majorSpan = view.getPreferredSpan(majorAxis);
             }
+            if (view instanceof NewlineView) {
+                visualUpdate.markNewLineViewChanged();
+            }
             // Below gap => do not use visualGapLength
             view.setRawVisualOffset(visualOffset);
             visualOffset += majorSpan;
@@ -379,7 +382,10 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                     visualUpdate.markWidthChanged();
                     repaintBounds.width = EXTEND_TO_END;
                 } else {
-                    if (visualUpdate.isTabsChanged()) {
+                    if (visualUpdate.isNewLineViewChanged()) {
+                        //newline view paints not only its span, but also the remainder of the given row:
+                        repaintBounds.width = EXTEND_TO_END;
+                    } else if (visualUpdate.isTabsChanged()) {
                         // Can happen even without total children span change.
                         // Repaint till end.
                         repaintBounds.width = getMajorAxisChildrenSpan(boxView) - visualUpdate.visualOffset;
@@ -458,7 +464,10 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         if (high == -1) {
             return -1;
         }
-        int low = 0;
+        return getViewIndex(offset, 0, high);
+    }
+    
+    int getViewIndex(int offset, int low, int high) {
         while (low <= high) {
             int mid = (low + high) >>> 1;
             int midStartOffset = get(mid).getStartOffset();
@@ -555,7 +564,10 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         if (high == -1) {
             return -1; // No items
         }
-        int low = 0;
+        return getViewIndexFirst(offset, 0, high);
+    }
+
+    int getViewIndexFirst(int offset, int low, int high) {
         while (low <= high) {
             int mid = (low + high) >>> 1; // mid in the binary search
             int viewStartOffset = get(mid).getStartOffset();
@@ -751,16 +763,14 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
 
 
     public int getViewIndexAtPoint(EditorBoxView<V> boxView, double x, double y, Shape alloc) {
-        Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
-        x -= mutableBounds.x;
-        y -= mutableBounds.y;
+        Rectangle2D.Double relXY = ViewUtils.shape2RelBounds(alloc, x, y);
+        double visualOffset = (boxView.getMajorAxis() == View.X_AXIS) ? relXY.getX() : relXY.getY();
 
         int high = size() - 1;
         if (high == -1) {
             return -1;
         }
         int low = 0;
-        double visualOffset = (boxView.getMajorAxis() == View.X_AXIS) ? x : y;
         while (low <= high) {
             int mid = (low + high) >>> 1;
             double midVisualOffset = getViewVisualOffset(mid);
@@ -833,8 +843,6 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
     }
 
     protected void paint(EditorBoxView<V> boxView, Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        int index;
-        int endIndex;
         Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
         // Cannot use (clipBounds.contains(allocBounds)) to check for full rendering
         // since sometimes the allocBounds come equal to the visible area size which would then lead
@@ -844,19 +852,25 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         if (!mutableBounds.isEmpty()) {
             // Compute lower and higher bounds
             int majorAxis = boxView.getMajorAxis();
-            double visualOffset;
+            double startVisualOffset;
             double endVisualOffset;
             if (majorAxis == View.X_AXIS) {
-                visualOffset = mutableBounds.x;
-                endVisualOffset = visualOffset + mutableBounds.width;
+                startVisualOffset = mutableBounds.x;
+                endVisualOffset = startVisualOffset + mutableBounds.width;
             } else {
-                visualOffset = mutableBounds.y;
-                endVisualOffset = visualOffset + mutableBounds.height;
+                startVisualOffset = mutableBounds.y;
+                endVisualOffset = startVisualOffset + mutableBounds.height;
             }
-            index = Math.max(getViewIndexFirst(visualOffset), 0); // Cover no-children case
-            endIndex = getViewIndexFirst(endVisualOffset) + 1;
-            paintChildren(boxView, g, alloc, clipBounds, index, endIndex);
+            paintChildren(boxView, g, alloc, clipBounds, startVisualOffset, endVisualOffset);
         }
+    }
+    
+    protected void paintChildren(EditorBoxView<V> boxView, Graphics2D g, Shape alloc, Rectangle clipBounds,
+            double startVisualOffset, double endVisualOffset)
+    {
+        int index = Math.max(getViewIndexFirst(startVisualOffset), 0); // Cover no-children case
+        int endIndex = Math.min(getViewIndexFirst(endVisualOffset) + 1, size());
+        paintChildren(boxView, g, alloc, clipBounds, index, endIndex);
     }
     
     protected void paintChildren(EditorBoxView<V> boxView, Graphics2D g, Shape alloc, Rectangle clipBounds,

@@ -199,12 +199,12 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
                     // create standalone module
                     NbModuleProjectGenerator.createStandAloneModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), data.getPlatformID(), data.isOSGi());
+                            data.getBundle(), data.getLayer(), data.getPlatformID(), data.isOSGi(), false);
                 } else {
                     // create suite-component module
                     NbModuleProjectGenerator.createSuiteComponentModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()), data.isOSGi());
+                            data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()), data.isOSGi(), false);
                 }
                 break;
             case LIBRARY_MODULE:

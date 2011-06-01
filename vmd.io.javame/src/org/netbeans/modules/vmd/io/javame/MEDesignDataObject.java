@@ -63,6 +63,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.openide.util.UserQuestionException;
 
 /**
  * @author David Kaspar
@@ -123,7 +124,14 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
 
     public StyledDocument getEditorDocument () {
         try {
-            return editorSupport.openDocument ();
+            StyledDocument styledDocument = null;
+            try {
+                styledDocument = editorSupport.openDocument();
+            } catch (UserQuestionException uqe) { // issue #198930
+                uqe.confirmed();
+                styledDocument = editorSupport.openDocument();
+            }
+            return styledDocument;
         } catch (IOException e) {
             throw Debug.error (e);
         }

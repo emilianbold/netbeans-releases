@@ -92,9 +92,9 @@ public class CsmSortUtilities {
             return false;
         }
         int n2 = strPrefix_.length();
-        for (int i1=0, i2=0; i1<n1 && i2<n2; i1++, i2++) {
-            char c1 = name_.charAt(i1);
-            char c2 = strPrefix_.charAt(i2);
+        for (int i = 0; i < n1 && i < n2; i++) {
+            char c1 = name_.charAt(i);
+            char c2 = strPrefix_.charAt(i);
             if (c1 != c2) {
                 if (!caseSensitive && !match) {
                     c1 = Character.toUpperCase(c1);
@@ -171,6 +171,7 @@ public class CsmSortUtilities {
     
     public static final class DefaultClassNameComparator implements Comparator {
         
+        @Override
         public int compare(Object o1, Object o2) {
             if (o1 == o2) {
                 return 0;
@@ -191,6 +192,7 @@ public class CsmSortUtilities {
     
     public static final class InsensitiveClassNameComparator implements Comparator {
         
+        @Override
         public int compare(Object o1, Object o2) {
             if (o1 == o2) {
                 return 0;
@@ -221,6 +223,7 @@ public class CsmSortUtilities {
             this.sensitive = sensitive;
         }
         
+        @Override
         public int compare(Object o1, Object o2) {
             if (o1 == o2) {
                 return 0;
@@ -309,6 +312,7 @@ public class CsmSortUtilities {
             this.sensitive = sensitive;
         }
         
+        @Override
         public int compare(Object o1, Object o2) {
             if (o1 == o2) {
                 return 0;

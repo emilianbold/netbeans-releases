@@ -81,6 +81,10 @@ public class FastScanTest extends NbTestCase {
         doFastScanTest("project3/web", "jsp2/jspx/basic.jspx", new JspParserAPI.JspOpenInfo(true, "UTF-8"));
     }
     
+    public void testEncodingBug198637() throws Exception {
+        doFastScanTest("project2/web", "encoding198637.jsp", new JspParserAPI.JspOpenInfo(false, "utf-8"));
+    }
+    
     public void doFastScanTest(String wmRootPath, String path, JspParserAPI.JspOpenInfo correctInfo) throws Exception {
         FileObject wmRoot = TestUtil.getFileInWorkDir(wmRootPath, this);
         FileObject tempFile = wmRoot.getFileObject(path);

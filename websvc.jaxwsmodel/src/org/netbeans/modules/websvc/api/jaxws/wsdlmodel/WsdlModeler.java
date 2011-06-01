@@ -146,7 +146,11 @@ public class WsdlModeler {
     }
 
     public WsdlModel getAndWaitForWsdlModel() {
-        if (getWsdlModel() == null) {
+        return getAndWaitForWsdlModel( false );
+    }
+    
+    public WsdlModel getAndWaitForWsdlModel(boolean forceReload ) {
+        if (forceReload || getWsdlModel() == null) {
             generateWsdlModel();
         }
         return wsdlModel;

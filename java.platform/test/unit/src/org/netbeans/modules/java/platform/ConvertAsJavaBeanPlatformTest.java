@@ -73,7 +73,7 @@ public class ConvertAsJavaBeanPlatformTest extends NbTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(ConvertAsJavaBeanPlatformTest.class).gui(false));
+        return NbModuleSuite.emptyConfiguration().addTest(ConvertAsJavaBeanPlatformTest.class).gui(false).suite();
     }
 
     public void testConvertAsBeanPlatform() throws Exception {

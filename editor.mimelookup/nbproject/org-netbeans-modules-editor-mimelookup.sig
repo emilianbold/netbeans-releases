@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.16
+#Version 1.21.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -71,7 +71,22 @@ meth public static org.netbeans.api.editor.mimelookup.MimePath parse(java.lang.S
 supr java.lang.Object
 hfds LOCK,LOOKUP_LOCK,LRU,MAX_LRU_SIZE,REG_NAME_PATTERN,WELL_KNOWN_TYPES,lookup,mimePaths,mimeType,mimeType2mimePathRef,path,string2mimePath
 
+CLSS public abstract interface !annotation org.netbeans.api.editor.mimelookup.MimeRegistration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.Class<?> service()
+meth public abstract java.lang.String mimeType()
+
+CLSS public abstract interface !annotation org.netbeans.api.editor.mimelookup.MimeRegistrations
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.api.editor.mimelookup.MimeRegistration[] value()
+
 CLSS public abstract interface org.netbeans.spi.editor.mimelookup.Class2LayerFolder<%0 extends java.lang.Object>
+ anno 0 java.lang.Deprecated()
 meth public abstract java.lang.Class<{org.netbeans.spi.editor.mimelookup.Class2LayerFolder%0}> getClazz()
 meth public abstract java.lang.String getLayerFolderName()
 meth public abstract org.netbeans.spi.editor.mimelookup.InstanceProvider<{org.netbeans.spi.editor.mimelookup.Class2LayerFolder%0}> getInstanceProvider()
@@ -81,6 +96,14 @@ meth public abstract {org.netbeans.spi.editor.mimelookup.InstanceProvider%0} cre
 
 CLSS public abstract interface org.netbeans.spi.editor.mimelookup.MimeDataProvider
 meth public abstract org.openide.util.Lookup getLookup(org.netbeans.api.editor.mimelookup.MimePath)
+
+CLSS public abstract interface !annotation org.netbeans.spi.editor.mimelookup.MimeLocation
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.Class<? extends org.netbeans.spi.editor.mimelookup.InstanceProvider> instanceProviderClass()
+meth public abstract java.lang.String subfolderName()
 
 CLSS public abstract interface org.netbeans.spi.editor.mimelookup.MimeLookupInitializer
  anno 0 java.lang.Deprecated()

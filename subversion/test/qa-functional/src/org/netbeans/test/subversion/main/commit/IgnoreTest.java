@@ -19,12 +19,12 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.subversion.operators.SourcePackagesNode;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
@@ -121,7 +121,7 @@ public class IgnoreTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
 
@@ -231,7 +231,7 @@ public class IgnoreTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             TestKit.createNewPackage(PROJECT_NAME, "xx");
 
@@ -341,7 +341,7 @@ public class IgnoreTest extends JellyTestCase {
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            TestKit.waitForScanFinishedAndQueueEmpty();
+            TestKit.waitForScanFinishedSimple();
             
             TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");

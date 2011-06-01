@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,6 +74,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -119,7 +119,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	put();
     }
     
-    public FileContainer (DataInput input) throws IOException {
+    public FileContainer (RepositoryDataInput input) throws IOException {
 	super(input);
         fileSystem = PersistentUtils.readFileSystem(input);
         readStringToFileEntryMap(fileSystem, input, myFiles);
@@ -249,7 +249,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     public FileEntry getEntry(CharSequence absPath) {
-        CndUtils.assertTrue(CndPathUtilitities.isPathAbsolute(absPath), "Path should be absolute: " + absPath); //NOI18N
+        CndUtils.assertTrue(CndPathUtilitities.isPathAbsolute(absPath), "Path should be absolute: ", absPath); //NOI18N
         return getFileEntry(absPath, false, false);
     }
 
@@ -305,7 +305,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     @Override
-    public void write(DataOutput aStream) throws IOException {
+    public void write(RepositoryDataOutput aStream) throws IOException {
 	super.write(aStream);
         PersistentUtils.writeFileSystem(fileSystem, aStream);
 	// maps are concurrent, so we don't need synchronization here
@@ -422,7 +422,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     private static void writeStringToFileEntryMap (
-            final DataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
+            final RepositoryDataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
         assert output != null;
         assert aMap != null;
         int size = aMap.size();
@@ -443,7 +443,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     private static void  readStringToFileEntryMap(
-            FileSystem fs, DataInput input, Map<CharSequence, FileEntry> aMap) throws IOException {
+            FileSystem fs, RepositoryDataInput input, Map<CharSequence, FileEntry> aMap) throws IOException {
         
         assert input != null; 
         assert aMap != null;
@@ -465,7 +465,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     private static void writeStringToStringsArrMap (
-            final DataOutput output, final Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
+            final RepositoryDataOutput output, final Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
         
         assert output != null;
         assert aMap != null;
@@ -504,7 +504,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
     
     private static void readStringToStringsArrMap(
-            final DataInput input, Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
+            final RepositoryDataInput input, Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
         assert input != null;
         assert aMap != null;
 
@@ -554,7 +554,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private volatile int modCount;
 
         @SuppressWarnings("unchecked")
-        private FileEntry (FileSystem fs, DataInput input) throws IOException {
+        private FileEntry (FileSystem fs, RepositoryDataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
             canonical = PersistentUtils.readUTF(input, FilePathCache.getManager());
             modCount = input.readInt();
@@ -586,7 +586,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             this.modCount = 0;
         }
         
-        private void write(final DataOutput output) throws IOException {
+        private void write(final RepositoryDataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
             PersistentUtils.writeUTF(canonical, output);
             output.writeInt(modCount);
@@ -607,7 +607,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
         
-        private static PreprocessorStatePair readStatePair(FileSystem fs, DataInput input) throws IOException {
+        private static PreprocessorStatePair readStatePair(FileSystem fs, RepositoryDataInput input) throws IOException {
             if (input.readBoolean()) {
                 APTPreprocHandler.State state = null;
                 if (input.readBoolean()){
@@ -626,7 +626,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             
         }
 
-        private static void writeStatePair(DataOutput output, PreprocessorStatePair pair) throws IOException {
+        private static void writeStatePair(RepositoryDataOutput output, PreprocessorStatePair pair) throws IOException {
             output.writeBoolean(pair != null);
             if (pair != null) {
                 output.writeBoolean(pair.state != null);

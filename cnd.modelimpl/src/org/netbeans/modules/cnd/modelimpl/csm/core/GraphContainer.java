@@ -44,12 +44,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -57,19 +57,24 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Storage for include graph.
  * @author Alexander Simon
  */
-public class GraphContainer extends ProjectComponent implements Persistent, SelfPersistent {
+public class GraphContainer extends ProjectComponent implements Persistent, SelfPersistent, CsmProgressListener {
     
     // empty stub
     private static final GraphContainer EMPTY = new GraphContainer() {
@@ -86,12 +91,14 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     /** Creates a new instance of GraphContainer */
     public GraphContainer(ProjectBase project) {
         super(new GraphContainerKey(project.getUniqueName()), false);
+        CsmListeners.getDefault().addProgressListener(this);
         put();
     }
 
-    public GraphContainer(final DataInput input) throws IOException {
+    public GraphContainer(final RepositoryDataInput input) throws IOException {
         super(input);
         assert input != null;
+        CsmListeners.getDefault().addProgressListener(this);
         readUIDToNodeLinkMap(input, graph);
     }
 
@@ -207,33 +214,57 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         return convertToFiles(getIncludedFilesUids(referencedFile));
     }
 
+    private final LinkedList<WeakReference<HotSpotFile>> hotSpot = new LinkedList<WeakReference<HotSpotFile>>();
+    private final static int HOT_SPOT_SIZE = 10;
+
     public boolean isFileIncluded(CsmFile sourceFile, CsmFile headerFile) {
         CsmUID<CsmFile> keyFrom = UIDCsmConverter.fileToUID(sourceFile);
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(headerFile);
         if (keyFrom != null && keyTo != null) {
+            synchronized (hotSpot) {
+                Iterator<WeakReference<HotSpotFile>> iterator = hotSpot.iterator();
+                while(iterator.hasNext()) {
+                    WeakReference<HotSpotFile> ref = iterator.next();
+                    HotSpotFile file = ref.get();
+                    if (file != null) {
+                        if (file.from.equals(keyFrom)) {
+                            return file.to.contains(keyTo);
+                        }
+                    } else {
+                        iterator.remove();
+                    }
+                }
+            }
             Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
             Map<Integer, GraphContainer> map = new HashMap<Integer, GraphContainer>();
             try {
-                return isFileIncluded(map, res, keyFrom, keyTo);
+                gatherIncludedFiles(map, res, keyFrom);
             } finally {
                 for(GraphContainer current : map.values()){
                     current.graphLock.readLock().unlock();
                 }
             }
+            synchronized (hotSpot) {
+                if (hotSpot.size() > HOT_SPOT_SIZE) {
+                    hotSpot.removeFirst();
+                }
+                hotSpot.addLast(new WeakReference<HotSpotFile>(new HotSpotFile(keyFrom, res)));
+                return res.contains(keyTo);
+            }
         }
         return false;
     }
-
-    private boolean isFileIncluded(Map<Integer, GraphContainer> map, Set<CsmUID<CsmFile>> res, CsmUID<CsmFile> keyFrom, CsmUID<CsmFile> keyTo) {
+    
+    private void gatherIncludedFiles(Map<Integer, GraphContainer> map, Set<CsmUID<CsmFile>> res, CsmUID<CsmFile> keyFrom) {
         GraphContainer current = map.get(UIDUtilities.getProjectID(keyFrom));
         if (current == null) {
             CsmFile file = UIDCsmConverter.UIDtoFile(keyFrom);
             if (file == null) {
-                return false;
+                return;
             }
             current = ((ProjectBase)file.getProject()).getGraphStorage();
             if (current == null) {
-                return false;
+                return;
             }
             map.put(UIDUtilities.getProjectID(keyFrom), current);
             current.graphLock.readLock().lock();
@@ -241,18 +272,11 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         NodeLink node = current.graph.get(keyFrom);
         if (node != null) {
             for(CsmUID<CsmFile> uid : node.getOutLinks()){
-                if (uid.equals(keyTo)) {
-                    return true;
-                }
-                if (!res.contains(uid)){
-                    res.add(uid);
-                    if (isFileIncluded(map, res, uid, keyTo)){
-                        return true;
-                    }
+                if (res.add(uid)){
+                    gatherIncludedFiles(map, res, uid);
                 }
             }
         }
-        return false;
     }
 
     /**
@@ -346,9 +370,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                 NodeLink node = graph.get(keyTo);
                 if (node != null) {
                     for(CsmUID<CsmFile> uid : node.getInLinks()){
-                        if (!res.contains(uid)){
-                            res.add(uid);
-                        }
+                        res.add(uid);
                     }
                 }
             } finally {
@@ -377,9 +399,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                 NodeLink node = graph.get(keyTo);
                 if (node != null) {
                     for(CsmUID<CsmFile> uid : node.getOutLinks()){
-                        if (!res.contains(uid)){
-                            res.add(uid);
-                        }
+                        res.add(uid);
                     }
                 }
             } finally {
@@ -414,8 +434,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         NodeLink node = graph.get(keyFrom);
         if (node != null) {
             for(CsmUID<CsmFile> uid : node.getOutLinks()){
-                if (!res.contains(uid)){
-                    res.add(uid);
+                if (res.add(uid)){
                     getIncludedFiles(res, uid);
                 }
             }
@@ -429,8 +448,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         NodeLink node = graph.get(keyTo);
         if (node != null) {
             for(CsmUID<CsmFile> uid : node.getInLinks()){
-                if (!res.contains(uid)){
-                    res.add(uid);
+                if (res.add(uid)){
                     getParentFiles(res, uid);
                 }
             }
@@ -448,7 +466,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         // need a write lock
         graphLock.writeLock().lock();
@@ -460,7 +478,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
     
     private static void writeUIDToNodeLinkMap (
-            final DataOutput output, final Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
+            final RepositoryDataOutput output, final Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
         
         assert output != null;
         assert aMap != null;
@@ -483,7 +501,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }    
     
     private static void readUIDToNodeLinkMap (
-            final DataInput input, Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
+            final RepositoryDataInput input, Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
         
         assert input != null;
         assert aMap != null;
@@ -508,6 +526,49 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     
     private final Map<CsmUID<CsmFile>,NodeLink> graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
     private final ReadWriteLock graphLock = new ReentrantReadWriteLock();
+
+    @Override
+    public void projectParsingStarted(CsmProject project) {
+    }
+
+    @Override
+    public void projectFilesCounted(CsmProject project, int filesCount) {
+    }
+
+    @Override
+    public void projectParsingFinished(CsmProject project) {
+    }
+
+    @Override
+    public void projectParsingCancelled(CsmProject project) {
+    }
+
+    @Override
+    public void projectLoaded(CsmProject project) {
+    }
+
+    @Override
+    public void fileInvalidated(CsmFile file) {
+    }
+
+    @Override
+    public void fileAddedToParse(CsmFile file) {
+    }
+
+    @Override
+    public void fileParsingStarted(CsmFile file) {
+    }
+
+    @Override
+    public void fileParsingFinished(CsmFile sourceFile) {
+        synchronized (hotSpot) {
+            hotSpot.clear();
+        }
+    }
+
+    @Override
+    public void parserIdle() {
+    }
     
     private static class NodeLink implements SelfPersistent, Persistent {
         
@@ -519,7 +580,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             out = new HashSet<CsmUID<CsmFile>>();
         }
         
-        private NodeLink(final DataInput input) throws IOException {
+        private NodeLink(final RepositoryDataInput input) throws IOException {
             assert input != null;
 
             final UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -560,7 +621,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         }
 
         @Override
-        public void write(final DataOutput output) throws IOException {
+        public void write(final RepositoryDataOutput output) throws IOException {
             assert output != null;
             assert in != null;
             assert out != null;
@@ -613,5 +674,14 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         public Set<CsmUID<CsmFile>> getParentFilesUids(){
             return parentFiles;
         }
+    }
+    
+    private static final class HotSpotFile {
+         private final CsmUID<CsmFile> from;
+         private final Set<CsmUID<CsmFile>> to;
+         private HotSpotFile(CsmUID<CsmFile> from, Set<CsmUID<CsmFile>> to) {
+             this.from = from;
+             this.to = to;
+         }
     }
 }

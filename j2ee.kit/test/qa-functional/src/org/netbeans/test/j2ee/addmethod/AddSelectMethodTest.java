@@ -56,8 +56,9 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
- *
- * @author lm97939
+ *  Called from EJBValidation test suite.
+ * 
+ * @author Libor Martinek
  */
 public class AddSelectMethodTest extends AddMethodTest {
 
@@ -69,18 +70,6 @@ public class AddSelectMethodTest extends AddMethodTest {
         super(name);
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        System.out.println("########  " + getName() + "  #######");
-    }
-
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        junit.textui.TestRunner.run(new AddSelectMethodTest("testAddSelectMethod1InEB"));
-    }
-
     public void testAddSelectMethod1InEB() throws IOException {
         beanName = "TestingEntity";
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddSelectMethodAction");
@@ -88,7 +77,7 @@ public class AddSelectMethodTest extends AddMethodTest {
         returnType = "int";
         parameters = null;
         ejbql = null;
-        //toSearchFile = beanName+"LocalHome.java";
+        toSearchFile = methodName;
         isDDModified = true;
         saveFile = true;
         addMethod();
@@ -101,7 +90,7 @@ public class AddSelectMethodTest extends AddMethodTest {
         returnType = "int";
         parameters = new String[][]{{"java.lang.String", "a"}};
         ejbql = null;
-        //toSearchFile = beanName+"LocalHome.java";
+        toSearchFile = methodName;
         isDDModified = true;
         saveFile = true;
         addMethod();
@@ -119,20 +108,20 @@ public class AddSelectMethodTest extends AddMethodTest {
         new JTextFieldOperator((JTextField) lblOper.getLabelFor()).setText(methodName);
         if (returnType != null) {
             lblOper = new JLabelOperator(dialog, "Return Type:");
-            new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(returnType);
+            new JTextFieldOperator((JTextField) lblOper.getLabelFor()).setText(returnType);
         }
         fillParameters(dialog);
         if (ejbql != null) {
             lblOper = new JLabelOperator(dialog, "EJB QL:");
-            new JTextAreaOperator((JTextArea)lblOper.getLabelFor()).setText(ejbql);
+            new JTextAreaOperator((JTextArea) lblOper.getLabelFor()).setText(ejbql);
             //new JTextAreaOperator(dialog).setText(ejbql);
         }
         dialog.ok();
+        if (toSearchFile != null) {
+            editor.txtEditorPane().waitText(toSearchInEditor);
+        }
         if (saveFile) {
             editor.save();
-        }
-        if (toSearchFile != null) {
-            waitForEditorText(editor, methodName);
         }
         compareFiles();
     }

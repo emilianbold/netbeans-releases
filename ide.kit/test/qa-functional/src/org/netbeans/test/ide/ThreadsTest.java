@@ -95,7 +95,7 @@ public class ThreadsTest extends JellyTestCase {
 
         conf = conf.addTest("testThreads");
         
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     public void testThreads() throws Exception {

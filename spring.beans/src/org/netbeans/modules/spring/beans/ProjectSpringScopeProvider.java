@@ -75,4 +75,8 @@ public class ProjectSpringScopeProvider {
         }
         return springScope;
     }
+
+    public Project getProject() {
+        return project;
+    }
 }

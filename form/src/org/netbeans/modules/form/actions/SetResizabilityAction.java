@@ -157,8 +157,9 @@ public class SetResizabilityAction extends NodeAction {
         FormDesigner formDesigner = FormEditor.getFormDesigner(rc.getFormModel());
         formDesigner.updateResizabilityActions();
         for (int i=0; i<2; i++) {
-            items[i].setEnabled(formDesigner.getResizabilityButtons()[i].isEnabled());
-            items[i].setSelected(formDesigner.getResizabilityButtons()[i].isSelected());
+            Action a = formDesigner.getResizabilityActions()[i];
+            items[i].setEnabled(a.isEnabled());
+            items[i].setSelected(Boolean.TRUE.equals(a.getValue(Action.SELECTED_KEY)));
         }
     }
     
@@ -204,8 +205,9 @@ public class SetResizabilityAction extends NodeAction {
             RADComponent radC = (RADComponent)mi.getRADComponents().get(0);
             FormModel fm = radC.getFormModel();
             FormDesigner fd = FormEditor.getFormDesigner(fm);
-            fd.getResizabilityButtons()[index].setSelected(!fd.getResizabilityButtons()[index].isSelected());
-            ((Action)fd.getResizabilityActions().toArray()[index]).actionPerformed(evt);            
+            Action a = fd.getResizabilityActions()[index];
+            a.putValue(Action.SELECTED_KEY, !Boolean.TRUE.equals(a.getValue(Action.SELECTED_KEY)));
+            a.actionPerformed(evt);
         }
     }
         

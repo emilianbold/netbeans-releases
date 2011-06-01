@@ -68,9 +68,19 @@ public class ParagraphView extends EditorBoxView<EditorView> {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ParagraphView.level=FINE
     private static final Logger LOG = Logger.getLogger(ParagraphView.class.getName());
+    
+    /**
+     * Bit marking that this view uses RTL text and thus certain operations
+     * require special handling.
+     * @see #isRTL()
+     */
+    private static final int RTL_BIT = (1 << 31);
 
     private Position startPos; // 40 + 4 = 44 bytes
 
+    /**
+     * Total length of the paragraph view possibly mixed with
+     */
     private int length; // 44 + 4 = 48 bytes
 
     public ParagraphView(Position startPos) {
@@ -100,12 +110,32 @@ public class ParagraphView extends EditorBoxView<EditorView> {
 
     @Override
     public int getLength() { // Total length of contained child views
-        return length;
+        return length & (~RTL_BIT);
     }
 
     @Override
     public void setLength(int length) {
-        this.length = length;
+        this.length = ((this.length & RTL_BIT) == 0) ? length : length + RTL_BIT;
+    }
+    
+    /**
+     * Returns true if any of the child views of this paragraph view contains right-to-left text.
+     * <br/>
+     * In such case many things must be done in a different way. Regular binary search
+     * among child views for x-to-offset cannot be done since the x-offsets of the RTL child views
+     * are decreasing so since the array is not sorted it's not suitable for binary search.
+     * <br/>
+     * Line wrapping will be prohibited for such line in current implementation since it's
+     * way more difficult to handle.
+     * 
+     * @return true if there's any RTL text in this paragraph view.
+     */
+    public boolean isRTL() {
+        return (length & RTL_BIT) != 0;
+    }
+    
+    public void markRTL() {
+        this.length |= RTL_BIT;
     }
 
     @Override
@@ -191,14 +221,17 @@ public class ParagraphView extends EditorBoxView<EditorView> {
     }
     
     void releaseTextLayouts() {
-        int viewCount = getViewCount(); // would be 0 for children == null
-        for (int i = 0; i < viewCount; i++) {
-            EditorView view = getEditorView(i);
-            if (view instanceof HighlightsView) {
-                ((HighlightsView)view).setLayout(null);
+        DocumentView docView = getDocumentView();
+        if (docView != null) { // Only when actively used by docView
+            int viewCount = getViewCount(); // would be 0 for children == null
+            for (int i = 0; i < viewCount; i++) {
+                EditorView view = getEditorView(i);
+                if (view instanceof HighlightsView) {
+                    ((HighlightsView)view).setLayout(null);
+                }
             }
+            docView.getTextLayoutCache().remove(this);
         }
-        getDocumentView().getTextLayoutCache().remove(this);
     }
     
     void initTextLayouts() {

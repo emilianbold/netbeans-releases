@@ -44,6 +44,7 @@
 package org.netbeans.jellytools;
 
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.jellytools.actions.AttachWindowAction;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.DeleteAction;
@@ -52,16 +53,14 @@ import org.netbeans.jellytools.actions.PasteActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test TopComponentOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class TopComponentOperatorTest extends JellyTestCase {
 
-    static final String[] tests = new String [] {
+    static final String[] tests = new String[]{
         "testConstructors",
         "testMakeComponentVisible",
         "testAttachTo",
@@ -76,43 +75,21 @@ public class TopComponentOperatorTest extends JellyTestCase {
         "testClose",
         "testCloseAllDocuments"
     };
+
     public TopComponentOperatorTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+
+    public static Test suite() {
+        return createModuleTest(TopComponentOperatorTest.class, tests);
     }
-    
-    public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // test cases have to be in particular order
-        suite.addTest(new TopComponentOperatorTest("testConstructors"));
-        suite.addTest(new TopComponentOperatorTest("testMakeComponentVisible"));
-        suite.addTest(new TopComponentOperatorTest("testAttachTo"));
-        suite.addTest(new TopComponentOperatorTest("testMaximize"));
-        suite.addTest(new TopComponentOperatorTest("testRestore"));
-        suite.addTest(new TopComponentOperatorTest("testCloneDocument"));
-        suite.addTest(new TopComponentOperatorTest("testPushMenuOnTab"));
-        suite.addTest(new TopComponentOperatorTest("testSaveDocument"));
-        suite.addTest(new TopComponentOperatorTest("testSave"));
-        suite.addTest(new TopComponentOperatorTest("testCloseDiscard"));
-        suite.addTest(new TopComponentOperatorTest("testCloseWindow"));
-        suite.addTest(new TopComponentOperatorTest("testClose"));
-        suite.addTest(new TopComponentOperatorTest("testCloseAllDocuments"));
-        return suite;
-         */
-        return (NbTest) createModuleTest(TopComponentOperatorTest.class, tests);
-    }
-    
+
     /** Print out test name. */
     @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
     }
-    
     private static Node editableSourceNode;
     private static TopComponentOperator tco1;
     private static TopComponentOperator tco2;
@@ -126,7 +103,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         new OpenAction().performAPI(node);
         node = new Node(sample2, "SampleClass2.java");// NOI18N
         new OpenAction().performAPI(node);
-        if(editableSourceNode == null) {
+        if (editableSourceNode == null) {
             // copy node to be able to write in
             new CopyAction().performAPI(node);
             new PasteActionNoBlock().performAPI(sample2);
@@ -140,14 +117,14 @@ public class TopComponentOperatorTest extends JellyTestCase {
         }
         // "Navigator"
         String navigatorLabel = Bundle.getString("org.netbeans.modules.navigator.Bundle", "LBL_Navigator");
-        if(TopComponentOperator.findTopComponent(navigatorLabel, 0) != null) {
+        if (TopComponentOperator.findTopComponent(navigatorLabel, 0) != null) {
             // close navigator because it can be mixed with editor
             new TopComponentOperator(navigatorLabel).close();
         }
         tco1 = new TopComponentOperator("SampleClass1.java");  //NOI18N
         tco2 = new TopComponentOperator("SampleClass2.java");  //NOI18N
     }
-    
+
     /** Test constructors. */
     public void testConstructors() {
         initSources();
@@ -173,7 +150,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         tco1.makeComponentVisible();
         assertTrue("makeComponentVisible doesn't work.", tco1.isShowing());
     }
-    
+
     /**
      * Test of attachTo method.
      */
@@ -181,21 +158,21 @@ public class TopComponentOperatorTest extends JellyTestCase {
         tco1.attachTo("SampleClass2.java", AttachWindowAction.RIGHT);
         tco1.attachTo(tco2, AttachWindowAction.AS_LAST_TAB);
     }
-    
+
     /**
      * Test of maximize method.
      */
     public void testMaximize() {
         tco1.maximize();
     }
-    
+
     /**
      * Test of restore method.
      */
     public void testRestore() {
         tco1.restore();
     }
-    
+
     /**
      * Test of cloneDocument method.
      */
@@ -204,7 +181,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         // try to find and close cloned document
         new TopComponentOperator("SampleClass1.java", 1).close();
     }
-    
+
     /**
      * Test of pushMenuOnTab method.
      */
@@ -213,7 +190,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         tco1 = new TopComponentOperator("SampleClass1.java");  //NOI18N
         /** "Clone Document" popup menu item. */
         String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                                                    "LBL_CloneDocumentAction");
+                "LBL_CloneDocumentAction");
         tco1.pushMenuOnTab(popupPath);
         // try to find and close cloned document
         new TopComponentOperator("SampleClass1.java", 1).close();
@@ -233,7 +210,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         boolean modified = eo.isModified();
         assertFalse("Document is not saved.", modified);//NOI18N
     }
-    
+
     /**
      * Test of save method.
      */
@@ -245,7 +222,6 @@ public class TopComponentOperatorTest extends JellyTestCase {
         assertFalse("Document is not saved.", modified);//NOI18N
     }
 
-    
     /**
      * Test of closeDiscard method.
      */
@@ -259,12 +235,10 @@ public class TopComponentOperatorTest extends JellyTestCase {
         eo.closeDiscard();
         // clean up - delete editable source
         new DeleteAction().perform(editableSourceNode);
-        // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
-        new NbDialogOperator(safeDeleteTitle).ok();
+        new NbDialogOperator("Delete").ok();
         assertFalse("Document is not discarded.", saved);//NOI18N
     }
-    
+
     /**
      * Test of closeWindow method.
      */
@@ -272,7 +246,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         tco1.closeWindow();
         assertFalse("closeWindow doesn't work", tco1.isShowing());
     }
-    
+
     /**
      * Test of close method.
      */

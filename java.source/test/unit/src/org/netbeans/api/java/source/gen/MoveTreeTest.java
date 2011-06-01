@@ -77,7 +77,7 @@ import org.netbeans.modules.java.ui.FmtOptions;
  * 
  * @author Pavel Flaska
  */
-public class MoveTreeTest extends GeneratorTest {
+public class MoveTreeTest extends GeneratorTestBase {
 
     static {
         System.setProperty("org.netbeans.api.java.source.WorkingCopy.keep-old-trees", "true");
@@ -602,6 +602,46 @@ public class MoveTreeTest extends GeneratorTest {
         System.err.println(res);
         assertEquals(golden, res);
         Utils.setCodePreferences(origValues);
+    }
+
+    public void testCLikeArray() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui() {\n" +
+            "        int ii[] = null;" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public int taragui(int[] a) {\n" +
+            "        int ii[] = null;" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                TreeMaker make = workingCopy.getTreeMaker();
+                VariableTree param = workingCopy.getTreeMaker().Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "a", var.getType(), null);
+
+                workingCopy.rewrite(method, make.addMethodParameter(method, param));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
 
     String getGoldenPckg() {

@@ -340,6 +340,19 @@ public class OccurrencesFinderImplTest extends TestBase {
     public void testMagicMethod171249() throws Exception {
         checkOccurrences(getTestPath(), "class OldC^lass {", true);
     }
+    
+    public void testInstanceof198909_01() throws Exception {
+        checkOccurrences(getTestPath(), "$mExpectedE^xception = null", true);
+    }
+    
+    public void testInstanceof198909_02() throws Exception {
+        checkOccurrences(getTestPath(), "} catch (Exception $^e) {", true);
+    }
+    
+    public void testInstanceof198909_03() throws Exception {
+        checkOccurrences(getTestPath(), "$e instanceof $mExpect^edException", true);
+    }
+    
 
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)

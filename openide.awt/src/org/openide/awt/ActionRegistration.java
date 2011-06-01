@@ -48,9 +48,9 @@ import javax.swing.ActionMap;
 /** Registers an action under associated identifier specified by separate
  * {@link ActionID} annotation on the same element. Here is few usage examples:
  * <ul>
- *   <li>{@link Actions#alwaysEnabled(java.awt.event.ActionListener, java.lang.String, java.lang.String, boolean) always enabled action}</li>
- *   <li>{@link Actions#callback(java.lang.String, javax.swing.Action, boolean, java.lang.String, java.lang.String, boolean) callback action}</li>
- *   <li>{@link Actions#context(java.lang.Class, boolean, boolean, org.openide.util.ContextAwareAction, java.lang.String, java.lang.String, java.lang.String, boolean)  context aware action} </li>
+ *   <li>{@linkplain Actions#alwaysEnabled(java.awt.event.ActionListener, java.lang.String, java.lang.String, boolean) always enabled action}</li>
+ *   <li>{@linkplain Actions#callback(java.lang.String, javax.swing.Action, boolean, java.lang.String, java.lang.String, boolean) callback action}</li>
+ *   <li>{@linkplain Actions#context(java.lang.Class, boolean, boolean, org.openide.util.ContextAwareAction, java.lang.String, java.lang.String, java.lang.String, boolean)  context aware action} </li>
  * </ul>
  * 
  *
@@ -65,6 +65,29 @@ public @interface ActionRegistration {
      * @return display name for the action
      */
     String displayName();
+    
+    /** 
+     * Provides the JMenuItem text if one wants to use other than 
+     * the name of the action returned by {@link #displayName()}.
+     * 
+     * @return display name for the action
+     * 
+     * @see Actions#connect(javax.swing.JMenuItem, javax.swing.Action, boolean) 
+     * @since 7.35
+     */    
+    String menuText() default "";
+    
+    /** 
+     * Provides the JMenuItem popup text if one wants to use other   
+     * than the name of the action returned by {@link #displayName()}.
+     * 
+     * @return display name for the action in a popup menu
+     * 
+     * @see Actions#connect(javax.swing.JMenuItem, javax.swing.Action, boolean) 
+     * @since 7.35
+     */
+    String popupText() default "";
+    
     /** Path to image representing the action's icon.
      * @return "org/myproject/mypkg/Icon.png"
      */

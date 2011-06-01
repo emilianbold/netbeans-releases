@@ -69,6 +69,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -83,6 +84,7 @@ public class StatusTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         Git.STATUS_LOG.setLevel(Level.ALL);
     }
 
@@ -158,7 +160,7 @@ public class StatusTest extends AbstractGitTestCase {
         });
         GitVersioningTopComponent tc = tcs[0];
         assertNotNull(tc);
-        assertName(tc, "Git - work ");
+        assertName(tc, "Git - work - (no branch)");
         File f = new File(repositoryLocation, "f");
         f.createNewFile();
         add();

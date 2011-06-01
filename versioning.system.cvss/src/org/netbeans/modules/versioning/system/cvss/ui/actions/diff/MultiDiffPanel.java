@@ -168,6 +168,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
         diffViewPanel = null;
         initComponents();
+        aquaBackgroundWorkaround();
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
@@ -188,6 +189,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         context = null;
         contextName = file.getName();
         initComponents();
+        aquaBackgroundWorkaround();
         initToolbarButtons();
         initNextPrevActions();
 
@@ -203,6 +205,18 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         prepareTask = CvsVersioningSystem.getInstance().getRequestProcessor().post(dpt);
     }
 
+    private void aquaBackgroundWorkaround() {
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            setBackground(color);
+            controlsToolBar.setBackground(color);
+            jPanel1.setBackground(color);
+            jPanel2.setBackground(color);
+            jPanel4.setBackground(color);
+            jPanel5.setBackground(color);
+        }
+    }
+    
     private void replaceVerticalSplitPane(JComponent replacement) {
         removeAll();
         splitPane = null;

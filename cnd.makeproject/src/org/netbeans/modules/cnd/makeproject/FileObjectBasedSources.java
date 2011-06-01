@@ -44,14 +44,22 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.support.GenericSources;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -59,21 +67,37 @@ import org.openide.util.ChangeSupport;
  * So we have to create an implementation of our own
  * @author Vladimir Kvashin
  */
-public class FileObjectBasedSources implements Sources {
+public class FileObjectBasedSources implements Sources, FileChangeListener {
 
     private final ChangeSupport cs = new ChangeSupport(this);
+    private boolean haveAttachedListeners;
+    private final Set<CharSequence> rootsListenedTo = new HashSet<CharSequence>();
     private final Map<String, List<SourceGroup>> groups = new HashMap<String, List<SourceGroup>>();
+    /**
+     * The root URLs which were computed last, keyed by group type.
+     */
+    private final Map<String,List<CharSequence>> lastComputedRoots = new ConcurrentHashMap<String, List<CharSequence>>();
 
     @Override
     public SourceGroup[] getSourceGroups(String type) {
         synchronized (this) {
             List<SourceGroup> l = groups.get(type);
-            return (l == null) ? new SourceGroup[0] : l.toArray(new SourceGroup[l.size()]);
+            SourceGroup[] result = (l == null) ? new SourceGroup[0] : l.toArray(new SourceGroup[l.size()]);
+            // Remember what we computed here so we know whether to fire changes later.
+            List<CharSequence> rootURLs = new ArrayList<CharSequence>(groups.size());
+            for (SourceGroup g : result) {
+                rootURLs.add(CndFileUtils.fileObjectToUrl(g.getRootFolder()));
+            }
+            lastComputedRoots.put(type, rootURLs);
+            return result;
         }
     }
 
     public SourceGroup addGroup(Project project, String type, FileObject fo, String displayName) {
         synchronized (this) {
+            if (rootsListenedTo.add(CndFileUtils.fileObjectToUrl(fo)) && haveAttachedListeners) {
+                fo.addFileChangeListener(this);
+            }
             List<SourceGroup> l = groups.get(type);
             if (l == null) {
                 l = new ArrayList<SourceGroup>();
@@ -86,67 +110,81 @@ public class FileObjectBasedSources implements Sources {
     }
 
     @Override
-    public void addChangeListener(ChangeListener listener) {
+    public synchronized void addChangeListener(ChangeListener listener) {
+        if (!haveAttachedListeners) {
+            haveAttachedListeners = true;
+            for (CharSequence url : rootsListenedTo) {
+                FileObject fo = CndFileUtils.urlToFileObject(url);
+                if (fo != null && fo.isValid()) {
+                    fo.addFileChangeListener(this);
+                }
+            }
+        }
         cs.addChangeListener(listener);
     }
 
     @Override
-    public void removeChangeListener(ChangeListener listener) {
+    public synchronized void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
+        if (!cs.hasListeners()) {
+            if (haveAttachedListeners) {
+                haveAttachedListeners = false;
+                for (CharSequence url : rootsListenedTo) {
+                    FileObject fo = CndFileUtils.urlToFileObject(url);
+                    if (fo != null && fo.isValid()) {
+                        fo.removeFileChangeListener(this);
+                    }
+                }
+            }
+        }
     }
 
-//    private class Group implements SourceGroup {
-//
-//        private final FileObject loc;
-//        private final String displayName;
-//        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-//
-//        private Group(FileObject loc, String displayName) {
-//            this.loc = loc;
-//            this.displayName = displayName;
-//        }
-//
-//        @Override
-//        public boolean contains(FileObject file) throws IllegalArgumentException {
-//            if (file == loc) {
-//                return true;
-//            }
-//            return false;
-//        }
-//
-//        @Override
-//        public String getDisplayName() {
-//            return displayName;
-//        }
-//
-//        @Override
-//        public Icon getIcon(boolean opened) {
-//            return null;
-//        }
-//
-//        @Override
-//        public String getName() {
-//            return loc.getPath();
-//        }
-//
-//        @Override
-//        public FileObject getRootFolder() {
-//            return loc;
-//        }
-//
-//        @Override
-//        public void addPropertyChangeListener(PropertyChangeListener listener) {
-//            pcs.addPropertyChangeListener(listener);
-//        }
-//
-//        @Override
-//        public void removePropertyChangeListener(PropertyChangeListener listener) {
-//            pcs.removePropertyChangeListener(listener);
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return FileObjectBasedSources.class.getSimpleName() + "." + getClass().getSimpleName() + ' ' + loc.getPath(); // NOI18N
-//        }
-//    }
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+        // Root might have been created on disk.
+        maybeFireChange();
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        maybeFireChange();
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        // Root might have been deleted.
+        maybeFireChange();
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+        // ignore; generally should not happen (listening to dirs)
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        maybeFireChange();
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        // #164930 - ignore
+    }
+
+    private void maybeFireChange() {
+        boolean change = false;
+        // Cannot iterate over entrySet, as the map will be modified by getSourceGroups.
+        for (String type : new HashSet<String>(lastComputedRoots.keySet())) {
+            List<CharSequence> previous = new ArrayList<CharSequence>(lastComputedRoots.get(type));
+            getSourceGroups(type);
+            List<CharSequence> nue = lastComputedRoots.get(type);
+            if (!nue.equals(previous)) {
+                change = true;
+                break;
+            }
+        }
+        if (change) {
+            cs.fireChange();
+        }
+    }    
 }

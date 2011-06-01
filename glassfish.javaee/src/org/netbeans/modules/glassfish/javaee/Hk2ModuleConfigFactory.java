@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -62,7 +62,7 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory2 {
     public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
-            retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module));
+            retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module), null);
         } catch (ConfigurationException ce) {
             throw ce;
         } catch (Exception ex) {
@@ -75,10 +75,12 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory2 {
     public ModuleConfiguration create(@NonNull J2eeModule module, @NonNull String instanceUrl) throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
+            Hk2DeploymentManager hk2Dm =
+                    (Hk2DeploymentManager) Hk2DeploymentFactory.createEe6().getDisconnectedDeploymentManager(instanceUrl);
             if (instanceUrl.contains("gfv3ee6wc")) { // NOI18N
-                retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module));
+                retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module), hk2Dm);
             } else {
-                retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module));
+                retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module), hk2Dm);
             }
         } catch (ConfigurationException ce) {
             throw ce;

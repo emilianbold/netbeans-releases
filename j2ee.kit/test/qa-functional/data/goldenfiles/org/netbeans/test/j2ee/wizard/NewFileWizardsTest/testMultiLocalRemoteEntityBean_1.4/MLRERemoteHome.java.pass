@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package multi.ejbs.entity;
 
 import java.rmi.RemoteException;
@@ -12,12 +11,11 @@ import javax.ejb.FinderException;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 public interface MLRERemoteHome extends EJBHome {
     
-    multi.ejbs.entity.MLRERemote findByPrimaryKey(java.lang.Long key)  throws FinderException, RemoteException;
+    multi.ejbs.entity.MLRERemote findByPrimaryKey(java.lang.Long key) throws FinderException, RemoteException;
     
-    multi.ejbs.entity.MLRERemote create(java.lang.Long key)  throws CreateException, RemoteException;
-
+    multi.ejbs.entity.MLRERemote create(java.lang.Long key) throws CreateException, RemoteException;
 }

@@ -70,6 +70,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
+import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -281,7 +282,7 @@ public class ExportDiffAction extends ContextAction {
                 if (exportedFiles == 0) {
                     destination.delete();
                 } else {
-                    Utils.openFile(destination);
+                    Utils.openFile(FileUtil.normalizeFile(destination));
                 }
             } else {
                 destination.delete();

@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -377,7 +378,12 @@ public final class ClassIndex {
                     Exceptions.printStackTrace(e);
                 }
             }
-            LOGGER.fine(String.format("ClassIndex.getDeclaredTypes returned %d elements\n", result.size()));
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(
+                        Level.FINE,
+                        "ClassIndex.getDeclaredTypes returned {0} elements\n",  //NOI18N
+                        result.size());
+            }
             return Collections.unmodifiableSet(result);
         } catch (InterruptedException e) {
             return null;
@@ -470,7 +476,16 @@ public final class ClassIndex {
                 result.addAll(this.depsIndeces);
             }
         }
-        LOGGER.fine(String.format("ClassIndex.queries[Scope=%s, sourcePath=%s, bootPath=%s, classPath=%s] => %s\n",scope,sourcePath,bootPath,classPath,result));
+        LOGGER.log(
+                Level.FINE,
+                "ClassIndex.queries[Scope={0}, sourcePath={1}, bootPath={2}, classPath={3}] => {4}\n",  //NOI18N
+                new Object[] {
+                    scope,
+                    sourcePath,
+                    bootPath,
+                    classPath,
+                    result
+                });
         return result;
     }        
     

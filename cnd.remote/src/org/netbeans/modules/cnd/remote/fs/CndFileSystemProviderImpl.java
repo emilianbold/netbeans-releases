@@ -44,6 +44,10 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -55,6 +59,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -65,14 +71,13 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Kvashin
  */
 @ServiceProvider(service=CndFileSystemProvider.class)
-public class CndFileSystemProviderImpl extends CndFileSystemProvider implements FileSystemProvider.DownloadListener {
+public class CndFileSystemProviderImpl extends CndFileSystemProvider {
 
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
    private static final boolean isWindows = Utilities.isWindows();
    private String cachePrefix;
 
     public CndFileSystemProviderImpl() {
-        FileSystemProvider.addDownloadListener(this);
     }
 
     @Override
@@ -83,6 +88,11 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
         } else {
             return p.getFileObject();
         }
+    }
+
+    @Override
+    protected FileObject toFileObjectImpl(File file) {
+        return FileSystemProvider.fileToFileObject(file);
     }
 
     @Override
@@ -103,7 +113,22 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
     @Override
     protected CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException {
         return FileSystemProvider.getCanonicalPath(fileSystem, absPath.toString());
-    }            
+    }
+
+    @Override
+    protected FileObject getCanonicalFileObjectImpl(FileObject fo) throws IOException {
+        return FileSystemProvider.getCanonicalFileObject(fo);
+    }
+
+    @Override
+    protected String getCanonicalPathImpl(FileObject fo) throws IOException {
+        return FileSystemProvider.getCanonicalPath(fo);
+    }
+
+    @Override
+    protected String normalizeAbsolutePathImpl(FileSystem fs, String absPath) {
+        return FileSystemProvider.normalizeAbsolutePath(absPath, fs);
+    }
 
     @Override
     protected FileObject urlToFileObjectImpl(CharSequence url) {
@@ -159,6 +184,32 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
         }
         return null;
     }
+
+    @Override
+    protected boolean addFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+       FileSystemProvider.addFileChangeListener(listener, fileSystem, path);
+       return true;
+    }
+
+    @Override
+    protected boolean removeFileChangeListenerImpl(FileChangeListener listener, FileSystem fileSystem, String path) {
+        FileSystemProvider.removeRecursiveListener(listener, fileSystem, path);
+        return true;
+    }
+
+    @Override
+    protected boolean addFileChangeListenerImpl(FileChangeListener listener) {
+        FileSystemProvider.addFileChangeListener(listener);
+        return true;
+    }
+
+    @Override
+    protected boolean removeFileChangeListenerImpl(FileChangeListener listener) {
+        FileSystemProvider.removeFileChangeListener(listener);
+        return true;
+    }
+    
+    
 
     private FileSystemAndString getFileSystemAndRemotePath(CharSequence path) {
         String prefix = getPrefix();
@@ -226,25 +277,63 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider implements 
         }
         return result;
     }
-
+    
+    private final List<ProblemListenerAdapter> adapters = new ArrayList<ProblemListenerAdapter>();
+    
     @Override
-    protected String getCaseInsensitivePathImpl(CharSequence path) {
-//        String prefix = CndUtils.getIncludeFileBase();
-        if (Utilities.isWindows()) {
-            path = path.toString().replace('\\', '/');
+    protected void addFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        ProblemListenerAdapter newAdapter = new ProblemListenerAdapter(listener);
+        synchronized (adapters) {
+            for (Iterator<ProblemListenerAdapter> it = adapters.iterator(); it.hasNext(); ) {
+                ProblemListenerAdapter adapter = it.next();
+                if (adapter.listenerRef.get() == null) {
+                    it.remove();
+                }
+            }
+            adapters.add(newAdapter);
         }
-        return path.toString();
-//        if (pathStartsWith(path, prefix)) {
-//            CharSequence start = path.subSequence(0, prefix.length());
-//            CharSequence rest = path.subSequence(prefix.length(), path.length());
-//            return start + rest.toString(); // RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString());
-//        }
-//        return null;
+        FileSystemProvider.addFileSystemProblemListener(newAdapter, fileSystem);
     }
 
     @Override
-    public void postConnectDownloadFinished(ExecutionEnvironment env) {
-        RemoteCodeModelUtils.scheduleReparse(env);
+    protected void removeFileSystemProblemListenerImpl(CndFileSystemProblemListener listener, FileSystem fileSystem) {
+        synchronized (adapters) {
+            for (Iterator<ProblemListenerAdapter> it = adapters.iterator(); it.hasNext(); ) {
+                ProblemListenerAdapter adapter = it.next();
+                CndFileSystemProblemListener l = adapter.listenerRef.get();
+                if (l == null) {
+                    it.remove();
+                } else if (l == listener) {
+                    FileSystemProvider.removeFileSystemProblemListener(adapter, fileSystem);
+                    it.remove();
+                }                
+            }
+        }
+    }
+
+    private static class ProblemListenerAdapter implements FileSystemProblemListener {
+        
+        private final WeakReference<CndFileSystemProblemListener> listenerRef;
+
+        public ProblemListenerAdapter(CndFileSystemProblemListener listener) {
+            listenerRef = new WeakReference<CndFileSystemProblemListener>(listener);
+        }
+
+        @Override
+        public void problemOccurred(FileSystem fileSystem, String path) {
+            CndFileSystemProblemListener listener = listenerRef.get();
+            if (listener != null) {
+                listener.problemOccurred(new FSPath(fileSystem, path));
+            }
+        }
+
+        @Override
+        public void recovered(FileSystem fileSystem) {
+            CndFileSystemProblemListener listener = listenerRef.get();
+            if (listener != null) {
+                listener.recovered(fileSystem);
+            }
+        }        
     }
 
     private static class FileSystemAndString {

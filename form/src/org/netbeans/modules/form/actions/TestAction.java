@@ -79,9 +79,15 @@ public class TestAction extends CallableSystemAction implements Runnable {
     private Map<String,Map<String,Frame>> previews = new HashMap<String,Map<String,Frame>>();
 
     public TestAction() {
-        setEnabled(false);
+//        setEnabled(false);
     }
 
+    @Override
+    public boolean isEnabled() {
+        FormDesigner designer = FormDesigner.getSelectedDesigner();
+        return designer != null && designer.getTopDesignComponent() != null;
+    }
+    
     @Override
     protected boolean asynchronous() {
         return false;
@@ -115,7 +121,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
     @Override
     public void performAction() {
-        if (formDesigner != null) {
+        if (FormDesigner.getSelectedDesigner() != null) {
             selectedLaf = null;
             if (java.awt.EventQueue.isDispatchThread())
                 run();
@@ -126,9 +132,11 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
     @Override
     public void run() {
-        RADVisualComponent topComp = formDesigner.getTopDesignComponent();
-        if (topComp == null)
+        FormDesigner designer = FormDesigner.getSelectedDesigner();
+        RADVisualComponent topComp = designer != null ? designer.getTopDesignComponent() : null;
+        if (topComp == null) {
             return;
+        }
 
         RADVisualComponent parent = topComp.getParentContainer();
         while (parent != null) {
@@ -271,12 +279,12 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
     // -------
 
-    private FormDesigner formDesigner;
-
-    public void setFormDesigner(FormDesigner designer) {
-        formDesigner = designer;
-        setEnabled(formDesigner != null && formDesigner.getTopDesignComponent() != null);
-    }
+//    private FormDesigner formDesigner;
+//
+//    public void setFormDesigner(FormDesigner designer) {
+//        formDesigner = designer;
+//        setEnabled(formDesigner != null && formDesigner.getTopDesignComponent() != null);
+//    }
     
     // LAFMenu
 

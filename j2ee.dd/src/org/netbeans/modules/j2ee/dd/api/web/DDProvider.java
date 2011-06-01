@@ -45,7 +45,6 @@
 package org.netbeans.modules.j2ee.dd.api.web;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -60,8 +59,6 @@ import org.xml.sax.*;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -130,11 +127,11 @@ public final class DDProvider {
             synchronized (baseBeanMap) {
                 original = getOriginalFromCache(fo);
                 if (original == null) {
-                    version = WebParseUtils.getVersion(fo.getInputStream());
+                    version = WebParseUtils.getVersion(fo);
                     if (version != null) {
                         // preparsing
                         error = parse(fo);
-                        original = DDUtils.createWebApp(fo.getInputStream(), version);
+                        original = DDUtils.createWebApp(fo, version);
                         baseBeanMap.put(fo.getURL(), new WeakReference(original));
                         errorMap.put(fo.getURL(), error);
                     }
@@ -232,7 +229,7 @@ public final class DDProvider {
         WeakReference wr = (WeakReference) baseBeanMap.get(fo.getURL());
         if (wr == null) {
             return null;
-        }
+        }        
         WebApp webApp = (WebApp) wr.get();
         if (webApp == null) {
             baseBeanMap.remove(fo.getURL());
@@ -248,7 +245,11 @@ public final class DDProvider {
      * @return WebApp object - root of the deployment descriptor bean graph
      */
     public WebApp getDDRoot(File f) throws IOException, SAXException {
-        return DDUtils.createWebApp(new FileInputStream(f), WebParseUtils.getVersion(new FileInputStream(f)));
+        FileObject fileObject = FileUtil.toFileObject(f);
+        if (fileObject == null) {
+            throw new IOException(String.format("File: %s does not exist.", f.getAbsolutePath())); //NOI18N
+        }
+        return DDUtils.createWebApp(fileObject, WebParseUtils.getVersion(fileObject));
     }
     
     /**  Convenient method for getting the BaseBean object from CommonDDBean object.
@@ -270,8 +271,8 @@ public final class DDProvider {
     throws org.xml.sax.SAXException, java.io.IOException {
         return WebParseUtils.parse(fo);
     }
-  
-    
+
+
     /**
      * Removes the entries associated with the given <code>fo</code> from
      * the various caches that this class utilizes.
@@ -302,7 +303,7 @@ public final class DDProvider {
                         if (webApp!=null) {
                             String version = null;
                             try {
-                                version = WebParseUtils.getVersion(fo.getInputStream());
+                                version = WebParseUtils.getVersion(fo);
                                 // preparsing
                                 SAXParseException error = parse(fo);
                                 if (error!=null) {
@@ -312,7 +313,7 @@ public final class DDProvider {
                                     webApp.setError(null);
                                     webApp.setStatus(WebApp.STATE_VALID);
                                 }
-                                WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
+                                WebApp original = DDUtils.createWebApp(fo, version);
                                 if (original == null) {
                                     webApp.setStatus(WebApp.STATE_INVALID_OLD_VERSION);
                                     webApp.setError(null);
@@ -333,8 +334,8 @@ public final class DDProvider {
                         } else if (orig != null) {
                             String version = null;
                             try {
-                                version = WebParseUtils.getVersion(fo.getInputStream());
-                                WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
+                                version = WebParseUtils.getVersion(fo);
+                                WebApp original = DDUtils.createWebApp(fo, version);
                                 if (original == null) {
                                     baseBeanMap.remove(fo.getURL());
                                 } else {

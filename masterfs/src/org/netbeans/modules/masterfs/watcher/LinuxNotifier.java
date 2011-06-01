@@ -47,19 +47,22 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A {@link Notifier} implementation based on Linux inotify mechanism.
  *
  * @author nenik
  */
-public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
-
+final class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
+    private static final Logger LOG = Logger.getLogger(LinuxNotifier.class.getName());
+    
     private static interface InotifyImpl extends Library {
 	public int inotify_init();
 	public int inotify_init1(int flags);
 	public int close(int fd);
-        public int read(int fd, ByteBuffer buff, int count);
+    public int read(int fd, ByteBuffer buff, int count);
 	public int inotify_add_watch(int fd, String pathname, int mask);
 	public int inotify_rm_watch(int fd, int wd);
 
@@ -98,6 +101,17 @@ public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
          buff.position(buff.capacity()); // make the buffer empty
          buff.order(ByteOrder.nativeOrder());
          fd = IMPL.inotify_init1(InotifyImpl.O_CLOEXEC);
+         if (fd < 0) {
+             LOG.log(
+                 Level.INFO, "Linux kernel {0} returned {1} from inotify_init1",
+                 new Object[] { System.getProperty("os.version"), fd }
+             );
+             fd = IMPL.inotify_init();
+             LOG.log(Level.INFO, "Trying inotify_init: {0}", fd);
+         }
+         if (fd < 0) {
+             throw new IllegalStateException("inotify_init failed: " + fd);
+         }
     }
 
     private String getString(int maxLen) {
@@ -166,13 +180,19 @@ public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
         }
     }
 
-    @Override public LKey addWatch(String path) {
+    @Override public LKey addWatch(String path) throws IOException {
         // what if the file doesn't exist?
         int id = IMPL.inotify_add_watch(fd, path,
                     InotifyImpl.IN_CREATE | InotifyImpl.IN_MOVED_TO |
                     InotifyImpl.IN_DELETE | InotifyImpl.IN_MOVED_FROM |
                     InotifyImpl.IN_MODIFY | InotifyImpl.IN_ATTRIB);
         //XXX handle error return value (-1)
+        LOG.log(Level.FINEST, "addWatch{0} res: {1}", new Object[]{path, id});
+        if (id <= 0) {
+            // 28 == EINOSPC
+            int errno = NativeLibrary.getInstance("c").getFunction("errno").getInt(0); // NOI18N
+            throw new IOException("addWatch on " + path + " errno: " + errno); // NOI18N
+        }
 
         LKey newKey = map.get(id);
         if (newKey == null) {

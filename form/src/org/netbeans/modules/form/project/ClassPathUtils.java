@@ -55,6 +55,9 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
@@ -218,8 +221,8 @@ public class ClassPathUtils {
      * @return null if operation was cancelled by user otherwise true or false
      *  if project classpath was changed or not
      */
-    public static Boolean updateProject(FileObject fileInProject,
-                                        ClassSource classSource)
+    public static Boolean updateProject(final FileObject fileInProject,
+                                        final ClassSource classSource)
         throws IOException
     {
         if (!classSource.hasEntries())
@@ -229,7 +232,24 @@ public class ClassPathUtils {
 	if(project==null)
 	    return Boolean.FALSE;
 
-        return classSource.addToProjectClassPath(fileInProject, ClassPath.COMPILE);
+        String msg = getBundleString("MSG_UpdatingClassPath"); // NOI18N
+        Object retVal = ProgressUtils.showProgressDialogAndRun(new ProgressRunnable<Object>() {
+            @Override
+            public Object run(ProgressHandle handle) {
+                try {
+                    return classSource.addToProjectClassPath(fileInProject, ClassPath.COMPILE);
+                } catch (IOException ioex) {
+                    return ioex;
+                }
+            }
+        }, msg, false);
+        Boolean updated;
+        if (retVal instanceof IOException) {
+            throw (IOException)retVal;
+        } else {
+            updated = (Boolean)retVal;
+        }
+        return updated;
     }
 
     /** Provides description for ClassSource object usable e.g. for error

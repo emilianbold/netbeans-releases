@@ -55,6 +55,7 @@ import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
 import java.awt.event.ActionEvent;
 import java.util.*;
+import org.openide.util.NbBundle;
 
 /**
  * Top level main Versioninng menu.
@@ -81,40 +82,46 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
     private JComponent[] createMenu() {
         List<JComponent> items = new ArrayList<JComponent>(20);
 
-        final VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
-        List<VersioningSystem> systems = Arrays.asList(VersioningManager.getInstance().getVersioningSystems());
-        VersioningSystem [] vs = VersioningManager.getInstance().getOwners(ctx);
-
-        if (vs.length == 1) {
-            if (vs[0].getVCSAnnotator() != null) {
-                List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
-                items.addAll(systemItems);
-            }
+        if(!VersioningManager.isInitialized()) {
+            items.add(InitMenuItem.create(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));
             items.add(Utils.createJSeparator());
-        } else if (vs.length > 1) {
-            JMenuItem dummy = new JMenuItem("<multiple systems>");
-            dummy.setEnabled(false);
-            items.add(dummy);
-            items.add(Utils.createJSeparator());
-        }
+            items.add(InitMenuItem.create(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_LocalHistory")));
+        } else {
         
-        Collections.sort(systems, new ByDisplayNameComparator());
+            final VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
+            List<VersioningSystem> systems = Arrays.asList(VersioningManager.getInstance().getVersioningSystems());
+            VersioningSystem [] vs = VersioningManager.getInstance().getOwners(ctx);
 
-        VersioningSystem localHistory = null;
-        for (final VersioningSystem system : systems) {
-            if (Utils.isLocalHistory(system)) {
-                localHistory = system;
-            } else {
-                JMenu menu = createVersioningSystemMenu(system);
-                items.add(menu);
+            if (vs.length == 1) {
+                if (vs[0].getVCSAnnotator() != null) {
+                    List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
+                    items.addAll(systemItems);
+                }
+                items.add(Utils.createJSeparator());
+            } else if (vs.length > 1) {
+                JMenuItem dummy = new JMenuItem("<multiple systems>");
+                dummy.setEnabled(false);
+                items.add(dummy);
+                items.add(Utils.createJSeparator());
+            }
+
+            Collections.sort(systems, new ByDisplayNameComparator());
+
+            VersioningSystem localHistory = null;
+            for (final VersioningSystem system : systems) {
+                if (Utils.isLocalHistory(system)) {
+                    localHistory = system;
+                } else {
+                    JMenu menu = createVersioningSystemMenu(system);
+                    items.add(menu);
+                }
+            }
+
+            if (localHistory != null) {
+                items.add(Utils.createJSeparator());
+                items.add(createVersioningSystemMenu(localHistory));
             }
         }
-        
-        if (localHistory != null) {
-            items.add(Utils.createJSeparator());
-            items.add(createVersioningSystemMenu(localHistory));
-        }
-
         return items.toArray(new JComponent[items.size()]);
     }
 
@@ -142,8 +149,16 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
     }
 
     private void constructMenu(JMenu menu, VersioningSystem system, VCSContext ctx) {
-        if (system.getVCSAnnotator() != null) {
-            List<JComponent> systemItems = actionsToItems(system.getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
+        Action[] actions = null;
+        if(system instanceof DelegatingVCS) {
+            actions = ((DelegatingVCS)system).getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
+        } else {
+            if (system.getVCSAnnotator() != null) {
+                actions = system.getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
+            }
+        }
+        if(actions != null && actions.length > 0) {
+            List<JComponent> systemItems = actionsToItems(actions);
             for (JComponent systemItem : systemItems) {
                 menu.add(systemItem);
             }

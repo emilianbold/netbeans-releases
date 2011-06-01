@@ -83,19 +83,25 @@ public class HudsonMercurialSCM implements HudsonSCM {
         if (source == null) {
             return null;
         }
+        final String repo;
+        if ("file".equals(source.getScheme())) { // NOI18N
+            repo = new File(source).getAbsolutePath();
+        } else {
+            repo = source.toString();
+        }
         return new Configuration() {
             public void configure(Document doc) {
                 Element root = doc.getDocumentElement();
                 Element configXmlSCM = (Element) root.appendChild(doc.createElement("scm")); // NOI18N
                 configXmlSCM.setAttribute("class", "hudson.plugins.mercurial.MercurialSCM"); // NOI18N
-                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(source.toString())); // NOI18N
+                configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(repo)); // NOI18N
                 configXmlSCM.appendChild(doc.createElement("modules")).appendChild(doc.createTextNode("")); // NOI18N
                 configXmlSCM.appendChild(doc.createElement("clean")).appendChild(doc.createTextNode("true")); // NOI18N
                 Helper.addTrigger(doc);
             }
             public ConfigurationStatus problems() {
                 if (!source.isAbsolute() || "file".equals(source.getScheme())) { // NOI18N
-                    return ConfigurationStatus.withWarning(NbBundle.getMessage(HudsonMercurialSCM.class, "warning.local_repo", source));
+                    return ConfigurationStatus.withWarning(NbBundle.getMessage(HudsonMercurialSCM.class, "warning.local_repo", repo));
                 } else {
                     return null;
                 }

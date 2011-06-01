@@ -44,11 +44,14 @@ package org.netbeans.modules.git;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,8 +79,9 @@ class FilesystemInterceptor extends VCSInterceptor {
     private final FileStatusCache   cache;
 
     private final Set<File> filesToRefresh = new HashSet<File>();
+    private final Map<File, Set<File>> lockedRepositories = new HashMap<File, Set<File>>(5);
 
-    private RequestProcessor.Task refreshTask;
+    private RequestProcessor.Task refreshTask, lockedRepositoryRefreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("GitRefresh", 1, true);
     private final GitFolderEventsHandler gitFolderEventsHandler;
@@ -88,6 +92,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     public FilesystemInterceptor () {
         cache = Git.getInstance().getFileStatusCache();
         refreshTask = rp.create(new RefreshTask());
+        lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         gitFolderEventsHandler = new GitFolderEventsHandler();
     }
 
@@ -325,12 +330,80 @@ class FilesystemInterceptor extends VCSInterceptor {
             if (DelayScanRegistry.getInstance().isDelayed(refreshTask, Git.STATUS_LOG, "GitInterceptor.refreshTask")) { //NOI18N
                 return;
             }
-            Set<File> files;
+            Collection<File> files;
             synchronized (filesToRefresh) {
                 files = new HashSet<File>(filesToRefresh);
                 filesToRefresh.clear();
             }
-            cache.refreshAllRoots(files);
+            if (!"false".equals(System.getProperty("versioning.git.delayStatusForLockedRepositories"))) {
+                files = checkLockedRepositories(files, false);
+            }
+            if (!files.isEmpty()) {
+                cache.refreshAllRoots(files);
+            }
+            if (!lockedRepositories.isEmpty()) {
+                lockedRepositoryRefreshTask.schedule(5000);
+            }
+        }
+    }
+
+    private Collection<File> checkLockedRepositories (Collection<File> additionalFilesToRefresh, boolean keepCached) {
+        List<File> retval = new LinkedList<File>();
+        // at first sort the files under repositories
+        Map<File, Set<File>> sortedFiles = sortByRepository(additionalFilesToRefresh);
+        for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
+            Set<File> alreadyPlanned = lockedRepositories.get(e.getKey());
+            if (alreadyPlanned == null) {
+                alreadyPlanned = new HashSet<File>();
+                lockedRepositories.put(e.getKey(), alreadyPlanned);
+            }
+            alreadyPlanned.addAll(e.getValue());
+        }
+        // return all files that do not belong to a locked repository 
+        for (Iterator<Map.Entry<File, Set<File>>> it = lockedRepositories.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<File, Set<File>> entry = it.next();
+            File repository = entry.getKey();
+            if (!repository.exists()) {
+                // repository does not exist, no need to keep it
+                it.remove();
+            } else if (GitUtils.isRepositoryLocked(repository)) {
+                Git.STATUS_LOG.log(Level.FINE, "checkLockedRepositories(): Repository {0} locked, status refresh delayed", repository); //NOI18N
+            } else {
+                // repo not locked, add all files into the returned collection
+                retval.addAll(entry.getValue());
+                if (!keepCached) {
+                    it.remove();
+                }
+            }
+        }
+        return retval;
+    }
+
+    private Map<File, Set<File>> sortByRepository (Collection<File> files) {
+        Map<File, Set<File>> sorted = new HashMap<File, Set<File>>(5);
+        for (File f : files) {
+            File repository = Git.getInstance().getRepositoryRoot(f);
+            if (repository != null) {
+                Set<File> repoFiles = sorted.get(repository);
+                if (repoFiles == null) {
+                    repoFiles = new HashSet<File>();
+                    sorted.put(repository, repoFiles);
+                }
+                repoFiles.add(f);
+            }
+        }
+        return sorted;
+    }
+
+    private class LockedRepositoryRefreshTask implements Runnable {
+        @Override
+        public void run() {
+            if (!checkLockedRepositories(Collections.<File>emptySet(), true).isEmpty()) {
+                // there are some newly unlocked repositories to refresh
+                refreshTask.schedule(0);
+            } else if (!lockedRepositories.isEmpty()) {
+                lockedRepositoryRefreshTask.schedule(5000);
+            }
         }
     }
 
@@ -450,6 +523,10 @@ class FilesystemInterceptor extends VCSInterceptor {
          * @param timestamp new timestamp, value 0 and missing indexFile.getParentFile() will remove the item from the cache
          */
         private void refreshIndexFileTimestamp (File indexFile, long timestamp) {
+            if (Utils.isAncestorOrEqual(new File(System.getProperty("java.io.tmpdir")), indexFile)) { //NOI18N
+                // skip repositories in temp folder
+                return;
+            }
             final File gitFolder = FileUtil.normalizeFile(indexFile.getParentFile());
             boolean exists = timestamp > 0 || gitFolder.exists();
             synchronized (indexFiles) {

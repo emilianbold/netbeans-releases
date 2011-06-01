@@ -106,7 +106,8 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     private Object[][] members = new Object[0][0];
     private ElementKind sourceKind;
     private ChangeListener parent;
-    
+
+    private boolean initialized = false;
     
     /** Creates new form PullUpPanel
      * @param refactoring The refactoring this panel provides parameters for.
@@ -141,6 +142,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     }
 
     private void initializeInEDT() {
+        if (initialized) return;
         final TreePathHandle handle = refactoring.getSourceType();
         JavaSource source = JavaSource.forFileObject(handle.getFileObject());
         try {
@@ -223,6 +225,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         } catch (IOException ioe) {
             throw (RuntimeException) new RuntimeException().initCause(ioe);
         }
+        initialized = true;
     }
     
     // --- GETTERS FOR REFACTORING PARAMETERS ----------------------------------

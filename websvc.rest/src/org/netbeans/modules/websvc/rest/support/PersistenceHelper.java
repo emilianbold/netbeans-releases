@@ -139,10 +139,11 @@ public class PersistenceHelper {
     public void configure(Collection<String> classNames, boolean useResourceLocalTx) throws IOException {
         if (helper == null) return;
 
-        // Required by Spring
+        /* Required by Spring
+         * Fix for BZ#195973 -  EE6 RESTful WS in Spring app fails to deploy to GF 3.1
         if (RestUtils.hasSpringSupport(project)) {
             setDefaultProvider();
-        }
+        }*/
 
         // Need to do this for Tomcat
         if (RestUtils.isServerTomcat(project)) {
@@ -199,6 +200,11 @@ public class PersistenceHelper {
         }
     }
     
+    /*
+     * Commented out as fix for BZ#195973 -  EE6 RESTful WS in Spring app fails to deploy to GF 3.1
+     * In case of usage this method hardcoded strings DEFAULT_GFV3_PROVIDER and 
+     * DEFAULT_GFV2_PROVIDER should be chanhged to 
+     * org.netbeans.modules.j2ee.persistence.wizard.Util.getPreferredProvider() 
     private void setDefaultProvider() throws IOException {
         Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);
@@ -209,7 +215,7 @@ public class PersistenceHelper {
                     (RestUtils.isServerGFV3(project) ? DEFAULT_GFV3_PROVIDER : DEFAULT_GFV2_PROVIDER)),
                     puElement.getFirstChild());
         }
-    }
+    }*/
     
     private FileObject getPersistenceXML() {
         RestSupport rs = RestUtils.getRestSupport(project);

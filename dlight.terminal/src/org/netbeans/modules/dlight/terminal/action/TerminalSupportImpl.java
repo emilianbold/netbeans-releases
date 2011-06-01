@@ -108,7 +108,7 @@ public final class TerminalSupportImpl {
         return button;
     }
     
-    public static void openTerminalImpl(final IOContainer ioContainer, final ExecutionEnvironment env, final String dir, final boolean silentMode) {
+    public static void openTerminalImpl(final IOContainer ioContainer, final String tabTitle, final ExecutionEnvironment env, final String dir, final boolean silentMode) {
         final IOProvider term = IOProvider.get("Terminal"); // NOI18N
         if (term != null) {
             final AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -168,7 +168,7 @@ public final class TerminalSupportImpl {
 
                     final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
                     try {
-                        ioRef.set(term.getIO(env.getDisplayName(), null, ioContainer));
+                        ioRef.set(term.getIO(tabTitle, null, ioContainer));
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                         npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));

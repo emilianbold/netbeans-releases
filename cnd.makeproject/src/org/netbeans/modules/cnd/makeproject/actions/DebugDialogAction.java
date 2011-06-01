@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.actions;
 
-import java.io.File;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
@@ -59,9 +58,10 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -88,21 +88,18 @@ public class DebugDialogAction extends NodeAction {
 
     @Override
     protected void performAction(final Node[] activatedNodes) {
-        String path = null;
+        FileObject executableFO = null;
         if (activatedNodes != null && activatedNodes.length == 1) {
             DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
             String mime = getMime(dataObject);
             if (dataObject != null  && dataObject.isValid() && MIMENames.isBinary(mime)) {
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
-                    File file = FileUtil.toFile(fo);
-                    if (file != null) {
-                        path = file.getPath();
-                    }
+                    executableFO = fo;
                 }
             }
         }
-        perform(path);
+        perform(executableFO);
     }
 
     private String getMime(DataObject dob) {
@@ -125,14 +122,18 @@ public class DebugDialogAction extends NodeAction {
         return true;
     }
 
-    public void perform(String executablePath) {
+    private void perform(FileObject executableFO) {
         if (debugButton == null) {
             init();
         }
-        perform(new RunDialogPanel(executablePath, debugButton, true));
+        try {
+            perform(new RunDialogPanel(executableFO, debugButton, true));
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
-    protected void perform(RunDialogPanel runDialogPanel) {
+    protected void perform(final RunDialogPanel runDialogPanel) {
         if (debugButton == null) {
             init();
         }
@@ -147,20 +148,25 @@ public class DebugDialogAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == debugButton) {
-            Project project = runDialogPanel.getSelectedProject();
-            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-            if (conf != null) {
-                RunProfile profile = conf.getProfile();
-                String path = runDialogPanel.getExecutablePath();
-                path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                        project,
-                        PredefinedType.DEBUG,
-                        path, conf,
-                        profile,
-                        false);
-                ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
-            }
+            runDialogPanel.getSelectedProject(new RunDialogPanel.RunProjectAction() {
+
+                @Override
+                public void run(Project project) {
+                    MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+                    if (conf != null) {
+                        RunProfile profile = conf.getProfile();
+                        String path = runDialogPanel.getExecutablePath();
+                        path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                                project,
+                                PredefinedType.DEBUG,
+                                path, conf,
+                                profile,
+                                false);
+                        ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+                    }
+                }
+            });
         }
     }
 

@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
 
 /**
  * Returns source level of the given Java source file if it is known.
- * @see org.netbeans.spi.java.queries.SourceLevelQueryImplementation
+ * @see org.netbeans.spi.java.queries.SourceLevelQueryImplementation2
  * @author David Konecny
  * @author Tomas Zezula
  * @since org.netbeans.api.java/1 1.5

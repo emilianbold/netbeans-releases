@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
@@ -52,8 +54,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
 public final class GdbFrame extends Frame {
   
     private MITList MIframe;
-    private MITList args_list = null;
-    private String fullname = null;
+    private final List<GdbLocal> argsArray = new ArrayList<GdbLocal>();
+    private String fullname;
 
     public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, MIResult frameargs) {
 	super(debugger);
@@ -82,7 +84,7 @@ public final class GdbFrame extends Frame {
 	else
 	    func = "";
 	
-        args_list = (MITList) MIframe.valueOf("args"); // NOI18N
+        MITList args_list = (MITList) MIframe.valueOf("args"); // NOI18N
 	if (args_list != null && frameargs != null)
 	    System.out.println("GdbFrame Impossible "); // NOI18N
 
@@ -112,26 +114,25 @@ public final class GdbFrame extends Frame {
 	if (frameargs != null) 
             args_list = (MITList) frameargs.value().asTuple().valueOf("args"); // NOI18N
 
-	if (args_list != null) {
-            String stringframes = args_list.toString();
-
-	args = " ("; // NOI18N
-	if (debugger.getVerboseStack()) {
-        int args_count = args_list.size();
-        // iterate through args list
-        for (int vx=0; vx < args_count; vx++) {
-            MIValue arg = (MIValue)args_list.get(vx);
-            if (vx != 0)
-                args += ", "; // NOI18N
-            args += arg.asTuple().valueOf("name").asConst().value(); // NOI18N
-            MIValue value = arg.asTuple().valueOf("value"); // NOI18N
-            if (value != null) {
-                args += "="; // NOI18N
-                args += value.asConst().value();
+        if (args_list != null) {
+            args = " ("; // NOI18N
+            if (debugger.getVerboseStack()) {
+                int args_count = args_list.size();
+                    // iterate through args list
+                for (int vx=0; vx < args_count; vx++) {
+                    MIValue arg = (MIValue)args_list.get(vx);
+                    if (vx != 0)
+                        args += ", "; // NOI18N
+                    args += arg.asTuple().valueOf("name").asConst().value(); // NOI18N
+                    MIValue value = arg.asTuple().valueOf("value"); // NOI18N
+                    if (value != null) {
+                        argsArray.add(new GdbLocal(arg));
+                        args += "="; // NOI18N
+                        args += value.asConst().value();
+                    }
+                }
             }
-        }
-        }
-        args += ")"; // NOI18N
+            args += ")"; // NOI18N
 	}
 
 	range_of_hidden = false;
@@ -146,12 +147,8 @@ public final class GdbFrame extends Frame {
 	return MIframe;
     }
 
-    public void setMIArgs(MITList arg) {
-	args_list = arg;
-    }
-
-    public MITList getMIArgs() {
-	return args_list;
+    public List<GdbLocal> getArgsList() {
+	return argsArray;
     }
     
     @Override
@@ -159,4 +156,15 @@ public final class GdbFrame extends Frame {
         return debugger.remoteToLocal("Gdb frame", debugger.fmap().engineToWorld(fullname)); //NOI18N
     }
 
+    public String getEngineFullName() {
+        return fullname;
+    }
+    
+    void varUpdated(String name, String value) {
+        for (GdbLocal var : argsArray) {
+            if (var.getName().equals(name)) {
+                var.setValue(value);
+            }
+        }
+    }
 }

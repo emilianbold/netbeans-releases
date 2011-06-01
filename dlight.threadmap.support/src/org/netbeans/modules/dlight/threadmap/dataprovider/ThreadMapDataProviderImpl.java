@@ -79,6 +79,7 @@ import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
+import org.netbeans.modules.dlight.spi.support.SQLExceptions;
 import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDataQuery;
 import org.netbeans.modules.dlight.threadmap.storage.ThreadInfoImpl;
@@ -115,6 +116,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     }
 
+    @Override
     public synchronized void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         DLightSession session = DLightManager.getDefault().getActiveSession();
 
@@ -126,6 +128,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         }
     }
 
+    @Override
     public synchronized ThreadMapData queryData(final ThreadMapDataQuery query) {
         if (log.isLoggable(Level.FINEST)) {
             log.finest(String.format("DataQuery: [%d, %d], fullstate: %s", query.getTimeFrom(), query.getTimeTo(), query.isFullState() ? "yes" : "no")); // NOI18N
@@ -165,10 +168,12 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                         lwpStates.put(threadID, states);
                         data.add(new ThreadData() {
 
+                            @Override
                             public ThreadInfo getThreadInfo() {
                                 return lwpInfo;
                             }
 
+                            @Override
                             public List<ThreadState> getThreadState() {
                                 return states;
                             }
@@ -202,15 +207,17 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             }
 
         } catch (SQLException ex) {
-            log.log(Level.SEVERE, null, ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
         }
 
         ThreadMapData tmd = new ThreadMapData() {
 
+            @Override
             public List<ThreadData> getThreadsData() {
                 return data;
             }
 
+            @Override
             public boolean isSamplingMode() {
                 return false;
             }
@@ -220,14 +227,17 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         return tmd;
     }
 
+    @Override
     public synchronized ThreadDump getThreadDump(final ThreadDumpQuery query) {
         return threadDumpProvider == null ? null : threadDumpProvider.getThreadDump(query);
     }
 
+    @Override
     public Collection<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
         return threadDumpProvider == null ? null : threadDumpProvider.getThreadSnapshots(query);
     }
 
+    @Override
     public synchronized void attachTo(final DataStorage storage) {
         if (storage instanceof SQLDataStorage) {
             sqlStorage = (SQLDataStorage) storage;
@@ -252,7 +262,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             try {
                 queryDataStatement = sqlStorage.prepareStatement(query);
             } catch (SQLException ex) {
-                log.log(Level.SEVERE, null, ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
             }
 
             query = String.format("select %s, sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s), sum(%s) from %s where %s >= ? and %s < ? group by %s", // NOI18N
@@ -274,7 +284,7 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             try {
                 querySummaryStatement = sqlStorage.prepareStatement(query);
             } catch (SQLException ex) {
-                log.log(Level.SEVERE, null, ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
             }
 
             query = String.format("select %s from %s where %s = ?", // NOI18N
@@ -285,13 +295,14 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             try {
                 queryLWPInfo = sqlStorage.prepareStatement(query);
             } catch (SQLException ex) {
-                log.log(Level.SEVERE, null, ex);
+                SQLExceptions.printStackTrace(sqlStorage, ex);
             }
 
             ti.clear();
         }
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
@@ -313,12 +324,13 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             }
 
         } catch (SQLException ex) {
-            log.log(Level.SEVERE, null, ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
         }
 
         return lwpInfo;
     }
 
+    @Override
     public synchronized ThreadMapSummaryData queryData(ThreadMapSummaryDataQuery query) {
         if (log.isLoggable(Level.FINEST)) {
             log.finest(String.format("DataQuery: [%s], fullstate: %s", Arrays.toString(query.getIntervals().toArray()), query.isFullState() ? "yes" : "no")); // NOI18N
@@ -364,10 +376,12 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                             final MSAState state = MSAState.fromCode(colNum - 2, query.isFullState());
                             states.add(new StateDuration() {
 
+                                @Override
                                 public MSAState getState() {
                                     return state;
                                 }
 
+                                @Override
                                 public long getDuration() {
                                     return stateDuration;
                                 }
@@ -382,10 +396,12 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
                     result.add(new ThreadSummaryData() {
 
+                        @Override
                         public ThreadInfo getThreadInfo() {
                             return lwpInfo;
                         }
 
+                        @Override
                         public List<StateDuration> getThreadSummary() {
                             return states;
                         }
@@ -397,26 +413,31 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
             }
 
         } catch (SQLException ex) {
-            log.log(Level.SEVERE, null, ex);
+            SQLExceptions.printStackTrace(sqlStorage, ex);
         }
 
         return new ThreadMapSummaryData() {
 
+            @Override
             public List<ThreadSummaryData> getThreadsData() {
                 return result;
             }
         };
     }
 
+    @Override
     public List<ThreadNameDetails> getThreadNameDetails(final int threadID) {
         // empty stub implementation
         List<ThreadNameDetails> res = new ArrayList<ThreadNameDetails>();
         res.add(new ThreadNameDetails() {
+            @Override
             public String getName() {
                 return "Thread"+threadID; // NOI18N
             }
+            @Override
             public Action goToSource() {
                 return new AbstractAction(){
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                     }
                 };

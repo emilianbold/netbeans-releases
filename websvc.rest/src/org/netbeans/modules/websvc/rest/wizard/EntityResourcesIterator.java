@@ -62,6 +62,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -70,22 +71,26 @@ import org.openide.util.RequestProcessor;
 /**
  *
  * @author Peter Liu
+ * @author ads
  */
 public class EntityResourcesIterator implements TemplateWizard.Iterator {
     
+    private static final long serialVersionUID = -1555851385128542149L;
     private int index;
-    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor.Panel<?>[] panels;
     private RequestProcessor.Task transformTask;
     
-    public Set instantiate(TemplateWizard wizard) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         final Project project = Templates.getProject(wizard);
         RestUtils.ensureRestDevelopmentReady(project);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
         FileObject wizardSrcRoot = (FileObject)wizard.getProperty(
                 WizardProperties.TARGET_SRC_ROOT);
         /*
-         *  In JEE6 case last wizard panel doesn't set TargetFolder via Templates
-         *  method. There is special property WizardProperties.TARGET_SRC_ROOT
+         *  Visual panel is used from several wizards. One of them
+         *  has several options for target source roots ( different for 
+         *  entities, generation classes ). 
+         *  There is special property WizardProperties.TARGET_SRC_ROOT
          *  which is set up by wizard panel. This property should be used
          *  as target source root folder. 
          */
@@ -94,12 +99,13 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         }
         String targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
         String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
-        String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
+        String controllerPackage = (String) wizard.getProperty(WizardProperties.CONTROLLER_PACKAGE);
         EntityResourceBeanModel model = (EntityResourceBeanModel) wizard.getProperty(WizardProperties.ENTITY_RESOURCE_MODEL);
         final PersistenceUnit pu = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
     
         final EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
-        generator.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
+        generator.initialize(model, project, targetFolder, targetPackage, 
+                resourcePackage, controllerPackage, pu);
         final ProgressDialog progressDialog = new ProgressDialog(NbBundle.getMessage(
                 EntityResourcesIterator.class,
                 "LBL_RestSevicicesFromEntitiesProgress"));
@@ -129,26 +135,20 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         LogUtils.logWsWizard(params);
 
         progressDialog.open();   
-        return Collections.singleton(DataFolder.findFolder(targetFolder));
+        return Collections.<DataObject>singleton(DataFolder.findFolder(targetFolder));
     }
     
  
     public void initialize(TemplateWizard wizard) {
         index = 0;
-        WizardDescriptor.Panel secondPanel = new EntitySelectionPanel(
+        WizardDescriptor.Panel<?> secondPanel = new EntitySelectionPanel(
                 NbBundle.getMessage(EntityResourcesIterator.class, 
                         "LBL_EntityClasses"), wizard);      // NOI18N
-        WizardDescriptor.Panel thirdPanel = null ;
-        if ( RestUtils.isJavaEE6(Templates.getProject(wizard)) ){
-            thirdPanel =new org.netbeans.modules.websvc.rest.wizard.fromdb.
-                EntityResourcesSetupPanel(NbBundle.getMessage(EntityResourcesIterator.class,
-                "LBL_RestResourcesAndClasses"), wizard, true);// NOI18N
-        }
-        else {
-            thirdPanel = new EntityResourcesSetupPanel(
-                NbBundle.getMessage(EntityResourcesIterator.class, 
-                        "LBL_RestResourcesAndClasses"), wizard);// NOI18N
-        }
+        WizardDescriptor.Panel<?> thirdPanel =new EntityResourcesSetupPanel(
+                NbBundle.getMessage(EntityResourcesIterator.class,
+                "LBL_RestResourcesAndClasses"), wizard,         // NOI18N
+                RestUtils.isJavaEE6(Templates.getProject(wizard)) ||
+                        RestUtils.hasSpringSupport(Templates.getProject(wizard)));
         panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
         String names[] = new String[] {
             NbBundle.getMessage(EntityResourcesIterator.class, 

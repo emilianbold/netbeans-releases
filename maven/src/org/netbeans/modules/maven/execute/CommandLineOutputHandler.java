@@ -342,10 +342,10 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
         case NORMAL:
             if (forkCount == 0 && text.matches("-+")) { // NOI18N
                 state = ProgressState.GOT_DASHES;
-            } else if (text.startsWith("<<< ")) { // NOI18N
+            } else if (text.startsWith(">>> ")) { // NOI18N
                 forkCount++;
                 LOG.log(java.util.logging.Level.FINE, "fork count up to {0}", forkCount);
-            } else if (forkCount > 0 && text.startsWith(">>> ")) { // NOI18N
+            } else if (forkCount > 0 && text.startsWith("<<< ")) { // NOI18N
                 forkCount--;
                 LOG.log(java.util.logging.Level.FINE, "fork count down to {0}", forkCount);
             }

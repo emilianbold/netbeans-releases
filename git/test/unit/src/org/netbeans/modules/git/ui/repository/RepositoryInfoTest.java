@@ -57,6 +57,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -71,6 +72,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         System.setProperty("versioning.git.handleExternalEvents", "false");
     }
 
@@ -158,7 +160,8 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         GitClient client = getClient(repositoryLocation);
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         info.refresh();
-        assertNull(info.getActiveBranch()); // no branch yet, just initialized
+        assertEquals(GitBranch.NO_BRANCH, info.getActiveBranch().getName());
+        assertEquals("", info.getActiveBranch().getId());
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
 
         // test property support

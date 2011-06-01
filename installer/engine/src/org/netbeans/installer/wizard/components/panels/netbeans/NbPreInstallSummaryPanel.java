@@ -119,6 +119,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_GF_ADDONS_LOCATION_TEXT);
         setProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY,
                 DEFAULT_AS_ADDONS_LOCATION_TEXT);
+        setProperty(JUNIT_PRESENT_TEXT_PROPERTY,
+                DEFAULT_JUNIT_PRESENT_TEXT_PROPERTY);
         
         setProperty(NEXT_BUTTON_TEXT_PROPERTY,
                 DEFAULT_NEXT_BUTTON_TEXT);
@@ -141,6 +143,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_REMOVE_NETBEANS_USERDIR_CHECKBOX);
         setProperty(REMOVE_NETBEANS_USERDIR_LINK_PROPERTY,
                 DEFAULT_REMOVE_NETBEANS_USERDIR_LINK);
+        setProperty(REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY,
+                DEFAULT_REMOVE_NETBEANS_INSTALLDIR_CHECKBOX);
     }
     
     @Override
@@ -202,7 +206,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         private NbiLabel downloadSizeValue;
 
         private NbiCheckBox removeUserdirCheckbox;
-        private NbiTextPane removeUserdirPane;
+        private NbiCheckBox removeInstalldirCheckbox;
+        private NbiTextPane removeUserdirPane;        
         private NbiPanel spacer;
         
         private List <Pair <Product, NbiCheckBox>> productCheckboxList;
@@ -239,11 +244,15 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             final List<Product> dependentOnGf = new LinkedList<Product>();
             final List<Product> dependentOnAs = new LinkedList<Product>();
             boolean nbBasePresent = false;
+            boolean junitPresent = false;
             
             for (Product product: registry.getProductsToInstall()) {
                 installationSize += product.getRequiredDiskSpace();
                 downloadSize += product.getDownloadSize();
-                
+                if (product.getUid().equals(NB_JAVASE_UID)) {
+                    String jUnitAccepted = product.getProperty(JUNIT_ACCEPTED_PROPERTY);
+                    junitPresent = (jUnitAccepted != null  && jUnitAccepted.equals("true"));
+                }
                 try {
                     if (product.getLogic().registerInSystem() || product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
                         nbBasePresent = product.getUid().equals(NB_BASE_UID) ? true : nbBasePresent;
@@ -346,6 +355,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         StringUtils.asString(dependentOnAs)));
                 text.append(StringUtils.LF);                
             }
+            //temporary solution to include JUnit into panel
+            if (junitPresent) {
+                text.append(StringUtils.LF);                
+                text.append(panel.getProperty(JUNIT_PRESENT_TEXT_PROPERTY));
+                text.append(StringUtils.LF);                
+            }
             locationsPane.setText(text);
 
             List <Product> toUninstall = registry.getProductsToUninstall();
@@ -418,10 +433,22 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 
             removeUserdirCheckbox.setVisible(false);
             removeUserdirPane.setVisible(false);
-            for (Product product : Registry.getInstance().getProductsToUninstall()) {
+            
+            if(Boolean.getBoolean(REMOVE_NETBEANS_INSTALLDIR_PROPERTY)) {
+                removeInstalldirCheckbox.doClick();
+            }  
+            removeInstalldirCheckbox.setVisible(false);            
+            for (Product product : Registry.getInstance().getProductsToUninstall()) {                
                 if (product.getUid().equals(NB_BASE_UID)) {
-                    try {
+                    try {                       
                         File installLocation = product.getInstallationLocation();
+                        removeInstalldirCheckbox.setText(
+                                    StringUtils.format(
+                                    panel.getProperty(REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY),
+                                    installLocation.getAbsolutePath()));
+                        removeInstalldirCheckbox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                        removeInstalldirCheckbox.setVisible(true);
+
                         File userDir = NetBeansUtils.getNetBeansUserDirFile(installLocation);
                         if (FileUtils.exists(userDir) && FileUtils.canWrite(userDir)) {                            
                             removeUserdirCheckbox.setText(
@@ -794,6 +821,23 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
             });
 
+            removeInstalldirCheckbox = new NbiCheckBox();            
+            add(removeInstalldirCheckbox, new GridBagConstraints(
+                                    0, gridy++, // x, y
+                                    1, 1, // width, height
+                                    1.0, 0.0, // weight-x, weight-y
+                                    GridBagConstraints.PAGE_START, // anchor
+                                    GridBagConstraints.HORIZONTAL, // fill
+                                    new Insets(11, 20, 0, 11), // padding
+                                    0, 0));                           // padx, pady - ???
+
+            removeInstalldirCheckbox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {                    
+                    System.setProperty(REMOVE_NETBEANS_INSTALLDIR_PROPERTY,
+                            "" + removeInstalldirCheckbox.isSelected());
+                }
+            });
+
             add(installationSizeLabel, new GridBagConstraints(
                     0, gridy++,                             // x, y
                     1, 1,                             // width, height
@@ -877,6 +921,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "addons.gf.install.location.text"; // NOI18N
     public static final String AS_ADDONS_LOCATION_TEXT_PROPERTY =
             "addons.as.install.location.text"; // NOI18N
+    public static final String JUNIT_PRESENT_TEXT_PROPERTY =
+            "junit.present.text"; // NOI18N
+    public static final String JUNIT_ACCEPTED_PROPERTY =
+            "junit.accepted"; // NOI18N
     
     public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
             "error.not.enough.space"; // NOI18N
@@ -892,12 +940,16 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "error.cannot.write"; // NOI18N
     public static final String REMOVE_NETBEANS_USERDIR_PROPERTY =
             "remove.netbeans.userdir";
+    public static final String REMOVE_NETBEANS_INSTALLDIR_PROPERTY =
+            "remove.netbeans.installdir";
     public static final String REMOVE_NETBEANS_USERDIR_TEXT_PROPERTY =
             "remove.netbeans.userdir.text";
     public static final String REMOVE_NETBEANS_USERDIR_LINK_PROPERTY =
             "remove.netbeans.userdir.link";
     public static final String REMOVE_NETBEANS_USERDIR_CHECKBOX_PROPERTY =
             "remove.netbeans.userdir.checkbox";
+    public static final String REMOVE_NETBEANS_INSTALLDIR_CHECKBOX_PROPERTY =
+            "remove.netbeans.installdir.checkbox";
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -937,6 +989,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_NB_ADDONS_LOCATION_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.addons.nb.install.location.text"); // NOI18N
+    public static final String DEFAULT_JUNIT_PRESENT_TEXT_PROPERTY =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.junit.present.text"); // NOI18N
     
     public static final String DEFAULT_NEXT_BUTTON_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
@@ -974,9 +1029,16 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_REMOVE_NETBEANS_USERDIR_CHECKBOX =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.remove.netbeans.userdir.checkbox"); // NOI18N
+    public static final String DEFAULT_REMOVE_NETBEANS_INSTALLDIR_CHECKBOX =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.remove.netbeans.installdir.checkbox"); // NOI18N
 
     public static final String NB_BASE_UID = 
             "nb-base";//NOI18N
+    public static final String NB_JAVASE_UID =
+            "nb-javase";//NOI18N
+    public static final String JUNIT_UID =
+            "junit";//NOI18N
     public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
     public static final String GLASSFISH_JVM_OPTION_NAME =

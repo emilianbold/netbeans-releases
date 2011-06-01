@@ -54,6 +54,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.web.common.api.Constants;
 
 /**
  * Provides model for html code
@@ -61,8 +62,6 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  * @author Marek Fukala
  */
 public class XhtmlElEmbeddingProvider extends EmbeddingProvider {
-
-    public static final String GENERATED_CODE = "@@@"; //NOI18N
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
@@ -80,7 +79,7 @@ public class XhtmlElEmbeddingProvider extends EmbeddingProvider {
             } else {
                 //replace templating tokens by generated code marker
                 if (!lastEmbeddingIsVirtual) {
-                    embeddings.add(snapshot.create(GENERATED_CODE, "text/html"));
+                    embeddings.add(snapshot.create(Constants.LANGUAGE_SNIPPET_SEPARATOR, "text/html"));
                     lastEmbeddingIsVirtual = true;
                 }
             }

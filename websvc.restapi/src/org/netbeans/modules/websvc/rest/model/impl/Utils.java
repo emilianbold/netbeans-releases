@@ -227,7 +227,7 @@ public class Utils {
     static boolean isRestApplication(TypeElement type, AnnotationModelHelper helper) {
         boolean isRest = false;
         if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
-            if (helper.hasAnnotation(type.getAnnotationMirrors(), RestConstants.PATH_ANNOTATION)) { // NOI18N
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), RestConstants.APPLICATION_PATH)) { // NOI18N
                 isRest = true;
             }
         }

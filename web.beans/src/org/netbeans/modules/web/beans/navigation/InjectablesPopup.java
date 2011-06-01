@@ -76,7 +76,7 @@ public class InjectablesPopup extends JPanel implements FocusListener {
     private static final long serialVersionUID = -6156872540472708548L;
 
     /** Creates new form DeclarationPopup */
-    public InjectablesPopup(String title, List<ElementHandle<Element>> handles,
+    public InjectablesPopup(String title, List<ElementHandle<? extends Element>> handles,
             CompilationController controller ) 
     {
         myTitle = title;
@@ -170,7 +170,7 @@ public class InjectablesPopup extends JPanel implements FocusListener {
     private ListModel createListModel() {
         DefaultListModel dlm = new DefaultListModel();
         
-        for (ElementHandle<Element> el: myHandles) {
+        for (ElementHandle<? extends Element> el: myHandles) {
             dlm.addElement(el);
         }
         
@@ -220,16 +220,18 @@ public class InjectablesPopup extends JPanel implements FocusListener {
         private CompilationController myController;
     }
     
+    @Override
     public void focusGained(FocusEvent arg0) {
         jList1.requestFocus();
         jList1.requestFocusInWindow();
     }
     
+    @Override
     public void focusLost(FocusEvent arg0) {
     }
 
     private String myTitle;
-    private List<ElementHandle<Element>> myHandles;
+    private List<ElementHandle<? extends Element>> myHandles;
     private CompilationController myController;
     
 }

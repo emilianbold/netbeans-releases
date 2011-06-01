@@ -46,10 +46,13 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.concurrent.atomic.AtomicReference;
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,7 +61,8 @@ import org.openide.filesystems.FileObject;
  */
 public class FileBufferFile extends AbstractFileBuffer {
     
-    private volatile SoftReference<String> cachedString;
+    private volatile Reference<char[]> cachedArray;
+    private final Object lock = new Object();
     private volatile long lastModifiedWhenCachedString;
 
     public FileBufferFile(FileObject fileObject) {
@@ -66,105 +70,91 @@ public class FileBufferFile extends AbstractFileBuffer {
     }
     
     @Override
-    public String getText() throws IOException {
-        return asString();
+    public CharSequence getText() throws IOException {
+        char[] buf = doGetChar();
+        return new MyCharSequence(buf);
     }
     
     @Override
     public String getText(int start, int end) {
         try {
-            String b = asString();
-            if( end > b.length() ) {
-                new IllegalArgumentException("").printStackTrace(System.err);
-                end = b.length();
+            char[] buf = doGetChar();
+            if( end > buf.length ) {
+                new IllegalArgumentException("").printStackTrace(System.err); // NOI18N
+                end = buf.length;
             }
-            return b.substring(start, end);
+            return new String(buf, start, end - start);
         } catch( IOException e ) {
             DiagnosticExceptoins.register(e);
-            return "";
+            return ""; // NOI18N
         }
     }
 
-    private synchronized String asString() throws IOException {
-        byte[] b;
-        long newLastModified = lastModified();
-        if( cachedString != null  ) {
-            Object o = cachedString.get();
-            if( o != null && (lastModifiedWhenCachedString == newLastModified)) {
-                return (String) o;
-            }
-        }
-        // either bytes == null or bytes.get() == null
-        AtomicReference<Integer> realLen = new AtomicReference<Integer>(0);
-        b = doGetBytes(realLen);
-        String str = new String(b, 0, realLen.get().intValue(), getEncoding());
-        if (lastModifiedWhenCachedString != newLastModified) {
-            clearLineCache();
-        }
-        lastModifiedWhenCachedString = newLastModified;
-        cachedString = new SoftReference<String>(str);
-        return str;
-    }
-
-    private byte[] doGetBytes(AtomicReference<Integer> outLen) throws IOException {
-        FileObject fo = getFileObject();
-        long length = fo.getSize();
-        if (length > Integer.MAX_VALUE) {
-            new IllegalArgumentException("File is too large: " + fo.getPath()).printStackTrace(System.err); // NOI18N
-        }
-        byte[] readBytes = new byte[(int)length];
-        InputStream is = getInputStream();
-        try {
-            int offset = 0;
-            int numRead = 0;
-            while (offset < readBytes.length && (numRead = is.read(readBytes, offset, readBytes.length-offset)) >= 0) {
-                offset += numRead;
-            }
-        } finally {
-            is.close();
-        }
-        outLen.set(Integer.valueOf(convertLSToLF(readBytes)));
-        return readBytes;
-    }
-    
-    private static int convertLSToLF(byte[] bytes) {
-        int len = bytes.length;
-        int tgtOffset = 0;
-        short lsLen = 0;
-        int moveStart = 0;
-        int moveLen;
-        for (int i = 0; i < len; i++) {
-            if (bytes[i] == '\r') {
-                if (i + 1 < len && bytes[i + 1] == '\n') {
-                    lsLen = 2;
-                } else  {
-                    lsLen = 1;
+    private char[] doGetChar() throws IOException {
+        synchronized (lock) {
+            Reference<char[]> aCachedArray = cachedArray;
+            if (aCachedArray != null) {
+                char[] res = aCachedArray.get();
+                if (res != null) {
+                        if (lastModifiedWhenCachedString == lastModified()) {
+                            return res;
+                        }
                 }
             }
-            if (lsLen > 0) {
-                moveLen = i - moveStart;
-                if (moveLen > 0) {
-                    if (tgtOffset != moveStart) {
-                        System.arraycopy(bytes, moveStart, bytes, tgtOffset, moveLen);
+            FileObject fo = getFileObject();
+            long length = fo.getSize();
+            if (length > Integer.MAX_VALUE) {
+                new IllegalArgumentException("File is too large: " + fo.getPath()).printStackTrace(System.err); // NOI18N
+            }
+            if (length == 0) {
+                return new char[0];
+            }
+            length++;
+            char[] readChars = new char[(int)length];
+            InputStream is = getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, getEncoding()));
+            try {
+                String line;
+                int position = 0;
+                while((line = reader.readLine())!= null) {
+                    for(int i = 0; i < line.length(); i++) {
+                        if (length == position) {
+                            length = length*2;
+                            char[] copyChars = new char[(int)length];
+                            System.arraycopy(readChars, 0, copyChars, 0, position);
+                            readChars = copyChars;
+                        }
+                        readChars[position++] = line.charAt(i);
                     }
-                    tgtOffset += moveLen;
+                    if (length == position) {
+                        length = length*2;
+                        char[] copyChars = new char[(int)length];
+                        System.arraycopy(readChars, 0, copyChars, 0, position);
+                        readChars = copyChars;
+                    }
+                    readChars[position++] = '\n'; // NOI18N
                 }
-                bytes[tgtOffset++] = '\n';
-                moveStart += moveLen + lsLen;
-                i += lsLen - 1;
-                lsLen = 0;
+                // no need to copy if the same size
+                // TODO: can we also skip case readChars.length = position + 1 due to last '\n'?
+                if (readChars.length > position) {
+                    char[] copyChars = new char[position];
+                    System.arraycopy(readChars, 0, copyChars, 0, position);
+                    readChars = copyChars;
+                }
+            } finally {
+                reader.close();
+                is.close();
             }
-        }
-        moveLen = len - moveStart;
-        if (moveLen > 0) {
-            if (tgtOffset != moveStart) {
-                System.arraycopy(bytes, moveStart, bytes, tgtOffset, moveLen);
+            if (MIMENames.isCppOrCOrFortran(fo.getMIMEType())) {
+                cachedArray = new WeakReference<char[]>(readChars);
+            } else {
+                cachedArray = new SoftReference<char[]>(readChars);
             }
-            tgtOffset += moveLen;
+            lastModifiedWhenCachedString = lastModified();
+            return readChars;
         }
-        return tgtOffset;
     }
-    
+
     private InputStream getInputStream() throws IOException {
         InputStream is;
         FileObject fo = getFileObject();
@@ -189,12 +179,48 @@ public class FileBufferFile extends AbstractFileBuffer {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
-    public FileBufferFile(DataInput input) throws IOException {
+    public FileBufferFile(RepositoryDataInput input) throws IOException {
         super(input);
     }
 
     @Override
     public char[] getCharBuffer() throws IOException {
-        return asString().toCharArray();
+        return doGetChar();
+    }
+
+    static final class MyCharSequence implements CharSequence {
+        private final char[] buf;
+        private final int start;
+        private final int end;
+
+        MyCharSequence(char[] buf) {
+            this(buf, 0, buf.length);
+        }
+
+        MyCharSequence(char[] buf, int start, int end) {
+            this.buf = buf;
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        public int length() {
+            return end - start;
+        }
+
+        @Override
+        public char charAt(int index) {
+            return buf[start+index];
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return new MyCharSequence(buf, this.start + start, this.start + end);
+        }
+
+        @Override
+        public String toString() {
+            return new String(buf, start, end - start);
+        }
     }
 }

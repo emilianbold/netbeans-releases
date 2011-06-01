@@ -228,7 +228,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     }
     
     @Override
-    public List<Configuration> analyze(ProjectProxy project, Progress progress) {
+    public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
@@ -239,7 +239,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 private Set<String> myDependencies;
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
-                    return ProjectImpl.divideByLanguage(getSourcesConfiguration());
+                    return ProjectImpl.divideByLanguage(getSourcesConfiguration(), project);
                 }
                 
                 @Override

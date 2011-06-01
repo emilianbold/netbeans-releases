@@ -36,6 +36,7 @@ package org.netbeans.modules.settings;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -55,7 +56,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.implspi.NamedServicesProvider;
 
-/** Use FolderLookup to find out intances of named services.
+/** Use FolderLookup to find out instances of named services.
  *
  * @author Jaroslav Tulach
  */
@@ -68,6 +69,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
     private static final Logger LOG = Logger.getLogger(RecognizeInstanceObjects.class.getName());
     
     
+    @Override
     public Lookup create(String path) {
         return new OverObjects(path);
     }        
@@ -94,14 +96,18 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
         @SuppressWarnings("deprecation")
         private static Lookup[] delegates(String path) {
             Collection<? extends ClassLoader> allCL = CL.allInstances();
-            ClassLoader ccl = Thread.currentThread().getContextClassLoader();
-            if (ccl != null) {
-                allCL = Collections.singleton(ccl);
-            } else {
-                if (allCL.isEmpty()) {
-                    allCL = Collections.singleton(RecognizeInstanceObjects.class.getClassLoader());
+            LOG.log(Level.FINEST, "allCL: {0}", allCL);
+            if (allCL.isEmpty()) {
+                ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+                LOG.log(Level.FINEST, "ccl: {0}", ccl);
+                if (ccl != null) {
+                    allCL = Collections.singleton(ccl);
                 }
             }
+            if (allCL.isEmpty()) {
+                allCL = Collections.singleton(RecognizeInstanceObjects.class.getClassLoader());
+            }
+            LOG.log(Level.FINER, "metaInfServices for {0}", allCL);
             Lookup base = Lookups.metaInfServices(allCL.iterator().next(), "META-INF/namedservices/" + path); // NOI18N
             FileObject fo = FileUtil.getConfigFile(path);
             if (fo == null) {
@@ -116,25 +122,32 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
             return new Lookup[] {new org.openide.loaders.FolderLookup(DataFolder.findFolder(fo), s).getLookup(), base};
         }
     
+        @Override
         public void resultChanged(LookupEvent ev) {
             setLookups(delegates(path));
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileDataCreated(FileEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileChanged(FileEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileDeleted(FileEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             ch(fe);
         }
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             ch(fe);
         }

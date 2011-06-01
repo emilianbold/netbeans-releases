@@ -58,6 +58,8 @@ made subject to such option by the copyright holder.
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
         <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
                  classpath="${harness.dir}/tasks.jar"/>
+        <typedef name="islocked" classname="org.netbeans.nbbuild.IsLocked" 
+                 classpath="${harness.dir}/tasks.jar"/>
         <property name="harness.taskdefs.done" value="true"/>
 
         <fail message="When using cluster.path property, remove netbeans.dest.dir, enabled.clusters and disabled.clusters properties from platform config, they would be ignored.">
@@ -460,7 +462,9 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
     <target name="-testuserdir-delete-init" depends="-init">
         <property name="test.user.dir" location="${suite.build.dir}/testuserdir"/>
         <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
-        <available property="app.running" file="${test.user.dir.lock}"/>
+        <condition property="app.running">
+            <islocked file="${test.user.dir.lock}"/>
+        </condition> 
     </target>
     <target name="-testuserdir-delete-ok" depends="-testuserdir-delete-init" unless="app.running">
         <delete dir="${test.user.dir}"/>

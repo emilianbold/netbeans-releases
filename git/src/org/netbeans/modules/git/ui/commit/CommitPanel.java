@@ -48,10 +48,14 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import java.awt.Component;
 import java.awt.Dimension;
+import java.util.LinkedList;
 import java.util.List;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.libs.git.GitUser;
+import javax.swing.JComboBox;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.StringSelector;
@@ -84,35 +88,29 @@ public class CommitPanel extends javax.swing.JPanel {
         
         messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
         messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
+        
+        authorComboBox.setModel(prepareUserModel(GitModuleConfig.getDefault().getRecentCommitAuthors(), user));
+        setCaretPosition(authorComboBox);
+        
+        commiterComboBox.setModel(prepareUserModel(GitModuleConfig.getDefault().getRecentCommiters(), user));
+        setCaretPosition(commiterComboBox);
+        
+        Spellchecker.register (messageTextArea);  
+        initCommitMessage(commitMessage);
+    }
+
+    private void setCaretPosition(JComboBox cbo) {
+        Component cmp = cbo.getEditor().getEditorComponent();
+        if(cmp instanceof JTextComponent) {
+            ((JTextComponent)cmp).setCaretPosition(0);
+        }
+    }
+    
+    private void initCommitMessage (String commitMessage) {
+        TemplateSelector ts = new TemplateSelector(parameters.getPreferences());
         if(commitMessage != null) {
             messageTextArea.setText(commitMessage);
         }
-        
-        
-        List<String> authors = GitModuleConfig.getDefault().getRecentCommitAuthors(); 
-        if(authors != null && !authors.isEmpty()) {
-            authorComboBox.setModel(new DefaultComboBoxModel(authors.toArray(new String[authors.size()])));
-        } else if(user != null) {
-            authorComboBox.setModel(new DefaultComboBoxModel(new String[] {user}));
-        }
-        
-        List<String> commiters = GitModuleConfig.getDefault().getRecentCommiters();
-        if(commiters != null && !commiters.isEmpty()) {
-            commiterComboBox.setModel(new DefaultComboBoxModel(commiters.toArray(new String[commiters.size()])));
-        } else if(user != null) {
-            commiterComboBox.setModel(new DefaultComboBoxModel(new String[] {user}));            
-        }
-        
-        Spellchecker.register (messageTextArea);  
-        
-    }
-    
-    @Override
-    public void addNotify() {
-        super.addNotify();
-
-        // XXX why in notify?
-        TemplateSelector ts = new TemplateSelector(parameters.getPreferences());
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
         } else {
@@ -123,19 +121,32 @@ public class CommitPanel extends javax.swing.JPanel {
                     lastCommitMessage = messages.get(0);
                 }
             }
-            messageTextArea.setText(lastCommitMessage);
+            if (!lastCommitMessage.isEmpty()) {
+                messageTextArea.setText(lastCommitMessage);
+            }
         }
         messageTextArea.selectAll();
-        um = UndoRedoSupport.register(messageTextArea);          
+    }
+    
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (um == null) {
+            um = UndoRedoSupport.register(messageTextArea);
+        }
     }
 
     @Override
     public void removeNotify() {
+        // kind of a work-around, removeNotify is called even when a diff view is opened in the commit dialog
+        // we may unregister only when the whole dialog is shut down
+        if (getParent() == null || !getParent().isShowing()) {
+            if (um != null) {
+                um.unregister();
+                um = null;
+            }
+        }
         super.removeNotify();
-        if (um != null) {
-            um.unregister();
-            um = null;
-        }            
     }
         
     /** This method is called from within the constructor to
@@ -232,6 +243,18 @@ public class CommitPanel extends javax.swing.JPanel {
 
     private String getMessage(String msgKey) {
         return NbBundle.getMessage(CommitPanel.class, msgKey);
-    }      
+    }
+
+    private ComboBoxModel prepareUserModel (List<String> authors, String user) {
+        DefaultComboBoxModel model;
+        if (authors == null) {
+            authors = new LinkedList<String>();
+        }
+        if (!authors.contains(user)) {
+            authors.add(user);
+        }
+        model = new DefaultComboBoxModel(authors.toArray(new String[authors.size()]));
+        return model;
+    }
     
 }

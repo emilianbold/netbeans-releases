@@ -60,7 +60,6 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -263,10 +262,6 @@ public final class SourceGroups {
             FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
             if (sourceRoot != null) {
                 result.add(sourceRoot);
-            } else {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.INFORMATIONAL,
-                        new IllegalStateException("No FileObject found for the following URL: " + urls[i])); //NOI18N
             }
         }
         return result;

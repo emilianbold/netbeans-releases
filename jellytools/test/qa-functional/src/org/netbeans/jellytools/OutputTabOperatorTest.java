@@ -59,15 +59,16 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of OutputTabOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class OutputTabOperatorTest extends JellyTestCase {
 
-    static final String[] tests = new String[] {
+    private static final String targetName = "compile-single";
+    private static OutputTabOperator outputTabOperator;
+    static final String[] tests = new String[]{
         "testMakeComponentVisible",
         "testToolbarButtons",
         "testFindLine",
@@ -86,33 +87,25 @@ public class OutputTabOperatorTest extends JellyTestCase {
         "testClear",
         "testClose"
     };
-    
+
     public OutputTabOperatorTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {        
+
+    public static NbTest suite() {
         return (NbTest) createModuleTest(OutputTabOperatorTest.class, tests);
     }
-    
+
     /** Print out test name. */
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
     }
-    
-    private static final String targetName = "compile-single";
-    //private static final String targetName = "compile-test-single";
-    private static OutputTabOperator outputTabOperator;
 
     /** Compiles a source which opens output tab to test. */
     private static void initTab() {
         Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
-        Node sample2 = new Node(new SourcePackagesNode("SampleProject"), "sample1.sample2");  // NOI18N
         Node sampleClass1 = new Node(sample1, "SampleClass1.java");  // NOI18N
         CompileJavaAction compileAction = new CompileJavaAction();
         compileAction.perform(sampleClass1);
@@ -131,19 +124,19 @@ public class OutputTabOperatorTest extends JellyTestCase {
         initTab();
         // should be improved to use 2 terms and activate the hidden one
         outputTabOperator.makeComponentVisible();
-        assertTrue(targetName+" output tab should be visible.", outputTabOperator.isShowing());
+        assertTrue(targetName + " output tab should be visible.", outputTabOperator.isShowing());
     }
 
     /**
      * Tests presence and, where possible, functionality of buttons on the left
-     * side (toolbar) of the output tab.
+     * side (tool bar) of the output tab.
      */
-    public void testToolbarButtons()
-    {
+    public void testToolbarButtons() {
         outputTabOperator.clear();
         outputTabOperator.btnReRun().push();
         outputTabOperator.waitText("BUILD SUCCESSFUL");
-
+        outputTabOperator.btnReRunWithDifferentParameters().pushNoBlock();
+        new NbDialogOperator("Run Ant Target").close();
         assertFalse("When there's no task running, the Stop button should be disabled!", outputTabOperator.btnStop().isEnabled());
         outputTabOperator.btnAntSettings().push();
         new OptionsOperator().close();
@@ -153,41 +146,40 @@ public class OutputTabOperatorTest extends JellyTestCase {
      * Test of findLine method.
      */
     public void testFindLine() {
-        assertTrue("Wrong row found.", outputTabOperator.findLine(targetName)>0); // NOI18N
+        assertTrue("Wrong row found.", outputTabOperator.findLine(targetName) > 0); // NOI18N
     }
-    
+
     /**
      * Test of getText method.
      */
     public void testGetText() {
         String text = outputTabOperator.getText();
-        assertTrue("Text is not from "+targetName+" output tab.", text.indexOf(targetName) > -1);
+        assertTrue("Text is not from " + targetName + " output tab.", text.indexOf(targetName) > -1);
         String twoLines = outputTabOperator.getText(0, 1);
         assertTrue("Text from first and second lines should contain 2 ':'", twoLines.indexOf(':') != twoLines.lastIndexOf(':'));
     }
-    
+
     /**
      * Test of waitText method.
      */
     public void testWaitText() {
         outputTabOperator.waitText(targetName);
     }
-    
+
     /**
      * Test of getLineCount method.
      */
     public void testGetLineCount() {
-        assertTrue("Wrong line count.", outputTabOperator.getLineCount()>0);
+        assertTrue("Wrong line count.", outputTabOperator.getLineCount() > 0);
     }
-    
-    
+
     /**
      * Test of getLine() method.
      */
     public void testGetLine() {
         assertTrue("Wrong text found.", outputTabOperator.getLine(outputTabOperator.findLine(targetName)).indexOf(targetName) > -1);
     }
-    
+
     /**
      * Test of getLength() method.
      */
@@ -201,7 +193,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
     public void testVerify() {
         outputTabOperator.verify();
     }
-    
+
     /**
      * Test of selectAll method.
      */
@@ -221,7 +213,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
         outputTabOperator.copy();
         assertTrue("Copy doesn't work.", getClipboardText().indexOf(targetName) > -1);
     }
-    
+
     /**
      * Test of find method.
      */
@@ -248,14 +240,14 @@ public class OutputTabOperatorTest extends JellyTestCase {
         }
         new EventTool().waitNoEvent(1000);
     }
-    
+
     /**
      * Test of findNext method.
      */
     public void testFindNext() {
         outputTabOperator.findNext();
     }
-    
+
     /**
      * Test of saveAs method.
      */
@@ -271,13 +263,13 @@ public class OutputTabOperatorTest extends JellyTestCase {
         // TODO add test some day
         //outputTabOperator.nextError();
     }
-    
+
     /** Test of previousError method. */
     public void testPreviousError() {
         // TODO add test some day
         //outputTabOperator.previousError();
     }
-    
+
     /** Test of wrapText method. */
     public void testWrapText() {
         // set
@@ -285,13 +277,13 @@ public class OutputTabOperatorTest extends JellyTestCase {
         // unset
         outputTabOperator.wrapText();
     }
-    
+
     /** Test of clear method. */
     public void testClear() {
         outputTabOperator.clear();
         assertTrue("Text was not cleared.", outputTabOperator.getText().length() == 0);
     }
-    
+
     /**f
      * Test of close method.
      */
@@ -299,24 +291,28 @@ public class OutputTabOperatorTest extends JellyTestCase {
         outputTabOperator.close();
         assertFalse("Output tab should be closed.", outputTabOperator.isShowing());
     }
-    
+
     /** Wait until clipboard contains string data and returns the text. */
     private String getClipboardText() throws Exception {
         Waiter waiter = new Waiter(new Waitable() {
+
+            @Override
             public Object actionProduced(Object obj) {
                 Transferable contents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-                if(contents == null) {
+                if (contents == null) {
                     return null;
                 } else {
                     return contents.isDataFlavorSupported(DataFlavor.stringFlavor) ? Boolean.TRUE : null;
                 }
             }
+
+            @Override
             public String getDescription() {
-                return("Wait clipboard contains string data");
+                return ("Wait clipboard contains string data");
             }
         });
         waiter.waitAction(null);
         return Toolkit.getDefaultToolkit().getSystemClipboard().
-             getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
+                getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
     }
 }

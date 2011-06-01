@@ -47,6 +47,8 @@ package org.netbeans.libs.git;
  * @author ondra
  */
 public enum GitRefUpdateResult {
+    // TODO should be split into remote and local update
+    
     /** The ref update/delete has not been attempted by the caller. */
     NOT_ATTEMPTED,
 
@@ -126,5 +128,51 @@ public enum GitRefUpdateResult {
      * The ref was renamed from another name
      * <p>
      */
-    RENAMED
+    RENAMED,
+
+    /**
+     * Remote ref was up to date, there was no need to update anything.
+     */
+    UP_TO_DATE,
+
+    /**
+     * Remote ref update was rejected, as it would cause non fast-forward
+     * update.
+     */
+    REJECTED_NONFASTFORWARD,
+
+    /**
+     * Remote ref update was rejected, because remote side doesn't
+     * support/allow deleting refs.
+     */
+    REJECTED_NODELETE,
+
+    /**
+     * Remote ref update was rejected, because old object id on remote
+     * repository wasn't the same as defined expected old object.
+     */
+    REJECTED_REMOTE_CHANGED,
+
+    /**
+     * Remote ref update was rejected for other reason, possibly described
+     * in {@link RemoteRefUpdate#getMessage()}.
+     */
+    REJECTED_OTHER_REASON,
+
+    /**
+     * Remote ref didn't exist. Can occur on delete request of a non
+     * existing ref.
+     */
+    NON_EXISTING,
+
+    /**
+     * Push process is awaiting update report from remote repository. This
+     * is a temporary state or state after critical error in push process.
+     */
+    AWAITING_REPORT,
+
+    /**
+     * Remote ref was successfully updated.
+     */
+    OK;
 }

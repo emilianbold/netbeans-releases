@@ -1013,7 +1013,7 @@ public class TemplateWizard extends WizardDescriptor {
         
         public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException {
             // iterate Set and replace unexpected object with dataobjects
-            Set workSet;
+            Set<?> workSet;
             if (instantiatingIterator instanceof WizardDescriptor.ProgressInstantiatingIterator) {
                 assert wiz.getProgressHandle () != null : "ProgressHandle cannot be null.";
                 workSet = ((ProgressInstantiatingIterator)instantiatingIterator).instantiate (wiz.getProgressHandle ());
@@ -1026,22 +1026,15 @@ public class TemplateWizard extends WizardDescriptor {
                         " illegally returned null from the instantiate method");
                 return Collections.emptySet ();
             }
-            java.util.Iterator it = workSet.iterator ();
-            Object obj;
             DataObject dobj;
             Set<DataObject> resultSet = new LinkedHashSet<DataObject>(workSet.size());
-            while (it.hasNext ()) {
-                obj = it.next ();
+            for (Object obj : workSet) {
                 assert obj != null : "Null DataObject provided by " + instantiatingIterator;
                 if (obj instanceof DataObject) {
                     resultSet.add ((DataObject) obj);
                 } else if (obj instanceof FileObject) {
-                    try {
-                        dobj = DataObject.find ((FileObject)obj);
-                        resultSet.add (dobj);
-                    } catch (DataObjectNotFoundException ex) {
-                        assert false : obj;
-                    }
+                    dobj = DataObject.find ((FileObject)obj);
+                    resultSet.add (dobj);
                 } else if (obj instanceof Node) {
                     dobj = ((Node) obj).getCookie(DataObject.class);
                     if (dobj != null) {

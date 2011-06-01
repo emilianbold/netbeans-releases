@@ -47,18 +47,17 @@ package org.netbeans.modules.j2ee.jboss4.ide;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -85,6 +84,8 @@ import org.openide.windows.InputOutput;
  * @author Libor Kotouc
  */
 class JBStartRunnable implements Runnable {
+    
+    private static final int START_TIMEOUT = 300000;
     
     private final static String CONF_FILE_NAME = 
             "run.conf.bat";                             // NOI18N
@@ -142,9 +143,10 @@ class JBStartRunnable implements Runnable {
             return;
         }
 
-        JBLogWriter logWriter = createLogWriter();
+        JBOutputSupport outputSupport = JBOutputSupport.getInstance(ip, true);
+        outputSupport.start(openConsole(), serverProcess);
         
-        waitForServerToStart(logWriter, serverProcess);
+        waitForServerToStart(outputSupport);
     }
 
     private String[] createEnvironment(final InstanceProperties ip) {
@@ -322,15 +324,6 @@ class JBStartRunnable implements Runnable {
     }
 
     private Process createProcess(InstanceProperties ip) {
-        
-        //TODO do we really have to stop the log writer?
-        if (startServer.getMode() == JBStartServer.MODE.PROFILE) {
-
-            // stop logger if running
-            JBLogWriter logWriter = JBLogWriter.getInstance(instanceName);
-            if (logWriter != null && logWriter.isRunning()) logWriter.stop();
-        }
-        
         String envp[] = createEnvironment(ip);
         
         NbProcessDescriptor pd = createProcessDescriptor(ip, envp);
@@ -371,31 +364,26 @@ class JBStartRunnable implements Runnable {
     private void fireStartProgressEvent(StateType stateType, String msg) {
         startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, stateType, msg));
     }
-
-    private JBLogWriter createLogWriter() {
-        InputOutput io = openConsole();
-        return JBLogWriter.createInstance(io, instanceName);
-    }
     
-    private void waitForServerToStart(JBLogWriter logWriter, Process serverProcess) {
-        
+    private void waitForServerToStart(JBOutputSupport outputSupport) {
         fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS"));
 
-        JBStartServer.ACTION_STATUS status = logWriter.start(serverProcess, startServer);
-        
-        // reset the need restart flag
-        dm.setNeedsRestart(false);
-        
-        if (status == JBStartServer.ACTION_STATUS.SUCCESS) {
-            fireStartProgressEvent(StateType.COMPLETED, createProgressMessage("MSG_SERVER_STARTED"));
-        }
-        else
-        if (status == JBStartServer.ACTION_STATUS.FAILURE) {
-            fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED"));
-        }
-        else 
-        if (status == JBStartServer.ACTION_STATUS.UNKNOWN) {
+        try {
+            boolean result = outputSupport.waitForStart(START_TIMEOUT); 
+
+            // reset the need restart flag
+            dm.setNeedsRestart(false);
+
+            if (result) {
+                fireStartProgressEvent(StateType.COMPLETED, createProgressMessage("MSG_SERVER_STARTED"));
+            } else {
+                fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED"));
+            }
+        } catch (TimeoutException ex) {
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_StartServerTimeout"));
+        } catch (InterruptedException ex) {
+            fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_StartServerInterrupted"));
+            Thread.currentThread().interrupt();
         }
         
     }

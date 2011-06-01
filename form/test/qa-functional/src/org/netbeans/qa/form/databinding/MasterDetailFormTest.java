@@ -43,25 +43,29 @@
  */
 package org.netbeans.qa.form.databinding;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import java.util.*;
+import junit.framework.Test;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 
 /**
- * Basic test of Master/Detail form wizzard
+ * Basic test of Master/Detail form wizard
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 NOT WORKS NOW
  */
 public class MasterDetailFormTest extends ExtJellyTestCase {
-    //private String _newFormName = "NewMasterDetailForm_1182247916989";
+   
     private String _newFormName = "NewMasterDetailForm_" + getTimeStamp();
 
     /**
@@ -71,24 +75,15 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /**
-     * Method allowing to execute test directly from IDE.
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    /**
-     * Creates suite from particular test cases.
-     */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        
-        suite.addTest(new MasterDetailFormTest("testMasterDetailWizard")); // NOI18N
-        suite.addTest(new MasterDetailFormTest("testGeneratedJpaStuff")); // NOI18N
-        suite.addTest(new MasterDetailFormTest("testGeneratedCode")); // NOI18N
-                
-        return suite;
+    public static Test suite() {
+       
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(MasterDetailFormTest.class).addTest(
+                "testMasterDetailWizard",
+                "testGeneratedJpaStuff",
+                 "testGeneratedCode"
+                ).gui(true).enableModules(".*").clusters(".*"));
+
     }
     
     /** Uses Master/Detail Sample wizard */

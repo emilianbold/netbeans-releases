@@ -48,13 +48,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class ElfExecutableFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
+public class ElfExecutableFileFilter extends FileAndFileObjectFilter {
 
     private static ElfExecutableFileFilter instance = null;
 
@@ -71,29 +70,18 @@ public class ElfExecutableFileFilter extends FileFilterFactory.FileAndFileObject
     
     @Override
     public String getDescription() {
-	return(getString("FILECHOOSER_ELFEXECUTABLE_FILEFILTER")); // NOI18N
+        return NbBundle.getMessage(ElfExecutableFileFilter.class, "FILECHOOSER_ELFEXECUTABLE_FILEFILTER"); // NOI18N
     }
     
     @Override
-    public boolean accept(File f) {
-	if(f != null) {
-	    if(f.isDirectory()) {
-		return true;
-	    }
-	    return checkElfHeader(f);
-	}
-	return false;
+    protected boolean mimeAccept(File f) {
+        FileObject fo = CndFileSystemProvider.toFileObject(f);
+	return (fo == null) ? checkElfHeader(f) : checkElfHeader(fo);
     }
 
     @Override
-    public boolean accept(FileObject f) {
-	if(f != null) {
-	    if(f.isFolder()) {
-		return true;
-	    }
-	    return checkElfHeader(f);
-	}
-	return false;
+    protected boolean mimeAccept(FileObject f) {
+        return checkElfHeader(f);
     }
 
 
@@ -153,12 +141,8 @@ public class ElfExecutableFileFilter extends FileFilterFactory.FileAndFileObject
 	return false;
     }
 
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ElfExecutableFileFilter.class);
-	}
-	return bundle.getString(s);
+    @Override
+    protected String[] getSuffixes() {
+        return new String[]{};
     }
 }

@@ -1,3 +1,0 @@
-# visualweb/webui/runtime
-read global
-${l10n-module}/library/src/**/Bundle.properties

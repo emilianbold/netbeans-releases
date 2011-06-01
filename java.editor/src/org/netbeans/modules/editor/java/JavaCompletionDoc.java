@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.java;
 
 import java.net.URL;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.swing.Action;
 import org.netbeans.api.java.source.CompilationController;
@@ -75,6 +76,10 @@ public class JavaCompletionDoc implements CompletionDocumentation {
 
     public String getText() {
         return elementJavadoc.getText();
+    }
+
+    public Future<String> getFutureText() {
+        return elementJavadoc.getTextAsync();
     }
 
     public Action getGotoSourceAction() {

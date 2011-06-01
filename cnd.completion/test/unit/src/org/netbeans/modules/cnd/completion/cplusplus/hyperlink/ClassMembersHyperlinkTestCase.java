@@ -991,6 +991,27 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug187272.cc", 18, 17, "bug187272.cc", 12, 3);
         performTest("bug187272.cc", 24, 17, "bug187272.cc", 12, 3);
     }
+
+    public void testBug187254() throws Exception {
+        // Bug 187254 - unresolved full method name
+        performTest("bug187254.cpp", 14, 24, "bug187254.cpp", 8, 9);
+        performTest("bug187254.cpp", 15, 24, "bug187254.cpp", 9, 9);
+    }
+
+    public void testBug191026() throws Exception {
+        // Bug 191026 - Wrong class resolving
+        performTest("bug191026.cpp", 20, 11, "bug191026.cpp", 7, 9);
+    }
+    
+    public void testBug158905() throws Exception {
+        // Bug 158905 - Errors in resolving of friend templates
+        performTest("bug158905.cpp", 13, 11, "bug158905.cpp", 5, 5);
+    }    
+
+    public void testBug197394() throws Exception {
+        // Bug 197394 - Resolving member in array of struct fails 
+        performTest("bug197394.cpp", 10, 7, "bug197394.cpp", 4, 9);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

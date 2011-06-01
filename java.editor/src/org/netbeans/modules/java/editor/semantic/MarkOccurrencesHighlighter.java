@@ -43,9 +43,12 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
+import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LabeledStatementTree;
@@ -59,6 +62,7 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -75,6 +79,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.event.DocumentEvent;
@@ -389,8 +394,17 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
 
         Tree tree =tp.getLeaf();
 
-        if (node.getBoolean(MarkOccurencesSettings.BREAK_CONTINUE, true) && (tree.getKind() == Kind.BREAK || tree.getKind() == Kind.CONTINUE)) {
-            return detectBreakOrContinueTarget(info, doc, tp);
+        if (node.getBoolean(MarkOccurencesSettings.BREAK_CONTINUE, true)) {
+            if (tree.getKind() == Kind.BREAK || tree.getKind() == Kind.CONTINUE) {
+                return detectBreakOrContinueTarget(info, doc, tp, caretPosition);
+            } else if (tree.getKind() == Kind.LABELED_STATEMENT) {
+                int[] span = Utilities.findIdentifierSpan(tp, info, doc);
+                if (span[0] <= caretPosition && caretPosition <= span[1]) {
+                    List<int[]> ret = detectLabel(info, doc, tp);
+                    ret.add(span);
+                    return ret;
+                }
+            }
         }
 
         Element el;
@@ -590,7 +604,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         return highlights;
     }
 
-    private List<int[]> detectBreakOrContinueTarget(CompilationInfo info, Document document, TreePath breakOrContinue) {
+    private List<int[]> detectBreakOrContinueTarget(CompilationInfo info, Document document, TreePath breakOrContinue, int caretPosition) {
         List<int[]> result = new ArrayList<int[]>();
         StatementTree target = info.getTreeUtilities().getBreakContinueTarget(breakOrContinue);
 
@@ -598,7 +612,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             return null;
 
         TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-
+        
         ts.move((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), target));
 
         if (ts.moveNext()) {
@@ -620,6 +634,10 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
                 if (((ForLoopTree) statement).getStatement().getKind() == Kind.BLOCK)
                     block = ((ForLoopTree) statement).getStatement();
                 break;
+            case ENHANCED_FOR_LOOP:
+                if (((EnhancedForLoopTree) statement).getStatement().getKind() == Kind.BLOCK)
+                    block = ((EnhancedForLoopTree) statement).getStatement();
+                break;
             case DO_WHILE_LOOP:
                 if (((DoWhileLoopTree) statement).getStatement().getKind() == Kind.BLOCK)
                     block = ((DoWhileLoopTree) statement).getStatement();
@@ -633,7 +651,35 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
                 result.add(new int[] {ts.offset(), ts.offset() + ts.token().length()});
             }
         }
+        
+        if (target.getKind() == Kind.LABELED_STATEMENT && isIn(caretPosition, Utilities.findIdentifierSpan(info, document, breakOrContinue))) {
+            result.addAll(detectLabel(info, document, info.getTrees().getPath(info.getCompilationUnit(), target)));
+        }
 
+        return result;
+    }
+    
+    private List<int[]> detectLabel(final CompilationInfo info, final Document document, final TreePath labeledStatement) {
+        final List<int[]> result = new ArrayList<int[]>();
+        if (labeledStatement.getLeaf().getKind() == Kind.LABELED_STATEMENT) {
+            final Name label = ((LabeledStatementTree)labeledStatement.getLeaf()).getLabel();
+            new TreePathScanner <Void, Void>() {
+                @Override
+                public Void visitBreak(BreakTree node, Void p) {
+                    if (node.getLabel() != null && label.contentEquals(node.getLabel())) {
+                        result.add(Utilities.findIdentifierSpan(getCurrentPath(), info, document));
+                    }
+                    return super.visitBreak(node, p);
+                }
+                @Override
+                public Void visitContinue(ContinueTree node, Void p) {
+                    if (node.getLabel() != null && label.contentEquals(node.getLabel())) {
+                        result.add(Utilities.findIdentifierSpan(getCurrentPath(), info, document));
+                    }
+                    return super.visitContinue(node, p);
+                }
+            }.scan(labeledStatement, null);
+        }
         return result;
     }
 

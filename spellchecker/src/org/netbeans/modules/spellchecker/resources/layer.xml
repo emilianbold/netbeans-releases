@@ -69,4 +69,9 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <folder name="Spellcheckers">
+        <file name="Plain">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.resources.Bundle"/>
+        </file>
+    </folder>
 </filesystem>

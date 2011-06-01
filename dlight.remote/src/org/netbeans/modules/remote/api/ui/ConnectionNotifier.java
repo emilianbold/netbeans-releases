@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.remote.api.ui;
 
-import org.netbeans.modules.remote.impl.fs.ui.ConnectionNotifierImplementation;
+import org.netbeans.modules.remote.spi.ConnectionNotifierImplementation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
@@ -76,7 +76,7 @@ public class ConnectionNotifier {
         public final void run() {
             String oldName = Thread.currentThread().getName();
             try {
-                Thread.currentThread().setName(name);
+                Thread.currentThread().setName(getName());
                 runImpl();
             } finally {
                 // restore thread name - it might belong to the pool

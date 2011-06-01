@@ -27,6 +27,8 @@
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-navigation-is_specialized.xml" url="overrides/is-specialized-annotation.xml"/>
             <file name="org-netbeans-modules-cnd-navigation-specializes.xml" url="overrides/specializes-annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-extended_is_specialized.xml" url="overrides/extended-is-specialized-annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-navigation-extended_specializes.xml" url="overrides/extended-specializes-annotation.xml"/>
         </folder>
         <folder name="text">
             <folder name="x-h">

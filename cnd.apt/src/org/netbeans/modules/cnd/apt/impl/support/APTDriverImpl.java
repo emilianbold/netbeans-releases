@@ -46,19 +46,18 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.IOException;
-import java.io.Reader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.netbeans.modules.cnd.apt.support.APTFileBuffer.BufferType;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * implementation of APTDriver
@@ -149,6 +148,7 @@ public class APTDriverImpl {
                 TokenStream ts = getTokenStream(buffer, lang, !withTokens);
                 // build apt from light token stream
                 apt = APTBuilder.buildAPT(buffer.getFileSystem(), path, ts);
+                BufferType type = buffer.getType();
                 if (!withTokens) {
                     fullAPT = null;
                     if (apt != null) {
@@ -161,7 +161,7 @@ public class APTDriverImpl {
                             }
                         }
                         lightAPT = apt;
-                        _putAPTFile(path, lightAPT, false);
+                        _putAPTFile(path, lightAPT, false, type);
                     }
                 } else {
                     fullAPT = apt;
@@ -174,9 +174,9 @@ public class APTDriverImpl {
                                 System.err.println("error on serialization apt for file " + path); // NOI18N
                             }
                         }
-                        _putAPTFile(path, fullAPT, true);
+                        _putAPTFile(path, fullAPT, true, type);
                         lightAPT = (APTFile) APTBuilder.buildAPTLight(apt);
-                        _putAPTFile(path, lightAPT, false);
+                        _putAPTFile(path, lightAPT, false, type);
                     }
                 }
             }
@@ -199,13 +199,17 @@ public class APTDriverImpl {
         return apt;
     }
     
-    private void _putAPTFile(CharSequence path, APTFile apt, boolean withTokens) {
+    private void _putAPTFile(CharSequence path, APTFile apt, boolean withTokens, APTFileBuffer.BufferType bufType) {
         if (withTokens) {
             // we do not cache full apt
             return;
         }
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
-            file2ref2apt.put(path, new SoftReference<APTFile>(apt));
+            if (bufType == APTFileBuffer.BufferType.START_FILE) {
+                file2ref2apt.put(path, new WeakReference<APTFile>(apt));
+            } else {
+                file2ref2apt.put(path, new SoftReference<APTFile>(apt));
+            }
         } else {
             file2apt.put(path, apt);
         }        

@@ -47,7 +47,6 @@ package org.netbeans.core.ui.warmup;
 import java.lang.reflect.*;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -58,12 +57,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
-import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
@@ -78,6 +74,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * A menu preheating task. It is referenced from the layer and may be performed
@@ -85,6 +82,7 @@ import org.openide.util.Utilities;
  * 
  * Plus hooked WindowListener on main window (see {@link NbWindowsAdapter})
  */
+@ServiceProvider(service=Runnable.class, path="WarmUp")
 public final class MenuWarmUpTask implements Runnable {
 
     private Component[] comps;

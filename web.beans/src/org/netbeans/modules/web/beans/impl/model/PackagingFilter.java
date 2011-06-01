@@ -51,7 +51,12 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.SourceUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 
@@ -101,13 +106,22 @@ class PackagingFilter {
         if ( typeElement == null ){
             return false;
         }
+        
+        FileObject file = SourceUtils.getFile(ElementHandle.create(typeElement), 
+                ClasspathInfo.create(getModel().getModelUnit().getBootPath() , 
+                        ClassPath.EMPTY, getModel().getModelUnit().getSourcePath()));
+        
+        if ( file != null ){
+            return false;
+        }
+        
         PackageElement pack = getModel().getHelper().getCompilationController().
             getElements().getPackageOf( typeElement );
         if ( pack == null ){
             return false;
         }
         String packageName = pack.getQualifiedName().toString();
-        String fqn = typeElement.getQualifiedName().toString();
+        String fqn = ElementUtilities.getBinaryName(typeElement);
         String className = fqn.substring(packageName.length());
         if ( className.length() >0 && className.charAt(0)=='.' ){
             className = className.substring(1);
@@ -119,6 +133,10 @@ class PackagingFilter {
         if ( dotIndex != -1 ){
             className = className.substring( 0, dotIndex );
         }
+        if ( className == null ){
+            return false;
+        }
+        
         String path = packageName.replace('.', '/')+'/'+className+".class"; // NOI18N
         ClassPath classPath = getModel().getModelUnit().getCompilePath();
         FileObject resource = classPath.findResource( path );
@@ -127,11 +145,20 @@ class PackagingFilter {
             if ( root == null ){
                 return false;
             }
-            if ( root.getFileObject("META-INF/beans.xml") == null ){        // NOI18N
-                return true;
+            if ( FileUtil.isArchiveFile( root )){
+                FileObject archiveFile = FileUtil.getArchiveFile(root);
+                String ext = archiveFile.getExt();
+                if ( "war".equalsIgnoreCase( ext)){                        // NOI18N
+                    return root.getFileObject("WEB-INF/beans.xml") == null; // NOI18N
+                }
             }
+            return !hasMetaBeans(root);
         }
         return false;
+    }
+    
+    private boolean hasMetaBeans(FileObject root ){
+        return root.getFileObject("META-INF/beans.xml") != null;            // NOI18N
     }
     
     private WebBeansModelImplementation getModel(){

@@ -149,6 +149,7 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -760,7 +761,25 @@ public final class WebProject implements Project {
         ProjectManager.mutex().writeAccess(new Runnable() {
 
             public void run() {
-                Library lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compiler");
+                Library lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compilation");
+                
+                // #198056 - force libraries update by deleting old versions first:
+                if (lib != null) {
+                    boolean oldNB69ver = lib.getURIContent("classpath").toString().contains("glassfish-jspparser-2.0.jar");
+                    if (oldNB69ver) {
+                        try {
+                            refHelper.getProjectLibraryManager().removeLibrary(lib);
+                            lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compiler");
+                            refHelper.getProjectLibraryManager().removeLibrary(lib);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IllegalArgumentException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+                
+                lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compiler");
                 if (lib == null) {
                     try {
                         refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("jsp-compiler")); // NOI18N
@@ -772,6 +791,14 @@ public final class WebProject implements Project {
                 if (lib == null) {
                     try {
                         refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("jsp-compilation")); // NOI18N
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compilation-syscp");
+                if (lib == null) {
+                    try {
+                        refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("jsp-compilation-syscp")); // NOI18N
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -901,10 +928,10 @@ public final class WebProject implements Project {
                         // previously do not ask and use it
                         serverType = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
                         if (serverType != null) {
-                            String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
-                            if (servInstIDs.length > 0) {
-                                WebProjectProperties.setServerInstance(WebProject.this, WebProject.this.updateHelper, servInstIDs[0]);
-                                platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                            String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, Type.WAR, WebProject.this.getWebModule().getJ2eeProfile());
+                            if (instanceID != null) {
+                                WebProjectProperties.setServerInstance(WebProject.this, WebProject.this.updateHelper, instanceID);
+                                platform = Deployment.getDefault().getJ2eePlatform(instanceID);
                             }
                         }
                         if (platform == null) {
@@ -992,7 +1019,8 @@ public final class WebProject implements Project {
             artifactSupport.enableArtifactSynchronization(true);
 
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
-                BrokenReferencesSupport.showAlert();
+                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
+                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
             }
             if(apiWebServicesSupport.isBroken(WebProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(WebProject.this);
@@ -1710,6 +1738,8 @@ public final class WebProject implements Project {
         }
 
         private boolean handleResource(FileEvent fe) {
+            // this may happen in broken project - see issue #191516
+            // in any case it can't be resource event when resources is null            
             if (resources == null) {
                 return false;
             }

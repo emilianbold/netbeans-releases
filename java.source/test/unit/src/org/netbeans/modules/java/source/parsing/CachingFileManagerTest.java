@@ -44,82 +44,100 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import junit.framework.*;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import javax.tools.JavaFileObject;
-import org.netbeans.modules.java.source.util.Iterators;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Hrebejk
+ * @author Petr Hrebejk, Tomas Zezula
  */
-public class CachingFileManagerTest extends TestCase {
+public class CachingFileManagerTest extends NbTestCase {
 
     public CachingFileManagerTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
 
-    protected void tearDown() throws Exception {
+
+    public void testGetFileForInputWithFolderArchive() throws  Exception {
+        final File wd = getWorkDir();
+        final org.openide.filesystems.FileObject root = FileUtil.createFolder(new File (wd,"src"));
+        final org.openide.filesystems.FileObject data = FileUtil.createData(root, "org/me/resources/test.txt");
+        final URI expectedURI = data.getURL().toURI();
+        doTestGetFileForInput(ClassPathSupport.createClassPath(root),Arrays.asList(
+            Pair.<Pair<String,String>,URI>of(Pair.<String,String>of("","org/me/resources/test.txt"), expectedURI),
+            Pair.<Pair<String,String>,URI>of(Pair.<String,String>of("org.me","resources/test.txt"), expectedURI),
+            Pair.<Pair<String,String>,URI>of(Pair.<String,String>of("org.me","resources/doesnotexist.txt"), null)
+        ));
+
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite(CachingFileManagerTest.class);
-        
-        return suite;
+    public void testGetFileForInputWithCachingArchive() throws  Exception {
+        final File wd = getWorkDir();
+        final File archiveFile = new File (wd, "src.zip");
+        final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(archiveFile));
+        try {
+            out.putNextEntry(new ZipEntry("org/me/resources/test.txt"));
+            out.write("test".getBytes());
+        } finally {
+            out.close();
+        }
+        final URL archiveRoot = FileUtil.getArchiveRoot(archiveFile.toURI().toURL());
+        final URI expectedURI = new URL (archiveRoot.toExternalForm()+"org/me/resources/test.txt").toURI();
+        doTestGetFileForInput(ClassPathSupport.createClassPath(archiveRoot),
+        Arrays.asList(
+            Pair.<Pair<String,String>,URI>of(Pair.<String,String>of("","org/me/resources/test.txt"), expectedURI),
+            Pair.<Pair<String,String>,URI>of(Pair.<String,String>of("org.me","resources/test.txt"), expectedURI),
+            Pair.<Pair<String,String>,URI>of(Pair.<String,String>of("org.me","resources/doesnotexist.txt"), null)
+        ));
+
     }
 
-    /*
-    public void testList() {
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
+    private void doTestGetFileForInput(
+            final ClassPath cp,
+            final List<? extends Pair<Pair<String,String>,URI>> testCases) throws IOException, URISyntaxException {
+        final CachingArchiveProvider provider = CachingArchiveProvider.getDefault();
+        final CachingFileManager manager = new CachingFileManager(provider, cp, false, true);
+        for (Pair<Pair<String,String>,URI> testCase : testCases) {
+            final Pair<String,String> name = testCase.first;
+            final URI expectedURI = testCase.second;
+            FileObject fo = manager.getFileForInput(StandardLocation.CLASS_PATH, name.first, name.second);
+            if (expectedURI == null) {
+                assertNull(
+                    String.format("Lookup: %s/%s expected: null",
+                    name.first,
+                    name.second),
+                    fo);
+            } else {
+                assertEquals(
+                    String.format("Lookup: %s/%s expected: %s",
+                    name.first,
+                    name.second,
+                    expectedURI),
+                    expectedURI,
+                    fo.toUri());
+            }
+        }        
     }
-
-    public void testGetFileForInput() {
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
-    }
-
-    public void testGetFileForOutput() throws Exception {
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
-    }
-
-    public void testSetLocation() {
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
-    }
-
-    public void testFlush() throws Exception {
-        fail("The test case is empty.");
-    }
-
-    public void testClose() throws Exception {
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
-    }
-
-    public void testGetInputFile() {
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
-    }
-
-    public void testIsWritable() {
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
-    }
-
-    public void testGetFileObjects() {
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
-    }
-    */
+    
 }

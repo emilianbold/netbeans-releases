@@ -240,12 +240,6 @@ final class ResultWindow extends TopComponent {
         StatisticsPanel newSP = (StatisticsPanel)newView.getLeftComponent();
         newSP.copyFilterMask(oldSP);
     }
-    
-    /**
-     */
-    private boolean isActivated() {
-        return TopComponent.getRegistry().getActivated() == this;
-    }
 
     /**
      */
@@ -346,6 +340,19 @@ final class ResultWindow extends TopComponent {
 
     private JSplitPane getCurrentResultView(){
         return (JSplitPane)tabPane.getSelectedComponent();
+    }
+
+    @SuppressWarnings("deprecation") // seems to be OK to override, just not to call from outside?
+    public @Override boolean requestFocusInWindow() {
+        JSplitPane view = getCurrentResultView();
+        if (view == null) {
+            return super.requestFocusInWindow();
+        }
+        Component left = view.getLeftComponent();
+        if (left == null) {
+            return super.requestFocusInWindow();
+        }
+        return left.requestFocusInWindow();
     }
 
     private void closeAll(boolean butCurrent) {

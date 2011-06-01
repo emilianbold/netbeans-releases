@@ -44,12 +44,12 @@
 
 package org.netbeans.modules.cnd.repository.test;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 
@@ -76,7 +76,7 @@ public class TestKey implements Key, SelfPersistent {
     }
     
 
-    public TestKey(DataInput stream) throws IOException {
+    public TestKey(RepositoryDataInput stream) throws IOException {
         this(stream.readUTF(), stream.readUTF(), 
                 stream.readBoolean() ? Behavior.LargeAndMutable : Behavior.Default);
     }
@@ -154,7 +154,7 @@ public class TestKey implements Key, SelfPersistent {
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         output.writeUTF(key);
         output.writeUTF(unit);
         output.writeBoolean(behavior == Behavior.LargeAndMutable);

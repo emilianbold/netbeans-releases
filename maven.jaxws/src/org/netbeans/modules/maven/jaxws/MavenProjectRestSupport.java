@@ -51,10 +51,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
@@ -71,6 +75,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
@@ -93,9 +99,14 @@ import org.openide.util.NbBundle;
 @ProjectServiceProvider(service=RestSupport.class, projectType="org-netbeans-modules-maven")
 public class MavenProjectRestSupport extends WebRestSupport {
 
-    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";   //NOI18N
+    private static final String DEPLOYMENT_GOAL = "package";             //NOI18N   
 
+    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";   //NOI18N
+    
     public static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
+    
+    public static final String ACTION_PROPERTY_DEPLOY_OPEN = "netbeans.deploy.open.in.browser"; //NOI18N
+    
     private static final String TEST_SERVICES_HTML = "test-services.html"; //NOI18N
 
     String[] classPathTypes = new String[]{
@@ -186,6 +197,20 @@ public class MavenProjectRestSupport extends WebRestSupport {
     public boolean isReady() {
         return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
     }
+    
+    public String getContextRootURL() {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        String serverInstanceID = provider.getServerInstanceID();
+        if (WSStackUtils.DEVNULL.equals(serverInstanceID)) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(RestSupport.class, "MSG_MissingServer"), 
+                    NotifyDescriptor.ERROR_MESSAGE));
+            return "";
+        } 
+        else {
+            return super.getContextRootURL();
+        }
+    }
 
     private boolean platformHasRestLib(J2eePlatform j2eePlatform) {
         if (j2eePlatform != null) {
@@ -208,6 +233,25 @@ public class MavenProjectRestSupport extends WebRestSupport {
         }
         return false;
     }
+    
+    @Override
+    public String getBaseURL() throws IOException {
+        WebApp webApp = getWebApp();
+        if (webApp != null) {
+            String servletNames = "";
+            String urlPatterns = "";
+            int i=0;
+            for (ServletMapping mapping : webApp.getServletMapping()) {
+                servletNames+=(i>0 ? ",":"")+mapping.getServletName();
+                urlPatterns+= (i>0 ? ",":"")+mapping.getUrlPattern();
+                i++;
+            }
+            http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
+            return getContextRootURL()+"||"+servletNames+"||"+urlPatterns;
+        } else {
+            throw new IOException("Cannot read web.xml");
+        }
+    }
 
     private void addSwdpLibrary( RestConfig config ) throws IOException {
         boolean addLibrary = false;
@@ -222,7 +266,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
         if (config != null) {
             boolean added = false;
             if (config.isServerJerseyLibSelected()) {
-                added = addDeployableServerJerseyLibrary();
+                added = addDeployableServerJerseyLibraries();
             }
             if (!added && config.isJerseyLibSelected()) {
                 Library swdpLibrary = LibraryManager.getDefault().getLibrary(
@@ -239,22 +283,6 @@ public class MavenProjectRestSupport extends WebRestSupport {
                 addSwdpLibrary(classPathTypes, swdpLibrary);
             }
         }
-    }
-
-    private FileObject getApplicationContextXml() {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        FileObject[] fobjs = provider.getSourceRoots();
-
-        if (fobjs.length > 0) {
-            FileObject configRoot = fobjs[0];
-            FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
-
-            if (webInf != null) {
-                return webInf.getFileObject("applicationContext", "xml");      //NOI18N
-            }
-        }
-
-        return null;
     }
 
     @Override
@@ -276,20 +304,51 @@ public class MavenProjectRestSupport extends WebRestSupport {
     }
     
     @Override
-    public FileObject generateTestClient(File testdir) throws IOException {
-        FileObject mainFolder = project.getProjectDirectory().getFileObject("src/main"); //NOI18N
-        if (mainFolder != null) {
-            FileObject resourcesFolder = mainFolder.getFileObject("resources"); //NOI18N
-            if (resourcesFolder == null) {
-                resourcesFolder = mainFolder.createFolder("resources"); //NOI18N
-            }
-            if (resourcesFolder != null) {
-                FileObject restFolder = resourcesFolder.getFileObject("rest"); //NOI18N
-                if (restFolder == null) {
-                    restFolder = resourcesFolder.createFolder("rest"); //NOI18N
+    public FileObject generateTestClient(File testdir, String url ) throws IOException {
+        return generateMavenTester(testdir, url );
+    }
+    
+    @Override
+    public FileObject generateTestClient(File testdir ) throws IOException {
+        return generateMavenTester(testdir, getBaseURL() );
+    }
+    
+    @Override
+    public void deploy() {
+        RunConfig config = RunUtils.createRunConfig(FileUtil.toFile(
+                getProject().getProjectDirectory()), project, 
+                NbBundle.getMessage(MavenProjectRestSupport.class, "MSG_Deploy",    // NOI18N
+                        getProject().getLookup().lookup(
+                                ProjectInformation.class).getDisplayName()), 
+                Collections.singletonList(DEPLOYMENT_GOAL));
+        config.setProperty(ACTION_PROPERTY_DEPLOY_OPEN, Boolean.FALSE.toString() );
+        RunUtils.executeMaven(config);
+    }
+    
+    @Override
+    public File getLocalTargetTestRest(){
+        try {
+            FileObject mainFolder = project.getProjectDirectory()
+                    .getFileObject("src/main"); // NOI18N
+            if (mainFolder != null) {
+                FileObject resourcesFolder = mainFolder
+                        .getFileObject("resources"); // NOI18N
+                if (resourcesFolder == null) {
+                    resourcesFolder = mainFolder.createFolder("resources"); // NOI18N
                 }
-                return generateMavenTester(FileUtil.toFile(restFolder), getBaseURL());
+                if (resourcesFolder != null) {
+                    FileObject restFolder = resourcesFolder
+                            .getFileObject("rest"); // NOI18N
+                    if (restFolder == null) {
+                        restFolder = resourcesFolder.createFolder("rest"); // NOI18N
+                    }
+                    return FileUtil.toFile(restFolder);
+                }
             }
+        }
+        catch (IOException e) {
+            Logger.getLogger( MavenProjectRestSupport.class.getName() ).log(Level.WARNING, 
+                    null, e);
         }
         return null;
     }
@@ -391,67 +450,6 @@ public class MavenProjectRestSupport extends WebRestSupport {
             }
         }
         return fo;
-    }
-
-    private String getBaseURL() throws IOException {
-        String host = "localhost"; //NOI18N
-        String port = "8080"; //NOI18N
-        String contextRoot = "";
-        WebApp webApp = getWebApp();
-        if (webApp != null) {
-            String servletNames = "";
-            String urlPatterns = "";
-            int i=0;
-            for (ServletMapping mapping : webApp.getServletMapping()) {
-                servletNames+=(i>0 ? ",":"")+mapping.getServletName();
-                urlPatterns+= (i>0 ? ",":"")+mapping.getUrlPattern();
-                i++;
-            }
-            http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
-            return getContextRootURL()+"||"+servletNames+"||"+urlPatterns;
-        } else {
-            throw new IOException("Cannot read web.xml");
-        }
-    }
-
-
-    private String getContextRootURL() {
-        String portNumber = "8080"; //NOI18N
-        String host = "localhost"; //NOI18N
-        String contextRoot = "";
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
-        String serverInstanceID = provider.getServerInstanceID();
-        if (serverInstanceID == null || WSStackUtils.DEVNULL.equals(serverInstanceID)) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(MavenProjectRestSupport.class, "MSG_MissingServer"), NotifyDescriptor.ERROR_MESSAGE));
-        } else {
-            // getting port and host name
-            ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
-            try {
-                ServerInstance.Descriptor instanceDescriptor = serverInstance.getDescriptor();
-                if (instanceDescriptor != null) {
-                    int port = instanceDescriptor.getHttpPort();
-                    if (port>0) {
-                        portNumber = String.valueOf(port);
-                    }
-                    String hostName = instanceDescriptor.getHostname();
-                    if (hostName != null) {
-                        host = hostName;
-                    }
-                }
-            } catch (InstanceRemovedException ex) {}
-        }
-        J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
-        try {
-            contextRoot = configSupport.getWebContextRoot();
-        } catch (ConfigurationException e) {
-            // TODO the context root value could not be read, let the user know about it
-        }
-        if (contextRoot.length() > 0 && contextRoot.startsWith("/")) { //NOI18N
-            contextRoot = contextRoot.substring(1);
-        }
-        return "http://"+host+":"+portNumber+"/"+ //NOI18N
-                (contextRoot.length()>0 ? contextRoot+"/" : ""); //NOI18N
     }
 
     @Override

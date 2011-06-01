@@ -156,7 +156,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 try {
                     mdl.sync();
                 } catch (IOException ex) {
-//                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, null, ex);
                 }
             }
             t = t.getModel().getProject();

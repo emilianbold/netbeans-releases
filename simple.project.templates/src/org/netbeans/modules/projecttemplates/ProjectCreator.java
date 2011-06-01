@@ -45,10 +45,12 @@ package org.netbeans.modules.projecttemplates;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -191,8 +193,8 @@ public final class ProjectCreator {
     public ProjectCreator(FileObject projectDir) {
         this.dir = projectDir;
     }
-
-    private void add(String destPath, String name, FileObject fileTemplate, boolean openOnLoad) {
+    
+    public void add(String destPath, String name, FileObject fileTemplate, boolean openOnLoad) {
         add(new TemplateBasedFileCreator(destPath, name, fileTemplate, openOnLoad));
     }
 
@@ -239,20 +241,9 @@ public final class ProjectCreator {
         final FileObject projectDir = FileUtil.createFolder(dir, name);
         final GeneratedProject[] result = new GeneratedProject[1];
         projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
+            @Override
             public void run() throws IOException {
-                try {
-                    result[0] = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<GeneratedProject>() {
-
-                        public GeneratedProject run() throws Exception {
-                            return doCreateProject(handle, projectProps, projectDir, name, template, params);
-                        }
-                    });
-                } catch (MutexException ex) {
-                    IOException ioe = new IOException();
-                    ioe.initCause(ex);
-                    throw ioe;
-                }
+                result[0] = doCreateProject(handle, projectProps, projectDir, name, template, params);
             }
         });
         handle.finish();
@@ -284,6 +275,43 @@ public final class ProjectCreator {
             notifyAll(); //unit tests
         }
         return new GeneratedProject(projectDir, toOpen);
+    }
+    
+    /**
+     * Get a list of files which will be created, using the passed target
+     * directory as a parent.
+     * 
+     * @param target The folder where the project may be created
+     * @return A list files which will be created if createProject() is 
+     * invoked with this target folder
+     */
+    public final List<File> listCreatedFiles (File target) {
+        List<File> files = new LinkedList<File>();
+        for (FileCreator c : entries) {
+            String targetFile = c.dest;
+            if (targetFile != null && !targetFile.endsWith("/")) {
+                targetFile += '/';
+            }
+            targetFile = targetFile + c.getName();
+            File f = new File (target, targetFile);
+            files.add(f);
+        }
+        Collections.sort(files, new PathLengthComparator());
+        return files;
+    }
+    
+    private static final class PathLengthComparator implements Comparator<File> {
+
+        @Override
+        public int compare(File o1, File o2) {
+            int l1 = o1.getPath().length();
+            int l2 = o2.getPath().length();
+            if (l1 == l2) {
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            } else {
+                return l1 > l2 ? 1 : -1;
+            }
+        }
     }
 
     private EditableProperties[] parseTemplate(FileObject template, Map<String, String> params) throws IOException {
@@ -352,16 +380,33 @@ public final class ProjectCreator {
 
         @Override
         public DataObject create(FileObject project, Map<String, String> params) throws IOException {
-            DataObject result = super.create(project, params);
-            EditableProperties ed = new EditableProperties(props);
-            FileObject file = result.getPrimaryFile();
-            FileLock lock = file.lock();
-            OutputStream out = new BufferedOutputStream(file.getOutputStream(lock));
+            final DataObject result = super.create(project, params);
             try {
-                ed.store(out);
-            } finally {
-                out.close();
-                lock.releaseLock();
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws IOException {
+                        final EditableProperties ed = new EditableProperties(props);
+                        final FileObject file = result.getPrimaryFile();
+                        final FileLock lock = file.lock();
+                        try {
+                            final OutputStream out = new BufferedOutputStream(file.getOutputStream(lock));
+                            try {
+                                ed.store(out);
+                            } finally {
+                                out.close();
+                            }
+                        } finally {
+                            lock.releaseLock();
+                        }
+                        return null;
+                    }
+                });
+            } catch (MutexException me) {
+                if (me.getException() instanceof  IOException) {
+                    throw (IOException) me.getException();
+                } else {
+                    throw new IOException(me);
+                }
             }
             return result;
         }

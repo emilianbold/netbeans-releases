@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
@@ -76,6 +75,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -236,7 +236,7 @@ public class AnalyzeModel implements DiscoveryProvider {
             return;
         }
         if (d.exists() && d.isDirectory() && d.canRead()){
-            if (DiscoveryUtils.ignoreFolder(d)){
+            if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
             String path = d.getAbsolutePath();
@@ -295,11 +295,13 @@ public class AnalyzeModel implements DiscoveryProvider {
         private List<String> myIncludedFiles;
         private MakeConfigurationDescriptor makeConfigurationDescriptor;
         private CsmProject langProject;
+        private ProjectProxy project;
         private Progress progress;
         
         private MyConfiguration(ProjectProxy project, Progress progress){
             Project makeProject = project.getProject();
             this.progress = progress;
+            this.project =project;
             langProject = CsmModelAccessor.getModel().getProject(makeProject);
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
@@ -307,7 +309,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         
         @Override
         public List<ProjectProperties> getProjectConfiguration() {
-            return ProjectImpl.divideByLanguage(getSourcesConfiguration());
+            return ProjectImpl.divideByLanguage(getSourcesConfiguration(), project);
         }
        
         @Override
@@ -349,7 +351,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                     if (!isExcluded(item)) {
                         Language lang = item.getLanguage();
                         if (lang == Language.C || lang == Language.CPP){
-                            CsmFile langFile = langProject.findFile(item, false);
+                            CsmFile langFile = langProject.findFile(item, true, false);
                             SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
                             res.add(source);
                         }

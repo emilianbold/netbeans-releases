@@ -85,7 +85,7 @@ public interface SourceFileInfoProvider {
          * @param fileName
          * @param offset
          */
-        public SourceFileInfo(String fileName, long offset) {
+        public SourceFileInfo(CharSequence fileName, long offset) {
             this(fileName, -1, -1, offset);
         }
 

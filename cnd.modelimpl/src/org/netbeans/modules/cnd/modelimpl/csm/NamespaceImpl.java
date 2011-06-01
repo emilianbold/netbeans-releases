@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -72,6 +70,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * CsmNamespace implementation
@@ -655,7 +655,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     // impl of persistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         output.writeBoolean(this.global);
         
         UIDObjectFactory theFactory = UIDObjectFactory.getDefaultFactory();      
@@ -682,7 +682,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.writeUIDCollection(this.unnamedDeclarations, output, true);
     }
     
-    public NamespaceImpl(DataInput input) throws IOException {
+    public NamespaceImpl(RepositoryDataInput input) throws IOException {
         this.global = input.readBoolean();
         
         UIDObjectFactory theFactory = UIDObjectFactory.getDefaultFactory();
@@ -768,11 +768,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             return "FileNameSortedKey: " + this.fileIndex + "[" + this.start; // NOI18N
         }
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             output.writeInt(start);
             output.writeInt(fileIndex);
         }
-        public FileNameSortedKey(DataInput input) throws IOException {
+        public FileNameSortedKey(RepositoryDataInput input) throws IOException {
             start = input.readInt();
             fileIndex = input.readInt();
         }

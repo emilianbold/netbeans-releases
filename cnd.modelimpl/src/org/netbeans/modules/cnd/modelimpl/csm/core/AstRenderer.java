@@ -144,6 +144,18 @@ public class AstRenderer {
                         DiagnosticExceptoins.register(e);
                     }
                     break;
+                case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_INSTANTIATION:
+                    try {
+                        if(isClassExplicitInstantiation(token)) {
+                            // TODO
+                        } else {
+                            CsmFunctionInstantiation fi = FunctionInstantiationImpl.create(token, file, !isRenderingLocalContext());
+                            container.addDeclaration(fi);
+                        }
+                    } catch (AstRendererException e) {
+                        DiagnosticExceptoins.register(e);
+                    }
+                    break;                    
                 case CPPTokenTypes.CSM_CTOR_DEFINITION:
                 case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
                     try {
@@ -371,9 +383,11 @@ public class AstRenderer {
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
                         return true;
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
-                        CsmType type = TypeFactory.createType(child, file, null, 0);
-                        if (type != null && type.getClassifier().isValid()) {
-                            return true;
+                        if (!isAbstractDeclarator(child.getNextSibling())) {
+                            CsmType type = TypeFactory.createType(child, file, null, 0);
+                            if (type != null && type.getClassifier().isValid()) {
+                                return true;
+                            }
                         }
                     } else {
                         return false;
@@ -495,6 +509,9 @@ public class AstRenderer {
             return false;
         }
         node = node.getNextSibling();
+        if(node != null && node.getType() == CPPTokenTypes.CSM_PARMLIST) {
+            node = node.getNextSibling();
+        }
         if(node == null || node.getType() != CPPTokenTypes.RPAREN) {
             return false;
         }
@@ -1219,7 +1236,10 @@ public class AstRenderer {
     }
 
     public static TypeImpl renderType(AST tokType, CsmFile file) {
-
+        return renderType(tokType, file, false);
+    }
+    
+    public static TypeImpl renderType(AST tokType, CsmFile file, boolean inSpecializationParams) {
         AST typeAST = tokType;
         tokType = getFirstSiblingSkipQualifiers(tokType);
 
@@ -1228,7 +1248,11 @@ public class AstRenderer {
                     tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                 AST next = tokType.getNextSibling();
                 AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
-                return TypeFactory.createType(typeAST, file, ptrOperator, 0);
+                if(inSpecializationParams) {
+                    return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, false, true);
+                } else {
+                    return TypeFactory.createType(typeAST, file, ptrOperator, 0);
+                }                
             }
             if (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
                     tokType.getType() == CPPTokenTypes.LITERAL_class ||
@@ -1778,6 +1802,23 @@ public class AstRenderer {
         return true;
     }
 
+    private boolean isClassExplicitInstantiation(AST ast) {
+        AST type = ast.getFirstChild(); // type
+        if (type != null) {
+            AST child = type;
+            while ((child = child.getNextSibling()) != null) {
+                if (child.getType() == CPPTokenTypes.GREATERTHAN) {
+                    child = child.getNextSibling();
+                    if (child != null && (child.getType() == CPPTokenTypes.SEMICOLON)) {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        }
+        return false;
+    }    
+    
     protected boolean isMemberDefinition(AST ast) {
         if (CastUtils.isCast(ast)) {
             return CastUtils.isMemberDefinition(ast);

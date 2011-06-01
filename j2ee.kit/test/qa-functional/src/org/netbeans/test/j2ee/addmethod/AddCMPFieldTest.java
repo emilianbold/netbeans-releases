@@ -41,23 +41,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.addmethod;
 
 import java.io.IOException;
 import javax.swing.JTextField;
-import org.netbeans.jellytools.*;
-import org.netbeans.jemmy.operators.*;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.test.j2ee.EJBValidation;
 
 /**
- *
- * @author lm97939
+ *  Called from EJBValidation test suite.
+ * 
+ * @author Libor Martinek
  */
 public class AddCMPFieldTest extends AddMethodBase {
-    
+
     protected String methodName;
     protected String returnType;
     private String description;
@@ -65,25 +69,13 @@ public class AddCMPFieldTest extends AddMethodBase {
     private Boolean localSetter;
     private Boolean remoteGetter;
     private Boolean remoteSetter;
-    
+
     /** Creates a new instance of AddMethodTest */
     public AddCMPFieldTest(String name) {
         super(name);
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        junit.textui.TestRunner.run(new AddCMPFieldTest("testAddCMPField1InEB"));
-    }
-    
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        System.out.println("########  "+getName()+"  #######");
-    }
-    
-    public void testAddCMPField1InEB()  throws IOException{
+
+    public void testAddCMPField1InEB() throws IOException {
         beanName = "TestingEntity";
         editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddCmpFieldAction");
         methodName = "cmpTestField1x";
@@ -94,59 +86,61 @@ public class AddCMPFieldTest extends AddMethodBase {
         addMethod();
     }
 
-    public void testAddCMPField2InEB()  throws IOException{
+    public void testAddCMPField2InEB() throws IOException {
         beanName = "TestingEntity";
         editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddCmpFieldAction");
         methodName = "cmpTestField2x";
         description = null; //"Test Field";
         returnType = "int";
         localGetter = Boolean.TRUE;
-        localSetter = Boolean.FALSE; 
+        localSetter = Boolean.FALSE;
         remoteGetter = Boolean.TRUE;
-        remoteSetter = Boolean.TRUE; 
+        remoteSetter = Boolean.TRUE;
         isDDModified = true;
         saveFile = true;
         addMethod();
     }
-    
+
     protected void addMethod() throws IOException {
-        EditorOperator editor = EditorWindowOperator.getEditor(beanName+"Bean.java");
+        EditorOperator editor = EditorWindowOperator.getEditor(beanName + "Bean.java");
         editor.select(11);
 
         // invoke Add CMP Field dialog
         ProjectsTabOperator prj = new ProjectsTabOperator();
         ProjectRootNode prjnd = prj.getProjectRootNode(EJBValidation.EJB_PROJECT_NAME);
-        Node node = new Node(prjnd, "Enterprise Beans|"+beanName);
+        Node node = new Node(prjnd, "Enterprise Beans|" + beanName);
         node.performPopupActionNoBlock("Add|Add CMP Field...");
 
         AddCMPFieldDialog dialog = new AddCMPFieldDialog();
         JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
-        new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(methodName);
+        new JTextFieldOperator((JTextField) lblOper.getLabelFor()).setText(methodName);
         if (description != null) {
             dialog.setDescription(description);
             lblOper = new JLabelOperator(dialog, "Description");
-            new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(description);
-        } 
-        
+            new JTextFieldOperator((JTextField) lblOper.getLabelFor()).setText(description);
+        }
+
         lblOper = new JLabelOperator(dialog, "Type");
-        new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(returnType);
+        new JTextFieldOperator((JTextField) lblOper.getLabelFor()).setText(returnType);
 
-        if (localGetter != null)
+        if (localGetter != null) {
             dialog.checkLocalGetter(localGetter.booleanValue());
-        if (localSetter != null)
+        }
+        if (localSetter != null) {
             dialog.checkLocalSetter(localSetter.booleanValue());
-        if (remoteGetter != null)
+        }
+        if (remoteGetter != null) {
             dialog.checkRemoteGetter(remoteGetter.booleanValue());
-        if (remoteSetter != null)
+        }
+        if (remoteSetter != null) {
             dialog.checkRemoteSetter(remoteSetter.booleanValue());
+        }
         dialog.ok();
-
-        if (saveFile) 
+        editor.txtEditorPane().waitText(methodName);
+        if (saveFile) {
             editor.save();
-        
-        waitForEditorText(editor, methodName);
-        
+        }
+
         compareFiles();
     }
-    
 }

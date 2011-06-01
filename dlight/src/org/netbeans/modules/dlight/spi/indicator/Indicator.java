@@ -49,6 +49,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
+import org.netbeans.modules.dlight.api.indicator.IndicatorActionDescriptor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -98,21 +99,21 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private final int position;
     private String toolID;
     private String toolDecsription;
-    private String actionTooltip;
-    private String actionDisplayName;
     private final List<IndicatorActionListener> listeners;
     private final TickerListener tickerListener;
     private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
     private DLightTarget target;
     private boolean visible;
     private final Action defaultAction;
+    private final List<Action> actions;
     private final Collection<Column> columnsProvided = new ArrayList<Column>();
-    final AtomicReference<Object> oldRef = new AtomicReference<Object>();
+    private final AtomicReference<Object> oldRef = new AtomicReference<Object>();
+    private List<VisualizerConfiguration> visualizerConfigurations;
+    private final T configuration;
 
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
     }
-    private List<VisualizerConfiguration> visualizerConfigurations;
 
     protected final void notifyListeners(String vcID) {
         for (VisualizerConfiguration vc : visualizerConfigurations) {
@@ -126,7 +127,15 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         return toolDecsription;
     }
 
+    /**
+     * Deprecated API to get a tooltip of the default action associated with the 
+     * indicator.
+     * @see getDefaultAction()
+     */
+    @Deprecated
     protected final String getActionTooltip() {
+        String actionTooltip = (String) getDefaultAction().getValue(Action.SHORT_DESCRIPTION);
+        
         if (actionTooltip == null) {
             return null;
         }
@@ -151,11 +160,10 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     protected Indicator(T configuration) {
         listeners = Collections.synchronizedList(new ArrayList<IndicatorActionListener>());
+        this.configuration = configuration;
         this.metadata = IndicatorConfigurationAccessor.getDefault().getIndicatorMetadata(configuration);
         this.visualizerConfigurations = IndicatorConfigurationAccessor.getDefault().getVisualizerConfigurations(configuration);
         this.position = IndicatorConfigurationAccessor.getDefault().getIndicatorPosition(configuration);
-        this.actionDisplayName = IndicatorConfigurationAccessor.getDefault().getActionDisplayName(configuration);
-        this.actionTooltip = IndicatorConfigurationAccessor.getDefault().getActionTooltip(configuration);
         tickerListener = new TickerListener() {
 
             @Override
@@ -165,20 +173,53 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         };
 
         this.visible = configuration.isVisible();
+        actions = initActions();
+        defaultAction = initDefaultAction();
+        
+        // To support an old sceme...
+        if (actions.isEmpty()) {
+            actions.add(defaultAction);
+        }
+        
         setIndicatorActionsProviderContext(Lookup.EMPTY);
-        defaultAction = new AbstractAction(actionDisplayName) {
+    }
+
+    private Action initDefaultAction() {
+        IndicatorConfigurationAccessor cfgAccess = IndicatorConfigurationAccessor.getDefault();
+        IndicatorActionDescriptor actionDescr = cfgAccess.getDefaultActionDescriptor(configuration);
+        
+        if (actionDescr == null) {
+            return new AbstractAction() {
+
+                @Override
+                public boolean isEnabled() {
+                    return false;
+                }
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                }
+            };
+        }
+
+        Action result = new AbstractAction(actionDescr.getDisplayName()) {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 notifyListeners();
             }
         };
-        defaultAction.putValue(Action.NAME, actionDisplayName);
-        if (actionTooltip != null) {
-            defaultAction.putValue(Action.SHORT_DESCRIPTION, getActionTooltip());
+        
+        String tooltip = actionDescr.getTooltip();
+        
+        if (tooltip != null) {
+            result.putValue(Action.SHORT_DESCRIPTION, tooltip);
         }
+        
+        return result;
     }
 
+    
     /**
      * This method will be
      * @param context
@@ -188,6 +229,41 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     //public abstract Action[]  getActions();
     public final Action getDefaultAction() {
         return defaultAction;
+    }
+    
+    public final List<Action> getActions() {
+        return Collections.unmodifiableList(actions);
+    }
+    
+    private List<Action> initActions() {
+        IndicatorConfigurationAccessor cfgAccess = IndicatorConfigurationAccessor.getDefault();
+        List<IndicatorActionDescriptor> descriptors = cfgAccess.getActionDescriptors(configuration);
+        ArrayList<Action> result = new ArrayList<Action>();
+        
+        for (final IndicatorActionDescriptor d : descriptors) {
+            AbstractAction a = new AbstractAction(d.getDisplayName()) {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    VisualizerConfiguration visCfg = d.getVisualizerConfiguration();
+                    if (visCfg != null) {
+                        notifyListeners(d.getVisualizerConfiguration());
+                    } else {
+                        notifyListeners();
+                    }
+                }
+            };
+            
+            String tooltip = d.getTooltip();
+
+            if (tooltip != null) {
+                a.putValue(Action.SHORT_DESCRIPTION, tooltip);
+            }
+            
+            result.add(a);
+        }
+        
+        return result;
     }
 
     protected abstract void repairNeeded(boolean needed);

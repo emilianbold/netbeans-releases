@@ -250,14 +250,13 @@ public final class PaletteUtils {
                         if (pInfo != null) {
                             PaletteLookup lookup = pInfo.paletteLookup;
                             PaletteController oldPalette = pInfo.getPalette();
-                            PaletteController newPalette = createPalette(filter);
                             if (pInfo.paletteListeners != null) {
                                 for (PropertyChangeListener l : pInfo.paletteListeners) {
                                     oldPalette.removePropertyChangeListener(l);
-                                    newPalette.addPropertyChangeListener(l);
+                                    palette.addPropertyChangeListener(l);
                                 }
                             }
-                            lookup.setPalette(newPalette);
+                            lookup.setPalette(palette);
                         }
                     }
                 });

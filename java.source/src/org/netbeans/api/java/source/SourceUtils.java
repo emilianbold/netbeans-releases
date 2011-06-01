@@ -82,6 +82,7 @@ import java.net.URISyntaxException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.util.ElementScanner6;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.annotations.common.NonNull;
@@ -152,15 +153,7 @@ public class SourceUtils {
     
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
         Context c = ((JavacTaskImpl) info.impl.getJavacTask()).getContext();
-        if (from.getKind() == TypeKind.DECLARED) {
-            com.sun.tools.javac.util.List<Type> typeVars = com.sun.tools.javac.util.List.nil();
-            for (TypeMirror tm : ((DeclaredType)from).getTypeArguments()) {
-                if (tm.getKind() == TypeKind.TYPEVAR)
-                    typeVars = typeVars.append((Type)tm);
-            }
-            if (!typeVars.isEmpty())
-                from = new Type.ForAll(typeVars, (Type)from);
-        } else if (from.getKind() == TypeKind.WILDCARD) {
+        if (from.getKind() == TypeKind.WILDCARD) {
             from = Types.instance(c).upperBound((Type)from);
         }
         return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
@@ -484,15 +477,13 @@ public class SourceUtils {
                     return folders.isEmpty() ? fo : folders.get(0);
                 }
                 else {               
-                    boolean caseSensitive = isCaseSensitive ();
-                    String sourceFileName = getSourceFileName (className);
+                    final boolean caseSensitive = isCaseSensitive ();
+                    final String sourceFileName = getSourceFileName (className);
+                    final Match matchSet = caseSensitive ? new CaseSensitiveMatch(sourceFileName) : new CaseInsensitiveMatch(sourceFileName);
                     folders.addFirst(fo);
                     for (FileObject folder : folders) {
-                        FileObject[] children = folder.getChildren();
-                        for (FileObject child : children) {
-                            if (((caseSensitive && child.getName().equals (sourceFileName)) ||
-                                (!caseSensitive && child.getName().equalsIgnoreCase (sourceFileName))) &&
-                                (child.isData() && JavaDataLoader.JAVA_EXTENSION.equalsIgnoreCase(child.getExt()))) {
+                        for (FileObject child : folder.getChildren()) {
+                            if (matchSet.apply(child)) {
                                 return child;
                             }
                         }
@@ -538,6 +529,50 @@ public class SourceUtils {
             });
         } catch (InterruptedException e) {
             return null;
+        }
+    }
+
+    private static abstract class Match {
+
+        private final String name;
+
+        Match(final String names) {
+            this.name = names;
+        }
+
+        final boolean apply(final FileObject fo) {
+            final String foName = fo.getName();
+            return match(foName,name) && isJava(fo);
+        }
+
+        protected abstract boolean match(String name1, String name2);
+
+        private boolean isJava(final FileObject fo) {
+            return  JavaDataLoader.JAVA_EXTENSION.equalsIgnoreCase(fo.getExt()) && fo.isData();
+        }
+    }
+
+    private static class CaseSensitiveMatch extends Match {
+
+        CaseSensitiveMatch(final String name) {
+            super(name);
+        }
+
+        @Override
+        protected boolean match(String name1, String name2) {
+            return name1.equals(name2);
+        }
+    }
+
+    private static class CaseInsensitiveMatch extends Match {
+
+        CaseInsensitiveMatch(final String name) {
+            super(name);
+        }
+
+        @Override
+        protected boolean match(String name1, String name2) {
+            return name1.equalsIgnoreCase(name2);
         }
     }
     
@@ -703,9 +738,13 @@ public class SourceUtils {
      * @return the classes containing main method
      * @throws IllegalArgumentException when file does not exist or is not a java source file.
      */
-    public static Collection<ElementHandle<TypeElement>> getMainClasses (final FileObject fo) {
-        if (fo == null || !fo.isValid() || fo.isVirtual()) {
-            throw new IllegalArgumentException ();
+    public static Collection<ElementHandle<TypeElement>> getMainClasses (final @NonNull FileObject fo) {
+        Parameters.notNull("fo", fo);   //NOI18N
+        if (!fo.isValid()) {
+            throw new IllegalArgumentException ("FileObject : " + FileUtil.getFileDisplayName(fo) + " is not valid.");  //NOI18N
+        }
+        if (fo.isVirtual()) {
+            throw new IllegalArgumentException ("FileObject : " + FileUtil.getFileDisplayName(fo) + " is virtual.");  //NOI18N
         }
         final JavaSource js = JavaSource.forFileObject(fo);        
         if (js == null) {
@@ -714,36 +753,32 @@ public class SourceUtils {
         try {
             final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
             js.runUserActionTask(new Task<CompilationController>() {            
+                @Override
                 public void run(final CompilationController control) throws Exception {
                     if (control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo (JavaSource.Phase.ELEMENTS_RESOLVED)>=0) {
-                        new TreePathScanner<Void,Void> () {
-                           public @Override Void visitMethod(MethodTree node, Void p) {
-                               ExecutableElement method = (ExecutableElement) control.getTrees().getElement(getCurrentPath());
-                               if (method != null && SourceUtils.isMainMethod(method) && isAccessible(method.getEnclosingElement())) {
-                                   result.add (ElementHandle.create((TypeElement)method.getEnclosingElement()));
-                               }
-                               return null;
-                           }
-                        }.scan(control.getCompilationUnit(), null);
-                    }                   
-                }
-
-                private boolean isAccessible (Element element) {
-                    ElementKind kind = element.getKind();
-                    while (kind != ElementKind.PACKAGE) {
-                        if (!kind.isClass() && !kind.isInterface()) {
-                            return false;
-                        }                    
-                        Set<Modifier> modifiers = ((TypeElement)element).getModifiers();
-                        Element parent = element.getEnclosingElement();
-                        if (parent.getKind() != ElementKind.PACKAGE && !modifiers.contains(Modifier.STATIC)) {
-                            return false;
+                        final List<TypeElement>  types = new ArrayList<TypeElement>();
+                        final ElementScanner6<Void,Void> visitor = new ElementScanner6<Void, Void>() {
+                            @Override
+                            public Void visitType(TypeElement e, Void p) {
+                                if (e.getEnclosingElement().getKind() == ElementKind.PACKAGE
+                                   || e.getModifiers().contains(Modifier.STATIC)) {
+                                    types.add(e);
+                                    return super.visitType(e, p);
+                                } else {
+                                    return null;
+                                }
+                            }
+                        };
+                        visitor.scan(control.getTopLevelElements(), null);
+                        for (TypeElement type : types) {
+                            for (ExecutableElement exec :  ElementFilter.methodsIn(control.getElements().getAllMembers(type))) {
+                                if (SourceUtils.isMainMethod(exec)) {
+                                    result.add (ElementHandle.create(type));
+                                }
+                            }
                         }
-                        element = parent;
-                        kind = element.getKind();
                     }
-                    return true;
-                }
+                }                
 
             }, true);
             return result;
@@ -944,7 +979,7 @@ public class SourceUtils {
     private static String getSourceFileName (String classFileName) {
         int index = classFileName.indexOf('$'); //NOI18N
         return index == -1 ? classFileName : classFileName.substring(0,index);
-        }
+    }
         
     /**
      * @since 0.24

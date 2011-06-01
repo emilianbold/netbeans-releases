@@ -45,33 +45,33 @@ package org.netbeans.jellytools;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.CloneViewAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTest;
 
 /**
  * Test of org.netbeans.jellytools.EditorWindowOperator.
  * Order of tests is important.
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class EditorWindowOperatorTest extends JellyTestCase {
 
-    public static final String[] tests = new String[] {
-                "testSelectPage",
-                "testGetEditor",
-                "testSelectDocument",
-                "testJumpLeft",
-                "testMoveTabsRight",
-                "testMoveTabsLeft",
-                "testVerify",
-                "testCloseDiscard"
+    private static final String SAMPLE_CLASS_1 = "SampleClass1.java";
+    private static final String SAMPLE_CLASS_2 = "SampleClass2.java";
+    private static final String[] tests = new String[]{
+        "testSelectPage",
+        "testGetEditor",
+        "testSelectDocument",
+        "testJumpLeft",
+        "testMoveTabsRight",
+        "testMoveTabsLeft",
+        "testVerify",
+        "testCloseDiscard"
     };
+
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
@@ -79,45 +79,20 @@ public class EditorWindowOperatorTest extends JellyTestCase {
         super(testName);
     }
 
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        // order of tests is important
-        suite.addTest(new EditorWindowOperatorTest("testSelectPage"));
-        suite.addTest(new EditorWindowOperatorTest("testGetEditor"));
-        suite.addTest(new EditorWindowOperatorTest("testSelectDocument"));
-        suite.addTest(new EditorWindowOperatorTest("testJumpLeft"));
-        suite.addTest(new EditorWindowOperatorTest("testMoveTabsRight"));
-        suite.addTest(new EditorWindowOperatorTest("testMoveTabsLeft"));
-        suite.addTest(new EditorWindowOperatorTest("testVerify"));
-        suite.addTest(new EditorWindowOperatorTest("testCloseDiscard"));
-        return suite;
-         */
-        return (NbTest) NbModuleSuite.create(
-        NbModuleSuite.createConfiguration(EditorWindowOperatorTest.class).
-                addTest(tests).
-                enableModules(".*").clusters(".*"));
+        return createModuleTest(EditorWindowOperatorTest.class, tests);
     }
-    
+
     /** Redirect output to log files, wait before each test case. */
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
     }
-    
-    private static final String SAMPLE_CLASS_1 = "SampleClass1.java";
-    private static final String SAMPLE_CLASS_2 = "SampleClass2.java";
-    
+
     /** Test of selectPage method. */
     public void testSelectPage() {
         // next tests depends on this
@@ -131,14 +106,14 @@ public class EditorWindowOperatorTest extends JellyTestCase {
         EditorWindowOperator.closeDiscard();
         openAction.performAPI(sampleClass1);
         JavaNode sampleClass2 = new JavaNode(sample2, SAMPLE_CLASS_2);
-        openAction.performAPI(sampleClass2);        
+        openAction.performAPI(sampleClass2);
         EditorWindowOperator.selectPage(SAMPLE_CLASS_1);
         EditorWindowOperator.selectPage(SAMPLE_CLASS_2);
-        assertTrue("Page "+SAMPLE_CLASS_2+" not selected.", 
-                    EditorWindowOperator.getEditor().getName().indexOf(SAMPLE_CLASS_2) != -1);
+        assertTrue("Page " + SAMPLE_CLASS_2 + " not selected.",
+                EditorWindowOperator.getEditor().getName().indexOf(SAMPLE_CLASS_2) != -1);
         EditorWindowOperator.selectPage(SAMPLE_CLASS_1);
-        assertTrue("Page "+SAMPLE_CLASS_1+" not selected.", 
-                    EditorWindowOperator.getEditor().getName().indexOf(SAMPLE_CLASS_1) != -1);
+        assertTrue("Page " + SAMPLE_CLASS_1 + " not selected.",
+                EditorWindowOperator.getEditor().getName().indexOf(SAMPLE_CLASS_1) != -1);
         // finished succesfully
         endTest();
     }
@@ -146,7 +121,7 @@ public class EditorWindowOperatorTest extends JellyTestCase {
     /** Test of txtEditorPane method. */
     public void testGetEditor() {
         // next tests depends on this
-        startTest();        
+        startTest();
         assertEquals("Wrong editor pane found.", SAMPLE_CLASS_1, EditorWindowOperator.getEditor().getName());
         EditorWindowOperator.selectPage(SAMPLE_CLASS_2);
         assertEquals("Wrong editor pane found.", SAMPLE_CLASS_1, EditorWindowOperator.getEditor(0).getName());
@@ -161,7 +136,7 @@ public class EditorWindowOperatorTest extends JellyTestCase {
         startTest();
         // but not block anything else
         clearTestStatus();
-        
+
         EditorWindowOperator.selectDocument(SAMPLE_CLASS_1);
         assertEquals("Wrong document selected.", SAMPLE_CLASS_1, EditorWindowOperator.getEditor().getName());
         EditorWindowOperator.selectDocument(1);
@@ -171,18 +146,18 @@ public class EditorWindowOperatorTest extends JellyTestCase {
     /** Test of jumpLeft method. */
     public void testJumpLeft() {
         // next tests depends on this
-        startTest();        
+        startTest();
         // clones selected document several times to test control buttons
-        for(int i=0;i<10;i++) {
+        for (int i = 0; i < 10; i++) {
             new CloneViewAction().performAPI();
         }
         // click on leftmost tab until is not fully visible
         int count = 0;
-        while(EditorWindowOperator.jumpLeft() && count++ < 100);
+        while (EditorWindowOperator.jumpLeft() && count++ < 100);
         // if it is still possible to jump left, wait a little and do jumpLeft again
-        if(EditorWindowOperator.jumpLeft()) {
+        if (EditorWindowOperator.jumpLeft()) {
             new EventTool().waitNoEvent(3000);
-            while(EditorWindowOperator.jumpLeft() && count++ < 100);
+            while (EditorWindowOperator.jumpLeft() && count++ < 100);
         }
         assertFalse("Leftmost tab should not be partially hidden.", EditorWindowOperator.jumpLeft());
         // finished succesfully
@@ -192,7 +167,7 @@ public class EditorWindowOperatorTest extends JellyTestCase {
     /** Test of moveTabsRight method. */
     public void testMoveTabsRight() {
         // next tests depends on this
-        startTest();        
+        startTest();
         EditorWindowOperator.moveTabsRight();
         assertTrue("Tabs were not moved to the right.", EditorWindowOperator.btLeft().isEnabled());
         // finished succesfully
@@ -204,13 +179,13 @@ public class EditorWindowOperatorTest extends JellyTestCase {
         // this test depends on previous
         startTest();
         // but not block anything else
-        clearTestStatus();        
+        clearTestStatus();
         EditorWindowOperator.moveTabsLeft();
         assertFalse("Tabs were not moved to the left.", EditorWindowOperator.btLeft().isEnabled());
     }
-    
+
     /** Test of verify method. */
-    public void testVerify() {        
+    public void testVerify() {
         EditorWindowOperator.verify();
     }
 
@@ -219,4 +194,3 @@ public class EditorWindowOperatorTest extends JellyTestCase {
         EditorWindowOperator.closeDiscard();
     }
 }
-

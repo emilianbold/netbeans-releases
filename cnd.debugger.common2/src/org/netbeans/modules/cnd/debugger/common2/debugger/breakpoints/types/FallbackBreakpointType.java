@@ -73,4 +73,9 @@ public class FallbackBreakpointType extends NativeBreakpointType {
 	else
 	    return new FallbackBreakpointPanel(editable);
     }
+
+    @Override
+    public String id() {
+        return "Fallback"; //NOI18N
+    }
 }

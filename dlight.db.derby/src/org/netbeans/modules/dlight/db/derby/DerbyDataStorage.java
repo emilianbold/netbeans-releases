@@ -79,7 +79,6 @@ public class DerbyDataStorage extends SQLDataStorage {
 //    private static boolean driverLoaded = false;
     private final List<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
     private String dbURL;
-    private final List<DataTableMetadata> tableMetadatas;
 
     static {
         File tempDir = null;
@@ -153,7 +152,6 @@ public class DerbyDataStorage extends SQLDataStorage {
     DerbyDataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
-        this.tableMetadatas = new ArrayList<DataTableMetadata>();
         initStorageTypes();
     }
 
@@ -201,7 +199,7 @@ public class DerbyDataStorage extends SQLDataStorage {
     @Override
     public void createTables(List<DataTableMetadata> tableMetadatas) {
         for (DataTableMetadata tdmd : tableMetadatas) {
-            this.tableMetadatas.add(tdmd);
+            tables.put(tdmd.getName(), tdmd);
 //            if (tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
 //                if (!tables.containsKey(STACK_METADATA_VIEW_NAME)) {
 //                    tables.put(STACK_METADATA_VIEW_NAME, tdmd);
@@ -284,7 +282,8 @@ public class DerbyDataStorage extends SQLDataStorage {
 //    }
     @Override
     public boolean hasData(DataTableMetadata data) {
-        return data.isProvidedBy(tableMetadatas);
+        List<DataTableMetadata> toCheck = new ArrayList<DataTableMetadata>(tables.values());
+        return data.isProvidedBy(toCheck);
     }
 
     @Override

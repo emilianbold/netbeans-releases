@@ -47,8 +47,10 @@ package org.netbeans.modules.cnd.makeproject.actions;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -59,7 +61,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
@@ -103,9 +104,9 @@ public class AddExistingItemAction extends NodeAction {
 	assert folder != null;
 
 	ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
-	ConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
+	MakeConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
 
-        if (!((MakeConfigurationDescriptor)projectDescriptor).okToChange()) {
+        if (!projectDescriptor.okToChange()) {
             return;
         }
 	String seed = null;
@@ -115,7 +116,7 @@ public class AddExistingItemAction extends NodeAction {
 	if (seed == null) {
 	    seed = projectDescriptor.getBaseDir();
 	}
-	FileChooser fileChooser = new FileChooser(getString("SelectItem"), getString("Select"), FileChooser.FILES_ONLY, null, seed, false);
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(projectDescriptor.getBaseDirFileSystem(), getString("SelectItem"), getString("Select"), FileChooser.FILES_ONLY, null, seed, false);                
 	PathPanel pathPanel = new PathPanel();
 	fileChooser.setAccessory(pathPanel);
 	fileChooser.setMultiSelectionEnabled(true);
@@ -179,7 +180,7 @@ public class AddExistingItemAction extends NodeAction {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                         //return;
                     } else {
-                        Item item = new Item(itemPath);
+                        Item item = Item.createInFileSystem(((MakeConfigurationDescriptor) projectDescriptor).getBaseDirFileSystem(), itemPath);
                         folder.addItemAction(item);
                         items.add(item);
                         if (CndPathUtilitities.isPathAbsolute(itemPath)) {

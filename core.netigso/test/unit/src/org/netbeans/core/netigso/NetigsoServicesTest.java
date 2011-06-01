@@ -165,13 +165,13 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
     }
 
 
-    static Bundle findBundle(String cnb) throws Exception {
+    static Bundle findBundle(String bsn) throws Exception {
         Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
         assertEquals("The right class", Netigso.class, o.getClass());
         Netigso f = (Netigso)o;
         Bundle[] arr = f.getFramework().getBundleContext().getBundles();
         for (Bundle b : arr) {
-            if (cnb.equals(b.getSymbolicName())) {
+            if (bsn.equals(b.getSymbolicName())) {
                 return b;
             }
         }

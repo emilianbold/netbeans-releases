@@ -43,13 +43,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -73,7 +73,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
         this.hangInRepository = hangInRepository;
     }
 
-    public ProjectComponent(DataInput in) throws IOException {
+    public ProjectComponent(RepositoryDataInput in) throws IOException {
         key = KeyFactory.getDefaultFactory().readKey(in);
         hangInRepository = in.readBoolean();
         if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
@@ -100,7 +100,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
 //	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Putting %s by key %s\n", this, key);
 //	RepositoryUtils.put(key, this);
 //    }
-    public void write(DataOutput out) throws IOException {
+    public void write(RepositoryDataOutput out) throws IOException {
         if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
             System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);
         }
@@ -108,11 +108,11 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
         out.writeBoolean(hangInRepository);
     }
 
-    public static Key readKey(DataInput in) throws IOException {
+    public static Key readKey(RepositoryDataInput in) throws IOException {
         return KeyFactory.getDefaultFactory().readKey(in);
     }
 
-    public static void writeKey(Key key, DataOutput out) throws IOException {
+    public static void writeKey(Key key, RepositoryDataOutput out) throws IOException {
         KeyFactory.getDefaultFactory().writeKey(key, out);
     }
 

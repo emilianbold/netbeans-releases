@@ -51,14 +51,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetPreferences;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -69,9 +75,10 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
-/*package*/ abstract class CCCCompiler extends AbstractCompiler {
+public abstract class CCCCompiler extends AbstractCompiler {
 
     private static final String DEV_NULL = "/dev/null"; // NOI18N
+    private static final String NB69_VERSION_PATTERN = "/var/cache/cnd/remote-includes/"; // NOI18N
 
     private volatile Pair compilerDefinitions;
     private static File emptyFile = null;
@@ -82,6 +89,21 @@ import org.openide.util.Utilities;
 
     @Override
     public boolean setSystemIncludeDirectories(List<String> values) {
+        return copySystemIncludeDirectoriesImpl(values, true);
+    }
+    
+    protected final boolean copySystemIncludeDirectories(List<String> values) {
+        boolean res = copySystemIncludeDirectoriesImpl(values, false);
+        if (res) {
+            if (values instanceof CompilerDefinition) {
+                compilerDefinitions.systemIncludeDirectoriesList.userAddedDefinitions.clear();
+                compilerDefinitions.systemIncludeDirectoriesList.userAddedDefinitions.addAll(((CompilerDefinition)values).userAddedDefinitions);
+            }
+        }
+        return res;
+    }
+    
+    private boolean copySystemIncludeDirectoriesImpl(List<String> values, boolean normalize) {
         assert values != null;
         if (compilerDefinitions == null) {
             compilerDefinitions = new Pair();
@@ -89,12 +111,15 @@ import org.openide.util.Utilities;
         if (values.equals(compilerDefinitions.systemIncludeDirectoriesList)) {
             return false;
         }
-        List<String> systemIncludeDirectoriesList = new ArrayList<String>(values);
-        normalizePaths(systemIncludeDirectoriesList);
+        CompilerDefinition systemIncludeDirectoriesList = new CompilerDefinition(values);
+        if (normalize) {
+            normalizePaths(systemIncludeDirectoriesList);
+        }
+        systemIncludeDirectoriesList.userAddedDefinitions.addAll(compilerDefinitions.systemIncludeDirectoriesList.userAddedDefinitions);
         compilerDefinitions.systemIncludeDirectoriesList = systemIncludeDirectoriesList;
         return true;
     }
-
+    
     @Override
     public boolean setSystemPreprocessorSymbols(List<String> values) {
         assert values != null;
@@ -104,8 +129,21 @@ import org.openide.util.Utilities;
         if (values.equals(compilerDefinitions.systemPreprocessorSymbolsList)) {
             return false;
         }
-        compilerDefinitions.systemPreprocessorSymbolsList = new ArrayList<String>(values);
+        CompilerDefinition systemPreprocessorSymbolsList = new CompilerDefinition(values);
+        systemPreprocessorSymbolsList.userAddedDefinitions.addAll(compilerDefinitions.systemPreprocessorSymbolsList.userAddedDefinitions);
+        compilerDefinitions.systemPreprocessorSymbolsList = systemPreprocessorSymbolsList;
         return true;
+    }
+    
+    protected final boolean copySystemPreprocessorSymbols(List<String> values) {
+        boolean res = setSystemPreprocessorSymbols(values);
+        if (res) {
+            if (values instanceof CompilerDefinition) {
+                compilerDefinitions.systemPreprocessorSymbolsList.userAddedDefinitions.clear();
+                compilerDefinitions.systemPreprocessorSymbolsList.userAddedDefinitions.addAll(((CompilerDefinition)values).userAddedDefinitions);
+            }
+        }
+        return res;
     }
 
     @Override
@@ -146,15 +184,36 @@ import org.openide.util.Utilities;
         }
     }
 
+    
     @Override
     public void loadSettings(Preferences prefs, String prefix) {
+        String version = prefs.get(CompilerSetPreferences.VERSION_KEY, "1.0"); // NOI18N
         List<String> includeDirList = new ArrayList<String>();
+        List<Integer> userAddedInclude = new ArrayList<Integer>();
         String includeDirPrefix = prefix + ".systemIncludes"; // NOI18N
         int includeDirCount = prefs.getInt(includeDirPrefix + ".count", 0); // NOI18N
         for (int i = 0; i < includeDirCount; ++i) {
             String includeDir = prefs.get(includeDirPrefix + '.' + i, null); // NOI18N
             if (includeDir != null) {
+                if ("1.1".equals(version)) { // NOI18N
+                    if (Utilities.isWindows()) {
+                        includeDir = includeDir.replace('\\', '/'); // NOI18N
+                    }
+                    int start = includeDir.indexOf(NB69_VERSION_PATTERN);
+                    if (start > 0) {
+                        includeDir = includeDir.substring(start+NB69_VERSION_PATTERN.length());
+                        int index = includeDir.indexOf('/'); // NOI18N
+                        if (index > 0) {
+                            includeDir = includeDir.substring(index);
+                        }
+                    }
+                    
+                }
                 includeDirList.add(includeDir);
+                String added = prefs.get(includeDirPrefix + ".useradded." + i, null); // NOI18N
+                if ("true".equals(added)) { // NOI18N
+                    userAddedInclude.add(includeDirList.size()-1);
+                }
             }
         }
         if (includeDirList.isEmpty()) {
@@ -164,15 +223,25 @@ import org.openide.util.Utilities;
                 includeDirList.addAll(oldIncludeDirList);
             }
         }
-        setSystemIncludeDirectories(includeDirList);
+        copySystemIncludeDirectories(includeDirList);
+        if (!userAddedInclude.isEmpty()) {
+            for(Integer i : userAddedInclude) {
+                compilerDefinitions.systemIncludeDirectoriesList.setUserAdded(true, i);
+            }
+        }
 
         List<String> preprocSymbolList = new ArrayList<String>();
+        List<Integer> userAddedpreprocSymbol = new ArrayList<Integer>();
         String preprocSymbolPrefix = prefix + ".systemMacros"; // NOI18N
         int preprocSymbolCount = prefs.getInt(preprocSymbolPrefix + ".count", 0); // NOI18N
         for (int i = 0; i < preprocSymbolCount; ++i) {
             String preprocSymbol = prefs.get(preprocSymbolPrefix + '.' + i, null); // NOI18N
             if (preprocSymbol != null) {
                 preprocSymbolList.add(preprocSymbol);
+                String added = prefs.get(preprocSymbolPrefix + ".useradded." + i, null); // NOI18N
+                if ("true".equals(added)) { // NOI18N
+                    userAddedpreprocSymbol.add(preprocSymbolList.size()-1);
+                }
             }
         }
         if (preprocSymbolList.isEmpty()) {
@@ -182,7 +251,12 @@ import org.openide.util.Utilities;
                 preprocSymbolList.addAll(oldPreprocSymbolList);
             }
         }
-        setSystemPreprocessorSymbols(preprocSymbolList);
+        copySystemPreprocessorSymbols(preprocSymbolList);
+        if (!userAddedpreprocSymbol.isEmpty()) {
+            for(Integer i : userAddedpreprocSymbol) {
+                compilerDefinitions.systemPreprocessorSymbolsList.setUserAdded(true, i);
+            }
+        }
     }
 
     @Override
@@ -192,6 +266,9 @@ import org.openide.util.Utilities;
         prefs.putInt(includeDirPrefix + ".count", includeDirList.size()); // NOI18N
         for (int i = 0; i < includeDirList.size(); ++i) {
             prefs.put(includeDirPrefix + '.' + i, includeDirList.get(i)); // NOI18N
+            if (compilerDefinitions.systemIncludeDirectoriesList.isUserAdded(i)) {
+                prefs.put(includeDirPrefix + ".useradded." + i, "true"); // NOI18N
+            }
         }
 
         List<String> preprocSymbolList = getSystemPreprocessorSymbols();
@@ -199,6 +276,9 @@ import org.openide.util.Utilities;
         prefs.putInt(preprocSymbolPrefix + ".count", preprocSymbolList.size()); // NOI18N
         for (int i = 0; i < preprocSymbolList.size(); ++i) {
             prefs.put(preprocSymbolPrefix + '.' + i, preprocSymbolList.get(i)); // NOI18N
+            if (compilerDefinitions.systemPreprocessorSymbolsList.isUserAdded(i)) {
+                prefs.put(preprocSymbolPrefix + ".useradded." + i, "true"); // NOI18N
+            }
         }
     }
 
@@ -353,11 +433,62 @@ import org.openide.util.Utilities;
     }
 
     protected static final class Pair {
-        public List<String> systemIncludeDirectoriesList;
-        public List<String> systemPreprocessorSymbolsList;
+        public CompilerDefinition systemIncludeDirectoriesList;
+        public CompilerDefinition systemPreprocessorSymbolsList;
         public Pair(){
-            systemIncludeDirectoriesList = new ArrayList<String>(0);
-            systemPreprocessorSymbolsList = new ArrayList<String>(0);
+            systemIncludeDirectoriesList = new CompilerDefinition(0);
+            systemPreprocessorSymbolsList = new CompilerDefinition(0);
+        }
+    }
+    
+    public static final class CompilerDefinition extends ArrayList<String> {
+        private List<Integer> userAddedDefinitions = new ArrayList<Integer>(0);
+        
+        public CompilerDefinition() {
+            super();
+        }
+        
+        public CompilerDefinition(int size) {
+            super(size);
+        }
+        
+        public CompilerDefinition(Collection<String> c) {
+            super(c);
+        }
+        
+        public boolean isUserAdded(int i) {
+            return userAddedDefinitions.contains(i);
+        }
+        
+        public void setUserAdded(boolean isUserAddes, int i) {
+            if (isUserAddes) {
+                if (!userAddedDefinitions.contains(i)) {
+                    userAddedDefinitions.add(i);
+                }
+            } else {
+                if (userAddedDefinitions.contains(i)) {
+                    userAddedDefinitions.remove(Integer.valueOf(i));
+                }
+            }
+        }
+
+        public void sort() {
+            Set<String> set = new HashSet<String>();
+            for(Integer i : userAddedDefinitions) {
+                if (i < size()) {
+                    set.add(get(i));
+                }
+            }
+            Collections.sort(this, new Comparator<String>() {
+                @Override
+                public int compare(String s1, String s2) {
+                    return s1.compareToIgnoreCase(s2);
+                }
+            });
+            userAddedDefinitions.clear();
+            for(String s : set) {
+                userAddedDefinitions.add(indexOf(s));
+            }
         }
     }
 }

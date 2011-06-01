@@ -49,6 +49,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
 import org.netbeans.modules.cnd.remote.fs.CndFileUtilTestCase;
+import org.netbeans.modules.cnd.remote.full.FullRemoteBuildTestCase;
 import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
@@ -92,6 +93,9 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
            RemoteBuildUpdatesDownloadTestCase.class,
            RfsRemoteControllerDeathTestCase.class,
            RemoteCodeModelTestCase.class,
+           RemoteBuildRequiredProjectsTestCase.class,
+           RemoteBuildLinksTestCase.class,
+           FullRemoteBuildTestCase.class,
            CndFileUtilTestCase.class
        );
    }

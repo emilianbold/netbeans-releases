@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -52,18 +51,24 @@ import org.openide.filesystems.FileSystem;
 public abstract class SupportAPIAccessor {
     private static SupportAPIAccessor INSTANCE;
 
-    public static synchronized SupportAPIAccessor get() {
-        if (INSTANCE == null) {
-            Class<?> c = IncludeDirEntry.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                // ignore
+    public static SupportAPIAccessor get() {
+        SupportAPIAccessor out = INSTANCE;
+        if (out == null) {
+            synchronized (SupportAPIAccessor.class) {
+                if (INSTANCE == null) {
+                    Class<?> c = IncludeDirEntry.class;
+                    try {
+                        Class.forName(c.getName(), true, c.getClassLoader());
+                    } catch (ClassNotFoundException e) {
+                        // ignore
+                    }
+                }
+                out = INSTANCE;
             }
         }
 
         assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
-        return INSTANCE;
+        return out;
     }
 
     /**

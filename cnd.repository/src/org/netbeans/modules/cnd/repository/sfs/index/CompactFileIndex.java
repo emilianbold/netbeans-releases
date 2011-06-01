@@ -44,13 +44,13 @@
 
 package org.netbeans.modules.cnd.repository.sfs.index;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.repository.util.LongHashMap;
@@ -82,7 +82,7 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
     public CompactFileIndex () {
     }
     
-    public CompactFileIndex (final DataInput input ) throws IOException {
+    public CompactFileIndex (final RepositoryDataInput input ) throws IOException {
         
         assert input != null;
         
@@ -94,6 +94,7 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
         }
     }
     
+    @Override
     public int size() {
         try {
             lock.readLock().lock();
@@ -103,6 +104,7 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
         }
     }
 
+    @Override
     public Collection<Key> keySet() {
         try {
             lock.readLock().lock();
@@ -112,10 +114,12 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
         }
     }
     
+    @Override
     public Iterator<Key> getKeySetIterator() {
         return keySet().iterator();
     }
     
+    @Override
     public int remove(final Key key) {
         long data = LongHashMap.NO_VALUE;
         try {
@@ -127,6 +131,7 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
         return (data == LongHashMap.NO_VALUE) ? 0 : convertToSize(data);
     }
 
+    @Override
     public int put(final Key key, final long offset, final int size) {
         long data = LongHashMap.NO_VALUE;
         try {
@@ -148,23 +153,25 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
 	return data;
     }
     
-    private static final int convertToSize(final long data) {
+    private static int convertToSize(final long data) {
 	final int size = (int) (data >>> shift);
 	return size;
     }
 
-    private static final long convertToOffset(final long data) {
+    private static long convertToOffset(final long data) {
 	final long offset = data & mask;
 	return offset;
     }
     
 
+    @Override
     public ChunkInfo get(final Key key) {
 	final long entry = map.get(key);
 	return (entry == LongHashMap.NO_VALUE) ? null : new LongChunkInfo(entry);
     }
 
-    public void write(final DataOutput output) throws IOException {
+    @Override
+    public void write(final RepositoryDataOutput output) throws IOException {
         final Collection<LongHashMap.Entry<Key>> collection = map.entrySet();
         output.writeInt(collection.size());
         for(LongHashMap.Entry<Key> entry : collection) {
@@ -180,14 +187,17 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
 	    this.entry = entry;
 	}
 	
+        @Override
 	public int getSize() {
 	    return convertToSize(entry);
 	}
 	
+        @Override
 	public long getOffset() {
 	    return convertToOffset(entry);
 	}
 	
+        @Override
 	public int compareTo(final Object o) {
 	    if (o instanceof ChunkInfo) {
 		return (this.getOffset()  < ((ChunkInfo) o).getOffset()) ? -1 : 1;
@@ -195,6 +205,7 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
 	    return 1;
 	}
 	
+        @Override
 	public void setOffset(final long offset) {
 	    entry = convertToLongData(offset, getSize());
 	}
@@ -207,7 +218,8 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
 	    return f.toString();
 	}
 
-        public void write(final DataOutput output) throws IOException {
+        @Override
+        public void write(final RepositoryDataOutput output) throws IOException {
             output.writeLong(entry);
         }
     }

@@ -452,6 +452,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.startsWith(System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
             return false;
         }
+        if (file.startsWith("/usr/jdk/packages/javax.help-")) {
+            // ignore javahelp location on solaris
+            return false;
+        }
         if (file.startsWith(System.getProperty("netbeans.home") + File.separator + "lib")) {
             return false;
         }

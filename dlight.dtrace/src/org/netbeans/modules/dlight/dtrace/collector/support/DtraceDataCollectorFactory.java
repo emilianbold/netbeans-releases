@@ -43,14 +43,15 @@
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;;
+import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
 /**
- *
+ * Factory that created DtraceDataCollector based on provided by active tool(s)
+ * DTDCConfiguration(s).
  */
 @ServiceProviders({
     @ServiceProvider(service = DataCollectorFactory.class),

@@ -59,36 +59,38 @@ import org.openide.util.lookup.ServiceProvider;
 public class HudsonProviderImpl extends ProjectHudsonProvider {
 
     private static final String HUDSON_SYSTEM = "hudson"; // NOI18N
-
-    static boolean TEST;
+    private static final String JENKINS_SYSTEM = "jenkins"; // NOI18N
 
     private FileObject pom(Project p) {
-        if (!TEST && p.getLookup().lookup(NbMavenProject.class) == null) {
+        if (p.getLookup().lookup(NbMavenProject.class) == null) {
             return null;
         }
         return p.getProjectDirectory().getFileObject("pom.xml"); // NOI18N
     }
 
-    public Association findAssociation(Project p) {
+    public @Override Association findAssociation(Project p) {
         //reading needs to be done from resolved model..
         NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
         if (prj != null) {
             org.apache.maven.model.CiManagement cim = prj.getMavenProject().getCiManagement();
-            if (cim != null && HUDSON_SYSTEM.equalsIgnoreCase(cim.getSystem())) {
-                return Association.fromString(cim.getUrl());
+            if (cim != null) {
+                String system = cim.getSystem();
+                if (HUDSON_SYSTEM.equalsIgnoreCase(system) || JENKINS_SYSTEM.equalsIgnoreCase(system)) {
+                    return Association.fromString(cim.getUrl());
+                }
             }
             // could listen to NbMavenProject.PROP_PROJECT if change firing is supported
         }
         return null;
     }
 
-    public boolean recordAssociation(Project p, final Association a) {
+    public @Override boolean recordAssociation(Project p, final Association a) {
         FileObject pom = pom(p);
         if (pom == null) {
             return false;
         }
         Utilities.performPOMModelOperations(pom, Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
+            public @Override void performOperation(POMModel model) {
                 CiManagement cim;
                 if (a != null) {
                     cim = model.getFactory().createCiManagement();

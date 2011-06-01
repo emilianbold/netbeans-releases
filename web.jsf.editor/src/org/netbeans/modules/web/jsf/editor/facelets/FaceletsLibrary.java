@@ -40,342 +40,186 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Collection;
-import org.netbeans.modules.web.jsfapi.api.Library;
-import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
-import org.netbeans.modules.web.jsfapi.api.Attribute;
-import org.netbeans.modules.web.jsfapi.api.Tag;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import org.netbeans.modules.web.jsfapi.api.LibraryType;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
-public abstract class FaceletsLibrary implements Library {
+/**
+ * Represents a facelets library defined by the facelets library VDL descriptor (.taglib.xml) file.
+ * The descriptor must declare the library namespace.
+ * 
+ * The library may contain both class or composite components
+ * 
+ * @author marekfukala
+ */
+public class FaceletsLibrary extends AbstractFaceletsLibrary {
 
-    protected FaceletsLibrarySupport support;
-    private String namespace;
+    /** 
+     * The namespace declared in the facelets library descriptor
+     */
+    private final String declaredNamespace;
+    
+    private final Map<String, NamedComponent> components = new HashMap<String, NamedComponent>();
+    private LibraryDescriptor libraryDescriptor, faceletsLibraryDescriptor;
+    private final String defaultPrefix;
+    private final URL libraryDescriptorSource;
 
-    public FaceletsLibrary(FaceletsLibrarySupport support, String namespace) {
-        this.namespace = namespace;
-        this.support = support;
+    public FaceletsLibrary(FaceletsLibrarySupport support, String namespace, URL libraryDescriptorSourceURL) {
+        super(support);
+        declaredNamespace = namespace;
+        libraryDescriptorSource = libraryDescriptorSourceURL;
+
+        defaultPrefix = generateDefaultPrefix();
     }
-
+    
+    protected synchronized LibraryDescriptor getFaceletsLibraryDescriptor() throws LibraryDescriptorException {
+        if(faceletsLibraryDescriptor == null) {
+            FileObject libraryDescriptorSourceFile = URLMapper.findFileObject(libraryDescriptorSource);
+            faceletsLibraryDescriptor = FaceletsLibraryDescriptor.create(libraryDescriptorSourceFile);
+        }
+        return faceletsLibraryDescriptor;
+    }
+    
     @Override
-    public abstract Collection<? extends NamedComponent> getComponents();
-
-    public abstract URL getLibraryDescriptorSource();
-
-    public abstract LibraryDescriptor getLibraryDescriptor();
+    public Map<String, ? extends NamedComponent> getComponentsMap() {
+        return components;
+    }
 
     @Override
     public String getNamespace() {
-        return namespace;
+        return declaredNamespace;
     }
 
-    //linear search, do we call this often?
     @Override
-    public NamedComponent getComponent(String componentName) {
-        for(NamedComponent comp : getComponents()) {
-            if(comp.getName().equals(componentName)) {
-                return comp;
-            }
-        }
+    public URL getLibraryDescriptorSource() {
+        return libraryDescriptorSource;
+    }
+
+    @Override
+    public LibraryType getType() {
+        return LibraryType.CLASS;
+    }
+
+    @Override
+    public String getDefaultNamespace() {
         return null;
     }
 
-    //since the web-facelettaglibrary_2_0.xsd schema doesn't define any library default prefixes as the TLDs do,
-    //we need to define them manually
     @Override
     public String getDefaultPrefix() {
-        return DefaultFaceletLibraries.getLibraryDefaultPrefix(getNamespace());
+        //non standard library will use a prefix generated from the library namespace
+        String superdefaultPrefix = super.getDefaultPrefix();
+        return superdefaultPrefix != null ? superdefaultPrefix : defaultPrefix;
     }
+    
 
     @Override
-    public String getDisplayName() {
-        String displayName = DefaultFaceletLibraries.getLibraryDisplayName(getNamespace());
-        return displayName != null ? displayName : getNamespace();
+    public synchronized LibraryDescriptor getLibraryDescriptor() {
+        if(libraryDescriptor == null) {
+            try {
+                //create a merged library descriptor from facelets VDL descriptor and the JSP taglib descriptor
+                //the reason for this is that often the facelets descriptor doesn't declare the components metadata but the
+                //jsp tag library descriptor does
+                libraryDescriptor = new TldProxyLibraryDescriptor(getFaceletsLibraryDescriptor(), support.getJsfSupport().getIndex());
+            } catch (LibraryDescriptorException ex) {
+                //error in parsing the descriptors
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return libraryDescriptor;
     }
 
-    @Override
-    public String toString() {
-        return "FaceletsLibrary(namespace=" + getNamespace() +
-                ", default prefix= " + getDefaultPrefix() +
-                ", descriptor= " + getLibraryDescriptor(); //NOI18N
+    public void putConverter(String name, String id) {
+        components.put(name, new Converter(name, id, null));
     }
 
-
-
-     @Override
-    public boolean equals(Object obj) {
-         if(!(obj instanceof FaceletsLibrary)) {
-             return false;
-         }
-         FaceletsLibrary other = (FaceletsLibrary)obj;
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        if ((this.getNamespace() == null) ? (other.getNamespace() != null) : !this.getNamespace().equals(other.getNamespace())) {
-            return false;
-        }
-        return true;
+    public void putConverter(String name, String id, Class handlerClass) {
+        components.put(name, new Converter(name, id, handlerClass));
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + (this.namespace != null ? this.namespace.hashCode() : 0);
-        return hash;
+    public void putValidator(String name, String id) {
+        components.put(name, new Validator(name, id, null));
     }
 
-    public class NamedComponent implements LibraryComponent {
-
-        protected String name;
-
-        protected NamedComponent(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public Tag getTag() {
-            return getLibraryDescriptor().getTags().get(getName());
-        }
-
-        public FaceletsLibrary getLibrary() {
-            return FaceletsLibrary.this;
-        }
-
-        @Override
-        public String[][] getDescription() {
-            return new String[][]{{"name", getName()}}; //NOI18N
-        }
-
-        protected String[][] merge(String[][] first, String[][] second) {
-            String[][] merged = new String[first.length + second.length][];
-            System.arraycopy(first, 0, merged, 0, first.length);
-            System.arraycopy(second, 0, merged, first.length, second.length);
-            return merged;
-        }
-
-
+    public void putValidator(String name, String id, Class handlerClass) {
+        components.put(name, new Validator(name, id, handlerClass));
     }
 
-    public class BaseComponent extends NamedComponent {
-
-        protected String id;
-        protected Class handlerClass;
-
-        private BaseComponent(String name, String id, Class handlerClass) {
-            super(name);
-            this.id = id;
-            this.handlerClass = handlerClass;
-        }
-
-        public Class getHandlerClass() {
-            return handlerClass;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        @Override
-        public String[][] getDescription() {
-            String[][] myDescr = new String[][]{{"id", getId()}, //NOI18N
-                                  {"handler class", getHandlerClass() == null ? "N/A" : getHandlerClass().getName()}}; //NOI18N
-            return merge(super.getDescription(), myDescr);
-        }
-
-
+    public void putBehavior(String name, String id) {
+        components.put(name, new Behavior(name, id, null));
     }
 
-    public class Converter extends BaseComponent {
-
-        protected Converter(String name, String id, Class handlerClass) {
-            super(name, id, handlerClass);
-        }
-
-        @Override
-        public String[][] getDescription() {
-               String[][] myDescr = new String[][]{{"type", "converter"}}; //NOI18N
-            return merge(super.getDescription(), myDescr);
-        }
-
-
+    public void putBehavior(String name, String id, Class handlerClass) {
+        components.put(name, new Behavior(name, id, handlerClass));
     }
 
-    public class Validator extends BaseComponent {
+    public void putTagHandler(String name, Class type) {
+        components.put(name, new TagHandler(name, type));
+    }
 
-        protected Validator(String name, String id, Class handlerClass) {
-            super(name, id, handlerClass);
+    public void putComponent(String name, String componentType,
+            String rendererType) {
+        components.put(name, new Component(name, componentType, rendererType, null));
+    }
+
+    public void putComponent(String name, String componentType,
+            String rendererType, Class handlerClass) {
+        components.put(name, new Component(name, componentType, rendererType, handlerClass));
+    }
+
+    public void putUserTag(String name, URL source) {
+        components.put(name, new UserTag(name, source));
+    }
+
+    public void putFunction(String name, Method method) {
+        components.put(name, new Function(name, method));
+    }
+
+    public NamedComponent createNamedComponent(String name) {
+        return new NamedComponent(name);
+    }
+
+    public Function createFunction(String name, Method method) {
+        return new Function(name, method);
+    }
+
+    private String generateDefaultPrefix() {
+        //generate a default prefix from the namespace
+        String ns = getNamespace();
+        final String HTTP_PREFIX = "http://"; //NOI18N
+        if(ns.startsWith(HTTP_PREFIX)) {
+            ns = ns.substring(HTTP_PREFIX.length());
+        }
+        StringTokenizer st = new StringTokenizer(ns, "/.");
+        List<String> tokens = new LinkedList<String>();
+        while(st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if(token.length() > 0) {
+                tokens.add(token);
+            }
+        }
+        if(tokens.isEmpty()) {
+            //shoult not happen for normal URLs
+            return "lib"; //NOI18N
         }
 
-        @Override
-        public String[][] getDescription() {
-               String[][] myDescr = new String[][]{{"type", "validator"}}; //NOI18N
-            return merge(super.getDescription(), myDescr);
+        if(tokens.size() == 1) {
+            return tokens.iterator().next();
+        } else {
+            StringBuilder buf = new StringBuilder();
+            for(String token : tokens) {
+                buf.append(token.charAt(0));
+            }
+            return buf.toString();
         }
     }
 
-    public class Behavior extends BaseComponent {
 
-        protected Behavior(String name, String id, Class handlerClass) {
-            super(name, id, handlerClass);
-        }
-
-        @Override
-        public String[][] getDescription() {
-               String[][] myDescr = new String[][]{{"type", "behavior"}}; //NOI18N
-            return merge(super.getDescription(), myDescr);
-        }
-    }
-
-    public class TagHandler extends NamedComponent {
-
-        protected Class type;
-
-        protected TagHandler(String name, Class type) {
-            super(name);
-            this.type = type;
-        }
-
-        public Class getType() {
-            return type;
-        }
-
-        @Override
-        public String[][] getDescription() {
-               String[][] myDescr = new String[][]{{"type", "tag handler"}, //NOI18N
-               {"class type", getType() == null ? "N/A" : getType().getName()}}; //NOI18N
-            return merge(super.getDescription(), myDescr); //NOI18N
-        }
-
-
-    }
-
-    public class Component extends NamedComponent {
-
-        protected String componentType;
-        protected String rendererType;
-        protected Class handlerClass;
-
-        protected Component(String name, String componentType, String rendererType, Class handlerClass) {
-            super(name);
-            this.componentType = componentType;
-            this.rendererType = rendererType;
-            this.handlerClass = handlerClass;
-        }
-
-        public String getComponentType() {
-            return componentType;
-        }
-
-        public String getRendererType() {
-            return rendererType;
-        }
-
-        public Class getHandlerClass() {
-            return handlerClass;
-        }
-
-           @Override
-        public String[][] getDescription() {
-               String[][] myDescr = new String[][]{{"type", "component"}, //NOI18N
-               {"component type", getComponentType() == null ? "N/A" : getComponentType()}, //NOI18N
-               {"renderer type", getRendererType() == null ? "N/A" : getRendererType()}, //NOI18N
-               {"handler class", getHandlerClass() == null ? "N/A" : getHandlerClass().getName()}}; //NOI18N
-            return merge(super.getDescription(), myDescr);
-        }
-
-
-    }
-
-    public class UserTag extends NamedComponent {
-
-        protected URL source;
-
-        protected UserTag(String name, URL source) {
-            super(name);
-            this.source = source;
-        }
-
-        public URL getUrl() {
-            return source;
-        }
-
-        @Override
-        public String[][] getDescription() {
-               String[][] myDescr = new String[][]{{"type", "user tag"}, //NOI18N
-               {"URL", getUrl() == null ? "N/A" : getUrl().toExternalForm()}}; //NOI18N
-            return merge(super.getDescription(), myDescr);
-        }
-
-
-    }
-
-    public class Function extends NamedComponent {
-
-        protected Method function;
-
-        protected Function(String name, Method function) {
-            super(name);
-            this.function = function;
-        }
-
-        public Method getFunction() {
-            return function;
-        }
-
-        @Override
-        public String[][] getDescription() {
-               String[][] myDescr = new String[][]{{"type", "function"}, //NOI18N
-               {"function name", getFunction() == null ? "N/A" : getFunction().toGenericString()}}; //NOI18N
-            return merge(super.getDescription(), myDescr);
-        }
-
-
-    }
-
-    private static final class ProxyTag implements Tag {
-
-        private Tag tag1, tag2;
-
-        public ProxyTag(Tag tag1, Tag tag2) {
-            this.tag1 = tag1;
-            this.tag2 = tag2;
-
-            assert tag1 != null;
-        }
-
-        @Override
-        public String getName() {
-            return tag1.getName() == null && tag2 != null ? tag2.getName() : tag1.getName();
-        }
-
-        @Override
-        public String getDescription() {
-            return tag1.getDescription() == null && tag2 != null ? tag2.getDescription() : tag1.getDescription();
-        }
-
-        @Override
-        public boolean hasNonGenenericAttributes() {
-            return !tag1.hasNonGenenericAttributes() && tag2 != null ? tag2.hasNonGenenericAttributes() : tag1.hasNonGenenericAttributes();
-        }
-
-        @Override
-        public Collection<Attribute> getAttributes() {
-            return !tag1.hasNonGenenericAttributes() && tag2 != null ? tag2.getAttributes() : tag1.getAttributes();
-        }
-
-        @Override
-        public Attribute getAttribute(String name) {
-            return tag1.getAttribute(name) == null && tag2 != null ? tag2.getAttribute(name) : tag1.getAttribute(name);
-        }
-
-        
-
-    }
+   
 }

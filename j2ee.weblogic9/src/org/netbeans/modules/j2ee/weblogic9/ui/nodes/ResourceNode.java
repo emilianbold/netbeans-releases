@@ -181,5 +181,4 @@ class ResourceNode extends AbstractItemNode {
     }
     
     private ResourceNodeType resourceType;
-    private String id;
 }

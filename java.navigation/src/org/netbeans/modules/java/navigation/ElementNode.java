@@ -77,6 +77,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.InstanceContent.Convertor;
 
 /** Node representing an Element
  *
@@ -92,7 +93,7 @@ public class ElementNode extends AbstractNode {
            
     /** Creates a new instance of TreeNode */
     public ElementNode( Description description ) {
-        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), description.treePathHandle==null ? null : prepareLookup(description));
+        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), prepareLookup(description));
         this.description = description;
         setDisplayName( description.name ); 
     }
@@ -285,44 +286,63 @@ public class ElementNode extends AbstractNode {
     private static Lookup prepareLookup(Description d) {
         InstanceContent ic = new InstanceContent();
 
-        ic.add(d.treePathHandle);
-        ic.add(d, new InstanceContent.Convertor<Description, FileObject>() {
-            public FileObject convert(Description d) {
-                return d.getFileObject();
-            }
-            public Class<? extends FileObject> type(Description obj) {
-                return FileObject.class;
-            }
-            public String id(Description obj) {
-                return "IL[" + obj.toString();
-            }
-            public String displayName(Description obj) {
-                return id(obj);
-            }
-        });
-        ic.add(d,new InstanceContent.Convertor<Description, DataObject>(){
-            public DataObject convert(Description d) {
-                try {
-                    final FileObject fo = d.getFileObject();
-                    return fo == null ? null : DataObject.find(fo);
-                } catch (DataObjectNotFoundException ex) {
-                    return null;
-                }
-            }
-            public Class<? extends DataObject> type(Description obj) {
-                return DataObject.class;
-            }
-            public String id(Description obj) {
-                return "IL[" + obj.toString();
-            }
-            public String displayName(Description obj) {
-                return id(obj);
-            }
-        });
+        ic.add(d, ConvertDescription2TreePathHandle);
+        ic.add(d, ConvertDescription2FileObject);
+        ic.add(d, ConvertDescription2DataObject);
 
         return new AbstractLookup(ic);
     }
     
+    private static final Convertor<Description, TreePathHandle> ConvertDescription2TreePathHandle = new InstanceContent.Convertor<Description, TreePathHandle>() {
+        @Override public TreePathHandle convert(Description obj) {
+            return TreePathHandle.from(obj.elementHandle, obj.cpInfo);
+        }
+        @Override public Class<? extends TreePathHandle> type(Description obj) {
+            return TreePathHandle.class;
+        }
+        @Override public String id(Description obj) {
+            return "IL[" + obj.toString();
+        }
+        @Override public String displayName(Description obj) {
+            return id(obj);
+        }
+    };
+
+    private static final Convertor<Description, FileObject> ConvertDescription2FileObject = new InstanceContent.Convertor<Description, FileObject>() {
+        public FileObject convert(Description d) {
+            return d.getFileObject();
+        }
+        public Class<? extends FileObject> type(Description obj) {
+            return FileObject.class;
+        }
+        public String id(Description obj) {
+            return "IL[" + obj.toString();
+        }
+        public String displayName(Description obj) {
+            return id(obj);
+        }
+    };
+
+    private static final Convertor<Description, DataObject> ConvertDescription2DataObject = new InstanceContent.Convertor<Description, DataObject>(){
+        public DataObject convert(Description d) {
+            try {
+                final FileObject fo = d.getFileObject();
+                return fo == null ? null : DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                return null;
+            }
+        }
+        public Class<? extends DataObject> type(Description obj) {
+            return DataObject.class;
+        }
+        public String id(Description obj) {
+            return "IL[" + obj.toString();
+        }
+        public String displayName(Description obj) {
+            return id(obj);
+        }
+    };
+
     private static final class ElementChilren extends Children.Keys<Description> {
             
         public ElementChilren(Collection<Description> descriptions, ClassMemberFilters filters ) {
@@ -356,7 +376,6 @@ public class ElementNode extends AbstractNode {
         
         final String name;
         final ElementHandle<? extends Element> elementHandle;
-        final TreePathHandle treePathHandle;
         final ElementKind kind;
         Set<Modifier> modifiers;        
         Collection<Description> subs; 
@@ -369,7 +388,6 @@ public class ElementNode extends AbstractNode {
             this.ui = ui;
             this.name = null;
             this.elementHandle = null;
-            this.treePathHandle = null;
             this.kind = null;
             this.isInherited = false;
         }
@@ -378,14 +396,12 @@ public class ElementNode extends AbstractNode {
                     String name,
                     ElementHandle<? extends Element> elementHandle,
                     ElementKind kind,
-                    TreePathHandle tpHandle,
                     boolean inherited ) {
             this.ui = ui;
             this.name = name;
             this.elementHandle = elementHandle;
             this.kind = kind;
             this.isInherited = inherited;
-            this.treePathHandle = tpHandle;
         }
 
         public FileObject getFileObject() {
@@ -414,12 +430,12 @@ public class ElementNode extends AbstractNode {
                 return false;
             }
             
-            if ( !name.equals(d.name) ) {
+            if (this.name != d.name && (this.name == null || !this.name.equals(d.name))) {
                 // System.out.println("- name");
                 return false;
             }
-            
-            if ( !this.elementHandle.signatureEquals(d.elementHandle) ) {
+
+            if (this.elementHandle != d.elementHandle && (this.elementHandle == null || !this.elementHandle.equals(d.elementHandle))) {
                 return false;
             }
             

@@ -179,10 +179,10 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         return service.getServiceName();
     }
 
-    @Override
+    /*@Override
     public String getShortDescription() {
         return getWsdlURL();
-    }
+    }*/
 
     private static final String WAITING_BADGE = "org/netbeans/modules/maven/jaxws/resources/waiting.png"; // NOI18N
     private static final String ERROR_BADGE = "org/netbeans/modules/maven/jaxws/resources/error-badge.gif"; //NOI18N
@@ -464,11 +464,12 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     }
     
     void setServiceUrl() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        new RequestProcessor(JaxWsNode.class).post(new Runnable() {
 
             @Override
             public void run() {
-                JaxWsNode.this.setValue("wsdl-url", getWsdlURL());
+                JaxWsNode.this.setValue("wsdl-url", getWsdlURL());      // NOI18N
+                fireShortDescriptionChange();
             }
         });        
     }

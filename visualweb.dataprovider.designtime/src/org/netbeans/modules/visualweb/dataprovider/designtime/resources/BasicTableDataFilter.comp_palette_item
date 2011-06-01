@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<palette_item version="1.0">
-  <component classname="com.sun.data.provider.impl.BasicTableDataFilter" type="visual" />
-  <description localizing-bundle="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"
-               display-name-key="NAME_org-netbeans-modules-visualweb-dataprovider-designtime-BasicTableDataFilter"
-               tooltip-key="HINT_org-netbeans-modules-visualweb-dataprovider-designtime-BasicTableDataFilter" />
-</palette_item> 

@@ -53,8 +53,6 @@ import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.ui.project.ImportAction;
-import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -82,8 +80,13 @@ import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
 import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.subversion.ui.export.ExportAction;
+import org.netbeans.modules.subversion.ui.lock.LockAction;
+import org.netbeans.modules.subversion.ui.lock.UnlockAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -108,12 +111,13 @@ public class Annotator {
 
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
 
-    public static String ANNOTATION_REVISION    = "revision";
-    public static String ANNOTATION_STATUS      = "status";
-    public static String ANNOTATION_FOLDER      = "folder";
-    public static String ANNOTATION_MIME_TYPE   = "mime_type";
+    public static final String ANNOTATION_REVISION    = "revision";
+    public static final String ANNOTATION_STATUS      = "status";
+    public static final String ANNOTATION_LOCK        = "lock";
+    public static final String ANNOTATION_FOLDER      = "folder";
+    public static final String ANNOTATION_MIME_TYPE   = "mime_type";
 
-    public static String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
+    public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
 
     private final FileStatusCache cache;
     private MessageFormat format;
@@ -138,10 +142,10 @@ public class Annotator {
             if (!SvnUtils.isAnnotationFormatValid(string)) {
                 Subversion.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
                 string = org.openide.util.NbBundle.getMessage(Annotator.class, "Annotator.defaultFormat"); // NOI18N
-                mimeTypeFlag = string.contains("{3}");
+                mimeTypeFlag = string.contains("{4}");
             }
             format = new MessageFormat(string);
-            emptyFormat = format.format(new String[] {"", "", "", ""} , new StringBuffer(), null).toString().trim();
+            emptyFormat = format.format(new String[] {"", "", "", "", ""} , new StringBuffer(), null).toString().trim();
         }
         cache.getLabelsCache().setMimeTypeFlag(mimeTypeFlag); // mime labels enabled
     }
@@ -169,20 +173,22 @@ public class Annotator {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
+                String lockString = getLockString(info.getStatus());
+                String lockStringAnnPart = (lockString.isEmpty() ? "" : (lockString + "; "));
                 String sticky = cache.getLabelsCache().getLabelInfo(file, false).getStickyString();
                 if (status == FileInformation.STATUS_VERSIONED_UPTODATE && "".equals(sticky)) { //NOI18N
-                    textAnnotation = "";  // NOI18N
+                    textAnnotation = lockString;  // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                    textAnnotation = " [" + sticky + "]"; // NOI18N
+                    textAnnotation = " [" + lockStringAnnPart + sticky + "]"; // NOI18N
                 } else if ("".equals(sticky)) {                         //NOI18N
                     String statusText = info.getShortStatusText();
                     if(!statusText.equals("")) {
-                        textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+                        textAnnotation = " [" + lockStringAnnPart + info.getShortStatusText() + "]"; // NOI18N
                     } else {
-                        textAnnotation = "";
+                        textAnnotation = lockString;
                     }
                 } else {
-                    textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
+                    textAnnotation = " [" + info.getShortStatusText() + "; " + lockStringAnnPart + sticky + "]"; // NOI18N
                 }
             }
         } else {
@@ -241,6 +247,7 @@ public class Annotator {
         if (status != FileInformation.STATUS_VERSIONED_UPTODATE) {
             statusString = info.getShortStatusText();
         }
+        String lockString = getLockString(status);
 
         FileStatusCache.FileLabelCache.FileLabelInfo labelInfo;
         labelInfo = cache.getLabelsCache().getLabelInfo(file, mimeTypeFlag);
@@ -252,6 +259,7 @@ public class Annotator {
             revisionString,
             statusString,
             stickyString,
+            lockString,
             binaryString
         };
 
@@ -406,8 +414,13 @@ public class Annotator {
     public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         List<Action> actions = new ArrayList<Action>(20);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            actions.add(SystemAction.get(CheckoutAction.class));
-            actions.add(SystemAction.get(ImportAction.class));
+            Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance").getAttribute("instanceCreate");
+            if(a != null) actions.add(a);
+            a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+            if(a instanceof ContextAwareAction) {
+                a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+            }            
+            if(a != null) actions.add(a);
             actions.add(SystemAction.get(RelocateAction.class));
             actions.add(null);
             actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
@@ -432,6 +445,14 @@ public class Annotator {
             actions.add(SystemAction.get(RevertModificationsAction.class));
             actions.add(SystemAction.get(ResolveConflictsAction.class));
             actions.add(SystemAction.get(IgnoreAction.class));
+            SystemAction lockAction = SystemAction.get(LockAction.class);
+            if (lockAction.isEnabled()) {
+                actions.add(lockAction);
+            }
+            SystemAction unlockAction = SystemAction.get(UnlockAction.class);
+            if ((unlockAction = SystemAction.get(UnlockAction.class)).isEnabled()) {
+                actions.add(unlockAction);
+            }
             actions.add(null);
             actions.add(SystemAction.get(CleanupAction.class));
             actions.add(SystemAction.get(VersioningInfoAction.class));
@@ -442,7 +463,11 @@ public class Annotator {
             Lookup context = ctx.getElements();
             boolean noneVersioned = isNothingVersioned(files);
             if (noneVersioned) {
-                actions.add(SystemActionBridge.createAction(SystemAction.get(ImportAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Import"), context));
+                Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+                if(a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                }            
+                if(a != null) actions.add(a);
             } else {
                 Node[] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
                 boolean onlyFolders = onlyFolders(files);
@@ -480,6 +505,16 @@ public class Annotator {
                         ((ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class)).getActionStatus(nodes) == ExcludeFromCommitAction.INCLUDING
                         ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
                         : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
+                }
+                if (!onlyFolders) {
+                    SystemActionBridge lockAction = SystemActionBridge.createAction(SystemAction.get(LockAction.class), loc.getString("CTL_PopupMenuItem_Lock"), context);
+                    if (lockAction.isEnabled()) {
+                        actions.add(lockAction);
+                    }
+                    SystemActionBridge unlockAction = SystemActionBridge.createAction(SystemAction.get(UnlockAction.class), loc.getString("CTL_PopupMenuItem_Unlock"), context);
+                    if (unlockAction.isEnabled()) {
+                        actions.add(unlockAction);
+                    }
                 }
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(
@@ -678,5 +713,15 @@ public class Annotator {
 
     private AnnotationColorProvider getAnnotationProvider() {
         return AnnotationColorProvider.getInstance();
+    }
+
+    private String getLockString (int status) {
+        String lockString = ""; //NOI18N
+        if ((status & FileInformation.STATUS_LOCKED) != 0) {
+            lockString = "K"; //NOI18N
+        } else if ((status & FileInformation.STATUS_LOCKED_REMOTELY) != 0) {
+            lockString = "O"; //NOI18N
+        }
+        return lockString;
     }
 }

@@ -436,9 +436,10 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             // FIXUP: error message
             return;
         }
-        lastSelectedPath = fileChooser.getSelectedFile().getAbsolutePath();
-        FileObject fo = /*XXX:fullRemote*/ CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(lastSelectedPath));
-        data.add(new FolderEntry(fo, CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
+        File file = fileChooser.getSelectedFile();
+        lastSelectedPath = file.getAbsolutePath();
+        FileObject fo = CndFileUtils.toFileObject(file);
+        data.add(new FolderEntry(fo, CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath()))); //TODO:fullRemote use base dir file object
         refresh();
     }
 

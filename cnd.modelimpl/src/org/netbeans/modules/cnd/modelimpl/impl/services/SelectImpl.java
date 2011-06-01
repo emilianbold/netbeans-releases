@@ -162,31 +162,32 @@ public class SelectImpl implements CsmSelectProvider {
             if (implName.caseSensitive && implName.match) {
                 // can be optimized
                 res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+                StringBuilder from = new StringBuilder();
                 for(int i = 0; i < implKind.kinds.length; i++){
-                    String from;
+                    from.setLength(0);
                     if (namespace.isGlobal()) {
                         if (implKind.kinds[i] == CsmDeclaration.Kind.VARIABLE || 
                             implKind.kinds[i] == CsmDeclaration.Kind.VARIABLE_DEFINITION) {
-                            from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
-                                   OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
-                                   "::" + // NOI18N
-                                   implName.strPrefix;
+                            from.append(Utils.getCsmDeclarationKindkey(implKind.kinds[i]))
+                                .append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR)
+                                .append("::") // NOI18N
+                                .append(implName.strPrefix);
                         } else {
-                            from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
-                                   OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
-                                   implName.strPrefix;
+                            from.append(Utils.getCsmDeclarationKindkey(implKind.kinds[i]))
+                                .append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR)
+                                .append(implName.strPrefix);
                         }
                     } else {
-                        from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]) +
-                               OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
-                               namespace.getQualifiedName() +
-                               "::" + // NOI18N
-                               implName.strPrefix;
+                        from.append(Utils.getCsmDeclarationKindkey(implKind.kinds[i]))
+                            .append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR)
+                            .append(namespace.getQualifiedName())
+                            .append("::") // NOI18N
+                            .append(implName.strPrefix);
                     }
                     // possible suffix after name is ' ', '(', '<'.
                     // all chars are contained in the Portable Character Set.
                     // using next char for segment works for any encodins.
-                    res.addAll(namespace.findUidsRange(from, from+">")); // NOI18N
+                    res.addAll(namespace.findUidsRange(from.toString(), from.append('>').toString())); // NOI18N
                     //res.addAll(namespace.findUidsByPrefix(from));
                 }
                 if (implName.allowEmptyName) {

@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.netbeans.modules.masterfs.ProvidedExtensionsAccessor;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileObject;
 
@@ -68,6 +69,38 @@ import org.openide.filesystems.FileObject;
  */
 public class ProvidedExtensions implements InterceptionListener {
 
+    /**
+     * true if this instance should be called to determine a files canWrite value, otherwise false
+     */
+    private final boolean providesCanWrite;
+
+    /**
+     * Creates a new ProvidedExtensions. 
+     * 
+     * @param providesCanWrite true if this instance is meant to 
+     *        determine a files {@link #canWrite()} value, otherwise false. 
+     * @since 2.29
+     *          
+     */
+    public ProvidedExtensions(boolean providesCanWrite) {
+        this.providesCanWrite = providesCanWrite;
+        if(ProvidedExtensionsAccessor.IMPL == null) {
+            ProvidedExtensionsAccessor.IMPL = new ProvidedExtensionsAccessor() {
+                @Override
+                public boolean providesCanWrite(ProvidedExtensions pe) {
+                    return pe.providesCanWrite;
+                }
+            };
+        }     
+    }
+
+    /**
+     * Default constructor
+     */
+    public ProvidedExtensions() {
+        this(false);
+    }
+    
     /**
      * Return instance of {@link ProvidedExtensions.IOHandler}
      * that is responsible for copying the file or null.

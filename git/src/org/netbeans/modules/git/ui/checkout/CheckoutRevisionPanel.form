@@ -19,14 +19,14 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblError" alignment="0" pref="445" max="32767" attributes="0"/>
+                  <Component id="lblError" alignment="0" pref="446" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="21" pref="21" max="21" attributes="0"/>
                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="branchNameField" pref="315" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="revisionPickerDialog" alignment="0" pref="445" max="32767" attributes="0"/>
+                  <Component id="revisionPickerDialog" alignment="0" pref="446" max="32767" attributes="0"/>
                   <Component id="cbCheckoutAsNewBranch" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -40,7 +40,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="revisionPickerDialog" pref="185" max="32767" attributes="0"/>
+              <Component id="revisionPickerDialog" pref="200" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbCheckoutAsNewBranch" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -64,11 +64,9 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/git/ui/checkout/Bundle.properties" key="CheckoutRevisionPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>

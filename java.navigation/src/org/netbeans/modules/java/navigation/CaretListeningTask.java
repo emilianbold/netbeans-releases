@@ -44,19 +44,19 @@
 
 package org.netbeans.modules.java.navigation;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
@@ -65,6 +65,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * This task is called every time the caret position changes in a Java editor.
@@ -292,100 +293,58 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             return;
         }
         
-        Tree tree = compilationInfo.getTrees().getTree(element);
+        final TreePath treePath = compilationInfo.getTrees().getPath(element);
 
         if ( isCancelled()) {
             return;
         }
 
-        if ( tree != null ) {
-            String declaration = unicodeToUtf(tree.toString());
-            if (element.getKind() ==  ElementKind.CONSTRUCTOR) {
-                String constructorName = element.getEnclosingElement().getSimpleName().toString();
-                declaration = declaration.replaceAll(Pattern.quote("<init>"), Matcher.quoteReplacement(constructorName));
-            } else if (element.getKind() ==  ElementKind.METHOD) {
-                if (declaration != null) {
-                    ExecutableElement executableElement = (ExecutableElement) element;
-                    AnnotationValue annotationValue = executableElement.getDefaultValue();
-                    if (annotationValue != null) {
-                        int lastSemicolon = declaration.lastIndexOf(";"); // NOI18N
-                        if (lastSemicolon == -1) {
-							declaration += " default " + String.valueOf(annotationValue) + ";"; // NOI18N
-                        } else {
-                            declaration = declaration.substring(0, lastSemicolon) +
-							    " default " + String.valueOf(annotationValue) +  // NOI18N
-							    declaration.substring(lastSemicolon);
-                        }
-                    }
-                }
-            } else if ( element.getKind() == ElementKind.FIELD ) {
-                declaration = declaration + ";"; // NOI18N 
+        if ( treePath != null ) {
+            try {
+                final CompilationUnitTree cu = treePath.getCompilationUnit();
+                final CharSequence text = cu.getSourceFile().getCharContent(true);
+                final SourcePositions pos = compilationInfo.getTrees().getSourcePositions();
+                long startPos = pos.getStartPosition(treePath.getCompilationUnit(), treePath.getLeaf());
+                long endPos = pos.getEndPosition(treePath.getCompilationUnit(), treePath.getLeaf());
+                long shift = cu.getLineMap().getColumnNumber(startPos) - 1;
+                int tabSize = CodeStyle.getDefault(fileObject).getTabSize();
+                final CharSequence declaration = text.subSequence((int)startPos, (int)endPos);
+                setDeclaration(shift(declaration,(int)shift,tabSize));
+            } catch(IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
-            setDeclaration(declaration);
-            return;
         }
     }
-    
-    private String unicodeToUtf( String s ) {
-        
-        char buf[] = new char[s.length()];
-        s.getChars(0, s.length(), buf, 0);
-        
+
+    private String shift (final CharSequence content, int shift, int tabSize) {
         int j = 0;
-        for( int i = 0; i < buf.length; i++ ) {
-            
-            if (buf[i] == '\\' ) {                
-                i++;
-                char ch = buf[i];
-                if (ch == 'u') {
-                    do {
-                        i++; 
-                        ch = buf[i];
-                    } 
-                    while (ch == 'u');
-                    
-                    int limit = i + 3;
-                    if (limit < buf.length) {
-                        int d = digit(16, buf[i]);
-                        int code = d;
-                        while (i < limit && d >= 0) {
-                            i++; 
-                            ch = buf[i];
-                            d = digit(16, ch);
-                            code = (code << 4) + d;
-                        }
-                        if (d >= 0) {
-                            ch = (char)code;
-                            buf[j] = ch;
-                            j++;
-                            //unicodeConversionBp = bp;
-                            // return;
-                        }
+        boolean trim = true;
+        final StringBuilder result = new StringBuilder();
+        for (int i=0; i< content.length(); i++) {
+            char c = content.charAt(i);
+            if (trim) {
+                if (Character.isWhitespace(c)) {
+                    j+= c == '\t' ? tabSize : 1;    //NOI18N
+                    while (j>shift) {
+                        result.append(' ');         //NOI18N
+                        j--;
                     }
-                    // lexError(bp, "illegal.unicode.esc");
+                    if (j == shift) {
+                        trim = false;
+                    }
                 } else {
-                    i--;
-                    j++;
-                    // buf = '\\';
+                    result.append(c);
+                    trim = false;
+                }
+            } else {
+                result.append(c);
+                if (c == '\n') {        //NOI18N
+                    trim = true;
+                    j = 0;
                 }
             }
-            else {
-                buf[j] = buf[i];
-                j++;
-            }
-	}
-        
-        return new String( buf, 0, j);
-    }
-    
-     private int digit(int base, char ch) {
-	char c = ch;
-	int result = Character.digit(c, base);
-	if (result >= 0 && c > 0x7f) {
-	    // lexError(pos+1, "illegal.nonascii.digit");
-	    ch = "0123456789abcdef".charAt(result);
-	}
-	return result;
+        }
+        return result.toString();
     }
     
     private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) {

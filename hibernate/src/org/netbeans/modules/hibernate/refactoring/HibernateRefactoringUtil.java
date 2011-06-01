@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.hibernate.refactoring;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -719,6 +721,20 @@ public class HibernateRefactoringUtil {
             return true;
         } else {
             return false;
+        }
+    }
+    
+   static class ChangeTracker implements PropertyChangeListener{
+        private boolean changed;
+        public boolean isChanged (){
+            return changed;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            Object nV = evt.getNewValue();
+            Object oV = evt.getOldValue();
+            changed = changed || ((nV!=null && !nV.equals(oV)) || (nV==null && nV!=oV));
         }
     }
 }

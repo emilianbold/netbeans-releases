@@ -49,8 +49,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
-import javax.swing.ImageIcon;
-import org.openide.util.Utilities;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 
 /**
  * Open the mercurial view. It focuses recently opened
@@ -60,11 +62,19 @@ import org.openide.util.Utilities;
  *
  * @author Petr Kuzel
  */
+@ActionID(id = "org.netbeans.modules.mercurial.ui.status.OpenVersioningAction", category = "Mercurial")
+@ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
+@ActionReferences({
+   @ActionReference(path="Menu/Window/Versioning", position=400),
+   @ActionReference(path="OptionsDialog/Actions/Mercurial")
+})
 public class OpenVersioningAction extends ShowAllChangesAction {
 
+    static final String ICON_BASE = "org/netbeans/modules/mercurial/resources/icons/versioning-view.png";
+    
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
-        setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/mercurial/resources/icons/versioning-view.png", false)); // NOI18N
+        setIcon(ImageUtilities.loadImageIcon(ICON_BASE, false)); // NOI18N
     }
 
     public String getName() {

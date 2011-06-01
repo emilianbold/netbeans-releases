@@ -59,16 +59,16 @@ import org.netbeans.modules.j2ee.deployment.common.api.Version;
  * @author sherold
  */
 public class WLPluginPropertiesTest extends NbTestCase {
-    
+
     public WLPluginPropertiesTest(String testName) {
         super(testName);
     }
-   
+
     public void testGetServerVersion() throws Exception {
         File baseFolder = getWorkDir();
         File libFolder = new File(baseFolder, "server/lib");
         libFolder.mkdirs();
-        
+
         File file = new File(libFolder, "weblogic.jar");
         createJar(file, "Implementation-Version: 10.0.0.1");
         Version version = WLPluginProperties.getServerVersion(baseFolder);
@@ -76,15 +76,15 @@ public class WLPluginPropertiesTest extends NbTestCase {
         assertEquals(10, version.getMajor().intValue());
         assertEquals(1, version.getUpdate().intValue());
         assertTrue(file.delete());
-        
+
         file = new File(libFolder, "weblogic-webprofile-dev.jar");
         createJar(file, "Implementation-Version: 8.0.0");
         version = WLPluginProperties.getServerVersion(baseFolder);
         assertEquals("8.0.0", version.toString());
         assertEquals(8, version.getMajor().intValue());
-        assertNull(version.getUpdate());        
+        assertNull(version.getUpdate());
     }
-    
+
     public void testIsSupportedVersion() throws Exception {
         File baseFolder = getWorkDir();
         File libFolder = new File(baseFolder, "server/lib");
@@ -99,7 +99,7 @@ public class WLPluginPropertiesTest extends NbTestCase {
         createJar(file, "Missing-Implementation-Version: 10.0.0.0");
         assertFalse(WLPluginProperties.isSupportedVersion(WLPluginProperties.getServerVersion(baseFolder)));
     }
-    
+
     public void testIsWebProfile() throws Exception {
         File baseFolder = getWorkDir();
         File libFolder = new File(baseFolder, "server/lib");
@@ -111,45 +111,66 @@ public class WLPluginPropertiesTest extends NbTestCase {
         createJar(file, "Implementation-Title: Some OtherProfile");
         assertFalse(WLPluginProperties.isWebProfile(baseFolder));
         assertTrue(file.delete());
-        
+
         file = new File(libFolder, "weblogic-webprofile-dev.jar");
         createJar(file, "Implementation-Title: Some WebProfile");
         assertTrue(WLPluginProperties.isWebProfile(baseFolder));
         createJar(file, "Implementation-Title: Some OtherProfile");
-        assertFalse(WLPluginProperties.isWebProfile(baseFolder));        
+        assertFalse(WLPluginProperties.isWebProfile(baseFolder));
     }
-    
+
     public void testGetWeblogicJar() throws Exception {
         File baseFolder = getWorkDir();
         File libFolder = new File(baseFolder, "server/lib");
         libFolder.mkdirs();
-        
+
         File file = new File(libFolder, "weblogic.jar");
-        
+
         File wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
         assertNotNull(wlJar);
         assertEquals(file, wlJar);
-        
+
         createJar(file, "Implementation-Version: 9.0.0.0");
         wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
         assertNotNull(wlJar);
         assertEquals(file, wlJar);
-        
+
         File webFile = new File(libFolder, "weblogic-webprofile-dev.jar");
-        createJar(webFile, "Implementation-Version: 10.0.0.0"); 
+        createJar(webFile, "Implementation-Version: 10.0.0.0");
         wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
         assertNotNull(wlJar);
-        assertEquals(file, wlJar); 
-        
+        assertEquals(file, wlJar);
+
         assertTrue(file.delete());
         wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
         assertNotNull(wlJar);
         assertEquals(webFile, wlJar);
-        
+
         assertTrue(webFile.delete());
         wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
         assertNotNull(wlJar);
-        assertEquals(file, wlJar);        
+        assertEquals(file, wlJar);
+    }
+
+    public void testJvmVendor() {
+        assertEquals(WLPluginProperties.JvmVendor.SUN,
+                WLPluginProperties.JvmVendor.fromPropertiesString("Sun"));
+        assertEquals(WLPluginProperties.JvmVendor.ORACLE,
+                WLPluginProperties.JvmVendor.fromPropertiesString("Oracle"));
+        assertEquals(WLPluginProperties.JvmVendor.DEFAULT,
+                WLPluginProperties.JvmVendor.fromPropertiesString(""));
+        assertEquals(WLPluginProperties.JvmVendor.DEFAULT,
+                WLPluginProperties.JvmVendor.fromPropertiesString("  "));
+        assertEquals("something",
+                WLPluginProperties.JvmVendor.fromPropertiesString("something").toPropertiesString());
+
+        WLPluginProperties.JvmVendor vendor1 = WLPluginProperties.JvmVendor.fromPropertiesString("something1");
+        WLPluginProperties.JvmVendor vendor2 = WLPluginProperties.JvmVendor.fromPropertiesString("something2");
+        WLPluginProperties.JvmVendor vendor3 = WLPluginProperties.JvmVendor.fromPropertiesString("something1");
+
+        assertNotSame(vendor1, vendor2);
+        assertNotSame(vendor1, vendor3);
+        assertNotSame(vendor2, vendor3);
     }
 
     private void createJar(File file, String... manifestLines) throws Exception {
@@ -158,7 +179,7 @@ public class WLPluginPropertiesTest extends NbTestCase {
         for (String line : manifestLines) {
             stringBuilder.append(line).append("\n");
         }
-        
+
         InputStream is = new ByteArrayInputStream(stringBuilder.toString().getBytes("UTF-8"));
         try {
             new JarOutputStream(new FileOutputStream(file), new Manifest(is)).close();

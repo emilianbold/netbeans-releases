@@ -259,7 +259,10 @@ public final class WLStartServer extends StartServer {
         if (pingPath(host, port, timeout, "/console/login/LoginForm.jsp")) {
             return true;
         }
-        return pingPath(host, port, timeout, "/consoledwp");
+        // TODO this is somehow broken - we have to access consoledwp first,
+        // getting 404 - this cause console is then available under console
+        return pingPath(host, port, timeout, "/consoledwp")
+                || pingPath(host, port, timeout, "/console");
     }
 
     private static boolean pingPath(String host, int port, int timeout, String path) {

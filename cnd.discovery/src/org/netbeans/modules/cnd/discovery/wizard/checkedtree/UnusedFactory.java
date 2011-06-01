@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -58,8 +59,8 @@ public class UnusedFactory {
     private UnusedFactory() {
     }
 
-    public static AbstractRoot createRoot(Set<String> set){
-        AbstractRoot root = makeRoot(set);
+    public static AbstractRoot createRoot(Set<String> set, FileSystem fileStystem){
+        AbstractRoot root = makeRoot(set, fileStystem);
         consolidateRoot(root);
         return root;
     }
@@ -76,8 +77,8 @@ public class UnusedFactory {
         return files;
     }
     
-    private static AbstractRoot makeRoot(Set<String> set){
-        AbstractRoot root = new Root("",""); //NOI18N
+    private static AbstractRoot makeRoot(Set<String> set, FileSystem fileStystem){
+        AbstractRoot root = new Root("", "", fileStystem); //NOI18N
         for(String path : set){
             ((Root)root).addChild(path);
         }

@@ -100,7 +100,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     private Map<UserConfigurableRule,ModifiedPreferences> changes;
     
-    private static Map<HintSeverity,Integer> severity2index;
+    private static final Map<HintSeverity,Integer> severity2index;
     
     private static final String DESCRIPTION_HEADER = 
         "<html><head>" + // NOI18N
@@ -115,7 +115,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         severity2index = new HashMap<HintSeverity, Integer>();
         severity2index.put( HintSeverity.ERROR, 0  );
         severity2index.put( HintSeverity.WARNING, 1  );
-        severity2index.put( HintSeverity.CURRENT_LINE_WARNING, 2  );        
+        severity2index.put( HintSeverity.CURRENT_LINE_WARNING, 2  );
+        severity2index.put( HintSeverity.INFO, 3  );
     }
     
     private JTree errorTree;

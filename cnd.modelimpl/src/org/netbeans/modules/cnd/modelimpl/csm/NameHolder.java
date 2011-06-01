@@ -374,9 +374,11 @@ public class NameHolder {
                         end = OffsetableBase.getEndOffset(operator);
                         StringBuilder sb = new StringBuilder(operator.getText());
                         sb.append(' ');
-                        for( AST next = operator.getNextSibling(); next != null; next = next.getNextSibling() ) {
+                        boolean first = true;
+                        for( AST next = operator.getNextSibling(); next != null && (first || next.getType() != CPPTokenTypes.LESSTHAN) ; next = next.getNextSibling() ) {
                             sb.append(next.getText());
                             end = OffsetableBase.getEndOffset(next);
+                            first = false;
                         }
                         return sb.toString();
                     } else {

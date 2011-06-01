@@ -62,6 +62,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorAccessor;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
@@ -73,10 +74,12 @@ import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 public class Legend extends JPanel {
     private final List<TimeSeriesDescriptor> graphs;
     private final List<DetailDescriptor> details;
+    private final TimeSeriesIndicatorConfiguration configuration;
 
-    public Legend(List<TimeSeriesDescriptor> graphs, List<DetailDescriptor> details) {
+    public Legend(List<TimeSeriesDescriptor> graphs, List<DetailDescriptor> details, TimeSeriesIndicatorConfiguration configuration) {
         this.graphs = graphs;
         this.details = details;
+        this.configuration = configuration;
         init(null);
     }
 
@@ -100,8 +103,9 @@ public class Legend extends JPanel {
 
         setBackground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_BGCOLOR));
         setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
+        TimeSeriesIndicatorConfigurationAccessor configurationAccessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();        
         Dimension size = new Dimension(
-                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_WIDTH),
+                configurationAccessor.getLegendWidth(configuration) == 0? DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_WIDTH): configurationAccessor.getLegendWidth(configuration),
                 DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_HEIGHT));
         setSize(size);
         setMinimumSize(size);

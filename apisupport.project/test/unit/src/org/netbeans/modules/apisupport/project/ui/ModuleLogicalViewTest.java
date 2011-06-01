@@ -110,8 +110,8 @@ public class ModuleLogicalViewTest extends TestBase {
         lvp.findPath(root, f); // ping
         waitForNodesUpdate();
         
-        Node n = lvp.findPath(root, f);
         DataObject d = DataObject.find(f);
+        Node n = lvp.findPath(root, f);
         assertEquals("same result for DataObject as for FileObject", n, lvp.findPath(root, d));
         if (n != null) {
             assertEquals("right DataObject", d, n.getLookup().lookup(DataObject.class));

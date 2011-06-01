@@ -94,7 +94,7 @@ public class SlownessReporterTest extends NbTestCase {
     @Test
     public void testGetLatestAction() {
         SlownessReporter reporter = new SlownessReporter();
-        String latestAction = reporter.getLatestAction(10L);
+        String latestAction = reporter.getLatestAction(10L, System.currentTimeMillis());
         assertEquals("redo", latestAction);
     }
 
@@ -102,7 +102,7 @@ public class SlownessReporterTest extends NbTestCase {
     public void testIgnoreOldActions() throws InterruptedException {
         SlownessReporter reporter = new SlownessReporter();
         Thread.sleep(SlownessReporter.LATEST_ACTION_LIMIT * 2);
-        String latestAction = reporter.getLatestAction(10L);
+        String latestAction = reporter.getLatestAction(10L, System.currentTimeMillis());
         assertNull(latestAction);
     }
 
@@ -110,7 +110,7 @@ public class SlownessReporterTest extends NbTestCase {
     public void testGetIdeStartup() {
         SlownessReporter reporter = new SlownessReporter();
         Logger.getLogger("org.netbeans.ui.test").log(new LogRecord(Level.CONFIG, Installer.IDE_STARTUP));
-        String latestAction = reporter.getLatestAction(100L);
+        String latestAction = reporter.getLatestAction(100L, System.currentTimeMillis());
         assertNotNull(latestAction);
         assertEquals(NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP"), latestAction);
     }

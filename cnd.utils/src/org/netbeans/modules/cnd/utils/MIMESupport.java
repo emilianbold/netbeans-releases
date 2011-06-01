@@ -53,9 +53,15 @@ import org.openide.util.Parameters;
  */
 public final class MIMESupport {
 
-    private static final String[] SOURCE_MIME_TYPES = new String[]{
+    private static final String[] SOURCE_MIME_TYPES = new String[] {
         MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.C_MIME_TYPE, MIMENames.HEADER_MIME_TYPE,
         MIMENames.FORTRAN_MIME_TYPE, MIMENames.ASM_MIME_TYPE,};
+
+    private static final String[] BINARY_MIME_TYPES = new String[] {
+        MIMENames.EXE_MIME_TYPE, MIMENames.ELF_EXE_MIME_TYPE,
+        MIMENames.ELF_CORE_MIME_TYPE, MIMENames.ELF_SHOBJ_MIME_TYPE,
+        MIMENames.ELF_STOBJ_MIME_TYPE, MIMENames.ELF_GENERIC_MIME_TYPE,
+        MIMENames.ELF_OBJECT_MIME_TYPE};
 
     private MIMESupport() {
         // no instantiation of utility class
@@ -66,7 +72,7 @@ public final class MIMESupport {
      * @param file file object to check
      * @return one of mime types or "content/unknown"
      */
-    public static String getFileMIMEType(FileObject fo) {
+    public static String getSourceFileMIMEType(FileObject fo) {
         Parameters.notNull("file object", fo); // NOI18N
         // try fast check
         String mime = FileUtil.getMIMEType(fo, SOURCE_MIME_TYPES);
@@ -82,14 +88,14 @@ public final class MIMESupport {
      * @param file file to check
      * @return one of mime types or "content/unknown"
      */
-    public static String getFileMIMEType(File file) {
+    public static String getSourceFileMIMEType(File file) {
         FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeFile(file));
         String mime;
         if (fo != null && fo.isValid()) {
             // try fast check
-            mime = getFileMIMEType(fo);
+            mime = getSourceFileMIMEType(fo);
         } else {
-            mime = getKnownMIMETypeByExtension(file.getPath());
+            mime = getKnownSourceFileMIMETypeByExtension(file.getPath());
         }
         return mime != null ? mime : "content/unknown"; // NOI18N
     }
@@ -102,7 +108,7 @@ public final class MIMESupport {
      * @param filePathOrName path or name to check
      * @return one of cnd source mime types (@see MIMENames.SOURCE_MIME_TYPES) or null
      */
-    public static String getKnownMIMETypeByExtension(String filePathOrName) {
+    public static String getKnownSourceFileMIMETypeByExtension(String filePathOrName) {
         String fileName = CndPathUtilitities.getBaseName(filePathOrName);
         // check by known file extension
         String ext = FileUtil.getExtension(fileName);
@@ -113,4 +119,59 @@ public final class MIMESupport {
         }
         return null;
     }
+
+
+    /**
+     * tries to detect mime type of file checking cnd known types first
+     * @param file file object to check
+     * @return one of mime types or "content/unknown"
+     */
+    public static String getBinaryFileMIMEType(FileObject fo) {
+        Parameters.notNull("file object", fo); // NOI18N
+        // try fast check
+        String mime = FileUtil.getMIMEType(fo, BINARY_MIME_TYPES);
+        if (mime == null) {
+            // now full check
+            mime = FileUtil.getMIMEType(fo);
+        }
+        return mime;
+    }
+
+    /**
+     * tries to detect mime type of file checking cnd known types first
+     * @param file file to check
+     * @return one of mime types or "content/unknown"
+     */
+    public static String getBinaryFileMIMEType(File file) {
+        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeFile(file));
+        String mime;
+        if (fo != null && fo.isValid()) {
+            // try fast check
+            mime = getBinaryFileMIMEType(fo);
+        } else {
+            mime = getKnownBinaryFileMIMETypeByExtension(file.getPath());
+        }
+        return mime != null ? mime : "content/unknown"; // NOI18N
+    }
+
+    /**
+     * tries to detect mime type by file path extension only
+     * more precise (but possibly slower) method is @see getSourceMIMEType(File file).
+     * This method can not detect header files without extensions, while
+     * @see getSourceMIMEType(File file) can
+     * @param filePathOrName path or name to check
+     * @return one of cnd source mime types (@see MIMENames.SOURCE_MIME_TYPES) or null
+     */
+    public static String getKnownBinaryFileMIMETypeByExtension(String filePathOrName) {
+        String fileName = CndPathUtilitities.getBaseName(filePathOrName);
+        // check by known file extension
+        String ext = FileUtil.getExtension(fileName);
+        for (String mimeType : BINARY_MIME_TYPES) {
+            if (MIMEExtensions.isRegistered(mimeType, ext)) {
+                return mimeType;
+            }
+        }
+        return null;
+    }
+
 }

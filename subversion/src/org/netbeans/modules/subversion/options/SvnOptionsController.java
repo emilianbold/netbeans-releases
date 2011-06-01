@@ -108,6 +108,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
         panel.annotationTextField.setText(SvnModuleConfig.getDefault().getAnnotationFormat());
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault().getAutoOpenOutput());
+        panel.cbGetRemoteLocks.setSelected(SvnModuleConfig.getDefault().isGetRemoteLocks());
+        panel.cbAutoLockFiles.setSelected(SvnModuleConfig.getDefault().isAutoLock());
         annotationSettings.update();
         if (repository != null) {
             repository.refreshUrlHistory();
@@ -126,6 +128,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
         SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());                
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
         SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
+        SvnModuleConfig.getDefault().setGetRemoteLocks(panel.cbGetRemoteLocks.isSelected());
+        SvnModuleConfig.getDefault().setAutoLock(panel.cbAutoLockFiles.isSelected());
         SvnModuleConfig.getDefault().setExcludeNewFiles(panel.excludeNewFiles.isSelected());
         SvnModuleConfig.getDefault().setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
 
@@ -151,6 +155,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     public boolean isChanged() {        
         return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) || 
                !panel.annotationTextField.getText().equals(SvnModuleConfig.getDefault().getAnnotationFormat()) || 
+               panel.cbGetRemoteLocks.isSelected() != SvnModuleConfig.getDefault().isGetRemoteLocks() || 
                (repository != null && repository.isChanged()) || 
                annotationSettings.isChanged();
     }

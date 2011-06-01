@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -345,25 +346,31 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
+                            Element e = description.getElementHandle().resolve(copy);
+                            TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
-                            ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
-                            if( generateEquals ) {
-                                for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
-                                    equalsElements.add((VariableElement)elementHandle.resolve(copy));
+                            if (path == null) {
+                                String message = NbBundle.getMessage(EqualsHashCodeGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
+                                org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                            } else {
+                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
+                                ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
+                                if( generateEquals ) {
+                                    for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
+                                        equalsElements.add((VariableElement)elementHandle.resolve(copy));
+                                    }
+                                ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
+                                if( generateHashCode ) {
+                                    for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
+                                        hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
                                 }
-                            ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
-                            if( generateHashCode ) {
-                                for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
-                                    hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
+                                generateEqualsAndHashCode(
+                                    copy, path, 
+                                    generateEquals ? equalsElements : null, 
+                                    generateHashCode ? hashCodeElements : null, 
+                                    idx
+                                );
                             }
-                            generateEqualsAndHashCode(
-                                copy, path, 
-                                generateEquals ? equalsElements : null, 
-                                generateHashCode ? hashCodeElements : null, 
-                                idx
-                            );
                         }
                     });
                     GeneratorUtils.guardedCommit(component, mr);
@@ -582,7 +589,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "this.{VAR} != other.{VAR}");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "! java.util.Arrays.equals(this.{VAR}, other.{VAR}");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "! java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "equals"), "! java.util.Objects.equals(this.{VAR}, other.{VAR})");
+        EQUALS_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "equals", SourceVersion.RELEASE_7), "! java.util.Objects.equals(this.{VAR}, other.{VAR})");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
 
@@ -596,7 +603,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
         HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "java.util.Arrays.hashCode(this.{VAR}");
         HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "java.util.Arrays.deepHashCode(this.{VAR}");
-        HASH_CODE_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "hashCode"), "java.util.Objects.hashCode(this.{VAR})");
+        HASH_CODE_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "hashCode", SourceVersion.RELEASE_7), "java.util.Objects.hashCode(this.{VAR})");
         HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
         HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
     }
@@ -626,13 +633,21 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     private static final class MethodExistsAcceptor implements Acceptor {
         private final String fqn;
         private final String methodName;
+        private final SourceVersion minimalVersion;
 
         public MethodExistsAcceptor(String fqn, String methodName) {
+            this(fqn, methodName, null);
+        }
+
+        public MethodExistsAcceptor(String fqn, String methodName, SourceVersion minimalVersion) {
             this.fqn = fqn;
             this.methodName = methodName;
+            this.minimalVersion = minimalVersion;
         }
 
         public boolean accept(CompilationInfo info, TypeMirror tm) {
+            if (minimalVersion != null && minimalVersion.compareTo(info.getSourceVersion()) > 0) return false;
+            
             TypeElement clazz = info.getElements().getTypeElement(fqn);
 
             if (clazz == null) {

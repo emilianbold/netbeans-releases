@@ -48,14 +48,13 @@ import java.io.FileOutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupportTest;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RefreshSlowTest;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.TestUtils;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManagerTest;
 import org.openide.filesystems.FileChangeAdapter;
@@ -65,6 +64,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 public class SlowRefreshSuspendableTest extends NbTestCase {
+    static {
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
+    }
     private Logger LOG;
     private FileObject testFolder;
 
@@ -117,14 +119,14 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         assertGC("File Object can disappear", ref);
 
         class L extends FileChangeAdapter {
-            int cnt;
-            FileEvent event;
+            volatile int cnt;
+            volatile FileEvent event;
 
             @Override
             public void fileChanged(FileEvent fe) {
-                LOG.info("file change " + fe.getFile());
                 cnt++;
                 event = fe;
+                LOG.log(Level.INFO, "file change {0} cnt: {1}", new Object[]{fe.getFile(), cnt});
             }
         }
         L listener = new L();
@@ -140,15 +142,15 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
             fail("New modification time shall be at last 50ms after the original one: " + (file.lastModified() - lm));
         }
 
-        Object obj = RefreshSlowTest.findSlowRefresh(testFolder);
+        Object obj = TestUtils.findSlowRefresh(testFolder);
         assertNotNull("Refresh attribute found", obj);
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 
         Runnable r = (Runnable)obj;
         class AE extends ActionEvent implements Runnable {
             List<FileObject> files = new ArrayList<FileObject>();
-            boolean boosted;
-            boolean finished;
+            volatile boolean boosted;
+            volatile boolean finished;
             int goingIdle;
             
             public AE() {
@@ -223,11 +225,11 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         LOG.info("Starting refresh");
         // do the refresh
         r.run();
-        LOG.info("Refresh finished");
+        LOG.log(Level.INFO, "Refresh finished {0} cnt: {1}", new Object[]{counter.finished, listener.cnt});
 
         assertTrue("Background I/O access needs to stop before we finish our task", counter.finished);
 
-        assertEquals("Change notified", 1, listener.cnt);
+        assertTrue("At least one Change notified", 1 <= listener.cnt);
         assertEquals("Right file", file, FileUtil.toFile(listener.event.getFile()));
         assertEquals("Right source", file.getParentFile(), FileUtil.toFile((FileObject)listener.event.getSource()));
         if (counter.goingIdle == 0) {

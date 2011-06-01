@@ -46,6 +46,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
+import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 
 /**
@@ -66,6 +69,12 @@ public final class SharedStorageDLightSession implements SessionStateListener {
 
     public ServiceInfoDataStorage getServiceInfoStorage() {
         return DataStorageManager.getInstance().getServiceInfoDataStorageFor(storageUniqueKey);
+    }
+
+    public final void addIndicatorNotificationListener(IndicatorNotificationsListener l) {
+        for (DLightSession session : sessions){
+            session.addIndicatorNotificationListener(l);
+        }
     }
     //it has state
     //list of DLigthSessions

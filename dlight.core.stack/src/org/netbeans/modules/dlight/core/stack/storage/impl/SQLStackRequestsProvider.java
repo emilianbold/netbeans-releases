@@ -61,159 +61,225 @@ final class SQLStackRequestsProvider {
     private final SQLStatementsCache cache;
     private final MetricsCache metricsCache;
 
-    public SQLStackRequestsProvider(SQLStatementsCache cache, MetricsCache metricsCache) {
+    public SQLStackRequestsProvider(SQLStatementsCache cache) {
         this.cache = cache;
-        this.metricsCache = metricsCache;
+        metricsCache = new MetricsCache();
     }
 
-    public SQLRequest addSourceFileInfo(long id, CharSequence sourceFile) {
-        return new AddSourceFileInfo(id, sourceFile);
+    public SQLRequest addNode(long nodeID, long callerID, long funcID, long offset) {
+        return new AddNodeRequest(nodeID, callerID, funcID, offset);
     }
 
-    public AddNodeRequest addNode(Long nodeId, long callerId, long funcId, long offset, int lineNumber) {
-        return new AddNodeRequest(nodeId, callerId, funcId, offset, lineNumber);
+    SQLRequest updateNodeMetrics(long nodeID, long contextID, long bucket, long duration) {
+        metricsCache.updateNodeMetrics(nodeID, contextID, bucket, duration, false, true);
+        return new UpdateNodeMetricsRequest(nodeID, contextID, bucket);
     }
 
-    public AddFunctionRequest addFunction(Long funcId, String funcName, int source_file_index, int line_number) {
-        return new AddFunctionRequest(funcId, funcName, source_file_index, line_number);
+    SQLRequest updateFunctionMetrics(long funcID, long contextID, long bucket, long duration, boolean addInclusive, boolean addExclusive) {
+        metricsCache.updateFunctionMetrics(funcID, contextID, bucket, duration, addInclusive, addExclusive);
+        return new UpdateFuncMetricsRequest(funcID, contextID, bucket);
     }
 
-    public SQLRequest updateNodeMetrics(long id, long bucket) {
-        return new UpdateMetricsRequest(true, id, bucket);
+    SQLRequest addFunction(long funcID, CharSequence funcName) {
+        return new AddFunctionRequest(funcID, funcName);
     }
 
-    public SQLRequest updateFunctionMetrics(long id, long bucket) {
-        return new UpdateMetricsRequest(false, id, bucket);
+    SQLRequest addFile(Long fileID, CharSequence path) {
+        return new AddFileRequest(fileID, path);
     }
 
-    public class AddNodeRequest implements SQLRequest {
+    SQLRequest addSourceInfo(long nodeID, long contextID, long fileID, int line, int column, long fileOffset) {
+        return new AddSourceInfoRequest(nodeID, contextID, fileID, line, column, fileOffset);
+    }
 
-        public final long id;
+    SQLRequest addModule(Long moduleID, CharSequence module) {
+        return new AddModuleRequest(moduleID, module);
+    }
+
+    SQLRequest addModuleInfo(long nodeID, long contextID, long moduleID, long offsetInModule) {
+        return new AddModuleInfoRequest(nodeID, contextID, moduleID, offsetInModule);
+    }
+
+    private class AddSourceInfoRequest implements SQLRequest {
+
+        private final long nodeID;
+        private final long contextID;
+        private final long fileID;
+        private final int line;
+        private final int column;
+        private final long fileOffset;
+
+        private AddSourceInfoRequest(long nodeID, long contextID, long fileID, int line, int column, long fileOffset) {
+            this.nodeID = nodeID;
+            this.contextID = contextID;
+            this.fileID = fileID;
+            this.line = line;
+            this.column = column;
+            this.fileOffset = fileOffset;
+        }
+
+        @Override
+        public void execute() throws SQLException {
+            PreparedStatement stmt = cache.getPreparedStatement("insert into sourceinfo (node_id, context_id, file_id, fline, fcolumn, file_offset) values (?,?,?,?,?,?)"); // NOI18N
+            stmt.setLong(1, nodeID);
+            stmt.setLong(2, contextID);
+            stmt.setLong(3, fileID);
+            stmt.setInt(4, line);
+            stmt.setInt(5, column);
+            stmt.setLong(6, fileOffset);
+            stmt.executeUpdate();
+        }
+    }
+
+    private class AddModuleInfoRequest implements SQLRequest {
+
+        private final long nodeID;
+        private final long contextID;
+        private final long moduleID;
+        private final long offsetInModule;
+
+        private AddModuleInfoRequest(long nodeID, long contextID, long moduleID, long offsetInModule) {
+            this.nodeID = nodeID;
+            this.contextID = contextID;
+            this.moduleID = moduleID;
+            this.offsetInModule = offsetInModule;
+        }
+
+        @Override
+        public void execute() throws SQLException {
+            PreparedStatement stmt = cache.getPreparedStatement("insert into moduleinfo (node_id, context_id, module_id, module_offset) values (?,?,?,?)"); // NOI18N
+            stmt.setLong(1, nodeID);
+            stmt.setLong(2, contextID);
+            stmt.setLong(3, moduleID);
+            stmt.setLong(4, offsetInModule);
+            stmt.executeUpdate();
+        }
+    }
+
+    private class AddFileRequest implements SQLRequest {
+
+        private final Long fileID;
+        private final CharSequence path;
+
+        private AddFileRequest(Long fileID, CharSequence path) {
+            this.fileID = fileID;
+            this.path = path;
+        }
+
+        @Override
+        public void execute() throws SQLException {
+            PreparedStatement stmt = cache.getPreparedStatement("insert into sourcefiles (id, path) values (?, ?)"); // NOI18N
+            stmt.setLong(1, fileID);
+            stmt.setString(2, truncate(path).toString());
+            stmt.executeUpdate();
+        }
+    }
+
+    private class AddModuleRequest implements SQLRequest {
+
+        private final Long moduleID;
+        private final CharSequence module;
+
+        private AddModuleRequest(Long moduleID, CharSequence module) {
+            this.moduleID = moduleID;
+            this.module = module;
+        }
+
+        @Override
+        public void execute() throws SQLException {
+            PreparedStatement stmt = cache.getPreparedStatement("insert into modules (id, path) values (?, ?)"); // NOI18N
+            stmt.setLong(1, moduleID);
+            stmt.setString(2, truncate(module).toString());
+            stmt.executeUpdate();
+        }
+    }
+
+    private class AddNodeRequest implements SQLRequest {
+
+        public final long nodeID;
         public final long callerId;
-        public final long funcId;
+        public final long funcID;
         public final long offset;
-        public final int lineNumber;
 
-        public AddNodeRequest(long id, long callerId, long funcId, long offset, int lineNumber) {
-            this.id = id;
+        public AddNodeRequest(long nodeID, long callerId, long funcID, long offset) {
+            this.nodeID = nodeID;
             this.callerId = callerId;
-            this.funcId = funcId;
+            this.funcID = funcID;
             this.offset = offset;
-            this.lineNumber = lineNumber;
         }
 
         @Override
         public void execute() throws SQLException {
             PreparedStatement stmt = cache.getPreparedStatement(
-                    "INSERT INTO Node (node_id, caller_id, func_id, offset, " + // NOI18N
-                    "time_incl, time_excl, line_number) " + // NOI18N
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)"); // NOI18N
+                    "insert into StackNode (id, caller_id, func_id, offset) values (?, ?, ?, ?)"); // NOI18N
 
-            stmt.setLong(1, id);
+            stmt.setLong(1, nodeID);
             stmt.setLong(2, callerId);
-            stmt.setLong(3, funcId);
+            stmt.setLong(3, funcID);
             stmt.setLong(4, offset);
-            stmt.setInt(5, lineNumber);
-            stmt.setLong(5, 0);
-            stmt.setLong(6, 0);
-            stmt.setInt(7, lineNumber);
             stmt.executeUpdate();
         }
     }
 
-    public class AddFunctionRequest implements SQLRequest {
+    private class AddFunctionRequest implements SQLRequest {
 
-        public final long id;
+        public final long funcID;
         public final CharSequence name;
-        public final int sourceFileIndex;
-        public final int line_number;
 
-        public AddFunctionRequest(long id, CharSequence name, int sourceFileIndex, int line_number) {
-            this.id = id;
+        private AddFunctionRequest(long funcID, CharSequence name) {
+            this.funcID = funcID;
             this.name = name;
-            this.sourceFileIndex = sourceFileIndex;
-            this.line_number = line_number;
         }
 
         @Override
         public void execute() throws SQLException {
-            PreparedStatement stmt = cache.getPreparedStatement(
-                    "INSERT INTO Func " + // NOI18N
-                    "(func_id, func_name, func_source_file_id, line_number) " + // NOI18N
-                    "VALUES (?, ?, ?, ?)"); // NOI18N
-            stmt.setLong(1, id);
-            stmt.setString(2, truncateString(name.toString()));
-            stmt.setInt(3, sourceFileIndex);
-            stmt.setLong(4, line_number);
+            PreparedStatement stmt = cache.getPreparedStatement("insert into funcnames (id, fname) values (?, ?)"); // NOI18N
+            stmt.setLong(1, funcID);
+            stmt.setString(2, truncate(name).toString());
             stmt.executeUpdate();
         }
     }
 
-    public class AddSourceFileInfo implements SQLRequest {
+    private class UpdateNodeMetricsRequest implements SQLRequest {
 
-        public final long id;
-        public final CharSequence sourceFile;
+        private final long nodeID;
+        private final long contextID;
+        private final long bucket;
 
-        public AddSourceFileInfo(long id, CharSequence sourceFile) {
-            this.id = id;
-            this.sourceFile = sourceFile;
+        private UpdateNodeMetricsRequest(long nodeID, long contextID, long bucket) {
+            this.nodeID = nodeID;
+            this.contextID = contextID;
+            this.bucket = bucket;
         }
 
         @Override
         public void execute() throws SQLException {
-            PreparedStatement stmt = cache.getPreparedStatement(
-                    "INSERT INTO SourceFiles (source_file) VALUES ( ?)"); // NOI18N
-            stmt.setString(1, truncateString(sourceFile.toString()));
-            stmt.executeUpdate();
-        }
-    }
+            MetricsCache.Metrics metrics = metricsCache.getAndResetNodeMetrics(nodeID, contextID, bucket);
 
-    public class UpdateMetricsRequest implements SQLRequest {
-
-        public final boolean funcOrNode; // false => func, true => node
-        public final long objId;
-        public final long bucketId;
-
-        public UpdateMetricsRequest(boolean funcOrNode, long objId, long bucketId) {
-            this.funcOrNode = funcOrNode;
-            this.objId = objId;
-            this.bucketId = bucketId;
-        }
-
-        @Override
-        public void execute() throws SQLException {
-            if (funcOrNode) {
-                executeNode();
-            } else {
-                executeFunc();
-            }
-        }
-
-        private void executeFunc() throws SQLException {
-            MetricsCache.Metrics metrics = metricsCache.getAndResetFunctionMetrics(objId, bucketId);
-
-            if (metrics == null) {
+            if (metrics == null || (metrics.incl == 0 && metrics.excl == 0)) {
                 return;
             }
 
             PreparedStatement stmt = cache.getPreparedStatement(
-                    "SELECT func_id, bucket_id, time_incl, time_excl " + // NOI18N
-                    "FROM FuncMetricAggr " + // NOI18N
-                    "WHERE func_id = ? AND bucket_id = ? FOR UPDATE"); // NOI18N
-            stmt.setLong(1, objId);
-            stmt.setLong(2, bucketId);
+                    "select node_id, context_id, bucket, time_excl " + // NOI18N
+                    "from NodeMetrics " + // NOI18N
+                    "where node_id = ? and context_id = ? and bucket = ? for update"); // NOI18N
+
+            stmt.setLong(1, nodeID);
+            stmt.setLong(2, contextID);
+            stmt.setLong(3, bucket);
+
             ResultSet rs = stmt.executeQuery();
 
             try {
                 if (rs.next()) {
-                    rs.updateLong(3, rs.getLong(3) + metrics.incl);
                     rs.updateLong(4, rs.getLong(4) + metrics.excl);
                     rs.updateRow();
                 } else {
                     rs.moveToInsertRow();
-                    rs.updateLong(1, objId);
-                    rs.updateLong(2, bucketId);
-                    rs.updateLong(3, metrics.incl);
+                    rs.updateLong(1, nodeID);
+                    rs.updateLong(2, contextID);
+                    rs.updateLong(3, bucket);
                     rs.updateLong(4, metrics.excl);
                     rs.insertRow();
                 }
@@ -221,30 +287,64 @@ final class SQLStackRequestsProvider {
                 rs.close();
             }
         }
+    }
 
-        private void executeNode() throws SQLException {
-            MetricsCache.Metrics metrics = metricsCache.getAndResetNodeMetrics(objId, bucketId);
+    private class UpdateFuncMetricsRequest implements SQLRequest {
 
-            if (metrics == null) {
+        private final long funcID;
+        private final long contextID;
+        private final long bucket;
+
+        private UpdateFuncMetricsRequest(long funcID, long contextID, long bucket) {
+            this.funcID = funcID;
+            this.contextID = contextID;
+            this.bucket = bucket;
+        }
+
+        @Override
+        public void execute() throws SQLException {
+            MetricsCache.Metrics metrics = metricsCache.getAndResetFunctionMetrics(funcID, contextID, bucket);
+
+            if (metrics == null || (metrics.incl == 0 && metrics.excl == 0)) {
                 return;
             }
 
             PreparedStatement stmt = cache.getPreparedStatement(
-                    "UPDATE Node SET time_incl = time_incl + ?, " + // NOI18N
-                    "time_excl = time_excl + ? WHERE node_id = ?"); // NOI18N
-            stmt.setLong(1, metrics.incl);
-            stmt.setLong(2, metrics.excl);
-            stmt.setLong(3, objId);
-            stmt.executeUpdate();
+                    "select func_id, context_id, bucket, time_incl, time_excl " + // NOI18N
+                    "from FuncMetrics " + // NOI18N
+                    "where func_id = ? and context_id = ? and bucket = ? for update"); // NOI18N
 
+            stmt.setLong(1, funcID);
+            stmt.setLong(2, contextID);
+            stmt.setLong(3, bucket);
+
+            ResultSet rs = stmt.executeQuery();
+
+            try {
+                if (rs.next()) {
+                    rs.updateLong(4, rs.getLong(4) + metrics.incl);
+                    rs.updateLong(5, rs.getLong(5) + metrics.excl);
+                    rs.updateRow();
+                } else {
+                    rs.moveToInsertRow();
+                    rs.updateLong(1, funcID);
+                    rs.updateLong(2, contextID);
+                    rs.updateLong(3, bucket);
+                    rs.updateLong(4, metrics.incl);
+                    rs.updateLong(5, metrics.excl);
+                    rs.insertRow();
+                }
+            } finally {
+                rs.close();
+            }
         }
     }
 
-    private static String truncateString(String str) {
+    private static CharSequence truncate(CharSequence str) {
         if (str.length() <= MAX_STRING_LENGTH) {
             return str;
         } else {
-            return str.substring(0, MAX_STRING_LENGTH - 3) + "..."; // NOI18N
+            return str.subSequence(0, MAX_STRING_LENGTH - 3) + "..."; // NOI18N
         }
     }
 }

@@ -43,28 +43,23 @@
  */
 package org.netbeans.test.j2ee.wizard;
 
+import javax.swing.JComboBox;
 import org.netbeans.api.project.Project;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
  *
- * @author jungi
+ * @author jungi, Jiri Skrivanek
  */
 public class WizardUtils {
-    
-    public static final int MODULE_WAR = 0;
-    public static final int MODULE_EJB = 1;
-    public static final int MODULE_EAR = 2;
-    public static final int MODULE_CAR = 3;
-    
-    public static final int VERSION_1_4 = 0;
-    public static final int VERSION_5 = 1;
     
     /** Creates a new instance of WizardUtils */
     private WizardUtils() {
@@ -112,25 +107,20 @@ public class WizardUtils {
         op.setPackage(pkg);
         return op;
     }
-    
+
+    /** Finds Java EE Version combo box in wizard and sets it to requested version.
+     * @param op wizard operator
+     * @param version sub string of requested Java EE version
+     * @return same wizard operator instance
+     */
     public static NewJavaProjectNameLocationStepOperator setJ2eeSpecVersion(
-            NewJavaProjectNameLocationStepOperator op, int moduleType, String version) {
+            NewJavaProjectNameLocationStepOperator op, String version) {
         op.next();
-        JComboBoxOperator jcbo = new JComboBoxOperator(op, 1);
-        boolean found = false;
-        int i = 0;
-        for (; i < jcbo.getItemCount(); i++) {
-            Object o = jcbo.getItemAt(i);
-            if (o.toString().indexOf(version) > 0) {
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            jcbo.selectItem(i);
-        } else {
-            throw new IllegalArgumentException("Version: '" + version + "' was not found.");
-        }
+        // "Java EE Version"
+        String javaEEVersionLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_J2EESpecLevel_Label");
+        JLabelOperator lblJavaEEVersion = new JLabelOperator(op, javaEEVersionLabel);
+        JComboBoxOperator cboVersion = new JComboBoxOperator((JComboBox)lblJavaEEVersion.getLabelFor());
+        cboVersion.selectItem(version);
         return op;
     }
     

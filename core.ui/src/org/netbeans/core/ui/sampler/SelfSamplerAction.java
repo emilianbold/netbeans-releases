@@ -92,7 +92,6 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
     private static final String ACTION_NAME_START = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ActionNameStart");
     private static final String ACTION_NAME_STOP = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ActionNameStop");
 //    private static final String ACTION_DESCR = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ActionDescription");
-    private static final String THREAD_NAME = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_ThreadName");
     private static final String NOT_SUPPORTED = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_NotSupported");
     private static final String SAVE_MSG = NbBundle.getMessage(SelfSamplerAction.class, "SelfSamplerAction_SavedFile");
     private static final String DEBUG_ARG = "-Xdebug"; // NOI18N
@@ -128,7 +127,7 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
     public void actionPerformed(final ActionEvent e) {
         if (SamplesOutputStream.isSupported()) {
             Sampler c;
-            if (RUNNING.compareAndSet(null, c = new InternalSampler(THREAD_NAME))) {
+            if (RUNNING.compareAndSet(null, c = new InternalSampler("Self Sampler"))) { // NOI18N
                 putValue(Action.NAME, ACTION_NAME_STOP);
                 putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_STOP);
                 putValue ("iconBase", "org/netbeans/core/ui/sampler/selfSamplerRunning.png"); // NOI18N
@@ -238,8 +237,26 @@ public class SelfSamplerAction extends AbstractAction implements AWTEventListene
             File outFile = File.createTempFile("selfsampler", SamplesOutputStream.FILE_EXT); // NOI18N
             outFile = FileUtil.normalizeFile(outFile);
             writeToFile(outFile, arr);
+            
+            File gestures = new File(new File(new File(
+                new File(System.getProperty("netbeans.user")), // NOI18N
+                "var"), "log"), "uigestures"); // NOI18N
+            
+            SelfSampleVFS fs;
+            if (gestures.exists()) {
+                fs = new SelfSampleVFS(
+                    new String[] { "selfsampler.npss", "selfsampler.log" }, 
+                    new File[] { outFile, gestures }
+                );
+            } else {
+                fs = new SelfSampleVFS(
+                    new String[] { "selfsampler.npss" }, 
+                    new File[] { outFile }
+                );
+            }
+            
             // open snapshot
-            FileObject fo = FileUtil.toFileObject(outFile);
+            FileObject fo = fs.findResource("selfsampler.npss");
             DataObject dobj = DataObject.find(fo);
             // ugly test for DefaultDataObject
             if (defaultDataObject.isAssignableFrom(dobj.getClass())) {

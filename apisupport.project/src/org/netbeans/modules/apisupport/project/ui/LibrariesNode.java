@@ -118,6 +118,7 @@ import org.openide.xml.XMLUtil;
 final class LibrariesNode extends AbstractNode {
 
     private static final Logger LOG = Logger.getLogger(LibrariesNode.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(LibrariesNode.class);
 
     static final String LIBRARIES_NAME = "libraries"; // NOI18N
     private static final String DISPLAY_NAME = getMessage("LBL_libraries");
@@ -571,9 +572,8 @@ final class LibrariesNode extends AbstractNode {
                     assert project != null;
                     projects[i] = project;
                 }
-                RequestProcessor.getDefault().post(new Runnable() {
-
-                    public void run() {
+                RP.post(new Runnable() {
+                    public @Override void run() {
                         StatusDisplayer.getDefault().setStatusText(
                                 getMessage("MSG_OpeningProjects"));
                         OpenProjects.getDefault().open(projects, false);

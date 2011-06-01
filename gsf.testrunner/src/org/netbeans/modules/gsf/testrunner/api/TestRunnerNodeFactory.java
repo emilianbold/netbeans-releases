@@ -52,10 +52,13 @@ import org.openide.nodes.Node;
  */
 public abstract class TestRunnerNodeFactory {
 
+    /** @see TestMethodNode */
     public abstract Node createTestMethodNode(Testcase testcase, Project project);
 
-    public abstract Node createCallstackFrameNode(String frameInfo, String dispayName);
+    /** @see CallstackFrameNode */
+    public abstract Node createCallstackFrameNode(String frameInfo, String displayName);
 
+    /** @see TestsuiteNode */
     public abstract TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered);
 
 }

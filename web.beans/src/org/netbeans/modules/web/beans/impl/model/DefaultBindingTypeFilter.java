@@ -110,7 +110,7 @@ class DefaultBindingTypeFilter<T extends Element> extends Filter<T> {
             }
             else if ( element instanceof ExecutableElement ){
                 Element specialized = 
-                    MemberCheckerFilter.getSpecialized( element, 
+                    MemberCheckerFilter.getSpecialized( (ExecutableElement)element, 
                             getImplementation(), 
                             WebBeansModelProviderImpl.DEFAULT_QUALIFIER_ANNOTATION);
                 if ( specialized!= null){
@@ -125,7 +125,7 @@ class DefaultBindingTypeFilter<T extends Element> extends Filter<T> {
 
     private boolean isQualifier( TypeElement annotationElement ) {
         return AnnotationObjectProvider.isQualifier(annotationElement, 
-                getImplementation().getHelper());
+                getImplementation().getHelper(), false );
     }
 
     private WebBeansModelImplementation getImplementation() {

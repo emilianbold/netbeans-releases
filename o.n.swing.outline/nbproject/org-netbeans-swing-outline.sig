@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.9
+#Version 1.13.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -272,8 +272,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,changeSupportLock,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,opaquePropertyChangeListener,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public init()
@@ -353,11 +353,12 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
+meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,ncomponents,numOfHWComponents,numOfLWComponents,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public abstract interface java.awt.MenuContainer
@@ -569,7 +570,7 @@ meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
 meth public void update(java.awt.Graphics)
 meth public void updateUI()
 supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
+hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
 CLSS public javax.swing.JLabel
@@ -1089,6 +1090,7 @@ cons public init(javax.swing.table.TableModel,javax.swing.table.TableColumnModel
 cons public init(javax.swing.table.TableModel,javax.swing.table.TableColumnModel,javax.swing.ListSelectionModel)
 fld protected int[] inverseSortingPermutation
 fld protected int[] sortingPermutation
+fld public final static java.lang.String PROP_QUICK_FILTER = "quickFilter"
 innr public final static RowMapping
 meth protected boolean acceptByQuickFilter(javax.swing.table.TableModel,int)
 meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
@@ -1144,7 +1146,7 @@ meth public void unsetQuickFilter()
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JTable
 hfds ACTION_FOCUS_NEXT,COMPUTING_TOOLTIP,DEFAULT,DEFAULT_COLUMNS_ICON,FULLY_EDITABLE,FULLY_NONEDITABLE,SEARCH_COLUMN,SEARCH_FIELD_PREFERRED_SIZE,SEARCH_FIELD_SPACE,columnHidingAllowed,columnSelectionMouseListener,columnSelector,defaultColumnSelector,editing,filteredRowCount,headerMouseListener,heightOfTextField,inEditRequest,inRemoveRequest,maxPrefix,popupUsedFromTheCorner,quickFilterColumn,quickFilterFormatStrings,quickFilterObject,searchColumn,searchCombo,searchPanel,searchTextField,selectVisibleColumnsLabel
-hcls CTRLTabAction,CancelEditAction,ColumnSelectionMouseListener,CompareQuickFilter,EditAction,EnterAction,EqualsQuickFilter,HeaderMouseListener,NavigationAction,OriginalRowComparator,STPolicy,SearchComboListener,SearchFieldListener,SearchTextField
+hcls CTRLTabAction,CancelEditAction,ColumnSelectionMouseListener,CompareQuickFilter,EditAction,EnterAction,EqualsQuickFilter,HeaderMouseListener,NavigationAction,OriginalRowComparator,STPolicy,SearchComboListener,SearchFieldListener,SearchTextField,SelectedRows
 
 CLSS public final static org.netbeans.swing.etable.ETable$RowMapping
  outer org.netbeans.swing.etable.ETable
@@ -1199,8 +1201,10 @@ fld protected java.util.List<javax.swing.table.TableColumn> sortedColumns
 meth public boolean isColumnHidden(javax.swing.table.TableColumn)
 meth public java.util.Comparator<org.netbeans.swing.etable.ETable$RowMapping> getComparator()
 meth public org.netbeans.swing.etable.TableColumnSelector$TreeNode getColumnHierarchyRoot()
+meth public void clean()
 meth public void clearSortedColumns()
 meth public void readSettings(java.util.Properties,java.lang.String,org.netbeans.swing.etable.ETable)
+meth public void removeColumn(javax.swing.table.TableColumn)
 meth public void setColumnHidden(javax.swing.table.TableColumn,boolean)
 meth public void setColumnHierarchyRoot(org.netbeans.swing.etable.TableColumnSelector$TreeNode)
 meth public void setColumnSorted(org.netbeans.swing.etable.ETableColumn,boolean,int)
@@ -1254,11 +1258,12 @@ meth public abstract void setSelected(java.lang.Object,java.lang.Boolean)
 
 CLSS public org.netbeans.swing.outline.DefaultOutlineCellRenderer
 cons public init()
+meth protected void setValue(java.lang.Object)
 meth public final void setBorder(javax.swing.border.Border)
 meth public java.awt.Component getTableCellRendererComponent(javax.swing.JTable,java.lang.Object,boolean,boolean,int,int)
 meth public java.lang.String getToolTipText()
 supr javax.swing.table.DefaultTableCellRenderer
-hfds checkBox,expanded,expansionBorder,expansionHandleHeight,expansionHandleWidth,fakeCellRendererPane,lastRenderedValueRef,lastRendererRef,leaf,nestingDepth,showHandle,theCheckBox
+hfds checkBox,expanded,expansionBorder,expansionHandleHeight,expansionHandleWidth,fakeCellRendererPane,htmlRenderer,lastRenderedValueRef,lastRendererRef,leaf,nestingDepth,showHandle,swingRendering,theCheckBox
 hcls ExpansionHandleBorder
 
 CLSS public org.netbeans.swing.outline.DefaultOutlineModel
@@ -1311,6 +1316,8 @@ meth public boolean isRootVisible()
 meth public boolean isVisible(javax.swing.tree.TreePath)
 meth public final javax.swing.tree.AbstractLayoutCache getLayoutCache()
 meth public java.awt.Rectangle getPathBounds(javax.swing.tree.TreePath)
+meth public java.lang.String getToolTipText(java.awt.event.MouseEvent)
+meth public javax.swing.JToolTip createToolTip()
 meth public javax.swing.table.TableCellRenderer getCellRenderer(int,int)
 meth public javax.swing.tree.TreePath getClosestPathForLocation(int,int)
 meth public org.netbeans.swing.outline.OutlineModel getOutlineModel()
@@ -1326,7 +1333,7 @@ meth public void setRowHeight(int)
 meth public void setRowHeight(int,int)
 meth public void tableChanged(javax.swing.event.TableModelEvent)
 supr org.netbeans.swing.etable.ETable
-hfds cachedRootVisible,componentListener,initialized,renderDataProvider,selectionDisabled
+hfds cachedRootVisible,componentListener,initialized,lastEditPosition,renderDataProvider,rowHeightIsSet,selectedRow,selectionDisabled,toolTip
 hcls ExpandAction,ND,SizeManager,TreeCellEditorBorder
 
 CLSS protected org.netbeans.swing.outline.Outline$OutlineColumn

@@ -65,6 +65,7 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
     private final InnerToOuterRefactoring refactoring;
     private final ChangeListener parent;
     private boolean disableDeclareFields;
+    private boolean initialized = false;
     
     /** Creates new form InnerToOuterPanel
      * @param refactoring The refactoring this panel provides parameters for.
@@ -84,6 +85,7 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
     /** Initialization of the panel (called by the parent window).
      */
     public void initialize() {
+        if (initialized) return;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 classNameField.setText(refactoring.getClassName());
@@ -110,6 +112,7 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
                 classNameField.requestFocusInWindow();
             }
         });
+        initialized = true;
     }
     
     // --- GETTERS FOR REFACTORING PARAMETERS ----------------------------------

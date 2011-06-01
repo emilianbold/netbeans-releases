@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.cnd.repository.test;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * PersistentFactory implementation
@@ -64,14 +64,14 @@ public class TestFactory implements PersistentFactory {
     }
     
     @Override
-    public void write(DataOutput out, Persistent obj) throws IOException {
+    public void write(RepositoryDataOutput out, Persistent obj) throws IOException {
 	if( obj instanceof TestObject ) {
 	    ((TestObject) obj).write(out);
 	}
     }
     
     @Override
-    public Persistent read(DataInput in) throws IOException {
+    public Persistent read(RepositoryDataInput in) throws IOException {
 	TestObject obj = new TestObject(in);
 	return obj;
     }    

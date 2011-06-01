@@ -108,7 +108,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Breakpoint
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblerWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
 
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
@@ -120,7 +119,11 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
@@ -132,7 +135,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
-    public final class GdbDebuggerImpl extends NativeDebuggerImpl 
+public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
 
     private GdbEngineProvider engineProvider;
@@ -147,7 +150,7 @@ import org.openide.util.Exceptions;
 
     private DisModel disModel = new DisModel();
     private DisController disController = new DisController();
-    private final Disassembly disassembly;
+    private final GdbDisassembly disassembly;
     private boolean update_dis = true;
 
     private final VariableBag variableBag = new VariableBag();
@@ -183,8 +186,7 @@ import org.openide.util.Exceptions;
 		MIValue addrValue = frameTuple.valueOf("addr");	// NOI18N
 		if (addrValue != null) {
 		    String addr = addrValue.asConst().value();
-		    addr = addr.substring(2);	// skip 0x
-		    pc = Long.parseLong(addr, 16);
+                    pc = Address.parseAddr(addr);
 		}
 
                 MIValue funcValue = frameTuple.valueOf("func"); // NOI18N
@@ -278,7 +280,7 @@ import org.openide.util.Exceptions;
 
         profileBridge = new GdbDebuggerSettingsBridge(this);
         handlerExpert = new GdbHandlerExpert(this);
-        disassembly = new Disassembly(this, breakpointModel());
+        disassembly = new GdbDisassembly(this, breakpointModel());
         disStateModel().addListener(disassembly);
     }
 
@@ -362,7 +364,7 @@ import org.openide.util.Exceptions;
             connectExisting = false;
         }
 
-
+        profileBridge.setup(gdi);
 	if (!connectExisting) {
 	    int flags = 0;
 	    if (Log.Startup.nopty)
@@ -406,12 +408,15 @@ import org.openide.util.Exceptions;
 	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
 
 	// SHOULD process OPTION_EXEC32?
+        String runDir = gdi.getProfile().getRunDirectory();
+        runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
 
 	factory = new Gdb.Factory(executor, additionalArgv,
 	    listener, false, isShortName(),
 	    gdbInitFile,
 	    getHost(),
 	    connectExisting,
+            runDir,
 	    gdi);
 	factory.start();
     }
@@ -607,7 +612,6 @@ import org.openide.util.Exceptions;
      * was: sessionExited() and if(cleanup) portion of finishDebugger()
      */
     public final void kill() {
-        Disassembly.close();
         super.preKill();
 
         optionLayers().save();
@@ -636,16 +640,23 @@ import org.openide.util.Exceptions;
             ioPack.close();
         }
 
+        postedKillEngine = true;
         session = null;
 	state().isLoaded = false;
 	stateChanged();
-
-        postedKillEngine = true;
+        
+        if (MemoryWindow.getDefault().isShowing()) {
+            MemoryWindow.getDefault().setDebugger(null);
+        }
 
         // tell debuggercore that we're going away
         engineProvider.getDestructor().killEngine();
 
 	// It all ends here
+    }
+    
+    boolean postedKillEngine() {
+        return postedKillEngine;
     }
 
     public void postKill() {
@@ -706,7 +717,7 @@ import org.openide.util.Exceptions;
         sendResumptive("-exec-step"); // NOI18N
     }
 
-    public final void stepIntoMain() {
+    private void stepIntoMain() {
         send("-break-insert -t main"); //NOI18N
         sendResumptive("-exec-run"); // NOI18N
 	
@@ -744,11 +755,20 @@ import org.openide.util.Exceptions;
         sendResumptive("-exec-continue"); // NOI18N
     }
 
-    public void doMIAttach(GdbDebuggerInfo gdi) {
-        final long pid = gdi.getPid();
-        // MI command "-target-attach pid | file" does not available in
-        // gdb 6.1, 6.6, use CLI command "attach" instead.
-        String cmdString = "attach " + Long.toString(pid); // NOI18N
+    private void doMIAttach(GdbDebuggerInfo gdi) {
+        String cmdString;
+        long pid = -1;
+        String remoteTarget = gdi.getRemoteTarget();
+        if (remoteTarget != null) {
+            cmdString = "target remote " + remoteTarget;  //NOI18N
+        } else {
+            pid = gdi.getPid();
+            // MI command "-target-attach pid | file" does not available in
+            // gdb 6.1, 6.6, use CLI command "attach" instead.
+            cmdString = "attach " + Long.toString(pid); //NOI18N
+        }
+        
+        final long newPid = pid;
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -757,7 +777,9 @@ import org.openide.util.Exceptions;
                         state().isProcess = true;
                         stateChanged();
 			session().setSessionState(state());
-			session().setPid(pid);
+                        if (newPid != -1) {
+                            session().setPid(newPid);
+                        }
                         requestStack(null);
                         finish();
                     }
@@ -765,7 +787,7 @@ import org.openide.util.Exceptions;
         gdb.sendCommand(cmd);
     }
 
-    public void doMICorefile(GdbDebuggerInfo gdi) {
+    private void doMICorefile(GdbDebuggerInfo gdi) {
         String corefile = gdi.getCorefile();
         String cmdString = "core " + corefile; // NOI18N
         /*
@@ -802,6 +824,11 @@ import org.openide.util.Exceptions;
 	src = localToRemote("runToCursor", src); // NOI18N
         String cmdString = "-exec-until " + src + ":" + line; // NOI18N
         sendResumptive(cmdString);
+    }
+    
+    // interface NativeDebugger
+    public void runToCursorInst(String addr) {
+        sendResumptive("-exec-until *" + addr); //NOI18N
     }
 
     public GdbVersionPeculiarity getGdbVersionPeculiarity() {
@@ -925,27 +952,26 @@ import org.openide.util.Exceptions;
     /**
      * Handle the oputput of "info proc".
      */
-    private static int extractPid1(MIRecord record) {
+    static int extractPid1(MIRecord record) {
 	StringTokenizer st =
 	    new StringTokenizer(record.command().
 				getConsoleStream());
-	int pid = 0;
-	if (st.hasMoreTokens()) {
-	    st.nextToken();
-	    if (st.hasMoreTokens()) {
+	while (st.hasMoreTokens()) {
+            String str = st.nextToken();
+	    if ("process".equals(str) && st.hasMoreTokens()) { //NOI18N
 		String pidStr = st.nextToken();
                 int pidEnd = 0;
                 while (pidEnd < pidStr.length() && Character.isDigit(pidStr.charAt(pidEnd))) {
                     pidEnd++;
                 }
                 try {
-                    pid = Integer.parseInt(pidStr.substring(0, pidEnd));
+                    return Integer.parseInt(pidStr.substring(0, pidEnd));
                 } catch (Exception e) {
                     Exceptions.printStackTrace(new Exception("Pid parsing error: " + record.command().getConsoleStream(), e)); //NOI18N
                 }
 	    }
 	}
-	return pid;
+	return 0;
     }
 
     /**
@@ -1183,6 +1209,7 @@ import org.openide.util.Exceptions;
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
     private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
+    private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 0); // NOI18N
     
     public void initializeGdb(FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
@@ -1211,6 +1238,7 @@ import org.openide.util.Exceptions;
         //init global parameters
         send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
+        send("-gdb-set print elements " + PRINT_ELEMENTS); // NOI18N
         
         // set terminal mode on windows, see IZ 193220
         if (getHost().getPlatform() == Platform.Windows_x86 && getIOPack().isExternal()) {
@@ -1745,6 +1773,7 @@ import org.openide.util.Exceptions;
             getFullPath((GdbFrame) f);
         }
         stackUpdater.treeChanged();     // causes a pull
+        disassembly.stateUpdated();
     }
 
     private void visitCurrentSrc(GdbFrame f, MIRecord srcRecord) {
@@ -1830,27 +1859,32 @@ import org.openide.util.Exceptions;
         int size = stack_list.size();
 
         // iterate through frame list
-        guiStackFrames = new GdbFrame[size];
+        // initialize before assign, see IZ 196318
+        GdbFrame[] newGuiStackFrames = new GdbFrame[size];
         for (int vx = 0; vx < size; vx++) {
             MIResult frame = (MIResult) stack_list.get(vx);
             
             // try to find frame arguments
             MIResult frameArgs = null;
-            if (args_list != null && vx <= args_list.size()) {
+            if (args_list != null && vx < args_list.size()) {
                 frameArgs = (MIResult) args_list.get(vx);
             }
             
-            guiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs);
+            newGuiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs);
             
             if (vx == 0) {
-                guiStackFrames[vx].setCurrent(true); // make top frame current
+                newGuiStackFrames[vx].setCurrent(true); // make top frame current
             }
         }
+        // 
+        guiStackFrames = newGuiStackFrames;
+        
         if (get_locals) {
             getMILocals(true); // "true" for gdb "var-update *" to get value update
         }
 
         stackUpdater.treeChanged();     // causes a pull
+        disassembly.stateUpdated();
     }
 
     /*
@@ -1994,6 +2028,7 @@ import org.openide.util.Exceptions;
             System.out.println("value " + value.toString()); // NOI18N
         }
         String value_string = value.valueOf("value").asConst().value(); // NOI18N
+        value_string = ValuePresenter.getValue(value_string);
         EvalAnnotation.postResult(0, 0, 0, expr, value_string, null, null);
     }
     /* 
@@ -2006,12 +2041,6 @@ import org.openide.util.Exceptions;
 
     public boolean watchError(int rt, Error error) {
         return false;
-    }
-
-    // interface NativeDebugger
-    @Override
-    public WatchVariable[] getWatches() {
-        return watches.toArray(new WatchVariable[watches.size()]);
     }
 
     // interface NativeDebugger
@@ -2034,22 +2063,11 @@ import org.openide.util.Exceptions;
 
 	NativeWatch nativeWatch = template;
 
-        GdbWatch gdbWatch;
-	Object key = nativeWatch.getExpression();
-	if (watches.byKey(key) != null) {
-	    // duplicate watch
-	    gdbWatch =
-		new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-	    // set "value"
-	    final String msg = String.format("Duplicate of %d", 999); // NOI18N
-	    gdbWatch.setAsText(msg);
-
-	} else {
-	    gdbWatch =
-		new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
-	    createMIVar(gdbWatch);
-	}
-
+        // see IZ 194721
+        // No need to check for duplicates - gdb will create different vars
+        GdbWatch gdbWatch = new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
+        createMIVar(gdbWatch, true);
+        
 	updateMIVar();
 	nativeWatch.setSubWatchFor(gdbWatch, this);
         watches.add(gdbWatch);
@@ -2134,7 +2152,7 @@ import org.openide.util.Exceptions;
 	    if (w.getMIName() != null)
 		continue;		// we already have a var for this one
 */
-	    createMIVar(w);
+	    createMIVar(w, true);
 	}
     }
 
@@ -2152,17 +2170,45 @@ import org.openide.util.Exceptions;
         }
     }
     
+    private void updateStringValue(final GdbVariable v) {
+        if (!ValuePresenter.acceptsType(v.getType())) { //NOI18N
+            return;
+        }
+        MiCommandImpl cmd = new MiCommandImpl("-data-evaluate-expression \"" + v.getFullName() + '\"') { //NOI18N
+            @Override
+            protected void onDone(MIRecord record) {
+                updateValue(v, record, false);
+                super.onDone(record);
+            }
+        };
+        cmd.dontReportError();
+        gdb.sendCommand(cmd);
+    }
+    
     public static final String STRUCT_VALUE = "{...}"; // NOI18N
-
-    private void updateValue(GdbVariable v, MIRecord varvalue) {
+    
+    private void updateValue(final GdbVariable v, MIRecord varvalue, boolean pretty) {
         MITList value_results = varvalue.results();
         MIValue miValue = value_results.valueOf("value"); //NOI18N
+        updateValue(v, miValue, pretty);
+    }
+
+    private void updateValue(final GdbVariable v, MIValue miValue, boolean pretty) {
         String value = null;
         if (miValue != null) {
             value = miValue.asConst().value();
         }
         value = processValue(value);
+        if (!pretty) {
+            value = ValuePresenter.getValue(value);
+        }
         v.setAsText(value);
+        
+        // pretty printer for string type
+        if (pretty) {
+            updateStringValue(v);
+        }
+        
         if (v.isWatch()) {
             watchUpdater().treeNodeChanged(v); // just update this node
         } else {
@@ -2290,7 +2336,11 @@ import org.openide.util.Exceptions;
 		    GdbWatch w = (GdbWatch) wv;
 		    w.setInScope(Boolean.parseBoolean(in_scope));
 		}
-                evalMIVar(wv);
+                if (updatevar.asTuple().valueOf("value") != null) { //NOI18N
+                    updateValue(wv, updatevar.asTuple().valueOf("value"), true); //NOI18N
+                } else if (in_scope == null || in_scope.equalsIgnoreCase("true")){  //NOI18N
+                    evalMIVar(wv);
+                }
             }
         }
     }
@@ -2390,9 +2440,13 @@ import org.openide.util.Exceptions;
     }
 
     private void attrMIVar(final GdbVariable v, final boolean evalValue) {
+        // see IZ 197562, on MacOSX -var-show-attributes on invalid watch breaks gdb
+        if (v.getNumChild() == -1) {
+            return;
+        }
         String expr = v.getMIName();
 	// editable ?
-        String cmdString = "-var-show-attributes " + expr; // NOI18N
+        String cmdString = "-var-show-attributes \"" + expr + "\""; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
             @Override
@@ -2406,7 +2460,7 @@ import org.openide.util.Exceptions;
 
 
     private void updateMIVar() {
-        String cmdString = "-var-update * "; // NOI18N
+        String cmdString = "-var-update --all-values * "; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -2435,8 +2489,22 @@ import org.openide.util.Exceptions;
                 };
 
         gdb.sendCommand(cmd);
+        
+        // update string values
+        Variable[] list = isShowAutos() ? getAutos() : local_vars;
+        for (Variable var : list) {
+            if (var instanceof GdbVariable) {
+                updateStringValue((GdbVariable)var);
+            }
+        }
+        
+        for (WatchVariable var : getWatches()) {
+            if (var instanceof GdbVariable) {
+                updateStringValue((GdbVariable)var);
+            }
+        }
     }
-
+    
     private void evalMIVar(final GdbVariable v) {
         String mi_name = v.getMIName();
 	// value of mi_name
@@ -2446,7 +2514,7 @@ import org.openide.util.Exceptions;
 
             @Override
                     protected void onDone(MIRecord record) {
-                        updateValue(v, record);
+                        updateValue(v, record, true);
                         finish();
                     }
 
@@ -2488,21 +2556,24 @@ import org.openide.util.Exceptions;
 			      String expr,
 			      final int level) {
 
-        String cmdString = "-var-list-children --all-values " + expr; // NOI18N
-        MICommand cmd =
-            new MiCommandImpl(cmdString) {
-		    @Override
-                    protected void onDone(MIRecord record) {
-                        interpMIChildren(parent, record, level);
-                        finish();
-                    }
-                };
+        String cmdString = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
+        MiCommandImpl cmd = new MiCommandImpl(cmdString) {
+            @Override
+            protected void onDone(MIRecord record) {
+                interpMIChildren(parent, record, level);
+                finish();
+            }
+        };
+        cmd.dontReportError();
         gdb.sendCommand(cmd);
     }
 
-    private void createMIVar(final GdbVariable v) {
-        String expr = MacroSupport.expandMacro(this, v.getVariableName());
-        String cmdString = "-var-create - * " + expr; // NOI18N
+    private void createMIVar(final GdbVariable v, boolean expandMacros) {
+        String expr = v.getVariableName();
+        if (expandMacros) {
+            expr = MacroSupport.expandMacro(this, v.getVariableName());
+        }
+        String cmdString = "-var-create - @ " + expr; // NOI18N
         MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -2510,8 +2581,8 @@ import org.openide.util.Exceptions;
                 protected void onDone(MIRecord record) {
 		    v.setAsText("{...}");// clear any error messages // NOI18N
 		    v.setInScope(true);
-                    updateValue(v, record);
                     interpVar(v, record);
+                    updateValue(v, record, true);
                     finish();
                 }
 
@@ -2534,7 +2605,6 @@ import org.openide.util.Exceptions;
      */
     // SHOULD factor with DbxDebuggerImpl's localsMasked
     private boolean get_locals = false; // indicate Locals View open/close
-    private int local_count;
     private GdbVariable[] local_vars = new GdbVariable[0];
 
     public void registerLocalModel(LocalModel model) {
@@ -2546,7 +2616,7 @@ import org.openide.util.Exceptions;
             get_locals = true;
             if ((state().isProcess || state().isCore) && !state().isRunning) {
                 // have frame args already
-                getMILocals(false); // from current frame
+                getMILocals(true); // from current frame
             }
         } else {
             get_locals = false;
@@ -2558,7 +2628,7 @@ import org.openide.util.Exceptions;
     }
 
     public int getLocalsCount() {
-        return local_count;
+        return local_vars.length;
     }
 
     @Override
@@ -2569,7 +2639,7 @@ import org.openide.util.Exceptions;
             GdbVariable var = variableBag.get(auto, false, VariableBag.FROM_BOTH);
             if (var == null) {
                 var = new GdbWatch(this, watchUpdater(), auto);
-                createMIVar(var);
+                createMIVar(var, true);
             }
             res.add(var);
         }
@@ -2598,15 +2668,15 @@ import org.openide.util.Exceptions;
         MITList localsresults = locals.results();
         MITList locals_list = (MITList) localsresults.valueOf("locals"); // NOI18N
         int size = locals_list.size();
-        local_count = size;
+        int local_count = size;
 
-        MITList param_list = null;
+        List<GdbLocal> param_list = null;
         int params_count = 0;
 
         // paramaters
         GdbFrame cf = getCurrentFrame();
         if (cf != null) {
-            param_list = cf.getMIArgs();
+            param_list = cf.getArgsList();
             if (param_list != null) {
                 params_count = param_list.size();
             }
@@ -2621,7 +2691,7 @@ import org.openide.util.Exceptions;
         }
 
         // iterate through local list
-        local_vars = new GdbVariable[local_count];
+        GdbVariable[] new_local_vars = new GdbVariable[local_count];
         for (int vx = 0; vx < size; vx++) {
             MIValue localvar = (MIValue) locals_list.get(vx);
             GdbLocal loc = new GdbLocal(localvar);
@@ -2629,19 +2699,20 @@ import org.openide.util.Exceptions;
             GdbVariable gv = variableBag.get(var_name, 
                   false, VariableBag.FROM_LOCALS);
             if (gv == null) {
-                local_vars[vx] = new GdbVariable(this, localUpdater, null, 
+                new_local_vars[vx] = new GdbVariable(this, localUpdater, null, 
                         var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(local_vars[vx]);
+                createMIVar(new_local_vars[vx], false);
             } else {
-		gv.setValue(loc.getValue()); // update value
-                local_vars[vx] = gv;
+                if (loc.isSimple()) {
+                    gv.setValue(loc.getValue()); // update value
+                }
+                new_local_vars[vx] = gv;
             }
         }
 
         // iterate through frame arguments list
         for (int vx = 0; vx < params_count; vx++) {
-            MIValue param = (MIValue) param_list.get(vx);
-            GdbLocal loc = new GdbLocal(param);
+            GdbLocal loc = param_list.get(vx);
             GdbVariable gv = null;
 	    String var_name = loc.getName();
 	    String var_value = loc.getValue();
@@ -2658,13 +2729,16 @@ import org.openide.util.Exceptions;
                     gv.setValue(var_value); // update value
             }
             if (gv == null) {
-                local_vars[size + vx] = new GdbVariable(this, localUpdater, 
+                new_local_vars[size + vx] = new GdbVariable(this, localUpdater, 
                         null, var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(local_vars[size + vx]);
+                createMIVar(new_local_vars[size + vx], false);
             } else {
-                local_vars[size + vx] = gv;
+                new_local_vars[size + vx] = gv;
             }
         }
+        // need to update local_vars with fully filled array
+        local_vars = new_local_vars;
+        
         if (update_var) {
             updateMIVar(); // call var-update * , but results are not reliable
         }
@@ -2695,11 +2769,6 @@ import org.openide.util.Exceptions;
 	gdb.sendCommand(cmd);
     }
 
-    @Override
-    protected void openDis() {
-        Disassembly.open();
-    }
-    
     /**
      * Continuation from genericStopped().
      *
@@ -2766,9 +2835,8 @@ import org.openide.util.Exceptions;
             // is open, we need frame params info from here.
             if (get_locals && frameValue != null) {
                 // needs to get args info
-                guiStackFrames = new GdbFrame[1];
                 // frameValue include args  info
-                guiStackFrames[0] = new GdbFrame(this, frameValue, null);
+                guiStackFrames = new GdbFrame[] {new GdbFrame(this, frameValue, null)};
             }
 
 	    if (srcResults != null) {
@@ -2807,11 +2875,11 @@ import org.openide.util.Exceptions;
                 updateWatches();
             }
             
-            if (get_registers) {
+            state().isProcess = true;
+            
+            if (RegistersWindow.getDefault().isShowing()) {
                 requestRegisters();
             }
-            
-            state().isProcess = true;
         }
 
         if (record != null) {
@@ -2930,11 +2998,12 @@ import org.openide.util.Exceptions;
         // detect first stop (in _start or main)
         if (firstBreakpointId != null) {
             MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
-            if (bkptnoValue == null ||
-               (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())))) {
-                    firstBreakpointId = null;
-                    sendPidCommand(true);
-                    return;
+            boolean cont = (bkptnoValue == null) ||
+               (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())));
+            firstBreakpointId = null;
+            sendPidCommand(cont);
+            if (cont) {
+                return;
             }
         }
         
@@ -3180,6 +3249,7 @@ import org.openide.util.Exceptions;
         }
         
         String outputFile = ((MakeConfiguration)gdi.getConfiguration()).getAbsoluteOutputValue();
+        outputFile = localToRemote("symbol-file", outputFile); //NOI18N
         if (!CndPathUtilitities.sameString(program, outputFile)) {
             // load symbol file separately, IZ 194531
             send("-file-symbol-file " + toCString(outputFile), false); // NOI18N
@@ -3416,32 +3486,31 @@ import org.openide.util.Exceptions;
 	 */
 
         // interface Controller
-        public void requestDis() {
-            if (visitedLocation == null)
+        public void requestDis(boolean withSource) {
+            GdbFrame currentFrame = getCurrentFrame();
+            if (currentFrame == null) {
                 return;
+            }
+            String file = currentFrame.getEngineFullName();
+            String line = currentFrame.getLineNo();
 
 	    String cmd = "-data-disassemble"; // NOI18N
-	    if (visitedLocation.hasSource()) {
+            int src = withSource ? 1 : 0;
+	    if (file != null && line != null && !line.isEmpty()) {
 		// request by line #
 
-		// 6742661
-		if (visitedLocation.line() <= 0)
-		    visitedLocation = visitedLocation.line(1);
-
-		String file = visitedLocation.src();
-		file = localToRemote("requestDis", file); // NOI18N
-		cmd += " -f " + file; // NOI18N
-		cmd += " -l " + visitedLocation.line(); // NOI18N
-		cmd += " -- 1";		// provide src lines as well // NOI18N
+		cmd += " -f \"" + file + '\"'; // NOI18N
+		cmd += " -l " + line; // NOI18N
+		cmd += " -- " + src; // NOI18N
 
 	    } else {
-                cmd += " -s $pc -e \"$pc+1000\" -- 1"; //NOI18N
+                cmd += " -s $pc -e \"$pc+100\" -- " + src; //NOI18N
 	    }
 	    requestDisFromGdb(cmd);
         }
 
         // interface Controller
-        public void requestDis(String start, int count) {
+        public void requestDis(String start, int count, boolean withSource) {
 	    /* 
 	    System.out.printf("DisController.requestDis(%s, %d)\n",
 		start, count);
@@ -3450,19 +3519,20 @@ import org.openide.util.Exceptions;
 	    if (start == null)
 		return;
 
+            int src = withSource ? 1 : 0;
 	    String cmd = "-data-disassemble"; // NOI18N
 	    cmd += " -s " + start; // NOI18N
-	    cmd += " -e " + start + "+" + count; // NOI18N
-	    cmd += " -- 1";		// provide disassembly only // NOI18N
+	    cmd += " -e \"" + start + '+' + count + "\""; // NOI18N
+	    cmd += " -- " + src; // NOI18N
 	    requestDisFromGdb(cmd);
         }
     }
 
     // interface NativeDebugger
-    public void registerDisassemblerWindow(DisassemblerWindow w) {
-	assert w == null || w == disassemblerWindow();
+    public void registerDisassembly(Disassembly dis) {
+	//assert w == null || w == disassemblerWindow();
 
-	boolean makeAsmVisible = (w != null);
+	boolean makeAsmVisible = (dis != null);
 	if (makeAsmVisible == isAsmVisible())
 	    return;
 
@@ -3472,13 +3542,13 @@ import org.openide.util.Exceptions;
         if (!isConnected())
             return;
 
-	if (! viaShowLocation) {
-	    // I.e. user clicked on Disassembly tab or some other tab
-	    if (makeAsmVisible)
-		requestDisassembly();
-	    else
-		requestSource(false);
-	}
+//	if (! viaShowLocation) {
+//	    // I.e. user clicked on Disassembly tab or some other tab
+//	    if (makeAsmVisible)
+//		requestDisassembly();
+//	    else
+//		requestSource(false);
+//	}
 
         if (makeAsmVisible) {
 	    setAsmVisible(true);
@@ -3493,14 +3563,14 @@ import org.openide.util.Exceptions;
     }
 
     // implement NativeDebuggerImpl
-    protected Controller disController() {
+    public Controller disController() {
 	return disController;
     }
-    
-    Disassembly getDisassembly() {
+
+    public GdbDisassembly getDisassembly() {
         return disassembly;
     }
-
+    
     private void requestDisFromGdb(String cmd) {
 	// DEBUG System.out.printf("requestDisFromGdb(%s)\n", cmd);
 	if (postedKill || postedKillEngine || gdb == null || cmd == null)
@@ -3513,28 +3583,28 @@ import org.openide.util.Exceptions;
         disassembly.update(record.toString());
 
 	// 6582172
-	if (update_dis)
-	    disStateModel().updateStateModel(visitedLocation, false);
+//	if (update_dis)
+//	    disStateModel().updateStateModel(visitedLocation, false);
     }
 
-    @Override
-    public void requestDisassembly() {
-        Disassembly.open();
+    public FormatOption[] getMemoryFormats() {
+        return GdbMemoryFormat.values();
     }
 
     private static final int MEMORY_READ_WIDTH = 16;
     
-    public void requestMems(String start, String length, String format, int index) {
+    public void requestMems(String start, String length, FormatOption format) {
         int lines;
         try {
             lines = (Integer.valueOf(length)-1)/MEMORY_READ_WIDTH+1;
         } catch (Exception e) {
             return;
         }
-        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " .") { // NOI18N
+        MICommand cmd = new MiCommandImpl("-data-read-memory " + start + ' ' + format.getOption() + //NOI18N
+                " 1 " + lines + ' ' + MEMORY_READ_WIDTH + " .") { // NOI18N
             @Override
             protected void onDone(MIRecord record) {
-                if (memoryWindow != null) {
+                if (MemoryWindow.getDefault().isShowing()) {
                     LinkedList<String> res = new LinkedList<String>();
                     for (MITListItem elem : record.results().valueOf("memory").asList()) { //NOI18N
                         StringBuilder sb = new StringBuilder();
@@ -3549,7 +3619,7 @@ import org.openide.util.Exceptions;
                         sb.append(" \"").append(ascii).append("\""); //NOI18N
                         res.add(sb.toString() + "\n"); //NOI18N
                     }
-                    memoryWindow.updateData(res);
+                    MemoryWindow.getDefault().updateData(res);
                 }
                 finish();
             }
@@ -3583,39 +3653,40 @@ import org.openide.util.Exceptions;
             }
         }
         
-        MICommand cmd = new MiCommandImpl("-data-list-register-values x") { // NOI18N
-            @Override
-            protected void onDone(MIRecord record) {
-                if (registersWindow != null) {
-                    LinkedList<String> res = new LinkedList<String>();
-                    for (MITListItem elem : record.results().valueOf("register-values").asList()) { //NOI18N
-                        StringBuilder sb = new StringBuilder();
-                        MITList line = ((MITList)elem);
-                        String number = line.valueOf("number").asConst().value(); //NOI18N
-                        // try to get real name
-                        try {
-                            number = regNames.get(Integer.valueOf(number));
-                        } catch (Exception e) {
-                            Exceptions.printStackTrace(e);
+        if (state().isProcess) {
+            MICommand cmd = new MiCommandImpl("-data-list-register-values x") { // NOI18N
+                @Override
+                protected void onDone(MIRecord record) {
+                    if (RegistersWindow.getDefault().isShowing()) {
+                        LinkedList<String> res = new LinkedList<String>();
+                        for (MITListItem elem : record.results().valueOf("register-values").asList()) { //NOI18N
+                            StringBuilder sb = new StringBuilder();
+                            MITList line = ((MITList)elem);
+                            String number = line.valueOf("number").asConst().value(); //NOI18N
+                            // try to get real name
+                            try {
+                                number = regNames.get(Integer.valueOf(number));
+                            } catch (Exception e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                            sb.append(number).append(' ');
+                            String value = line.valueOf("value").asConst().value(); //NOI18N
+                            sb.append(value);
+                            res.add(sb.toString());
                         }
-                        sb.append(number).append(' ');
-                        String value = line.valueOf("value").asConst().value(); //NOI18N
-                        sb.append(value);
-                        res.add(sb.toString());
+                        RegistersWindow.getDefault().updateData(res);
                     }
-                    registersWindow.updateData(res);
+                    finish();
                 }
-                finish();
+            };
+            // LATER: sometimes it is sent too early, need to investigate
+            if (gdb != null) {
+                gdb.sendCommand(cmd);
             }
-        };
-        // LATER: sometimes it is sent too early, need to investigate
-        if (gdb != null) {
-            gdb.sendCommand(cmd);
         }
     }
 
     public void registerEvaluationWindow(EvaluationWindow w) {
-        notImplemented("registerEvaluationWindow()");	// NOI18N
     }
 
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w) {
@@ -3701,7 +3772,7 @@ import org.openide.util.Exceptions;
 	    */
 	    bm().noteNewHandler(rt, bp, handler);
         } catch (Exception x) {
-            x.printStackTrace();
+            Exceptions.printStackTrace(x);
 	    /* LATER
             // something went wrong, create a "broken" breakpoint
             if (created != null) {
@@ -4188,7 +4259,11 @@ import org.openide.util.Exceptions;
     }
 
     void setEnv(String envVar) {
-        sendSilent("-gdb-set environment " + envVar); // NOI18N
+        sendSilent("set environment " + envVar); // NOI18N
+    }
+
+    void unSetEnv(String envVar) {
+        sendSilent("unset environment " + envVar); // NOI18N
     }
     
     private static String quoteValue(String value) {
@@ -4214,6 +4289,10 @@ import org.openide.util.Exceptions;
 
             @Override
                     protected void onDone(MIRecord record) {
+                        GdbFrame currentFrame = getCurrentFrame();
+                        if (currentFrame != null) {
+                            currentFrame.varUpdated(var.getFullName(), value);
+                        }
                         updateMIVar();
                         finish();
                     }
@@ -4246,13 +4325,9 @@ import org.openide.util.Exceptions;
     public void activate(boolean redundant) {
 
 	if (isConnected()) {
-
+            
 	    super.activate(redundant);
-
-            if (memoryWindow != null) {
-                memoryWindow.setDebugger(this);
-            }
-
+            
 	} else {
 	    // See big comment in dbx side
 	    updateActions();
@@ -4304,12 +4379,6 @@ import org.openide.util.Exceptions;
     }
 
     // interface NativeDebugger
-    public void runToCursorInst(String addr) {
-        notImplemented("runToCursorInst");	// NOI18N
-    }
-
-
-    // interface NativeDebugger
     public void postRestoring(boolean restoring) {
     }
 
@@ -4323,9 +4392,40 @@ import org.openide.util.Exceptions;
         notImplemented("fix");	// NOI18N
     }
 
+    public FormatOption[] getEvalFormats() {
+        return null; // gdb does not support eval formats
+    }
+
     // interface NativeDebugger
-    public void exprEval(String format, String expr) {
-        notImplemented("exprEval");	// NOI18N
+    public void exprEval(FormatOption format, final String expr) {
+        String cmdString = "-data-evaluate-expression " + "\"" + expr + "\""; // NOI18N
+        MICommand cmd = new MiCommandImpl(cmdString) {
+            @Override
+            protected void onDone(MIRecord record) {
+                final String res;
+                if (!record.isError()) {
+                    MIValue val = record.results().valueOf("value"); //NOI18N
+                    if (val != null) {
+                        res = val.asConst().value();
+                    } else {
+                        res = "";
+                    }
+                } else {
+                    res = record.error();
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        EvaluationWindow evalWindow = EvaluationWindow.getDefault();
+                        evalWindow.open();
+                        evalWindow.requestActive();
+                        evalWindow.componentShowing();
+                        evalWindow.evalResult(expr + " = " + res + "\n"); //NOI18N
+                    }
+                });
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
 
     // interface NativeDebugger
@@ -4365,14 +4465,10 @@ import org.openide.util.Exceptions;
         gdb.sendCommand(cmd);
     }
 
-    private boolean get_registers = false;
-    
     @Override
     public void registerRegistersWindow(RegistersWindow w) {
-        super.registerRegistersWindow(w);
-        if (get_registers == false && w != null) {
+        if (w != null) {
             requestRegisters();
         }
-        get_registers = (w != null);
     }
 }

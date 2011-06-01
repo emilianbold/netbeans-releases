@@ -46,11 +46,8 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
@@ -59,6 +56,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
@@ -140,7 +139,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
     @Override
     public boolean isValid() {
-        return CsmBaseUtilities.isValid(getContainingFile());
+        return CsmBaseUtilities.isValid(getContainingFileImpl(false));
     }
 
     protected TemplateDescriptor createTemplateDescriptor(AST node, CsmScope scope, StringBuilder classTemplateSuffix, boolean global) {
@@ -254,11 +253,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     // impl of SelfPersistent
     
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }  
     
-    protected OffsetableDeclarationBase(DataInput input) throws IOException {
+    protected OffsetableDeclarationBase(RepositoryDataInput input) throws IOException {
         super(input);
     }    
 

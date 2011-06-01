@@ -47,12 +47,12 @@ import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -184,7 +184,8 @@ public class MakeTemplateListener implements OperationListener {
             ERR.log(ErrorManager.INFORMATIONAL, "in project = " + project.getProjectDirectory()); // NOI18N
         }
 
-        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) { // See 193227
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory() && // See 193227
+                CndFileUtils.isLocalFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem())) { // See 196885 
             File ioFile = FileUtil.toFile(file);
             if (ioFile.isDirectory()) {
                 return;
@@ -194,12 +195,21 @@ public class MakeTemplateListener implements OperationListener {
             }
             String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
-            Item item = new Item(itemPath);
+            Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
 
             folder.addItemAction(item);
 
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "folder: " + folder + ", added: " + file); // NOI18N
+            }
+        } else if (file != null && makeConfigurationDescriptor != null && 
+                !CndFileUtils.isLocalFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem())) {
+            // Ugly fix for #196885 full remote: new C source file doesn't show in Project view. TODO: find better (more common) solution
+            if (file.isData() && makeConfigurationDescriptor.okToChange()) {
+                String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDirFileObject(), file, project);
+                itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+                Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
+                folder.addItemAction(item);
             }
         } else {
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {

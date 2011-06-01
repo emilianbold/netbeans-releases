@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.spring.api.beans;
 
 import java.io.File;
@@ -53,7 +52,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.api.beans.model.SpringModel;
+import org.netbeans.modules.spring.api.beans.model.SpringMetaModelSupport;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.modules.spring.beans.SpringConfigModelAccessor;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
@@ -76,16 +78,18 @@ public final class SpringScope {
     // for files not included in the config file group). But, in order to make
     // clients' life easier, they can obtain models through SpringConfigModel
     // (which calls back into this class).
-
     private final ConfigFileManager configFileManager;
     private final SpringConfigFileModelManager fileModelManager = new SpringConfigFileModelManager();
+    private MetadataModel<SpringModel> springAnnotationModel = null;
 
     static {
         SpringScopeAccessor.setDefault(new SpringScopeAccessor() {
+
             @Override
             public SpringScope createSpringScope(ConfigFileManager configFileManager) {
                 return new SpringScope(configFileManager);
             }
+
             @Override
             public SpringConfigModel getConfigModel(SpringScope scope, FileObject fo) {
                 return scope.getConfigModel(fo);
@@ -115,7 +119,7 @@ public final class SpringScope {
         }
         return provider.getSpringScope();
     }
-
+    
     /**
      * Returns the config file groups for this Spring scope.
      *
@@ -161,6 +165,25 @@ public final class SpringScope {
     }
 
     /**
+     * Returns the reference to the {@code MetadataModel<SpringMOdel>} of Spring 
+     * annotation support.
+     * 
+     * @param fo any file inside project; never null.
+     * @return {@code MetadataModel<SpringMOdel>} of annotation model; never null
+     */
+    public MetadataModel<SpringModel> getSpringAnnotationModel(FileObject fo) {
+        if (springAnnotationModel == null) {
+            Project project = getSpringProject(fo);
+            if (project == null) {
+                return null;
+            }
+            SpringMetaModelSupport metaModelSupport = new SpringMetaModelSupport(project);
+            springAnnotationModel = metaModelSupport.getMetaModel();
+        }
+        return springAnnotationModel;
+    }
+
+    /**
      * Returns the model of the beans configuration files for the given file
      * (and any related files, if the files belongs to a
      * {@link ConfigFileGroup config file group}).
@@ -198,5 +221,18 @@ public final class SpringScope {
             return SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, singleFileGroup);
         }
         return null;
+    }
+    
+    private static Project getSpringProject(FileObject fo) {
+        Parameters.notNull("fo", fo);
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return null;
+        }
+        ProjectSpringScopeProvider provider = project.getLookup().lookup(ProjectSpringScopeProvider.class);
+        if (provider == null) {
+            return null;
+        }
+        return provider.getProject();
     }
 }

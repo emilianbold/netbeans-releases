@@ -123,7 +123,11 @@ public abstract class VCSFileNode<I extends VCSFileInformation> {
 
             String rootPath = root.getAbsolutePath();
             if(shortPath.startsWith(rootPath)) {
-                return shortPath.substring(rootPath.length() + 1);
+                if (shortPath.length() == rootPath.length()) {
+                    return "."; //NOI18N
+                } else {
+                    return shortPath.substring(rootPath.length() + 1);
+                }
             } else {
                 return NbBundle.getMessage(VCSFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
             }

@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     <target name="compile">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
-                <pathelement location="../../xtest/lib/junit.jar"/>
+                <pathelement location="../../libs.junit4/external/junit-4.8.2.jar"/>
             </classpath>
         </javac>
     </target>

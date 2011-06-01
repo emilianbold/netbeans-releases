@@ -138,29 +138,6 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         editorOperator.closeDiscard();
     }
 
-    public void testCC_InRubyEditor() {
-        testProject = Projects.RUBY_PROJECT;
-        fileName = "ruby20kb.rb";
-        nodePath = "Source Files";
-        lineNumber = 5;
-        doMeasurement();
-    }
-/* TB fixed
-    public void testCC_InRHTMLEditor() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "rhtml20kb.rhtml";
-        nodePath = "Test Files|unit";
-        lineNumber = 2;
-        doMeasurement();
-    }
-*/
-    public void testCC_InYMLEditor() {
-        testProject = Projects.RAILS_PROJECT;
-        fileName = "yaml20kb.yml";
-        nodePath = "Test Files|unit";
-        lineNumber = 39;
-        doMeasurement();
-    }
 
     public void testCC_InJavaScriptEditor() {
         testProject = Projects.SCRIPTING_PROJECT;

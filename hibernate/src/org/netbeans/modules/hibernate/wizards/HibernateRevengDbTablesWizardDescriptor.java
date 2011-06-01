@@ -160,8 +160,8 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
         }
         // prevent NPE from IZ#164960
         TableClosure tc = this.getTableClosure();
-        if (tc == null) {
-            getComponent().update(this.getTableClosure());
+        if (tc != null) {
+            getComponent().update(tc);
         }
     }
 

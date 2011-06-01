@@ -1,4 +1,0 @@
-Test6Spec:CLASS:[]:ESCAPED{Test6Spec}:
-  describe: ThingsController:TEST:[]:ESCAPED{describe: ThingsController}:
-    before:TEST:[]:ESCAPED{before}:
-  things:FIELD:[PRIVATE]:ESCAPED{things}:

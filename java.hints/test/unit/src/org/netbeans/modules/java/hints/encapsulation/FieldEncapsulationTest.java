@@ -338,6 +338,16 @@ public class FieldEncapsulationTest extends TestBase {
                                 "8:28-8:29:verifier:Access of Private Field of Another Object");
     }
 
+    public void testLimitByEnclosing194543() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private static final class A {\n"+
+                            "        public static int I;\n"+
+                            "    }\n"+
+                            "}");
+    }
+
     public void testEnumIgnore() throws Exception {
         Preferences p = RulesManager.getPreferences(FieldEncapsulation.class.getName() + ".publicField", HintsSettings.getCurrentProfileId());
 

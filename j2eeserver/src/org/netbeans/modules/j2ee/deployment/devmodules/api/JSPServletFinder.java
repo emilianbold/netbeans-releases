@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -54,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OldJSPDebug;
 import org.openide.filesystems.FileObject;
 
@@ -172,6 +174,32 @@ System.out.println("getting servlet temp directory - find is " + find);
         return find.getServletEncoding(webURL, jspResourcePath);
     }
  
+    @CheckForNull
+    public String getServletBasePackageName() {
+        FindJSPServlet find = getServletFinder();
+        if (!(find instanceof FindJSPServlet2)) {
+            return null;
+        }
+        String webURL = getWebURL();
+        if (webURL == null) {
+            return null;     
+        }
+        return ((FindJSPServlet2) find).getServletBasePackageName(webURL);
+    }
+    
+    @CheckForNull
+    public String getServletSourcePath(String jspRelativePath) {
+        FindJSPServlet find = getServletFinder();
+        if (!(find instanceof FindJSPServlet2)) {
+            return null;
+        }
+        String webURL = getWebURL();
+        if (webURL == null) {
+            return null;     
+        }
+        return ((FindJSPServlet2) find).getServletSourcePath(webURL, jspRelativePath);
+    }    
+    
     public OldJSPDebug.JspSourceMapper getSourceMapper(String jspResourcePath) {
         // PENDING
         return null;

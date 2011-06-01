@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
@@ -317,11 +316,13 @@ public abstract class JPAProblemFinder {
                 
                 for (PersistenceScope scope : scopes.getPersistenceScopes()){
                     FileObject persistenceXML = scope.getPersistenceXml();
-                    PersistenceXMLListener pxmlListener = new PersistenceXMLListener(file);
-                    FileChangeListener weakPXMLListener = WeakListeners.create(FileChangeListener.class, pxmlListener, null);
-                    persistenceXML.addFileChangeListener(weakPXMLListener);
-                    pxmlListeners.add(pxmlListener);
-                    LOG.fine("Added PersistenceXMLListener to " + persistenceXML.getName());
+                    if(persistenceXML!=null){//persistence xml may be deleted/renamed
+                        PersistenceXMLListener pxmlListener = new PersistenceXMLListener(file);
+                        FileChangeListener weakPXMLListener = WeakListeners.create(FileChangeListener.class, pxmlListener, null);
+                        persistenceXML.addFileChangeListener(weakPXMLListener);
+                        pxmlListeners.add(pxmlListener);
+                        LOG.fine("Added PersistenceXMLListener to " + persistenceXML.getName());
+                    }
                 }
                 
                 // persistence.xml listeners should live as long as the scopes listener

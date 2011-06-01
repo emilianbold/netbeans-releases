@@ -41,12 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.multiview;
 
 import java.io.File;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
@@ -66,130 +64,123 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
-
 /**
  *
  * @author blaha
  */
 public class EBDetailsAndCMPFieldPanelTest extends J2eeTestCase {
-    
+
     private static Project project;
     private static EjbJarMultiViewDataObject ddObj;
     private static FileObject ddFo;
     private static Entity bean;
     private static EjbJar ejbJar;
-    
+
     public EBDetailsAndCMPFieldPanelTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.out.println("############ "+getName()+" ############");
+        System.out.println("############ " + getName() + " ############");
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
     }
-    
+
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EBDetailsAndCMPFieldPanelTest.class);
-        conf = addServerTests(conf,"testOpenProject","testEBName","testDescription","testSmallIcon",
-        "testLargeIcon","testRevertChanges");
+        conf = addServerTests(conf, "testOpenProject", "testEBName", "testDescription", "testSmallIcon",
+                "testLargeIcon", "testRevertChanges");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run only selected test case
-        TestRunner.run(suite());
-    }
-    
-    public void testOpenProject() throws Exception{
+
+    public void testOpenProject() throws Exception {
         File projectDir = new File(getDataDir(), "projects/TestCMP");
-        project = (Project)J2eeProjectSupport.openProject(projectDir);
+        project = (Project) J2eeProjectSupport.openProject(projectDir);
         assertNotNull("Project is null.", project);
         Thread.sleep(1000);
-        
-        EjbJarProject ejbJarProject = (EjbJarProject)project;
+
+        EjbJarProject ejbJarProject = (EjbJarProject) project;
         ddFo = ejbJarProject.getAPIEjbJar().getDeploymentDescriptor();  // deployment descriptor
         assertNotNull("ejb-jar.xml FileObject is null.", ddFo);
-        
+
         ejbJar = DDProvider.getDefault().getDDRoot(ddFo);
-        
-        ddObj = (EjbJarMultiViewDataObject)DataObject.find(ddFo); //MultiView Editor
-        assertNotNull("MultiViewDO is null.",ddObj);
-        
-        EditCookie edit = (EditCookie)ddObj.getCookie(EditCookie.class);
+
+        ddObj = (EjbJarMultiViewDataObject) DataObject.find(ddFo); //MultiView Editor
+        assertNotNull("MultiViewDO is null.", ddObj);
+
+        EditCookie edit = (EditCookie) ddObj.getCookie(EditCookie.class);
         edit.edit();
         Thread.sleep(1000);
-        
+
         // select CustomerBean
         EnterpriseBeans beans = DDProvider.getDefault().getDDRoot(ddFo).getEnterpriseBeans();
-        bean = (Entity)beans.findBeanByName(EnterpriseBeans.ENTITY,
-                Ejb.EJB_NAME ,"CustomerBean");
-        
+        bean = (Entity) beans.findBeanByName(EnterpriseBeans.ENTITY,
+                Ejb.EJB_NAME, "CustomerBean");
+
         ddObj.showElement(bean); //open visual editor
         Utils.waitForAWTDispatchThread();
     }
-    
-    public void testEBName() throws Exception{
-        assertEquals("CustomerEB",getBeanDetailPanel().getDisplayNameTextField().getText());
+
+    public void testEBName() throws Exception {
+        assertEquals("CustomerEB", getBeanDetailPanel().getDisplayNameTextField().getText());
         getBeanDetailPanel().getDisplayNameTextField().setText("testBeanName");
         assertEquals("testBeanName", bean.getDisplayName(null));
         Utils utils = new Utils(this);
         utils.checkInXML(ddObj, "<display-name>testBeanName</display-name>");
         utils.save(ddObj);
-        utils.checkFiles("testEBName",new String[]{"ejb-jar.xml"},null);
+        utils.checkFiles("testEBName", new String[]{"ejb-jar.xml"}, null);
     }
-    
-    public void testDescription() throws Exception{
-        assertEquals("jdbc:mysql://localhost:3306/users [blaha on Default schema]",getBeanDetailPanel().getDescriptionTextArea().getText());
+
+    public void testDescription() throws Exception {
+        assertEquals("jdbc:mysql://localhost:3306/users [blaha on Default schema]", getBeanDetailPanel().getDescriptionTextArea().getText());
         getBeanDetailPanel().getDescriptionTextArea().setText("testDescription");
         assertEquals("testDescription", bean.getDescription(null));
         Utils utils = new Utils(this);
         utils.checkInXML(ddObj, "<description>testDescription</description>");
         utils.save(ddObj);
-        utils.checkFiles("testDescription",new String[]{"ejb-jar.xml"},null);
+        utils.checkFiles("testDescription", new String[]{"ejb-jar.xml"}, null);
     }
-    
-    public void testSmallIcon() throws Exception{
-        assertEquals("",getBeanDetailPanel().getSmallIconTextField().getText().trim());
+
+    public void testSmallIcon() throws Exception {
+        assertEquals("", getBeanDetailPanel().getSmallIconTextField().getText().trim());
         getBeanDetailPanel().getSmallIconTextField().setText("testEntitySmallIcon");
         assertEquals("testEntitySmallIcon", bean.getSmallIcon(null));
         Utils utils = new Utils(this);
         utils.checkInXML(ddObj, "<small-icon>testEntitySmallIcon</small-icon>");
         utils.save(ddObj);
-        utils.checkFiles("testSmallIcon",new String[]{"ejb-jar.xml"},null);
+        utils.checkFiles("testSmallIcon", new String[]{"ejb-jar.xml"}, null);
     }
-    
-    public void testLargeIcon() throws Exception{
-        assertEquals("",getBeanDetailPanel().getLargeIconTextField().getText().trim());
+
+    public void testLargeIcon() throws Exception {
+        assertEquals("", getBeanDetailPanel().getLargeIconTextField().getText().trim());
         getBeanDetailPanel().getLargeIconTextField().setText("testEntityLargeIcon");
         assertEquals("testEntityLargeIcon", bean.getLargeIcon(null));
         Utils utils = new Utils(this);
         utils.checkInXML(ddObj, "<large-icon>testEntityLargeIcon</large-icon>");
         utils.save(ddObj);
-        utils.checkFiles("testLargeIcon",new String[]{"ejb-jar.xml"},null);
+        utils.checkFiles("testLargeIcon", new String[]{"ejb-jar.xml"}, null);
     }
-    
-    public void testRevertChanges() throws Exception{
+
+    public void testRevertChanges() throws Exception {
         bean.setDisplayName("CustomerEB"); // back changes
         bean.setDescription("jdbc:mysql://localhost:3306/users [blaha on Default schema]"); // back changes
         bean.setSmallIcon(null); // back changes
         bean.setLargeIcon(null); // back changes
         ejbJar.write(ddFo);
     }
-    
-    private BeanDetailsPanel getBeanDetailPanel(){
+
+    private BeanDetailsPanel getBeanDetailPanel() {
         Node[] nnChild = Utils.getChildrenNodes(Utils.getEntityNode(ddObj));
-        for(int k = 0; k < nnChild.length; k++){
-            if(nnChild[k] instanceof BeanDetailNode){
-                SectionNodePanel overviewPanel = ((BeanDetailNode)nnChild[k]).getSectionNodePanel();
+        for (int k = 0; k < nnChild.length; k++) {
+            if (nnChild[k] instanceof BeanDetailNode) {
+                SectionNodePanel overviewPanel = ((BeanDetailNode) nnChild[k]).getSectionNodePanel();
                 overviewPanel.open();
-                return (BeanDetailsPanel)overviewPanel.getInnerPanel();
+                return (BeanDetailsPanel) overviewPanel.getInnerPanel();
             }
         }
         return null;

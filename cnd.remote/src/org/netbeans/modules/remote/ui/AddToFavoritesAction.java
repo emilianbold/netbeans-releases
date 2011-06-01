@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.ui;
 
+import java.awt.Frame;
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import javax.swing.JMenu;
@@ -56,6 +57,9 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -70,6 +74,9 @@ import org.openide.windows.WindowManager;
  *
  * @author Vladimir Voskresensky
  */
+@ActionID(id = "org.netbeans.modules.remote.ui.AddToFavoritesAction", category = "NativeRemote")
+@ActionRegistration(displayName = "AddToFavoritesMenuItem")
+@ActionReference(path = "Remote/Host/Actions", name = "AddToFavoritesAction", position = 600)
 public class AddToFavoritesAction extends SingleHostAction {
     private JMenu popupMenu;
     
@@ -115,6 +122,7 @@ public class AddToFavoritesAction extends SingleHostAction {
 //            popupMenu.add(new AddProjects().getPopupPresenter());
             popupMenu.add(new AddMirror().getPopupPresenter());
             popupMenu.add(new AddRoot().getPopupPresenter());
+            popupMenu.add(new AddOther().getPopupPresenter());
         }
     }    
     
@@ -122,6 +130,7 @@ public class AddToFavoritesAction extends SingleHostAction {
         ROOT("AddRoot"),// NOI18N
         HOME("AddHome"),// NOI18N
         PROJECTS("AddProjects"),// NOI18N
+        OTHER("AddOtherFolder"), // NOI18N
         MIRROR("AddMirror");// NOI18N
         
         private final String name;
@@ -175,13 +184,16 @@ public class AddToFavoritesAction extends SingleHostAction {
                             };
                             SwingUtilities.invokeLater(openFavorites);
                         } else {
-                            String msg;
-                            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                                msg = NbBundle.getMessage(AddToFavoritesAction.class, "NotConnected", getPath(env), env.getDisplayName());
-                            } else {
-                                msg = NbBundle.getMessage(AddToFavoritesAction.class, "NoRemotePath", getPath(env));
+                            String path = getPath(env);
+                            if (path != null) {
+                                String msg;
+                                if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                                    msg = NbBundle.getMessage(AddToFavoritesAction.class, "NotConnected", path, env.getDisplayName());
+                                } else {
+                                    msg = NbBundle.getMessage(AddToFavoritesAction.class, "NoRemotePath", path);
+                                }
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
                             }
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
                         }
                     }
                 };
@@ -272,4 +284,27 @@ public class AddToFavoritesAction extends SingleHostAction {
             return remoteSyncRoot;
         }
     }
+    
+    private static final class AddOther extends AddPlace {
+
+        private final Frame mainWindow;
+
+        public AddOther() {
+            super(PLACE.OTHER);
+            mainWindow = WindowManager.getDefault().getMainWindow();
+        }
+
+        @Override
+        protected FileObject getRoot(ExecutionEnvironment env, FileSystem fs) {
+            String title = NbBundle.getMessage(AddToFavoritesAction.class, "SelectFolder");
+            String btn = NbBundle.getMessage(AddToFavoritesAction.class, "AddText");
+            FileObject fo = OpenTerminalAction.getRemoteFileObject(env, title, btn, mainWindow);
+            return fo;
+        }
+
+        @Override
+        protected String getPath(ExecutionEnvironment env) {
+            return null;
+        }
+    }    
 }

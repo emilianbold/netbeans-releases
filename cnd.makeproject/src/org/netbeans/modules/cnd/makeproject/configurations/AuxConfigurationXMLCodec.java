@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.xml.sax.Attributes;
 
@@ -133,8 +134,9 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             configurationDescriptor.getConfs().setActive(new Integer(currentText).intValue());
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
             if (currentConf instanceof MakeConfiguration) {
-                ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
-                        ExecutionEnvironmentFactory.fromUniqueID(currentText));
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(currentText);
+                env = CppUtils.convertAfterReading(env, (MakeConfiguration) currentConf);
+                ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(env);
             }
         } else if (element.equals(PLATFORM_ELEMENT)) {
             if (currentConf instanceof MakeConfiguration) {
@@ -150,7 +152,11 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     @Override
     protected void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
         xes.elementOpen(TOOLS_SET_ELEMENT);
-        xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getHostKey());
+        String hostKey = makeConfiguration.getDevelopmentHost().getHostKey();
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostKey);
+        env = CppUtils.convertBeforeWriting(env, makeConfiguration);
+        hostKey = ExecutionEnvironmentFactory.toUniqueID(env);
+        xes.element(DEVELOPMENT_SERVER_ELEMENT, hostKey);
         xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
         xes.elementClose(TOOLS_SET_ELEMENT);
     }

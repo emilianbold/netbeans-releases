@@ -66,14 +66,19 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     private WizardDescriptor.Panel<WizardDescriptor> installStep = null;
     private boolean isCompact = false;
     private boolean clearLazyUnits = false;
+    private final boolean allowRunInBackground;
     
     public InstallUnitWizardIterator (InstallUnitWizardModel model) {
         this (model, false);
     }
     
     public InstallUnitWizardIterator (InstallUnitWizardModel model, boolean clearLazyUnits) {
+        this(model, clearLazyUnits, true);
+    }
+    public InstallUnitWizardIterator (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground) {
         this.installModel = model;
         this.clearLazyUnits = clearLazyUnits;
+        this.allowRunInBackground = allowRunInBackground;
         createPanels ();
         index = 0;
     }
@@ -90,7 +95,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
         panels.add (licenseApprovalStep);
         customHandleStep = new CustomHandleStep (installModel);
         panels.add (customHandleStep);
-        installStep = new InstallStep (installModel, clearLazyUnits);
+        installStep = new InstallStep (installModel, clearLazyUnits, allowRunInBackground);
         panels.add (installStep);
     }
     

@@ -105,6 +105,7 @@ public class PHPNewLineIndenter {
             @Override
             public void run() {
                 try {
+
                     int newIndent = 0;
                     boolean insideString = false;
                     TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
@@ -234,6 +235,9 @@ public class PHPNewLineIndenter {
                                     case ',':
                                         continualIndent = true;
                                         break;
+                                    case '.':
+                                        continualIndent = true;
+                                        break;
                                     case ':':
                                         indent = true;
                                         break;
@@ -263,8 +267,20 @@ public class PHPNewLineIndenter {
                                     || ts.token().id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
                                 int startExpression = findStartTokenOfExpression(ts);
                                 if (startExpression != -1) {
-                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
-                                    break;
+                                    int rememberOffset = ts.offset();
+                                    ts.move(startExpression);
+                                    ts.moveNext();
+                                    if (ts.token().id() != PHPTokenId.PHP_IF 
+                                            && ts.token().id() != PHPTokenId.PHP_WHILE
+                                            && ts.token().id() != PHPTokenId.PHP_FOR
+                                            && ts.token().id() != PHPTokenId.PHP_FOREACH) {
+                                        newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
+                                        break;
+                                    } else {
+                                        ts.move(rememberOffset);
+                                        ts.moveNext();
+                                    }
+                                    
                                 }
                             }
                         }

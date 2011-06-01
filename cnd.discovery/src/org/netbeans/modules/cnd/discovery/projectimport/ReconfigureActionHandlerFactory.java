@@ -42,12 +42,15 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.util.Collection;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.InputOutput;
@@ -60,7 +63,7 @@ import org.openide.windows.InputOutput;
 public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFactory {
 
     @Override
-    public boolean canHandle(Type type, Configuration configuration) {
+    public boolean canHandle(Type type, Lookup context, Configuration configuration) {
         if ("configure".equals(type.name())) { // NOI18N
             type.setLocalizedName(NbBundle.getMessage(getClass(), "ConfigureActionName")); // NOI18N
             return true;
@@ -76,7 +79,7 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
             private ReconfigureProject reconfigure;
 
             @Override
-            public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
+            public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
                 this.pae = pae;
                 reconfigure = new ReconfigureProject(pae.getProject());
             }
@@ -110,7 +113,7 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
 
     @Override
     public boolean canHandle(ProjectActionEvent pae) {
-        return canHandle(pae.getType(), pae.getConfiguration());
+        return canHandle(pae.getType(), pae.getContext(),  pae.getConfiguration());
     }
 
 }

@@ -49,9 +49,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisassemblyService;
 
 /**
  * Common code for all ActionProvider's in this package.
@@ -82,7 +80,7 @@ abstract class NativeActionsProvider
 	    actionPerformedNotifier.run();
 	}
     }
-    protected NativeDebugger getDebugger() {
+    protected final NativeDebugger getDebugger() {
 	// TODO: how do we know this returns the debugger for 
 	// the current session?
 	if (ctx != null)
@@ -95,10 +93,5 @@ abstract class NativeActionsProvider
 
     protected DebuggerManager manager() {
 	return DebuggerManager.get();
-    }
-    
-    protected boolean inDis() {
-        DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-        return disProvider != null && disProvider.isInDis();
     }
 }

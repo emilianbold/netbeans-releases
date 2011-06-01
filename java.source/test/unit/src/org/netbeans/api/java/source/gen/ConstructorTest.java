@@ -67,7 +67,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author  Pavel Flaska
  */
-public class ConstructorTest extends GeneratorTest {
+public class ConstructorTest extends GeneratorTestBase {
     
     /** Need to be defined because of JUnit */
     public ConstructorTest(String name) {

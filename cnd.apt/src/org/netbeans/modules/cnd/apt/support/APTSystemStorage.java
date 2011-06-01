@@ -68,7 +68,7 @@ public final class APTSystemStorage {
         includesStorage = new APTIncludePathStorage();
     }
     
-    public static synchronized APTSystemStorage getInstance() {
+    public static APTSystemStorage getInstance() {
         return instance;
     }
     

@@ -48,8 +48,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -61,9 +63,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -78,6 +80,7 @@ import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
+import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -92,9 +95,9 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=1000)
 public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
-    private static final ConcurrentMap<Project, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Project, Map<Folder, List<CharSequence>>>();
-    private static final ConcurrentMap<Project, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<Project, ConcurrentMap<CharSequence, List<CharSequence>>>();
-    private static final UserOptionsProvider packageSearch = Lookup.getDefault().lookup(UserOptionsProvider.class);
+    private static final ConcurrentMap<Lookup.Provider, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Lookup.Provider, Map<Folder, List<CharSequence>>>();
+    private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<Lookup.Provider, ConcurrentMap<CharSequence, List<CharSequence>>>();
+    private static final Collection<? extends UserOptionsProvider> packageSearch = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
 
     /**
      * Store/update/remove list of non cnd files for project folder
@@ -194,7 +197,9 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
     private final static class FileProviderImpl implements FileProvider, NativeFileSearch {
         private final AtomicBoolean cancel = new AtomicBoolean();
-
+        private final Set<SearchContext> searchedProjects = new HashSet<SearchContext>();
+        private Context lastContext = null;
+        
         public FileProviderImpl() {
         }
 
@@ -203,22 +208,32 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             if (!MakeOptions.getInstance().isFullFileIndexer()) {
                 cancel.set(false);
                 Project project = context.getProject();
+                SearchContext searchContext = new SearchContext(context.getText(), context.getSearchType(), project);
                 if (project != null) {
-                    ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    if (provider != null && provider.gotDescriptor()) {
-                        MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
-                        Sources srcs = project.getLookup().lookup(Sources.class);
-                        final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
-                        if (genericSG != null && genericSG.length > 0) {
-                            for(SourceGroup group : genericSG) {
-                                if (group.getRootFolder().equals(context.getRoot())) {
-                                    NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-                                    computeFiles(project, descriptor, matcher, result);
-                                    break;
+                    // check if anything have changed in context, just compare context instances
+                    if (context != lastContext) {
+                        lastContext = context;
+                        searchedProjects.clear();
+                    }
+                    if (searchedProjects.add(searchContext)) {
+                        ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                        if (provider != null && provider.gotDescriptor()) {
+                            MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                            Sources srcs = project.getLookup().lookup(Sources.class);
+                            final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
+                            if (genericSG != null && genericSG.length > 0) {
+                                for(SourceGroup group : genericSG) {
+                                    if (group.getRootFolder().equals(context.getRoot())) {
+                                        NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+                                        computeFiles(project, descriptor, matcher, result);
+                                        break;
+                                    }
                                 }
                             }
+                            return false;
                         }
-                        return false;
+                    } else {
+                        System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: skip already searched context " + searchContext);// NOI18N
                     }
                 } else {
                     System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: no project for source root " + context.getRoot());// NOI18N
@@ -230,36 +245,46 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         @Override
         public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
             if (MakeOptions.getInstance().isFixUnresolvedInclude()) {
-                for(Project p : OpenProjects.getDefault().getOpenProjects()) {
-                    NativeProject np = p.getLookup().lookup(NativeProject.class);
+                for(NativeProject np : NativeProjectRegistry.getDefault().getOpenProjects()) {
                     if (np == project) {
-                        ConcurrentMap<CharSequence,List<CharSequence>> projectSearchBase = fileNameSearchBase.get(p);
-                        if (projectSearchBase == null) {
-                            projectSearchBase = computeProjectFiles(p);
-                            fileNameSearchBase.put(p, projectSearchBase);
-                        }
-                        int i = fileName.lastIndexOf('/');
-                        String name = fileName;
-                        if (i >= 0) {
-                            name = fileName.substring(i+1);
-                        }
-                        Collection<CharSequence> res = projectSearchBase.get(CharSequences.create(name));
-                        if (res != null && res.size() > 0) {
-                            return res;
-                        }
-                        boolean isLocalHost = true;
-                        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(p);
-                        if (conf != null){
-                            isLocalHost = conf.getDevelopmentHost().isLocalhost();
-                        }
-                        boolean runPackagesSearchInRemote  =
-                                Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "false"));
+                        Lookup.Provider p = np.getProject();
+                        if (p instanceof Project) {
+                            ConcurrentMap<CharSequence,List<CharSequence>> projectSearchBase = fileNameSearchBase.get(p);
+                            if (projectSearchBase == null) {
+                                projectSearchBase = computeProjectFiles(p);
+                                fileNameSearchBase.put(p, projectSearchBase);
+                            }
+                            int i = fileName.lastIndexOf('/');
+                            String name = fileName;
+                            if (i >= 0) {
+                                name = fileName.substring(i+1);
+                            }
+                            Collection<CharSequence> res = projectSearchBase.get(CharSequences.create(name));
+                            if (res != null && res.size() > 0) {
+                                return res;
+                            }
+                            boolean isLocalHost = true;
+                            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration((Project)p);
+                            if (conf != null){
+                                isLocalHost = conf.getDevelopmentHost().isLocalhost();
+                            }
+                            boolean runPackagesSearchInRemote  =
+                                    Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "false"));
 
-                        if (packageSearch != null && (isLocalHost || runPackagesSearchInRemote)) {
-                            res = packageSearch.getPackageFileSearch(p).searchFile(project, fileName);
-                        }
-                        if (res != null && res.size() > 0) {
-                            return res;
+                            if (!packageSearch.isEmpty() && (isLocalHost || runPackagesSearchInRemote)) {
+                                for (UserOptionsProvider userOptionsProvider : packageSearch) {
+                                    NativeFileSearch search = userOptionsProvider.getPackageFileSearch((Project)p);
+                                    if (search != null) {
+                                        res = search.searchFile(project, fileName);
+                                        if(res != null) {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (res != null && res.size() > 0) {
+                                return res;
+                            }
                         }
                     }
                 }
@@ -267,7 +292,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             return Collections.<CharSequence>emptyList();
         }
 
-        private ConcurrentMap<CharSequence,List<CharSequence>> computeProjectFiles(Project project) {
+        private ConcurrentMap<CharSequence,List<CharSequence>> computeProjectFiles(Lookup.Provider project) {
             ConcurrentMap<CharSequence,List<CharSequence>> result = new ConcurrentHashMap<CharSequence,List<CharSequence>>();
             ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (provider != null && provider.gotDescriptor()) {
@@ -382,6 +407,54 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         result.addFile(fileObject);
                     }
                 }
+            }
+        }
+        
+        private static final class SearchContext {
+
+            private final String searchText;
+            private final SearchType searchType;
+            private final Project project;
+
+            public SearchContext(String searchText, SearchType searchType, Project project) {
+                this.searchText = searchText;
+                this.searchType = searchType;
+                this.project = project;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final SearchContext other = (SearchContext) obj;
+                if ((this.searchText == null) ? (other.searchText != null) : !this.searchText.equals(other.searchText)) {
+                    return false;
+                }
+                if (this.searchType != other.searchType) {
+                    return false;
+                }
+                if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 43 * hash + (this.searchText != null ? this.searchText.hashCode() : 0);
+                hash = 43 * hash + (this.searchType != null ? this.searchType.hashCode() : 0);
+                hash = 43 * hash + (this.project != null ? this.project.hashCode() : 0);
+                return hash;
+            }
+
+            @Override
+            public String toString() {
+                return "SearchContext{" + "searchText=" + searchText + ", searchType=" + searchType + ", project=" + project + '}'; // NOI18N
             }
         }
     }

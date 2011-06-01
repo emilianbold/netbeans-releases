@@ -44,17 +44,15 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
-import java.lang.String;
-
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
-
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 
 /**
  * Action which "stepi" one assembly instruction
@@ -83,9 +81,9 @@ public class EvaluateAction extends CallableSystemAction implements StateListene
             // 6574620
             String selectedStr = EditorBridge.getCurrentSelection();
             if (selectedStr == null)
-                debugger.exprEval("", ""); // NOI18N
+                debugger.exprEval(FormatOption.EMPTY, ""); // NOI18N
             else
-                debugger.exprEval("", selectedStr);
+                debugger.exprEval(FormatOption.EMPTY, selectedStr);
 	}
 
     }

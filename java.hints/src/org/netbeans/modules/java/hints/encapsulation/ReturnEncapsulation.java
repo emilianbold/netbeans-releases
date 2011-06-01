@@ -43,8 +43,11 @@
 package org.netbeans.modules.java.hints.encapsulation;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,7 @@ import java.util.Map.Entry;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -64,6 +68,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -89,6 +94,24 @@ public class ReturnEncapsulation {
     private static final String A_LONG = "long[]";                      //NOI18N
     private static final String A_FLOAT = "float[]";                    //NOI18N
     private static final String A_DOUBLE = "double[]";                  //NOI18N
+    private static final Iterable<? extends String> UNMODIFIABLE = Arrays.asList(
+            "java.util.Collections.<$T$>emptySet()",
+            "java.util.Collections.<$T$>emptyList()",
+            "java.util.Collections.<$T$>emptyMap()",
+            "java.util.Collections.EMPTY_SET",
+            "java.util.Collections.EMPTY_LIST",
+            "java.util.Collections.EMPTY_MAP",
+            "java.util.Collections.<$T$>singleton($any)",
+            "java.util.Collections.<$T$>singletonList($any)",
+            "java.util.Collections.<$T$>singletonMap($any)",
+            "java.util.Collections.<$T$>unmodifiableCollection($any)",
+            "java.util.Collections.<$T$>unmodifiableList($any)",
+            "java.util.Collections.<$T$>unmodifiableSet($any)",
+            "java.util.Collections.<$T$>unmodifiableSortedSet($any)",
+            "java.util.Collections.<$T$>unmodifiableMap($any)",
+            "java.util.Collections.<$T$>unmodifiableSortedMap($any)",
+            "java.util.Arrays.<$T$>asList($any$)"
+    );
 
     @Hint(category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false) //NOI18N
     @TriggerPatterns({
@@ -199,6 +222,19 @@ public class ReturnEncapsulation {
             exprElement.getKind() != ElementKind.FIELD ||
             exprType.getKind() == TypeKind.ERROR) {
             return null;
+        }
+        if (exprElement.getModifiers().contains(Modifier.FINAL)) {
+            TreePath decl = ctx.getInfo().getTrees().getPath(exprElement);
+
+            if (decl != null && decl.getLeaf().getKind() == Kind.VARIABLE && ((VariableTree) decl.getLeaf()).getInitializer() != null) {
+                TreePath init = new TreePath(decl, ((VariableTree) decl.getLeaf()).getInitializer());
+
+                for (String p : UNMODIFIABLE) {
+                    if (MatcherUtilities.matches(ctx, init, p)) {
+                        return null;
+                    }
+                }
+            }
         }
         final Element enclMethod = getElementOrNull(info,findEnclosingMethod(tp));
         if (enclMethod == null || enclMethod.getEnclosingElement() != exprElement.getEnclosingElement()) {

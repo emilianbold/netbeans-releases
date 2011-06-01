@@ -190,8 +190,10 @@ class Archive implements Stamps.Updater {
                 String key = sb.append(srcId).append(name).toString();
 
                 synchronized(gatheringLock) {
-                    if (!knownSources.containsKey(srcId)) knownSources.put(srcId, source);
-                    if (!requests.containsKey(key)) requests.put(key, Boolean.TRUE);
+                    if (gathering) {
+                        if (!knownSources.containsKey(srcId)) knownSources.put(srcId, source);
+                        if (!requests.containsKey(key)) requests.put(key, Boolean.TRUE);
+                    }
                 }
             }
         }
@@ -205,7 +207,9 @@ class Archive implements Stamps.Updater {
     }
     
     public void stopGathering() {
-        gathering = false;
+        synchronized (gatheringLock) {
+            gathering = false;
+        }
     }
     
     public void stopServing() {
@@ -240,10 +244,11 @@ class Archive implements Stamps.Updater {
         // no need to really synchronize on this collection, gathering flag
         // is already cleared
         for (String s:requests.keySet()) {
-            String[] parts = s.split("(?<=!/)");
+            String[] parts = s.split("(?<=!/)", 2);
+            String name = parts.length == 2 ? parts[1] : "";
             ArchiveResources src = knownSources.get(parts[0]);
             assert src != null : "Could not find " + s + " in " + knownSources;
-            byte[] data = src.resource(parts[1]);
+            byte[] data = src.resource(name);
             Integer srcId = sources.get(parts[0]);
             if (srcId == null) {
                 srcId = sources.size();
@@ -255,8 +260,10 @@ class Archive implements Stamps.Updater {
             dos.write(2);
             dos.writeChar(srcId);
             dos.writeInt(data == null ? -1 : data.length); // store a marker to avoid openning
-            writeString(dos, parts[1]);
-            if (data != null) dos.write(data);
+            writeString(dos, name);
+            if (data != null) {
+                dos.write(data);
+            }
         }
         dos.close();
 

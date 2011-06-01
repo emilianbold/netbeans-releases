@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.model.settings.SettingsComponent;
 import org.netbeans.modules.maven.model.settings.SettingsComponentVisitor;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.StringList;
+import org.netbeans.modules.maven.model.util.ModelImplUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -171,7 +172,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
     public List<String> getPluginGroups() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getSettingsQNames().PLUGINGROUPS.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getSettingsQNames().PLUGINGROUPS.getName())) {
                 return list.getListChildren();
             }
         }
@@ -181,7 +182,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
     public void addPluginGroup(String group) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getSettingsQNames().PLUGINGROUPS.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getSettingsQNames().PLUGINGROUPS.getName())) {
                 list.addListChild(group);
                 return;
             }
@@ -192,7 +193,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
                  getClassesBefore(ORDER, StringListImpl.class));
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getSettingsQNames().PLUGINGROUPS.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getSettingsQNames().PLUGINGROUPS.getName())) {
                 list.addListChild(group);
                 return;
             }
@@ -202,7 +203,7 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
     public void removePluginGroup(String group) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getSettingsQNames().PLUGINGROUPS.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getSettingsQNames().PLUGINGROUPS.getName())) {
                 list.removeListChild(group);
                 return;
             }

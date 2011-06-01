@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -78,7 +79,7 @@ import org.openide.nodes.Node;
 /**
  * {@code GridManager} for {@code GrigBagLayout} layout manager.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public class GridBagManager implements GridManager {
     private Container container;
@@ -153,6 +154,24 @@ public class GridBagManager implements GridManager {
         setProperty(component, "gridy", gridY); // NOI18N
     }
 
+    public void updateGridX(Component component, int gridXDiff) {
+        int oldGridX = info.getGridX(component);
+        if(oldGridX + gridXDiff > 0) {
+            setProperty(component, "gridx", oldGridX + gridXDiff); // NOI18N
+        } else {
+            setProperty(component, "gridx", 0); // NOI18N
+        }
+    }
+    
+    public void updateGridY(Component component, int gridYDiff) {
+        int oldGridY = info.getGridY(component);
+        if(oldGridY + gridYDiff > 0) {
+            setProperty(component, "gridy", oldGridY + gridYDiff); // NOI18N
+        } else {
+            setProperty(component, "gridy", 0); // NOI18N
+        }
+    }
+
     @Override
     public void setGridWidth(Component component, int gridWidth) {
         setProperty(component, "gridwidth", gridWidth); // NOI18N
@@ -161,6 +180,24 @@ public class GridBagManager implements GridManager {
     @Override
     public void setGridHeight(Component component, int gridHeight) {
         setProperty(component, "gridheight", gridHeight); // NOI18N
+    }
+
+    public void updateGridWidth(Component component, int gridWDiff) {
+        int oldGridW = info.getGridWidth(component);
+        if(oldGridW + gridWDiff > 1) {
+            setProperty(component, "gridwidth", oldGridW + gridWDiff); // NOI18N
+        } else {
+            setProperty(component, "gridwidth", 1); // NOI18N
+        }
+    }
+    
+    public void updateGridHeight(Component component, int gridHDiff) {
+        int oldGridH = info.getGridHeight(component);
+        if(oldGridH + gridHDiff > 1) {
+            setProperty(component, "gridheight", oldGridH + gridHDiff); // NOI18N
+        } else {
+            setProperty(component, "gridheight", 1); // NOI18N
+        }
     }
 
     @Override
@@ -318,12 +355,98 @@ public class GridBagManager implements GridManager {
         setProperty(component, "fill", fill); // NOI18N
     }
     
+    public void setHorizontalFill(Component component, boolean fill) {
+        int oldFill = info.getFill(component);
+        if(fill) switch(oldFill) {
+            case GridBagConstraints.NONE: oldFill = GridBagConstraints.HORIZONTAL; break;
+            case GridBagConstraints.VERTICAL: oldFill = GridBagConstraints.BOTH; break;
+        } else switch(oldFill) {
+            case GridBagConstraints.HORIZONTAL: oldFill = GridBagConstraints.NONE; break;
+            case GridBagConstraints.BOTH: oldFill = GridBagConstraints.VERTICAL; break;
+        }
+        setProperty(component, "fill", oldFill); // NOI18N
+    }
+    
+    public void setVerticalFill(Component component, boolean fill) {
+        int oldFill = info.getFill(component);
+        if(fill) switch(oldFill) {
+            case GridBagConstraints.NONE: oldFill = GridBagConstraints.VERTICAL; break;
+            case GridBagConstraints.HORIZONTAL: oldFill = GridBagConstraints.BOTH; break;
+        } else switch(oldFill) {
+            case GridBagConstraints.VERTICAL: oldFill = GridBagConstraints.NONE; break;
+            case GridBagConstraints.BOTH: oldFill = GridBagConstraints.HORIZONTAL; break;
+        }
+        setProperty(component, "fill", oldFill); // NOI18N
+    }
+    
+    public void updateIPadX(Component component, int iPadXDiff) {
+        int oldIPadX = info.getIPadX(component);
+        if(oldIPadX + iPadXDiff > 0) {
+            setProperty(component, "ipadx", oldIPadX + iPadXDiff); // NOI18N
+        } else {
+            setProperty(component, "ipadx", 0); // NOI18N
+        }
+    }
+    
+    public void updateIPadY(Component component, int iPadYDiff) {
+        int oldIPadY = info.getIPadY(component);
+        if(oldIPadY + iPadYDiff > 0) {
+            setProperty(component, "ipady", oldIPadY+iPadYDiff); // NOI18N
+        } else {
+            setProperty(component, "ipady", 0); // NOI18N
+        }
+    }
+
+    public void setIPadX(Component component, int iPadX) {
+        setProperty(component, "ipadx", iPadX); // NOI18N
+    }
+
+    public void setIPadY(Component component, int iPadY) {
+        setProperty(component, "ipady", iPadY); // NOI18N
+    }
+    
+    public void updateInsets(Component component, Insets diff) {
+        Insets insets = info.getInsets(component);
+        insets.top = insets.top + diff.top >= 0 ? insets.top + diff.top : 0;
+        insets.left = insets.left + diff.left >= 0 ? insets.left + diff.left : 0;
+        insets.bottom = insets.bottom + diff.bottom >= 0 ? insets.bottom + diff.bottom : 0;
+        insets.right = insets.right + diff.right >= 0 ? insets.right + diff.right : 0;
+        setProperty(component, "insets", insets); // NOI18N
+    }
+
+    public void resetInsets(Component component, boolean top, boolean left, boolean bottom, boolean right) {
+        Insets insets = info.getInsets(component);
+        if (top) insets.top = 0;
+        if (left) insets.left = 0;
+        if (bottom) insets.bottom = 0;
+        if (right) insets.right = 0;
+        setProperty(component, "insets", insets); // NOI18N
+    }
+    
     public void setWeightX(Component component, double weight) {
         setProperty(component, "weightx", weight); // NOI18N
     }
 
     public void setWeightY(Component component, double weight) {
         setProperty(component, "weighty", weight); // NOI18N
+    }
+
+    public void updateWeightX(Component component, double diff) {
+        double oldWeight = info.getWeightX(component);
+        if(oldWeight + diff > 0.0d) {
+            setProperty(component, "weightx", oldWeight + diff); // NOI18N
+        } else {
+            setProperty(component, "weightx", 0.0d); // NOI18N
+        }
+    }
+
+    public void updateWeightY(Component component, double diff) {
+        double oldWeight = info.getWeightY(component);
+        if(oldWeight + diff > 0.0d) {
+            setProperty(component, "weighty", oldWeight + diff); // NOI18N
+        } else {
+            setProperty(component, "weighty", 0.0d); // NOI18N
+        }
     }
 
     @Override

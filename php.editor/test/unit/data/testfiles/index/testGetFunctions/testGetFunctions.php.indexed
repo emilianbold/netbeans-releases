@@ -8,9 +8,9 @@ Not Searchable Keys:
 
 Document 1
 Searchable Keys:
-  base : af;af;71;$pClass:ParameterClass:1::1:0,$pIface:ParameterIface:1::1:0,$pDefault::0:"test":0:0;;;
-  base : bf;bf;156;;;;
-  base : cf;cf;175;;;;
+  base : af;af;71;$pClass:ParameterClass:1::1:0,$pIface:ParameterIface:1::1:0,$pDefault::0:"test":0:0,$pConstDefault::0:MY_CONST:0:0;;;
+  base : bf;bf;183;;;;
+  base : cf;cf;202;;;;
   top : af
   top : bf
   top : cf
@@ -36,6 +36,7 @@ Searchable Keys:
   identifier_used : parameteriface;
   identifier_used : parameteriface;
   identifier_used : pclass;
+  identifier_used : pconstdefault;
   identifier_used : pdefault;
   identifier_used : piface;
 

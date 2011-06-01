@@ -47,10 +47,11 @@ import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.j2ee.wizard.NewProjectWizardsTest.NewProjectWizardsTest5;
 
 /**
  *
- * @author jungi
+ * @author jungi, Jiri Skrivanek
  */
 public class WizardsJavaEE5Test extends J2eeTestCase {
 
@@ -61,42 +62,38 @@ public class WizardsJavaEE5Test extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
-        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        conf = addServerTests(Server.GLASSFISH, conf, NewProjectWizardsTest5.class, "testEJBModWizard");
+        if (isRegistered(Server.GLASSFISH)) {
+            conf = conf.addTest(Suite.class);
+        }
         conf = conf.enableModules(".*").clusters(".*");
-        return isRegistered(Server.GLASSFISH)
-                ? NbModuleSuite.create(conf.addTest(Suite.class))
-                : NbModuleSuite.create(conf.addTest(J2eeTestCase.class));
+        return NbModuleSuite.create(conf);
     }
 
     public static class Suite extends NbTestSuite {
 
         public Suite() {
             super();
-            addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard"));
-            addTest(new NewFileWizardsTest("testLocalSessionBean"));
-            addTest(new NewFileWizardsTest("testRemoteSessionBean"));
-            addTest(new NewFileWizardsTest("testLocalRemoteSessionBean"));
-            addTest(new NewFileWizardsTest("testLocalStatefulSessionBean"));
-            addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean"));
-            addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean"));
-            addTest(new NewFileWizardsTest("testPersistenceUnitInEjb"));
-            addTest(new NewFileWizardsTest("testEntityClassInEjb"));
-            addTest(new NewFileWizardsTest("testQueueMdbBean"));
-            addTest(new NewFileWizardsTest("testTopicMdbBean"));
-            addTest(new NewFileWizardsTest("testServiceLocatorInEjb"));
-            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb"));
-            addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod"));
+            addTest(new NewFileWizardsTest("testLocalSessionBean", "5"));
+            addTest(new NewFileWizardsTest("testRemoteSessionBean", "5"));
+            addTest(new NewFileWizardsTest("testLocalRemoteSessionBean", "5"));
+            addTest(new NewFileWizardsTest("testLocalStatefulSessionBean", "5"));
+            addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean", "5"));
+            addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean", "5"));
+            addTest(new NewFileWizardsTest("testPersistenceUnitInEjb", "5"));
+            addTest(new NewFileWizardsTest("testEntityClassInEjb", "5"));
+            addTest(new NewFileWizardsTest("testQueueMdbBean", "5"));
+            addTest(new NewFileWizardsTest("testTopicMdbBean", "5"));
+            addTest(new NewFileWizardsTest("testServiceLocatorInEjb", "5"));
+            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "5"));
+            addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod", "5"));
 
-            addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard"));
-            addTest(new NewFileWizardsTest("testServiceLocatorInWeb"));
-            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb"));
-            addTest(new NewFileWizardsTest("testPersistenceUnitInWeb"));
-            addTest(new NewFileWizardsTest("testEntityClassInWeb"));
-            addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod"));
-
-            addTest(new NewProjectWizardsTest("testDefaultAppClientWizard"));
-            addTest(new NewProjectWizardsTest("testDefaultNewJ2eeAppWizard"));
-            addTest(new NewProjectWizardsTest("closeProjects"));
+            addTest(new NewProjectWizardsTest5("testWebModWizard"));
+            addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "5"));
+            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "5"));
+            addTest(new NewFileWizardsTest("testPersistenceUnitInWeb", "5"));
+            addTest(new NewFileWizardsTest("testEntityClassInWeb", "5"));
+            addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "5"));
         }
     }
 }

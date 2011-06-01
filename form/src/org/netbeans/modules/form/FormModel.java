@@ -78,9 +78,10 @@ public class FormModel
         NB60_PRE, // until NB 6.0 beta 1 (incl. 5.5 with 6.0 update), form file version 1.4
         NB60, // since NB 6.0 beta1, form file version 1.5
         NB61, // since NB 6.1 milestone 2, form file version 1.6
-        NB65 // since NB 6.5 milestone 1, form file version 1.7
+        NB65, // since NB 6.5 milestone 1, form file version 1.7
+        NB71 // since NB 7.1, form file version 1.8
     }
-    final static FormVersion LATEST_VERSION = FormVersion.NB65;
+    final static FormVersion LATEST_VERSION = FormVersion.NB71;
 
     private FormVersion currentVersionLevel;
     private FormVersion lastVersionLevel;
@@ -698,7 +699,7 @@ public class FormModel
         compoundEdit.addEdit(edit);
     }
 
-    UndoRedo.Manager getUndoRedoManager() {
+    public UndoRedo.Manager getUndoRedoManager() {
 //        if (undoRedoManager == null) {
 //            undoRedoManager = new UndoRedoManager();
 //            undoRedoManager.setLimit(50);

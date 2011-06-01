@@ -44,11 +44,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import java.io.DataOutput;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +54,8 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * @author Vladimir Kvasihn
@@ -94,13 +94,13 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmF
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
-    public ConstructorDefinitionImpl(DataInput input) throws IOException {
+    public ConstructorDefinitionImpl(RepositoryDataInput input) throws IOException {
         super(input);
         initializers = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(), input);
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeExpressions(initializers, output);
     }

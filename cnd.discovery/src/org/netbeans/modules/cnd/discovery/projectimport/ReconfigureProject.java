@@ -42,11 +42,18 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import static java.util.logging.Logger.getLogger;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,6 +68,7 @@ import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -71,7 +79,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
+import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -103,6 +118,11 @@ public class ReconfigureProject {
     private Future<Integer> lastTask;
     private Set<ExecutionListener> listeners = new WeakSet<ExecutionListener>();
     private InputOutput tab;
+    private boolean configureCodeAssistance = false;
+    private File makeLog = null;
+    private File execLog = null;
+    private String remoteExecLog = null;
+    private ExecutionEnvironment executionEnvironment;
 
     public ReconfigureProject(Project makeProject){
         if (TRACE) {
@@ -152,6 +172,10 @@ public class ReconfigureProject {
         listeners.remove(listener);
     }
 
+    public void setConfigureCodeAssistance(boolean configureCodeAssistance) {
+        this.configureCodeAssistance = configureCodeAssistance;
+    }
+    
     private String escapeFlags(String flags) {
         if ((flags.indexOf(' ') > 0 || flags.indexOf('=') > 0)&& !flags.startsWith("\"")) { // NOI18N
             flags = "\""+flags+"\""; // NOI18N
@@ -375,27 +399,112 @@ public class ReconfigureProject {
         if (TRACE) {
             logger.log(Level.INFO, "#make -f {0}", make.getPrimaryFile().getPath()); // NOI18N
         }
+        if (configureCodeAssistance) {
+            ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (provider != null && provider.gotDescriptor()) {
+                MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                if (descriptor != null) {
+                    MakeConfiguration activeConfiguration = descriptor.getActiveConfiguration();
+                    if (activeConfiguration != null) {
+                        executionEnvironment = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+                    }
+                }
+            }
+            if (executionEnvironment != null) {
+                makeLog = ImportProject.createTempFile("make"); // NOI18N
+                if(BuildTraceSupport.useBuildTrace()) {
+                    try {
+                        HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                        switch (hostInfo.getOSFamily()) {
+                        case SUNOS:
+                        case LINUX:
+                            execLog = ImportProject.createTempFile("exec"); // NOI18N
+                            execLog.deleteOnExit();
+                            if (executionEnvironment.isRemote()) {
+                                remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
+                            }
+                        }
+                    } catch (IOException ex) {
+                    } catch (CancellationException ex) {
+                    }
+                }
+            } else {
+                configureCodeAssistance = false;
+            }
+        }
+        
+        ExecutionListener listener = new ExecutionListener() {
+            private ImportProject.RfsListenerImpl listener;
+
+            @Override
+            public void executionStarted(int pid) {
+                if (makeLog != null) {
+                    if (executionEnvironment.isRemote()) {
+                        listener = new ImportProject.RfsListenerImpl(executionEnvironment);
+                        RfsListenerSupport.addListener(executionEnvironment, listener);
+                    }
+                }
+            }
+
+            @Override
+            public void executionFinished(int rc) {
+                if (rc < 0) {
+                    return;
+                }
+                if (listener != null) {
+                    listener.download();
+                    RfsListenerSupport.removeListener(executionEnvironment, listener);
+                }
+                if (executionEnvironment.isRemote() && execLog != null) {
+                    try {
+                        if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
+                            Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
+                            if (TRACE) {
+                                logger.log(Level.INFO, "#download file {0}", makeLog.getAbsolutePath()); // NOI18N
+                            }
+                            /*int rc =*/ task.get();
+                        }
+                    } catch (Throwable ex) {
+                        Exceptions.printStackTrace(ex);
+                        execLog = null;
+                    }
+                }
+                Map<String, Object> artifacts = new HashMap<String, Object>();
+                if (execLog != null) {
+                    artifacts.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getAbsolutePath());
+                    DiscoveryManagerImpl.projectBuilt(makeProject, artifacts, false);
+                }
+            }
+        };
+        Writer outputListener = null;
+        if (makeLog != null) {
+            try {
+                outputListener = new BufferedWriter(new FileWriter(makeLog));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         Node node = make.getNodeDelegate();
         ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
         List<String> vars = ImportUtils.parseEnvironment(arguments);
         if (ses != null) {
             try {
                 ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
+                if (execLog != null) {
+                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.CND_TOOLS_VALUE); // NOI18N
+                    if (executionEnvironment.isLocal()) {
+                        vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
+                    } else {
+                        vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+remoteExecLog); // NOI18N
+                    }
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        ExecutionListener listener = new ExecutionListener() {
-            @Override
-            public void executionStarted(int pid) {
-            }
-            @Override
-            public void executionFinished(int rc) {
-                for(ExecutionListener listener : listeners){
-                    listener.executionFinished(rc);
-                }
-            }
-        };
+        if (TRACE) {
+            logger.log(Level.INFO, "#make {0}", arguments); // NOI18N
+        }
         if (canceled.get()) {
             listener.executionFinished(-1);
         } else {

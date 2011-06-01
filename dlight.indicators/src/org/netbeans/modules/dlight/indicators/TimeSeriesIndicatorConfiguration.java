@@ -72,6 +72,7 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
     private boolean lastNonNull;
     private String persistencePrefix;
     private boolean legendIsVisible;
+    private int legendWidth = 0;
 
     public TimeSeriesIndicatorConfiguration(IndicatorMetadata metadata, int position) {
         super(metadata, position, true);
@@ -139,6 +140,10 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         this.legendIsVisible = legendIsVisible;
     }
 
+    public void setLegendWidth(int legendWidth) {
+        this.legendWidth = legendWidth;
+    }
+    
     private static class TimeSeriesIndicatorConfigurationAccessorImpl extends TimeSeriesIndicatorConfigurationAccessor {
 
         @Override
@@ -200,6 +205,12 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         public long getExtent(TimeSeriesIndicatorConfiguration conf) {
             return conf.extent;
         }
+
+        @Override
+        public int getLegendWidth(TimeSeriesIndicatorConfiguration conf) {
+            return conf.legendWidth;
+        }        
+        
     }
 
     static {

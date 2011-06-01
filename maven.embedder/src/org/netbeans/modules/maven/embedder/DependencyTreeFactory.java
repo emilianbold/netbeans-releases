@@ -47,16 +47,10 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.execution.DefaultMavenExecutionRequest;
-import org.apache.maven.execution.DefaultMavenExecutionResult;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
  *
@@ -79,9 +73,7 @@ public class DependencyTreeFactory {
         ArtifactCollector collector = embedder.lookupComponent(ArtifactCollector.class);
         assert collector !=null : "ArtifactCollector component not found in maven";
 
-        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-        session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(embedder.getLocalRepository().getBasedir()));
-        embedder.lookupComponent(LegacySupport.class).setSession(new MavenSession(embedder.getPlexus(), session, new DefaultMavenExecutionRequest(), new DefaultMavenExecutionResult()));
+        embedder.setUpLegacySupport();
        
         return createDependencyTree(project, builder, embedder.getLocalRepository(), factory, source, collector, scope);
 

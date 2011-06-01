@@ -65,7 +65,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.web.core.syntax.SyntaxElement;
-import org.netbeans.modules.web.core.syntax.spi.AutoTagImporterProvider;
+import org.netbeans.modules.web.core.syntax.AutoTagImporterProvider;
 import org.netbeans.spi.editor.completion.*;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -391,7 +391,7 @@ public class JspCompletionItem implements CompletionItem {
         }
 
         PrefixTag(String prefix, int substitutionOffset, TagInfo ti, SyntaxElement.Tag set) {
-            super(prefix + ":" + ti.getTagName(), substitutionOffset, ti != null ? ti.getInfoString() : null); // NOI18N
+            super(prefix + ":" + (ti != null ? ti.getTagName() : "<null>"), substitutionOffset, ti != null ? ti.getInfoString() : null); // NOI18N
             tagInfo = ti;
             if ((tagInfo != null) &&
                     (tagInfo.getBodyContent().equalsIgnoreCase(TagInfo.BODY_CONTENT_EMPTY))) {

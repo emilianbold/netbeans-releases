@@ -46,13 +46,13 @@ package org.netbeans.qa.form.visualDevelopment;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import javax.swing.JPanel;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.ComponentPaletteOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.NbTestSuite;
 import java.util.*;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -60,11 +60,10 @@ import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
-import org.netbeans.jellytools.actions.*;
-import org.netbeans.jellytools.*;
+import junit.framework.Test;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.BorderCustomEditorOperator;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
@@ -74,6 +73,9 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  * @see <a href="http://qa.netbeans.org/modules/form/promo-f/testspecs/visualDevelopment.html">Test specification</a>
  *
  * @author Jiri Vagner
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
  */
 public class FormGenerateCodeTest extends ExtJellyTestCase {
     
@@ -82,25 +84,25 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         super(testName);
     }
     
-    /* Method allowing to execute test directly from IDE. */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+      @Override
+    public void setUp() throws IOException {
+        openDataProjects(_testProjectName);
     }
     
-    /** Creates suite from particular test cases. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        
-        suite.addTest(new FormGenerateCodeTest("testAWTAndSwingComponentsTogether"));
-        suite.addTest(new FormGenerateCodeTest("testAddComponentsIntoContainersSwing"));
-        suite.addTest(new FormGenerateCodeTest("testAddComponentsIntoContainersAwt"));
-        suite.addTest(new FormGenerateCodeTest("testInPlaceEditing"));
-        suite.addTest(new FormGenerateCodeTest("testSimpleComponentInsertingIntoForm"));
-        suite.addTest(new FormGenerateCodeTest("testLayouts"));
-        suite.addTest(new FormGenerateCodeTest("testBorderSettings"));
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(FormGenerateCodeTest.class).addTest(
+               "testAWTAndSwingComponentsTogether",
+               "testAddComponentsIntoContainersSwing",
+               "testAddComponentsIntoContainersAwt",
+               "testInPlaceEditing",
+               "testSimpleComponentInsertingIntoForm",
+               "testLayouts",
+               "testBorderSettings"
+               ).clusters(".*").enableModules(".*").gui(true));
 
-        return suite;
     }
+    
+    
     
     public void testSimpleComponentInsertingIntoForm() {
         p("testSimpleComponentInsertingIntoForm - start"); // NOI18N
@@ -138,21 +140,21 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         Node frameNode = new Node(inspector.treeComponents(), nodeName);
         
         HashMap<String,String> task = new HashMap<String,String>();
-        task.put("Set Layout|AbsoluteLayout","setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());"); // NOI18N
-        task.put("Set Layout|BoxLayout","setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));"); // NOI18N
-        task.put("Set Layout|CardLayout","setLayout(new java.awt.CardLayout());"); // NOI18N
-        task.put("Set Layout|FlowLayout","setLayout(new java.awt.FlowLayout());"); // NOI18N
-        task.put("Set Layout|GridBagLayout","setLayout(new java.awt.GridBagLayout());"); // NOI18N
-        task.put("Set Layout|GridLayout","setLayout(new java.awt.GridLayout());"); // NOI18N
+        task.put("Set Layout|Absolute Layout","setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());"); // NOI18N
+        task.put("Set Layout|Box Layout","setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));"); // NOI18N
+        task.put("Set Layout|Card Layout","setLayout(new java.awt.CardLayout());"); // NOI18N
+        task.put("Set Layout|Flow Layout","setLayout(new java.awt.FlowLayout());"); // NOI18N
+        task.put("Set Layout|Grid Bag Layout","setLayout(new java.awt.GridBagLayout());"); // NOI18N
+        task.put("Set Layout|Grid Layout","setLayout(new java.awt.GridLayout());"); // NOI18N
         task.put("Set Layout|Null Layout","setLayout(null);"); // NOI18N
         task.put("Set Layout|Free Design",".GroupLayout(getContentPane());"); // NOI18N
-        task.put("Set Layout|BorderLayout", "setLayout("); //setLayout("); // NOI18N
+        task.put("Set Layout|Border Layout", "setLayout("); //setLayout("); // NOI18N
         
         for (Map.Entry<String,String> entry : task.entrySet()) {
             String layoutCmd = entry.getKey();
             runPopupOverNode(layoutCmd, frameNode);
             
-            if (layoutCmd != "Set Layout|BorderLayout") // NOI18N
+            if (!layoutCmd.equals("Set Layout|Border Layout")) // NOI18N
                 findInCode(entry.getValue(), designer);
             else
                 missInCode(entry.getValue(), designer);

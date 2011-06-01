@@ -218,10 +218,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         handle.finish();
         sleepTask.cancel();
     }
-    
+
     private void verifyRunning() {
         if (!running && !insideToString.get()) {
-            throw new IllegalStateException("AntSession/AntEvent/TaskStructure method called after completion of Ant process"); // NOI18N
+            throw new ThreadDeath(); // AntSession/AntEvent/TaskStructure method called after completion of Ant process
         }
     }
     

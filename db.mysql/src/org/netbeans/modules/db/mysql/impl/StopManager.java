@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,7 +57,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
-import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -117,6 +116,7 @@ public final class StopManager {
         this.server = server;
 
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     boolean stopping = isStopping.getAndSet(true);
@@ -142,6 +142,7 @@ public final class StopManager {
 
     private void disconnectAndWaitForStop() {
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(
                         NbBundle.getMessage(StopManager.class, "MSG_WaitingForServerToStop"));
@@ -162,7 +163,6 @@ public final class StopManager {
                     }
                 } finally {
                     handle.finish();
-                    stopRequested.set(true);
                 }
             }
         });
@@ -189,6 +189,7 @@ public final class StopManager {
                 NotifyDescriptor.CANCEL_OPTION); //NOI18N
 
         Object ret = Mutex.EVENT.readAccess(new Action<Object>() {
+            @Override
             public Object run() {
                 return DialogDisplayer.getDefault().notify(ndesc);
             }
@@ -196,7 +197,7 @@ public final class StopManager {
         });
 
         if (cancelButton.equals(ret)) {
-            stopRequested.set(false);;
+            stopRequested.set(false);
             return false;
         } else if (keepWaitingButton.equals(ret)) {
             return true;
@@ -208,6 +209,7 @@ public final class StopManager {
 
     private void displayAdminProperties(final DatabaseServer server)  {
         Mutex.EVENT.postReadRequest(new Runnable() {
+            @Override
             public void run() {
                 PropertiesDialog dlg = new PropertiesDialog(server);
                 dlg.displayDialog(Tab.ADMIN);
@@ -215,6 +217,7 @@ public final class StopManager {
         });
     }
 
+    @SuppressWarnings("SleepWhileInLoop")
     private boolean waitForStop() {
         int tries = 0;
         while (tries <= 10) {
@@ -248,6 +251,7 @@ public final class StopManager {
     }
 
     private class StopPropertyChangeListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final DatabaseServer server = (DatabaseServer)evt.getSource();
             if ((MySQLOptions.PROP_STOP_ARGS.equals(evt.getPropertyName()) ||

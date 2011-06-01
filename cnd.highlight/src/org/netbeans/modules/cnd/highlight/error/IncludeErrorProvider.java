@@ -51,6 +51,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInclude.IncludeState;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
@@ -110,7 +111,11 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         
         public IncludeErrorInfo(CsmInclude incl) {
             super(incl, Severity.ERROR);
-            this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissed", getIncludeText(incl)));
+            if (incl.getIncludeState() == IncludeState.Recursive) {
+                this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeRecursive"));
+            } else {
+                this.message = decorateWithExtraHyperlinkTip(NbBundle.getMessage(IncludeErrorProvider.class, "HighlightProvider_IncludeMissed", getIncludeText(incl)));
+            }
         }
 
         @Override
@@ -174,7 +179,9 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             if (request.isCancelled()) {
                 break;
             }
-            if (incl.getIncludeFile() == null) {
+            if (incl.getIncludeState() == IncludeState.Recursive) {
+                response.addError(new IncludeErrorInfo(incl));
+            } else if(incl.getIncludeFile() == null) {
                 response.addError(new IncludeErrorInfo(incl));
             }
         }

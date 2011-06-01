@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.j2ee.multiview;
 
 import javax.swing.event.DocumentEvent;
@@ -54,38 +53,40 @@ import org.netbeans.junit.AssertionFailedErrorException;
  *
  * @author blaha
  */
-public class TestDocumentListener implements DocumentListener{
+public class TestDocumentListener implements DocumentListener {
+
     private String findText;
 
-    public TestDocumentListener(String findText){
+    public TestDocumentListener(String findText) {
         this.findText = findText;
     }
 
-
+    @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
     }
 
+    @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         fireEvent(e);
     }
 
+    @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         fireEvent(e);
     }
-    
-    public void fireEvent(DocumentEvent e) throws RuntimeException{
+
+    public void fireEvent(DocumentEvent e) throws RuntimeException {
         try {
-            Document document = (Document)e.getDocument();
-            String text = document.getText(0,document.getLength());
+            Document document = (Document) e.getDocument();
+            String text = document.getText(0, document.getLength());
             int index = text.indexOf(findText);
-            if(index<0){ // don't find the text in document
+            if (index < 0) { // don't find the text in document
                 throw new AssertionFailedError("Cannot find correct element " + findText + "in XML view (editor document)");
             }
             document.removeDocumentListener(this);
             System.out.println("Found text: " + findText + ", index: " + index);
         } catch (javax.swing.text.BadLocationException ex) {
-            throw new AssertionFailedErrorException("Failed to read the document: ",ex);
+            throw new AssertionFailedErrorException("Failed to read the document: ", ex);
         }
     }
-    
 }

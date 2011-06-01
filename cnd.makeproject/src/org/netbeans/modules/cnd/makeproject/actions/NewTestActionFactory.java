@@ -47,7 +47,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -86,6 +87,8 @@ import org.openide.util.actions.SystemAction;
  */
 public final class NewTestActionFactory {
 
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
+    
     private NewTestActionFactory() {
     }
 
@@ -129,8 +132,11 @@ public final class NewTestActionFactory {
             this.generateCode = generateCode;
             
             MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
-            if(mcd != null && mcd.getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-                this.setEnabled(false);
+            if(mcd != null) {
+                MakeConfiguration activeConfiguration = mcd.getActiveConfiguration();
+                if(activeConfiguration != null && activeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
+                    this.setEnabled(false);
+                }
             }
         }
 
@@ -155,10 +161,18 @@ public final class NewTestActionFactory {
                 templateWizard.putProperty("project", aProject); // NOI18N
                 Set<DataObject> files = templateWizard.instantiate(DataObject.find(FileUtil.getConfigFile(test.getPath())));
                 if (files != null && !files.isEmpty()) {
-                    MakeLogicalViewProvider.setVisible(project,
-                        getMakeConfigurationDescriptor(project).findProjectItemByPath(
-                        files.iterator().next().getPrimaryFile().getPath()).getFolder());
-
+                    MakeConfigurationDescriptor mkd = getMakeConfigurationDescriptor(project);
+                    if (mkd != null) {
+                        String path = files.iterator().next().getPrimaryFile().getPath();
+                        Item item = mkd.findProjectItemByPath(path);
+                        if (item != null) {
+                            MakeLogicalViewProvider.setVisible(project, item.getFolder());
+                        } else {
+                            LOGGER.log(Level.WARNING, "Can not find project item for {0}", path);
+                        }
+                    } else {
+                        LOGGER.warning("Can not get make configuration descriptor");
+                    }
                     for (DataObject file : files) {
                         Openable open = file.getLookup().lookup(Openable.class);
                         if (open != null) {
@@ -320,12 +334,16 @@ public final class NewTestActionFactory {
         private Collection<Action> createActions(Project project, FileObject fo) {
             ArrayList<Action> actions = new ArrayList<Action>();
             FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
-            if (testFiles.isFolder()) {
-                for (FileObject test : testFiles.getChildren()) {
-                    if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
-                        String mimeTypes = (String) test.getAttribute("supportedMimeTypes"); //NOI18N
-                        if (checkMimeType(mimeTypes, fo.getMIMEType())) {
-                            actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+            // Bug 195897
+            // Templates/testFiles could be deleted
+            if (testFiles != null) {
+                if (testFiles.isFolder()) {
+                    for (FileObject test : testFiles.getChildren()) {
+                        if (Boolean.TRUE.equals(test.getAttribute("templateGenerator"))) { //NOI18N
+                            String mimeTypes = (String) test.getAttribute("supportedMimeTypes"); //NOI18N
+                            if (checkMimeType(mimeTypes, fo.getMIMEType())) {
+                                actions.add(new NewTestAction(test, project, org.openide.util.Utilities.actionsGlobalContext(), true));
+                            }
                         }
                     }
                 }

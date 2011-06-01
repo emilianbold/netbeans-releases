@@ -44,6 +44,7 @@ package org.netbeans.modules.git;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.MissingResourceException;
 import org.netbeans.modules.git.utils.GitUtils;
 import java.io.File;
 import java.util.Collections;
@@ -58,93 +59,31 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.NbPreferences;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author ondra
  */
-@ServiceProviders({@ServiceProvider(service=VersioningSystem.class), @ServiceProvider(service=GitVCS.class)})
+@VersioningSystem.Registration(
+    displayName="#CTL_Git_DisplayName", 
+    menuLabel="#CTL_Git_MainMenu", 
+    metadataFolderNames={".git"}, 
+    actionsCategory="Git"
+)
 public class GitVCS extends VersioningSystem implements PropertyChangeListener {
 
-    private Set<File> knownRoots = Collections.synchronizedSet(new HashSet<File>());
-    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
-    private final static String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
-    private final static Integer priority = Utils.getPriority("git"); //NOI18N
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.GitVCS"); //NOI18N
     private final Set<File> disconnectedRepositories;
 
     public GitVCS() {
-        putProperty(PROP_DISPLAY_NAME, org.openide.util.NbBundle.getMessage(GitVCS.class, "CTL_Git_DisplayName")); // NOI18N
+        putProperty(PROP_DISPLAY_NAME, getDisplayName()); 
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(GitVCS.class, "CTL_Git_MainMenu")); // NOI18N
-        putProperty(PROP_PRIORITY, priority);
         this.disconnectedRepositories = initializeDisconnectedRepositories();
+        Git.getInstance().registerGitVCS(this);
     }
 
-    @Override
-    public File getTopmostManagedAncestor(File file) {
-        return getTopmostManagedAncestor(file, true);
-    }
-
-    public File getTopmostManagedAncestor (File file, boolean skipDisconnectedRepositories) {
-        long t = System.currentTimeMillis();
-        LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
-        if(unversionedParents.contains(file)) {
-            LOG.fine(" cached as unversioned");
-            return null;
-        }
-        LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
-        File parent = getKnownParent(file);
-        if(parent != null) {
-            if (skipDisconnectedRepositories && isDisconnected(parent)) {
-                LOG.log(Level.FINE, "  getTopmostManagedParent returning null, disconnected {0}", parent);
-                return null;
-            } else {
-                LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent {0}", parent);
-                return parent;
-            }
-        }
-
-        if (GitUtils.isPartOfGitMetadata(file)) {
-            for (;file != null; file = file.getParentFile()) {
-                if (GitUtils.isAdministrative(file)) {
-                    file = file.getParentFile();
-                    break;
-                }
-            }
-        }
-        Set<File> done = new HashSet<File>();
-        File topmost = null;
-        for (;file != null; file = file.getParentFile()) {
-            if(unversionedParents.contains(file)) {
-                LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
-                break;
-            }
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (GitUtils.repositoryExistsFor(file)){
-                LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
-                done.clear();   // all folders added before must be removed, they ARE in fact managed by git
-                topmost =  file;
-            } else {
-                LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
-                if(file.exists()) { // could be created later ...
-                    done.add(file);
-                }
-            }
-        }
-        if(done.size() > 0) {
-            LOG.log(Level.FINE, " storing unversioned");
-            unversionedParents.addAll(done);
-        }
-        if(LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });
-        }
-        if(topmost != null) {
-            knownRoots.add(topmost);
-        }
-
-        return topmost == null || skipDisconnectedRepositories && isDisconnected(topmost) ? null : topmost;
+    public static String getDisplayName() throws MissingResourceException {
+        return org.openide.util.NbBundle.getMessage(GitVCS.class, "CTL_Git_DisplayName");
     }
 
     @Override
@@ -162,6 +101,11 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
         Git.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
+    @Override
+    public File getTopmostManagedAncestor(File file) {
+        return Git.getInstance().getTopmostManagedAncestor(file, true);
+    }
+    
     @Override
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return collocationQueryImplementation;
@@ -184,17 +128,6 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
         }
     };
 
-    private File getKnownParent(File file) {
-        File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
-        File knownParent = null;
-        for (File r : roots) {
-            if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
-                knownParent = r;
-            }
-        }
-        return knownParent;
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public void propertyChange(PropertyChangeEvent event) {
@@ -205,8 +138,7 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
             fireAnnotationsChanged((Set<File>) event.getNewValue());
         } else if (event.getPropertyName().equals(Git.PROP_VERSIONED_FILES_CHANGED)) {
             LOG.fine("cleaning unversioned parents cache"); //NOI18N
-            unversionedParents.clear();
-            knownRoots.clear();
+            Git.getInstance().clearAncestorCaches();
             fireVersionedFilesChanged();
         }
     }

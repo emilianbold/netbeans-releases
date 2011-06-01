@@ -193,6 +193,8 @@ class AssignComments extends TreeScanner<Void, Void> {
     }
 
     private void attachComments(Tree tree, CommentsCollection result, CommentSet.RelativePosition position) {
+        if (!mapComments) return;
+        
         CommentSetImpl cs = commentService.getComments(tree);
         for (Token<JavaTokenId> token : result) {
             attachComment(position, cs, token);

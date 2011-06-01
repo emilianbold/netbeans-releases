@@ -223,6 +223,9 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                         ShortcutAction sca = (ShortcutAction) o;
                         String[] shortcuts = getShortcuts(sca);
                         String displayName = sca.getDisplayName();
+                        if (displayName.isEmpty()) {
+                            continue;
+                        }
 //                        System.out.println("### " + sca.getDisplayName() + " " + searched(displayName.toLowerCase()));
                         if (searched(caseSensitiveSearch ? displayName : displayName.toLowerCase(), searchTxt)) {
                             if (shortcuts.length == 0)

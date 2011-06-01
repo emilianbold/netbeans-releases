@@ -224,15 +224,15 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     private final ConcurrentMap<CsmFile, Object> macroUsagesLocks = new ConcurrentHashMap<CsmFile, Object>();
 
     private static final class NamedLock {
-        private final String name;
+        private final CharSequence name;
 
-        public NamedLock(String name) {
+        public NamedLock(CharSequence name) {
             this.name = name;
         }
 
         @Override
         public String toString() {
-            return this.name;
+            return "getMacroUsages lock for " + this.name; // NOI18N
         }
 
         @Override
@@ -264,7 +264,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-            Object lock = new NamedLock("getMacroUsages lock for " + file.getAbsolutePath()); // NOI18N
+            Object lock = new NamedLock(file.getAbsolutePath());
             Object prevLock = macroUsagesLocks.putIfAbsent(fileImpl, lock);
             lock = prevLock != null ? prevLock : lock;
             try {
@@ -473,7 +473,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     @Override
     public long getFileVersion(CsmFile file) {
         if (file instanceof FileImpl) {
-            return FileImpl.getParseCount();
+            return FileImpl.getLongParseCount();
         }
         return 0;
     }

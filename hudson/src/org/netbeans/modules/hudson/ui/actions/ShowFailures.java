@@ -46,27 +46,44 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
+import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
+import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSuite;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.netbeans.modules.hudson.spi.HudsonLogger;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -106,8 +123,14 @@ public class ShowFailures extends AbstractAction implements Runnable {
         new RequestProcessor(url + "testReport").post(this); // NOI18N
     }
 
-    @Messages({"# {0} - job #build", "ShowFailures.title={0} Test Failures",
-               "# {0} - class & method name of failed test", "# {1} - suite name of failed test", "ShowFailures.from_suite={0} (from {1})"})
+    private static final Pattern ASSERTION_FAILURE = Pattern.compile("(?m)junit[.]framework[.](AssertionFailedError|(Array)?ComparisonFailure)|java[.]lang[.]AssertionError($|: )");
+
+    @Messages({
+        "# {0} - job #build", "ShowFailures.title={0} Test Failures",
+        "# {0} - class & method name of failed test", "# {1} - suite name of failed test", "ShowFailures.from_suite={0} (from {1})",
+        "LBL_GotoSource=Go to Source",
+        "no_test_result=No test result found for this build."
+    })
     public void run() {
         try {
             XMLReader parser = XMLUtil.createXMLReader();
@@ -115,11 +138,71 @@ public class ShowFailures extends AbstractAction implements Runnable {
                 InputOutput io;
                 StringBuilder buf;
                 Hyperlinker hyperlinker = new Hyperlinker(job);
+                TestSession session = new TestSession(displayName, new Project() {
+                    public @Override FileObject getProjectDirectory() {
+                        return FileUtil.createMemoryFileSystem().getRoot();
+                    }
+                    public @Override Lookup getLookup() {
+                        return Lookup.EMPTY;
+                    }
+                }, TestSession.SessionType.TEST, new TestRunnerNodeFactory() {
+                    public @Override TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
+                        // XXX could add OpenableInBrowser
+                        return new TestsuiteNode(suiteName, filtered);
+                    }
+                    public @Override Node createTestMethodNode(final Testcase testcase, Project project) {
+                        return new TestMethodNode(testcase, project, Lookups.singleton(new OpenableInBrowser() {
+                            public @Override String getUrl() {
+                                return url + "testReport/" + testcase.getClassName().replaceFirst("[.][^.]+$", "") + "/" + testcase.getClassName().replaceFirst(".+[.]", "") + "/" + testcase.getName() + "/";
+                            }
+                        })) {
+                            public @Override Action[] getActions(boolean context) {
+                                return new Action[] {
+                                    // XXX singleton disabled since TR window has no activatedNodes (and no other parent of ResultTreeView implements Lookup.Provider)
+                                    OpenUrlAction.get(OpenUrlAction.class).createContextAwareInstance(Lookups.singleton(this)),
+                                    new DiffViewAction(testcase),
+                                };
+                            }
+                        };
+                    }
+                    public @Override Node createCallstackFrameNode(String frameInfo, String displayName) {
+                        return new CallstackFrameNode(frameInfo, displayName) {
+                            public @Override Action getPreferredAction() {
+                                return new AbstractAction(LBL_GotoSource()) {
+                                    FileObject f;
+                                    int line;
+                                    {
+                                        // XXX should have utility API to parse stack traces
+                                        Matcher m = Pattern.compile("\tat (.+[.])[^.]+[.][^.]+[(]([^.]+[.]java):([0-9]+)[)]").matcher(frameInfo);
+                                        if (m.matches()) {
+                                            String resource = m.group(1).replace('.', '/') + m.group(2);
+                                            f = GlobalPathRegistry.getDefault().findResource(resource);
+                                            line = Integer.parseInt(m.group(3));
+                                            LOG.log(Level.FINER, "matched {0} -> {1}", new Object[] {resource, f});
+                                        } else {
+                                            LOG.log(Level.FINER, "no match for {0}", frameInfo);
+                                        }
+                                        setEnabled(f != null);
+                                    }
+                                    public @Override void actionPerformed(ActionEvent e) {
+                                        if (f != null) {
+                                            HudsonLogger.Helper.openAt(f, line - 1, -1, true);
+                                        }
+                                    }
+                                };
+                            }
+                            public @Override Action[] getActions(boolean context) {
+                                return new Action[] {getPreferredAction()};
+                            }
+                        };
+                    }
+                });
                 private void prepareOutput() {
                     if (io == null) {
                         String title = ShowFailures_title(displayName);
                         io = IOProvider.getDefault().getIO(title, new Action[0]);
                         io.select();
+                        Manager.getInstance().testStarted(session);
                     }
                 }
                 class Suite {
@@ -128,11 +211,23 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     String stderr;
                     Stack<Case> cases = new Stack<Case>();
                     List<Case> casesDone = new ArrayList<Case>();
+                    long duration;
                 }
                 class Case {
                     String className;
                     String name;
                     String errorStackTrace;
+                    long duration;
+                }
+                long parseDuration(String d) {
+                    if (d == null) {
+                        return 0;
+                    }
+                    try {
+                        return (long) (1000 * Float.parseFloat(d));
+                    } catch (NumberFormatException x) {
+                        return 0;
+                    }
                 }
                 Stack<Suite> suites = new Stack<Suite>();
                 public @Override void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -163,6 +258,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
                             s.stderr = text;
                         } else if (qName.equals("name")) { // NOI18N
                             s.name = text;
+                        } else if (qName.equals("duration")) { // NOI18N
+                            s.duration = parseDuration(text);
                         }
                     } else { // case level
                         Case c = s.cases.peek();
@@ -172,6 +269,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
                             c.name = text;
                         } else if (qName.equals("className")) { // NOI18N
                             c.className = text;
+                        } else if (qName.equals("duration")) { // NOI18N
+                            c.duration = parseDuration(text);
                         }
                     }
                     if (qName.equals("suite")) { // NOI18N
@@ -189,36 +288,45 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     prepareOutput();
                     OutputWriter out = io.getOut();
                     OutputWriter err = io.getErr();
+                    TestSuite suite = new TestSuite(s.name);
+                    session.addSuite(suite);
+                    Manager.getInstance().displaySuiteRunning(session, suite.getName());
+                    if (s.stderr != null) {
+                        // XXX TR window does not seem to show only stdio from selected suite
+                        Manager.getInstance().displayOutput(session, s.stderr, true);
+                    }
+                    if (s.stdout != null) {
+                        Manager.getInstance().displayOutput(session, s.stdout, false);
+                    }
                     for (final Case c : s.casesDone) {
                         if (c.errorStackTrace == null) {
                             continue;
                         }
                         String name = c.className + "." + c.name;
+                        String shortName = c.name;
                         if (s.name != null && !s.name.equals(c.className)) {
+                            shortName = name;
                             name = ShowFailures_from_suite(name, s.name);
                         }
                         println();
-                        out.println(name, new OutputListener() {
-                            public void outputLineAction(OutputEvent ev) {
-                                try {
-                                    // XXX try to find name in Java method index and open it instead
-                                    URLDisplayer.getDefault().showURL(new URL(url +
-                                            "testReport/" + c.className.replaceFirst("[.][^.]+$", "") + "/" + // NOI18N
-                                            c.className.replaceFirst(".+[.]", "") + "/" + c.name + "/")); // NOI18Nb
-                                } catch (MalformedURLException x) {
-                                    LOG.log(Level.FINE, null, x);
-                                }
-                            }
-                            public void outputLineSelected(OutputEvent ev) {}
-                            public void outputLineCleared(OutputEvent ev) {}
-                        });
+                        out.println("[" + name + "]"); // XXX use color printing to make it stand out?
                         show(c.errorStackTrace, /* err is too hard to read */ out);
+                        Testcase test = new Testcase(shortName, null, session);
+                        test.setClassName(c.className);
+                        Trouble trouble = new Trouble(!ASSERTION_FAILURE.matcher(c.errorStackTrace).lookingAt());
+                        trouble.setStackTrace(c.errorStackTrace.split("\r?\n"));
+                        // XXX call setComparisonFailure if matches "expected:<...> but was:<...>"
+                        test.setTrouble(trouble);
+                        LOG.log(Level.FINE, "got {0} as {1}", new Object[] {name, test.getStatus()});
+                        test.setTimeMillis(c.duration);
+                        session.addTestCase(test);
                     }
                     if (s.stderr != null || s.stdout != null) {
                         println();
                         show(s.stderr, err);
                         show(s.stdout, out);
                     }
+                    Manager.getInstance().displayReport(session, session.getReport(s.duration));
                 }
                 boolean firstLine = true;
                 void println() {
@@ -240,6 +348,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
                     if (io != null) {
                         io.getOut().close();
                         io.getErr().close();
+                        Manager.getInstance().sessionFinished(session);
                     }
                 }
             });
@@ -250,6 +359,7 @@ public class ShowFailures extends AbstractAction implements Runnable {
             parser.parse(source);
         } catch (FileNotFoundException x) {
             Toolkit.getDefaultToolkit().beep();
+            StatusDisplayer.getDefault().setStatusText(no_test_result());
         } catch (Exception x) {
             Toolkit.getDefaultToolkit().beep();
             LOG.log(Level.INFO, null, x);

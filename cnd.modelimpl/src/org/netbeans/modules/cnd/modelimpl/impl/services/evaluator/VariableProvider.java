@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services.evaluator;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
@@ -53,19 +56,27 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver3;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ExpressionEvaluator;
+import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 
 /**
  *
@@ -150,38 +161,61 @@ public class VariableProvider {
                     }
                 }
             }
-            // it works but does it too slow
-//            {
-//                TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1")); // NOI18N
-//
-//                CPPParserEx parser = CPPParserEx.getInstance(decl.getContainingFile().getName().toString(), buildTokenStream, 0);
-//                parser.type_name();
-//                AST ast = parser.getAST();
-//
-//
-//                CsmType type = TypeFactory.createType(ast, decl.getContainingFile(), null, 0, decl.getScope());
-//                if(CsmKindUtilities.isInstantiation(decl)) {
-//                    type = checkTemplateType(type, (Instantiation)decl);
-//                }
-//
-//                if(CsmKindUtilities.isInstantiation(decl)) {
-//                    type = Instantiation.createType(type, (Instantiation)decl);
-//                }
-//                CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
-//                if (CsmKindUtilities.isTemplate(originalClassifier)) {
-//                    CsmObject instantiate = InstantiationProviderImpl.getDefault().instantiate((CsmTemplate) originalClassifier, Collections.<CsmSpecializationParameter>emptyList(), mapping, decl.getContainingFile(), decl.getStartOffset());
-//                    if (CsmKindUtilities.isClassifier(instantiate)) {
-//                        originalClassifier = (CsmClassifier) instantiate;
-//                    }
-//                }
-//                if(CsmKindUtilities.isInstantiation(originalClassifier)) {
-//                    Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier); // NOI18N
-//                    if (eval instanceof Integer) {
-//                        return (Integer) eval;
-//                    }
-//                }
-//
-//            }
+            
+            if (TraceFlags.EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER) {
+                // it works but does it too slow
+                TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1"), APTLanguageSupport.GNU_CPP); // NOI18N
+
+                CPPParserEx parser = CPPParserEx.getInstance(decl.getContainingFile().getName().toString(), buildTokenStream, 0);
+                parser.type_name();
+                AST ast = parser.getAST();
+
+
+                CsmType type = TypeFactory.createType(ast, decl.getContainingFile(), null, 0, decl.getScope());
+                if(CsmKindUtilities.isInstantiation(decl)) {
+                    type = checkTemplateType(type, (Instantiation)decl);
+                }
+                for (CsmTemplateParameter csmTemplateParameter : mapping.keySet()) {
+                    type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
+                }
+
+                if (CsmKindUtilities.isTemplateParameterType(type)) {
+                    CsmSpecializationParameter instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
+                    int iteration = 15;
+                    while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
+                            CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
+                        CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
+                        if (nextInstantiatedType != null) {
+                            instantiatedType = nextInstantiatedType;
+                        } else {
+                            break;
+                        }
+                        iteration--;
+                    }
+                    if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
+                        type = ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
+                    }
+                }
+                
+                if(CsmKindUtilities.isInstantiation(decl)) {
+                    type = Instantiation.createType(type, (Instantiation)decl);
+                }
+                
+                CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
+                if (CsmKindUtilities.isTemplate(originalClassifier)) {
+                    CsmObject instantiate = InstantiationProviderImpl.getDefault().instantiate((CsmTemplate) originalClassifier, Collections.<CsmSpecializationParameter>emptyList(), mapping, decl.getContainingFile(), decl.getStartOffset());
+                    if (CsmKindUtilities.isClassifier(instantiate)) {
+                        originalClassifier = (CsmClassifier) instantiate;
+                    }
+                }
+                if(CsmKindUtilities.isInstantiation(originalClassifier)) {
+                    Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier); // NOI18N
+                    if (eval instanceof Integer) {
+                        return (Integer) eval;
+                    }
+                }
+
+            }
         }
 
         return Integer.MAX_VALUE;

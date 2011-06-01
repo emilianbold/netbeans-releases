@@ -43,8 +43,6 @@
 package org.netbeans.modules.cnd.modelimpl.fsm;
 
 import java.util.*;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -59,6 +57,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
@@ -203,7 +203,7 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
     // impl of SelfPersistent
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.declarations, output, true);
@@ -216,7 +216,7 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
         }
     }
 
-    public ModuleImpl(DataInput input) throws IOException {
+    public ModuleImpl(RepositoryDataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         int collSize = input.readInt();

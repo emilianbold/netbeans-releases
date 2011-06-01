@@ -48,6 +48,7 @@ import javax.el.ELException;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParser;
+import org.netbeans.modules.web.el.ELPreprocessor;
 import org.netbeans.modules.web.el.Pair;
 
 /**
@@ -56,10 +57,10 @@ import org.netbeans.modules.web.el.Pair;
  *
  * @author Erno Mononen
  */
-final class ELSanitizer {
+public final class ELSanitizer {
 
     static final String ADDED_SUFFIX = "x"; // NOI18N
-    private final String expression;
+    private final ELPreprocessor expression;
     private final ELElement element;
     private static final Set<Pair<ELTokenId, ELTokenId>> BRACKETS;
 
@@ -83,9 +84,10 @@ final class ELSanitizer {
      */
     public ELElement sanitized() {
         try {
-            String sanitizedExpression = sanitize(expression);
-            Node sanitizedNode = ELParser.parse(sanitizedExpression);
-            return element.makeValidCopy(sanitizedNode, sanitizedExpression);
+            String sanitizedExpression = sanitize(expression.getOriginalExpression()); //use original expression!
+            ELPreprocessor elp = new ELPreprocessor(sanitizedExpression, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+            Node sanitizedNode = ELParser.parse(elp);
+            return element.makeValidCopy(sanitizedNode, elp);
         } catch (ELException ex) {
             return element;
         }

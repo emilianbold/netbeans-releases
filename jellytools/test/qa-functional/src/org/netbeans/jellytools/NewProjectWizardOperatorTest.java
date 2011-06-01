@@ -44,7 +44,6 @@
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.CloseAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
@@ -57,52 +56,38 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
     public static NewProjectWizardOperator op;
     // "Java Application"
     private static String javaApplicationLabel;
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static final String[] tests = new String[] {
-                "testCreateTwo",
-                "testCreate", "testVerifyCreated",
-                "testInvokeTitle", "testInvoke",
-                "testSelectCategoryAndProject",
-                "testVerify", "testGetDescription"};
-    
+    public static final String[] tests = new String[]{
+        "testInvokeTitle",
+        "testInvoke",
+        "testSelectCategoryAndProject",
+        "testVerify",
+        "testGetDescription",
+        "testCreateTwo",
+        "testCreate"
+    };
+
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new NewProjectWizardOperatorTest("testInvokeTitle"));
-        suite.addTest(new NewProjectWizardOperatorTest("testInvoke"));
-        suite.addTest(new NewProjectWizardOperatorTest("testSelectCategoryAndProject"));
-        suite.addTest(new NewProjectWizardOperatorTest("testVerify"));
-        suite.addTest(new NewProjectWizardOperatorTest("testGetDescription"));
-        return suite;
-         */
         return createModuleTest(NewProjectWizardOperatorTest.class,
                 tests);
     }
-    
+
     protected void setUp() {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         javaApplicationLabel =
-            Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                             "Templates/Project/Standard/emptyJ2SE.xml");
+                Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
+                "Templates/Project/Standard/emptyJ2SE.xml");
     }
-    
+
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
     public NewProjectWizardOperatorTest(String testName) {
         super(testName);
     }
-    
+
     /** Test of invoke method with title parameter. Opens new wizard, waits for the dialog and closes it. */
     public void testInvokeTitle() {
         // "New Project"
@@ -123,15 +108,15 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         op.selectCategory(standardLabel);
         op.selectProject(javaApplicationLabel);
     }
-    
+
     /** Test of verify method. */
     public void testVerify() {
         op.verify();
     }
-    
+
     /** Test of getDescription method. */
     public void testGetDescription() {
-        assertTrue("Wrong description.", op.getDescription().indexOf("Java SE application")>0);
+        assertTrue("Wrong description.", op.getDescription().indexOf("Java SE application") > 0);
         op.cancel();
     }
 
@@ -144,6 +129,7 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         new CloseAction().perform(one);
         new CloseAction().perform(two);
     }
+
     public void testCreate() {
         createJavaProject("MyJavaProject");
     }
@@ -159,16 +145,6 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         npnlso.txtProjectName().setText(projectName);
         npnlso.txtProjectLocation().setText(getDataDir().getAbsolutePath()); // NOI18N
         npnlso.finish();
-    /*
-    op.next();
-    NewProjectNameLocationStepOperator pnop = new NewProjectNameLocationStepOperator();
-    pnop.txtProjectName().typeText("MyJavaProject");
-    pnop.txtProjectLocation().typeText(getDataDir().getAbsolutePath());
-    pnop.finish();
-     */
-    }
-
-    public void testVerifyCreated() {
-        new ProjectRootNode(new ProjectsTabOperator().tree(), "MyJavaProject");
+        new ProjectsTabOperator().getProjectRootNode(projectName);
     }
 }

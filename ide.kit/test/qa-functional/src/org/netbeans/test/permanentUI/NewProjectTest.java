@@ -90,7 +90,7 @@ public class NewProjectTest extends JellyTestCase{
         conf = conf.addTest("testNewProjectsPHP");
         conf = conf.addTest("testNewProjectsMaven");
 
-        return NbModuleSuite.create(conf);
+        return conf.suite();
 
 
      }

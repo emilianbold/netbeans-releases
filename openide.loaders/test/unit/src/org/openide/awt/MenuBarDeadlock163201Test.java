@@ -49,6 +49,8 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -127,9 +129,15 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
     private MenuBar mb;
     private DataFolder df2;
     private MFS mfs;
+    private Logger LOG;
 
     public MenuBarDeadlock163201Test(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
     }
 
     @Override
@@ -144,6 +152,7 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
         mfs = new MFS();
         FileObject fo = FileUtil.createFolder(
             mfs.getRoot(),
@@ -220,14 +229,17 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
             public synchronized void propertyChange(PropertyChangeEvent evt) {
                 if (Node.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
                     ok = true;
+                    LOG.info("Property change");
                     notifyAll();
                 }
             }
 
             public synchronized void waitOK() throws InterruptedException {
                 while (!ok) {
+                    LOG.info("waiting for node name");
                     wait();
                 }
+                LOG.info("node name is OK");
             }
         }
         Node node = df.getChildren()[0].getNodeDelegate();
@@ -238,14 +250,20 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
         assertEquals("Node name changed", "New", node.getDisplayName());
 
         for (int i = 0; i < 15; i++) {
+            LOG.info("checking round " + i);
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
+                    LOG.info("invokeAndWait");
                 }
             });
             if (mb.getMenuCount() != 1) {
+                LOG.log(Level.INFO, "wrong count {0}", mb.getMenuCount());
+                Thread.sleep(100);
                 continue;
             }
             if (!mb.getMenu(0).getText().equals("New")) {
+                LOG.log(Level.INFO, "Wrong name {0}", mb.getMenu(0).getText());
+                Thread.sleep(100);
                 continue;
             }
             break;

@@ -1223,10 +1223,14 @@ public final class CreatedModifiedFiles {
     }
     
     private static void copyAndSubstituteTokens(FileObject content, FileObject target, Map<String,? extends Object> tokens) throws IOException {
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+        if (l == null) {
+            l = Thread.currentThread().getContextClassLoader();
+        }
+        ScriptEngineManager scriptEngineManager = new ScriptEngineManager(l);
         ScriptEngine engine = scriptEngineManager.getEngineByName("freemarker");
         assert engine != null : "#163878: " + scriptEngineManager.getEngineFactories() + " lacks freemarker using " +
-                Thread.currentThread().getContextClassLoader() + " though lookup has " +
+                l + " though lookup has " +
                 Lookup.getDefault().lookupAll(ScriptEngineFactory.class);
         Map<String,Object> bindings = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
         String basename = target.getName();

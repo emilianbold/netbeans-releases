@@ -155,7 +155,7 @@ public class BracketCompletion {
         int lastParenPos = dotPos;
         while (cppTokenSequence.moveNext() && cppTokenSequence.offset() < eolPos) {
             Token<TokenId> token = cppTokenSequence.token();
-            if (token.id() == CppTokenId.RPAREN) {
+            if (token.id() == CppTokenId.RPAREN || token.id() == CppTokenId.RBRACKET) {
                 lastParenPos = cppTokenSequence.offset();
             } else if (!CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory())) {
                 return;

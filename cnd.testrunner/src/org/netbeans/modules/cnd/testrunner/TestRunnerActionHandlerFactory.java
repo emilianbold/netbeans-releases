@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -59,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class TestRunnerActionHandlerFactory implements ProjectActionHandlerFactory {
 
     @Override
-    public boolean canHandle(Type type, Configuration configuration) {
+    public boolean canHandle(Type type, Lookup context, Configuration configuration) {
         return type == PredefinedType.TEST;
     }
 
@@ -70,7 +71,7 @@ public class TestRunnerActionHandlerFactory implements ProjectActionHandlerFacto
 
     @Override
     public boolean canHandle(ProjectActionEvent pae) {
-        return canHandle(pae.getType(), pae.getConfiguration());
+        return canHandle(pae.getType(), pae.getContext(), pae.getConfiguration());
     }
 
 }

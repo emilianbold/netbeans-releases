@@ -44,9 +44,11 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.LayoutManager;
+import java.awt.Insets;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import org.netbeans.modules.form.FormUtils;
@@ -54,7 +56,7 @@ import org.netbeans.modules.form.FormUtils;
 /**
  * {@code GridInfoProvider} for {@code GrigBagLayout} layout manager.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public class GridBagInfoProvider implements GridInfoProvider {
     private Container container;
@@ -181,25 +183,65 @@ public class GridBagInfoProvider implements GridInfoProvider {
     @Override
     public int getGridX(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
-        return getIntFieldValue(tempXField, constraints);
+        int gridx = getIntFieldValue(tempXField, constraints);
+        int columns = getColumnCount();
+        return Math.min(gridx, columns-1); // See Issue 198519
+    }
+
+    public boolean getGridXRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridx == GridBagConstraints.RELATIVE;
     }
 
     @Override
     public int getGridY(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
-        return getIntFieldValue(tempYField, constraints);
+        int gridy = getIntFieldValue(tempYField, constraints);
+        int rows = getRowCount();
+        return Math.min(gridy, rows-1); // See Issue 198519
+    }
+
+    public boolean getGridYRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridy == GridBagConstraints.RELATIVE;
     }
 
     @Override
     public int getGridWidth(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
-        return getIntFieldValue(tempWidthField, constraints);
+        int gridWidth = getIntFieldValue(tempWidthField, constraints);
+        int columns = getColumnCount();
+        int gridx = getGridX(component);
+        return Math.min(gridWidth, columns-gridx); // See Issue 198519
+    }
+
+    public boolean getGridWidthRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridwidth == GridBagConstraints.RELATIVE;
+    }
+
+    public boolean getGridWidthRemainder(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridwidth == GridBagConstraints.REMAINDER;
     }
 
     @Override
     public int getGridHeight(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
-        return getIntFieldValue(tempHeightField, constraints);
+        int gridHeight = getIntFieldValue(tempHeightField, constraints);
+        int rows = getRowCount();
+        int gridy = getGridY(component);
+        return Math.min(gridHeight, rows-gridy); // See Issue 198519
+    }
+
+    public boolean getGridHeightRelative(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridheight == GridBagConstraints.RELATIVE;
+    }
+
+    public boolean getGridHeightRemainder(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.gridheight == GridBagConstraints.REMAINDER;
     }
 
     public int getAnchor(Component component) {
@@ -220,6 +262,26 @@ public class GridBagInfoProvider implements GridInfoProvider {
     public double getWeightY(Component component) {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return constraints.weighty;
+    }
+
+    public int getIPadX(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.ipadx;
+    }
+
+    public int getIPadY(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.ipady;
+    }
+
+    public Insets getInsets(Component component) {
+        GridBagConstraints constraints = getLayout().getConstraints(component);
+        return constraints.insets;
+    }
+
+    @Override
+    public void paintConstraints(Graphics g, Component component, boolean selected) {
+        // PENDING painting of insets and remainders
     }
 
 }

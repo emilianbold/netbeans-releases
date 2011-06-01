@@ -58,6 +58,15 @@ import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
+/**
+ * Testing if Undo/Redo
+ *
+ * @author Unknown
+ * 
+ * <b>Adam Senk</b>
+ * 20 April 2011 WORKS
+ */
+
 public class BaseTest extends ExtJellyTestCase {
 
     public String FILE_NAME = "clear_JFrame";
@@ -83,7 +92,7 @@ public class BaseTest extends ExtJellyTestCase {
             System.out.println("Solaris is not supported");
         } else {
 
-            return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
+            return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").clusters(".*").gui(true));
         }
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testNoScenario"));
 

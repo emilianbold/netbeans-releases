@@ -61,6 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -235,7 +236,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             return null;
         
         boolean inherited = isParentInherited || (null != parent && !parent.equals( e.getEnclosingElement() ));
-        Description d = new Description( ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind(), TreePathHandle.create(e, info), inherited );
+        Description d = new Description( ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind(), inherited );
         
         if( e instanceof TypeElement ) {
             d.subs = new HashSet<Description>();
@@ -250,10 +251,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
         d.modifiers = e.getModifiers();
         d.pos = getPosition(e, info, pos);
-        
-        if( inherited ) {
-            d.cpInfo = info.getClasspathInfo();
-        }
+        d.cpInfo = info.getClasspathInfo();
         
         return d;
     }
@@ -277,12 +275,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if( isInherited ) {
             sb.append( "<font color=" + INHERITED_COLOR + ">" ); // NOI18N
         }
-        if ( e.getKind() == ElementKind.CONSTRUCTOR ) {
-            sb.append(e.getEnclosingElement().getSimpleName());
-        }
-        else {
-            sb.append(e.getSimpleName());
-        }
+        Name name = e.getKind() == ElementKind.CONSTRUCTOR ? e.getEnclosingElement().getSimpleName() : e.getSimpleName();
+        sb.append(Utils.escape(name.toString()));        
         if ( isDeprecated ) {
             sb.append("</s>"); // NOI18N
         }
@@ -297,7 +291,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             sb.append(printArg(param.asType(),vararg));
             sb.append("</font>"); // NOI18N
             sb.append(" "); // NOI18N
-            sb.append(param.getSimpleName());
+            sb.append(Utils.escape(param.getSimpleName().toString()));
             if ( it.hasNext() ) {
                 sb.append(", "); // NOI18N
             }
@@ -329,7 +323,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if( isInherited ) {
             sb.append( "<font color=" + INHERITED_COLOR + ">" ); // NOI18N
         }
-        sb.append(e.getSimpleName());
+        sb.append(Utils.escape(e.getSimpleName().toString()));
         if ( isDeprecated ) {
             sb.append("</s>"); // NOI18N
         }
@@ -353,7 +347,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if( isInherited ) {
             sb.append( "<font color=" + INHERITED_COLOR + ">" ); // NOI18N
         }
-        sb.append(e.getSimpleName());
+        sb.append(Utils.escape(e.getSimpleName().toString()));
         if ( isDeprecated ) {
             sb.append("</s>"); // NOI18N
         }
@@ -367,7 +361,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
             for( Iterator<? extends TypeParameterElement> it = typeParams.iterator(); it.hasNext(); ) {
                 TypeParameterElement tp = it.next();
-                sb.append( tp.getSimpleName() );                    
+                sb.append( Utils.escape(tp.getSimpleName().toString()) );                    
                 try { // XXX Verry ugly -> file a bug against Javac?
                     List<? extends TypeMirror> bounds = tp.getBounds();
                     //System.out.println( tp.getSimpleName() + "   bounds size " + bounds.size() );
@@ -453,15 +447,16 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
     private String printArg(final TypeMirror tm, final boolean varArg) {
         if (varArg) {
-            assert tm.getKind() == TypeKind.ARRAY;
-            final ArrayType at = (ArrayType)tm;
-            final StringBuilder sb = new StringBuilder( print(at.getComponentType()) );
-            sb.append("...");   //NOI18N
-            return sb.toString();
+            if (tm.getKind() == TypeKind.ARRAY) {
+                final ArrayType at = (ArrayType)tm;
+                final StringBuilder sb = new StringBuilder( print(at.getComponentType()) );
+                sb.append("...");   //NOI18N
+                return sb.toString();
+            } else {
+                assert false : "Expected array: " + tm.toString() + " ( " +tm.getKind() + " )"; //NOI18N
+            }
         }
-        else {
-            return print(tm);
-        }
+        return print(tm);
     }
 
     private String print( TypeMirror tm ) {
@@ -508,7 +503,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 }
                 return sb.toString();
             default:
-                return tm.toString();
+                return Utils.escape(tm.toString());
         }
     }
 }

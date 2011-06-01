@@ -71,21 +71,10 @@ public abstract class AddMethodBase extends J2eeTestCase {
         super(name);
     }
 
-    protected void waitForEditorText(final EditorOperator editor, final String toSearchInEditor) {
-        try {
-            new Waiter(new Waitable() {
-
-                public Object actionProduced(Object obj) {
-                    return editor.contains(toSearchInEditor) ? Boolean.TRUE : null;
-                }
-
-                public String getDescription() {
-                    return ("Editor contains " + toSearchInEditor); // NOI18N
-                }
-            }).waitAction(null);
-        } catch (InterruptedException ie) {
-            throw new JemmyException("Interrupted.", ie);
-        }
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        System.out.println("########  " + getName() + "  #######");
     }
 
     protected void compareFiles() throws IOException {
@@ -101,8 +90,9 @@ public abstract class AddMethodBase extends J2eeTestCase {
         };
         File EJB_PROJECT_FILE = new File(new File(getDataDir(), EJBValidation.EAR_PROJECT_NAME), EJBValidation.EAR_PROJECT_NAME + "-ejb");
         utils.assertFiles(new File(EJB_PROJECT_FILE, "src/java/test"), beanNames, getName() + "_");
-        String ddNames[] = {"ejb-jar.xml",
-            "sun-ejb-jar.xml"
+        String ddNames[] = {
+            "ejb-jar.xml",
+            "glassfish-ejb-jar.xml"
         };
         utils.assertFiles(new File(EJB_PROJECT_FILE, "src/conf"), ddNames, isDDModified ? getName() + "_" : "");
     }

@@ -50,23 +50,33 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -111,9 +121,8 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
 
     static {
-        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
-        log.setLevel(Level.ALL);
-        log.addHandler(new TestLogHandler(log));
+        Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
+        org.netbeans.modules.nativeexecution.support.Logger.getInstance().addHandler(new TestLogHandler(log));
 
         // the 3 lines below contain a workaround for some WinXP tests failure
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -126,7 +135,8 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     private final ExecutionEnvironment testExecutionEnvironment;
     private String remoteTmpDir;
-
+    private Level oldLevel = null;
+    
     public NativeExecutionBaseTestCase(String name) {
         super(name);
         System.setProperty("nativeexecution.mode.unittest", "true");
@@ -145,11 +155,12 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         System.setProperty("nativeexecution.mode.unittest", "true");
         this.testExecutionEnvironment = testExecutionEnvironment;
         assertNotNull(testExecutionEnvironment);
-        setupUserDir();
+        setupUserDir();        
     }
 
     @Override
     protected void setUp() throws Exception {
+        setLoggers(true);
         setupProperties();
         super.setUp();
     }
@@ -157,6 +168,21 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        setLoggers(false);
+    }
+    
+    private void setLoggers(boolean setup) {
+        if (setup) {
+            if (NativeExecutionTestSupport.getBoolean("execution", "logging.finest")
+                 || NativeExecutionTestSupport.getBoolean("execution", getClass().getName() + ".logging.finest")) {        
+                oldLevel = org.netbeans.modules.nativeexecution.support.Logger.getInstance().getLevel();
+                org.netbeans.modules.nativeexecution.support.Logger.getInstance().setLevel(Level.ALL);
+            }
+        } else {
+            if (oldLevel != null) {
+                org.netbeans.modules.nativeexecution.support.Logger.getInstance().setLevel(oldLevel);
+            }
+        }
     }
 
     private void setupUserDir() {
@@ -238,12 +264,117 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return res;
     }
 
-    public static void writeFile(File file, CharSequence content) throws IOException {
-        Writer writer = new FileWriter(file);
-        writer.write(content.toString());
-        writer.close();
+    protected String runCommand(String command, String... args) throws Exception {
+        return runCommand(getTestExecutionEnvironment(), command, args);
     }
 
+    protected String runCommand(ExecutionEnvironment env, String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, command, args);
+        assertTrue("Command failed:" + command + ' ' + stringArrayToString(args), res.isOK());
+        return res.output;
+    }
+
+    protected String runCommandInDir(String dir, String command, String... args) throws Exception {
+        return runCommandInDir(getTestExecutionEnvironment(), dir, command, args);
+        
+    }
+    
+    protected String runCommandInDir(ExecutionEnvironment env, String dir, String command, String... args) throws Exception {
+        ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, env, command, args);
+        assertTrue("Command \"" + command + ' ' + stringArrayToString(args) +
+                "\" in dir " + dir + " failed", res.isOK());
+        return res.output;
+    }
+    
+    private String stringArrayToString(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        for (String arg : args) {
+            sb.append(' ').append(arg);
+        }
+        return sb.toString();
+    }
+    
+    protected String runScript(String script) throws Exception {
+        return runScript(getTestExecutionEnvironment(), script);
+    }
+
+    protected String runScript(ExecutionEnvironment env, String script) throws Exception {
+        final StringBuilder output = new StringBuilder();        
+        ShellScriptRunner scriptRunner = new ShellScriptRunner(env, script, new LineProcessor() {
+            @Override
+            public void processLine(String line) {
+                output.append(line).append('\n');
+                //System.err.println(line);
+            }
+            @Override
+            public void reset() {}
+            @Override
+            public void close() {}
+        });
+        int rc = scriptRunner.execute();
+        assertEquals("Error running script", 0, rc);
+        return output.toString();
+    }
+    
+    protected boolean canRead(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-r", path);
+        return npb.call().waitFor() == 0;        
+    }
+
+    protected boolean canWrite(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-w", path);
+        return npb.call().waitFor() == 0;        
+    }
+
+    protected boolean canExecute(ExecutionEnvironment env, String path) throws Exception {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("test").setArguments("-x", path);
+        return npb.call().waitFor() == 0;        
+    }
+
+    public static void writeFile(File file, CharSequence content) throws IOException {
+        Writer writer = new FileWriter(file);
+        try {
+            writer.write(content.toString());
+        } finally {
+            writer.close();
+        }
+    }
+    
+    public static void writeFile(File file, List<? extends CharSequence> lines) throws IOException {
+        Writer writer = new FileWriter(file);
+        try {
+            for (CharSequence line : lines) {
+                writer.write(line.toString());
+                writer.write('\n');
+            }
+        } finally {
+            writer.close();
+        }
+    }
+
+    public void sortFile(File file) throws IOException {
+        List<String> lines = readFileLines(file);
+        Collections.sort(lines);
+        writeFile(file, lines);
+    }
+    
+    private List<String> readFileLines(File file) throws IOException {
+        BufferedReader r = new BufferedReader(new FileReader(file));
+        try {
+            List<String> lines = new ArrayList<String>();
+            String line;
+            while ((line = r.readLine()) != null) {
+                lines.add(line);
+            }
+            return lines;
+        } finally {
+            if (r != null) try { r.close(); } catch (IOException e) {}
+        }
+    }
+    
     public String readFile(File file) throws IOException {
         BufferedReader rdr = new BufferedReader(new FileReader(file));
         StringBuilder sb = new StringBuilder();
@@ -350,6 +481,24 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
+    protected static void printFile(File file, String prefix, PrintStream out) throws Exception {
+        BufferedReader rdr = new BufferedReader(new FileReader(file));
+        try {
+            String line;
+            while ((line = rdr.readLine()) != null) {
+                if (prefix == null) {
+                    out.printf("%s\n", line);
+                } else {
+                    out.printf("%s: %s\n", prefix, line);
+                }
+            }
+        } finally {
+            if (rdr != null) {
+                rdr.close();                
+            }
+        }
+    }
+    
     /** A convenience wrapper for Thread.sleep */
     protected static void sleep(int millis) {
         try {
@@ -359,6 +508,19 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
+    protected String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        
+        String[] mkTempArgs;
+        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
+            mkTempArgs = directory ? new String[] { "-t", "/tmp", "-d" } : new String[] { "-t", "/tmp" };
+        } else {
+            mkTempArgs = directory ? new String[] { "-d" } : new String[0];
+        }        
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
+        assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
+        return res.output;
+    }
+    
+    
     protected String createRemoteTmpDir() throws Exception {
         String dir = getRemoteTmpDir();
         int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), dir, new PrintWriter(System.err)).get().intValue();

@@ -45,6 +45,7 @@ package org.netbeans.jellytools;
 
 import java.io.IOException;
 import java.util.Arrays;
+import junit.framework.Test;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -53,60 +54,40 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTest;
 
 /** Test DocumentsDialogOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class DocumentsDialogOperatorTest extends JellyTestCase {
-    
+
+    private static DocumentsDialogOperator documentsOper;
+    private static Node editableSourceNode;
+    private static String[] tests = new String[]{
+        "testInvoke",
+        "testVerify",
+        "testSelectDocument",
+        "testSelectDocuments",
+        "testGetDescription",
+        "testSaveDocuments",
+        "testCloseDocuments",
+        "testSwitchToDocument"
+    };
+
     public DocumentsDialogOperatorTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+
+    public static Test suite() {
+        return NbModuleSuite.create(DocumentsDialogOperatorTest.class, ".*", ".*", tests);
     }
-    
-    static String[] tests = new String[] { 
-                    "testInvoke",
-                    "testVerify",
-                    "testSelectDocument",
-                    "testSelectDocuments",
-                    "testGetDescription",
-                    "testSaveDocuments",
-                    "testCloseDocuments",
-                    "testSwitchToDocument"
-    };
-    public static NbTest suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // test cases have to be in particular order
-        suite.addTest(new DocumentsDialogOperatorTest("testInvoke"));
-        suite.addTest(new DocumentsDialogOperatorTest("testVerify"));
-        suite.addTest(new DocumentsDialogOperatorTest("testSelectDocument"));
-        suite.addTest(new DocumentsDialogOperatorTest("testSelectDocuments"));
-        suite.addTest(new DocumentsDialogOperatorTest("testGetDescription"));
-        suite.addTest(new DocumentsDialogOperatorTest("testSaveDocuments"));
-        suite.addTest(new DocumentsDialogOperatorTest("testCloseDocuments"));
-        suite.addTest(new DocumentsDialogOperatorTest("testSwitchToDocument"));
-        return suite;
-         */
-        return (NbTest) NbModuleSuite.create(DocumentsDialogOperatorTest.class,
-                ".*", ".*", tests);
-    }
-    
-    /** Print out test name. */
+
+    @Override
     public void setUp() throws IOException {
-        openDataProjects("SampleProject");
-        closeOpenedProjects();
+        System.out.println("########  " + getName() + "  #######");
         openDataProjects("SampleProject");
     }
-    
-    private static DocumentsDialogOperator documentsOper;
-    private static Node editableSourceNode;
-    
+
     /**
      * Test of invoke method.
      */
@@ -132,7 +113,7 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         new OpenAction().performAPI(editableSourceNode);
         documentsOper = DocumentsDialogOperator.invoke();
     }
-    
+
     /**
      * Test of verify method.
      */
@@ -145,12 +126,12 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
      */
     public void testSelectDocument() {
         documentsOper.selectDocument("SampleClass1.java"); // NOI18N
-        assertEquals("Wrong document selected.", "SampleClass1.java", 
-                     documentsOper.lstDocuments().getSelectedValue().toString());  // NOI18N
+        assertEquals("Wrong document selected.", "SampleClass1.java",
+                documentsOper.lstDocuments().getSelectedValue().toString());  // NOI18N
         documentsOper.selectDocument(2);
         assertEquals("Wrong document selected.", 2, documentsOper.lstDocuments().getSelectedIndex());  // NOI18N
     }
-    
+
     /**
      * Test of selectDocuments method.
      */
@@ -158,20 +139,20 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         String[] documents = {"SampleClass1.java", "SampleClass2.java"}; // NOI18N
         documentsOper.selectDocuments(documents);
         Object[] selected = documentsOper.lstDocuments().getSelectedValues();
-        for(int i = 0;i<selected.length;i++) {
+        for (int i = 0; i < selected.length; i++) {
             assertEquals("Wrong document selected by names.", documents[i], selected[i].toString());
         }
         // test one document
-        documentsOper.selectDocuments(new String[] {"SampleClass21.java"}); // NOI18N
-        assertEquals("Wrong document selected.", "SampleClass21.java", 
-                     documentsOper.lstDocuments().getSelectedValue().toString());  // NOI18N
-        
+        documentsOper.selectDocuments(new String[]{"SampleClass21.java"}); // NOI18N
+        assertEquals("Wrong document selected.", "SampleClass21.java",
+                documentsOper.lstDocuments().getSelectedValue().toString());  // NOI18N
+
         int[] indexes = {0, 1};
         documentsOper.selectDocuments(indexes);
-        assertTrue("Wrong documents selected by indexes.", 
-                   Arrays.equals(indexes, documentsOper.lstDocuments().getSelectedIndices()));  // NOI18N
+        assertTrue("Wrong documents selected by indexes.",
+                Arrays.equals(indexes, documentsOper.lstDocuments().getSelectedIndices()));  // NOI18N
         // test one document
-        documentsOper.selectDocuments(new int[] {2});
+        documentsOper.selectDocuments(new int[]{2});
         assertEquals("Wrong document selected.", 2, documentsOper.lstDocuments().getSelectedIndex());  // NOI18N
     }
 
@@ -195,16 +176,16 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         eo.closeDiscard();
         assertFalse("Document is not saved.", modified);//NOI18N
     }
-    
+
     /**
      * Test of closeDocuments method.
-     */ 
+     */
     public void testCloseDocuments() {
         documentsOper.selectDocument("SampleClass2.java");  // NOI18N
         documentsOper.closeDocuments();
         assertTrue("Document was not closed.", documentsOper.lstDocuments().getModel().getSize() == 1);
     }
-    
+
     /**
      * Test of switchToDocument method.
      */
@@ -217,60 +198,4 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete"); // NOI18N
         new NbDialogOperator(safeDeleteTitle).ok();
     }
-    /*
-    private static class P implements Project, ProjectConfigurationProvider {
-        Lookup l = Lookups.singleton(this);
-        FileObject fo;
-        PC conf = new PC();
-        
-        public P(File dir) throws IOException {
-            fo = FileUtil.createFolder(dir);
-        }
-
-        public FileObject getProjectDirectory() {
-            return fo;
-        }
-
-        public Lookup getLookup() {
-            return l;
-        }
-
-        public Collection getConfigurations() {
-            return Collections.singleton(conf);
-        }
-
-        public ProjectConfiguration getActiveConfiguration() {
-            return conf;
-        }
-
-        public void setActiveConfiguration(ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public boolean hasCustomizer() {
-            return true;
-        }
-
-        public void customize() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public boolean configurationsAffectAction(String command) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener lst) {
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener lst) {
-        }
-    }
-    
-    private static final class PC implements ProjectConfiguration {
-        public String getDisplayName() {
-            return "Default";
-        }
-        
-    }
-    */
 }

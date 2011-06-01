@@ -102,6 +102,9 @@ public abstract class J2eeModuleProvider {
         });
     }
 
+    private final Object configSupportImplLock = new Object();
+
+    /* GuardedBy(configSupportImplLock) */
     private ConfigSupportImpl configSupportImpl;
     private final List listeners = new ArrayList();
     private ConfigFilesListener configFilesListener = null;
@@ -128,12 +131,12 @@ public abstract class J2eeModuleProvider {
     
     public final ConfigSupport getConfigSupport () {
         ConfigSupportImpl confSupp;
-        synchronized (this) {
+        synchronized (configSupportImplLock) {
             confSupp = configSupportImpl;
         }
         if (confSupp == null) {
             confSupp = new ConfigSupportImpl(this);
-            synchronized (this) {
+            synchronized (configSupportImplLock) {
                 configSupportImpl = confSupp;
             }
         }
@@ -143,8 +146,10 @@ public abstract class J2eeModuleProvider {
     // Do not remove this method! It is a helper for the Maven support project to 
     // workaround the issue #109507. Please keep in mind that this is a hack, so
     // keep it private! No one else should use it.
-    private synchronized void resetConfigSupport() {
-        configSupportImpl = null;
+    private void resetConfigSupport() {
+        synchronized (configSupportImplLock) {
+            configSupportImpl = null;
+        }
     }
     
     /**
@@ -846,7 +851,7 @@ public abstract class J2eeModuleProvider {
         // corresponds to the "resolve missing server" or "new project"
         if (oldServer == null && newServer != null) {
             ConfigSupportImpl oldConSupp;
-            synchronized (this) {
+            synchronized (configSupportImplLock) {
                 oldConSupp = configSupportImpl;
                 configSupportImpl = null;
             }
@@ -870,7 +875,7 @@ public abstract class J2eeModuleProvider {
             if (J2eeModule.Type.WAR.equals(getJ2eeModule().getType())) {
                 String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
                 ConfigSupportImpl oldConSupp;
-                synchronized (this) {
+                synchronized (configSupportImplLock) {
                     oldConSupp = configSupportImpl;
                     configSupportImpl = null;
                 }
@@ -899,7 +904,7 @@ public abstract class J2eeModuleProvider {
                 }
             } else {
                 ConfigSupportImpl oldConSupp;
-                synchronized (this) {
+                synchronized (configSupportImplLock) {
                     oldConSupp = configSupportImpl;
                     configSupportImpl = null;
                 }

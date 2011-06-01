@@ -454,21 +454,30 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(InstanceOfExpression node) {
-        occurencesBuilder.prepare(node.getClassName(), modelBuilder.getCurrentScope());
-        String clsName = CodeUtils.extractClassName(node.getClassName());
-        if (clsName != null) {
-            Expression expression = node.getExpression();
+        ClassName className = node.getClassName();
+        Expression expression = node.getExpression();
+        if (className.getName() instanceof Variable) {
+            occurencesBuilder.prepare((Variable)className.getName(), modelBuilder.getCurrentScope());
             if (expression instanceof Variable) {
-                Variable var = (Variable) expression;
-                Scope currentScope = modelBuilder.getCurrentScope();
-                VariableNameImpl varN = findVariable(currentScope, var);
-                if (varN != null) {
-                    varN.addElement(new VarAssignmentImpl(varN, currentScope, true,
-                            getBlockRange(currentScope), ASTNodeInfo.create(var).getRange(), clsName));
-                }
+                occurencesBuilder.prepare((Variable)expression, modelBuilder.getCurrentScope());
             }
+        } else {
+            occurencesBuilder.prepare(node.getClassName(), modelBuilder.getCurrentScope());
+            String clsName = CodeUtils.extractClassName(node.getClassName());
+            if (clsName != null) {
+                if (expression instanceof Variable) {
+                    Variable var = (Variable) expression;
+                    Scope currentScope = modelBuilder.getCurrentScope();
+                    VariableNameImpl varN = findVariable(currentScope, var);
+                    if (varN != null) {
+                        varN.addElement(new VarAssignmentImpl(varN, currentScope, true,
+                                getBlockRange(currentScope), ASTNodeInfo.create(var).getRange(), clsName));
+                    }
+                }
 
+            }
         }
+        
         super.visit(node);
     }
 

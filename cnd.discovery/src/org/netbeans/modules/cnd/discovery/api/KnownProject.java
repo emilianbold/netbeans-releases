@@ -57,7 +57,7 @@ public abstract class KnownProject {
     /** path to created netbeans projects */
     public static final String NB_ROOT = "netbeans-project"; // NOI18N
 
-    private static KnownProject DEFAULT = new Default();
+    private static Default DEFAULT = new Default();
 
     public abstract boolean canCreate(Map<String,String> parameters);
     public abstract boolean create(Map<String,String> parameters);
@@ -69,32 +69,17 @@ public abstract class KnownProject {
      * Static method to obtain the CsmSelect implementation.
      * @return the selector
      */
-    public static synchronized KnownProject getDefault() {
-        return DEFAULT;
+    public static synchronized KnownProject find(Map<String, String> parameters)  {
+        return DEFAULT.find(parameters);
     }
     
     /**
      * Implementation of the default creator
      */  
-    private static final class Default extends KnownProject {
+    private static final class Default {
         private final Lookup.Result<KnownProject> res;
         Default() {
             res = Lookup.getDefault().lookupResult(KnownProject.class);
-        }
-
-        @Override
-        public boolean canCreate(Map<String, String> parameters) {
-            KnownProject creator = find(parameters);
-            return creator != null;
-        }
-        @Override
-        public boolean create(Map<String, String> parameters) {
-            KnownProject creator = find(parameters);
-            if (creator != null) {
-                return creator.create(parameters);
-                
-            }
-            return false;
         }
 
         private KnownProject find(Map<String, String> parameters) {

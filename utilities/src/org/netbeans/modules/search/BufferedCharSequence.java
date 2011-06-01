@@ -42,16 +42,15 @@
 
 package org.netbeans.modules.search;
 
-import java.io.FileInputStream;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import sun.nio.cs.ThreadLocalCoders;
 
@@ -138,43 +137,27 @@ public class BufferedCharSequence implements CharSequence {
 
     /**
      * Creates {@code BufferedCharSequence} for the specified {@code stream}.
-     * @param stream is a stream that will be buffered and represented as a 
+     * @param stream is a stream that will be buffered and represented as a
      *        {@code CharSequence}.
      * @param charset is a named mapping that will be used to decode a sequence
      *                of bytes from the {@code stream}.
+     * @param size is the size of the file.
      */
-    public BufferedCharSequence(final FileInputStream stream, Charset charset) {
-        this(stream.getChannel(), charset);
-    }
-
-    /**
-     * Creates {@code BufferedCharSequence} for the specified {@code channel}.
-     * @param channel is a channel that will be buffered and represented as a
-     *        {@code CharSequence}.
-     * @param charset is a named mapping that will be used to decode a sequence
-     *                of bytes from the {@code channel}.
-     */
-    public BufferedCharSequence(final FileChannel channel, Charset charset) {
+    public BufferedCharSequence(final InputStream stream, Charset charset, long size) {
         // TODO charset.name() is used instead of charset due to a bug in the
         // org.netbeans.api.queries.FileEncodingQuery.ProxyCharset.ProxyDecoder
         // The IllegalStateException may be thrown after correct actions.
         // See #169804
-        this(channel,
+        this(stream,
             ThreadLocalCoders.decoderFor(charset.name())
                              .onMalformedInput(CodingErrorAction.REPLACE)
-                             .onUnmappableCharacter(CodingErrorAction.REPLACE));
+                             .onUnmappableCharacter(CodingErrorAction.REPLACE), size);
     }
 
-    /**
-     * Creates {@code BufferedCharSequence} for the specified {@code channel}.
-     * @param channel is a channel that will be buffered and represented as a
-     *        {@code CharSequence}.
-     * @param decoder is a decoder that will be used to decode a sequence
-     *                of bytes from the {@code channel}.
-     */
-    public BufferedCharSequence(final FileChannel channel,
-                                CharsetDecoder decoder) {
-        this.source = new Source(channel);
+
+    public BufferedCharSequence(final InputStream stream,
+                                CharsetDecoder decoder, long size) {
+        this.source = new Source(stream, size);
         this.decoder = decoder;
         this.sink = new Sink(this.source);
         LOG.finer("<init> " + this.source + "; decoder = " + this.decoder +
@@ -232,7 +215,7 @@ public class BufferedCharSequence implements CharSequence {
      * @return the underlying instance of this class.
      * @throws SourceIOException
      */
-    public BufferedCharSequence reset() throws SourceIOException {
+    public BufferedCharSequence reset() throws SourceIOException {        
         source.reset();
         sink.reset();
         decoder.reset();
@@ -274,7 +257,7 @@ public class BufferedCharSequence implements CharSequence {
         reset();
         int length = 0;
         while(sink.next()) {  }
-        length = sink.buffer.scope.end;
+        length = sink.buffer.scope.end;        
         return length;
     }
 
@@ -409,13 +392,13 @@ public class BufferedCharSequence implements CharSequence {
      */
     public String getLineText(int start) {
         int oldPosition = changePosition(start);
-        String text = nextLineText();
+        String text = nextLineText();        
         changePosition(oldPosition);
         return text;
     }
 
-    private char getCharAt(int index) throws IndexOutOfBoundsException {
-        if(sink.buffer.scope.isBefore(index)) {
+    private char getCharAt(int index) throws IndexOutOfBoundsException {        
+        if(sink.buffer.scope.isBefore(index)) {            
             reset();
         }
         while(!sink.buffer.scope.isInside(index)) {
@@ -424,7 +407,7 @@ public class BufferedCharSequence implements CharSequence {
                 throw new IndexOutOfBoundsException("index is " +
                         index + " > lenght"); // NOI18N
             }
-        }
+        }        
         return sink.charAt(index);
     }
 
@@ -466,70 +449,68 @@ public class BufferedCharSequence implements CharSequence {
     /**
      * The source buffer.
      */
-    private class Source {
+       private class Source {
         private int maxBufferSize = MAX_SOURCE_BUFFER_SIZE;
 
         private ByteBuffer buffer;
-        private FileChannel channel;
+        private BufferedInputStream bstream;
+        private int bufferSize;
         
-        public Source(FileChannel channel) {
-            this.channel = channel;
+        public Source(InputStream inputStream, long bufferSize) {
+            this.bstream = new BufferedInputStream(inputStream);
+            this.bstream.mark(Integer.MAX_VALUE);
+            this.bufferSize = getBufferSize(bufferSize);
             buffer = newBuffer();
         }
 
         @Override
         public String toString() {
-            return "source=[channel = "+channel+", buffer = "+buffer+"]";
+            return "source=[stream = " + bstream.toString() + ", buffer = " + buffer + "]";
         }
 
         private ByteBuffer newBuffer() {
-            return ByteBuffer.allocate(getBufferSize());
+            return ByteBuffer.allocate(bufferSize);
         }
 
-        public void reset() {
-            try {
-                channel.position(0);
+       public void reset() {        
+            try {                
+                bstream.reset();
             } catch (IOException ex) {
                 throw new SourceIOException(ex);
-            }
+            }            
             buffer.clear();
         }
 
         /**
-         * Reads a sequence of bytes from the source channel. Bytes are read 
-         * starting at the channel's current file position, and then the 
+         * Reads a sequence of bytes from the source stream. Bytes are read
+         * starting at the stream's current position, and then the
          * position is updated with the number of bytes actually read.
-         *  
-         * @return The number of bytes read, possibly zero, or -1 if the channel
-         * has reached end-of-stream
-         * 
+         *
+         * @return The number of bytes read, possibly zero, or -1 if 
+         * the end-of-stream is reached
+         *
          * @throws ProcessException If some other I/O error occurs
          */
         private int read() {
             try {
-                return channel.read(buffer);
+                if(buffer.hasArray()) {
+                    int res = bstream.read(buffer.array());
+                    if(res > 0) {
+                        buffer.position(res);
+                    }
+                    return res;
+                }
+                throw new IOException("No byte array");
             } catch (IOException ex) {
                 throw new SourceIOException(ex);
             }
         }
 
-        public int position() throws IOException {
-            return (int) channel.position();
-        }
-
         public void close() throws IOException {
-            channel.close();
+            bstream.close();
         }
 
-        public int size() {
-            try {
-                return getSize(channel.size());
-            } catch (IOException ioe) {
-                throw new SourceIOException(ioe);
-            }
-        }
-
-        private int getSize(long size) {
+        public int getSize(long size) {
             if (size > Integer.MAX_VALUE) {
                 LOG.warning("File size is " + size + "bytes. " +
                             "Only first " + MAX_FILE_SIZE +
@@ -539,8 +520,8 @@ public class BufferedCharSequence implements CharSequence {
             return (int) size;
         }
 
-        private int getBufferSize() {
-            int size = Math.min(size(), maxBufferSize);
+        private int getBufferSize(long bufferSize) {
+            int size = Math.min(getSize(bufferSize), maxBufferSize);
             return size;
         }
 
@@ -548,10 +529,10 @@ public class BufferedCharSequence implements CharSequence {
          *
          * @return {@code true} if EOF, otherwise {@code false}.
          */
-        public boolean readNext() {
-            buffer.clear();
-            int status = read();
-            buffer.flip();
+        public boolean readNext() {           
+            buffer.clear();            
+            int status = read();            
+            buffer.flip();            
             return status == -1;
         }
 
@@ -578,7 +559,7 @@ public class BufferedCharSequence implements CharSequence {
             return "sink = [" + buffer + "]";
         }
 
-        public void reset() {
+        public void reset() {            
             buffer.reset();
         }
 
@@ -595,7 +576,7 @@ public class BufferedCharSequence implements CharSequence {
          * @return {@code true} is successful, otherwise {@code false}.
          */
         private boolean next() {
-            CharBuffer out = buffer.clear();
+            CharBuffer out = buffer.clear();           
             boolean endOfInput = false;
             if(coderResult == CoderResult.UNDERFLOW) {
                 endOfInput = source.readNext();
@@ -603,7 +584,7 @@ public class BufferedCharSequence implements CharSequence {
             while((coderResult =
                     decoder.decode(source.buffer, out, endOfInput))
                     != CoderResult.UNDERFLOW) {
-                out = buffer.growBuffer();
+                out = buffer.growBuffer();                
             }
             if(endOfInput) {
                 while((coderResult = decoder.flush(out))
@@ -676,7 +657,7 @@ public class BufferedCharSequence implements CharSequence {
                 return c;
             }
 
-            private void reset() {
+            private void reset() {               
                 scope.reset();
                 charBuffer.clear();
             }
@@ -690,10 +671,10 @@ public class BufferedCharSequence implements CharSequence {
                 return charBuffer;
             }
 
-            private void adjustScope() {
-                scope.start = scope.end == -1 ? 0 : scope.end;
-                flip();
-                scope.end = scope.start + charBuffer.limit();
+            private void adjustScope() {             
+                scope.start = scope.end == -1 ? 0 : scope.end;              
+                flip();                                                 
+                scope.end = scope.start + charBuffer.limit();                              
             }
 
             /**

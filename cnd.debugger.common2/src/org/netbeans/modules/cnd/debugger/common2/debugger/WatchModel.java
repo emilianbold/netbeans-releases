@@ -386,7 +386,6 @@ public final class WatchModel extends VariableModel
 		Action_INHERITED_MEMBERS,
 		Action_DYNAMIC_TYPE,
 		Action_STATIC_MEMBERS,
-		Action_OUTPUT_FORMAT,
 		SystemAction.get(MaxObjectAction.class),
 		null,
 	    };

@@ -62,23 +62,20 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -251,7 +248,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     private SelectHostWizardProvider getSelectHostWizardProvider() {
         if (selectHostWizardProvider == null) {
-            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, new ChangeListener() {
+            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, false, new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     fireStateChanged();
@@ -337,25 +334,15 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
                 panelConfigureProjectTrue.setFinishPanel(false);
                 panels.add(panelConfigureProjectTrue);
-                WizardDescriptor.Panel<WizardDescriptor> masterPanel = createDatabaseMasterPanel();
-                if(masterPanel != null) {
-		    panels.add(masterPanel);
+                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                if(provider != null) {
+                    provider.setupAdditionalWizardPanels(panels);
                 }
-                    String[] steps = createSteps(panels);
+                String[] steps = createSteps(panels);
             }
         } else {
             throw new IllegalStateException("Illegal wizard type: " + wizardtype); //NOI18N
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    WizardDescriptor.Panel<WizardDescriptor> createDatabaseMasterPanel() {
-        FileObject wizardOptions = FileUtil.getConfigFile("Templates/Project/Native/newDBApplication.xml"); //NOI18N
-        Object panel = wizardOptions.getAttribute("databaseMasterPanel"); //NOI18N
-        if (panel instanceof WizardDescriptor.Panel) {
-            return (WizardDescriptor.Panel<WizardDescriptor>) panel;
-        }
-        return null;
     }
 
     private void setupSteps() {
@@ -466,7 +453,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             } else if (wizardtype == TYPE_QT_STATIC_LIB) {
                 conftype = MakeConfiguration.TYPE_QT_STATIC_LIB;
             } else if (wizardtype == TYPE_DB_APPLICATION) {
-                conftype = MakeConfiguration.TYPE_APPLICATION;
+                conftype = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             String mainFile = null;
             if (((Boolean) wiz.getProperty("createMainFile")).booleanValue()) { // NOI18N
@@ -481,12 +468,10 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             debug.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
             if (wizardtype == TYPE_DB_APPLICATION) {
-                LinkerConfiguration linkerConfiguration = debug.getLinkerConfiguration();
-                LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-                librariesConfiguration.add(new LibraryItem.LibItem("clntsh")); // NOI18N
-                librariesConfiguration.add(new LibraryItem.LibItem("nnz11")); // NOI18N
-                linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
-                debug.setLinkerConfiguration(linkerConfiguration);
+                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                if(provider != null) {
+                    provider.setupReleaseConfiguration(debug);
+                }                
             }
             MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain, defaultToolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
@@ -495,12 +480,10 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             release.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
             if (wizardtype == TYPE_DB_APPLICATION) {
-                LinkerConfiguration linkerConfiguration = release.getLinkerConfiguration();
-                LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-                librariesConfiguration.add(new LibraryItem.LibItem("clntsh")); // NOI18N
-                librariesConfiguration.add(new LibraryItem.LibItem("nnz11")); // NOI18N
-                linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
-                release.setLinkerConfiguration(linkerConfiguration);
+                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                if(provider != null) {
+                    provider.setupReleaseConfiguration(release);
+                }
             }
             MakeConfiguration[] confs = new MakeConfiguration[]{debug, release};
             ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, dirF);
@@ -518,7 +501,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
             
-            MakeProjectGenerator.createProject(prjParams);
+            MakeProjectGeneratorImpl.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = CndFileUtils.toFileObject(dirF);
             resultSet.add(dir);
@@ -533,6 +516,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         wiz.putProperty(WizardConstants.PROPERTY_FULL_REMOTE, Boolean.valueOf(fullRemote));
+        wiz.putProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV, NewProjectWizardUtils.getDefaultSourceEnvironment());
         index = 0;
         setupPanelsAndStepsIfNeed();
     }
@@ -541,7 +525,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, null);
         this.wiz.putProperty(WizardConstants.PROPERTY_NAME, null);
-        this.wiz.putProperty("mainClass", null); // NOI18N
+        this.wiz.putProperty(WizardConstants.MAIN_CLASS, null); // NOI18N
         if (wizardtype == TYPE_MAKEFILE) {
             this.wiz.putProperty("sourceRoot", null); // NOI18N
         }

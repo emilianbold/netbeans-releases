@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package web.entity;
 
 import java.io.Serializable;
@@ -13,7 +12,7 @@ import javax.persistence.Id;
 
 /**
  *
- * @author lukas
+ * @author jskrivanek
  */
 @Entity
 public class WebEntity implements Serializable {
@@ -52,7 +51,7 @@ public class WebEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "web.entity.WebEntity[id=" + id + "]";
+        return "web.entity.WebEntity[ id=" + id + " ]";
     }
-
+    
 }

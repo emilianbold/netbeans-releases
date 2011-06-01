@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,14 +62,18 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.java.hints.introduce.IntroduceHint;
+import org.netbeans.modules.java.hints.introduce.IntroduceKind;
 import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.PositionRefresher;
 import org.openide.util.Exceptions;
@@ -144,7 +149,7 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             //SuggestionsTask
             if ((version > 0 && holder.suggestions < version) || holder.suggestionsCaret != position) {
                 LOG.fine("Computing suggestions");
-                eds.put(HintsTask.KEY_SUGGESTIONS, new HintsInvoker(controller, position, new AtomicBoolean()).computeHints(controller));
+                eds.put(HintsTask.KEY_SUGGESTIONS, new HintsInvoker(controller, position, ctx.getCancel()).computeHints(controller));
             } else {
                 LOG.fine("Suggestions already computed");
             }
@@ -160,9 +165,28 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
                 int rowStart = Utilities.getRowStart((BaseDocument) doc, position);
                 int rowEnd = Utilities.getRowEnd((BaseDocument) doc, position);
 
-                eds.put(HintsTask.KEY_HINTS, new HintsInvoker(controller, rowStart, rowEnd, new AtomicBoolean()).computeHints(controller));
+                eds.put(HintsTask.KEY_HINTS, new HintsInvoker(controller, rowStart, rowEnd, ctx.getCancel()).computeHints(controller));
             } else {
                 LOG.fine("Hints already computed");
+            }
+
+            if (ctx.isCanceled()) {
+                return;
+            }
+
+            //IntroduceHints:
+            int[] selection = SelectionAwareJavaSourceTaskFactory.getLastSelection(controller.getFileObject());
+
+            if (selection != null) {
+                if ((version > 0 && holder.introduce < version) || holder.introduceSelStart != selection[0] || holder.introduceSelEnd != selection[1]) {
+                    LOG.fine("Computing introduce hints");
+
+                    eds.put(IntroduceHint.class.getName(), IntroduceHint.computeError(controller, selection[0], selection[1], new EnumMap<IntroduceKind, Fix>(IntroduceKind.class), new EnumMap<IntroduceKind, String>(IntroduceKind.class), ctx.getCancel()));
+                } else {
+                    LOG.fine("Introduce hints already computed");
+                }
+            } else {
+                LOG.fine("No selection, not computing introduce hints");
             }
 
             if (ctx.isCanceled()) {
@@ -210,6 +234,13 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
         getHolder(doc).suggestionsCaret = caret;
     }
 
+    public static void introduceHintsUpdated(Document doc, long version, int selStart, int selEnd) {
+        if (doc == null) return;
+        getHolder(doc).introduce = version;
+        getHolder(doc).introduceSelStart = selStart;
+        getHolder(doc).introduceSelEnd = selEnd;
+    }
+
     public static void errorsUpdated(Document doc, long version, List<ErrorDescription> errors) {
         if (doc == null) return;
         getHolder(doc).errors = version;
@@ -231,6 +262,9 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
         private int suggestionsCaret;
         private long hints;
         private long errors;
+        private long introduce;
+        private long introduceSelStart;
+        private long introduceSelEnd;
         private List<ErrorDescription> errorsContent;
     }
 }

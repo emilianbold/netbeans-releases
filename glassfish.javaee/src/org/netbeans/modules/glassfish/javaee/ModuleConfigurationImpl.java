@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -82,10 +82,10 @@ public class ModuleConfigurationImpl implements
     private J2eeModule module;
     private Lookup lookup;
 
-    ModuleConfigurationImpl(J2eeModule module, Hk2Configuration config) throws ConfigurationException {
+    ModuleConfigurationImpl(J2eeModule module, Hk2Configuration config, Hk2DeploymentManager hk2Dm) throws ConfigurationException {
         this.module = module;
         this.config = config;
-        ResourcesHelper.addSampleDatasource(module);
+        ResourcesHelper.addSampleDatasource(module, hk2Dm);
     }
 
     // ------------------------------------------------------------------------

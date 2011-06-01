@@ -48,7 +48,11 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -188,11 +192,18 @@ public class CndPathUtilitities {
     }
 
     public static String toAbsolutePath(FileObject base, String path) {
-        return toAbsolutePath(base.getPath(), path);
-    }
-
-    public static String toAbsolutePath(FileObject base, FileObject path) {
-        return toAbsolutePath(base, path.getPath()); // TODO: use smarter logic (compare file systems, etc)
+        path = (path == null || path.length() == 0) ? "." : path; // NOI18N
+        if (!isPathAbsolute(path)) {
+            path = base.getPath() + '/' + path; //NOI18N
+        }       
+        try {
+            FileSystem fileSystem = base.getFileSystem();
+            path = CndFileUtils.normalizeAbsolutePath(fileSystem, path);
+            path = naturalizeSlashes(fileSystem, path);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }        
+        return path;
     }
 
     /*
@@ -504,6 +515,12 @@ public class CndPathUtilitities {
         }
     }
 
+    public static String naturalizeSlashes(FileSystem fileSystem, String path) {
+        char rightSlash = CndFileUtils.getFileSeparatorChar(fileSystem);
+        char wrongSlash = (rightSlash == '/') ? '\\' : '/';
+        return path.replace(wrongSlash, rightSlash);
+    }
+
     /** Add quotes around the string if necessary.
      * This is the case when the string contains space or meta characters.
      * For now, we only worry about space, tab, *, [, ], ., ( and )
@@ -547,6 +564,14 @@ public class CndPathUtilitities {
         }
     }
 
+    public static boolean isIgnoredFolder(File file) {
+        if (file.isDirectory()) {
+            String name = file.getName();
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
+        }
+        return false;
+    }
+        
     /**
      * Same as String.equals, but allows arguments to be null
      */

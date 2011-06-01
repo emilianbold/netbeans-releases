@@ -78,13 +78,13 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
         for (EncryptionProvider p : Lookup.getDefault().lookupAll(EncryptionProvider.class)) {
             if (p.enabled()) {
                 encryption = p;
-                LOG.log(Level.FINE, "Using provider: {0}", p);
                 Preferences prefs = prefs();
                 Utils.goMinusR(prefs);
                 p.encryptionChangingCallback(this);
                 if (!testSampleKey(prefs)) {
                     continue;
                 }
+                LOG.log(Level.FINE, "Using provider: {0}", p);
                 return true;
             }
         }
@@ -102,7 +102,7 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
                 return true;
             } else {
                 LOG.fine("could not save sample key");
-                return promptToDelete(prefs);
+                return false;
             }
         } else {
             encryption.freshKeyring(false);

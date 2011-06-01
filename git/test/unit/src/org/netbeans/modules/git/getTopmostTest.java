@@ -59,7 +59,7 @@ public class getTopmostTest extends NbTestCase {
     GitVCS mvcs;
     public getTopmostTest(String arg0) {
         super(arg0);
-        mvcs = Lookup.getDefault().lookup(GitVCS.class);
+        mvcs = new GitVCS();
     }
 
     @Override
@@ -280,12 +280,12 @@ public class getTopmostTest extends NbTestCase {
     private Set<File> getKnownRoots() throws SecurityException, IllegalArgumentException, Exception, IllegalAccessException {
         Field f = null;
         try {
-            f = GitVCS.class.getDeclaredField("knownRoots");
+            f = Git.class.getDeclaredField("knownRoots");
         } catch (Exception ex) {
             throw ex;
         }
         f.setAccessible(true);
-        Set<File> m = (Set<File>) f.get(mvcs);
+        Set<File> m = (Set<File>) f.get(Git.getInstance());
         return m;
     }
 

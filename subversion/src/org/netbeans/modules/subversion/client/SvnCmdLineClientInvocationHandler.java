@@ -62,7 +62,7 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
     private SvnWcParser wcParser = new SvnWcParser();    
     
     public SvnCmdLineClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-        super(adapter, desc, support, handledExceptions);
+        super(adapter, desc, support, handledExceptions, SvnClientFactory.ConnectionType.cli);
     }
    
     @Override
@@ -102,11 +102,5 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
         }
         return returnValue;
     }
-
-    @Override
-    protected boolean isCommandLine () {
-        return true;
-    }
-    
 }
 

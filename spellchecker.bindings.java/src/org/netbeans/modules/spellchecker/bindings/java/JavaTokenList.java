@@ -284,6 +284,11 @@ public class JavaTokenList implements TokenList {
                         offsetStart = offset;
                         break;
                     }
+                    if (current == '&') {
+                        state = 5;
+                        offsetStart = offset;
+                        break;
+                    }
                     break;
 
                 case 1:
@@ -315,6 +320,15 @@ public class JavaTokenList implements TokenList {
                     
                     offset--;
                     state = 0;
+                    break;
+                case 5:
+                    if (current == ';') {
+                        return new Pair<CharSequence, Integer>(start.subSequence(offsetStart, offset + 1), offsetStart);
+                    }
+                    if (!isLetter(current) && current != '#' && !Character.isDigit(current)) {
+                        return new Pair<CharSequence, Integer>(start.subSequence(offsetStart, offset), offsetStart);
+                    }
+
                     break;
             }
 

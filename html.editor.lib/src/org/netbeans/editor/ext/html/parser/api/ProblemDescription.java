@@ -47,6 +47,7 @@ public final class ProblemDescription {
     public static final int WARNING = 1;
     public static final int ERROR = 2;
     public static final int FATAL = 3;
+    public static final int INTERNAL_ERROR = 4;
     
     private String key;
     private String text;
@@ -109,6 +110,9 @@ public final class ProblemDescription {
                 break;
             case FATAL:
                 ttype = "Fatal Error"; //NOI18N
+                break;
+            case INTERNAL_ERROR:
+                ttype = "Internal Error"; //NOI18N
                 break;
         }
         String nodetext = code == null ? "" : code.substring(getFrom(), getTo());

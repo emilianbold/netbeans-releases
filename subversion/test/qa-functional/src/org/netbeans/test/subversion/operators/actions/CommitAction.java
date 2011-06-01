@@ -17,15 +17,18 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  */
 public class CommitAction extends ActionNoBlock {
     
+    /** "Copy..." menu item. */
+    public static final String TEAM_ITEM = "Team";
+    
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
             
     /** "Commit" menu item. */
-    public static final String COMMIT_ITEM = "Commit";
+    public static final String COMMIT_ITEM = "Commit...";
     
     /** Creates a new instance of CommitAction */
     public CommitAction() {
-        super("Versioning" + "|" + COMMIT_ITEM, SVN_ITEM + "|" + COMMIT_ITEM);
+        super(TEAM_ITEM + "|" + COMMIT_ITEM, SVN_ITEM + "|" + COMMIT_ITEM);
     }
     
 }

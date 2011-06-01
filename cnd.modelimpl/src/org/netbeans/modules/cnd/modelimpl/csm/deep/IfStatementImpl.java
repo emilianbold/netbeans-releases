@@ -69,7 +69,13 @@ public final class IfStatementImpl extends StatementBase implements CsmIfStateme
     }
 
     public static IfStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        return new IfStatementImpl(ast, file, scope);
+        IfStatementImpl stmt = new IfStatementImpl(ast, file, scope);
+        stmt.init(ast);
+        return stmt;
+    }
+    
+    private void init(AST ast) {
+        render(ast);
     }
     
     @Override
@@ -79,19 +85,16 @@ public final class IfStatementImpl extends StatementBase implements CsmIfStateme
 
     @Override
     public CsmCondition getCondition() {
-        renderIfNeed(); // be lazy! ;-)
         return condition;
     }
 
     @Override
     public CsmStatement getThen() {
-        renderIfNeed(); // lazyness is good ;-)
         return thenStmt;
     }
 
     @Override
     public CsmStatement getElse() {
-        renderIfNeed(); // long live lazyness! ;-))
         return elseStmt;
     }
 
@@ -109,12 +112,6 @@ public final class IfStatementImpl extends StatementBase implements CsmIfStateme
         }
     }
 
-    private void renderIfNeed() {
-        if( condition == null ) { // should never be null, so used as a flag
-            render(getAst());
-        }
-    }
-    
     private void render(AST ast) {
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile());
         boolean inElse = false;

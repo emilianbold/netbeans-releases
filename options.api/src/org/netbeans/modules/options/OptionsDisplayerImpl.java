@@ -141,6 +141,7 @@ public class OptionsDisplayerImpl {
     }
 
     public void showOptionsDialog (String categoryID, String subpath) {
+        log.fine("showOptionsDialog(" + categoryID + ", " + subpath+ ")");
         if (isOpen()) {
             // dialog already opened
             dialog.setVisible (true);
@@ -189,12 +190,16 @@ public class OptionsDisplayerImpl {
         }
         
         dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
-        optionsPanel.initCurrentCategory(categoryID, subpath);
+        log.fine("Options Dialog created; descriptor.title = " + descriptor.getTitle() +
+                "; descriptor.message = " + descriptor.getMessage());
+        optionsPanel.initCurrentCategory(categoryID, subpath);        
         dialog.addWindowListener (new MyWindowListener (optionsPanel));
         Point userLocation = getUserLocation();
         if (userLocation != null) {
             dialog.setLocation(userLocation);
+            log.fine("userLocation is set to " + userLocation);
         }
+        log.fine("setting Options Dialog visible");
         dialog.setVisible (true);     
     }
 

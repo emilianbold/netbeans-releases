@@ -188,6 +188,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.eclipselink</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -473,6 +482,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.persistence.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.datasource</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.jpql</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.moduleinfo</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.server</package>

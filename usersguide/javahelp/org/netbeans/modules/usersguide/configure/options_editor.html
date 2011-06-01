@@ -47,20 +47,21 @@
         <p>This tab enables you to specify the following Java source code formatting settings:</p>
         <ul>
             <li><b>Expand Tabs to Spaces.</b> When selected, inserts spaces when the Tab key is typed.
-            <!--The number of spaces inserted is set in the Number of Spaces per Tab property.-->
+            <!--The number of spaces inserted is set in the Number of Spaces per Indent property.-->
            When unselected, typing the Tab key inserts the tab character (<tt>\t</tt>) into the file if 
             possible. It also replaces preceding spaces with the tab character if possible.  
             The Source Editor calculates where to place tab characters based on the value 
             of the Tab Size property.
-            <p>If Expand Tabs to Spaces is unselected and the Number of Spaces per Tab is different
+            <p>If Expand Tabs to Spaces is unselected and the Number of Spaces per Indent is different
             than the Tab Size property, the indentation created by typing the Tab key is 
             made up of a combination of spaces and tab characters.  It is easiest to predict 
-            the location of tab characters if you set Number of Spaces per Tab to an even 
+            the location of tab characters if you set Number of Spaces per Indent to an even
             multiple or divisor of Tab Size.
             </li>
             <li><b>Number of Spaces per Indent.</b> Specifies the number of spaces represented by one indentation level.</li>
             <li><b>Tab Size.</b> See the description of Expand Tabs to Spaces, above. </li>
             <li><b>Right Margin.</b> Specifies the location of the right margin, which is 80 characters by default. </li>
+            <li><b>Line Wrap.</b> Disabled by default. Use the dropdown list to specify where the break for line wrapping in the source code will occur.</li>
         </ul>
         <p>The Preview pane displays how the applied changes will appear in the Source Editor.</p>
     
@@ -100,8 +101,8 @@
         key or key combination that is used to expand the abbreviations.
         By default, abbreviations are expanded when you press Tab.
         The Expand Template On drop-down list also contains the options of Space, Shift-Space, and Enter.</p>
-        <p>Using <a href="editor_template_syntax.html">special code template syntax</a>,
-            you can add further functionality to new or existing abbreviations.</p>
+        <p>Using <a href="editor_template_syntax.html">code template syntax</a>,
+            you can add further functionality to templates or create new templates.</p>
         <p>For lists of default code template abbreviations included in the IDE, see <a href="../shortcuts/abbreviations-list.html">Code Template Abbreviations: Quick Reference</a></p>
         <p>The web tutorial <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
          <!-- Enter the URL below -->

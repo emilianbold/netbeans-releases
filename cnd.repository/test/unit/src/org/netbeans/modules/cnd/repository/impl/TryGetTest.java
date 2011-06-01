@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import junit.framework.*;
 import org.netbeans.junit.*;
@@ -54,6 +52,8 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
@@ -180,13 +180,13 @@ public class TryGetTest extends CndBaseTestCase {
     private class Factory implements PersistentFactory {
 
         @Override
-        public void write(DataOutput out, Persistent obj) throws IOException {
+        public void write(RepositoryDataOutput out, Persistent obj) throws IOException {
             assert obj instanceof Value;
             out.writeUTF(((Value) obj).value);
         }
 
         @Override
-        public Persistent read(DataInput in) throws IOException {
+        public Persistent read(RepositoryDataInput in) throws IOException {
             readFlag = true;
             String value = in.readUTF();
             return new Value(value);

@@ -45,16 +45,19 @@
 package org.netbeans.modules.git.ui.diff;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.actions.AddAction;
@@ -97,6 +100,7 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
     private Map<File, EditorCookie> editorCookies;
     
     private PropertyChangeListener changeListener;
+    private DiffMode diffMode;
     
     public DiffFileTable (VCSStatusTableModel<DiffNode> model) {
         super(model);
@@ -119,7 +123,7 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
         item = menu.add(new OpenInEditorAction(getSelectedFiles()));
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
-        GitStatusNode[] selectedNodes = getSelectedNodes();
+        final GitStatusNode[] selectedNodes = getSelectedNodes();
         boolean displayAdd = false;
         for (GitStatusNode node : selectedNodes) {
             // is there any change between index and WT?
@@ -136,6 +140,13 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"))); //NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new AbstractAction(NbBundle.getMessage(ExportUncommittedChangesAction.class, "LBL_ExportUncommittedChangesAction_PopupName")) { //NOI18N
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                SystemAction.get(ExportUncommittedChangesAction.class).exportDiff(selectedNodes, diffMode);
+            }
+        });
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
@@ -205,6 +216,10 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
 
     protected JTable getDiffTable () {
         return super.getTable();
+    }
+
+    void setSelectedMode (DiffMode diffMode) {
+        this.diffMode = diffMode;
     }
 
     private static class ColumnDescriptor<T> extends ReadOnly<T> {

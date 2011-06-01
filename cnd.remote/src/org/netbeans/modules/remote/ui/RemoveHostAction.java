@@ -50,6 +50,9 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -58,6 +61,9 @@ import org.openide.windows.WindowManager;
  *
  * @author Vladimir Kvashin
  */
+@ActionID(id = "org.netbeans.modules.remote.ui.RemoveHostAction", category = "NativeRemote")
+@ActionRegistration(displayName = "RemoveHostMenuItem")
+@ActionReference(path = "Remote/Host/Actions", name = "RemoveHostAction", position = 400)
 public class RemoveHostAction extends SingleHostAction {
 
     @Override

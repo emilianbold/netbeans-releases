@@ -45,13 +45,23 @@ import java.util.List;
  */
 public class FieldGroupTree extends JCTree implements Tree {
 
-    private List<JCVariableDecl> vars;
-    private boolean enumeration;
+    private final List<JCVariableDecl> vars;
+    private final boolean enumeration;
+    private final boolean moreElementsFollowEnum;
 
-    public FieldGroupTree(List<JCVariableDecl> vars, boolean enumeration) {
+    public FieldGroupTree(List<JCVariableDecl> vars) {
+        this(vars, false, false);
+    }
+
+    public FieldGroupTree(List<JCVariableDecl> vars, boolean moreElementsFollowEnum) {
+        this(vars, true, moreElementsFollowEnum);
+    }
+
+    private FieldGroupTree(List<JCVariableDecl> vars, boolean enumeration, boolean moreElementsFollowEnum) {
         this.vars = vars;
         pos = TreeInfo.getStartPos(vars.get(0));
         this.enumeration = enumeration;
+        this.moreElementsFollowEnum = moreElementsFollowEnum;
     }
 
     public Kind getKind() {
@@ -64,6 +74,10 @@ public class FieldGroupTree extends JCTree implements Tree {
 
     public boolean isEnum() {
         return enumeration;
+    }
+
+    public boolean moreElementsFollowEnum() {
+        return moreElementsFollowEnum;
     }
 
     public int endPos() {

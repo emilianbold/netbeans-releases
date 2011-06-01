@@ -350,18 +350,24 @@ public class MetaComponentCreator {
     }
 
     public boolean addPrecreatedComponent(RADComponent targetComp,
-                                          Object constraints)
+                                          final Object constraints)
     {
         if (preMetaComp == null) {
             return false;
         }
         if (checkFormClass(preMetaComp.getBeanClass())) {
-            TargetInfo target = getTargetInfo(preMetaComp.getBeanClass(), targetComp, true, true);
+            final TargetInfo target = getTargetInfo(preMetaComp.getBeanClass(), targetComp, true, true);
             if (target != null
                 && (target.targetType == TargetType.VISUAL
                     || target.targetType == TargetType.OTHER)) {
-                addVisualComponent2(preMetaComp, target.targetComponent, constraints, true);
-                ResourceSupport.switchComponentToResources(preMetaComp);
+                // Look&Feel UI defaults remapping needed (see issue 197521)
+                FormLAF.executeWithLookAndFeel(formModel, new Runnable() {
+                    @Override
+                    public void run() {
+                        addVisualComponent2(preMetaComp, target.targetComponent, constraints, true);
+                        ResourceSupport.switchComponentToResources(preMetaComp);                        
+                    }
+                });
             }
             releasePrecreatedComponent();
             return true;

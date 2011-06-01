@@ -43,10 +43,15 @@
  */
 package org.netbeans.modules.mercurial.ui.clone;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
-import org.openide.nodes.Node;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.HelpCtx;
 
 /**
  * Clone action for mercurial: 
@@ -55,18 +60,23 @@ import org.openide.nodes.Node;
  * 
  * @author Padraig O'Briain
  */
-public class CloneExternalAction extends ContextAction {
-
-    protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_CloneExternal"; // NOI18N
-    }
-
+@ActionID(id = "org.netbeans.modules.mercurial.ui.clone.CloneExternalAction", category = "Mercurial")
+@ActionRegistration(displayName = "#CTL_MenuItem_CloneExternal")
+@ActionReferences({
+   @ActionReference(path="Versioning/Mercurial/Actions/Global", position=301)
+})
+public class CloneExternalAction implements ActionListener, HelpCtx.Provider {
     @Override
-    protected void performContextAction(Node[] nodes) {
+    public void actionPerformed(ActionEvent e) {
         if (!Mercurial.getInstance().isAvailable(true)) {
             return;
         }
         CloneWizardAction wiz = CloneWizardAction.getInstance();
         wiz.performAction();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.mercurial.ui.clone.CloneExternalAction");
     }
 }

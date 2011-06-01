@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.parsing.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.io.OutputStream;
@@ -49,7 +50,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -329,6 +334,81 @@ public class CachingTest extends NbTestCase {
         latch2.await ();
         test.check ("4 - end\n");
         assertEquals ("", test.getResult ());
+    }
+
+
+    public void testPreservesEmbeddingOrder() {
+        final String mimeType = "text/x-" + getName();
+        final String embeddedMimeTypeFirst = "text/x-embedded-first-" + getName();
+        final AtomicReference<EmbeddingProvider> ep1Ref = new AtomicReference<EmbeddingProvider>();
+        final TaskFactory tf1 = new TaskFactory() {
+            public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+                EmbeddingProvider ep1 = ep1Ref.get();
+                if (ep1 == null) {
+                    ep1 = new EmbeddingProvider() {
+                    public @Override List<Embedding> getEmbeddings(Snapshot snapshot) {
+                        List<Embedding> embeddings = new ArrayList<Embedding>();
+                        embeddings.add(snapshot.create("1", embeddedMimeTypeFirst));
+                        embeddings.add(snapshot.create("2", embeddedMimeTypeFirst));
+                        embeddings.add(snapshot.create("3", embeddedMimeTypeFirst));
+                        return embeddings;
+                    }
+
+                    public @Override int getPriority() {
+                        return Integer.MAX_VALUE;
+                    }
+
+                    public @Override void cancel() {
+                    }
+                    };
+                    ep1Ref.set(ep1);
+                }
+                return Collections.singleton(ep1);
+            }
+        };
+        final String embeddedMimeTypeSecond = "text/x-embedded-second" + getName();
+        final TaskFactory tf2 = new TaskFactory() {
+            public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+                return Collections.singleton(new EmbeddingProvider() {
+                    public @Override List<Embedding> getEmbeddings(Snapshot snapshot) {
+                        List<Embedding> embeddings = new ArrayList<Embedding>();
+                        embeddings.add(snapshot.create("4", embeddedMimeTypeSecond));
+                        embeddings.add(snapshot.create("5", embeddedMimeTypeSecond));
+                        embeddings.add(snapshot.create("6", embeddedMimeTypeSecond));
+                        return embeddings;
+                    }
+
+                    public @Override int getPriority() {
+                        return Integer.MIN_VALUE;
+                    }
+
+                    public @Override void cancel() {
+                    }
+                });
+            }
+        };
+        MockMimeLookup.setInstances(MimePath.parse(mimeType),tf1, tf2);
+        final EditorKit kit = new DefaultEditorKit();
+        final Document doc = kit.createDefaultDocument();
+        doc.putProperty("mimeType", mimeType);
+
+        final Source source = Source.create(doc);
+        final SourceCache hanz = SourceAccessor.getINSTANCE().getCache(source);
+        Iterable<? extends Embedding> embeddings = hanz.getAllEmbeddings();
+        assertEquals(Arrays.asList(new Integer[]{1,2,3,4,5,6}),asContentNumber(embeddings));
+        final EmbeddingProvider toRefresh = ep1Ref.get();
+        assertNotNull(toRefresh);
+        hanz.refresh(toRefresh, toRefresh.getSchedulerClass());
+        embeddings = hanz.getAllEmbeddings();
+        assertEquals(Arrays.asList(new Integer[]{1,2,3,4,5,6}),asContentNumber(embeddings));
+    }
+
+    private Collection<? extends Integer> asContentNumber(final Iterable<? extends Embedding> embeddings) {
+        final Collection<Integer> result = new ArrayList<Integer>();
+        for (Embedding e : embeddings) {
+            result.add(Integer.parseInt(e.getSnapshot().getText().toString()));
+        }
+        return result;
     }
 }
 

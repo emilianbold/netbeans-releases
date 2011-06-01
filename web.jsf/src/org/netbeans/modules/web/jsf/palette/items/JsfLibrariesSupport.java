@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -62,6 +63,7 @@ import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -84,7 +86,11 @@ public class JsfLibrariesSupport {
 
     private void initLibraries(JTextComponent tc) {
         Document doc = tc.getDocument();
-        JsfSupport jsfs = JsfSupportProvider.get(doc);
+        FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
+        if(file == null) {
+            return ;
+        }
+        JsfSupport jsfs = JsfSupportProvider.get(file);
         if (jsfs == null) {
             return;
         }

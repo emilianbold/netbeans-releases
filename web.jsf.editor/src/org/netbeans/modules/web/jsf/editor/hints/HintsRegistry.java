@@ -71,13 +71,14 @@ public class HintsRegistry {
         //init providers
         PROVIDERS.add(new ComponentUsagesChecker());
         PROVIDERS.add(new LibraryDeclarationChecker());
-//        PROVIDERS.add(new ElChecker());
     }
 
     public List<Hint> gatherHints(RuleContext context) {
         List<Hint> hints = new ArrayList<Hint>();
         for(HintsProvider provider : PROVIDERS) {
-            hints.addAll(provider.compute(context));
+            if(!provider.requiresDocument() || context.doc != null) {
+                hints.addAll(provider.compute(context));
+            }
         }
         return hints;
     }

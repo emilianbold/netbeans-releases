@@ -117,10 +117,10 @@ public class ChangeParametersUI implements RefactoringUI {
         int counter = 0;
         Problem problem = null;
         for (List<Object> row : data) {
-            int origIndex = ((Integer) row.get(3)).intValue();
-            CharSequence name = (CharSequence) row.get(0);
-            CharSequence type = (CharSequence) row.get(1);
-            CharSequence defaultVal = (CharSequence) row.get(2);
+            int origIndex = ((Integer) row.get(ChangeParametersPanel.PARAM_ORIG_INDEX)).intValue();
+            CharSequence name = (CharSequence) row.get(ChangeParametersPanel.PARAM_NAME);
+            CharSequence type = (CharSequence) row.get(ChangeParametersPanel.PARAM_TYPE);
+            CharSequence defaultVal = (CharSequence) row.get(ChangeParametersPanel.PARAM_VALUE);
             paramList[counter++] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
         }
         CsmVisibility visibility = panel.getModifier();

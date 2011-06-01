@@ -54,14 +54,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -78,12 +74,14 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
+import org.netbeans.modules.websvc.rest.codegen.model.Resource;
+import org.netbeans.modules.websvc.rest.codegen.model.ResourceModel;
+import org.netbeans.modules.websvc.rest.codegen.model.WadlModeler;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.websvc.rest.wizard.Util;
 
 /**
  * Code generator for plain REST resource class.
@@ -92,6 +90,7 @@ import org.netbeans.modules.websvc.rest.wizard.Util;
  *  - REST resource bean meta getModel().
  *
  * @author Ayub Khan
+ * @author (rewritten by) ads
  */
 public class ClientStubsGenerator extends AbstractGenerator {
 
@@ -114,9 +113,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS_TESTSTUBS_TEMPLATE = "Templates/WebServices/JsTestStubs.html"; //NOI18N
     public static final String JS_STUBSUPPORT_TEMPLATE = "Templates/WebServices/JsStubSupport.js"; //NOI18N
     public static final String JS_PROJECTSTUB_TEMPLATE = "Templates/WebServices/JsProjectStub.js"; //NOI18N
-    public static final String JS_CONTAINERSTUB_TEMPLATE = "Templates/WebServices/JsContainerStub.js"; //NOI18N
-    public static final String JS_CONTAINERITEMSTUB_TEMPLATE = "Templates/WebServices/JsContainerItemStub.js"; //NOI18N
-    public static final String JS_GENERICSTUB_TEMPLATE = "Templates/WebServices/JsGenericStub.js"; //NOI18N
+    public static final String JS_STUB_TEMPLATE = "Templates/WebServices/JsStub.js"; //NOI18N
+    public static final String JS_ENTITY_TEMPLATE = "Templates/WebServices/JsEntity.js"; //NOI18N
     public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
 
     public static final String PROXY = "RestProxyServlet"; //NOI18N
@@ -127,10 +125,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String MSG_Readme = "MSG_Readme";
     public static final String MSG_TestPage = "MSG_TestPage";
     public static final String TTL_RestClient_Stubs = "TTL_RestClient_Stubs";
-    public static final String TTL_JMakiWidget_Stubs = "TTL_JMakiWidget_Stubs";
     public static final String MSG_SelectResource = "MSG_SelectResource";
     public static final String MSG_JS_Readme_Content = "MSG_JS_Readme_Content";
-    public static final String MSG_JMaki_Readme_Content = "MSG_JMaki_Readme_Content";
 
     public static final String DEFAULT_PROTOCOL = "http";
     public static final String DEFAULT_HOST = "localhost";
@@ -212,7 +208,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
 
     public String getDefaultBaseUrl() {
-        return DEFAULT_BASE_URL+"/";
+        return DEFAULT_BASE_URL;
     }
 
     public String getBaseUrl() {
@@ -296,8 +292,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
             if(url == null)
                 url = getDefaultBaseUrl();
             String proxyUrl2 = findBaseUrl(targetPrj);
-            if(proxyUrl2 == null)
+            if(proxyUrl2 == null){
                 proxyUrl2 = url;
+            }
             RestSupport restSupport = p.getLookup().lookup(RestSupport.class);
             String path = restSupport.getApplicationPath();
             setBaseUrl((url.endsWith("/")?url:url+"/") + findAppContext(getProject()) + (path.startsWith("/")?path:"/"+path));
@@ -306,8 +303,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
             this.model = new ClientStubModel().createModel(wadl);
             this.model.build();
             String url = ((WadlModeler)this.model).getBaseUrl();
-            if(url == null)
+            if(url == null) {
                 url = getDefaultBaseUrl();
+            }
             setBaseUrl(url);
             setProxyUrl(url+".."+PROXY_URL);
             this.projectName = getApplicationNameFromUrl(url);
@@ -318,23 +316,23 @@ public class ClientStubsGenerator extends AbstractGenerator {
         initJs(p);
 
         FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
-        createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, getProjectName(), JS, canOverwrite());
-        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
+        createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, 
+                getProjectName(), JS, canOverwrite());
+        Set<String> entities = new HashSet<String>();
         for (Resource r : resourceList) {
-            if(pHandle != null)
+            if(pHandle != null) {
                 reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
                     "MSG_GeneratingClass", r.getName(), JS));
-            ResourceJavaScript js = null;
-            RepresentationNode root = r.getRepresentation().getRoot();
-            if(r.isContainer() && root != null && root.getChildren().size() > 0)
-                js = new ContainerJavaScript(r, prjStubDir);
-            else if(root != null){
-                js = new ContainerItemJavaScript(r, prjStubDir);
-            } else {
-                js = new GenericResourceJavaScript(r, prjStubDir);
             }
+            ResourceJavaScript js = new ResourceJavaScript( this , r, prjStubDir,
+                    entities );
             js.generate();
+            r.getEntities();
+            Set<String> generated = r.getEntities();
+            entities.addAll( generated );
         }
+        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), 
+                getProjectName());
         updateRestStub(rjsDir.getFileObject(JS_TESTSTUBS, HTML), resourceList, "");
 
         Set<FileObject> files = new HashSet<FileObject>();
@@ -399,7 +397,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
 
     private void initJs(Project p) throws IOException {
-        TokenReplacer tr = new TokenReplacer();
+        TokenReplacer tr = new TokenReplacer(this);
         tr.addToken(TTL_RestClient_Stubs, NbBundle.getMessage(ClientStubsGenerator.class, TTL_RestClient_Stubs));
         tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
         tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
@@ -477,26 +475,41 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return folder;
     }
 
-    private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
+    private void updateProjectStub(FileObject projectStub, String prjName) 
+        throws IOException 
+    {
         FileLock lock = projectStub.lock();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(projectStub)));
+            BufferedReader reader = new BufferedReader(new FileReader(
+                    FileUtil.toFile(projectStub)));
             String line;
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             while ((line = reader.readLine()) != null) {
                 if (line.contains(BASE_URL_TOKEN)) {
-                    sb.append(line.replaceAll(BASE_URL_TOKEN, getBaseUrl()));
+                    String url = getBaseUrl();
+                    if ( url.endsWith("/")){
+                        url = url.substring(0, url.length()-1);
+                    }
+                    sb.append(line.replaceAll(BASE_URL_TOKEN, url));
                 } else if (line.contains("__PROJECT_NAME__")) {
                     sb.append(line.replaceAll("__PROJECT_NAME__", prjName));
                 } else if (line.contains("__PROJECT_INIT_BODY__")) {
-                    String initBody = "";
+                    StringBuilder initBody = new StringBuilder();
                     int count = 0;
                     List<Resource> resourceList = getModel().getResources();
-                    for (Resource r : resourceList) {
-                        if (r.isRootResource()) {
-                            String path = r.getPath();
-                            if (!path.startsWith("/")) path = "/"+path;
-                            initBody += "      this.resources[" + count++ + "] = new " + pkg + r.getName() + "(this.uri+'" + path + "');\n";
+                    for (Resource resource : resourceList) {
+                        if (resource.hasDefaultGet()) {
+                            String path = resource.getPath();
+                            if (!path.startsWith("/")) {
+                                path = "/"+path;
+                            }
+                            initBody.append( "      this.resources[");
+                            initBody.append( count++ );
+                            initBody.append( "] = new " ); 
+                            initBody.append( resource.getName());
+                            initBody.append("(this.uri+'" );
+                            initBody.append( path );
+                            initBody.append("');\n");
                         }
                     }
                     sb.append(initBody);
@@ -519,18 +532,44 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private void updateRestStub(FileObject restStub, List<Resource> resourceList, String pkg) throws IOException {
         String prjName = getProjectName();
         String prjStubDir = prjName.toLowerCase();
-        StringBuffer sb1 = new StringBuffer();
-        sb1.append("\t<script type='text/javascript' src='./" + prjStubDir + "/" + prjName + "." + JS + "'></script>\n");
+        StringBuilder sb1 = new StringBuilder();
+        sb1.append("\t<script type='text/javascript' src='./" );
+        sb1.append(prjStubDir); 
+        sb1.append( '/');
+        sb1.append(prjName );
+        sb1.append('.');
+        sb1.append(JS ); 
+        sb1.append("'></script>\n");
         for (Resource r : resourceList) {
-            sb1.append("\t<script type='text/javascript' src='./" + prjStubDir + "/" + r.getName() + "." + JS + "'></script>\n");
+            sb1.append("\t<script type='text/javascript' src='./" );
+            sb1.append(prjStubDir); 
+            sb1.append( '/');
+            sb1.append(r.getName() );
+            sb1.append('.');
+            sb1.append(JS ); 
+            sb1.append("'></script>\n");
+            Iterator<String> iterator = r.getEntities().iterator();
+            while ( iterator.hasNext() ){
+                sb1.append("\t<script type='text/javascript' src='./" );
+                sb1.append(prjStubDir); 
+                sb1.append( '/');
+                sb1.append(iterator.next() );
+                sb1.append('.');
+                sb1.append(JS ); 
+                sb1.append("'></script>\n");
+            }
         }
-        StringBuffer sb2 = new StringBuffer();
+        StringBuilder sb2 = new StringBuilder();
+        String url = getBaseUrl();
+        if ( url.endsWith("/")) {
+            url = url.substring(0, url.length()-1);
+        }
         sb2.append("\n\t<!-- Using JavaScript files for project " + prjName + "-->\n");
         sb2.append("\t<script language='Javascript'>\n");
         sb2.append("\t\tvar str = '';\n");
         sb2.append("\t\t//Example test code for " + prjName + "\n");
         sb2.append("\t\tstr = '<h2>Resources for " + prjName + ":</h2><br><table border=\"1\">';\n");
-        sb2.append("\t\tvar app = new " + pkg+prjName + "('"+getBaseUrl()+"');\n");
+        sb2.append("\t\tvar app = new " + pkg+prjName + "('"+url+"');\n");
         sb2.append("\t\t//Uncomment below if using proxy for javascript cross-domain.\n");
         sb2.append("\t\t//app.setProxy(\""+getProxyUrl()+"\");\n");
         sb2.append("\t\tvar resources = app.getResources();\n");
@@ -538,13 +577,15 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\t  var resource = resources[i];\n");
         sb2.append("\t\t  var uri = resource.getUri();\n");
         sb2.append("\t\t  str += '<tr><td valign=\"top\"><a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a></td><td>';\n");
-        sb2.append("\t\t  var items  = resource.getItems();\n");
+        sb2.append("\t\t  var items  = resource.getEntities();\n");
         sb2.append("\t\t  if (items != undefined) {\n");
         sb2.append("\t\t    if (items.length > 0) {\n");
         sb2.append("\t\t      for(j=0;j<items.length;j++) {\n");
         sb2.append("\t\t        var item = items[j];\n");
         sb2.append("\t\t        var uri2 = item.getUri();\n");
-        sb2.append("\t\t        str += '<a href=\"'+uri2+'\" target=\"_blank\">'+uri2+'</a><br/>';\n");
+        sb2.append("\t\t        if ( uri2 != null && uri2 != undefined ){\n");
+        sb2.append("\t\t            str += '<a href=\"'+uri2+'\" target=\"_blank\">'+uri2+'</a><br/>';\n");
+        sb2.append("\t\t        }\n");
         sb2.append("\t\t        str += '&nbsp;&nbsp;<font size=\"-3\">'+item.toString()+'</font><br/>';\n");
         sb2.append("\t\t      }\n");
         sb2.append("\t\t    } else {\n");
@@ -564,7 +605,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(restStub)));
             String line;
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             while ((line = reader.readLine()) != null) {
                 if (line.contains("JS_DECLARE_END")) {
                     sb.append(sb1.toString());
@@ -584,465 +625,4 @@ public class ClientStubsGenerator extends AbstractGenerator {
             lock.releaseLock();
         }
     }
-
-    public class TokenReplacer {
-
-        private Map<String, String> tokens = new HashMap<String, String>();
-
-        public Map<String, String> getTokens() {
-            return Collections.unmodifiableMap(tokens);
-        }
-
-        public void addToken(String name, String value) {
-            tokens.put(name, value);
-        }
-
-        public void setTokens(Map<String, String> tokens) {
-            this.tokens = tokens;
-        }
-
-        public void replaceTokens(FileObject fo) throws IOException {
-            replaceTokens(fo, getTokens());
-        }
-
-        public void replaceTokens(FileObject fo, Map<String, String> tokenMap) throws IOException {
-            FileLock lock = fo.lock();
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
-                String line;
-                StringBuffer sb = new StringBuffer();
-                while ((line = reader.readLine()) != null) {
-                    line = replaceTokens(line, "", "", tokenMap);
-                    sb.append(line);
-                    sb.append("\n");
-                }
-                OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), getBaseEncoding());
-                try {
-                    writer.write(sb.toString());
-                } finally {
-                    writer.close();
-                }
-            } finally {
-                lock.releaseLock();
-            }
-        }
-
-        private String replaceTokens(String line, String object, String pkg, Map<String, String> tokenMap) {
-            String replacedLine = line;
-            for(Map.Entry e:tokenMap.entrySet()) {
-                String key = (String) e.getKey();
-                String value = (String) e.getValue();
-                if(key != null && value != null)
-                    replacedLine = replacedLine.replaceAll(key, value);
-            }
-            return replacedLine;
-        }
-    }
-
-    public abstract class ResourceJavaScript extends TokenReplacer {
-        final String RJSSUPPORT = "rjsSupport";
-
-        protected Resource r;
-        protected FileObject jsFolder;
-        protected RepresentationNode root;
-        protected String pkg;
-        protected String object;
-        protected String stubJSToken;
-        private Map<String, String> tokens;
-
-        public ResourceJavaScript(Resource r, FileObject jsFolder) {
-            super();
-            this.r = r;
-            this.jsFolder = jsFolder;
-            pkg = "";
-            object = "";
-            root = r.getRepresentation().getRoot();
-            stubJSToken = createStubJSMethods(r, object, pkg);
-        }
-
-        public FileObject getFolder() {
-            return jsFolder;
-        }
-
-        public abstract FileObject generate() throws IOException;
-
-        protected String createStubJSMethods(Resource r, String object, String pkg) {
-            StringBuffer sb = new StringBuffer();
-            for (Method m : r.getMethods()) {
-                sb.append(createMethod(m, RJSSUPPORT+".", pkg)+",\n\n");
-            }
-            String s = sb.toString();
-            if(s.length() > 3)
-                return s.substring(0, s.length()-3);
-            else
-                return s;
-        }
-
-        private String createMethod(Method m, final String object, String pkg) {
-            if (m.getType() == MethodType.GET) {
-                return createGetMethod(m, object);
-            } else if (m.getType() == MethodType.POST) {
-                return createPostMethod(m, object);
-            } else if (m.getType() == MethodType.PUT) {
-                return createPutMethod(m, object);
-            } else if (m.getType() == MethodType.DELETE) {
-                return createDeleteMethod(m, object);
-            } else if (m instanceof NavigationMethod) {
-                return createNavigationMethod((NavigationMethod) m, pkg);
-            } else {
-                return "";
-            }
-        }
-
-        private String createMethodName(Method m, String mimeType, int length) {
-            if(length > 1) {
-                for(Constants.MimeType mime:Constants.MimeType.values())
-                    if(mime.value().equals(mimeType))
-                        return m.getName() + mime.suffix();
-            }
-            return m.getName();
-        }
-
-        private String createGetMethod(Method m, String object) {
-            StringBuffer sb = new StringBuffer();
-            int length = m.getResponse().getRepresentation().size();
-            for(Representation rep:m.getResponse().getRepresentation()) {
-                String mimeType = rep.getMime();
-                mimeType = mimeType.replaceAll("\"", "").trim();
-                sb.append("   " + createMethodName(m, mimeType, length) + " : function() {\n" +
-                        "      return "+object+"get(this.uri, '" +mimeType+ "');\n" +
-                        "   },\n\n");
-            }
-            String s = sb.toString();
-            if(s.length() > 3)
-                return s.substring(0, s.length()-3);
-            else
-                return s;
-        }
-
-        private String createPostMethod(Method m, String object) {
-            StringBuffer sb = new StringBuffer();
-            int length = m.getRequest().getRepresentation().size();
-            for(Representation rep:m.getRequest().getRepresentation()) {
-                String mimeType = rep.getMime();
-                mimeType = mimeType.replaceAll("\"", "").trim();
-                sb.append("   " + createMethodName(m, mimeType, length) + " : function(content) {\n" +
-                        "      return "+object+"post(this.uri, '" + mimeType + "', content);\n" +
-                        "   },\n\n");
-            }
-            String s = sb.toString();
-            if(s.length() > 3)
-                return s.substring(0, s.length()-3);
-            else
-                return s;
-        }
-
-        private String createPutMethod(Method m, String object) {
-            StringBuffer sb = new StringBuffer();
-            int length = m.getRequest().getRepresentation().size();
-            for(Representation rep:m.getRequest().getRepresentation()) {
-                String mimeType = rep.getMime();
-                mimeType = mimeType.replaceAll("\"", "").trim();
-                sb.append("   " + createMethodName(m, mimeType, length) + " : function(content) {\n" +
-                        "      return "+object+"put(this.uri, '" + mimeType + "', content);\n" +
-                        "   },\n\n");
-            }
-            String s = sb.toString();
-            if(s.length() > 3)
-                return s.substring(0, s.length()-3);
-            else
-                return s;
-        }
-
-        private String createDeleteMethod(Method m, String object) {
-            return "   " + RestUtils.escapeJSReserved(m.getName()) + " : function() {\n" +
-                    "      return "+object+"delete_(this.uri);\n" +
-                    "   }";
-        }
-
-        private String createNavigationMethod(NavigationMethod m, String pkg) {
-            String s = "";
-            String fs = "";
-            if(m.getNavigationUri().contains(",")) {
-                String[] ss = m.getNavigationUri().split(",");
-                for(String s1:ss) {
-                    if(s1.startsWith("{"))
-                        s1 = s1.substring(1);
-                    else if(s1.endsWith("}"))
-                        s1 = s1.substring(0, s1.length()-1);
-                    s += s1+"+','+";
-                    fs += s1+",";
-                }
-                s = s.substring(0, s.length()-5);
-                fs = fs.substring(0, fs.length()-1);
-            } else {
-                s = m.getNavigationUri();
-                fs = s;
-            }
-            return "   " + m.getName() + " : function(" + fs + ") {\n" +
-                    "      var link = new " + pkg+m.getLinkName() + "(this.uri+'/'+" + s + ");\n" +
-                    "      return link;\n" +
-                    "   }";
-        }
-
-    }
-
-    public class ContainerJavaScript extends ResourceJavaScript {
-
-        public ContainerJavaScript(Resource r, FileObject jsFolder) {
-            super(r, jsFolder);
-
-            if (root != null && root.getChildren().size() > 0) {
-                String containerName = r.getName();
-                String containerRepName = root.getName();
-                //TODO
-                String containerItemRepName = root.getChildren().get(0).getName();
-                String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
-                Map<String, String> containerStubTokens = new HashMap<String, String>();
-                containerStubTokens.put("__CONTAINER_NAME__", containerName);
-                containerStubTokens.put("__CONTAINER_PATH_NAME__", containerRepName);
-                containerStubTokens.put("__CONTAINER_ITEM_NAME__", containerItemName);
-                containerStubTokens.put("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
-                containerStubTokens.put("__STUB_METHODS__", stubJSToken.equals("")?stubJSToken:"   ,\n"+stubJSToken);
-                containerStubTokens.put("__PROJECT_NAME__", getProjectName());
-                setTokens(containerStubTokens);
-            }
-        }
-
-        @Override
-        public FileObject generate() throws IOException {
-            String fileName = r.getName();
-            String fileNameExt = r.getName() + "." + JS;
-            FileObject fo = jsFolder.getFileObject(fileNameExt);
-            if (fo != null) {
-                if(canOverwrite()) {
-                    fo.delete();
-                } else {
-                    Logger.getLogger(this.getClass().getName()).log(
-                        Level.INFO, NbBundle.getMessage(ClientStubsGenerator.class,
-                            "MSG_SkippingStubGeneration", jsFolder.getPath()+
-                                    File.separator+fileNameExt));
-                }
-            }
-            createDataObjectFromTemplate(JS_CONTAINERSTUB_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
-            fo = jsFolder.getFileObject(fileNameExt);
-            replaceTokens(fo);
-            return fo;
-        }
-    }
-
-    public class ContainerItemJavaScript extends ResourceJavaScript {
-
-        public ContainerItemJavaScript(Resource r, FileObject jsFolder) {
-            super(r, jsFolder);
-
-            if(root != null){
-                String resourceName = r.getName();
-                String resourceRepName = root.getName();
-                Map<String, String> genericStubTokens = new HashMap<String, String>();
-                genericStubTokens.put("__GENERIC_NAME__", resourceName);
-                genericStubTokens.put("__GENERIC_PATH_NAME__", resourceRepName);
-                genericStubTokens.put("__FIELDS_DEFINITION__", createFieldsDefinition(root, true));
-                genericStubTokens.put("__GETTER_SETTER_METHODS__", createGetterSetterMethods(root, true));
-                genericStubTokens.put("__FIELDS_INIT__", createFieldsInitBody(root, true, pkg));
-                genericStubTokens.put("__SUB_RESOURCE_NAME__", "");
-                genericStubTokens.put("__SUB_RESOURCE_PATH_NAME__", "");
-                genericStubTokens.put("__FIELDS_TOSTRING__", createFieldsToStringBody(root, true));
-                genericStubTokens.put("__FIELD_NAMES_TOSTRING__", createFieldNamesBody(root, true));
-                genericStubTokens.put("__STUB_METHODS__", stubJSToken.equals("")?stubJSToken:"   ,\n"+stubJSToken);
-                setTokens(genericStubTokens);
-            }
-        }
-
-        @Override
-        public FileObject generate() throws IOException {
-            String fileName = r.getName();
-            String fileNameExt = r.getName() + "." + JS;
-            FileObject fo = jsFolder.getFileObject(fileNameExt);
-            if (fo != null) {
-                if(canOverwrite()) {
-                    fo.delete();
-                } else {
-                    Logger.getLogger(this.getClass().getName()).log(
-                        Level.INFO, NbBundle.getMessage(ClientStubsGenerator.class,
-                            "MSG_SkippingStubGeneration", jsFolder.getPath()+
-                                    File.separator+fileNameExt));
-                }
-            }
-            createDataObjectFromTemplate(JS_CONTAINERITEMSTUB_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
-            fo = jsFolder.getFileObject(fileNameExt);
-            replaceTokens(fo);
-            return fo;
-        }
-
-        private String createGetterSetterMethods(RepresentationNode root, boolean skipUri) {
-            StringBuffer sb = new StringBuffer();
-
-            //create getter and setter for attributes
-            sb.append(createGetterSetterMethods(root.getAttributes(), skipUri));
-
-            //create getter and setter for elements
-            sb.append(createGetterSetterMethods(root.getChildren(), skipUri));
-
-            return sb.toString();
-        }
-
-        private String createGetterSetterMethods(List<RepresentationNode> nodes, boolean skipUri) {
-            StringBuffer sb = new StringBuffer();
-            for(RepresentationNode child:nodes) {
-                String childName = child.getName();
-                if(!(skipUri && childName.equals("uri"))) {
-                    sb.append(createGetterMethod(child)+",\n\n");
-                    sb.append(createSetterMethod(child)+",\n\n");
-                }
-            }
-            return sb.toString();
-        }
-
-        private String createFieldsDefinition(RepresentationNode root, boolean skipUri) {
-            StringBuffer sb = new StringBuffer();
-            for(RepresentationNode child:root.getAttributes()) {
-                String childName = child.getName();
-                if(!(skipUri && childName.equals("uri")))
-                    sb.append("    this."+childName+" = '';\n");
-            }
-            for(RepresentationNode child:root.getChildren()) {
-                String name = child.getName();
-                if(child.isContainer()) {
-                    sb.append("    this."+name+" = new Array();\n");
-                } else {
-                    sb.append("    this."+name+" = '';\n");
-                }
-            }
-            return sb.toString();
-        }
-
-        private String createFieldsInitBody(RepresentationNode root, boolean skipUri, String pkg) {
-            String repName = root.getName();
-            StringBuffer sb = new StringBuffer();
-            for(RepresentationNode child:root.getAttributes()) {
-                String childName = child.getName();
-                if(!(skipUri && childName.equals("uri")))
-                    sb.append("         this."+childName+" = "+repName+"['@"+childName+"'];\n");
-            }
-            for(RepresentationNode child:root.getChildren()) {
-                String childName = child.getName();
-                if(child.isRoot() || child.isReference()) {
-                    String refName = child.getId();//child.isContainer()?pluralize(childName):child.getId();
-                    sb.append("         this."+childName+" = new "+pkg+
-                            findResourceName(childName)+"("+repName+"['"+refName+"']['@uri']);\n");
-                } else {
-                    //this.vehiclePK = this.findValue(this.vehiclePK , vehicle['vehiclePK']);
-                    sb.append("         this."+childName+" = this.findValue(this."+childName+", "+repName+"['"+childName+"']);\n");
-                }
-            }
-            return sb.toString();
-        }
-
-        private String pluralize(String word) {
-            String plural = Util.pluralize(word);
-            if(plural.endsWith("ss"))
-                plural = plural.substring(0, plural.length()-2)+Constants.COLLECTION;
-            return plural;
-        }
-
-        private String createFieldsToStringBody(RepresentationNode root, boolean skipUri) {
-            StringBuffer sb = new StringBuffer();
-            for(RepresentationNode child:root.getAttributes()) {
-                String childName = child.getName();
-                if(!(skipUri && childName.equals("uri")))
-                    sb.append("         ', \"@"+childName+"\":\"'+this."+childName+"+'\"'+\n");
-            }
-            for(RepresentationNode child:root.getChildren()) {
-                String childName = child.getName();
-                if(child.isRoot() || child.isReference()) {
-                    sb.append("         ', \""+childName+"\":{\"@uri\":\"'+this."+childName+".getUri()+'\"}'+\n");
-                }else
-                    sb.append("         ', \""+childName+"\":\"'+this."+childName+"+'\"'+\n");
-            }
-            return sb.toString();
-        }
-
-        private String createFieldNamesBody(RepresentationNode root, boolean skipUri) {
-            StringBuffer sb = new StringBuffer();
-            for(RepresentationNode child:root.getAttributes()) {
-                String childName = child.getName();
-                if(!(skipUri && childName.equals("uri")))
-                    sb.append("         fields.push('"+childName+"');\n");//      fields.push('customerId');
-            }
-            for(RepresentationNode child:root.getChildren()) {
-                String childName = child.getName();
-                if(!(child.isReference() || child.isRoot())) {
-                    sb.append("         fields.push('"+childName+"');\n");//      fields.push('customerId');
-                }
-            }
-            return sb.toString();
-        }
-
-        private String findResourceName(String repName) {
-            return repName.substring(0,1).toUpperCase()+repName.substring(1);
-        }
-
-        private String createGetterMethod(RepresentationNode n) {
-            String mName = RestUtils.createGetterMethodName(n);
-            String fieldName = n.getName();
-            return "   "+mName + " : function() {\n" +
-                    "      if(!this.initialized)\n" +
-                    "         this.init();\n" +
-                    "      return this." + fieldName + ";\n" +
-                    "   }";
-        }
-
-        private String createSetterMethod(RepresentationNode n) {
-            String mName = createSetterMethodName(n);
-            String fieldName = n.getName();
-            return "   " + mName + " : function(" + fieldName + "_) {\n" +
-                    "      this." + fieldName + " = " + fieldName + "_;\n" +
-                    "   }";
-        }
-
-        private String createSetterMethodName(RepresentationNode n) {
-            String mName = "set";
-            if(n.getLink() != null) {
-                mName = RestUtils.escapeJSReserved(n.getLink().getName().toString());
-                mName = "set"+mName.substring(3);
-            } else {
-                mName = n.getName();
-                mName = "set"+mName.substring(0, 1).toUpperCase()+mName.substring(1);
-            }
-            return mName;
-        }
-    }
-
-    public class GenericResourceJavaScript extends ResourceJavaScript {
-
-        public GenericResourceJavaScript(Resource r, FileObject jsFolder) {
-            super(r, jsFolder);
-            Map<String, String> stubOnlyTokens = new HashMap<String, String>();
-            stubOnlyTokens.put("__RESOURCE_NAME__", r.getName());
-            stubOnlyTokens.put("__STUB_METHODS__", stubJSToken);
-            setTokens(stubOnlyTokens);
-        }
-
-        @Override
-        public FileObject generate() throws IOException {
-            String fileName = r.getName();
-            String fileNameExt = r.getName() + "." + JS;
-            FileObject fo = jsFolder.getFileObject(fileNameExt);
-            if (fo != null) {
-                if(canOverwrite()) {
-                    fo.delete();
-                } else {
-                    Logger.getLogger(this.getClass().getName()).log(
-                        Level.INFO, NbBundle.getMessage(ClientStubsGenerator.class,
-                            "MSG_SkippingStubGeneration", jsFolder.getPath()+
-                                    File.separator+fileNameExt));
-                }
-            }
-            createDataObjectFromTemplate(JS_GENERICSTUB_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
-            fo = jsFolder.getFileObject(fileNameExt);
-            replaceTokens(fo);
-            return fo;
-        }
-     }
 }

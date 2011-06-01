@@ -1,3 +1,0 @@
-ActiveRecord:MODULE:[]:ESCAPED{ActiveRecord}:
-  columns:METHOD:[PUBLIC]:ESCAPED{columns}(PARAMETERS{ESCAPED{table_name}, ESCAPED{name}}):
-  indexes:METHOD:[PUBLIC]:ESCAPED{indexes}(PARAMETERS{ESCAPED{table_name}, ESCAPED{name}}):

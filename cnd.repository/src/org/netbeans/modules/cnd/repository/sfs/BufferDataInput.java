@@ -46,12 +46,13 @@ package org.netbeans.modules.cnd.repository.sfs;
 
 import java.io.*;
 import java.nio.*;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * ByteBuffer based DataInput implementation
  * @author Vladimir Kvashin
  */
-public class BufferDataInput implements DataInput {
+public class BufferDataInput implements RepositoryDataInput, SharedStringBuffer {
     
     private ByteBuffer buffer;
     
@@ -59,35 +60,43 @@ public class BufferDataInput implements DataInput {
         this.buffer = buffer;
     }
 
+    @Override
     public byte readByte() throws IOException {
         return buffer.get();
     }
     
+    @Override
     public char readChar() throws IOException {
         return buffer.getChar();
     }
     
+    @Override
     public int readInt() throws IOException {
         return buffer.getInt();
     }
 
+    @Override
     public int readUnsignedShort() throws IOException {
         short result = buffer.getShort();
         return ((int) result) & 0x0000FFFF;
     }
 
+    @Override
     public boolean readBoolean() throws IOException {
         return buffer.get() != 0;
     }
 
+    @Override
     public double readDouble() throws IOException {
         return buffer.getDouble();
     }
     
+    @Override
     public float readFloat() throws IOException {
         return buffer.getFloat();
     }
 
+    @Override
     public String readLine() throws IOException {
         StringBuilder sb = new StringBuilder();
         byte b;
@@ -112,34 +121,65 @@ public class BufferDataInput implements DataInput {
         return sb.toString();
     }
     
+    @Override
     public long readLong() throws IOException {
         return buffer.getLong();
     }
 
+    @Override
     public short readShort() throws IOException {
         return buffer.getShort();
     }
 
+    @Override
     public String readUTF() throws IOException {
         return UTF.readUTF(this);
     }
 
+    @Override
     public int readUnsignedByte() throws IOException {
         byte b = buffer.get();
         return ((short) b) & 0x00FF;
     }
 
+    @Override
     public int skipBytes(int n) throws IOException {
         int skip = Math.min(n, buffer.remaining());
         buffer.position(buffer.position() + skip);
         return skip;
     }
 
+    @Override
     public void readFully(byte[] b, int off, int len) throws IOException {
         buffer.get(b, off, len);
     }
 
+    @Override
     public void readFully(byte[] b) throws IOException {
         buffer.get(b);
+    }
+
+    @Override
+    public CharSequence readCharSequenceUTF() throws IOException {
+        return UTF.readCharSequenceUTF(this);
+    }
+
+    private static final int sharedArrySize = 1024;
+    private final byte[] sharedByteArray = new byte[sharedArrySize];
+    private final char[] sharedCharArray = new char[sharedArrySize];
+    
+    @Override
+    public final byte[] getSharedByteArray() {
+        return sharedByteArray;
+    }
+
+    @Override
+    public final char[] getSharedCharArray() {
+        return sharedCharArray;
+    }
+
+    @Override
+    public final int getSharedArrayLehgth() {
+        return sharedArrySize;
     }
 }

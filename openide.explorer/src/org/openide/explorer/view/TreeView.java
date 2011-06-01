@@ -336,6 +336,7 @@ public abstract class TreeView extends JScrollPane {
         // Init of the editor
         tree.setCellEditor(new TreeViewCellEditor(tree));
         tree.setEditable(true);
+        tree.setInvokesStopCellEditing(true);
         int rowHeight = rend.getTreeCellRendererComponent(tree, null, false, false, false, 0, true).getPreferredSize().height;
         tree.setRowHeight(rowHeight);
         tree.setLargeModel(true);
@@ -518,7 +519,7 @@ public abstract class TreeView extends JScrollPane {
         // activate / deactivate support according to the state
         dragActive = state;
 
-        if (dragSupport != null) {
+        if (dragSupport != null && !GraphicsEnvironment.isHeadless()) {
             dragSupport.activate(dragActive);
         }
     }
@@ -544,7 +545,7 @@ public abstract class TreeView extends JScrollPane {
         // activate / deactivate support according to the state
         dropActive = state;
 
-        if (dropSupport != null) {
+        if (dropSupport != null && !GraphicsEnvironment.isHeadless()) {
             dropSupport.activate(dropActive);
         }
     }
@@ -1278,22 +1279,27 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
-        public final void propertyChange(final PropertyChangeEvent evt) {
+        public @Override final void propertyChange(PropertyChangeEvent evt) {
             if (manager == null) {
                 return; // the tree view has been removed before the event got delivered
             }
+            final String prop = evt.getPropertyName();
+            if (!prop.equals(ExplorerManager.PROP_ROOT_CONTEXT) &&
+                    !prop.equals(ExplorerManager.PROP_EXPLORED_CONTEXT) &&
+                    !prop.equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                return;
+            }
             Children.MUTEX.readAccess(new Runnable() {
-
-                public void run() {
-                    if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
+                public @Override void run() {
+                    if (prop.equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
                         synchronizeRootContext();
                     }
 
-                    if (evt.getPropertyName().equals(ExplorerManager.PROP_EXPLORED_CONTEXT)) {
+                    if (prop.equals(ExplorerManager.PROP_EXPLORED_CONTEXT)) {
                         synchronizeExploredContext();
                     }
 
-                    if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                    if (prop.equals(ExplorerManager.PROP_SELECTED_NODES)) {
                         synchronizeSelectedNodes();
                     }
                 }
@@ -1607,6 +1613,7 @@ public abstract class TreeView extends JScrollPane {
         /* clicking adapter */
         @Override
         public void mouseClicked(MouseEvent e) {
+            tree.stopEditing();
             int selRow = tree.getRowForLocation(e.getX(), e.getY());
 
             if ((selRow != -1) && SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
@@ -2076,6 +2083,7 @@ public abstract class TreeView extends JScrollPane {
         
         private List<TreePath> doSearch(String prefix) {
             List<TreePath> results = new ArrayList<TreePath>();
+            Set<TreePath> resSet = new HashSet<TreePath>();
 
             int startIndex = origSelectionPaths != null ? Math.max(0, getRowForPath(origSelectionPaths[0])) : 0;
             int size = getRowCount();
@@ -2095,9 +2103,10 @@ public abstract class TreeView extends JScrollPane {
                     path = getNextMatch(prefix, startIndex, Position.Bias.Forward);
                 }
 
-                if ((path != null) && !results.contains(path)) {
+                if ((path != null) && !resSet.contains(path)) {
                     startIndex = tree.getRowForPath(path);
                     results.add(path);
+                    resSet.add(path);
 
                     if (!quickSearchUsingSubstring) {
                         String elementName = ((VisualizerNode) path.getLastPathComponent()).getDisplayName();
@@ -2444,7 +2453,7 @@ public abstract class TreeView extends JScrollPane {
                     TreePath path = findSiblingTreePath(e.getTreePath(), e.getChildIndices());
 
                     // bugfix #39564, don't select again the same object
-                    if ((path == null) || path.equals(e.getTreePath())) {
+                    if ((path == null) || e.getChildIndices().length == 0) {
                         return;
                     } else if (path.getPathCount() > 0) {
                         tree.setSelectionPath(path);

@@ -45,17 +45,21 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
@@ -63,10 +67,12 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
+    private SpecializationDescriptor specializationDesctiptor;
     
     private FriendFunctionImpl(AST ast, ClassImpl cls, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
         super(ast, cls.getContainingFile(), null, scope, nameHolder, global);
         friendClassUID = cls.getUID();
+        specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, global);
     }
 
     public static FriendFunctionImpl create(AST ast, ClassImpl cls, CsmScope scope, boolean register) throws AstRendererException {
@@ -76,7 +82,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
         nameHolder.addReference(cls.getContainingFile(), friendFunctionImpl);
         return friendFunctionImpl;
     }
-    
+        
     @Override
     public CsmFunction getReferencedFunction() {
         CsmFunction fun = this;
@@ -97,19 +103,25 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
         return cls;
     }
 
+    public List<CsmSpecializationParameter> getSpecializationParameters() {
+        return (specializationDesctiptor != null) ? specializationDesctiptor.getSpecializationParameters() : Collections.<CsmSpecializationParameter>emptyList();
+    }
+    
     @Override
     public Kind getKind() {
         return Kind.FUNCTION_FRIEND;
     }
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUID(friendClassUID, output);
+        PersistentUtils.writeSpecializationDescriptor(specializationDesctiptor, output);
     }
     
-    public FriendFunctionImpl(DataInput input) throws IOException {
+    public FriendFunctionImpl(RepositoryDataInput input) throws IOException {
         super(input);
         friendClassUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.specializationDesctiptor = PersistentUtils.readSpecializationDescriptor(input);
     }       
 }

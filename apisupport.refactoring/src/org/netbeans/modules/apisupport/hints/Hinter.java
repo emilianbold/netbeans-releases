@@ -50,6 +50,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.RunnableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -97,34 +100,36 @@ public interface Hinter {
      */
     class Context {
 
+        private static final Logger LOG = Logger.getLogger(Hinter.class.getName());
+
         private final Document doc;
         private final LayerHandle layer;
-        private final FileObject instanceFile;
-        private final int line;
+        private final FileObject file;
+        private final RunnableFuture<Map<String,Integer>> lines;
         private final List<? super ErrorDescription> errors;
 
-        Context(Document doc, LayerHandle layer, FileObject instanceFile, int line, List<? super ErrorDescription> errors) {
+        Context(Document doc, LayerHandle layer, FileObject file, RunnableFuture<Map<String,Integer>> lines, List<? super ErrorDescription> errors) {
             this.doc = doc;
             this.layer = layer;
-            this.instanceFile = instanceFile;
-            this.line = line;
+            this.file = file;
+            this.lines = lines;
             this.errors = errors;
         }
 
         /**
          * Gets the layer entry you may offer hints for.
          * File attribute names like {@code literal:instanceCreate} may return values like {@code new:pkg.Clazz} or {@code method:pkg.Clazz.factory}.
-         * @return a {@code *.instance} file in the project's layer
+         * @return a file (or folder) in the project's layer
          */
-        public FileObject instanceFile() {
-            return instanceFile;
+        public FileObject file() {
+            return file;
         }
 
         /**
          * @return standard description to pass to {@link #addHint}
          */
         @Messages("Hinter.description=Use of layer entry where annotation is available")
-        public String standardDescription() {
+        public String standardAnnotationDescription() {
             return Hinter_description();
         }
 
@@ -132,32 +137,43 @@ public interface Hinter {
          * @return standard fix description to pass to {@link #addHint}
          */
         @Messages("Hinter.fix.description=Convert registration to Java annotation")
-        public String standardFixDescription() {
+        public String standardAnnotationFixDescription() {
             return Hinter_fix_description();
         }
 
         /**
          * Add a hint.
          * @param severity whether to treat as a warning, etc.
-         * @param description description of hint (e.g. {@link #standardDescription})
-         * @param fixes any fixes to offer (see {@link #standardFixDescription}
-         * @see #addStandardHint
+         * @param description description of hint
+         * @param fixes any fixes to offer
+         * @see #addStandardAnnotationHint
          */
         public void addHint(Severity severity, String description, Fix... fixes) {
-            errors.add(ErrorDescriptionFactory.createErrorDescription(severity, description, Arrays.asList(fixes), doc, line));
+            Integer line = null;
+            try {
+                lines.run();
+                line = lines.get().get(file.getPath());
+            } catch (Exception x) {
+                LOG.log(Level.INFO, null, x);
+            }
+            if (line != null) {
+                errors.add(ErrorDescriptionFactory.createErrorDescription(severity, description, Arrays.asList(fixes), doc, line));
+            } else {
+                LOG.log(Level.WARNING, "no line found for {0}", file);
+            }
         }
 
         /**
-         * Add a warning hint following the standard pattern.
+         * Add an annotation-oriented warning hint following the standard pattern.
          * @param fix what to do for a fix (see e.g. {@link #findAndModifyDeclaration}); no change info
          * @see #addHint
-         * @see #standardDescription
-         * @see #standardFixDescription
+         * @see #standardAnnotationDescription
+         * @see #standardAnnotationFixDescription
          */
-        public void addStandardHint(final Callable<Void> fix) {
-            addHint(Severity.WARNING, standardDescription(), new Fix() {
+        public void addStandardAnnotationHint(final Callable<Void> fix) {
+            addHint(Severity.WARNING, standardAnnotationDescription(), new Fix() {
                 public @Override String getText() {
-                    return standardFixDescription();
+                    return standardAnnotationFixDescription();
                 }
                 public @Override ChangeInfo implement() throws Exception {
                     fix.call();
@@ -233,6 +249,14 @@ public interface Hinter {
         }
 
         /**
+         * Saves the layer after some modifications to {@link #file()}.
+         * @throws IOException if the layer could not be saved
+         */
+        public void saveLayer() throws IOException {
+            layer.save();
+        }
+
+        /**
          * Task to be used from {@link #findAndModifyDeclaration}.
          */
         interface ModifyDeclarationTask {
@@ -278,7 +302,7 @@ public interface Hinter {
                         mods = wc.getTrees().getTree((ExecutableElement) decl).getModifiers();
                     }
                     task.run(wc, decl, mods);
-                    layer.save();
+                    saveLayer();
                 }
             }).commit();
             SaveCookie sc = DataObject.find(java).getLookup().lookup(SaveCookie.class);

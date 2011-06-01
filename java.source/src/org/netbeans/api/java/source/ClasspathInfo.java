@@ -123,23 +123,23 @@ public final class ClasspathInfo {
     private final ClassPath srcClassPath;
     private final ClassPath bootClassPath;
     private final ClassPath compileClassPath;
-    private final ClassPath cachedUserSrcClassPath;
     private final ClassPath cachedAptSrcClassPath;
-    private final ClassPath cachedSrcClassPath; // = cachedUserSrcClassPath + cachedAptSrcClassPath
+    private final ClassPath cachedSrcClassPath;
     private final ClassPath cachedBootClassPath;
     private final ClassPath cachedCompileClassPath;
-    private ClassPath outputClassPath;
+    private final ClassPath outputClassPath;
     
     private final ClassPathListener cpListener;
     private final boolean backgroundCompilation;
     private final boolean useModifiedFiles;
     private final boolean ignoreExcludes;
-    private final JavaFileFilterImplementation filter;
-    private JavaFileManager fileManager;
-    //@GuardedBy (this)
-    private OutputFileManager outFileManager;
+    private final JavaFileFilterImplementation filter;    
     private final MemoryFileManager memoryFileManager;
     private final ChangeSupport listenerList;
+
+    //@GuardedBy("this")
+    private JavaFileManager fileManager;
+    //@GuardedBy("this")
     private ClassIndex usagesQuery;
     
     /** Creates a new instance of ClasspathInfo (private use the factory methods) */
@@ -165,17 +165,14 @@ public final class ClasspathInfo {
 	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
 	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         if (srcCp == null) {
-            this.cachedAptSrcClassPath = null;
-            this.cachedSrcClassPath = this.srcClassPath = this.cachedUserSrcClassPath = EMPTY_PATH;
+            this.cachedSrcClassPath = this.srcClassPath = EMPTY_PATH;
+            this.cachedAptSrcClassPath = null;            
             this.outputClassPath = EMPTY_PATH;
-        }
-        else {
+        } else {
             this.srcClassPath = srcCp;
-            final boolean allowAptRoots = true; //todo: Set by PROCESSOR_PATH != null
-            this.cachedUserSrcClassPath = SourcePath.sources(srcCp, backgroundCompilation);
-            this.cachedAptSrcClassPath = allowAptRoots ? SourcePath.apt(srcCp, backgroundCompilation) : null;
-            this.cachedSrcClassPath =    allowAptRoots ? ClassPathSupport.createProxyClassPath(this.cachedUserSrcClassPath,this.cachedAptSrcClassPath) : this.cachedUserSrcClassPath;
-            this.outputClassPath = CacheClassPath.forSourcePath (this.cachedUserSrcClassPath);
+            this.cachedSrcClassPath = SourcePath.sources(srcCp, backgroundCompilation);
+            this.cachedAptSrcClassPath = SourcePath.apt(srcCp, backgroundCompilation);
+            this.outputClassPath = CacheClassPath.forSourcePath (this.cachedSrcClassPath);
 	    this.cachedSrcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedSrcClassPath));
         }
         this.backgroundCompilation = backgroundCompilation;
@@ -383,7 +380,7 @@ public final class ClasspathInfo {
             usagesQuery = new ClassIndex (
                     this.bootClassPath,
                     this.compileClassPath,
-                    this.cachedUserSrcClassPath);
+                    this.cachedSrcClassPath);
         }
         return usagesQuery;
     }
@@ -392,16 +389,16 @@ public final class ClasspathInfo {
     
     synchronized JavaFileManager getFileManager() {
         if (this.fileManager == null) {
-            boolean hasSources = this.cachedSrcClassPath != null;
-            final CacheMarker marker = new CacheMarker(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, backgroundCompilation);
+            boolean hasSources = this.cachedSrcClassPath != EMPTY_PATH;
+            final CacheMarker marker = new CacheMarker(this.cachedSrcClassPath, this.cachedAptSrcClassPath, backgroundCompilation);
             final SiblingSource siblings = SiblingSupport.create();
             this.fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
-                    : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
-                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
+                    : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
+                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
+                hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
                 this.memoryFileManager,
                 marker,
                 siblings);
@@ -409,10 +406,6 @@ public final class ClasspathInfo {
         return this.fileManager;
     }
     
-    synchronized OutputFileManager getOutputFileManager () {        
-        getFileManager();   //Side effect: initializes outFileManager
-        return this.outFileManager;
-    }
     
     // Private methods ---------------------------------------------------------
     
@@ -434,6 +427,7 @@ public final class ClasspathInfo {
     
     private class ClassPathListener implements PropertyChangeListener {	
 		
+        @Override
         public void propertyChange (PropertyChangeEvent event) {
             if (ClassPath.PROP_ROOTS.equals(event.getPropertyName())) {
                 synchronized (this) {
@@ -452,6 +446,7 @@ public final class ClasspathInfo {
             return cpInfo.getFileManager();
         }
 
+        @Override
         public ClassPath getCachedClassPath(final ClasspathInfo cpInfo, final PathKind kind) {
             return cpInfo.getCachedClassPath(kind);
         }                
@@ -520,6 +515,7 @@ public final class ClasspathInfo {
             return this.allowsWrite;
         }
 
+        @Override
         public void mark(@NonNull final URL result, GeneratedFileMarker.Type type) {
             if (allowsWrite) {
                 switch (type) {
@@ -535,6 +531,7 @@ public final class ClasspathInfo {
             }
         }
 
+        @Override
         public void finished(@NonNull final URL source) {
             try {
                 if (allowsWrite && (!srcOutput.isEmpty() || !clsOutput.isEmpty())) {

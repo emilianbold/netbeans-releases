@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -77,7 +77,12 @@ public abstract class NodeProvider implements Lookup.Provider {
     public NodeProvider(Lookup lookup) {
         this.lookup = lookup;
         changeSupport = new ChangeSupport(this);
-        nodeSet = new TreeSet<Node>();
+        nodeSet = new TreeSet<Node>(new Comparator<Node>() {
+            @Override
+            public int compare(Node n1, Node n2) {
+                return n1.getDisplayName().compareTo(n2.getDisplayName());
+            }
+        });
     }
     
     /**
@@ -92,6 +97,7 @@ public abstract class NodeProvider implements Lookup.Provider {
         nodeSet = new TreeSet<Node>(comparator);
     }
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
@@ -129,6 +135,7 @@ public abstract class NodeProvider implements Lookup.Provider {
 
     public synchronized void refresh() {
         initialized = false;
+        @SuppressWarnings("unchecked")
         TreeSet<Node> nodes = (TreeSet<Node>)nodeSet.clone();
 
         for (Node child : nodes) {

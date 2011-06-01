@@ -42,11 +42,27 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.io.IOException;
+import javax.swing.text.BadLocationException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.mozilla.nb.javascript.Node;
+
 public class JsFormatterTest extends JsTestBase {
     
     public JsFormatterTest(String testName) {
         super(testName);
     }            
+
+
+    public static Test Xsuite() throws IOException, BadLocationException {
+        System.err.println("Beware, only selected tests runs!!!");
+        TestSuite suite = new TestSuite();
+        suite.addTest(new JsFormatterTest("testIssue190613"));
+        suite.addTest(new JsFormatterTest("testIssue190613b"));
+        return suite;
+    }
+
 
     // Used to test arbitrary source trees
     //public void testReformatSourceTree() {
@@ -898,7 +914,37 @@ public class JsFormatterTest extends JsTestBase {
          );
     }
 
-    
+//    //Bug 190613 - reformatting of code blocks doesn't work well
+//    public void testIssue190613() throws Exception {
+//        format(
+//           "    {\n" +
+//           "        {\n" +
+//           "            \n" +
+//           "        }\n" +
+//           "    }\n",
+//           "    {\n" +
+//           "        {\n" +
+//           "            \n" +
+//           "        }\n" +
+//           "    }\n", null);
+//    }
+//
+//    //Bug 190613 - reformatting of code blocks doesn't work well
+//    public void testIssue190613b() throws Exception {
+//        format(
+//           "{\n" +
+//           "{\n" +
+//           "            \n" +
+//           "        }\n" +
+//           "}\n",
+//           "{\n" +
+//           "    {\n" +
+//           "        \n" +
+//           "    }\n" +
+//           "}\n", null);
+//    }
+//
+//   
 //    public void testLineContinuation4() throws Exception {
 //        format("def foo\nfoo\nif true\nx\nend\nend", 
 //               "def foo\n  foo\n  if true\n    x\n  end\nend", null);
@@ -1067,4 +1113,6 @@ public class JsFormatterTest extends JsTestBase {
 //        format("x\n",
 //               "x\n", null);
 //    }
+
+     
 }

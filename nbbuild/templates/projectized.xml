@@ -95,6 +95,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
                 moduledependenciesproperty="module.dependencies"
                 moduleclasspathproperty="module.classpath"
                 publicpackagejardir="${public.package.jar.dir}"
+                moduleprocessorclasspathproperty="module.processor.classpath"
                 modulerunclasspathproperty="module.run.classpath"
                 commitmailproperty="commit.mail"
                 classpathextensionsproperty="class.path.extensions">
@@ -225,18 +226,89 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <releasefilescopy cluster="${cluster}"/>
     </target>
 
-    <target name="test-lib-init" depends="init">
+    <target name="-check-for-libs.junit4">
+        <condition property="build.libs.junit4">
+            <not>
+                <or>
+                    <equals arg1="${code.name.base}" arg2="org.netbeans.libs.junit4"/>
+                    <available file="${libs.junit4.dir}/modules/org-netbeans-libs-junit4.jar"/>
+                </or>
+            </not>
+        </condition>
+    </target>
+    <target name="-build-libs.junit4" depends="-check-for-libs.junit4" if="build.libs.junit4">
+        <ant dir="${nb_all}/libs.junit4" inheritall="false"/>
+    </target>
+    <target name="test-lib-init" depends="init,-build-libs.junit4">
         <path id="test.unit.lib.cp"/>
         <!-- The IDE is so big that anything enabling all clusters will exceed the JVM's defaults! -->
         <!-- Any changes please propagate into nbbuild/testdist/release/one-module.xml test.run.args property -->
         <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx320m"/>
+        <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/>
+        <macrodef name="test-init-nborg">
+            <attribute name="test.type"/>
+            <sequential>
+                <property name="test.@{test.type}.folder" location="${build.dir}/test/@{test.type}/dist"/>
+                <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
+            </sequential>
+        </macrodef>
+        <test-init-nborg test.type="unit"/>
+        <test-init-nborg test.type="qa-functional"/>
+    </target>
+    <macrodef name="do-test-build-nborg">
+        <attribute name="test.type"/>
+        <sequential>
+            <mkdir dir="${test.dist.dir}"/>
+            <available file="${test.@{test.type}.data.dir}" type="dir" property="exists.test.@{test.type}.data"/>
+            <!-- test distribution -->
+            <mkdir dir="${extra.test.libs.dir}"/>
+            <mkdir dir="${test.@{test.type}.out.folder}"/>
+            <jar destfile="${test.@{test.type}.out.folder}/tests.jar" basedir="${build.test.@{test.type}.classes.dir}" filesetmanifest="merge"/>
+            <!-- create properties -->
+            <shorterpaths inref="test.@{test.type}.run.cp"
+                          out="test.@{test.type}.run.cp.short"
+                          extralibs="extra.test.libs.short"
+                          extralibsdir="${extra.test.libs.dir}"
+                          testproperties="${test.@{test.type}.out.folder}/test.properties">
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir" excluded="${netbeans.dest.dir}/extra"/> <!-- for pre-7.0 and NB.org projects -->
+                <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
+                <!-- XXX this will not be right on Macs: -->
+                <replacement dir="${nbjdk.home}/jre" name="java.home"/>
+                <replacement dir="${nbjdk.home}" name="java.home.parent"/>
+            </shorterpaths>
+        </sequential>
+    </macrodef>
+    <target name="do-unit-test-build" depends="init,test-init,projectized-common.do-unit-test-build" if="exists.test.unit.src.dir">
+        <do-test-build-nborg test.type="unit"/>
+    </target>
+    <target name="do-qa-functional-test-build" depends="init,test-init,projectized-common.do-qa-functional-test-build" if="exists.test.qa-functional.src.dir">
+        <do-test-build-nborg test.type="qa-functional"/>
+    </target>
+    <target name="test-unit-build-datajar" depends="do-test-build" if="exists.test.unit.data">
+        <zip destfile="${test.unit.out.folder}/data.zip" basedir="${test.unit.data.dir}"/>
+    </target>
+    <target name="test-qa-functional-build-datajar" depends="do-test-build" if="exists.test.qa-functional.data">
+        <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.data.dir}"/>
+    </target>
+    <target name="test-build" depends="projectized-common.test-build,test-build-datajar" description="Compile and package all tests."/>
+    <target name="test-build-datajar" depends="test-unit-build-datajar,test-qa-functional-build-datajar"/>
+    <target name="clean" depends="projectized-common.clean">
+        <macrodef name="test-clean">
+            <attribute name="test.type"/>
+            <sequential>
+                <parseprojectxml project=".">
+                    <testtype name="@{test.type}" folder="test.@{test.type}.folder"/>
+                </parseprojectxml>
+                <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
+                <delete dir="${test.@{test.type}.out.folder}"/>
+            </sequential>
+        </macrodef>
+        <test-clean test.type="unit"/>
+        <test-clean test.type="qa-functional"/>
     </target>
 
     <target name="javadoc" depends="build-init,-javadoc-init">
-        <path id="javadoc.classpath">
-            <path refid="cp"/>
-            <path path="${module.run.classpath}"/><!-- XXX #157320: JDK 5 bug workaround -->
-        </path>
+        <path id="javadoc.classpath" refid="processor.cp"/> <!-- #157320 -->
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
@@ -572,7 +644,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         </condition>
 
         <path id="sigtest.class.path.ref">
-            <path path="${module.run.classpath}"/>
+            <path path="${module.run.classpath}"/> <!-- XXX or module.processor.classpath? -->
             <path path="${cp.extra}"/>
             <path path="${cluster}/${module.jar}"/>
         </path>
@@ -641,7 +713,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${findbugs.home}/lib/findbugs-ant.jar"/>
 
         <path id="findbugs.class.path.ref">
-            <path path="${module.run.classpath}"/>
+            <path path="${module.run.classpath}"/> <!-- XXX or module.processor.classpath? -->
             <path path="${cp.extra}"/>
             <path path="${cluster}/${module.jar}"/>
         </path>

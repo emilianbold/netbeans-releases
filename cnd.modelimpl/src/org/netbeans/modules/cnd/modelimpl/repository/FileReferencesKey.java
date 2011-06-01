@@ -42,24 +42,24 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FileReferencesKey extends ProjectFileNameBasedKey {
+public final class FileReferencesKey extends ProjectFileNameBasedKey {
 
     public FileReferencesKey(FileImpl file) {
 	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
     }
 
-    public FileReferencesKey(DataInput aStream) throws IOException {
+    public FileReferencesKey(RepositoryDataInput aStream) throws IOException {
 	super(aStream);
     }
 

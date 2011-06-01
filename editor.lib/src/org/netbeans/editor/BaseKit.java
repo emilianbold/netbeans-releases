@@ -241,6 +241,9 @@ public class BaseKit extends DefaultEditorKit {
     /** Reindent Line action */
     public static final String reindentLineAction = "reindent-line"; // NOI18N
 
+    /** Reformat Line action */
+    public static final String reformatLineAction = "reformat-line"; // NOI18N
+
     /** Shift line right action */
     public static final String shiftLineRightAction = "shift-line-right"; // NOI18N
 

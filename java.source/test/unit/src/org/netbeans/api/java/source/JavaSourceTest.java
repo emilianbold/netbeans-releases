@@ -88,6 +88,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import javax.swing.text.BadLocationException;
@@ -1208,7 +1209,12 @@ public class JavaSourceTest extends NbTestCase {
         rutStart.await();
         res = js.runWhenScanFinished(new T(latch), true);
         assertEquals(1,latch.getCount());
-        res.get(1,TimeUnit.SECONDS);
+        try {
+            res.get(1,TimeUnit.SECONDS);
+            assertTrue(false);
+        } catch (TimeoutException te) {
+            //Pass
+        }
         assertFalse(res.isDone());
         assertFalse (res.isCancelled());
         rutLatch.countDown();
@@ -1225,13 +1231,23 @@ public class JavaSourceTest extends NbTestCase {
         rutStart.await();
         res = js.runWhenScanFinished(new T(latch), true);
         assertEquals(1,latch.getCount());
-        res.get(1,TimeUnit.SECONDS);
+        try {
+            res.get(1,TimeUnit.SECONDS);
+            assertTrue(false);
+        } catch (TimeoutException te) {
+            //Pass
+        }
         assertFalse(res.isDone());
         assertFalse (res.isCancelled());
         assertTrue (res.cancel(false));
         rutLatch.countDown();
         assertFalse(latch.await(3, TimeUnit.SECONDS));
-        res.get(1,TimeUnit.SECONDS);
+        try {
+            res.get(1,TimeUnit.SECONDS);
+            assertTrue(false);
+        } catch (TimeoutException te) {
+            //Pass
+        }
         assertFalse(res.isDone());
         assertTrue (res.isCancelled());
     }
@@ -2181,15 +2197,10 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         @Override
-        public boolean isValid(boolean tryOpen) throws IOException {
-            return true;
+        public Status getStatus(boolean tryOpen) throws IOException {
+            return Status.VALID;
         }
-
-        @Override
-        public boolean exists() {
-            return true;
-        }
-
+        
         @Override
         public <T> void query(
                 Collection<? super T> result,

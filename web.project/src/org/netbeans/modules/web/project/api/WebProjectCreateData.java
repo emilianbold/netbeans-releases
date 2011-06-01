@@ -426,4 +426,8 @@ public final class WebProjectCreateData {
         this.cdiEnabled = cdiEnabled;
     }
 
+    public boolean skipTests() {
+        return testFolders == null || testFolders.length == 0;
+    }
+
 }

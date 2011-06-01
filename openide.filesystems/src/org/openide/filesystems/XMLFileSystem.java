@@ -324,13 +324,13 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
         if (urls.length == 0) {
             urlsToXml = urls;
-            refreshChildrenInAtomicAction((AbstractFolder) getRoot(), rootElem = new ResourceElem(true, urls, null)); // NOI18N
+            refreshChildrenInAtomicAction((AbstractFolder) getRoot(), rootElem = new ResourceElem(true, urls)); // NOI18N
             rootElem = null;
 
             return;
         }
 
-        Handler handler = new Handler(DTD_MAP, rootElem = new ResourceElem(true, urls, null), validate); // NOI18N        
+        Handler handler = new Handler(DTD_MAP, rootElem = new ResourceElem(true, urls), validate); // NOI18N        
 
         try {
             _setSystemName("XML_" + urls[0].toExternalForm().replace('/','-')); // NOI18N
@@ -600,14 +600,14 @@ public final class XMLFileSystem extends AbstractFileSystem {
         private java.util.List<ResourceElem> children;
         private java.util.List<String> names;
         private byte[] content;
+        private int weight = Integer.MIN_VALUE; // initially unset
         private java.util.List<URL> urlContext = new ArrayList<URL>();
         private XMLMapAttr foAttrs;
         private boolean isFolder;
         private String uri;
 
-        public ResourceElem(boolean isFolder, URL[] urlContext, String uri) {
+        public ResourceElem(boolean isFolder, URL[] urlContext) {
             this.isFolder = isFolder;
-            this.uri = uri;
             this.urlContext.addAll(Arrays.asList(urlContext));
 
             if (isFolder) {
@@ -616,9 +616,8 @@ public final class XMLFileSystem extends AbstractFileSystem {
             }
         }
 
-        public ResourceElem(boolean isFolder, URL urlContext, String uri) {
+        public ResourceElem(boolean isFolder, URL urlContext) {
             this.isFolder = isFolder;
-            this.uri = uri;
             this.urlContext.add(urlContext);
 
             if (isFolder) {
@@ -689,11 +688,11 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return uri;
         }
 
-        void setContent(byte[] content) {
-            if (this.content == null) {
-                byte[] alloc = new byte[content.length];
-                System.arraycopy(content, 0, alloc, 0, content.length);
-                this.content = alloc;
+        void setContent(byte[] content, String uri, int weight) {
+            if (weight > this.weight) {
+                this.weight = weight;
+                this.content = content != null ? content.clone() : null;
+                this.uri = uri;
             }
         }
 
@@ -1165,6 +1164,8 @@ public final class XMLFileSystem extends AbstractFileSystem {
         private Map dtdMap;
         private ResourceElem topRE;
         private StringBuffer pcdata = new StringBuffer();
+        private int weight;
+        private String uri;
 
         Handler(Map dtdMap, ResourceElem rootElem, boolean validate) {
             this.dtdMap = dtdMap;
@@ -1204,7 +1205,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
                     throw new SAXException(NbBundle.getMessage(XMLFileSystem.class, "XML_MisssingAttr")); // NOI18N 
                 }
 
-                ResourceElem newRes = new ResourceElem(true, urlContext, null);
+                ResourceElem newRes = new ResourceElem(true, urlContext);
 
                 topRE = topRE.addChild(foName, newRes);
                 resElemStack.push(topRE);
@@ -1219,18 +1220,19 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
                 foName = foName.intern();
 
-                String uri = null;
+                uri = null;
 
                 if (amap.getLength() > 1) {
                     uri = amap.getValue("url"); // NOI18N
                 }
 
-                ResourceElem newRes = new ResourceElem(false, urlContext, uri);
+                ResourceElem newRes = new ResourceElem(false, urlContext);
 
                 topRE = topRE.addChild(foName, newRes);
                 resElemStack.push(topRE);
 
                 pcdata.setLength(0);
+                weight = 0;
 
                 return;
             }
@@ -1257,6 +1259,17 @@ public final class XMLFileSystem extends AbstractFileSystem {
                     }
                 }
 
+                if (MultiFileObject.WEIGHT_ATTRIBUTE.equals(amap.getValue("name"))) {
+                    String weightS = amap.getValue("intvalue");
+                    if (weightS != null) {
+                        try {
+                            weight = Integer.parseInt(weightS);
+                        } catch (NumberFormatException x) {
+                            // ignore here (other places should report it)
+                        }
+                    }
+                }
+
                 return;
             }
         }
@@ -1266,9 +1279,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             if ((elementStack.peek().hashCode() == FILE_CODE) && !topRE.isFolder()) {
                 String string = pcdata.toString().trim();
 
-                if (string.length() > 0) {
-                    topRE.setContent(string.getBytes());
-                }
+                topRE.setContent(string.length() > 0 ? string.getBytes() : null, this.uri, weight);
 
                 pcdata.setLength(0);
             }

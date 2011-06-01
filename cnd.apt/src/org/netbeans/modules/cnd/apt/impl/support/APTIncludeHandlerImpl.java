@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +66,8 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
@@ -82,7 +82,11 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private List<IncludeDirEntry> userIncludeFilePaths;
     
     private Map<CharSequence, Integer> recurseIncludes = null;
-    private static final int MAX_INCLUDE_DEEP = 5;    
+    /* CUDA+trast example shows that 5 (and 4) is too expensive in case code model ignores pragma once
+     * Boost needs at least 4 for include boost/spirit/home/classic/utility/chset_operators.hpp>
+     * So it is dangerous level that can led to "infinite" parsing time.
+     */
+    private static final int MAX_INCLUDE_DEEP = 4;
     private LinkedList<IncludeInfo> inclStack = null;
     private StartEntry startFile;
     private final APTFileSearch fileSearch;
@@ -103,7 +107,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
 
     @Override
-    public boolean pushInclude(CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
+    public IncludeState pushInclude(CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
         return pushIncludeImpl(path, aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedDirIndex);
     }
 
@@ -247,7 +251,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
         
         @Override
-        public void write(DataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             assert output != null;
             startFile.write(output);
             
@@ -257,21 +261,21 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             int size = systemIncludePaths.size();
             output.writeInt(size);
             for (int i = 0; i < size; i++) {
-                output.writeUTF(systemIncludePaths.get(i).getPath());
+                output.writeCharSequenceUTF(systemIncludePaths.get(i).getAsSharedCharSequence());
             }
             
             size = userIncludePaths.size();
             output.writeInt(size);
             
             for (int i = 0; i < size; i++) {
-                output.writeUTF(userIncludePaths.get(i).getPath());
+                output.writeCharSequenceUTF(userIncludePaths.get(i).getAsSharedCharSequence());
             }
             
             size = userIncludeFilePaths.size();
             output.writeInt(size);
             
             for (int i = 0; i < size; i++) {
-                output.writeUTF(userIncludeFilePaths.get(i).getPath());
+                output.writeCharSequenceUTF(userIncludeFilePaths.get(i).getAsSharedCharSequence());
             }
 
             if (recurseIncludes == null) {
@@ -315,7 +319,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             }
         }
         
-        public StateImpl(FileSystem fs, final DataInput input) throws IOException {
+        public StateImpl(FileSystem fs, final RepositoryDataInput input) throws IOException {
             assert input != null;
             final APTStringManager pathManager = FilePathCache.getManager();
             
@@ -447,7 +451,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
 
-    private boolean pushIncludeImpl(CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
+    private IncludeState pushIncludeImpl(CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
         if (recurseIncludes == null) {
             assert (inclStack == null): inclStack.toString() + " started on " + startFile;
             inclStack = new LinkedList<IncludeInfo>();
@@ -459,11 +463,11 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
             recurseIncludes.put(path, counter);
             inclStack.addLast(new IncludeInfoImpl(path, directiveLine, directiveOffset, resolvedDirIndex));
-            return true;
+            return IncludeState.Success;
         } else {
             assert (recurseIncludes.get(path) != null) : "included file must be in map"; // NOI18N
             APTUtils.LOG.log(Level.WARNING, "RECURSIVE inclusion:\n\t{0}\n\tin {1}\n", new Object[] { path , getCurPath() }); // NOI18N
-            return false;
+            return IncludeState.Recursive;
         }
     }    
     
@@ -482,9 +486,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             this.resolvedDirIndex = resolvedDirIndex;
         }
         
-        public IncludeInfoImpl(final DataInput input) throws IOException {
+        public IncludeInfoImpl(final RepositoryDataInput input) throws IOException {
             assert input != null;
-            this.path = FilePathCache.getManager().getString(input.readUTF());
+            this.path = FilePathCache.getManager().getString(input.readCharSequenceUTF());
             directiveLine = input.readInt();
             directiveOffset = input.readInt();
             resolvedDirIndex = input.readInt();
@@ -535,10 +539,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
 
         @Override
-        public void write(final DataOutput output) throws IOException {
+        public void write(final RepositoryDataOutput output) throws IOException {
             assert output != null;
             
-            output.writeUTF(path.toString());
+            output.writeCharSequenceUTF(path.toString());
             output.writeInt(directiveLine);
             output.writeInt(directiveOffset);
             output.writeInt(resolvedDirIndex);

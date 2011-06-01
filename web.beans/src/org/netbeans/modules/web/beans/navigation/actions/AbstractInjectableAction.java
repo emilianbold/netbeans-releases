@@ -42,30 +42,14 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.swing.text.JTextComponent;
-
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.openide.filesystems.FileObject;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractInjectableAction extends AbstractWebBeansAction {
+abstract class AbstractInjectableAction extends AbstractCdiAction {
 
     private static final long serialVersionUID = 6150283611609922936L;
 
@@ -74,61 +58,12 @@ abstract class AbstractInjectableAction extends AbstractWebBeansAction {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.editor.BaseAction#actionPerformed(java.awt.event.ActionEvent, javax.swing.text.JTextComponent)
+     * @see org.netbeans.modules.web.beans.navigation.actions.AbstractCdiAction#findContext(javax.swing.text.JTextComponent, java.lang.Object[])
      */
     @Override
-    public void actionPerformed( ActionEvent event, final JTextComponent component ) {
-        if ( component == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        final FileObject fileObject = NbEditorUtilities.getFileObject( 
-                component.getDocument());
-        if ( fileObject == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        Project project = FileOwnerQuery.getOwner( fileObject );
-        if ( project == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        
-        MetaModelSupport support = new MetaModelSupport(project);
-        final MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
-        if ( metaModel == null ){
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        
-        /*
-         *  this list will contain variable element name and TypeElement 
-         *  qualified name which contains variable element. 
-         */
-        final Object[] variableAtCaret = new Object[3];
-        if ( !WebBeansActionHelper.getVariableElementAtDot( component, 
-                variableAtCaret , true ))
-        {
-            return;
-        }
-        
-        try {
-            metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
-
-                public Void run( WebBeansModel model ) throws Exception {
-                    modelAcessAction(model, metaModel, variableAtCaret, component, 
-                            fileObject);
-                    return null;
-                }
-            });
-        }
-        catch (MetadataModelException e) {
-            Logger.getLogger( AbstractInjectableAction.class.getName()).
-                log( Level.INFO, e.getMessage(), e);
-        }
-        catch (IOException e) {
-            Logger.getLogger( AbstractInjectableAction.class.getName()).
-                log( Level.WARNING, e.getMessage(), e);
-        }
+    protected boolean findContext( JTextComponent component, Object[] context )
+    {
+        return WebBeansActionHelper.getVariableElementAtDot( component, 
+                context , true );
     }
 }

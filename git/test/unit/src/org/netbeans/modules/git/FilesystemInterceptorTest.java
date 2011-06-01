@@ -62,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -80,6 +81,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         System.setProperty("versioning.git.handleExternalEvents", "false");
         System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
         Git.STATUS_LOG.setLevel(Level.ALL);

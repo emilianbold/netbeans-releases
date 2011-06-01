@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package stateful.ejbs.remote;
 
 import java.rmi.RemoteException;
@@ -11,10 +10,9 @@ import javax.ejb.EJBHome;
 
 /**
  *
- * @author js103526
+ * @author jskrivanek
  */
 public interface RSSRemoteHome extends EJBHome {
-
-    stateful.ejbs.remote.RSSRemote create()  throws CreateException, RemoteException;
     
+    stateful.ejbs.remote.RSSRemote create() throws CreateException, RemoteException;
 }

@@ -86,6 +86,4 @@ public class ParserErrorProvider extends CsmErrorProvider {
     public String getName() {
         return "syntax-error"; //NOI18N
     }
-
-
 }

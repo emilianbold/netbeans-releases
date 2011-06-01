@@ -324,9 +324,14 @@ public final class CompilerSetImpl extends CompilerSet {
     @Override
     public Charset getEncoding() {
         if (charset == null) {
-            charset = Charset.forName("UTF-8"); //NOI18N
-            if (charset == null) {
+            if (flavor != null && flavor.isSunStudioCompiler()) {
                 charset = Charset.defaultCharset();
+            }
+            if (charset == null) {
+                charset = Charset.forName("UTF-8"); //NOI18N
+                if (charset == null) {
+                    charset = Charset.defaultCharset();
+                }
             }
         }
         return charset;

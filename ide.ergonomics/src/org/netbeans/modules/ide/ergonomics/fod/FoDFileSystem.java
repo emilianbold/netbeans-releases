@@ -85,7 +85,6 @@ implements Runnable, ChangeListener, LookupListener {
     public FoDFileSystem() {
         setPropagateMasks(true);
         weakL = WeakListeners.change(this, FeatureManager.getInstance());
-        FeatureManager.getInstance().addChangeListener(weakL);
         FileSystem fs;
         try {
             fs = manager.loadCache();
@@ -102,6 +101,10 @@ implements Runnable, ChangeListener, LookupListener {
 
     public static FoDFileSystem getInstance() {
         return Lookup.getDefault().lookup(FoDFileSystem.class);
+    }
+    
+    public void initListener() {
+        FeatureManager.getInstance().addChangeListener(weakL);
     }
 
     public void refresh() {

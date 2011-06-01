@@ -328,6 +328,15 @@ Group system
         SwingUtilities.invokeAndWait(r);
         return r.arr;
     }
+    
+    public void testRenameHtAccess() throws Exception {
+        FileObject fo = lfs.getRoot().createData("example.htaccess");
+        DataObject mine = DataObject.find(fo);
+        assertEquals("It is default DO", DefaultDataObject.class, mine.getClass());
+        mine.rename(".htaccess");
+        assertEquals("Primary file remains", fo, mine.getPrimaryFile());
+        assertEquals(".htaccess", fo.getNameExt());
+    }
 
     private void waitEQ() throws Exception {
         getEPanes(null);

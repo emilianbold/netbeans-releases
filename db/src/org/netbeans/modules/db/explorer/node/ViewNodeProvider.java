@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -73,6 +73,7 @@ public class ViewNodeProvider extends NodeProvider {
 
     private static class FactoryHolder {
         static final NodeProviderFactory FACTORY = new NodeProviderFactory() {
+            @Override
             public ViewNodeProvider createInstance(Lookup lookup) {
                 ViewNodeProvider provider = new ViewNodeProvider(lookup);
                 return provider;
@@ -83,12 +84,14 @@ public class ViewNodeProvider extends NodeProvider {
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Schema> schemaHandle;
 
+    @SuppressWarnings("unchecked")
     private ViewNodeProvider(Lookup lookup) {
         super(lookup, new ViewComparator());
         connection = getLookup().lookup(DatabaseConnection.class);
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
+    @Override
     protected synchronized void initialize() {
         
         final List<Node> newList = new ArrayList<Node>();
@@ -99,6 +102,7 @@ public class ViewNodeProvider extends NodeProvider {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                        @Override
                         public void run(Metadata metaData) {
                             Schema schema = schemaHandle.resolve(metaData);
                             if (schema != null) {
@@ -130,8 +134,9 @@ public class ViewNodeProvider extends NodeProvider {
 
     static class ViewComparator implements Comparator<Node> {
 
+        @Override
         public int compare(Node model1, Node model2) {
-            return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
+            return model1.getDisplayName().compareTo(model2.getDisplayName());
         }
 
     }

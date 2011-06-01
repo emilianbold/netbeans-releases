@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -98,7 +98,7 @@ public class PluginImporter {
     private static final String MODULES = "Modules"; // NOI18N
     private static final String LAST_MODIFIED = ".lastModified"; // NOI18N
 
-    private static Logger LOG = Logger.getLogger (PluginImporter.class.getName ());
+    private static final Logger LOG = Logger.getLogger (PluginImporter.class.getName ());
 
     public PluginImporter (Collection<UpdateUnit> foundPlugins) {
         plugins = foundPlugins;
@@ -140,8 +140,8 @@ public class PluginImporter {
                 if (! unit.getAvailableUpdates ().isEmpty ()) {
                     UpdateElement el = unit.getAvailableUpdates ().get (0);
                     if (remoteElement != null) {
-                        SpecificationVersion spec = new SpecificationVersion (el.getSpecificationVersion ());
-                        if (spec.compareTo (remoteSpec) > 0) {
+                        SpecificationVersion spec = el.getSpecificationVersion () == null ? null : new SpecificationVersion (el.getSpecificationVersion ());
+                        if (spec != null && spec.compareTo (remoteSpec) > 0) {
                             candidate2import.add (el);
                         }
                     } else {
@@ -155,8 +155,8 @@ public class PluginImporter {
                 assert ! unit.getAvailableUpdates ().isEmpty () : "If " + unit + " isn't installed thus has available updates.";
                 UpdateElement el = unit.getAvailableUpdates ().get (0);
                 if (remoteElement != null) {
-                    SpecificationVersion spec = new SpecificationVersion (el.getSpecificationVersion ());
-                    if (spec.compareTo (remoteSpec) > 0) {
+                    SpecificationVersion spec = el.getSpecificationVersion () == null ? null : new SpecificationVersion (el.getSpecificationVersion ());
+                    if (spec != null && spec.compareTo (remoteSpec) > 0) {
                         candidate2import.add (el);
                     } else {
                         toInstall.add (remoteElement);
@@ -382,6 +382,7 @@ public class PluginImporter {
             try {
                 FileUtil.runAtomicAction (new FileSystem.AtomicAction () {
 
+                    @Override
                     public void run () throws IOException {
                         modulesRoot.getParent ().refresh ();
                         modulesRoot.refresh ();
@@ -404,7 +405,7 @@ public class PluginImporter {
                 }
             }
         } catch (IOException ex) {
-            ex.printStackTrace ();
+            LOG.log(Level.INFO, ex.getMessage(), ex);
         }
     }
 }

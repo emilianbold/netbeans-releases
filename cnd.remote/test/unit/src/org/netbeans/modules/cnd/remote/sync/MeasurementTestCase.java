@@ -54,8 +54,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
@@ -79,7 +77,7 @@ public class MeasurementTestCase extends RemoteTestBase {
 
     private final File srcDir;
     private final String displayNameBase;
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static final List<StatEntry> statistics = new ArrayList<StatEntry>();
 
@@ -96,10 +94,6 @@ public class MeasurementTestCase extends RemoteTestBase {
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     private MeasurementTestCase(String testName, ExecutionEnvironment execEnv, File testDirectory, String displayNameBase) {
         super(testName, execEnv);
-        if (DEBUG)  {
-            Logger.getLogger("cnd.remote.logger").setLevel(Level.FINEST);
-            Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
-        }
         this.srcDir = testDirectory;
         this.displayNameBase = displayNameBase;
     }

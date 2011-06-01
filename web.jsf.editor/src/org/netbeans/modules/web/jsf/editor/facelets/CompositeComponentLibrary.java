@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -62,53 +61,36 @@ import org.openide.util.NbBundle;
  */
 public class CompositeComponentLibrary extends FaceletsLibrary {
 
-    private final String libraryName;
-    private final LibraryDescriptor generatedLibraryDescriptor;
+    /**
+     * Name of the folder/s where the composite library components are located. 
+     * It's usually placed under the META-INF/resources folder inside the library archive.
+     */
+    private final String compositeLibraryResourceFolderName;
     private final String defaultPrefix;
-    private URL libraryDescriptorURL;
 
-    //for composite component libraries without facelets library descriptor
-    public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName) {
-        this(support, libraryName, null, null);
-    }
 
     //for cc libraries with facelets library descriptor, the constructor is called by Mojarra
-    public CompositeComponentLibrary(FaceletsLibrarySupport support, String libraryName, String namespace, URL libraryDescriptorURL) {
-        super(support, namespace);
-        this.libraryName = libraryName;
+    public CompositeComponentLibrary(FaceletsLibrarySupport support, String compositeLibraryName, String namespace, URL libraryDescriptorURL) {
+        super(support, namespace, libraryDescriptorURL);
+        
+        this.compositeLibraryResourceFolderName = compositeLibraryName;
 
         //the default prefix is always computed from the composite library location
         //since even if there's a descriptor for the library, it doesn't contain
         //such information
         this.defaultPrefix = generateVirtualLibraryPrefix();
-
-        //it looks like there's no intention of the spec creators to use the facelet
-        //descriptor for anything else than declaring the composite component
-        //non-default namespace. So all the information about tags, their attributes
-        //etc. needs to be parsed from the components themselves.
-        generatedLibraryDescriptor = new TldProxyLibraryDescriptor(new CCVirtualLibraryDescriptor(), support.getJsfSupport().getIndex());
-
-        //the descriptor just defines the library namespace and location
-        this.libraryDescriptorURL = libraryDescriptorURL;
     }
 
     @Override
-    public URL getLibraryDescriptorSource() {
-        return libraryDescriptorURL;
+    protected LibraryDescriptor getFaceletsLibraryDescriptor() throws LibraryDescriptorException {
+        //return a composite (merged) descriptor from the xml descriptor and the composite components themselves
+        return new CompositeLibraryDescriptor(super.getFaceletsLibraryDescriptor(), new CCVirtualLibraryDescriptor());
     }
 
+    
     @Override
     public LibraryType getType() {
         return LibraryType.COMPOSITE;
-    }
-
-    @Override
-    public String getNamespace() {
-        return getDeclaredNamespace() != null ? getDeclaredNamespace() : getDefaultNamespace();
-    }
-
-    public String getDeclaredNamespace() {
-        return super.getNamespace();
     }
 
     @Override
@@ -121,36 +103,26 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         return defaultPrefix;
     }
 
-    @Override
-    public String getDisplayName() {
-        return getLibraryName();
-    }
-
     public String getLibraryName() {
-        return libraryName;
+        return compositeLibraryResourceFolderName;
     }
 
     @Override
-    public synchronized Collection<CompositeComponent> getComponents() {
-        Collection<CompositeComponent> components = new ArrayList<CompositeComponent>();
+    public Map<String, ? extends NamedComponent> getComponentsMap() {
+        //add the composite components to the class components
+        Map<String, NamedComponent> all = new HashMap<String, NamedComponent>(super.getComponentsMap());
+        all.putAll(getCompositeComponentsMap());
+        return all;
+    }
+    
+    private Map<String, CompositeComponent> getCompositeComponentsMap() {
+        Map<String, CompositeComponent> ccomponents = new HashMap<String, CompositeComponent>();
         Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
         for (String compName : componentNames) {
             CompositeComponent comp = new CompositeComponent(compName);
-            components.add(comp);
+            ccomponents.put(compName, comp);
         }
-        return components;
-    }
-
-    @Override
-    public synchronized LibraryDescriptor getLibraryDescriptor() {
-        return generatedLibraryDescriptor;
-    }
-
-    @Override
-    public String toString() {
-        return "CompositeComponent(" + (getNamespace() == null ? //NOI18N
-                "created via indexing" : //NOI18N
-                "created by Mojarra") + " " + super.toString(); //NOI18N
+        return ccomponents;
     }
 
     private JsfIndex index() {
@@ -191,12 +163,12 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     }
 
-    private class CCVirtualLibraryDescriptor implements LibraryDescriptor {
+    protected class CCVirtualLibraryDescriptor implements LibraryDescriptor {
 
         @Override
         public Map<String, Tag> getTags() {
             Map<String, Tag> map = new HashMap<String, Tag>();
-            Collection<CompositeComponent> components = getComponents();
+            Collection<CompositeComponent> components = getCompositeComponentsMap().values();
             for (CompositeComponent cc : components) {
                 map.put(cc.getName(), new LazyLoadingTag(cc));
             }

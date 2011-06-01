@@ -183,7 +183,6 @@ public class WsValidation extends WebServicesTestBase {
                 break;
             case SJSAS:
             case GLASSFISH:
-            case GLASSFISH_V3:
                 port = 8080;
                 suffix = "?Tester"; //NOI18N
                 break;

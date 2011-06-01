@@ -51,6 +51,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.introduce.CopyFinder;
+import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
 
 /**
  *
@@ -68,7 +69,7 @@ public class MatcherUtilities {
         Tree  patternTree = Utilities.parseAndAttribute(ctx.getInfo(), pattern, s);
         TreePath patternTreePath = new TreePath(new TreePath(ctx.getInfo().getCompilationUnit()), patternTree);
         
-        return CopyFinder.isDuplicate(ctx.getInfo(), patternTreePath, variable, true, ctx, fillInVariables, new AtomicBoolean()/*XXX*/);
+        return CopyFinder.isDuplicate(ctx.getInfo(), patternTreePath, variable, true, ctx, fillInVariables, null, new AtomicBoolean()/*XXX*/, Options.ALLOW_VARIABLES_IN_PATTERN);
     }
 
 }

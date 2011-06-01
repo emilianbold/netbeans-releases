@@ -59,14 +59,17 @@ import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
@@ -675,7 +678,14 @@ public class MakeNBM extends Task {
  	    new BuildException( "Can't get codenamebase" );
  	
  	UpdateTracking tracking = new UpdateTracking(productDir.getAbsolutePath());
- 	String files[] = tracking.getListOfNBM( codename );
+ 	Set<String> _files = new LinkedHashSet<String>(Arrays.asList(tracking.getListOfNBM(codename)));
+    List<String> __files = new ArrayList<String>(_files);
+    for (String f : _files) {
+        if (f.endsWith(".external")) { // #195041
+            __files.remove(f.substring(0, f.length() - 9));
+        }
+    }
+    String[] files = __files.toArray(new String[__files.size()]);
  	ZipFileSet fs = new ZipFileSet();
         List <String> moduleFiles = new ArrayList <String>();
  	fs.setDir( productDir );

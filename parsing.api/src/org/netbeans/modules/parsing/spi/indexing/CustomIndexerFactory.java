@@ -42,9 +42,16 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+
 /**
- * Factory class to create indexers
- * Instances of this class are registered in {@link org.openide.util.lookup.ServiceProvider}.
+ * Factory class to create {@link CustomIndexer}s
+ * The {@link CustomIndexerFactory} instances are registered in the {@link MimeLookup}
+ * under the mime path corresponding to mime type of handled files.
+ * <div class="nonnormative">
+ * <p>The {@link IndexingSupport} can be used to implement the {@link CustomIndexerFactory}</p>
+ * </div>.
  * @author Tomas Zezula
  */
 public abstract class CustomIndexerFactory extends SourceIndexerFactory {

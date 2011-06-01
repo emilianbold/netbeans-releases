@@ -45,15 +45,21 @@
 package org.openide.loaders;
 
 
+import java.awt.Component;
+import java.awt.Graphics;
 import java.beans.*;
 import java.io.*;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import javax.swing.event.*;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
+import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -108,7 +114,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
 
     /** all modified data objects contains DataObjects.
     * ! Use syncModified for modifications instead !*/
-    private static ModifiedRegistry modified = new ModifiedRegistry();
+    private static final ModifiedRegistry modified = new ModifiedRegistry();
     /** sync modified data (for modification operations) */
     private static final Set<DataObject> syncModified = Collections.synchronizedSet(modified);
 
@@ -454,10 +460,17 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     public void setModified(boolean modif) {
         if (this.modif != modif) {
             this.modif = modif;
+            Savable present = getLookup().lookup(AbstractSavable.class);
             if (modif) {
                 syncModified.add (this);
+                if (present == null) {
+                    new DOSavable(this).add();
+                }
             } else {
                 syncModified.remove (this);
+                if (present == null) {
+                    new DOSavable(this).remove();
+                }
             }
             firePropertyChange(DataObject.PROP_MODIFIED,
                                !modif ? Boolean.TRUE : Boolean.FALSE,
@@ -1176,7 +1189,8 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         */
         public Set<DataObject> getModifiedSet() {
             synchronized (syncModified) {
-                return new HashSet<DataObject>(syncModified);
+                HashSet<DataObject> set = new HashSet<DataObject>(syncModified);
+                return set;
             }
         }
 
@@ -1184,7 +1198,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         * @return array of objects
         */
         public DataObject[] getModified () {
-            return syncModified.toArray(new DataObject[0]);
+            return getModifiedSet().toArray(new DataObject[0]);
         }
     }
 
@@ -1233,6 +1247,69 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         }
 
     }  // end of ModifiedRegistry inner class
+    
+    private static final class DOSavable extends AbstractSavable 
+    implements Icon {
+        final DataObject obj;
+
+        public DOSavable(DataObject obj) {
+            this.obj = obj;
+        }
+
+        @Override
+        public String findDisplayName() {
+            return obj.getNodeDelegate().getDisplayName();
+        }
+
+        @Override
+        protected void handleSave() throws IOException {
+            SaveCookie sc = obj.getCookie(SaveCookie.class);
+            if (sc != null) {
+                sc.save();
+            }
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof DOSavable) {
+                DOSavable dos = (DOSavable)other;
+                return obj.equals(dos.obj);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return obj.hashCode();
+        }
+
+        final void remove() {
+            unregister();
+        }
+
+        final void add() {
+            register();
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            icon().paintIcon(c, g, x, y);
+        }
+
+        @Override
+        public int getIconWidth() {
+            return icon().getIconWidth();
+        }
+
+        @Override
+        public int getIconHeight() {
+            return icon().getIconHeight();
+        }
+        
+        private Icon icon() {
+            return ImageUtilities.image2Icon(obj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+        }
+    }
 
     /** A.N. - profiling shows that MultiLoader.checkFiles() is called too often
     * This method is part of the fix - empty for DataObject.

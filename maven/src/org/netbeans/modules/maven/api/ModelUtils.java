@@ -238,25 +238,25 @@ public final class ModelUtils {
      */
     public static void checkEncoding(ModelHandle handle, String enc) {
         String source = handle.getProject().getProperties().getProperty(Constants.ENCODING_PROP);
-        if (source != null && source.contains(enc)) {
+        if (enc.equals(source)) {
             return;
         }
         //new approach, assume all plugins conform to the new setting.
-        Properties props = handle.getPOMModel().getProject().getProperties();
+        POMModel model = handle.getPOMModel();
+        handle.markAsModified(model);
+        POMComponentFactory fact = model.getFactory();
+        Properties props = model.getProject().getProperties();
         if (props == null) {
-            props = handle.getPOMModel().getFactory().createProperties();
-            handle.getPOMModel().getProject().setProperties(props);
-            handle.markAsModified(handle.getPOMModel());
+            props = fact.createProperties();
+            model.getProject().setProperties(props);
         }
         props.setProperty(Constants.ENCODING_PROP, enc);
         boolean createPlugins = source == null;
 
         //check if compiler/resources plugins are configured and update them to ${project.source.encoding expression
-        POMModel model = handle.getPOMModel();
-        POMComponentFactory fact = model.getFactory();
         Plugin plugin;
         Plugin plugin2;
-        Build bld = handle.getPOMModel().getProject().getBuild();
+        Build bld = model.getProject().getBuild();
         if (bld == null) {
             if (createPlugins) {
                 bld = fact.createBuild();

@@ -148,7 +148,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     ensureGlassFishApiSupport(glassfishRoot);
                     // lookup the javadb register service here and use it.
                     RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
-                    if (null != db) {
+                    if (null != db  && null != installRoot) {
                         File ir = new File(installRoot);
                         File f = new File(ir,"javadb");
                         if (f.exists() && f.isDirectory() && f.canRead()) {

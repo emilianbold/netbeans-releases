@@ -2,7 +2,7 @@
     <Tags>
         <PHPDocTypeTag start='7' end='108' kind='THROWS'>
             <Types>
-                <PHPDocNode start='18' end='43' value='sfInitializationException'/>
+                <PHPDocTypeNode start='18' end='43' value='sfInitializationException' isArray='false'/>
             </Types>
         </PHPDocTypeTag>
     </Tags>

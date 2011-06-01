@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.mercurial.ui.log;
 
+import java.awt.Color;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.util.RequestProcessor;
@@ -105,9 +106,22 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         explorerManager = new ExplorerManager ();
         initComponents();
         setupComponents();
+        aquaBackgroundWorkaround();
         refreshComponents(true);
     }
     
+    private void aquaBackgroundWorkaround() {
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
+            setBackground(color); 
+            jToolBar1.setBackground(color); 
+            resultsPanel.setBackground(color); 
+            jPanel1.setBackground(color); 
+            searchCriteriaPanel.setBackground(color); 
+            criteria.setBackground(color); 
+        }
+    }
+
     /**
      * Sets the factory creating the appropriate DiffResultsView to display.
      * @param fac factory creating the appropriate DiffResultsView to display. If null then a default factory will be created.

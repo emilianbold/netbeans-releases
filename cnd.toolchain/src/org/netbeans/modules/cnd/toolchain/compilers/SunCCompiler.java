@@ -65,8 +65,8 @@ import org.openide.ErrorManager;
     public SunCCompiler createCopy(CompilerFlavor flavor) {
         SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
-            copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
-            copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+            copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
         }
         return copy;
     }

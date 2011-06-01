@@ -47,6 +47,7 @@ import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.pom.MailingList;
 import org.netbeans.modules.maven.model.pom.ModelList;
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
+import org.netbeans.modules.maven.model.util.ModelImplUtils;
 
 /**
  *
@@ -528,7 +529,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     public List<String> getModules() {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().MODULES.getName())) {
                 return list.getListChildren();
             }
         }
@@ -539,7 +540,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     public void addModule(String module) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().MODULES.getName())) {
                 list.addListChild(module);
                 return;
             }
@@ -550,7 +551,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
                  getClassesBefore(ORDER, StringListImpl.class));
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().MODULES.getName())) {
                 list.addListChild(module);
                 return;
             }
@@ -561,7 +562,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     public void removeModule(String module) {
         List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (ModelImplUtils.hasName(list, getModel().getPOMQNames().MODULES.getName())) {
                 list.removeListChild(module);
                 return;
             }

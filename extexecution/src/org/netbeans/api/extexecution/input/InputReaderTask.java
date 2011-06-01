@@ -102,7 +102,11 @@ public final class InputReaderTask implements Runnable, Cancellable {
 
     private static final Logger LOGGER = Logger.getLogger(InputReaderTask.class.getName());
 
-    private static final int DELAY = 50;
+    private static final int MIN_DELAY = 50;
+
+    private static final int MAX_DELAY = 300;
+
+    private static final int DELAY_INCREMENT = 50;
 
     private final InputReader inputReader;
 
@@ -171,6 +175,9 @@ public final class InputReaderTask implements Runnable, Cancellable {
 
         boolean interrupted = false;
         try {
+            long delay = MIN_DELAY;
+            int emptyReads = 0;
+
             while (true) {
                 synchronized (this) {
                     if (Thread.currentThread().isInterrupted() || cancelled) {
@@ -179,11 +186,30 @@ public final class InputReaderTask implements Runnable, Cancellable {
                     }
                 }
 
-                inputReader.readInput(inputProcessor);
+                int count = inputReader.readInput(inputProcessor);
 
+                // compute the delay based on how often we really get the data
+                if (count > 0) {
+                    delay = MIN_DELAY;
+                    emptyReads = 0;
+                } else {
+                    // increase the delay only slowly - once for
+                    // MAX_DELAY / DELAY_INCREMENT unsuccesfull read attempts
+                    if (emptyReads > (MAX_DELAY / DELAY_INCREMENT)) {
+                        emptyReads = 0;
+                        delay = Math.min(delay + DELAY_INCREMENT, MAX_DELAY);
+                    } else {
+                        emptyReads++;
+                    }
+                }
+
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "Task {0} sleeping for {1} ms",
+                            new Object[] {Thread.currentThread().getName(), delay});
+                }
                 try {
                     // give the producer some time to write the output
-                    Thread.sleep(DELAY);
+                    Thread.sleep(delay);
                 } catch (InterruptedException e) {
                     interrupted = true;
                     break;

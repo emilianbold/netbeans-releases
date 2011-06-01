@@ -69,6 +69,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
@@ -106,21 +107,18 @@ public class ParentVersionError implements POMErrorFixProvider {
         String declaredVersion = par.getVersion();
         String relPath = par.getRelativePath();
         if (relPath == null) {
-            relPath = ".." + File.separator; //NOI18N
+            relPath = "../pom.xml"; //NOI18N
         }
-        if (relPath.endsWith("pom.xml")) {
-            relPath = relPath.substring(0, relPath.length() - "pom.xml".length());
-        }
-        File resolvedDir = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), relPath);
+        FileObject relPathFO = prj.getProjectDirectory().getFileObject(relPath);
         String currentVersion = null;
         boolean usedSources = false;
-        if (useSources && resolvedDir.exists()) {
+        if (useSources && relPathFO != null && relPathFO.getNameExt().equals("pom.xml")) {
             //#172839
             String parGr = par.getGroupId();
             String parArt = par.getArtifactId();
             if (parArt != null && parGr != null) {
                 try {
-                    Project parentPrj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(resolvedDir));
+                    Project parentPrj = ProjectManager.getDefault().findProject(relPathFO.getParent());
                     if (parentPrj != null) {
                         NbMavenProject nbprj = parentPrj.getLookup().lookup(NbMavenProject.class);
                         if (nbprj != null) { //do we have some non-maven project maybe?
@@ -134,8 +132,6 @@ public class ParentVersionError implements POMErrorFixProvider {
                         }
                     }
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalArgumentException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }

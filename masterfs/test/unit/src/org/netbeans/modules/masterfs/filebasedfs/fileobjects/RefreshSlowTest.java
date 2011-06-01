@@ -45,34 +45,39 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class RefreshSlowTest extends  NbTestCase {
-
     public RefreshSlowTest(String n) {
         super(n);
-        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
     }
 
-    public static Runnable findSlowRefresh(FileObject fo) throws FileStateInvalidException {
-        Object r = fo.getFileSystem().getRoot().getAttribute("refreshSlow");
-        assertNotNull("Runnable for refreshSlow found", r);
-        assertEquals("Right class", RefreshSlow.class, r.getClass());
-        RefreshSlow rs = (RefreshSlow)r;
-        rs.setIgnoreRecursiveListener(false);
-        return rs;
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
-
 
     public void testByDefaultTheRefreshIgnoresRecListeners() throws IOException {
+        Logger LOG = Logger.getLogger("test." + getName());
+        if (!Watcher.isEnabled()) {
+            LOG.warning("Have to skip the test, as native watching is disabled");
+            LOG.log(Level.WARNING, "os.name: {0} os.version: {1} os.arch: {2}", new Object[] {
+                    System.getProperty("os.name"), 
+                    System.getProperty("os.version"), 
+                    System.getProperty("os.arch")
+            });
+            return;
+        }
+        
         File d = new File(new File(getWorkDir(), "dir"), "subdir");
         d.mkdirs();
         
@@ -81,16 +86,14 @@ public final class RefreshSlowTest extends  NbTestCase {
         FileUtil.addRecursiveListener(ad, getWorkDir());
 
         final FileObject fo = FileUtil.toFileObject(getWorkDir());
-//        Runnable r = findSlowRefresh(fo);
         Runnable r = (Runnable) fo.getFileSystem().getRoot().getAttribute("refreshSlow");
         final int cnt[] = { 0 };
         ActionEvent ae = new ActionEvent(this, 0, "") {
-            
             @Override
             public void setSource(Object newSource) {
                 assertTrue(newSource instanceof Object[]);
                 Object[] arr = (Object[]) newSource;
-                assertTrue("Three elements at leat ", 3 <= arr.length);
+                assertTrue("Three elements at least ", 3 <= arr.length);
                 assertTrue("3rd is fileobject", arr[2] instanceof FileObject);
                 FileObject checked = (FileObject) arr[2];
                 assertFalse(checked + " shall not be a children of " + fo, FileUtil.isParentOf(fo, checked));

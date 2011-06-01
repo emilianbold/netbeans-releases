@@ -61,7 +61,7 @@ import org.netbeans.modules.java.source.transform.Transformer;
  *
  * @author Pavel Flaska
  */
-public class LabelsTest extends GeneratorTest {
+public class LabelsTest extends GeneratorTestBase {
     
     /** Creates a new instance of LabelsTest */
     public LabelsTest(String name) {

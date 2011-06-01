@@ -59,7 +59,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
@@ -143,6 +143,7 @@ public class AnyTest extends CommonTestCase {
         
         testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
+            @Override
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.TestClass" );
                 Element clazz = ((DeclaredType)mirror).asElement();

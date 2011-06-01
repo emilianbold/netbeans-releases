@@ -124,7 +124,9 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         assertItems("<|", arr("div"), Match.CONTAINS, 1);
         assertItems("<|", arr("jindra"), Match.DOES_NOT_CONTAIN);
         assertItems("<d|", arr("div"), Match.CONTAINS, 1);
+        assertItems("<d|", arr("html"), Match.DOES_NOT_CONTAIN, 1);
         assertItems("<div|", arr("div"), Match.CONTAINS, 1);
+        assertItems("<div|", arr("body"), Match.DOES_NOT_CONTAIN, 1);
 
         //           01234567
         assertItems("<div></|", arr("div"), Match.CONTAINS, 7);

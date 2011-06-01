@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
@@ -91,7 +92,9 @@ public class J2eeLookupProvider implements LookupProvider {
         ic.add(new ExecutionChecker(project));
         ic.add(new SessionContent());
         Provider prov = new Provider(project, ic);
-        ic.add(new POHImpl(project, prov));
+        POHImpl p = new POHImpl(project, prov);
+        ic.add(p);
+        ic.add(new POHImpl.Hook(p));
         ic.add(new ContainerCPModifierImpl(project));
         return prov;
     }
@@ -147,12 +150,29 @@ public class J2eeLookupProvider implements LookupProvider {
             doCheckJ2ee(null);
             checkJ2ee();
         }
+
+        private boolean isWebSupported(String packaging) {
+            if ("war".equals(packaging)) { // NOI18N
+                return true;
+            }
+            // #179584
+            // if it is bundle packaging type but a valid "src/main/webapp" exists
+            // then provide lookup content as for web application so that code
+            // completion etc. works
+            if ("bundle".equals(packaging)) { // NOI18N
+                NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
+                if (new File(proj.getWebAppDirectory()).exists()) {
+                    return true;
+                }
+            }
+            return false;
+        }
         
         private void doCheckJ2ee(String packaging) {
             if (packaging == null) {
                 packaging = NbMavenProject.TYPE_JAR;
             }
-            if (copyOnSave != null && !NbMavenProject.TYPE_WAR.equals(packaging)) {
+            if (copyOnSave != null && !isWebSupported(packaging)) {
                 try {
                     copyOnSave.cleanup();
                 } catch (FileStateInvalidException ex) {
@@ -161,7 +181,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 content.remove(copyOnSave);
                 copyOnSave = null;
             }
-            if (NbMavenProject.TYPE_WAR.equals(packaging) && !lastType.equals(packaging)) {
+            if (isWebSupported(packaging) && !lastType.equals(packaging)) {
                 removeInstances();
                 WebModuleProviderImpl prov = new WebModuleProviderImpl(project);
                 lastInstance = prov;
@@ -212,7 +232,7 @@ public class J2eeLookupProvider implements LookupProvider {
                 }
                 content.add(copyOnSave);
             } else if (lastInstance != null && !(
-                    NbMavenProject.TYPE_WAR.equals(packaging) || 
+                    isWebSupported(packaging) || 
                     NbMavenProject.TYPE_EJB.equals(packaging) || 
                     NbMavenProject.TYPE_EAR.equals(packaging)))
             {

@@ -256,7 +256,7 @@ public class HighlightsViewUtils {
 //                            if (!foreColorsEqual(foreColor, foreColorFirst)) {
 //                                break;
 //                            }
-                        fixLayoutViewGroup(boxView, docView, groupStartIndex, i, hViewFirst,
+                        fixLayoutViewGroup(pView, docView, groupStartIndex, i, hViewFirst,
                                 docText, fontFirst, foreColorFirst, backColorFirst);
                         // Create next group
                         groupStartIndex = i;
@@ -268,7 +268,7 @@ public class HighlightsViewUtils {
                 }
             } else { // Not HighlightsView => End possible group
                 if (hViewFirst != null) {
-                    fixLayoutViewGroup(boxView, docView, groupStartIndex, i, hViewFirst,
+                    fixLayoutViewGroup(pView, docView, groupStartIndex, i, hViewFirst,
                             docText, fontFirst, foreColorFirst, backColorFirst);
                     groupStartIndex = -1;
                     hViewFirst = null;
@@ -292,13 +292,13 @@ public class HighlightsViewUtils {
         }
         if (hViewFirst != null) { // Check possible group till viewCount
             assert (i == viewCount);
-            fixLayoutViewGroup(boxView, docView, groupStartIndex, i, hViewFirst,
+            fixLayoutViewGroup(pView, docView, groupStartIndex, i, hViewFirst,
                     docText, fontFirst, foreColorFirst, backColorFirst);
         }
         visualUpdate.endVisualIndex = viewCount;
     }
     
-    private static void fixLayoutViewGroup(EditorBoxView boxView, DocumentView docView,
+    private static void fixLayoutViewGroup(ParagraphView pView, DocumentView docView,
             int groupStartIndex, int groupEndIndex, HighlightsView hViewFirst,
             CharSequence docText, Font fontFirst, Color foreColorFirst, Color backColorFirst)
     {
@@ -307,8 +307,11 @@ public class HighlightsViewUtils {
         assert (groupLength > 0) : "groupLength=" + groupLength; // NOI18N
         int textLength = (groupLength == 1)
                 ? hViewFirst.getLength()
-                : boxView.getEditorView(groupEndIndex - 1).getEndOffset() - startOffset;
+                : pView.getEditorView(groupEndIndex - 1).getEndOffset() - startOffset;
         String text = docText.subSequence(startOffset, startOffset + textLength).toString();        
+        if (docView.isShowNonprintingCharacters()) {
+            text = text.replace(' ', DocumentView.PRINTING_SPACE);
+        }
         TextLayout textLayout = docView.createTextLayout(text, fontFirst);
 
         if (groupLength == 1) { // Construct TextLayout
@@ -316,12 +319,13 @@ public class HighlightsViewUtils {
         } else { // Text layout wrapper
             TextLayoutWrapper wrapper = new TextLayoutWrapper(textLayout, groupLength,
                     foreColorFirst, backColorFirst);
-            TextLayoutPart textLayoutPart = new TextLayoutPart(wrapper, 0, 0, 0f, null, null);
+            TextLayoutPart textLayoutPart = new TextLayoutPart(wrapper, 0, 0, null, null);
             hViewFirst.setLayout(textLayoutPart);
             int len = hViewFirst.getLength();
             JTextComponent textComponent = docView.getTextComponent();
+            float lastX = 0f;
             for (int i = groupStartIndex + 1; i < groupEndIndex; i++) {
-                HighlightsView view = (HighlightsView) boxView.getEditorView(i);
+                HighlightsView view = (HighlightsView) pView.getEditorView(i);
                 AttributeSet attrs = view.getAttributes();
                 Color foreColor = validForeColor(attrs, textComponent);
                 if (colorsEqual(foreColor, foreColorFirst)) {
@@ -332,7 +336,10 @@ public class HighlightsViewUtils {
                     backColor = null;
                 }
                 float x = TextLayoutUtils.index2X(textLayout, len);
-                textLayoutPart = new TextLayoutPart(wrapper, i - groupStartIndex, len, x,
+                if (x < lastX) {
+                    pView.markRTL();
+                }
+                textLayoutPart = new TextLayoutPart(wrapper, i - groupStartIndex, len,
                         foreColor, backColor);
                 view.setLayout(textLayoutPart);
                 len += view.getLength();
@@ -388,13 +395,6 @@ public class HighlightsViewUtils {
         return err;
     }
     
-    static Shape indexToView(TextLayoutPart part,
-             int index, Position.Bias bias, int maxIndex, Shape alloc)
-    {
-        return indexToView(part.textLayout(), TextLayoutUtils.textLayoutBounds(part, alloc),
-                index, bias, maxIndex, alloc);
-    }
-
     static Shape indexToView(TextLayout textLayout, Rectangle2D textLayoutBounds,
              int index, Position.Bias bias, int maxIndex, Shape alloc)
     {
@@ -407,35 +407,18 @@ public class HighlightsViewUtils {
 	int charIndex = Math.min(index, maxIndex);
         // When e.g. creating fold-preview the offset can be < startOffset
         charIndex = Math.max(charIndex, 0);
-        Shape ret;
-        if (charIndex < maxIndex) {
-            TextHitInfo startHit;
-            TextHitInfo endHit;
-            if (bias == Position.Bias.Forward) {
-                startHit = TextHitInfo.leading(charIndex);
-                endHit = TextHitInfo.trailing(charIndex);
-            } else { // backward bias
-                startHit = TextHitInfo.trailing(charIndex - 1);
-                endHit = TextHitInfo.trailing(charIndex);
-            }
-            if (textLayoutBounds == null) {
-                textLayoutBounds = ViewUtils.shapeAsRect(alloc);
-            }
-            ret = TextLayoutUtils.getRealAlloc(textLayout, textLayoutBounds, startHit, endHit);
-        } else { // index == maxIndex
-            Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
-            mutableBounds.setRect(
-                    mutableBounds.getX() + TextLayoutUtils.getWidth(textLayout),
-                    mutableBounds.getY(),
-                    1,
-                    mutableBounds.getHeight());
-            ret = mutableBounds;
+        TextHitInfo startHit;
+        TextHitInfo endHit;
+        if (bias == Position.Bias.Forward) {
+            startHit = TextHitInfo.leading(charIndex);
+        } else { // backward bias
+            startHit = TextHitInfo.trailing(charIndex - 1);
         }
-        return ret;
-    }
-
-    static int viewToIndex(TextLayoutPart part, double x, Shape alloc, Position.Bias[] biasReturn) {
-        return viewToIndex(part.textLayout(), x, TextLayoutUtils.textLayoutBounds(part, alloc), biasReturn);
+        endHit = (charIndex < maxIndex) ? TextHitInfo.trailing(charIndex) : startHit;
+        if (textLayoutBounds == null) {
+            textLayoutBounds = ViewUtils.shapeAsRect(alloc);
+        }
+        return TextLayoutUtils.getRealAlloc(textLayout, textLayoutBounds, startHit, endHit);
     }
 
     static int viewToIndex(TextLayout textLayout, double x, Shape alloc, Position.Bias[] biasReturn) {
@@ -449,14 +432,10 @@ public class HighlightsViewUtils {
 
     static TextHitInfo x2Index(TextLayout textLayout, float x) {
         TextHitInfo hit;
-        if (x >= TextLayoutUtils.getWidth(textLayout)) {
-            hit = TextHitInfo.trailing(textLayout.getCharacterCount());
-        } else {
-            hit = textLayout.hitTestChar(x, 0);
-            // Use forward bias only since BaseCaret and other code is not sensitive to backward bias yet
-            if (!hit.isLeadingEdge()) {
-                hit = TextHitInfo.leading(hit.getInsertionIndex());
-            }
+        hit = textLayout.hitTestChar(x, 0);
+        // Use forward bias only since BaseCaret and other code is not sensitive to backward bias yet
+        if (!hit.isLeadingEdge()) {
+            hit = TextHitInfo.leading(hit.getInsertionIndex());
         }
         return hit;
     }
@@ -732,7 +711,7 @@ public class HighlightsViewUtils {
                     g.fillRect(
                             (int) allocBounds.getX(),
                             (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[2]), // strikethrough offset
-                            (int) TextLayoutUtils.getWidth(textLayout), // Full width of text layout
+                            (int) Math.abs(TextLayoutUtils.getWidth(textLayout)), // Full width of text layout
                             (int) Math.max(1, Math.round(underlineAndStrike[3])) // strikethrough thickness
                     );
                 }

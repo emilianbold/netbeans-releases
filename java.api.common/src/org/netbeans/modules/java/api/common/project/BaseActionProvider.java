@@ -80,6 +80,9 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -238,10 +241,16 @@ public abstract class BaseActionProvider implements ActionProvider {
         return antProjectHelper;
     }
 
+    /**
+     * Callback for project private data.
+     *
+     * @return
+     * @see Callback
+     * @see Callback2
+     */
     protected Callback getCallback() {
         return callback;
     }
-
 
     private boolean allowsFileChangesTracking () {
         //allowsFileTracking is volatile primitive, fine to do double checking
@@ -516,17 +525,41 @@ public abstract class BaseActionProvider implements ActionProvider {
                         DialogDisplayer.getDefault().notify(nd);
                     }
                     else {
-                        ActionUtils.runTarget(buildFo, targetNames, p).addTaskListener(new TaskListener() {
-                            @Override
-                            public void taskFinished(Task task) {
-                                if (((ExecutorTask) task).result() != 0) {
-                                    synchronized (BaseActionProvider.this) {
-                                        // #120843: if a build fails, disable dirty-list optimization.
-                                        dirty = null;
+                        final Callback cb = getCallback();
+                        final Callback2 cb2 = (cb instanceof Callback2) ? (Callback2) cb : null;
+
+                        if (cb2 != null) {
+                            cb2.antTargetInvocationStarted(command, context);
+                        }
+                        try {
+                            ActionUtils.runTarget(buildFo, targetNames, p).addTaskListener(new TaskListener() {
+                                @Override
+                                public void taskFinished(Task task) {
+                                    try {
+                                        if (((ExecutorTask) task).result() != 0) {
+                                            synchronized (BaseActionProvider.this) {
+                                                // #120843: if a build fails, disable dirty-list optimization.
+                                                dirty = null;
+                                            }
+                                        }
+                                    } finally {
+                                        if (cb2 != null) {
+                                            cb2.antTargetInvocationFinished(command, context, ((ExecutorTask) task).result());
+                                        }
                                     }
                                 }
+                            });
+                        } catch (IOException ex) {
+                            if (cb2 != null) {
+                                cb2.antTargetInvocationFailed(command, context);
                             }
-                        });
+                            throw ex;
+                        } catch (RuntimeException ex) {
+                            if (cb2 != null) {
+                                cb2.antTargetInvocationFailed(command, context);
+                            }
+                            throw ex;
+                        }
                     }
                 }
                 catch (IOException e) {
@@ -596,6 +629,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 return null;
             }
         }
+        LOG.log(Level.FINE, "COMMAND: {0}", command);       //NOI18N
         String[] targetNames = new String[0];
         Map<String,String[]> targetsFromConfig = loadTargetsFromConfig();
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
@@ -653,7 +687,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 classes = getTopLevelClasses(files[0]);
             } else {
                 files = findTestSources(context, false);
-                assert files != null : "findTestSources () can't be null: " + projectTestRoots.getRoots();   //NOI18N
+                assert files != null : "findTestSources () can't be null: " + Arrays.toString(projectTestRoots.getRoots());   //NOI18N
                 path = FileUtil.getRelativePath(getRoot(projectTestRoots.getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix-test"}; // NOI18N
             }
@@ -732,11 +766,26 @@ public abstract class BaseActionProvider implements ActionProvider {
                 files = findSources(context);
                 rootz = projectSourceRoots.getRoots();
             }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Is test: {0} Files: {1} Roots: {2}",    //NOI18N
+                        new Object[]{
+                            isTest,
+                            asPaths(files),
+                            asPaths(rootz)
+                });
+            }
             if (files == null) {
                 //The file was not found under the source roots
                 return null;
             }
-            FileObject file = files[0];
+            final FileObject file = files[0];
+            assert file != null;
+            if (!file.isValid()) {
+                LOG.log(Level.WARNING,
+                        "FileObject to execute: {0} is not valid.",
+                        FileUtil.getFileDisplayName(file));   //NOI18N
+                return null;
+            }
             String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
             p.setProperty("javac.includes", clazz); // NOI18N
             // Convert foo/FooTest.java -> foo.FooTest
@@ -744,10 +793,12 @@ public abstract class BaseActionProvider implements ActionProvider {
                 clazz = clazz.substring(0, clazz.length() - 5);
             }
             clazz = clazz.replace('/','.');
+            LOG.log(Level.FINE, "Class to run: {0}", clazz);    //NOI18N
             final boolean hasMainClassFromTest = MainClassChooser.unitTestingSupport_hasMainMethodResult == null ? false :
                 MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue();
             if (doJavaChecks) {
                 final Collection<ElementHandle<TypeElement>> mainClasses = CommonProjectUtils.getMainMethods (file);
+                LOG.log(Level.FINE, "Main classes: {0} ", mainClasses);
                 if (!hasMainClassFromTest && mainClasses.isEmpty()) {
                     if (!isTest && AppletSupport.isApplet(file)) {
 
@@ -1063,7 +1114,18 @@ public abstract class BaseActionProvider implements ActionProvider {
                 return true;
             }
             fos = findTestSources(context, false);
-            return fos != null && fos.length == 1;
+            if (fos != null && fos.length == 1) {
+                return true;
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Source Roots: {0} Test Roots: {1} Lookup Content: {2}",    //NOI18N
+                        new Object[]{
+                            asPaths(projectSourceRoots.getRoots()),
+                            asPaths(projectTestRoots.getRoots()),
+                            asPaths(context)
+                        });
+            }
+            return false;
         } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD)
                 || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
             if (isCompileOnSaveEnabled()) {
@@ -1685,6 +1747,47 @@ public abstract class BaseActionProvider implements ActionProvider {
         ClassPath findClassPath(FileObject file, String type);
     }
 
+    /**
+     * Callback for accessing project private data and supporting
+     * ant invocation hooks.
+     * 
+     * @since 1.29
+     */
+    public static interface Callback2 extends Callback {
+
+        /**
+         * Called before an <i>ant</i> target is invoked. Note that call to
+         * {@link #invokeAction(java.lang.String, org.openide.util.Lookup)} does
+         * not necessarily means call to ant.
+         *
+         * @param command the command to be invoked
+         * @param context the invocation context
+         */
+        void antTargetInvocationStarted(final String command, final Lookup context);
+
+        /**
+         * Called after the <i>ant</i> target invocation. This does not reflect
+         * whether the ant target returned error or not, just successful invocation.
+         * Note that call to {@link #invokeAction(java.lang.String, org.openide.util.Lookup)}
+         * does not necessarily means call to ant.
+         *
+         * @param command executed command
+         * @param context the invocation context
+         */
+        void antTargetInvocationFinished(final String command, final Lookup context, int result);
+
+        /**
+         * Called when the <i>ant</i> target invocation failed. Note that call to
+         * {@link #invokeAction(java.lang.String, org.openide.util.Lookup)} does
+         * not necessarily means call to ant.
+         *
+         * @param command failed command
+         * @param context the invocation context
+         */
+        void antTargetInvocationFailed(final String command, final Lookup context);
+
+    }
+
     public static final class CallbackImpl implements Callback {
 
         private ClassPathProviderImpl cp;
@@ -1703,6 +1806,26 @@ public abstract class BaseActionProvider implements ActionProvider {
             return cp.findClassPath(file, type);
         }
 
+    }
+
+    private static @CheckForNull Collection<? extends String> asPaths(final @NullAllowed FileObject[] fos) {
+        if (fos == null) {
+            return null;
+        }
+        final Collection<String> result = new ArrayList<String>(fos.length);
+        for (FileObject fo : fos) {
+            result.add(FileUtil.getFileDisplayName(fo));
+        }
+        return result;
+    }
+
+    private static @NonNull Collection<? extends String> asPaths(final @NonNull Lookup context) {
+        final Collection<? extends DataObject> dobjs = context.lookupAll(DataObject.class);
+        final Collection<String> result = new ArrayList<String>(dobjs.size());
+        for (DataObject dobj : dobjs) {
+            result.add(FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
+        }
+        return result;
     }
     
 }

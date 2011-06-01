@@ -101,6 +101,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static final String NB60_VERSION = "1.5"; // NOI18N
     private static final String NB61_VERSION = "1.6"; // NOI18N
     private static final String NB65_VERSION = "1.7"; // NOI18N
+    private static final String NB71_VERSION = "1.8"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -3355,6 +3356,22 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (convIndex < 0) // not a standard layout
                 return LAYOUT_FROM_CODE;
         }
+        if (convIndex == LAYOUT_FLOW) {
+            FormProperty property = (FormProperty)layoutSupport.getLayoutProperty("alignOnBaseline"); // NOI18N
+            if (property.isChanged()) {
+                return LAYOUT_FROM_CODE;
+            }
+        } else if (convIndex == LAYOUT_GRIDBAG) {
+            for (Node.PropertySet set : layoutSupport.getPropertySets()) {
+                if ("properties".equals(set.getName())) { // NOI18N
+                    for (Node.Property property : set.getProperties()) {
+                        if (((FormProperty)property).isChanged()) {
+                            return LAYOUT_FROM_CODE;
+                        }
+                    }
+                }
+            }
+        }
 
         StringBuffer buf2 = new StringBuffer();
 
@@ -6015,7 +6032,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                || NB60_PRE_VERSION.equals(ver)
                || NB60_VERSION.equals(ver)
                || NB61_VERSION.equals(ver)
-               || NB65_VERSION.equals(ver);
+               || NB65_VERSION.equals(ver)
+               || NB71_VERSION.equals(ver);
     }
 
     private static FormModel.FormVersion formVersionForVersionString(String version) {
@@ -6038,6 +6056,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (NB65_VERSION.equals(version)) {
                 return FormModel.FormVersion.NB65;
             }
+            if (NB71_VERSION.equals(version)) {
+                return FormModel.FormVersion.NB71;
+        }
         }
         return null;
     }
@@ -6051,6 +6072,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 case NB60: return NB60_VERSION;
                 case NB61: return NB61_VERSION;
                 case NB65: return NB65_VERSION;
+                case NB71: return NB71_VERSION;
             }
         }
         return null;

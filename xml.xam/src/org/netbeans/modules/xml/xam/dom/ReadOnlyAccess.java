@@ -201,7 +201,7 @@ public class ReadOnlyAccess extends DocumentModelAccess {
             }
         }
         pos = buf.indexOf(root.getTagName(), pos)-1;
-        assert pos > 0 : "Root element position should be greater than 0";
+        assert pos >= 0 : "Root element position should be nonnegative";
         return pos;
     }
     

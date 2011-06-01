@@ -120,7 +120,7 @@ public class HudsonConnector {
                 "?tree=primaryView[name],views[name,url,jobs[name]]," +
                 "jobs[name,url,color,displayName,buildable,inQueue," +
                 "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
-                "module[name,displayName,url,color]]" :
+                "modules[name,displayName,url,color]]" :
                 "?depth=1&xpath=/&exclude=//assignedLabel&exclude=//primaryView/job" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +

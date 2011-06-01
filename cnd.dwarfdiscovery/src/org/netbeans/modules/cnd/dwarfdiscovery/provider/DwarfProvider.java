@@ -72,51 +72,63 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
         clean();
     }
     
-    public void clean() {
+    @Override
+    public final void clean() {
         myProperties.clear();
         myProperties.put(EXECUTABLES_KEY, new ProviderProperty(){
             private String[] myPath;
+            @Override
             public String getName() {
                 return i18n("Binaries_Files_Name"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("Binaries_Files_Description"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String[]){
                     myPath = (String[])value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.BinaryFiles;
             }
         });
     }
     
+    @Override
     public String getID() {
         return "dwarf-binaries"; // NOI18N
     }
     
+    @Override
     public String getName() {
         return i18n("Binaries_Provider_Name"); // NOI18N
     }
     
+    @Override
     public String getDescription() {
         return i18n("Binaries_Provider_Description"); // NOI18N
     }
     
+    @Override
     public List<String> getPropertyKeys() {
         return new ArrayList<String>(myProperties.keySet());
     }
     
+    @Override
     public ProviderProperty getProperty(String key) {
         return myProperties.get(key);
     }
     
-    public List<Configuration> analyze(ProjectProxy project, Progress progress) {
+    @Override
+    public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
@@ -124,14 +136,17 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
+                @Override
                 public List<ProjectProperties> getProjectConfiguration() {
-                    return ProjectImpl.divideByLanguage(getSourcesConfiguration());
+                    return ProjectImpl.divideByLanguage(getSourcesConfiguration(), project);
                 }
                 
+                @Override
                 public List<String> getDependencies() {
                     return null;
                 }
                 
+                @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         String[] objFileNames = (String[])getProperty(EXECUTABLES_KEY).getValue();
@@ -142,6 +157,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                     return myFileProperties;
                 }
                 
+                @Override
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();

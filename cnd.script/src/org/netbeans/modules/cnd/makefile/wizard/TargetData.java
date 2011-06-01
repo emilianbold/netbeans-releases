@@ -526,25 +526,25 @@ final public class TargetData {
 
     /** Check if a file is a C++ file */
     public boolean isCppFile(String file) {
-        return MIMENames.CPLUSPLUS_MIME_TYPE.equals(MIMESupport.getKnownMIMETypeByExtension(file));
+        return MIMENames.CPLUSPLUS_MIME_TYPE.equals(MIMESupport.getKnownSourceFileMIMETypeByExtension(file));
     }
 
 
     /** Check if a file is a C file */
     public boolean isCFile(String file) {
-        return MIMENames.C_MIME_TYPE.equals(MIMESupport.getKnownMIMETypeByExtension(file));
+        return MIMENames.C_MIME_TYPE.equals(MIMESupport.getKnownSourceFileMIMETypeByExtension(file));
     }
 
 
     /** Check if a file is a C/C++ header file */
     public boolean isHdrFile(String file) {
-        return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getKnownMIMETypeByExtension(file));
+        return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getKnownSourceFileMIMETypeByExtension(file));
     }
 
 
     /** Check if a file is a Fortran file */
     public boolean isFortranFile(String file) {
-        return MIMENames.FORTRAN_MIME_TYPE.equals(MIMESupport.getKnownMIMETypeByExtension(file));
+        return MIMENames.FORTRAN_MIME_TYPE.equals(MIMESupport.getKnownSourceFileMIMETypeByExtension(file));
     }
 
     /** Check if a file is a X-Designer file */
@@ -555,7 +555,7 @@ final public class TargetData {
 
     /** Check if a file is a Assembly file */
     public boolean isAssemblyFile(String file) {
-        return MIMENames.ASM_MIME_TYPE.equals(MIMESupport.getKnownMIMETypeByExtension(file));
+        return MIMENames.ASM_MIME_TYPE.equals(MIMESupport.getKnownSourceFileMIMETypeByExtension(file));
     }
 
 

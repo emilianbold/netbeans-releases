@@ -76,6 +76,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.Keymap;
+import org.openide.NotifyDescriptor.InputLine;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
@@ -104,6 +109,14 @@ import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Extent;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.modules.terminal.api.IOResizable;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -131,7 +144,7 @@ import org.openide.windows.OutputListener;
  * </pre>
  * @author ivan
  */
-/* package */ final class Terminal extends JComponent {
+public final class Terminal extends JComponent {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
@@ -143,7 +156,7 @@ import org.openide.windows.OutputListener;
     private final CallBacks callBacks = new CallBacks();
 
     // Not final so we can dispose of them
-    private ActiveTerm term;
+    private final ActiveTerm term;
     private final TermListener termListener;
     private FindState findState;
 
@@ -151,6 +164,9 @@ import org.openide.windows.OutputListener;
         NbPreferences.forModule(TermAdvancedOption.class);
     private final TermOptions termOptions;
     private final TermOptionsPCL termOptionsPCL = new TermOptionsPCL();
+    
+    private final FileObject shortcutsDir = FileUtil.getConfigFile("Terminal/Shortcuts"); //NOI18N
+    private final ShortcutsListener shortcutsListener = new ShortcutsListener();
 
     private String title;
 
@@ -280,6 +296,7 @@ import org.openide.windows.OutputListener;
         term.setHistorySize(4000);
         term.setRenderingHints(getRenderingHints());
 	
+	shortcutsDir.addFileChangeListener(shortcutsListener);
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
 
@@ -361,7 +378,7 @@ import org.openide.windows.OutputListener;
 	term.removeListener(termListener);
 	term.setActionListener(null);
 	findState = null;
-	term = null;
+	shortcutsDir.removeFileChangeListener(shortcutsListener);
         termOptions.removePropertyChangeListener(termOptionsPCL);
 	tio.dispose();
 	TerminalIOProvider.dispose(tio);
@@ -441,8 +458,11 @@ import org.openide.windows.OutputListener;
         term.setClickToType(termOptions.getClickToType());
         term.setScrollOnInput(termOptions.getScrollOnInput());
         term.setScrollOnOutput(termOptions.getScrollOnOutput());
-        if (initial)
+        if (initial) {
             term.setHorizontallyScrollable(!termOptions.getLineWrap());
+	}
+	
+	applyShortcuts();
 
         // If we change the font from smaller to bigger, the size
         // calculations go awry and the last few lines are forever hidden.
@@ -509,6 +529,28 @@ import org.openide.windows.OutputListener;
 	public boolean isEnabled() {
 	    return closable;
 	}
+    }
+    
+    private final class SetTitleAction extends AbstractAction {
+
+	public SetTitleAction() {
+	    super(Catalog.get("CTL_SetTitle"));	// NOI18N
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+	    InputLine inputLine = new NotifyDescriptor.InputLine(Catalog.get("LBL_Title"), Catalog.get("LBL_SetTitle"));// NOI18N
+	    String title = getTitle();
+	    inputLine.setInputText(title);
+	    if (DialogDisplayer.getDefault().notify(inputLine) == NotifyDescriptor.OK_OPTION) {
+		String newTitle = inputLine.getInputText().trim();
+		if (!newTitle.equals(title)) {
+		    setTitle(newTitle);
+		}
+	    }
+	    
+	}
+	
     }
 
     private final class CopyAction extends AbstractAction {
@@ -604,6 +646,7 @@ import org.openide.windows.OutputListener;
     }
 
     private final Action copyAction = new CopyAction();
+    private final Action setTitleAction = new SetTitleAction();
     private final Action pasteAction = new PasteAction();
     private final Action findAction = new FindAction();
     private final Action wrapAction = new WrapAction();
@@ -777,7 +820,7 @@ import org.openide.windows.OutputListener;
 	// passKeystrokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
 	// passKeystrokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0));
 	 */
-
+	
 	comp.setActionMap(newActionMap);
 	comp.setInputMap(JComponent.WHEN_FOCUSED, newInputMap);
         term.setKeyStrokeSet((HashSet) passKeystrokes);
@@ -806,6 +849,8 @@ import org.openide.windows.OutputListener;
         addMenuItem(menu, findAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, wrapAction);
+	addMenuItem(menu, new JSeparator());
+	addMenuItem(menu, setTitleAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, clearAction);
 	if (isClosable())
@@ -873,5 +918,57 @@ import org.openide.windows.OutputListener;
 
     void scrollTo(Coord coord) {
         term.possiblyNormalize(coord);
+    }
+    
+    private void applyShortcuts() {
+	if (!termOptions.getIgnoreKeymap()) {
+	    Set<Action> actions = new HashSet<Action>();
+	    for (FileObject def : shortcutsDir.getChildren()) {
+		try {
+		    DataObject dobj = DataObject.find(def);
+		    InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
+		    if (ic != null) {
+			actions.add((Action)ic.instanceCreate());
+		    }
+		} catch (Exception e) {
+		    Exceptions.printStackTrace(e);
+		}
+	    }
+	    term.setKeymap(Lookup.getDefault().lookup(Keymap.class), actions);
+	} else {
+	    term.setKeymap(null, null);
+	}
+    }
+    
+    private class ShortcutsListener extends FileChangeAdapter {
+	@Override
+	public void fileAttributeChanged(FileAttributeEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileChanged(FileEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileDataCreated(FileEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileDeleted(FileEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileFolderCreated(FileEvent fe) {
+	    applyShortcuts();
+	}
+
+	@Override
+	public void fileRenamed(FileRenameEvent fe) {
+	    applyShortcuts();
+	}
     }
 }

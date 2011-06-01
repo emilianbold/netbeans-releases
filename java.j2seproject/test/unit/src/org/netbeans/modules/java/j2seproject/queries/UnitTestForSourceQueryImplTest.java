@@ -83,14 +83,13 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setLayersAndInstances(
-            new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.java.project.UnitTestForSourceQueryImpl(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         );
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null);
+        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false);
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         sources = projdir.getFileObject("src");
         tests = projdir.getFileObject("test");

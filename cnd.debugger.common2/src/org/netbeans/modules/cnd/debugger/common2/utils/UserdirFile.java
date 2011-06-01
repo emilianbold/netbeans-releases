@@ -118,9 +118,9 @@ public final class UserdirFile {
 
     public String fullPath() {
 	final String fullPath = moduleFolderName() +
-			        File.separator +
+			        '/' +
 			        folderName() +
-			        File.separator +
+			        '/' +
 			        filename() +
 			        "." + // NOI18N
 			        "xml"; // NOI18N

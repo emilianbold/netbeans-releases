@@ -69,8 +69,24 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
     }
 
     public static SwitchStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        return new SwitchStatementImpl(ast, file, scope);
+        SwitchStatementImpl stmt = new SwitchStatementImpl(ast, file, scope);
+        stmt.init(ast);
+        return stmt;
     }
+    
+    private void init(AST ast) {
+        AST token = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_CONDITION);
+        if( token != null ) {
+            condition = new AstRenderer((FileImpl) getContainingFile()).renderCondition(token, this);
+        }
+        
+        for( AST token2 = ast.getFirstChild(); token2 != null; token2 = token2.getNextSibling() ) {
+            if( AstRenderer.isStatement(token2) ) {
+                body = AstRenderer.renderStatement(token2, getContainingFile(), this);
+                break;
+            }
+        }
+    }    
     
     @Override
     public CsmStatement.Kind getKind() {
@@ -90,27 +106,11 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
 
     @Override
     public CsmCondition getCondition() {
-        if( condition == null ) {
-            AST token = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_CONDITION);
-            if( token != null ) {
-                condition = new AstRenderer((FileImpl) getContainingFile()).renderCondition(token, this);
-            }
-        }
-        //renderIfNeed();
         return condition;
     }
     
     @Override
     public CsmStatement getBody() {
-        //renderIfNeed();
-        if( body == null ) {
-            for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
-                if( AstRenderer.isStatement(token) ) {
-                    body = AstRenderer.renderStatement(token, getContainingFile(), this);
-                    break;
-                }
-            }
-        }
         return body;
     }
 

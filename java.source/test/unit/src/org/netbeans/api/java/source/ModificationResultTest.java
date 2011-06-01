@@ -83,12 +83,12 @@ public class ModificationResultTest extends NbTestCase {
     private FileObject testFile;
     private CloneableEditorSupport ces;
     
-    private void prepareTest() throws Exception {
+    private void prepareTest(String code) throws Exception {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         FileObject root = fs.getRoot();
         testFile = FileUtil.createData(root, "test/test.java");
         
-        TestUtilities.copyStringToFile(testFile, "test\ntest\ntest\n");
+        TestUtilities.copyStringToFile(testFile, code);
         
         DataObject od = DataObject.find(testFile);
         
@@ -124,7 +124,7 @@ public class ModificationResultTest extends NbTestCase {
     }
 
     private void performTestToFile(String creator) throws Exception {
-        prepareTest();
+        prepareTest("test\ntest\ntest\n");
         
         Method m = ModificationResultTest.class.getDeclaredMethod(creator);
         
@@ -140,7 +140,7 @@ public class ModificationResultTest extends NbTestCase {
     }
     
     private void performTestToDocument(String creator) throws Exception {
-        prepareTest();
+        prepareTest("test\ntest\ntest\n");
         
         Document doc = ces.openDocument();
         
@@ -156,7 +156,7 @@ public class ModificationResultTest extends NbTestCase {
     }
     
     private void performTestToGuardedDocument(String creator) throws Exception {
-        prepareTest();
+        prepareTest("test\ntest\ntest\n");
         
         StyledDocument doc = ces.openDocument();
         
@@ -181,7 +181,7 @@ public class ModificationResultTest extends NbTestCase {
     }
     
     private void performTestToFileNoDocumentOpen(String creator) throws Exception {
-        prepareTest();
+        prepareTest("test\ntest\ntest\n");
 
         Method m = ModificationResultTest.class.getDeclaredMethod(creator);
 
@@ -195,7 +195,7 @@ public class ModificationResultTest extends NbTestCase {
     }
 
     private void performTestToResultingSource(String creator) throws Exception {
-        prepareTest();
+        prepareTest("test\ntest\ntest\n");
 
         Method m = ModificationResultTest.class.getDeclaredMethod(creator);
 
@@ -290,8 +290,20 @@ public class ModificationResultTest extends NbTestCase {
         performTestToDocument("prepareModificationResult2");
     }
     
+    public void testCRLF1() throws Exception {
+        prepareTest("test\r\ntest\r\ntest\r\n");
+        
+        Method m = ModificationResultTest.class.getDeclaredMethod("prepareModificationResult2");
+        
+        ModificationResult result = (ModificationResult) m.invoke(this);
+        
+        result.commit();
+        
+        assertEquals("test\r\nabcde\r\ntat\r\n", testFile.asText());
+    }
+    
     public void test152941() throws Exception {
-        prepareTest();
+        prepareTest("test\ntest\ntest\n");
 
         ModificationResult result = new ModificationResult(null);
 

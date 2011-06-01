@@ -50,6 +50,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
@@ -61,9 +62,13 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.openide.util.RequestProcessor;
 
 /**
  * Top level versioning manager that mediates communitation between IDE and registered versioning systems.
@@ -103,6 +108,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     static final String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
     
     private static VersioningManager instance;
+    private static boolean initialized = false;
+    private static boolean initializing = false;
+    private static final Object INIT_LOCK = new Object();
 
     public static synchronized VersioningManager getInstance() {
         if (instance == null) {
@@ -110,6 +118,24 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             instance.init();
         }
         return instance;
+    }
+
+    public static boolean isInitialized() {
+        if(initialized && OpenProjects.getDefault().openProjects().isDone()) {
+            return true;
+        }
+        synchronized(INIT_LOCK) {
+            if(!initializing) {
+                initializing = true;
+                new RequestProcessor("Initialize VCS").post(new Runnable() {        // NOI18N
+                    @Override
+                    public void run() {                    
+                        getInstance(); // init manager                                                    
+                    }                    
+                });
+            }
+        }
+        return false;
     }
 
     // ======================================================================================================
@@ -169,14 +195,18 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     
     private VersioningManager() {
         systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
-        filesystemInterceptor = new FilesystemInterceptor();
+        filesystemInterceptor = new FilesystemInterceptor(true);
     }
     
     private void init() {
-        systemsLookupResult.addLookupListener(this);
-        refreshVersioningSystems();
-        filesystemInterceptor.init(this);
-        VersioningSupport.getPreferences().addPreferenceChangeListener(this);
+        try {
+            systemsLookupResult.addLookupListener(this);
+            refreshVersioningSystems();
+            filesystemInterceptor.init(this);
+            VersioningSupport.getPreferences().addPreferenceChangeListener(this);
+        } finally {
+            initialized = true;                                    
+        }
     }
 
     private int refreshSerial;
@@ -203,8 +233,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
             // inline loadVersioningSystems(systems);
             versioningSystems.addAll(systems);
-            Collections.sort(versioningSystems, new ByPriorityComparator());
-            Collections.reverse(versioningSystems); // systems with higher priority should be at the end of the list, see getOwner logic
             for (VersioningSystem system : versioningSystems) {
                 if (localHistory == null && Utils.isLocalHistory(system)) {
                     localHistory = system;
@@ -228,7 +256,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         DiffSidebarManager.getInstance().refreshSidebars(files);
     }
     
-    private void flushFileOwnerCache() {
+    void flushFileOwnerCache() {
         synchronized(folderOwners) {
             folderOwners.clear();
         }
@@ -236,6 +264,24 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             fileOwners.clear();
         }
         
+    }
+
+    public void flushNullOwners() {
+        synchronized(folderOwners) {
+            flushNullOwners(folderOwners);
+        }
+        synchronized(fileOwners) {
+            flushNullOwners(fileOwners);
+        }
+    }
+    
+    private void flushNullOwners(Map<File, VersioningSystem> map) {
+        Iterator<File> it = map.keySet().iterator();
+        while(it.hasNext()) {
+            if(map.get(it.next()).equals(NULL_OWNER)) {
+                it.remove();
+            }
+        }
     }
 
     VersioningSystem[] getVersioningSystems() {
@@ -317,7 +363,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 return null;
             }
             LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), file });
-            return owner;
+            return (owner instanceof DelegatingVCS) ? ((DelegatingVCS) owner).getDelegate() : owner;
         }
 
         File folder = file;
@@ -347,7 +393,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 return null;
             }            
             LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), folder });                         
-            return owner;
+            return (owner instanceof DelegatingVCS) ? ((DelegatingVCS) owner).getDelegate() : owner;
         }        
         
         // no owner known yet - lets ask all registered VersioningSystem-s
@@ -384,7 +430,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             fileOwners.put(file, owner != null ? owner : NULL_OWNER);            
         }
         LOG.log(Level.FINE, "owner = {0}", new Object[] { owner != null ? owner.getClass().getName() : null }) ;
-        return owner;
+        return (owner instanceof DelegatingVCS) ? ((DelegatingVCS) owner).getDelegate() : owner;
     }
     
     /**
@@ -475,17 +521,29 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
-            if(evt.getSource() == localHistory) {
-                synchronized(localHistoryFiles) {
-                    localHistoryFiles.clear();
-                }
+            if(evt.getSource() instanceof VersioningSystem) {
+                versionedRootsChanged((VersioningSystem) evt.getSource());
             } else {
-                flushFileOwnerCache();
-                refreshDiffSidebars(null);
+                versionedRootsChanged(null);
             }
         }
     }
 
+    public void versionedRootsChanged() {
+        versionedRootsChanged(null);
+    }
+    
+    public void versionedRootsChanged(VersioningSystem owner) {
+        if(owner == localHistory) {
+            synchronized(localHistoryFiles) {
+                localHistoryFiles.clear();
+            }
+        } else {
+            flushFileOwnerCache();
+            refreshDiffSidebars(null);
+        }
+    }
+    
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         VersioningAnnotationProvider.instance.refreshAnnotations(null);
@@ -521,16 +579,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         } finally {
             LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
-        }
-    }
-
-    /**
-     * Sorts versioning systems according to their priority. Systems with lower value (higher priority) will be stated before those with higher value (lower priority) in the given list.
-     */
-    private static final class ByPriorityComparator implements Comparator<VersioningSystem> {
-        @Override
-        public int compare(VersioningSystem o1, VersioningSystem o2) {
-            return Utils.getPriority(o1).compareTo(Utils.getPriority(o2));
         }
     }
 }

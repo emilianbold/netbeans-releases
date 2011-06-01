@@ -135,7 +135,7 @@ final class ReplaceTask implements Runnable {
         for(MatchingObject mo: matchingObjects) {
             InvalidityStatus status = mo.checkValidity();
             if (status != null) {
-                problems.add(status.getDescription(mo.getFile().getPath()));
+                problems.add(status.getDescription(mo.getFileObject().getPath()));
                 if (++errorsCount > MAX_ERRORS_CHECKED) {
                     break;
                 }
@@ -177,7 +177,7 @@ final class ReplaceTask implements Runnable {
                 if (status == null) {
                     obj.write(fileLock);
                 } else {
-                    errMessage = status.getDescription(obj.getFile().getPath());
+                    errMessage = status.getDescription(obj.getFileObject().getPath());
                 }
             } catch (FileAlreadyLockedException ex) {
                 errMessage = createMsgFileLocked(obj);

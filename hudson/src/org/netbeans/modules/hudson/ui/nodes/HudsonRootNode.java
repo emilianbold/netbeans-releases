@@ -53,7 +53,6 @@ import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.ui.actions.AddInstanceAction;
-import org.netbeans.modules.hudson.ui.actions.AddTestInstanceAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -83,9 +82,11 @@ public class HudsonRootNode extends AbstractNode {
     public @Override Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new AddInstanceAction());
+        /* http://issues.hudson-ci.org/browse/HUDSON-8644
         if (HudsonManagerImpl.getDefault().getInstances().isEmpty()) {
             actions.add(new AddTestInstanceAction());
         }
+         */
         return actions.toArray(new Action[actions.size()]);
     }
     

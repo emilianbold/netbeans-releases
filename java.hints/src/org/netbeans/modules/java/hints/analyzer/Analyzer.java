@@ -79,6 +79,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -139,7 +140,14 @@ public class Analyzer implements Runnable {
                         
                         DataObject d = DataObject.find(cc.getFileObject());
                         EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
-                        Document doc = ec.openDocument();
+                        Document doc;
+                        
+                        try {
+                            doc = ec.openDocument();
+                        } catch (UserQuestionException uqe) {
+                            uqe.confirmed();
+                            doc = ec.openDocument();
+                        }
                         
                         try {
                             handle.progress(FileUtil.getFileDisplayName(cc.getFileObject()));

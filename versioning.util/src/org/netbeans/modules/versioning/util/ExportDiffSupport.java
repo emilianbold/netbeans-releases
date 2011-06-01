@@ -212,7 +212,9 @@ public abstract class ExportDiffSupport {
                             }
                             toFile.deleteOnExit();
                             writeDiffFile(toFile);
-                            exportDiffProvider.handleDiffFile(toFile);
+                            if (toFile.exists()) {
+                                exportDiffProvider.handleDiffFile(toFile);
+                            }
                         } finally {
                             handle.finish();
                         }

@@ -90,6 +90,7 @@ public final class AutoupdateCatalogCache {
             cacheDir = new File (new File (new File (userDir, "var"), "cache"), "catalogcache"); // NOI18N
         } else {
             File dir = FileUtil.toFile (FileUtil.getConfigRoot());
+            assert dir != null : "Provide netbeans.user so we know where to store catalogcache!";
             cacheDir = new File(dir, "catalogcache"); // NOI18N
         }
         cacheDir.mkdirs();

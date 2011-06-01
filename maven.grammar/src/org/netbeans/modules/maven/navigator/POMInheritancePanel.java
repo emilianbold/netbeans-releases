@@ -46,8 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -58,6 +56,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.cookies.EditCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -129,12 +128,11 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                            explorerManager.setRootContext(new AbstractNode(ch));
                         } 
                     });
-                } catch (ModelBuildingException ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
+                } catch (final ModelBuildingException ex) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(true);
-                           explorerManager.setRootContext(createErrorNode());
+                           explorerManager.setRootContext(POMModelPanel.createErrorNode(ex));
                         }
                     });
                 }
@@ -217,12 +215,6 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         AbstractNode an = new AbstractNode(Children.LEAF);
         return an;
     }
-
-    private static Node createErrorNode() {
-        AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "LBL_Error"));
-        return an;
-    }
     
     private static class PomChildren extends ChildFactory<Model> {
 
@@ -250,12 +242,17 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                 ArtifactRepository repo = EmbedderFactory.getProjectEmbedder().getLocalRepository();
                 DefaultArtifactHandler handler = new DefaultArtifactHandler();
                 handler.setExtension("pom");
-                fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(mdl.getGroupId(), mdl.getArtifactId(), version, null, "pom", null, handler)));
+                String groupId = mdl.getGroupId();
+                if (groupId == null && mdl.getParent() != null) {
+                    groupId = mdl.getParent().getGroupId();
+                }
+                assert groupId != null;
+                fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(groupId, mdl.getArtifactId(), version, null, "pom", null, handler)));
             }
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
             if (fo != null) {
                 try {
-                    return new POMNode(fl, mdl, DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl)), version);
+                    return new POMNode(fl, mdl, DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(fo)), version);
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }

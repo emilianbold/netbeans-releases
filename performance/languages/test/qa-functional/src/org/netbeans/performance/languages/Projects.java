@@ -49,8 +49,6 @@ package org.netbeans.performance.languages;
  * @author mkhramov@netbeans.org
  */
 public class Projects {
-    public static final String RUBY_PROJECT = "RubyPerfTest";
-    public static final String RAILS_PROJECT = "RailsPerfTest";
     public static final String SCRIPTING_PROJECT = "ScriptingPerfTest";
     public static final String PHP_PROJECT = "PhpPerfTest";
 }

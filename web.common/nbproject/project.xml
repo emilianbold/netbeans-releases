@@ -165,6 +165,7 @@
                 <friend>org.netbeans.modules.web.jsfapi</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.web.common.api</package>
                 <package>org.netbeans.modules.web.common.refactoring</package>
                 <package>org.netbeans.modules.web.common.spi</package>

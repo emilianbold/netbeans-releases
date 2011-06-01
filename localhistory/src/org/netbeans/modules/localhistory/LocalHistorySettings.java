@@ -59,6 +59,7 @@ public class LocalHistorySettings {
     
     private static final String LAST_SELECTED_ENTRY = "RevertFileChanges.lastSelected";         // NOI18N  
     private static final String PROP_TTL = "timeToLive";                                        // NOI18N  
+    private static final String PROP_CLEANUP_LABELED = "noLabelCleanUp";                       // NOI18N  
     private static final String PROP_KEEP_STORED = "filesToKeepStored";                         // NOI18N  
     
             
@@ -82,6 +83,14 @@ public class LocalHistorySettings {
         return getPreferences().getInt(PROP_TTL, 7);
     }    
 
+    public void setCleanUpLabeled(boolean selected) {
+        getPreferences().putBoolean(PROP_CLEANUP_LABELED, selected);
+    }
+    
+    public boolean getCleanUpLabeled() {
+        return getPreferences().getBoolean(PROP_CLEANUP_LABELED, true);
+    }
+    
     public long getTTLMillis() {
         return ((long) getTTL()) * 24 * 60 * 60 * 1000;
     }   

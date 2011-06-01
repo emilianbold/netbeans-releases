@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -69,7 +69,7 @@ public class Installer extends ModuleInstall {
     public static final String CODE_NAME = "ClusterUpdateProvider";
     public static final String REMOVED = "_removed"; // NOI18N
 
-    private static Logger LOG = Logger.getLogger (Installer.class.getName ());
+    private static final Logger LOG = Logger.getLogger (Installer.class.getName ());
     // XXX: copy from o.n.upgrader
     private static final List<String> VERSION_TO_CHECK =
             Arrays.asList (".netbeans/6.9", ".netbeans/6.8", ".netbeans/6.7", ".netbeans/6.5", ".netbeans/6.1", ".netbeans/6.0", ".netbeans/5.5.1", ".netbeans/5.5"); //NOI18N
@@ -89,6 +89,7 @@ public class Installer extends ModuleInstall {
         // install plugin importer when UI is ready (main window shown)
         WindowManager.getDefault ().invokeWhenUIReady (new Runnable () {
 
+            @Override
             public void run () {
                 RequestProcessor.getDefault ().post (doCheck, getImportDelay ()); // XXX: Need to wait until UC downloaded&parsed
             }
@@ -96,6 +97,7 @@ public class Installer extends ModuleInstall {
     }
 
     private Runnable doCheck = new Runnable () {
+        @Override
         public void run () {
             // check user wants to import previous userdir
             File importFrom = null;
@@ -149,9 +151,11 @@ public class Installer extends ModuleInstall {
                     Collection<UpdateUnit> units = clusterUpdateProvider.getUpdateUnits (UpdateManager.TYPE.MODULE);
                     UpdateUnitProviderFactory.getDefault ().remove (clusterUpdateProvider);
                     PluginImporter importer = new PluginImporter (units);
-                    LOG.fine ("Already installed plugins: " + importer.getInstalledPlugins ());
-                    LOG.fine ("Plugins available on UC: " + importer.getPluginsAvailableToInstall ());
-                    LOG.fine ("Plugins available for import: " + importer.getPluginsToImport ());
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine ("Already installed plugins: " + importer.getInstalledPlugins ());
+                        LOG.fine ("Plugins available on UC: " + importer.getPluginsAvailableToInstall ());
+                        LOG.fine ("Plugins available for import: " + importer.getPluginsToImport ());
+                    }
                     if (! importer.getBrokenPlugins ().isEmpty ()) {
                         LOG.info ("Plugins for import with broken dependencies: " + importer.getBrokenPlugins ());
                     }

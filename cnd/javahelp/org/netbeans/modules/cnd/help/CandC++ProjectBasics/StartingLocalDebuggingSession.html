@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Copyright &copy; 2007, 2011 Sun Microsystems, Inc. All rights reserved.
 Use is subject to license terms.
  -->
 <html>
@@ -14,76 +14,34 @@ type="text/css">
 <h2>Starting a C or C++ Debugging Session
 </h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>When you start a debugging session, the IDE starts the <tt>gbd</tt>  
-debugger, then runs a project inside the debugger. The IDE automatically
+<p>When you start a debugging session, the IDE starts the 
+debugger in the project's associated tool collection, then runs the project inside the debugger. The IDE automatically
 opens the debugger windows and prints debugger output to the Output window.
 </p>
-<h3>
-Debugging the Main Project</h3>
-<p>
-All of the debugging commands in the Run menu are run on the main 
-project. No matter what file or project is selected in the Projects 
-window or Source Editor, these commands begin the debugging session 
-on the main project.
-</p>
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists  
-the command name. The right column describes the command.">
-<tr valign="top">
-<th scope="col" align="left">Command</th>
-<th scope="col" align="left">Description</th>
-</tr>
-<tr valign="top">
-<td>Debug &gt; Debug Main Project
-</td>
-<td>Runs the program until it reaches a breakpoint or exception or
-until the program terminates normally.
-</td>
-</tr> 
-<tr valign="top">
-<td>Debug &gt; Step Into
-</td>
-<td>Runs the program to the first line after the <tt>main</tt> routine and 
-pauses execution before any changes have been made to the state of 
-the program.
-</td>
-</tr>
-<tr valign="top">
-<td>Debug &gt; Run to Cursor
-</td>
-<td>Runs the program to the cursor location in the Source Editor 
-and pauses the program. 
-</td>
-</tr>
-</table>
-<h3>Debugging an Individual Project</h3>
+<p><b>To debug the main project:</b></p>
 <ul>
-<li>Right-click the project in the Projects window and choose one of 
-these commands from the pop-up menu.
+<li>Choose Debug &gt; Debug Main Project or click the Debug Main Project toolbar 
+button <img src="../images/Debug_Main_Project.gif" alt="Debug Main Project button">. The program runs until it 
+reaches a breakpoint or exception or
+until it terminates normally
+</li>
+</ul>.
+<p><b>To debug a project other than the main project, do one of the following:</b></p>
+<ul>
+<li>Right-click the project in the Projects window and choose Debug. The IDE 
+runs the project in the debugger until execution stops or a breakpoint is reached.
+</li>
+<li>Right-click the project in the Projects window and choose Step Into. The IDE 
+runs the project in the debugger to the first line after the main routine and 
+pauses execution before any changes have been made to the state of the program.
 </li>
 </ul>
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists  
-the command name. The right column describes the command.">
-<tr valign="top">
-<th scope="col" align="left">Command</th>
-<th scope="col" align="left">Description</th>
-</tr>
-<tr valign="top">
-<td>
-Debug Project
-</td>
-<td>
-The IDE runs the project in the debugger until execution stops or 
-a breakpoint is reached.
-</td>
-</tr>
-<tr valign="top">
-<td>
-Step Into Project
-</td>
-<td>The IDE runs the project in the debugger to the first line after the main routine.
-</td>
-</tr>
-</table>
+<p><b>To restart an existing debugging session:</b></p>
+<ul>
+<li>When your program is stopped at a breakpoint or paused, click the Restart toolbar 
+button <img src="../images/Restart.gif">. Restarting a debugging session throws out any cached state.
+</li>
+</ul> 
 <table summary="related topics">
 <tr valign="top">
 <th colspan=2 align=left><a name="seealso">See Also</a></th>

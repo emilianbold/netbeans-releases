@@ -71,6 +71,7 @@ public interface CsmDeclaration extends CsmQualifiedNamedElement,
         
         FUNCTION,
         FUNCTION_DEFINITION,
+        FUNCTION_INSTANTIATION,
         
         TEMPLATE_SPECIALIZATION,
         TYPEDEF,

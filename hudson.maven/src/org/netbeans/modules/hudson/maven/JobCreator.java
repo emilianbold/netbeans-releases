@@ -92,6 +92,7 @@ public class JobCreator implements ProjectHudsonJobCreatorFactory {
                 Document doc = XMLUtil.createDocument("maven2-moduleset", null, null, null); // NOI18N
                 scm.configure(doc);
                 Helper.addLogRotator(doc);
+                doc.getDocumentElement().appendChild(doc.createElement("aggregatorStyleBuild")).appendChild(doc.createTextNode("true"));
                 return doc;
             }
 

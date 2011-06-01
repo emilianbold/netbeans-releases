@@ -84,7 +84,7 @@ public final class NewProjectWizard extends TemplateWizard {
     public void setTitle (String ignore) {}
     
     protected WizardDescriptor.Panel<WizardDescriptor> createTemplateChooser() {
-        WizardDescriptor.Panel<WizardDescriptor> panel = new TemplatesPanel();
+        WizardDescriptor.Panel<WizardDescriptor> panel = new ProjectTemplatePanel();
         JComponent jc = (JComponent)panel.getComponent ();
         jc.setPreferredSize( new java.awt.Dimension (500, 340) );
         jc.setName (NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_NewProjectWizard_Name")); // NOI18N

@@ -253,18 +253,19 @@ public class JsHintsProvider implements HintsProvider {
 
             if (rules != null) {
                 int countBefore = result.size();
-                JsRuleContext jsContext = (JsRuleContext)context;
-                
+
                 boolean disabled = false;
                 for (JsErrorRule rule : rules) {
                     if (!manager.isEnabled(rule)) {
                         disabled = true;
                     } else if (rule.appliesTo(context)) {
-                        rule.run(jsContext, error, result);
+                        rule.run(context, error, result);
                     }
                 }
+                JsRuleContext jsContext = (context instanceof JsRuleContext) ? (JsRuleContext)context : null;
+                boolean remove = jsContext != null ? jsContext.remove : false;
                 
-                return disabled || countBefore < result.size() || jsContext.remove;
+                return disabled || countBefore < result.size() || remove;
             }
         }
         

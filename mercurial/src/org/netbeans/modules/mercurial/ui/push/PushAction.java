@@ -273,8 +273,8 @@ public class PushAction extends ContextAction {
                 }
                 list = HgCommand.doPush(root, pushUrl, logger, showSaveCredsOption);
             }
-            if (!list.isEmpty() &&
-                    HgCommand.isErrorAbortPush(list.get(list.size() - 1))) {
+            if (!list.isEmpty() && (HgCommand.isErrorAbortPush(list.get(list.size() - 1))
+                    || list.size() > 1 && HgCommand.isErrorAbortPush(list.get(list.size() - 2)))) {
                 logger.output(list);
                 logger.output("");
                 HgUtils.warningDialog(PushAction.class,

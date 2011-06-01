@@ -44,11 +44,13 @@ package org.netbeans.libs.git.jgit;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitMergeResult.MergeStatus;
 
@@ -60,6 +62,7 @@ public class JGitMergeResult implements GitMergeResult {
     private final MergeStatus mergeStatus;
     private final File workDir;
     private final List<File> conflicts;
+    private final List<File> failures;
     private final String newHead;
     private final String base;
     private final String[] mergedCommits;
@@ -71,6 +74,7 @@ public class JGitMergeResult implements GitMergeResult {
         this.base = result.getBase() == null ? null : result.getBase().getName();
         this.mergedCommits = getMergedCommits(result);
         this.conflicts = getConflicts(result);
+        this.failures = getFailures(result);
     }
 
     @Override
@@ -98,11 +102,16 @@ public class JGitMergeResult implements GitMergeResult {
         return conflicts;
     }
 
+    @Override
+    public Collection<File> getFailures () {
+        return failures;
+    }
+
     private String[] getMergedCommits (MergeResult result) {
         ObjectId[] mergedObjectIds = result.getMergedCommits();
         String[] commits = new String[mergedObjectIds.length];
         for (int i = 0; i < mergedObjectIds.length; ++i) {
-            commits[i] = mergedObjectIds[i].getName();
+            commits[i] = ObjectId.toString(mergedObjectIds[i]);
         }
         return commits;
     }
@@ -115,6 +124,17 @@ public class JGitMergeResult implements GitMergeResult {
                 files.add(new File(workDir, conflict.getKey()));
             }
         }
-        return files;
+        return Collections.unmodifiableList(files);
+    }
+
+    private List<File> getFailures (MergeResult result) {
+        List<File> files = new LinkedList<File>();
+        Map<String, MergeFailureReason> obstructions = result.getFailingPaths();
+        if (obstructions != null) {
+            for (Map.Entry<String, MergeFailureReason> failure : obstructions.entrySet()) {
+                files.add(new File(workDir, failure.getKey()));
+            }
+        }
+        return Collections.unmodifiableList(files);
     }
 }

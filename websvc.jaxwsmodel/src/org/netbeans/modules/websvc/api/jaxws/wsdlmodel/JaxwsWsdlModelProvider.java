@@ -73,11 +73,13 @@ public class JaxwsWsdlModelProvider implements WsdlModelProvider {
     private String packageName;
     private Throwable creationException;
 
-    public WsdlModel getWsdlModel(URL url, String packageName, URL catalog) {
+    public WsdlModel getWsdlModel(URL url, String packageName, URL catalog, 
+            boolean forceReload) 
+    {
         this.packageName = packageName;
         WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(url);
         modeler.setCatalog(catalog);
-        WsdlModel model = modeler.getAndWaitForWsdlModel();
+        WsdlModel model = modeler.getAndWaitForWsdlModel(forceReload);
         if (model != null && (this.packageName == null || this.packageName.trim().length() == 0)) {
             if(model.getServices().size() > 0)
                 this.packageName = model.getServices().get(0).getJavaName();

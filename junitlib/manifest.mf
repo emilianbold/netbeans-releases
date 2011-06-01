@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.junitlib
+OpenIDE-Module-Layer: org/netbeans/modules/junitlib/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/junitlib/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

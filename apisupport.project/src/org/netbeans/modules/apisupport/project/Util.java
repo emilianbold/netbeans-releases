@@ -81,6 +81,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -573,7 +575,7 @@ public final class Util {
         return resources;
     }
     
-    public static Manifest getManifest(FileObject manifestFO) {
+    public static @CheckForNull Manifest getManifest(@NullAllowed FileObject manifestFO) {
         if (manifestFO != null) {
             try {
                 InputStream is = manifestFO.getInputStream();

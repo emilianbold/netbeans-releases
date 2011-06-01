@@ -45,31 +45,43 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
-public final class PluginManagerAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction", category = "System")
+@ActionRegistration(displayName = "#PluginManagerAction_Name", iconInMenu=false)
+@ActionReference(path = "Menu/Tools", position = 1400)
+public final class PluginManagerAction extends AbstractAction {
     private static PluginManagerUI pluginManagerUI = null;
     private Dialog dlg = null;
     
-    public void performAction () {
+    @Override
+    public void actionPerformed(ActionEvent ev) {
         if (dlg == null) {
             JButton close = new JButton ();
             close.setDefaultCapable(false);
             Mnemonics.setLocalizedText (close,NbBundle.getMessage (PluginManagerAction.class, "PluginManager_CloseButton_Name"));
+            
+            String initialTab = null;
+            if (ev.getID() == 100) {
+                initialTab = ev.getActionCommand();
+            }
+            
             pluginManagerUI = new PluginManagerUI (
                 close,
-                getValue("InitialTab")//NOI18N
+                initialTab
             );
-            putValue("InitialTab", null); //NOI18N
             DialogDescriptor dd = new DialogDescriptor (
                                         pluginManagerUI,
                                         NbBundle.getMessage (PluginManagerAction.class, "PluginManager_Panel_Name"),
@@ -101,25 +113,6 @@ public final class PluginManagerAction extends CallableSystemAction {
         } else {
             dlg.requestFocus ();
         }
-    }
-    
-    public String getName () {
-        return NbBundle.getMessage (PluginManagerAction.class, "PluginManagerAction_Name");
-    }
-    
-    @Override
-    protected void initialize () {
-        super.initialize ();
-        putValue ("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    protected boolean asynchronous () {
-        return false;
     }
     
     public static PluginManagerUI getPluginManagerUI () {

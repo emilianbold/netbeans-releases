@@ -256,11 +256,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
-                    boolean fncFromDefaultNamespace = ((ifq instanceof FunctionElement) && ifq.getIn() == null
+                    boolean fncOrConstFromDefaultNamespace = (((ifq instanceof FunctionElement) || (ifq instanceof ConstantElement)) 
+                            && (ifq.getIn() == null || ifq.getIn().isEmpty())
                             && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
                     final boolean isUnqualified = ifq.isAliased() &&
                             (ifq instanceof AliasedElement) && ((AliasedElement)ifq).isNameAliased();
-                    if (!fncFromDefaultNamespace && !isUnqualified) {
+                    if (!fncOrConstFromDefaultNamespace && !isUnqualified) {
                         Model model = request.result.getModel();
                         NamespaceDeclaration namespaceDeclaration = findEnclosingNamespace(request.result, request.anchor);
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(namespaceDeclaration, model.getFileScope());
@@ -894,7 +895,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     break;
                 case ENDS_WITH_SEMICOLON:
                     builder.append(getName());
-                    builder.append(";"); //NOI18N
+                    if (';' != request.info.getSnapshot().getText().charAt(request.anchor + request.prefix.length())) {
+                        builder.append(";"); //NOI18N
+                    }
                     break;
                 case ENDS_WITH_COLON:
                     builder.append(getName());

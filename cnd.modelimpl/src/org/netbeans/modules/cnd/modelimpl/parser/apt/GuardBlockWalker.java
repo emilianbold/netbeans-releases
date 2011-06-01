@@ -46,9 +46,13 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;
+import org.netbeans.modules.cnd.apt.structure.APTPragma;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
@@ -56,7 +60,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
  */
 public class GuardBlockWalker extends APTWalker {
     
-    private APTIfndef guardCheck;
+    private APT guardCheck;
     private Boolean hasGuard = null;
             
             /** Creates a new instance of GuardBlockWalker */
@@ -66,55 +70,82 @@ public class GuardBlockWalker extends APTWalker {
 
     public Token getGuard(){
         if (hasGuard == Boolean.TRUE && guardCheck != null){
-            return  guardCheck.getMacroName();
+            if (guardCheck instanceof APTIfndef) {
+                return  ((APTIfndef)guardCheck).getMacroName();
+            } else {
+                APTDefine fileOnce = APTUtils.createAPTDefine(getRootFile().getPath().toString());
+                fileOnce.getName();
+            }
+
         }
         return null;
     }
     
+    @Override
     protected void onDefine(APT apt) {
         hasGuard = Boolean.FALSE;
     }
     
+    @Override
     protected void onUndef(APT apt) {
         hasGuard = Boolean.FALSE;
     }
     
+    @Override
     protected boolean onIf(APT apt) {
         hasGuard = Boolean.FALSE;
         return false;
     }
     
+    @Override
     protected boolean onIfdef(APT apt) {
         hasGuard = Boolean.FALSE;
         return false;
     }
     
+    @Override
     protected boolean onIfndef(APT apt) {
         guardCheck = (APTIfndef)apt;
         hasGuard = (hasGuard == null) ? Boolean.TRUE : Boolean.FALSE;
         return false;
     }
     
+    @Override
     protected boolean onElif(APT apt, boolean wasInPrevBranch) {
         hasGuard = Boolean.FALSE;
         return false;
     }
     
+    @Override
     protected boolean onElse(APT apt, boolean wasInPrevBranch) {
         hasGuard = Boolean.FALSE;
         return false;
     }
     
+    @Override
     protected void onEndif(APT apt, boolean wasInBranch) {
         hasGuard = (hasGuard == Boolean.TRUE) ? Boolean.TRUE : Boolean.FALSE;
     }
     
+    @Override
     protected void onInclude(APT apt) {
         hasGuard = Boolean.FALSE;
     }
     
+    @Override
     protected void onIncludeNext(APT apt) {
         hasGuard = Boolean.FALSE;
+    }
+
+    @Override
+    protected void onPragmaNode(APT apt) {
+        APTPragma pragma = (APTPragma) apt;
+        APTToken name = pragma.getName();
+        if (name != null && APTPragma.PRAGMA_ONCE.contentEquals(name.getTextID())) {
+            hasGuard = Boolean.TRUE;
+            guardCheck = apt;
+            super.stop();
+        }
     }
 
     @Override

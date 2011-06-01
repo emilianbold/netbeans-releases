@@ -59,6 +59,9 @@ import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -67,6 +70,8 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -79,6 +84,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -98,6 +105,9 @@ public class DefaultClassPathProvider implements ClassPathProvider {
 
     private static final int TYPE_CLASS = 2;
 
+    private static final RequestProcessor RP = new RequestProcessor(DefaultClassPathProvider.class);
+    private static final Logger LOG = Logger.getLogger(DefaultClassPathProvider.class.getName());
+
     private /*WeakHash*/Map<FileObject,WeakReference<FileObject>> sourceRootsCache = new WeakHashMap<FileObject,WeakReference<FileObject>>();
     private /*WeakHash*/Map<FileObject,WeakReference<ClassPath>> sourceClasPathsCache = new WeakHashMap<FileObject,WeakReference<ClassPath>>();
     private Reference<ClassPath> compiledClassPath;    
@@ -106,6 +116,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
     public DefaultClassPathProvider() {
     }
     
+    @Override
     public synchronized ClassPath findClassPath(FileObject file, String type) {
         if (!file.isValid ()) {
             return null;
@@ -283,7 +294,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             //Ignore it
             // The file was removed after checking it for isValid
         } catch (InvalidClassFormatException icf) {
-            Logger.getLogger(DefaultClassPathProvider.class.getName()).warning(file.getPath() + ": " + icf.getLocalizedMessage());
+            Logger.getLogger(DefaultClassPathProvider.class.getName()).log(Level.WARNING, "{0}: {1}", new Object[]{file.getPath(), icf.getLocalizedMessage()});
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
@@ -417,6 +428,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         }
 
         /** Reads chars from input reader and filters them. */
+        @Override
         public int read(char[] data, int pos, int len) throws IOException {
             int numRead = 0;
             int c;
@@ -569,21 +581,29 @@ public class DefaultClassPathProvider implements ClassPathProvider {
     private static class CompileClassPathImpl implements ClassPathImplementation, GlobalPathRegistryListener {
 
         private List<? extends PathResourceImplementation> cachedCompiledClassPath;
-        private PropertyChangeSupport support;
+        private final PropertyChangeSupport support;
         private final ThreadLocal<Boolean> active = new ThreadLocal<Boolean> ();
         private long eventId;
+        private volatile RequestProcessor.Task task;
+        private boolean listening;
 
         public CompileClassPathImpl () {
             this.support = new PropertyChangeSupport (this);
         }
 
+        @Override
         public List<? extends PathResourceImplementation> getResources () {
+            final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
             long myEventId;
             synchronized (this) {
                 if (this.cachedCompiledClassPath != null) {
                     return this.cachedCompiledClassPath;
                 }
                 myEventId=eventId;
+                if (!listening) {
+                    regs.addGlobalPathRegistryListener(this);
+                    listening = true;
+                }
             }
             Boolean _active = active.get();
             if (_active == Boolean.TRUE) {
@@ -591,9 +611,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             }
             active.set(true);
             final List<PathResourceImplementation> l =  new ArrayList<PathResourceImplementation> ();
-            try {
-                GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
-                regs.addGlobalPathRegistryListener(this);
+            try {                
                 Set<URL> roots = new HashSet<URL> ();
                 //Add compile classpath
                 Set<ClassPath> paths = regs.getPaths (ClassPath.COMPILE);
@@ -659,34 +677,64 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             }
         }
 
+        @Override
         public void addPropertyChangeListener (PropertyChangeListener l) {
             this.support.addPropertyChangeListener (l);
         }
 
+        @Override
         public void removePropertyChangeListener (PropertyChangeListener l) {
             this.support.removePropertyChangeListener (l);
         }
 
+        @Override
         public void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
             synchronized (this) {
                 if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
-                    GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
                     this.cachedCompiledClassPath = null;
                     this.eventId++;
                 }
             }
-            this.support.firePropertyChange(PROP_RESOURCES,null,null);
+            fire();
         }
 
+        @Override
         public void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
             synchronized (this) {
                 if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
-                    GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
                     this.cachedCompiledClassPath = null;
                     this.eventId++;
                 }
             }
-            this.support.firePropertyChange(PROP_RESOURCES,null,null);
+            fire();
+        }
+
+        private void fire() {
+            LOG.log(Level.FINEST, "Request to fire an event");      //NOI18N
+            synchronized (this) {
+                if (task == null) {
+                    LOG.log(Level.FINEST, "Scheduled firer task");  //NOI18N
+                    final Future<Project[]> becomeProjects = OpenProjects.getDefault().openProjects();
+                    task = RP.create(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                becomeProjects.get();
+                                support.firePropertyChange(PROP_RESOURCES,null,null);
+                                LOG.log(Level.FINEST, "Fired an event");    //NOI18N
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } finally {
+                                task = null;    //Write barrier
+                            }
+                        }
+                    });
+                    task.schedule(0);
+                }
+            }
+                        
         }
 
     }

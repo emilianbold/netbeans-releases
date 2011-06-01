@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -61,7 +62,7 @@ public class GizmoRunActionHandlerFactory implements ProjectActionHandlerFactory
     private static final boolean ENABLE = Util.getBoolean("cnd.prof.enable", true);
 
     @Override
-    public boolean canHandle(Type type, Configuration configuration) {
+    public boolean canHandle(Type type, Lookup context, Configuration configuration) {
         if (type == PredefinedType.RUN) {
             return ENABLE && GizmoOptionsProvider.getOptions(configuration).getProfileOnRunValue();
         } else {
@@ -79,7 +80,7 @@ public class GizmoRunActionHandlerFactory implements ProjectActionHandlerFactory
         if (!pae.getProfile().isSimpleRunCommand()) {
             return false;
         }
-        return canHandle(pae.getType(), pae.getConfiguration());
+        return canHandle(pae.getType(), pae.getContext(), pae.getConfiguration());
     }
 
 }

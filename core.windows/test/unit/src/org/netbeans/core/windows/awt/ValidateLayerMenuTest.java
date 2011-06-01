@@ -70,10 +70,10 @@ public class ValidateLayerMenuTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
+        return
             NbModuleSuite.createConfiguration(ValidateLayerMenuTest.class)
                 .clusters(".*").enableModules(".*").gui(false)
-        );
+        .suite();
     }
 
     //

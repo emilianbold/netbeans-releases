@@ -42,10 +42,17 @@
 
 package org.netbeans.modules.parsing.spi.indexing;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 
 /**
- *
+ * A factory class used to create {@link EmbeddingIndexer}s.
+ * The {@link EmbeddingIndexerFactory} instances are registered in the {@link MimeLookup}
+ * under the mime path corresponding to mime type of handled embeddings.
+ * <div class="nonnormative">
+ * <p>The {@link IndexingSupport} can be used to implement the {@link EmbeddingIndexerFactory}</p>
+ * </div>
  * @author Tomas Zezula
  */
 public abstract class EmbeddingIndexerFactory extends SourceIndexerFactory {

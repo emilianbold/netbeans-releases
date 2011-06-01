@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
@@ -59,6 +61,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
+import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -72,8 +76,11 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.RemoteSyncFactoryN
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -91,23 +98,21 @@ public class MakeConfiguration extends Configuration {
     public static final String EXT_FOLDER = "_ext"; // NOI18N
     public static final String OBJECTDIR_MACRO_NAME = "OBJECTDIR"; // NOI18N
     public static final String OBJECTDIR_MACRO = "${" + OBJECTDIR_MACRO_NAME + "}"; // NOI18N
-
     public static final String CND_CONF_MACRO = "${CND_CONF}"; // NOI18N
     public static final String CND_PLATFORM_MACRO = "${CND_PLATFORM}"; // NOI18N
     public static final String CND_DISTDIR_MACRO = "${CND_DISTDIR}"; // NOI18N
     public static final String CND_BUILDDIR_MACRO = "${CND_BUILDDIR}"; // NOI18N
-
     // Project Types
     private static String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
     };
-
     private static String[] TYPE_NAMES_MANAGED = {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
-        getString("StaticLibraryName"),
+        getString("StaticLibraryName"),};
+    private static String[] TYPE_NAMES_MANAGED_DB = {
+        getString("DBApplicationName")
     };
-
     private static String[] TYPE_NAMES_MANAGED_QT = {
         getString("QtApplicationName"),
         getString("QtDynamicLibraryName"),
@@ -120,6 +125,7 @@ public class MakeConfiguration extends Configuration {
     public static final int TYPE_QT_APPLICATION = 4;
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
+    public static final int TYPE_DB_APPLICATION = 7;
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
@@ -143,28 +149,44 @@ public class MakeConfiguration extends Configuration {
     private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
     private RemoteSyncFactory fixedRemoteSyncFactory;
-    private RemoteProject.Mode remoteMode;
+    private volatile RemoteProject.Mode remoteMode;
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
+    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         this(baseDir, name, configurationTypeValue, null);
     }
 
+    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
         this(baseDir, name, configurationTypeValue, hostUID, null, true);
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
-        super(baseDir, name);
+        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, hostUID, hostCS, defaultToolCollection);
+    }
+    
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue) {
+        this(fsPath, name, configurationTypeValue, null);
+    }
+
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID) {
+        this(fsPath, name, configurationTypeValue, hostUID, null, true);
+    }
+
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+        super(fsPath, name);
         remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
         } else if (configurationTypeValue == TYPE_APPLICATION || configurationTypeValue == TYPE_DYNAMIC_LIB || configurationTypeValue == TYPE_STATIC_LIB) {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null, TYPE_APPLICATION);
+        } else if (configurationTypeValue == TYPE_DB_APPLICATION) {
+            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_DB, null, TYPE_DB_APPLICATION);
         } else if (configurationTypeValue == TYPE_QT_APPLICATION || configurationTypeValue == TYPE_QT_DYNAMIC_LIB || configurationTypeValue == TYPE_QT_STATIC_LIB) {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_QT, null, TYPE_QT_APPLICATION);
-        }
-        else {
+        } else {
             assert false;
         }
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
@@ -181,10 +203,10 @@ public class MakeConfiguration extends Configuration {
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         rebuildPropChanged = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getRebuildPropChanged());
-        cCompilerConfiguration = new CCompilerConfiguration(baseDir, null, this);
-        ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null, this);
-        fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
-        assemblerConfiguration = new AssemblerConfiguration(baseDir, null);
+        cCompilerConfiguration = new CCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
+        ccCompilerConfiguration = new CCCompilerConfiguration(fsPath.getPath(), null, this); //XXX:fullRemote:fileSystem - use FSPath
+        fortranCompilerConfiguration = new FortranCompilerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath
+        assemblerConfiguration = new AssemblerConfiguration(fsPath.getPath(), null); //XXX:fullRemote:fileSystem - use FSPath
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
@@ -194,6 +216,7 @@ public class MakeConfiguration extends Configuration {
         qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
+        initAuxObjects();
     }
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
@@ -287,6 +310,7 @@ public class MakeConfiguration extends Configuration {
     public boolean isApplicationConfiguration() {
         switch (getConfigurationType().getValue()) {
             case TYPE_APPLICATION:
+            case TYPE_DB_APPLICATION:
             case TYPE_QT_APPLICATION:
                 return true;
             default:
@@ -295,7 +319,10 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isCompileConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION || getConfigurationType().getValue() == TYPE_DYNAMIC_LIB || getConfigurationType().getValue() == TYPE_STATIC_LIB;
+        return getConfigurationType().getValue() == TYPE_APPLICATION ||
+               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
+               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
+               getConfigurationType().getValue() == TYPE_STATIC_LIB;
     }
 
     public boolean isLibraryConfiguration() {
@@ -311,7 +338,9 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isLinkerConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION || getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
+        return getConfigurationType().getValue() == TYPE_APPLICATION ||
+               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
+               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
     }
 
     public final boolean isMakefileConfiguration() {
@@ -346,6 +375,7 @@ public class MakeConfiguration extends Configuration {
     public final boolean isStandardManagedConfiguration() {
         switch (getConfigurationType().getValue()) {
             case TYPE_APPLICATION:
+            case TYPE_DB_APPLICATION:
             case TYPE_DYNAMIC_LIB:
             case TYPE_STATIC_LIB:
                 return true;
@@ -442,7 +472,7 @@ public class MakeConfiguration extends Configuration {
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
-        setBaseDir(makeConf.getBaseDir());
+        setBaseFSPath(makeConf.getBaseFSPath());
         getConfigurationType().assign(makeConf.getConfigurationType());
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;
@@ -496,7 +526,7 @@ public class MakeConfiguration extends Configuration {
      */
     @Override
     public Configuration copy() {
-        MakeConfiguration copy = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
+        MakeConfiguration copy = new MakeConfiguration(getBaseFSPath(), getName(), getConfigurationType().getValue());
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
@@ -525,10 +555,12 @@ public class MakeConfiguration extends Configuration {
     }
 
     private void fixupMasterLinks(MakeConfiguration makeConf) {
-        FileObject projectDirFO = CndFileUtils.toFileObject(getBaseDir());
+        FileObject projectDirFO = getBaseFSPath().getFileObject();
         Project project = null;
         try {
-            project = ProjectManager.getDefault().findProject(projectDirFO);
+            if (projectDirFO != null && projectDirFO.isValid()) {
+                project = ProjectManager.getDefault().findProject(projectDirFO);
+            }
         } catch (IOException ioe) {
             // Error
             return;
@@ -578,7 +610,7 @@ public class MakeConfiguration extends Configuration {
      */
     @Override
     public MakeConfiguration clone() {
-        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(),
+        MakeConfiguration clone = new MakeConfiguration(getBaseFSPath(), getName(),
                 getConfigurationType().getValue(), getDevelopmentHost().getHostKey());
         super.cloneConf(clone);
         clone.setCloneOf(this);
@@ -635,7 +667,8 @@ public class MakeConfiguration extends Configuration {
         set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), true, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
+        boolean canEditHost = MakeProjectUtils.isFullRemote(project) ? FullRemoteExtension.canChangeHost(this) : true;
+        set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), canEditHost, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         RemoteSyncFactoryNodeProp rsfNodeProp = new RemoteSyncFactoryNodeProp(this);
         set.put(rsfNodeProp);
 //        set.put(new BuildPlatformNodeProp(getDevelopmentHost().getBuildPlatformConfiguration(), developmentHost, makeCustomizer, getDevelopmentHost().isLocalhost(), "builtPlatform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
@@ -664,8 +697,17 @@ public class MakeConfiguration extends Configuration {
                 return result;
             }
         }
+        //if (CndFileUtils.isLocalFileSystem(getBaseFSPath().getFileSystem())) {
         ExecutionEnvironment execEnv = getDevelopmentHost().getExecutionEnvironment();
-        return (execEnv.isLocal()) ? null : ServerList.get(execEnv).getSyncFactory(); // FIXUP: temporary solution
+        if (execEnv.isLocal()) {            
+            return null;
+        } else {
+            ExecutionEnvironment fsEnv = FileSystemProvider.getExecutionEnvironment(getBaseFSPath().getFileSystem());
+            if (execEnv.equals(fsEnv)) {
+                return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
+            }
+            return ServerList.get(execEnv).getSyncFactory();
+        }
     }
 
     public RemoteSyncFactory getFixedRemoteSyncFactory() {
@@ -680,12 +722,33 @@ public class MakeConfiguration extends Configuration {
         return remoteMode;
     }
 
+    public FileSystem getSourceFileSystem() {
+        return getBaseFSPath().getFileSystem();
+    }
+    
     public ExecutionEnvironment getFileSystemHost() {
         if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
             return getDevelopmentHost().getExecutionEnvironment();
         } else {
-            return ExecutionEnvironmentFactory.getLocal();
+            return FileSystemProvider.getExecutionEnvironment(getBaseFSPath().getFileSystem());
         }
+    }
+    
+    public String getSourceBaseDir() {        
+        if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+            FileObject projectDirFO = CndFileUtils.toFileObject(getBaseDir());
+            try {                
+                Project project = ProjectManager.getDefault().findProject(projectDirFO);
+                if (project != null) {
+                    RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+                    CndUtils.assertNotNullInConsole(remoteProject, "Null RemoteProject"); //NOI18N
+                    return remoteProject.getSourceBaseDir();
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.FINE, "Can not find a project in: " + projectDirFO, ioe);
+            }
+        }
+        return getBaseDir();
     }
 
     public void setRemoteMode(RemoteProject.Mode mode) {
@@ -930,19 +993,19 @@ public class MakeConfiguration extends Configuration {
             return output;
         }
         if (!CndPathUtilitities.isPathAbsolute(output)) {
-            output = getBaseDir() + "/" + output; // NOI18N
+            output = getSourceBaseDir() + "/" + output; // NOI18N
             output = CndPathUtilitities.normalizeSlashes(output);
         }
         return expandMacros(output);
     }
 
     public boolean hasDebugger() {
-        return ProjectActionSupport.getInstance().canHandle(this, PredefinedType.DEBUG);
+        return ProjectActionSupport.getInstance().canHandle(this, null, PredefinedType.DEBUG);
     }
 
     public String expandMacros(String val) {
         // Substitute macros
-        val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' +MakeConfiguration.CND_CONF_MACRO+ '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilitities.getBaseName(getOutputValue())); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
@@ -958,6 +1021,7 @@ public class MakeConfiguration extends Configuration {
      * Names are shifted by offset to match value and limit choice
      */
     private final static class ManagedIntConfiguration extends IntConfiguration {
+
         private int offset;
 
         public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options, int offset) {

@@ -49,6 +49,20 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="canWrite">
+            <api name="masterfs"/>
+            <summary>Determine if a ProvidedExtensions instance should be used to get a files canWrite() value</summary>
+            <version major="2" minor="30"/>
+            <date day="1" month="2" year="2011"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                Introduced a new constructor parameter <code>providesCanWrite</code> to specify if a 
+                ProvidedExtensions instance is meant to provide the canWrite() value for a file.
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="194683"/>
+        </change>
         <change id="copy-handler">
             <api name="masterfs"/>
             <summary>Delegate FileObject.copy() to ProvidedExtensions</summary>

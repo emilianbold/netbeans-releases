@@ -35,8 +35,10 @@ import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -71,7 +73,8 @@ public class DebugScript  extends RunScript {
                             provider.getStartFile(),
                             true,
                             provider.getDebugPathMapping(),
-                            provider.getDebugProxy());
+                            provider.getDebugProxy(),
+                            ProjectPropertiesSupport.getEncoding(PhpProjectUtils.getPhpProject(provider.getStartFile())));
                     dbgStarter.start(provider.getProject(), callable, props);
                 }
             }

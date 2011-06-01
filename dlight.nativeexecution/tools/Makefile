@@ -63,18 +63,23 @@ all: init privp process_start pty_open sigqueue stat
 
 privp: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
+	strip ${APP_PATH}/$@
 
 process_start: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
+	strip ${APP_PATH}/$@
 
 pty_open: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
+	strip ${APP_PATH}/$@
 
 sigqueue: init
 	gcc ${CFLAGS} ${FLAG64} ${LDFLAGS} -o ${APP_PATH}/$@ $@.c
+	strip ${APP_PATH}/$@
 
 stat: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
+	strip ${APP_PATH}/$@
 
 clean:
 	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}

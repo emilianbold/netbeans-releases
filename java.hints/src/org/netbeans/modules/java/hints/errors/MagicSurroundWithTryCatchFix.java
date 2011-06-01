@@ -53,6 +53,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
@@ -84,6 +85,7 @@ import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
@@ -99,7 +101,7 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 final class MagicSurroundWithTryCatchFix implements Fix {
-    
+
     private JavaSource js;
     private List<TypeMirrorHandle> thandles;
     private int offset;
@@ -137,7 +139,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     }
 
     public ChangeInfo implement() throws IOException {
-        js.runModificationTask(new Task<WorkingCopy>() {
+        ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(Phase.RESOLVED);
                 TreePath currentPath = wc.getTreeUtilities().pathFor(offset + 1);
@@ -200,9 +202,9 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                     new TransformerImpl(wc, thandles, streamAlike, statement).scan(blockTree, null);
                 }
             }
-        }).commit();
+        });
         
-        return null;
+        return Utilities.commitAndComputeChangeInfo(js.getFileObjects().iterator().next(), mr);
     }
     
     private final class TransformerImpl extends TreePathScanner<Void, Void> {
@@ -438,11 +440,42 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(etExpression, "log"), Arrays.asList(levelExpression, make.Literal(null), make.Identifier(name))));
     }
         
+    private static StatementTree createRethrowAsRuntimeExceptionStatement(WorkingCopy info, TreeMaker make, String name) {
+        if (!ErrorFixesFakeHint.isRethrowAsRuntimeException()) {
+            return null;
+        }
+
+        TypeElement runtimeException = info.getElements().getTypeElement("java.lang.RuntimeException");
+
+        if (runtimeException == null) {
+            return null;
+        }
+
+        ExpressionTree exceptionName = make.QualIdent(runtimeException);
+        StatementTree result = make.Throw(make.NewClass(null, Collections.<ExpressionTree>emptyList(), exceptionName, Arrays.asList(make.Identifier(name)), null));
+
+        info.tag(exceptionName, Utilities.TAG_SELECT);
+        
+        return result;
+    }
+
+    private static StatementTree createRethrow(WorkingCopy info, TreeMaker make, String name) {
+        if (!ErrorFixesFakeHint.isRethrow()) {
+            return null;
+        }
+
+        ThrowTree result = make.Throw(make.Identifier(name));
+
+        info.tag(result.getExpression(), Utilities.TAG_SELECT);
+
+        return result;
+    }
+
     private static StatementTree createPrintStackTraceStatement(CompilationInfo info, TreeMaker make, String name) {
         return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(name), "printStackTrace"), Collections.<ExpressionTree>emptyList()));
     }
 
-    private static CatchTree createCatch(CompilationInfo info, TreeMaker make, TreePath statement, String name, TypeMirror type) {
+    private static CatchTree createCatch(WorkingCopy info, TreeMaker make, TreePath statement, String name, TypeMirror type) {
         StatementTree logStatement = createExceptionsStatement(info, make, name);
 
         if (logStatement == null) {
@@ -450,13 +483,21 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         }
         
         if (logStatement == null) {
+            logStatement = createRethrowAsRuntimeExceptionStatement(info, make, name);
+        }
+        
+        if (logStatement == null) {
+            logStatement = createRethrow(info, make, name);
+        }
+
+        if (logStatement == null) {
             logStatement = createPrintStackTraceStatement(info, make, name);
         }
 
         return make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(type), null), make.Block(Collections.singletonList(logStatement), false));
     }
 
-    static List<CatchTree> createCatches(CompilationInfo info, TreeMaker make, List<TypeMirrorHandle> thandles, TreePath currentPath) {
+    static List<CatchTree> createCatches(WorkingCopy info, TreeMaker make, List<TypeMirrorHandle> thandles, TreePath currentPath) {
         String name = inferName(info, currentPath);
         List<CatchTree> catches = new ArrayList<CatchTree>();
 

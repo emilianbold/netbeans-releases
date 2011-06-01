@@ -254,7 +254,8 @@ public final class UiUtils {
                             UIManager.setLookAndFeel(className);
                             LogManager.log("... check headless");                            
                             if (GraphicsEnvironment.isHeadless()) {
-                                HeadlessException e = new HeadlessException();
+                                HeadlessException e = new HeadlessException(ResourceUtils.getString(UiUtils.class, RESOURCE_FAILED_TO_INIT_UI_HEADLESS));
+                                System.err.println(ResourceUtils.getString(UiUtils.class, RESOURCE_FAILED_TO_INIT_UI));
                                 System.err.println(e.getMessage());
                                 throw new InitializationException(
                                         ResourceUtils.getString(UiUtils.class, 
@@ -622,6 +623,8 @@ public final class UiUtils {
             "UI.error.failed.to.activate.defined.laf";//NOI18N
     private static final String RESOURCE_FAILED_TO_INIT_UI = 
             "UI.error.failed.to.init.ui";//NOI18N
+    private static final String RESOURCE_FAILED_TO_INIT_UI_HEADLESS = 
+            "UI.error.failed.to.init.ui.headless";//NOI18N
     private static final String RESOURCE_FAILED_TO_FORCE_GTK =
             "UI.error.failed.to.force.gtk";//NOI18N
     private static final String RESOURCE_SILENT_DEFAULT_YES = 

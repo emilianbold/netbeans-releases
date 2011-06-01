@@ -56,7 +56,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
-import org.netbeans.modules.cnd.highlight.InterrupterImpl;
+import org.netbeans.modules.cnd.highlight.error.HighlightProviderTaskFactory.CancellableInterruptor;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -98,7 +98,7 @@ public class HighlightProvider  {
     private HighlightProvider() {
     }
     
-    /* package */ void update(CsmFile file, Document doc, DataObject dao, Interrupter interrupter) {
+    /* package */ void update(CsmFile file, Document doc, DataObject dao, CancellableInterruptor interrupter) {
         assert doc!=null || file==null;
         if (doc instanceof BaseDocument){
             addAnnotations((BaseDocument)doc, file, dao, interrupter);
@@ -121,7 +121,7 @@ public class HighlightProvider  {
         }
     }
     
-    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, final Interrupter interrupter) {
+    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, final CancellableInterruptor interrupter) {
 
         CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
         final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
@@ -129,7 +129,11 @@ public class HighlightProvider  {
 
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
             private int lastSize = descriptions.size();
+            @Override
             public void addError(CsmErrorInfo info) {
+                if (interrupter.cancelled()) {
+                    return;
+                }
                 PositionBounds pb = createPositionBounds(dao, info.getStartOffset(), info.getEndOffset());
                 ErrorDescription desc = null;
                 if( pb != null ) {
@@ -145,6 +149,7 @@ public class HighlightProvider  {
                     if (TRACE_ANNOTATIONS) System.err.printf("\tCan't create PositionBounds for %s\n", info);
                 }
             }
+            @Override
             public void done() {
                 if( descriptions.size() > lastSize ) {
                     lastSize = descriptions.size();
@@ -155,14 +160,17 @@ public class HighlightProvider  {
         };
         removeAnnotations(doc);
         DocumentListener listener = null;
-        if (doc != null && (interrupter instanceof InterrupterImpl)) {
+        if (doc != null) {
             listener = new DocumentListener(){
+                @Override
                 public void insertUpdate(DocumentEvent e) {
-                    ((InterrupterImpl)interrupter).cancel();
+                    interrupter.cancel();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
-                    ((InterrupterImpl)interrupter).cancel();
+                    interrupter.cancel();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                 }
             };
@@ -209,14 +217,17 @@ public class HighlightProvider  {
             this.document = doc;
         }
 
+        @Override
         public CsmFile getFile() {
             return file;
         }
 
+        @Override
         public boolean isCancelled() {
             return interrupter.cancelled();
         }
 
+        @Override
         public Document getDocument() {
             return document;
         }

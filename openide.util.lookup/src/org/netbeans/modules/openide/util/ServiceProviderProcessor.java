@@ -80,21 +80,19 @@ public class ServiceProviderProcessor extends AbstractServiceProviderProcessor {
 
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element el : roundEnv.getElementsAnnotatedWith(ServiceProvider.class)) {
-            TypeElement clazz = (TypeElement) el;
-            ServiceProvider sp = clazz.getAnnotation(ServiceProvider.class);
-            register(clazz, ServiceProvider.class, sp);
+            ServiceProvider sp = el.getAnnotation(ServiceProvider.class);
+            register(el, ServiceProvider.class, sp);
         }
         for (Element el : roundEnv.getElementsAnnotatedWith(ServiceProviders.class)) {
-            TypeElement clazz = (TypeElement) el;
-            ServiceProviders spp = clazz.getAnnotation(ServiceProviders.class);
+            ServiceProviders spp = el.getAnnotation(ServiceProviders.class);
             for (ServiceProvider sp : spp.value()) {
-                register(clazz, ServiceProviders.class, sp);
+                register(el, ServiceProviders.class, sp);
             }
         }
         return true;
     }
 
-    private void register(TypeElement clazz, Class<? extends Annotation> annotation, ServiceProvider svc) {
+    private void register(Element clazz, Class<? extends Annotation> annotation, ServiceProvider svc) {
         try {
             svc.service();
             assert false;

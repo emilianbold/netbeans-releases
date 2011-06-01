@@ -167,6 +167,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jScrollField.getViewport().setBackground(jTableFields.getBackground());
         // set default row height
         jTableFields.setRowHeight(18);
+        jTableFields.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         // set grid color to be consistent with other netbeans tables
         if (UIManager.getColor("control") != null) { // NOI18N
             jTableFields.setGridColor(UIManager.getColor("control")); // NOI18N

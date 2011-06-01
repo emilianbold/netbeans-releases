@@ -34,7 +34,7 @@
                             <PHPDocNode start='14' end='20' value='$hello'/>
                         </Variable>
                         <Types>
-                            <PHPDocNode start='21' end='27' value='person'/>
+                            <PHPDocTypeNode start='21' end='27' value='person' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                 </Variable>
@@ -46,7 +46,7 @@
                             <PHPDocNode start='14' end='20' value='$hello'/>
                         </Variable>
                         <Types>
-                            <PHPDocNode start='21' end='27' value='person'/>
+                            <PHPDocTypeNode start='21' end='27' value='person' isArray='false'/>
                         </Types>
                     </PHPDocVarTypeTag>
                 </Variable>

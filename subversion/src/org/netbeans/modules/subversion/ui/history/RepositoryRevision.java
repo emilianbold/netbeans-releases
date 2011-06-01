@@ -205,10 +205,7 @@ class RepositoryRevision {
 
         @Override
         public String toString() {
-            StringBuilder text = new StringBuilder();
-            text.append("\t");
-            text.append(getPath());
-            return text.toString();
+            return changedPath.getPath();
         }
     }
 

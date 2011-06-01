@@ -355,7 +355,7 @@ public final class AttachPanel extends TopComponent {
 
         hostLabel.setText(Catalog.get("AttachProcDiag_HostColon")); // NOI18N
         hostLabel.setDisplayedMnemonic(
-                Catalog.getMnemonic("MNEM_AttachProcDiag_Host")); // NOI18N
+                Catalog.getMnemonic("MNEM_Host")); // NOI18N
 
         hostLabel.setLabelFor(hostCombo);
         hostCombo.setToolTipText(Catalog.get("HostName")); //NOI18N

@@ -50,7 +50,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GenerateDTOAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
@@ -153,7 +152,6 @@ public class EntityNode extends AbstractNode implements OpenCookie {
             list.add(SystemAction.get(AddActionGroup.class));
             list.add(null);
             list.add(SystemAction.get(GoToSourceActionGroup.class));
-            list.add(SystemAction.get(GenerateDTOAction.class));
         }
         return list.toArray(new SystemAction[0]);
     }

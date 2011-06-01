@@ -66,6 +66,7 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -163,6 +164,9 @@ public class FindNameTest extends NbTestCase {
     }
 
     private void baseTest(long shift, String function, String executable, boolean full, int etalonLine) {
+        if (Utilities.isWindows()) {
+            return; // this is for Unixes only (lineinfo.bash uses dbx)
+        }
         System.err.println("\nSearch for "+function+"0x"+Long.toHexString(shift)+" in "+executable);
         executable = getResource("/org/netbeans/modules/cnd/gizmo/addr2line/"+executable);
         String script = getResource("/org/netbeans/modules/cnd/gizmo/addr2line/lineinfo.bash");

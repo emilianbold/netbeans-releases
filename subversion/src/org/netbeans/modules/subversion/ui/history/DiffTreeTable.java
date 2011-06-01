@@ -87,12 +87,13 @@ class DiffTreeTable extends OutlineView {
     }
     
     private void setupColumns() {
-        Node.Property [] columns = new Node.Property[3];
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
-        columns[0] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
-        columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
-        columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
-        setProperties(columns);
+        setPropertyColumns(RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time"), //NOI18N
+                RevisionNode.COLUMN_NAME_USERNAME, loc.getString("LBL_DiffTree_Column_Username"), //NOI18N
+                RevisionNode.COLUMN_NAME_MESSAGE, loc.getString("LBL_DiffTree_Column_Message")); //NOI18N
+        setPropertyColumnDescription(RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time_Desc")); //NOI18N
+        setPropertyColumnDescription(RevisionNode.COLUMN_NAME_USERNAME, loc.getString("LBL_DiffTree_Column_Username_Desc")); //NOI18N
+        setPropertyColumnDescription(RevisionNode.COLUMN_NAME_MESSAGE, loc.getString("LBL_DiffTree_Column_Message_Desc")); //NOI18N
     }
     
     private void setDefaultColumnSizes() {

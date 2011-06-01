@@ -199,9 +199,9 @@ public class CGSInfo {
     private ClassDeclaration findEnclosingClass(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
         int count = nodes.size();
-        if (count > 1) {  // the cursor has to be in class block see issue #142417
-            ASTNode block = nodes.get(count - 1);
-            ASTNode declaration = nodes.get(count - 2);
+        if (count > 2) {  // the cursor has to be in class block see issue #142417
+            ASTNode declaration = nodes.get(1);
+            ASTNode block = nodes.get(2);
             if (block instanceof Block &&  declaration instanceof ClassDeclaration) {
                 return (ClassDeclaration) declaration;
             }

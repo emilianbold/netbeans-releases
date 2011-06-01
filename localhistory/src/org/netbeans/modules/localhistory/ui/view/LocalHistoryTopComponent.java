@@ -65,6 +65,9 @@ final public class LocalHistoryTopComponent extends TopComponent {
 
     public LocalHistoryTopComponent() {
         initComponents();
+        if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
+            setBackground(UIManager.getColor("NbExplorerView.background"));     // NOI18N
+        }
         setToolTipText(NbBundle.getMessage(LocalHistoryTopComponent.class, "HINT_LocalHistoryTopComponent"));
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
     }

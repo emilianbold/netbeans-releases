@@ -125,6 +125,9 @@ final class VisualizerChildren extends Object {
         VisualizerNode visNode = vn.get(pos);
         if (visNode == null) {
             Node node = snapshot.get(pos);
+            if (node == null) {
+                throw new NullPointerException("snapshot: " + snapshot + " pos: " + pos + " parent: " + parent); // NOI18N
+            }
             visNode = VisualizerNode.getVisualizer(this, node);
             visNode.indexOf = pos;
             vn.set(pos, visNode);

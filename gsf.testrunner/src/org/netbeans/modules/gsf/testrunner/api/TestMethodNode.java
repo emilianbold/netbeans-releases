@@ -187,16 +187,16 @@ public class TestMethodNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-        if (Status.PENDING == testcase.getStatus()) {
-            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
-        }
-        if (Status.SKIPPED == testcase.getStatus()) {
-            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
-        }
-        if (failed()) {
+        switch (testcase.getStatus()) {
+        case PASSED:
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
+        case FAILED:
             return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
+        case ERROR:
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error_16.png"); //NOI18N
+        default:
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
         }
-        return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
     }
 
     @Override

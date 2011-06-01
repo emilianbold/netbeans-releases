@@ -50,22 +50,10 @@ import org.openide.nodes.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import java.beans.*;
-
 import java.io.*;
 
 import javax.swing.*;
 
-
-/* TODO:
- - improve cell renderer (two lines of text or hints)
- - better behaviour during scrolling (ListPane)
- - external selection bug (BUG ID: 01110034)
- -
- - XXX if doing anything with this class other than deleting it, rewrite it to use a JTable - that would be
- - much more sensible and scalable.  -Tim
- -
-*/
 
 /** A view displaying {@link Node}s as icons.
  * <p>
@@ -110,35 +98,13 @@ public class IconView extends ListView implements Externalizable {
 
     /** Creates the list that will display the data.
     */
+    @Override
     protected JList createList() {
-        JList list = new ListPane() {
-                /**
-                 * Overrides JComponent's getToolTipText method in order to allow
-                 * renderer's tips to be used if it has text set.
-                 * @param event the MouseEvent that initiated the ToolTip display
-                 */
-                public String getToolTipText(MouseEvent event) {
-                    if (event != null) {
-                        Point p = event.getPoint();
-                        int index = locationToIndex(p);
-
-                        if (index >= 0) {
-                            VisualizerNode v = (VisualizerNode) getModel().getElementAt(index);
-                            String tooltip = v.getShortDescription();
-                            String displayName = v.getDisplayName();
-
-                            if ((tooltip != null) && !tooltip.equals(displayName)) {
-                                return tooltip;
-                            }
-                        }
-                    }
-
-                    return null;
-                }
-            };
-
-        list.setCellRenderer(new NodeRenderer());
-
-        return list;
+        JList tmp = new NbList();
+        tmp.setOpaque(false);
+        tmp.setCellRenderer(new IconPanel());
+        tmp.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        tmp.setVisibleRowCount(-1);
+        return tmp;
     }
 }

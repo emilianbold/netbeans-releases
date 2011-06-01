@@ -45,25 +45,25 @@ package org.netbeans.modules.web.beans.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.api.model.Result;
-import org.netbeans.modules.web.beans.api.model.Result.ApplicableResult;
+import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -76,11 +76,64 @@ public class ModelTest extends CommonTestCase {
         super(testName);
     }
     
+    public void testInjectionPointInitialization() throws MetadataModelException, 
+        IOException, InterruptedException 
+    {
+        createQualifier("CustomBinding");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class CustomClass  {" +
+                " @Inject @foo.CustomBinding Object myFieldA = new Object();  "+
+                " @Inject @foo.CustomBinding Object myFieldB ;  "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "@foo.CustomBinding " +
+                "public class One  {}" );
+        
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+    
+            @Override
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.CustomClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<VariableElement> fields = ElementFilter.fieldsIn(
+                        clazz.getEnclosedElements());
+                Map<String,VariableElement> variables = 
+                    new HashMap<String, VariableElement>();
+                for (VariableElement field : fields) {
+                    variables.put(field.getSimpleName().toString(), field);
+                }
+                VariableElement fieldA = variables.get("myFieldA");
+                assertNotNull( fieldA );
+                DependencyInjectionResult result = model.lookupInjectables(fieldA, 
+                        null);
+                assertEquals(DependencyInjectionResult.ResultKind.DEFINITION_ERROR,  
+                        result.getKind());
+                assertTrue( result instanceof DependencyInjectionResult.Error);
+                
+                VariableElement fieldB = variables.get("myFieldB");
+                assertNotNull( fieldB );
+                result = model.lookupInjectables(fieldB, null);
+                assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED,  
+                        result.getKind());
+                return null;
+            }
+    
+        });
+    }
     
     public void testCommon() throws MetadataModelException, IOException,
         InterruptedException 
     {
-        
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBinding.java",
                 "package foo; " +
                 "import static java.lang.annotation.ElementType.METHOD; "+
@@ -89,8 +142,10 @@ public class ModelTest extends CommonTestCase {
                 "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
+		"import javax.enterprise.util.*; "+
                 "import javax.inject.*; "+
                 "import java.lang.annotation.*; "+
+                "import javax.enterprise.util.*; "+
                 "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
@@ -329,7 +384,6 @@ public class ModelTest extends CommonTestCase {
                         assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myAmbiguousProducer")){
-                        // XXX: why "foo.Producer" is in results? it should not be there
                         assertFindVariableResultInjectables((VariableElement)element, provider, "foo.SlowProducer", "foo.FastProducer", "foo.Producer");
                         assertFindVariableResultProductions((VariableElement)element, provider);
                     }
@@ -358,8 +412,10 @@ public class ModelTest extends CommonTestCase {
                 "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
+		"import javax.enterprise.util.*; "+
                 "import java.lang.annotation.*; "+
                 "import javax.inject.*; "+
+                "import javax.enterprise.util.*; "+
                 "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+

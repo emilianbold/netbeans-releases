@@ -53,16 +53,7 @@ public final class FunctionNameUtils {
     }
 
     public static SourceFileInfo getSourceFileInfo(String functionSignature) {
-        int indexOf = functionSignature.lastIndexOf("+"); //NOI18N
-        //now we should get source file info (if presented)
-        while (indexOf > 0) {
-            if (functionSignature.length() > indexOf + 1
-                    && functionSignature.charAt(indexOf + 1) == '0') { //NOI18N
-                break;
-            }
-            indexOf = functionSignature.indexOf("+", indexOf + 1); //NOI18N
-        }
-        //here we are: after the function offset there could be : which starts file:line
+        int indexOf = functionSignature.lastIndexOf("+0x"); //NOI18N
         int indexOfFile = functionSignature.indexOf(":", indexOf); //NOI18N
         if (indexOfFile < 0) {
             return null;
@@ -74,6 +65,13 @@ public final class FunctionNameUtils {
         }
         String fileName = _file.substring(0, index);
         String line = _file.substring(index + 1);
+        int lineNumber = -1;
+        try{
+            lineNumber = Integer.valueOf(line);
+        }catch(NumberFormatException e){
+            //if exception is here means something is wrong with the parsing
+            return null;
+        }
         return new SourceFileInfo(fileName, Integer.valueOf(line), 0);
     }
 

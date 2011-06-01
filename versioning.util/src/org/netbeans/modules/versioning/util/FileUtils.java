@@ -306,6 +306,17 @@ public class FileUtils {
         }
         return checkoutFolder;
     }
+    
+    /**
+     * Returns a file with a non-existing name, but does not create it
+     */
+    public static File generateTemporaryFile (File parent, String name) {
+        File tmp = new File(parent, name);
+        while (tmp.exists()) {
+            tmp = new File(parent, name + Long.toString(System.currentTimeMillis()));
+        }
+        return tmp;
+    }
 
     /**
      * Returns the first found file whose filename is the same (in a case insensitive way) as given <code>file</code>'s.

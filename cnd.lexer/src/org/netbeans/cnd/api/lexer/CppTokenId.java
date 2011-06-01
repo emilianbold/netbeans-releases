@@ -62,7 +62,7 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Token ids of C/C++ languages defined as enum.
@@ -84,8 +84,9 @@ public enum CppTokenId implements TokenId {
     ASM("asm", "keyword-directive"), // gcc and C++ // NOI18N
     _ASM("_asm", "keyword"), // g++ // NOI18N
     __ASM("__asm", "keyword"), // gcc // NOI18N
-    __ASM__("__asm__", "keyword"), // gcc // NOI18N
+    __ASM__("__asm__", "keyword"), // gcc // NOI18N    
     AUTO("auto", "keyword"), // NOI18N
+    BIT("bit", "keyword"), // NOI18N
     BOOL("bool", "keyword"), // C++ // NOI18N
     BREAK("break", "keyword-directive"), // NOI18N
     CASE("case", "keyword-directive"), // NOI18N
@@ -103,6 +104,7 @@ public enum CppTokenId implements TokenId {
     DOUBLE("double", "keyword"), // NOI18N
     DYNAMIC_CAST("dynamic_cast", "keyword"), // C++ // NOI18N
     ELSE("else", "keyword-directive"), // NOI18N
+    _ENDASM("_endasm", "keyword"), // NOI18N
     ENUM("enum", "keyword"), // NOI18N
     EXPLICIT("explicit", "keyword"), // C++ // NOI18N
     EXPORT("export", "keyword"), // C++ // NOI18N
@@ -191,6 +193,12 @@ public enum CppTokenId implements TokenId {
     __UNUSED__("__unused__", "keyword"), // gcc // NOI18N
     __W64("__w64", "keyword"), // g++ // NOI18N
 
+    // extension points
+    BUILT_IN_TYPE(null, "keyword"), // NOI18N
+    TYPE_QUALIFIER(null, "keyword"), // NOI18N
+    STORAGE_CLASS_SPECIFIER(null, "keyword"), // NOI18N
+    
+    // 
     INT_LITERAL(null, "number"), // NOI18N
     LONG_LITERAL(null, "number"), // NOI18N
     LONG_LONG_LITERAL(null, "number"), // NOI18N
@@ -392,6 +400,7 @@ public enum CppTokenId implements TokenId {
         return fixedText;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
@@ -508,15 +517,20 @@ public enum CppTokenId implements TokenId {
                     return LanguageEmbedding.create(languagePreproc, 0, 0);
             }
 
-            Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
-            for (CndLexerLanguageEmbeddingProvider provider : providers) {
-                Map<CppTokenId, LanguageEmbedding<?>> embeddings = provider.getEmbeddings();
-                if(embeddings.containsKey(token.id())) {
-                    return embeddings.get(token.id());
+            if (!CndLexerEmbeddingProviders.providers.isEmpty()) {
+                for (org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider provider : CndLexerEmbeddingProviders.providers) {
+                    LanguageEmbedding<?> embedding = provider.createEmbedding(token, languagePath, inputAttributes);
+                    if (embedding != null) {
+                        return embedding;
+                    }
                 }
             }
-
             return null; // No embedding
         }
+        
+        private final static class CndLexerEmbeddingProviders {
+            private final static Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookups.forPath(CndLexerLanguageEmbeddingProvider.REGISTRATION_PATH).lookupAll(CndLexerLanguageEmbeddingProvider.class);
+        }
+
     }
 }

@@ -68,11 +68,13 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
         
     public void update() {        
         panel.daysTextField.setText(Long.toString(LocalHistorySettings.getInstance().getTTL()));
+        panel.noLabelCleanupCheckBox.setSelected(!LocalHistorySettings.getInstance().getCleanUpLabeled());
     }
 
     public void applyChanges() {
         if(!isValid()) return;
         LocalHistorySettings.getInstance().setTTL(Integer.parseInt(panel.daysTextField.getText()));
+        LocalHistorySettings.getInstance().setCleanUpLabeled(!panel.noLabelCleanupCheckBox.isSelected());
     }
 
     public void cancel() {
@@ -92,7 +94,8 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
 
     public boolean isChanged() {       
         String ttl = Long.toString(LocalHistorySettings.getInstance().getTTL());        
-        return !ttl.equals(panel.daysTextField.getText());
+        return !ttl.equals(panel.daysTextField.getText()) && 
+               (panel.noLabelCleanupCheckBox.isSelected() != LocalHistorySettings.getInstance().getCleanUpLabeled());
     }
 
     public JComponent getComponent(Lookup masterLookup) {

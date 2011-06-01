@@ -41,7 +41,7 @@ package org.netbeans.modules.dlight.dtrace.collector.support;
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
+import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,8 +50,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
-import static org.junit.Assert.*;
+import org.netbeans.modules.dlight.dtrace.collector.DTraceEventData;
 
 /**
  *
@@ -66,7 +65,7 @@ public class DtraceParserPerformanceTest {
                 new Column("foo", Integer.class),
                 new Column("bar", Integer.class));
         DataTableMetadata table = new DataTableMetadata("table", columns, null);
-        DtraceParser parser = new DtraceParser(table);
+        DataOnlyParser parser = new DataOnlyParser(table);
 
         int iterations = 1200000;
         List<DataRow> data = new ArrayList<DataRow>(iterations);
@@ -74,11 +73,12 @@ public class DtraceParserPerformanceTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < iterations; ++i) {
             String line = (i + iterations) + " " + i + " -" + i;
-            DataRow row = parser.process(line);
+            DTraceEventData res = parser.parse(line);
+            assertNull(res.getEventCallStack());
+            DataRow row = res.getDataRow();
             assertNotNull(row);
             data.add(row);
         }
-        assertNull(parser.processClose());
         long endTime = System.currentTimeMillis();
 
         System.err.println(endTime - startTime);

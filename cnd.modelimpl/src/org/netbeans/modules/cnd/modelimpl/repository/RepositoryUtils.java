@@ -49,6 +49,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -77,6 +80,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
  */
 public final class RepositoryUtils {
 
+    private static final Logger LOG = Logger.getLogger(RepositoryUtils.class.getName());
     private static final boolean TRACE_ARGS = CndUtils.getBoolean("cnd.repository.trace.args", false); //NOI18N;
     private static final boolean TRACE_REPOSITORY_ACCESS = TRACE_ARGS || DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
     private static final Repository repository = RepositoryAccessor.getRepository();
@@ -84,7 +88,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 104;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 111;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -177,7 +181,7 @@ public final class RepositoryUtils {
             assert uid != null;
             Key key = UIDtoKey(uid);
             put(key, (Persistent) csmObj);
-            if (!((csmObj instanceof CsmNamespace)||(csmObj instanceof CsmProject))){
+            if (!((csmObj instanceof CsmNamespace)||(csmObj instanceof CsmProject)||(csmObj instanceof CsmInstantiation))){
                 assert uid.getObject() != null;
             }
         }
@@ -314,7 +318,9 @@ public final class RepositoryUtils {
         if (!cleanRepository) {
             int errors = myRepositoryListenerProxy.getErrorCount(unit);
             if (errors > 0) {
-                System.err.println("Clean index for project \""+unit+"\" because index was corrupted (was "+errors+" errors)."); // NOI18N
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, "Clean index for project \"{0}\" because index was corrupted (was {1} errors).", new Object[]{unit, errors}); // NOI18N
+                }
                 cleanRepository = true;
             }
         }
@@ -388,18 +394,20 @@ public final class RepositoryUtils {
     private static class RepositoryListenerProxy implements RepositoryListener {
         private RepositoryListener parent = RepositoryListenerImpl.instance();
         private Map<CharSequence,Integer> wasErrors = new ConcurrentHashMap<CharSequence,Integer>();
+        private boolean fatalError = false;
         private RepositoryListenerProxy(){
         }
         public int getErrorCount(CharSequence unitName) {
             Integer i = wasErrors.get(unitName);
             if (i == null) {
-                return 0;
+                return fatalError ? 1 : 0;
             } else {
-                return i.intValue();
+                return fatalError ? i.intValue() + 1 : i.intValue();
             }
         }
         public void cleanErrorCount(CharSequence unitName) {
             wasErrors.remove(unitName);
+            fatalError = false;
         }
         @Override
         public boolean unitOpened(CharSequence unitName) {
@@ -422,13 +430,17 @@ public final class RepositoryUtils {
          * For example error in "file" segment can be fixed by file reparse.
          */
         private void primitiveErrorStrategy(CharSequence unitName, RepositoryException exc){
-            Integer i = wasErrors.get(unitName);
-            if (i == null) {
-                i = Integer.valueOf(1);
+            if (unitName != null) {
+                Integer i = wasErrors.get(unitName);
+                if (i == null) {
+                    i = Integer.valueOf(1);
+                } else {
+                    i = Integer.valueOf(i.intValue()+1);
+                }
+                wasErrors.put(unitName, i);
             } else {
-                i = Integer.valueOf(i.intValue()+1);
+                fatalError = true;
             }
-            wasErrors.put(unitName, i);
         }
     }
 }

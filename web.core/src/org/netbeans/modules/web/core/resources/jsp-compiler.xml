@@ -51,6 +51,6 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/web/core/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.web.project/ant/extra/jspcompile.jar!</resource>
+        <resource>jar:nbinst://org.netbeans.modules.web.project/ant/extra/jspcompile.jar!/</resource>
     </volume>
 </library>

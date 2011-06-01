@@ -359,7 +359,9 @@ public abstract class VariableModel extends ModelListenerSupport
 			return value.toString();
 		}
 	    else return null;
-	} else {
+	} else if (node instanceof WatchModel.EmptyWatch){
+            return "";
+        } else {
 	    throw new UnknownTypeException(node);
         }
     }
@@ -578,10 +580,15 @@ public abstract class VariableModel extends ModelListenerSupport
         }
     }
 
-    public static final Action Action_OUTPUT_FORMAT = 
-	new OutputFormatAction ();
+    private static final OutputFormatAction Action_OUTPUT_FORMAT = 
+	new OutputFormatAction();
     
-    public static class OutputFormatAction extends SystemAction
+    public static Action getOutputFormatAction(Variable v) {
+        Action_OUTPUT_FORMAT.setVar(v);
+        return Action_OUTPUT_FORMAT;
+    }
+    
+    private static class OutputFormatAction extends SystemAction
 			implements Presenter.Popup {
 
         private Variable var;
@@ -602,7 +609,6 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	// interface SystemAction
 	public void actionPerformed(ActionEvent ev) {
-	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
 	}
 
 	// interface Presenter.Popup

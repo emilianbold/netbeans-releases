@@ -290,17 +290,38 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     // Fast check of name.
     private boolean hasName(FileImpl file, CharSequence name){
         try {
-            if (file.isValid()) {
+            if (file.isValid() && name.length() > 0) {
                 FileBuffer buffer = file.getBuffer();
                 if (buffer == null){
                     return false;
                 }
-                String text = buffer.getText();
-                if (text.indexOf(name.toString()) < 0) {
-                    return false;
+                char[] charBuffer = buffer.getCharBuffer();
+                char first = name.charAt(0);
+                int nameLength = name.length();
+                int bufLength = charBuffer.length;
+                loop:for (int i = 0; i < bufLength-nameLength; i++) {
+                    if (charBuffer[i] == first) {
+                        for(int j = 1; j < nameLength; j++) {
+                            if (name.charAt(j) != charBuffer[i+j]) {
+                                continue loop;
+                            }
+                        }
+                        if (i > 0) {
+                            char prev = charBuffer[i-1];
+                            if (prev == '_' || prev == '$' || prev == '~' || Character.isLetterOrDigit(prev)) {
+                                continue;
+                            }
+                        }
+                        if (i + nameLength + 1 < bufLength) {
+                            char next = charBuffer[i + nameLength];
+                            if (next == '_' || next == '$' || Character.isLetterOrDigit(next)) {
+                                continue;
+                            }
+                        }
+                        return true;
+                    }
                 }
-                // TODO use grep by line and detect whole word
-                return true;
+                return false;
             }
         } catch (FileNotFoundException ex) {
             // TODO FileBuffer should provide method isValid()

@@ -75,9 +75,6 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
-import org.netbeans.modules.web.core.syntax.completion.JspELExpression;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
@@ -183,24 +180,24 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                 }
             }
             
-            // is it a bean in EL?
-            tokenSequence.move(offset); //reset tokenSequence
-            if(!tokenSequence.moveNext()) {
-                return false; //no token
-            }
-            TokenSequence<ELTokenId> elTokenSequence = 
-                tokenSequence.embedded(ELTokenId.language());
-            if (elTokenSequence != null){
-                //check expression language
- 		elTokenSequence.move(offset);
-		if (!elTokenSequence.moveNext()) {
-		    return false;
-		}
-
-		if(elTokenSequence.token().id() == ELTokenId.IDENTIFIER) {
-                    return true;
-                }
-            }
+//            // is it a bean in EL?
+//            tokenSequence.move(offset); //reset tokenSequence
+//            if(!tokenSequence.moveNext()) {
+//                return false; //no token
+//            }
+//            TokenSequence<ELTokenId> elTokenSequence =
+//                tokenSequence.embedded(ELTokenId.language());
+//            if (elTokenSequence != null){
+//                //check expression language
+// 		elTokenSequence.move(offset);
+//		if (!elTokenSequence.moveNext()) {
+//		    return false;
+//		}
+//
+//		if(elTokenSequence.token().id() == ELTokenId.IDENTIFIER) {
+//                    return true;
+//                }
+//            }
             // is the a reachable tag file?
             return (canBeTagFile(tokenSequence, jspSup));
             
@@ -280,35 +277,35 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                         }
                     });
                 } else{
-                    // is it a bean in EL ?
-                    final TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
-                            ELTokenId.language());
-
-                    if (elTokenSequence != null){
-                            elTokenSequence.move(offset);
-                            if (!elTokenSequence.moveNext()) {
-                                return; //no token
-                            }
-                            try {
-                                final int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
-                                final JspELExpression exp = new JspELExpression(jspSup, elEnd);
-
-                                returnTaskRef.set(new Callable<int[]>() {
-                                    @Override
-                                    public int[] call() throws Exception {
-                                        int res = exp.parse();
-                                        if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START) {
-                                            return new int[]{elTokenSequence.offset(), elEnd};
-                                        }
-                                        return null;
-                                    }
-                                });
-                                
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-
-                    }
+//                    // is it a bean in EL ?
+//                    final TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
+//                            ELTokenId.language());
+//
+//                    if (elTokenSequence != null){
+//                            elTokenSequence.move(offset);
+//                            if (!elTokenSequence.moveNext()) {
+//                                return; //no token
+//                            }
+//                            try {
+//                                final int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
+//                                final JspELExpression exp = new JspELExpression(jspSup, elEnd);
+//
+//                                returnTaskRef.set(new Callable<int[]>() {
+//                                    @Override
+//                                    public int[] call() throws Exception {
+//                                        int res = exp.parse();
+//                                        if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START) {
+//                                            return new int[]{elTokenSequence.offset(), elEnd};
+//                                        }
+//                                        return null;
+//                                    }
+//                                });
+//
+//                            } catch (BadLocationException ex) {
+//                                Exceptions.printStackTrace(ex);
+//                            }
+//
+//                    }
 
                     //the token image always contains the quotation marks e.g. "test.css"
                     if(token.length() > 2) {
@@ -375,47 +372,47 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                 }
                 Token<?> token = tokenSequence.token();
 
-                // is it a bean in EL
-                TokenSequence<ELTokenId> elTokenSequence =
-                        tokenSequence.embedded(ELTokenId.language());
-                if (elTokenSequence != null) {
-
-                    elTokenSequence.move(offset);
-                    if (!elTokenSequence.moveNext()) {
-                        return;//not token
-                    }
-
-                    final int parseOffset = elTokenSequence.offset()
-                            + elTokenSequence.token().length();
-                    final String beanName = elTokenSequence.token().text().toString();
-                    try {
-                        final JspELExpression exp = new JspELExpression(jspSup, parseOffset);
-
-                        outOfDocumentLockTaskRef.set(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                try {
-                                    int res = exp.parse();
-                                    if (res == ELExpression.EL_START) {
-                                        navigateToUserBeanDef(doc, jspSup, target, beanName);
-                                    }
-                                    if (res == ELExpression.EL_BEAN) {
-                                        if (!exp.gotoPropertyDeclaration(exp.getObjectClass())) {
-                                            gotoSourceFailed();
-                                        }
-                                    }
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        });
-
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    return;
-                }
+//                // is it a bean in EL
+//                TokenSequence<ELTokenId> elTokenSequence =
+//                        tokenSequence.embedded(ELTokenId.language());
+//                if (elTokenSequence != null) {
+//
+//                    elTokenSequence.move(offset);
+//                    if (!elTokenSequence.moveNext()) {
+//                        return;//not token
+//                    }
+//
+//                    final int parseOffset = elTokenSequence.offset()
+//                            + elTokenSequence.token().length();
+//                    final String beanName = elTokenSequence.token().text().toString();
+//                    try {
+//                        final JspELExpression exp = new JspELExpression(jspSup, parseOffset);
+//
+//                        outOfDocumentLockTaskRef.set(new Runnable() {
+//
+//                            @Override
+//                            public void run() {
+//                                try {
+//                                    int res = exp.parse();
+//                                    if (res == ELExpression.EL_START) {
+//                                        navigateToUserBeanDef(doc, jspSup, target, beanName);
+//                                    }
+//                                    if (res == ELExpression.EL_BEAN) {
+//                                        if (!exp.gotoPropertyDeclaration(exp.getObjectClass())) {
+//                                            gotoSourceFailed();
+//                                        }
+//                                    }
+//                                } catch (BadLocationException ex) {
+//                                    Exceptions.printStackTrace(ex);
+//                                }
+//                            }
+//                        });
+//
+//                    } catch (BadLocationException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//                    return;
+//                }
 
                 // is ti declaration of userBean?
                 while (tokenSequence.token().id() != JspTokenId.TAG

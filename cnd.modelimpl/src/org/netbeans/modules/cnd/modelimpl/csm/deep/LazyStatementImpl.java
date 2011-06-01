@@ -53,11 +53,11 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -67,8 +67,10 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 abstract public class LazyStatementImpl extends StatementBase implements CsmScope {
 
+    private static final List<CsmStatement> EMPTY = Collections.<CsmStatement>emptyList();
+        
     private volatile SoftReference<List<CsmStatement>> statements = null;
-
+    
     protected LazyStatementImpl(CsmFile file, int start, int end, CsmFunction scope) {
         super(file, start, end, scope);
     }
@@ -96,7 +98,6 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
     private List<CsmStatement> createStatements() {
         List<CsmStatement> list = statements == null ? null : statements.get();
         if (list == null) {
-            list = new ArrayList<CsmStatement>();
             // code completion tests do work in EDT because otherwise EDT thread is not started by test harness
             CndUtils.assertTrueInConsole(!SwingUtilities.isEventDispatchThread() || CndUtils.isCodeCompletionUnitTestMode(), "Calling Parser in UI Thread");
             synchronized (this) {
@@ -106,6 +107,9 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
                         return refList;
                     }
                 }
+                // assign constant to prevent infinite recusion by calling this method in the same thread
+                statements = new SoftReference<List<CsmStatement>>(EMPTY);
+                list = new ArrayList<CsmStatement>();
                 if (renderStatements(list)) {
                     statements = new SoftReference<List<CsmStatement>>(list);
                     return list;
@@ -153,11 +157,11 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
     abstract protected int/*CPPTokenTypes*/ getFirstTokenID();    
 
     @Override
-    public void write(DataOutput output) throws IOException {
+    public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
     }
 
-    public LazyStatementImpl(DataInput input) throws IOException {
+    public LazyStatementImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.statements = null;
     }

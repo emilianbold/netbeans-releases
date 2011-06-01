@@ -1,5 +1,0 @@
-org.netbeans.modules.wsdlextensions.ldap.impl.LDAPElementFactoryProvider$AddressFactory
-org.netbeans.modules.wsdlextensions.ldap.impl.LDAPElementFactoryProvider$BindingFactory
-org.netbeans.modules.wsdlextensions.ldap.impl.LDAPElementFactoryProvider$OperationFactory
-org.netbeans.modules.wsdlextensions.ldap.impl.LDAPElementFactoryProvider$InputFactory
-org.netbeans.modules.wsdlextensions.ldap.impl.LDAPElementFactoryProvider$OutputFactory
