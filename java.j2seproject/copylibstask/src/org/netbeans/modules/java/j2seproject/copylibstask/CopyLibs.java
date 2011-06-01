@@ -244,9 +244,9 @@ public class CopyLibs extends Jar {
                 final Enumeration<? extends ZipEntry> zent = zf.getEntries();
                 final ZipOutputStream out = new ZipOutputStream(target);
                 out.setEncoding(getEncoding());   //NOI18N
-                out.setUseLanguageEncodingFlag(getUseLanguageEnodingFlag());
-                out.setCreateUnicodeExtraFields(getCreateUnicodeExtraFields().getPolicy());
-                out.setFallbackToUTF8(getFallBackToUTF8());
+//                out.setUseLanguageEncodingFlag(getUseLanguageEnodingFlag());      requires Ant 1.8
+//                out.setCreateUnicodeExtraFields(getCreateUnicodeExtraFields().getPolicy());   requires Ant 1.8
+//                out.setFallbackToUTF8(getFallBackToUTF8());   requires Ant 1.8
                 try {
                     while (zent.hasMoreElements()) {
                         final ZipEntry entry = zent.nextElement();
