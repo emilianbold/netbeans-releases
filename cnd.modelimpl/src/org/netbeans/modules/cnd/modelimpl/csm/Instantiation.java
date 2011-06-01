@@ -95,7 +95,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     private String fullName = null;
 
     private Instantiation(T declaration, CsmType instType) {
-        super(declaration.getContainingFile(), declaration.getStartOffset(), declaration.getEndOffset());
+        super(declaration.getContainingFile(), instType.getStartOffset(), instType.getEndOffset());
         this.declaration = declaration;
         this.mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
         // inherit mapping
@@ -117,8 +117,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                     if (CsmKindUtilities.isType(defaultValue)) {
                         CsmType defaultType = (CsmType) defaultValue;
                         defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmScope) declaration));
-                        // See IZ 146522 (we need to create a new Instantiation with all parameters up to the current one)
-                        defaultType = Instantiation.createType(defaultType, new Instantiation<T>(this.declaration, new HashMap<CsmTemplateParameter, CsmSpecializationParameter>(this.mapping)));
                         if (defaultType != null) {
                             mapping.put(param, new TypeBasedSpecializationParameterImpl(defaultType));
                         }
@@ -133,6 +131,16 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         super(declaration.getContainingFile(), declaration.getStartOffset(), declaration.getEndOffset());
         this.declaration = declaration;
         this.mapping = mapping;
+    }
+
+    @Override
+    public int getStartOffset() {
+        return declaration.getStartOffset();
+    }
+    
+    @Override
+    public int getEndOffset() {
+        return declaration.getEndOffset();
     }
 
     // FIX for 146522, we compare toString value until better solution is found
@@ -1408,9 +1416,18 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
         @Override
         public CsmClassifier getClassifier() {
+            return  getClassifier(true);
+        }
+        
+        public CsmClassifier getClassifier(boolean specialize) {
             if (resolved == null) {
-                if (inst) {
-                    CsmClassifier classifier = originalType.getClassifier();
+                if (inst && !instantiationHappened()) {
+                    CsmClassifier classifier;
+                    if(originalType instanceof Type) {
+                        classifier = ((Type)originalType).getClassifier(false);                               
+                    } else {
+                        classifier = originalType.getClassifier();                        
+                    }
                     if (CsmKindUtilities.isTemplate(classifier) &&
                             !isTemplateParameterTypeBased()) {
                         CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
@@ -1419,11 +1436,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                             Resolver resolver = ResolverFactory.createResolver(this);
                             try {
                                 if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                                    Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = instantiation.getMapping();
-                                    if(isTemplateParameterTypeBased()) {
-//                                        mapping.remove(getResolvedTemplateParameter());
-                                    }
-                                    obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), mapping, getContainingFile(), getStartOffset());
+                                    obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, instantiation, specialize);
                                 } else {
                                     return null;
                                 }
@@ -1431,16 +1444,14 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                                 ResolverFactory.releaseResolver(resolver);
                             }
                         } else {
-                            obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), instantiation.getMapping(), getContainingFile(), getStartOffset());
+                            obj = ip.instantiate((CsmTemplate) classifier, instantiation);
                         }
                         if (CsmKindUtilities.isClassifier(obj)) {
                             resolved = (CsmClassifier) obj;
                             return resolved;
                         }
                     }
-                    if(!instantiationHappened()) {
-                        resolved = classifier;
-                    }
+                    resolved = classifier;
                 }
 
                 if (instantiationHappened() || resolved == null) {
@@ -1538,6 +1549,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
         @Override
         public CsmClassifier getClassifier() {
+            return getClassifier(true);
+        }
+        
+        @Override
+        public CsmClassifier getClassifier(boolean specialize) {
             if (resolved == null) {
                 if (parentType != null) {
                     CsmClassifier parentClassifier = parentType.getClassifier();
@@ -1560,7 +1576,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                         Resolver resolver = ResolverFactory.createResolver(this);
                         try {
                             if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), getStartOffset());
+                                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) resolved, getInstantiationParams(), this, getContainingFile(), getStartOffset(), specialize);
                             } else {
                                 return null;
                             }
