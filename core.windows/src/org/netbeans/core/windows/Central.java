@@ -1903,18 +1903,21 @@ final class Central implements ControllerHandler {
     
     ///////////////////////////
     // ControllerHandler>>
+    @Override
     public void userActivatedMode(ModeImpl mode) {
         if(mode != null) {
             setActiveMode(mode);
         }
     }
     
+    @Override
     public void userActivatedModeWindow(ModeImpl mode) {
         if(mode != null) {
             setActiveMode(mode);
         }
     }
     
+    @Override
     public void userActivatedEditorWindow() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent[] tcs = wm.getRecentViewList(); 
@@ -1940,12 +1943,14 @@ final class Central implements ControllerHandler {
         }
     }
     
+    @Override
     public void userActivatedTopComponent(ModeImpl mode, TopComponent selected) {
         if(mode != null) {
             setModeSelectedTopComponent(mode, selected);
         }
     }
     
+    @Override
     public void userResizedMainWindow(Rectangle bounds) {
         if(getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             model.setMainWindowBoundsJoined(bounds);
@@ -1954,6 +1959,7 @@ final class Central implements ControllerHandler {
         }
     }
     
+    @Override
     public void userResizedMainWindowBoundsSeparatedHelp(Rectangle bounds) {
         if(getEditorAreaState() == Constants.EDITOR_AREA_JOINED
         && getMainWindowBoundsSeparated().isEmpty()) {
@@ -1961,10 +1967,12 @@ final class Central implements ControllerHandler {
         }
     }
     
+    @Override
     public void userResizedEditorArea(Rectangle bounds) {
         model.setEditorAreaBounds(bounds);
     }
     
+    @Override
     public void userResizedEditorAreaBoundsHelp(Rectangle bounds) {
         if(getEditorAreaState() == Constants.EDITOR_AREA_JOINED
         && getEditorAreaBounds().isEmpty()) {
@@ -1972,6 +1980,7 @@ final class Central implements ControllerHandler {
         }
     }
 
+    @Override
     public void userResizedModeBounds(ModeImpl mode, Rectangle bounds) {
         Rectangle old = model.getModeBounds(mode);
         model.setModeBounds(mode, bounds);
@@ -1979,10 +1988,12 @@ final class Central implements ControllerHandler {
         mode.doFirePropertyChange(ModeImpl.PROP_BOUNDS, old, bounds);
     }
     
+    @Override
     public void userResizedModeBoundsSeparatedHelp(ModeImpl mode, Rectangle bounds) {
         model.setModeBoundsSeparatedHelp(mode, bounds);
     }
     
+    @Override
     public void userChangedFrameStateMainWindow(int frameState) {
         if(getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             model.setMainWindowFrameStateJoined(frameState);
@@ -1991,18 +2002,22 @@ final class Central implements ControllerHandler {
         }
     }
     
+    @Override
     public void userChangedFrameStateEditorArea(int frameState) {
         model.setEditorAreaFrameState(frameState);
     }
     
+    @Override
     public void userChangedFrameStateMode(ModeImpl mode, int frameState) {
         model.setModeFrameState(mode, frameState);
     }
     
+    @Override
     public void userChangedSplit( ModelElement[] snapshots, double[] splitWeights ) {
         model.setSplitWeights( snapshots, splitWeights );
     }
 
+    @Override
     public void userClosedTopComponent(ModeImpl mode, TopComponent tc) {
         if( mode == getCurrentMaximizedMode() && isViewMaximized() ) {
             switchMaximizedMode( null );
@@ -2102,6 +2117,7 @@ final class Central implements ControllerHandler {
         return null;
     }
     
+    @Override
     public void userClosedMode(ModeImpl mode) {
         if(mode != null) {
             closeMode(mode);
@@ -2117,20 +2133,24 @@ final class Central implements ControllerHandler {
     
     
     // DnD
+    @Override
     public void userDroppedTopComponents(ModeImpl mode, TopComponent[] tcs) {
         updateViewAfterDnD(moveTopComponentsIntoMode(mode, tcs));
     }
     
+    @Override
     public void userDroppedTopComponents(ModeImpl mode, TopComponent[] tcs, int index) {
         updateViewAfterDnD(moveTopComponentsIntoMode(mode, tcs, index));
     }
     
+    @Override
     public void userDroppedTopComponents(ModeImpl mode, TopComponent[] tcs, String side) {
         attachTopComponentsToSide(tcs, mode, side, false);
         
         updateViewAfterDnD(true);
     }
     
+    @Override
     public void userDroppedTopComponentsIntoEmptyEditor(TopComponent[] tcs) {
         // PENDING
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode("editor"); // NOI18N
@@ -2138,18 +2158,21 @@ final class Central implements ControllerHandler {
         updateViewAfterDnD(true);
     }
     
+    @Override
     public void userDroppedTopComponentsAround(TopComponent[] tcs, String side) {
         attachTopComponentsAroundDesktop(tcs, side, false);
 
         updateViewAfterDnD(true);
     }
     
+    @Override
     public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side, int modeKind) {
         attachTopComponentsAroundEditor(tcs, side, false, modeKind);
 
         updateViewAfterDnD(true);
     }
     
+    @Override
     public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int modeKind) {
         attachTopComponentsIntoNewMode(tcs, bounds, modeKind, Constants.MODE_STATE_SEPARATED);
         updateViewAfterDnD(true);
@@ -2567,6 +2590,7 @@ final class Central implements ControllerHandler {
             WindowManager.PROP_MODES, null, null);
     }    
     
+    @Override
     public void userEnabledAutoHide(TopComponent tc, ModeImpl source, String targetSide) {
         if( isViewMaximized() )
             switchMaximizedMode( null );
@@ -2614,6 +2638,7 @@ final class Central implements ControllerHandler {
         }        
     }
     
+    @Override
     public void userResizedSlidingMode(ModeImpl mode, Rectangle rect) {
         model.setModeBounds(mode, new Rectangle(rect));
         //remember user's settings for the slided-in TopComponent size
@@ -2628,6 +2653,7 @@ final class Central implements ControllerHandler {
     }
     
     
+    @Override
     public void userDisabledAutoHide(TopComponent tc, ModeImpl source) {
         // unmaximize if needed
         if( isViewMaximized() ) {
