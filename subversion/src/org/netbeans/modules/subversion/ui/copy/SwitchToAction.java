@@ -119,19 +119,22 @@ public class SwitchToAction extends ContextAction {
             interestingFile = SvnUtils.getPrimaryFile(roots[0]);
         }
 
-        SVNUrl rootUrl;
+        SVNUrl rootUrl = null, fileUrl = null;
         try {            
             rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
+            fileUrl = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
-        }                
-        final RepositoryFile repositoryRoot = new RepositoryFile(rootUrl, rootUrl, SVNRevision.HEAD);
+            if (rootUrl == null) {
+                SvnClientExceptionHandler.notifyException(ex, true, true);
+                return;
+            }
+        }
+        final RepositoryFile repositoryFile = new RepositoryFile(rootUrl, fileUrl == null ? rootUrl : fileUrl, SVNRevision.HEAD);
         boolean hasChanges = Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE, true);
 
         final RequestProcessor rp = createRequestProcessor(ctx);
 
-        final SwitchTo switchTo = new SwitchTo(repositoryRoot, interestingFile, hasChanges);
+        final SwitchTo switchTo = new SwitchTo(repositoryFile, interestingFile, hasChanges);
                 
         performSwitch(switchTo, rp, nodes, roots);
     }

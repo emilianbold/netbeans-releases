@@ -111,7 +111,7 @@ public class MergeAction extends ContextAction {
         SVNUrl url;
         try {            
             rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
-            url = SvnUtils.getRepositoryRootUrl(interestingFile);
+            url = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
