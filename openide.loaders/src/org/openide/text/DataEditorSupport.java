@@ -47,9 +47,7 @@ package org.openide.text;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.CharConversionException;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -63,7 +61,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.Reference;
-import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -74,12 +71,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.UIException;
@@ -105,7 +104,7 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -136,7 +135,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
     * @param env environment to pass to 
     */
     public DataEditorSupport (DataObject obj, CloneableEditorSupport.Env env) {
-        super (env, new DOEnvLookup (obj));
+        this(obj, new DOEnvLookup (obj), env);
+    }
+    
+    DataEditorSupport(DataObject obj, Lookup lkp, CloneableEditorSupport.Env env) {
+        super (env, lkp);
         this.obj = obj;
     }
     
@@ -167,6 +170,43 @@ public class DataEditorSupport extends CloneableEditorSupport {
      */
     public static CloneableEditorSupport create (DataObject obj, MultiDataObject.Entry entry, org.openide.nodes.CookieSet set) {
         return new SimpleES (obj, entry, set);
+    }
+
+    /** Factory method to create a bit more complicated CloneableEditorSupport for a given
+     * entry of a given DataObject. The common use inside DataObject looks like
+     * this:
+     * <pre>
+     *  getCookieSet().add((Node.Cookie) DataEditorSupport.create(
+     *    this, getPrimaryEntry(), getCookieSet(),
+     *    new Callable<Pane>() { 
+     *      public Pane call() {
+     *        return new {@link CloneableEditor YourSubclassOfCloneableEditor}(support);
+     *      }
+     *    }
+     *  ));
+     * </pre>
+     * The method can be used to instantiate <b>multi view</b> editor by returning
+     * <a href="@org-netbeans-core-multiview@/org/netbeans/core/api/multiview/MultiViews.html">
+     * MultiViews.createCloneableMultiView("text/yourmime", this)</a>.
+     *
+     * @param obj the data object
+     * @param entry the entry to read and write from
+     * @param set cookie set to add remove additional cookies (currently only {@link org.openide.cookies.SaveCookie})
+     * @param paneFactory callback to create editor(s) for this support (if null {@link CloneableEditor} will be created)
+     * @return a subclass of DataEditorSupport that implements at least
+     *   {@link org.openide.cookies.OpenCookie}, 
+     *   {@link org.openide.cookies.EditCookie}, 
+     *   {@link org.openide.cookies.EditorCookie.Observable}, 
+     *   {@link org.openide.cookies.PrintCookie}, 
+     *   {@link org.openide.cookies.CloseCookie}
+     * @since 7.21
+     */
+    public static CloneableEditorSupport create(
+        DataObject obj, MultiDataObject.Entry entry, 
+        org.openide.nodes.CookieSet set,
+        @NullAllowed Callable<CloneableEditorSupport.Pane> paneFactory
+    ) {
+        return new SimpleES (obj, entry, set, paneFactory);
     }
     
     /** Getter of the data object that this support is associated with.

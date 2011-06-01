@@ -114,6 +114,9 @@ public class CommonUtilities {
     private static Element testResultsTag, testTag, perfDataTag, testSuiteTag=null;
     private static String projectsDir; // <nbextra>/data/
     private static String tempDir; // <nbjunit.workdir>/tmpdir/
+    private static final String serverItem = "Tomcat 6.0";
+    private static final String serverItem2 = "Tomcat";
+    private static final String serverItem3 = "Apache Tomcat";
     
     static {
         SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
@@ -678,16 +681,21 @@ public class CommonUtilities {
         try {
             path = runtimeTree.findPath("Servers");
             runtimeTree.selectPath(path);
-            path = runtimeTree.findPath("Servers|Tomcat"); // NOI18N
+            path = runtimeTree.findPath("Servers|"+serverItem); // NOI18N
             runtimeTree.selectPath(path);
-        } catch (Exception exc) {
+        } catch (Exception e1) {
             try {
-                path = runtimeTree.findPath("Servers|Apache Tomcat"); // NOI18N
+                path = runtimeTree.findPath("Servers|"+serverItem2); // NOI18N
                 runtimeTree.selectPath(path);
-            } catch (Exception e) {
-                exc.printStackTrace(System.err);
-                e.printStackTrace(System.err);
-                throw new Error("Cannot find Tomcat Server Node", e);
+            } catch (Exception e2) {
+                try {
+                    path = runtimeTree.findPath("Servers|"+serverItem3); // NOI18N
+                    runtimeTree.selectPath(path);
+                } catch (Exception e3) {
+                    e1.printStackTrace(System.err);
+                    e2.printStackTrace(System.err);                    
+                    throw new Error("Cannot find Tomcat Server Node", e3);
+                }
             }
         }
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
@@ -758,9 +766,6 @@ public class CommonUtilities {
         
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
         String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
-        String serverItem = "Tomcat 6.0";
-        String serverItem2 = "Tomcat";
-        String serverItem3 = "Apache Tomcat";
         String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
         String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
 
