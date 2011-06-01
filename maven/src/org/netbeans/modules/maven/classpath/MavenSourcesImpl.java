@@ -130,7 +130,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         scalaGroup = new TreeMap<String, SourceGroup>();
 
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
+            public @Override void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
                     checkChanges(true, true);
                 }
@@ -189,19 +189,19 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         }
     }
     
-    public void addChangeListener(ChangeListener changeListener) {
+    public @Override void addChangeListener(ChangeListener changeListener) {
         synchronized (listeners) {
             listeners.add(changeListener);
         }
     }
     
-    public void removeChangeListener(ChangeListener changeListener) {
+    public @Override void removeChangeListener(ChangeListener changeListener) {
         synchronized (listeners) {
             listeners.remove(changeListener);
         }
     }
     
-    public SourceGroup[] getSourceGroups(String str) {
+    public @Override SourceGroup[] getSourceGroups(String str) {
         if (Sources.TYPE_GENERIC.equals(str)) {
             return new SourceGroup[] { GenericSources.group(project, project.getProjectDirectory(), NAME_PROJECTROOT, 
                     project.getLookup().lookup(ProjectInformation.class).getDisplayName(), null, null) };
@@ -434,7 +434,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         return changed;
     }
 
-    public SourceGroup createSourceGroup(String type, String hint) {
+    public @Override SourceGroup createSourceGroup(String type, String hint) {
         assert type != null;
         MavenProject mp = project.getOriginalMavenProject();
         File folder = null;
@@ -471,7 +471,10 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             }
         }
         if (folder != null) {
-            folder.mkdirs();
+            if (!folder.exists() && !folder.mkdirs()) {
+                // XXX not allowed to throw IOException
+                return null;
+            }
             FileUtil.refreshFor(folder);
             checkChanges(false, true);
             FileObject fo = FileUtil.toFileObject(folder);
@@ -488,7 +491,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         return null;
     }
 
-    public boolean canCreateSourceGroup(String type, String hint) {
+    public @Override boolean canCreateSourceGroup(String type, String hint) {
         return   (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type) ||
                   JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type) ||
                   TYPE_GROOVY.equals(type) ||
@@ -533,7 +536,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             }
         }
         
-        public FileObject getRootFolder() {
+        public @Override FileObject getRootFolder() {
             return rootFolder;
         }
         
@@ -545,22 +548,22 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             return resource;
         }
         
-        public String getName() {
+        public @Override String getName() {
             return name;
         }
         
-        public String getDisplayName() {
+        public @Override String getDisplayName() {
             if (resource != null && resource.getTargetPath() != null) {
                 return displayName + " -> " + resource.getTargetPath();
             }
             return displayName;
         }
         
-        public Icon getIcon(boolean opened) {
+        public @Override Icon getIcon(boolean opened) {
             return opened ? icon : openedIcon;
         }
         
-        public boolean contains(FileObject file)  {
+        public @Override boolean contains(FileObject file)  {
              if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
                 throw new IllegalArgumentException();
             }
@@ -584,11 +587,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
 
         }
         
-        public void addPropertyChangeListener(PropertyChangeListener l) {
+        public @Override void addPropertyChangeListener(PropertyChangeListener l) {
             support.addPropertyChangeListener(l);
         }
         
-        public void removePropertyChangeListener(PropertyChangeListener l) {
+        public @Override void removePropertyChangeListener(PropertyChangeListener l) {
             support.removePropertyChangeListener(l);
         }
 
@@ -612,7 +615,6 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final class GeneratedGroup implements SourceGroup {
         
         private final FileObject rootFolder;
-        private File rootFile;
         private final String name;
         private final String displayName;
         private final Icon icon = null;
@@ -623,34 +625,29 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 Icon icn, Icon opened*/) {
             project = p;
             rootFolder = rootFold;
-            rootFile = FileUtil.toFile(rootFolder);
             name = nm;
             displayName = displayNm != null ? displayNm : SG_Root_not_defined();
 //            icon = icn;
 //            openedIcon = opened;
         }
         
-        public FileObject getRootFolder() {
+        public @Override FileObject getRootFolder() {
             return rootFolder;
         }
         
-        public File getRootFolderFile() {
-            return rootFile;
-        }
-        
-        public String getName() {
+        public @Override String getName() {
             return name;
         }
         
-        public String getDisplayName() {
+        public @Override String getDisplayName() {
             return displayName;
         }
         
-        public Icon getIcon(boolean opened) {
+        public @Override Icon getIcon(boolean opened) {
             return opened ? icon : openedIcon;
         }
         
-        public boolean contains(FileObject file)  {
+        public @Override boolean contains(FileObject file)  {
              if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
                 throw new IllegalArgumentException();
             }
@@ -666,11 +663,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             return true;
         }
         
-        public void addPropertyChangeListener(PropertyChangeListener l) {
+        public @Override void addPropertyChangeListener(PropertyChangeListener l) {
             // XXX should react to ProjectInformation changes
         }
         
-        public void removePropertyChangeListener(PropertyChangeListener l) {
+        public @Override void removePropertyChangeListener(PropertyChangeListener l) {
             // XXX
         }
         
