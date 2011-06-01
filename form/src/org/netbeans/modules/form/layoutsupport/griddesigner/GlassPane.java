@@ -281,8 +281,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 g.setColor(GridDesigner.SELECTION_COLOR);
                 g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
             }
-            if(!animation) paintConstraints(g);
-            paintSelection(g);
+            if (!animation) {
+                paintConstraints(g);
+                paintSelection(g);
+            }
         }
         if (animation && (animPhase == 1f)) {
             // End of animation
@@ -431,7 +433,6 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @param g graphics object.
      */
     private void paintSelection(Graphics g) {
-        if (animation) return;
         Graphics gClip = g.create();
         Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
         gClip.clipRect(paneRect.x, paneRect.y, paneRect.width, paneRect.height);
