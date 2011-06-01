@@ -45,80 +45,62 @@ package org.netbeans.jellytools;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of org.netbeans.jellytools.SaveAsTemplateOperator.
  */
 public class SaveAsTemplateOperatorTest extends JellyTestCase {
 
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static final String[] tests = new String[] {"testInvoke",
+    public static final String[] tests = new String[]{"testInvoke",
         "testTree",
         "testLblSelectTheCategory",
         "testGetRootNode",
         "testSelectTemplate"};
-    
+
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SaveAsTemplateOperatorTest("testInvoke"));
-        suite.addTest(new SaveAsTemplateOperatorTest("testTree"));
-        suite.addTest(new SaveAsTemplateOperatorTest("testLblSelectTheCategory"));
-        suite.addTest(new SaveAsTemplateOperatorTest("testGetRootNode"));
-        suite.addTest(new SaveAsTemplateOperatorTest("testSelectTemplate"));
-        return suite;
-         */
-        return createModuleTest(SaveAsTemplateOperatorTest.class, 
-        tests);
+        return createModuleTest(SaveAsTemplateOperatorTest.class, tests);
     }
-    
+
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
     }
-    
+
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
     public SaveAsTemplateOperatorTest(String testName) {
         super(testName);
     }
-    
+
     /** Test of invoke method. */
     public void testInvoke() {
         Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
         Node sampleClass1 = new Node(sample1, "SampleClass1.java");  // NOI18N
         SaveAsTemplateOperator.invoke(sampleClass1);
     }
-    
+
     /** Test of tree method. */
     public void testTree() {
         SaveAsTemplateOperator sato = new SaveAsTemplateOperator();
         sato.tree();
     }
-    
+
     /** Test of lblSelectTheCategory method. */
     public void testLblSelectTheCategory() {
         SaveAsTemplateOperator sato = new SaveAsTemplateOperator();
         String labelText = sato.lblSelectTheCategory().getText();
         String expectedText = Bundle.getStringTrimmed("org.openide.loaders.Bundle",
-                                                      "CTL_SaveAsTemplate");
+                "CTL_SaveAsTemplate");
         assertEquals("Wrong label found.", expectedText, labelText);
     }
-    
+
     /** Test of getRootNode method. */
     public void testGetRootNode() {
         SaveAsTemplateOperator sato = new SaveAsTemplateOperator();
@@ -126,20 +108,20 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
         String expectedText = "Templates"; // NOI18N
         assertEquals("Wrong root node.", expectedText, text);
     }
-    
+
     /** Test of selectTemplate method. */
     public void testSelectTemplate() {
         SaveAsTemplateOperator sato = new SaveAsTemplateOperator();
         String mainClass = Bundle.getString("org.netbeans.modules.java.project.Bundle",
-                                               "Templates/Classes/Main.java");
+                "Templates/Classes/Main.java");
         // "Java Classes|Java Main Class"
-        String templatePath = Bundle.getString("org.netbeans.modules.java.project.Bundle", 
-                                               "Templates/Classes")+
-                              "|"+mainClass;
+        String templatePath = Bundle.getString("org.netbeans.modules.java.project.Bundle",
+                "Templates/Classes")
+                + "|" + mainClass;
         sato.setComparator(new DefaultStringComparator(true, true));
         sato.selectTemplate(templatePath);
         String selected = sato.tree().getSelectionPath().getLastPathComponent().toString();
         sato.close();
-        assertEquals("Path \""+templatePath+"\" not selected.", mainClass, selected);
+        assertEquals("Path \"" + templatePath + "\" not selected.", mainClass, selected);
     }
 }
