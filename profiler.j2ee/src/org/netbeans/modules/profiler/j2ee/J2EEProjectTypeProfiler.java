@@ -62,12 +62,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ProfilerIDESettings;
+import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.ui.stp.DefaultSettingsConfigurator;
-import org.netbeans.modules.profiler.ui.stp.SelectProfilingTask;
-import org.netbeans.modules.profiler.utils.IDEUtils;
+import org.netbeans.modules.profiler.stp.DefaultSettingsConfigurator;
+import org.netbeans.modules.profiler.stp.SelectProfilingTask;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -86,10 +84,13 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -319,14 +320,14 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
 
         if (j2eePlatform == null) {
-            NetBeansProfiler.getDefaultNB().displayError(NO_SERVER_FOUND_MSG);
+            ProfilerDialogs.displayError(NO_SERVER_FOUND_MSG);
 
             return false;
         }
 
         if (!j2eePlatform.supportsProfiling()) {
             // Server doesn't support profiling
-            ProfilerDialogs.notify(new NotifyDescriptor.Message(PROFILING_NOT_SUPPORTED_MSG, NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(PROFILING_NOT_SUPPORTED_MSG);
 
             return false;
         }
@@ -422,7 +423,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                     }
                                                              }, DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null,
                                                              null);
-                Object res = ProfilerDialogs.notify(desc);
+                Object res = DialogDisplayer.getDefault().notify(desc);
 
                 if (res.equals(NotifyDescriptor.YES_OPTION)) {
                     servletAddress = uriPanel.getServletUri();

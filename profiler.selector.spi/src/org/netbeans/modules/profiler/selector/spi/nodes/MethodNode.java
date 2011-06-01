@@ -45,6 +45,8 @@ package org.netbeans.modules.profiler.selector.spi.nodes;
 import java.util.Comparator;
 import java.util.Set;
 import javax.swing.Icon;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.LanguageIcons;
 
 /**
  *
@@ -84,23 +86,23 @@ abstract public class MethodNode extends SelectorNode {
 
         if (getModifiers().contains(Modifier.STATIC)) {
             if (getModifiers().contains(Modifier.PUBLIC)) {
-                icon = IconResource.METHOD_PUBLIC_STATIC_ICON;
+                icon = Icons.getIcon(LanguageIcons.METHOD_PUBLIC_STATIC);
             } else if (getModifiers().contains(Modifier.PROTECTED)) {
-                icon = IconResource.METHOD_PROTECTED_STATIC_ICON;
+                icon = Icons.getIcon(LanguageIcons.METHOD_PROTECTED_STATIC);
             } else if (getModifiers().contains(Modifier.PRIVATE)) {
-                icon = IconResource.METHOD_PRIVATE_STATIC_ICON;
+                icon = Icons.getIcon(LanguageIcons.METHOD_PRIVATE_STATIC);
             } else {
-                icon = IconResource.METHOD_PACKAGE_STATIC_ICON;
+                icon = Icons.getIcon(LanguageIcons.METHOD_PACKAGE_STATIC);
             }
         } else {
             if (getModifiers().contains(Modifier.PUBLIC)) {
-                icon = IconResource.METHOD_PUBLIC_ICON;
+                icon = Icons.getIcon(LanguageIcons.METHOD_PUBLIC);
             } else if (getModifiers().contains(Modifier.PROTECTED)) {
-                icon = IconResource.METHOD_PROTECTED_ICON;
+                icon = Icons.getIcon(LanguageIcons.METHOD_PROTECTED);
             } else if (getModifiers().contains(Modifier.PRIVATE)) {
-                icon = IconResource.METHOD_PRIVATE_ICON;
+                icon = Icons.getIcon(LanguageIcons.METHOD_PRIVATE);
             } else {
-                icon = IconResource.METHOD_PACKAGE_ICON;
+                icon = Icons.getIcon(LanguageIcons.METHOD_PACKAGE);
             }
         }
 

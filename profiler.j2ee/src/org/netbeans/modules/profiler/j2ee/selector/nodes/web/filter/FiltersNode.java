@@ -55,7 +55,6 @@ import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -68,6 +67,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
@@ -172,7 +173,7 @@ public class FiltersNode extends ContainerNode {
 
     /** Creates a new instance of ServletsNode */
     public FiltersNode(ContainerNode parent) {
-        super(FILTERS_STRING, Utils.PACKAGE_ICON, parent);
+        super(FILTERS_STRING, Icons.getIcon(JavaEEIcons.PACKAGE), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

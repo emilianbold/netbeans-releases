@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -64,6 +63,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
@@ -106,7 +107,7 @@ public class SessionBeansNode extends ContainerNode {
                                                      throws Exception {
                                                 TypeElement type = controller.getElements()
                                                                              .getTypeElement(sessionBean.getEjbClass());
-                                                beanList.add(new SessionBeanNode(cpInfo, sessionBean.getDefaultDisplayName(), Utils.CLASS_ICON, type, parent));
+                                                beanList.add(new SessionBeanNode(cpInfo, sessionBean.getDefaultDisplayName(), Icons.getIcon(JavaEEIcons.CLASS), type, parent));
                                             }
                                         }, true);
                                 }
@@ -137,7 +138,7 @@ public class SessionBeansNode extends ContainerNode {
 
     /** Creates a new instance of SessionBeansNode */
     public SessionBeansNode(final ContainerNode parent) {
-        super(SESSION_BEANS_STRING, Utils.PACKAGE_ICON, parent);
+        super(SESSION_BEANS_STRING, Icons.getIcon(JavaEEIcons.PACKAGE), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
