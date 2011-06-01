@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.queries;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -91,10 +90,16 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
                 File testSrcFile = testSrc != null ? FileUtil.normalizeFile(new File(testSrc)) : null;
                 toReturn = checkRoot(fil, srcFile, testSrcFile);
                 if (toReturn == null) {
-                    URI[] gens = project.getGeneratedSourceRoots();
-                    for (URI gen : gens) {
-                        // assume generated sources are not test..
+                    for (URI gen : project.getGeneratedSourceRoots(false)) {
                         toReturn = checkRoot(fil, gen, null);
+                        if (toReturn != null) {
+                            break;
+                        }
+                    }
+                }
+                if (toReturn == null) {
+                    for (URI gen : project.getGeneratedSourceRoots(true)) {
+                        toReturn = checkRoot(fil, null, gen);
                         if (toReturn != null) {
                             break;
                         }
@@ -145,20 +150,8 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
 
         }
         
-         /**
-         * Get the binary roots.         
-         * @return array of roots of compiled classes (may be empty but not null)
-         */       
         public @Override URL[] getRoots() {
-            try         {
-                File binFile = project.getProjectWatcher().getOutputDirectory(isTest);
-
-                return new URL[] {binFile.toURI().toURL()};
-            }
-            catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return new URL[0];
+            return new URL[] {FileUtil.urlForArchiveOrDir(project.getProjectWatcher().getOutputDirectory(isTest))};
         }   
 
         public @Override void addChangeListener(ChangeListener changeListener) {

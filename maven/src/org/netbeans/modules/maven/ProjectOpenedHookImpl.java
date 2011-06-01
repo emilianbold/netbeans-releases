@@ -117,7 +117,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         uris.addAll(Arrays.asList(project.getSourceRoots(true)));
         //#167572 in the unlikely event that generated sources are located outside of
         // the project root.
-        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots()));
+        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(false)));
+        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(true)));
         URI rootUri = FileUtil.toFile(project.getProjectDirectory()).toURI();
         File rootDir = new File(rootUri);
         for (URI uri : uris) {
@@ -199,7 +200,9 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     }
     private boolean existsDefaultIndexLocation() {
         String userdir = System.getProperty("netbeans.user"); //NOI18N
-        assert userdir != null;
+        if (userdir == null) {
+            return false; // from a unit test
+        }
         File cacheDir = new File(new File(new File(userdir, "var"), "cache"), "mavenindex");//NOI18N
         return cacheDir.exists() && cacheDir.isDirectory();
     }

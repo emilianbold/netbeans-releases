@@ -103,6 +103,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final String NAME_SOURCE = "1SourceRoot"; //NOI18N
     public static final String NAME_TESTSOURCE = "2TestSourceRoot"; //NOI18N
     public static final String NAME_GENERATED_SOURCE = "6GeneratedSourceRoot"; //NOI18N
+    public static final String NAME_GENERATED_TEST_SOURCE = "7GeneratedSourceRoot"; //NOI18N
     
     private final NbMavenProjectImpl project;
     private final List<ChangeListener> listeners;
@@ -154,7 +155,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             changed = changed | checkSourceGroupCache(folder, NAME_SOURCE, SG_Sources(), javaGroup);
             folder = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
             changed = changed | checkSourceGroupCache(folder, NAME_TESTSOURCE, SG_Test_Sources(), javaGroup);
-            changed = changed | checkGeneratedGroupsCache(project.getGeneratedSourceRoots());
+            changed = changed | checkGeneratedGroupsCache();
             //groovy
             folder = FileUtilities.convertURItoFileObject(project.getGroovyDirectory(false));
             changed = changed | checkSourceGroupCache(folder, NAME_GROOVYSOURCE, SG_GroovySources(), groovyGroup);
@@ -218,10 +219,9 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             return grp;
         }
         if (TYPE_GEN_SOURCES.equals(str)) {
-            URI[] uris = project.getGeneratedSourceRoots();
             List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
             synchronized (lock) {
-                checkGeneratedGroupsCache(uris);
+                checkGeneratedGroupsCache();
                 toReturn.addAll(genSrcGroup.values());
             }
             SourceGroup[] grp = new SourceGroup[toReturn.size()];
@@ -339,14 +339,16 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     }
 
 
-    private boolean checkGeneratedGroupsCache(URI[] uris) {
+    private boolean checkGeneratedGroupsCache() {
         boolean changed = false;
         List<File> checked = new ArrayList<File>();
-        for (URI u : uris) {
-            File file = FileUtil.normalizeFile(new File(u));
-            FileObject folder = FileUtil.toFileObject(file);
-            changed = changed |checkGeneratedGroupCache(folder, file, file.getName());
-            checked.add(file);
+        for (boolean test : new boolean[] {false, true}) {
+            for (URI u : project.getGeneratedSourceRoots(test)) {
+                File file = FileUtil.normalizeFile(new File(u));
+                FileObject folder = FileUtil.toFileObject(file);
+                changed |= checkGeneratedGroupCache(folder, file, file.getName(), test);
+                checked.add(file);
+            }
         }
         Set<File> currs = new HashSet<File>();
         currs.addAll(genSrcGroup.keySet());
@@ -362,8 +364,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     /**
      * consult the SourceGroup cache, return true if anything changed..
      */
-    @Messages("SG_Generated_Sources=Generated Sources ({0})")
-    private boolean checkGeneratedGroupCache(FileObject root, File rootFile, String nameSuffix) {
+    @Messages({
+        "SG_Generated_Sources=Generated Sources ({0})",
+        "SG_Generated_Test_Sources=Generated Test Sources ({0})"
+    })
+    private boolean checkGeneratedGroupCache(FileObject root, File rootFile, String nameSuffix, boolean test) {
         SourceGroup group = genSrcGroup.get(rootFile);
         if (root == null && group != null) {
             genSrcGroup.remove(rootFile);
@@ -373,13 +378,15 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             return false;
         }
         boolean changed = false;
+        String name = (test ? NAME_GENERATED_TEST_SOURCE : NAME_GENERATED_SOURCE) + nameSuffix;
+        String displayName = test ? SG_Generated_Test_Sources(nameSuffix) : SG_Generated_Sources(nameSuffix);
         if (group == null) {
-            group = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE + nameSuffix, SG_Generated_Sources(nameSuffix));
+            group = new GeneratedGroup(project, root, name, displayName);
             genSrcGroup.put(rootFile, group);
             changed = true;
         } else {
             if (!group.getRootFolder().isValid() || !group.getRootFolder().equals(root)) {
-                group = new GeneratedGroup(project, root, NAME_GENERATED_SOURCE + nameSuffix, SG_Generated_Sources(nameSuffix));
+                group = new GeneratedGroup(project, root, name, displayName);
                 genSrcGroup.put(rootFile, group);
                 changed = true;
             }
