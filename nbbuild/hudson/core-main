@@ -85,6 +85,7 @@ settings,\
 spi.quicksearch,\
 tasklist.todo,\
 tasklist.ui,\
-uihandler test || exit
+uihandler,\
+versioning test || exit
 ant check-sigtests-release -Dfail.on.error=false || exit
 ant init-test-dist || exit
