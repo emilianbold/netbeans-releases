@@ -1695,9 +1695,9 @@ final class Central implements ControllerHandler {
         attachTopComponentsHelper(tcs, newMode, fireEvents);
     }
     
-    private void attachTopComponentsIntoNewMode(TopComponent[] tcs, Rectangle bounds, int modeKind, int modeState) {
+    private ModeImpl attachTopComponentsIntoNewMode(TopComponent[] tcs, Rectangle bounds, int modeKind, int modeState) {
         if(tcs == null || tcs.length == 0) {
-            return;
+            return null;
         }
 
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
@@ -1708,7 +1708,7 @@ final class Central implements ControllerHandler {
         
         // XXX All others should have the same restriction.
         if(!newMode.canContain(tcs[0])) {
-            return;
+            return null;
         }
         
         model.addMode(newMode, new SplitConstraint[] {new SplitConstraint(Constants.HORIZONTAL, 100, 0.5f)});
@@ -1736,6 +1736,7 @@ final class Central implements ControllerHandler {
         }
 
         attachTopComponentsHelper(tcs, newMode, true);
+        return newMode;
     }
 
     /** Helper method. */
@@ -2154,6 +2155,227 @@ final class Central implements ControllerHandler {
         updateViewAfterDnD(true);
     }
 
+    /**
+     * User made the given Mode floating.
+     * @param mode 
+     * @since 2.30
+     */
+    public void userUndockedMode( ModeImpl mode ) {
+        int modeKind = mode.getKind();
+        if (modeKind == Constants.MODE_KIND_SLIDING) {
+            modeKind = Constants.MODE_KIND_VIEW;
+        }
+        if (getCurrentMaximizedMode() == mode) {
+            switchMaximizedMode(null);
+        }
+        TopComponent tc = mode.getSelectedTopComponent();
+        if( null != tc ) {
+            Point tcLoc = tc.getLocation();
+            Dimension tcSize = tc.getSize();
+            SwingUtilities.convertPointToScreen(tcLoc, tc);
+            Rectangle bounds = new Rectangle(tcLoc, tcSize);
+            model.setModeBounds( mode, bounds );
+        }
+        
+        SplitConstraint[] constraints = mode.getConstraints();
+        model.setModeState( mode, Constants.MODE_STATE_SEPARATED );
+        
+        ModeImpl previousMode = WindowManagerImpl.getInstance().createMode( null, mode.getKind(), Constants.MODE_STATE_JOINED, true, constraints);
+        constraints = previousMode.getConstraints();
+        List<String> openedIDs = mode.getOpenedTopComponentsIDs();
+        for( String tcID : getModeTopComponentsIDs( mode ) ) {
+            model.setModeTopComponentPreviousMode(mode, tcID, previousMode, openedIDs.indexOf( tcID ));
+            model.setModeTopComponentPreviousConstraints(mode, tcID, constraints);
+        }
+        model.setModeConstraints( mode, new SplitConstraint[0] );
+        updateViewAfterDnD(false);
+    }
+
+    /**
+     * User docked the given mode (from floating state).
+     * @param mode 
+     * @since 2.30
+     */
+    public void userDockedMode( ModeImpl mode ) {
+        int modeKind = mode.getKind();
+        if (modeKind == Constants.MODE_KIND_SLIDING) {
+            modeKind = Constants.MODE_KIND_VIEW;
+        }
+        switchMaximizedMode(null);
+
+        TopComponent selectedTC = mode.getSelectedTopComponent();
+        
+        if( !mode.isPermanent() ) {
+            for( TopComponent tc : mode.getOpenedTopComponents() ) {
+                userDockedTopComponent( tc, mode );
+            }
+        } else {
+        
+            List<String> ids = mode.getTopComponentsIDs();
+            if( !ids.isEmpty() ) {
+                String tcID = ids.get( 0 );
+                ModeImpl previousMode = model.getModeTopComponentPreviousMode( mode, tcID );
+                if( null == previousMode || !model.getModes().contains(previousMode) ) {
+                    SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints( mode, tcID );
+                    if( null != constraints ) {
+                        previousMode = findJoinedMode( modeKind, constraints);
+                    }
+                }
+                if( null == previousMode ) {
+                    SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints( mode, tcID );
+                    if( null != constraints )
+                        model.setModeConstraints( mode, constraints );
+                    model.setModeState( mode, Constants.MODE_STATE_JOINED );
+                } else {
+                    if( previousMode.isPermanent() && !previousMode.getTopComponentsIDs().isEmpty() ) {
+                        List<String> opened = mode.getOpenedTopComponentsIDs();
+                        for( String id : opened ) {
+                            int prevIndex = model.getModeTopComponentPreviousIndex( mode, id );
+                            TopComponent tc = WindowManagerImpl.getInstance().findTopComponent( id );
+                            previousMode.addOpenedTopComponent( tc, prevIndex );
+                        }
+                        mergeModes( mode, previousMode );
+                        mode = null;
+                    } else {
+                        for( TopComponent tc : previousMode.getOpenedTopComponents() ) {
+                            mode.addOpenedTopComponent( tc );
+                        }
+                        for( String id : previousMode.getClosedTopComponentsIDs() ) {
+                            mode.addUnloadedTopComponent( id );
+                        }
+                        SplitConstraint[] constraints = previousMode.getConstraints();
+                        model.setModeConstraints( mode, constraints );
+                        model.removeMode( previousMode );
+                    }
+                }
+            }
+            if( null != mode ) {
+                SplitConstraint[] constraints = mode.getConstraints();
+                if( null == constraints || constraints.length == 0 ) {
+                    //just a fallback, it shouldn't really happen
+                    model.setModeConstraints( mode, new SplitConstraint[] { new SplitConstraint( Constants.HORIZONTAL, 0, 0.2) } );
+                }
+                model.setModeState( mode, Constants.MODE_STATE_JOINED );
+            }
+        }
+        updateViewAfterDnD(false);
+        if( null != selectedTC )
+            selectedTC.requestActive();
+    }
+    
+    /**
+     * Merge the given Modes into a single name.
+     * @param source Mode which will disappear after the merge.
+     * @param target Mode which will receive all TopComponents from the source
+     * mode.
+     * @since 2.30
+     */
+    private void mergeModes( ModeImpl source, ModeImpl target ) {
+        ModeImpl prevMode = null;
+        SplitConstraint[] prevConstraints = null;
+        if( source.isPermanent() && !target.isPermanent() ) {
+            prevMode = getPreviousMode( source );
+            prevConstraints = getPreviousConstraints( source );
+        } else {
+            prevMode = getPreviousMode( target );
+            prevConstraints = getPreviousConstraints( target );
+        }
+        List<TopComponent> opened = source.getOpenedTopComponents();
+        for( TopComponent tc : opened ) {
+            target.addOpenedTopComponent( tc );
+        }
+        for( String tcID: source.getClosedTopComponentsIDs() ) {
+            target.addUnloadedTopComponent( tcID );
+        }
+        target.addOtherName( source.getName() );
+        for( String otherName : source.getOtherNames() ) {
+            target.addOtherName( otherName );
+        }
+        if( source.isPermanent() )
+            model.makeModePermanent( target );
+        if( target.getState() == Constants.MODE_STATE_SEPARATED ) {
+            setPreviousMode( target, prevMode );
+            setPreviousConstraints( target, prevConstraints );
+        }
+        model.removeMode( source );
+    }
+    
+    /**
+     * Find the mode which the TopComponents of the given mode were in before.
+     * @param mode
+     * @return 
+     * @since 2.30
+     */
+    private ModeImpl getPreviousMode( ModeImpl mode ) {
+        ModeImpl prevMode = null;
+        if( mode.getState() == Constants.MODE_STATE_JOINED ) {
+            prevMode = mode;
+        } else {
+            List<String> ids = mode.getTopComponentsIDs();
+            if( !ids.isEmpty() )
+                prevMode = model.getModeTopComponentPreviousMode( mode, ids.get( 0 ) );
+        }
+        if( prevMode != null && !getModes().contains( prevMode ) )
+            prevMode = null;
+        return prevMode;
+    }
+    
+    /**
+     * Find previous split constraints of TopComponents in the given mode.
+     * @param mode
+     * @return 
+     * @since 2.30
+     */
+    private SplitConstraint[] getPreviousConstraints( ModeImpl mode ) {
+        ModeImpl prevMode = getPreviousMode( mode );
+        if( null != prevMode )
+            return mode.getConstraints();
+        List<String> ids = mode.getTopComponentsIDs();
+        if( !ids.isEmpty() )
+            return model.getModeTopComponentPreviousConstraints( mode, ids.get( 0 ) );
+        return null;
+    }
+    
+    /**
+     * Set previous mode for all TopComponents in given mode.
+     * @param mode Mode to adjust
+     * @param prevMode Previous mode
+     * @since 2.30
+     */
+    private void setPreviousMode( ModeImpl mode, ModeImpl prevMode ) {
+        for( String tcId : mode.getTopComponentsIDs() ) {
+            int prevIndex = model.getModeTopComponentPreviousIndex( mode, tcId );
+            model.setModeTopComponentPreviousMode( mode, tcId, prevMode, prevIndex );
+        }
+    }
+    
+    /**
+     * Set previous split constraints for all TopComponents in given mode.
+     * @param mode
+     * @param prevConstraints 
+     * @since 2.30
+     */
+    private void setPreviousConstraints( ModeImpl mode, SplitConstraint[] prevConstraints ) {
+        for( String tcId : mode.getTopComponentsIDs() ) {
+            model.setModeTopComponentPreviousConstraints( mode, tcId, prevConstraints );
+        }
+    }
+    
+    /**
+     * User minimized the whole Mode
+     * @param mode 
+     * @since 2.30
+     */
+    void userMinimizedMode( ModeImpl mode ) {
+        List<TopComponent> opened = mode.getOpenedTopComponents();
+        String side = getSlideSideForMode( mode );
+        for( TopComponent tc : opened ) {
+            slide( tc, mode, side );
+        }
+        setModeMinimized( mode, true );
+    }
+
+    @Override
     public void userUndockedTopComponent(TopComponent tc, ModeImpl mode) {
         Point tcLoc = tc.getLocation();
         Dimension tcSize = tc.getSize();
@@ -2174,6 +2396,7 @@ final class Central implements ControllerHandler {
         updateViewAfterDnD(false);
     }
 
+    @Override
     public void userDockedTopComponent(TopComponent tc, ModeImpl mode) {
         ModeImpl dockTo = null;
         // find saved previous mode or at least constraints (=the place) to dock back into
@@ -2187,12 +2410,16 @@ final class Central implements ControllerHandler {
             // mode to dock to back isn't valid anymore, try constraints
             SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tcID);
             if (constraints != null) {
+                //there might be some mode with the same constraints already
+                dockTo = findJoinedMode( modeKind, constraints );
+                if( null == dockTo ) {
                     // create mode with the same constraints to dock topcomponent back into
                     dockTo = WindowManagerImpl.getInstance().createModeImpl(
                             ModeImpl.getUnusedModeName(), modeKind, false);
                     model.addMode(dockTo, constraints);
                 }
             }
+        }
         
         if (dockTo == null) {
             // fallback, previous saved mode not found somehow, use default modes
@@ -2204,6 +2431,28 @@ final class Central implements ControllerHandler {
         updateViewAfterDnD(false);
     }
 
+    private ModeImpl findJoinedMode( int modeKind, SplitConstraint[] constraints ) {
+        for( ModeImpl m : getModes() ) {
+            if( m.getKind() != modeKind || m.getState() != Constants.MODE_STATE_JOINED )
+                continue;
+            
+            SplitConstraint[] modeConstraints = m.getConstraints();
+            if( modeConstraints.length != constraints.length )
+                continue;
+            boolean match = true;
+            for( int i=0; i<constraints.length; i++ ) {
+                if( constraints[i].orientation != modeConstraints[i].orientation 
+                    || constraints[i].index != modeConstraints[i].index ) {
+                    match = false;
+                    break;
+                }
+            }
+            if( match )
+                return m;
+        }
+        return null;
+    }
+    
     private boolean moveTopComponentsIntoMode(ModeImpl mode, TopComponent[] tcs) {
         return moveTopComponentsIntoMode(mode, tcs, -1);
     }
@@ -2242,6 +2491,19 @@ final class Central implements ControllerHandler {
                 model.addModeOpenedTopComponent(mode, tc);
             }
             if (prevMode != null && (intoSliding || intoSeparate)) {
+                if( intoSeparate && mode.isPermanent() ) {
+                    //TC is being moved to a undocked mode so from now it will
+                    //groupped with other TCs in that mode
+                    //so change the previous mode to ensure it docks back into
+                    //the same mode as other TCs in this mode
+                    List<String> ids = mode.getTopComponentsIDs();
+                    if( !ids.isEmpty() ) {
+                        ModeImpl groupPrevMode = model.getModeTopComponentPreviousMode( mode, ids.get( 0 ) );
+                        if( null != groupPrevMode ) {
+                            prevMode = groupPrevMode;
+                        }
+                    }
+                }
                 // remember previous mode and constraints for precise de-auto-hide
                 model.setModeTopComponentPreviousMode(mode, tcID, prevMode, prevIndex);
                 model.setModeTopComponentPreviousConstraints(mode, tcID, model.getModeConstraints(prevMode));
@@ -2407,6 +2669,8 @@ final class Central implements ControllerHandler {
         }
 
         moveTopComponentsIntoMode(targetMode, new TopComponent[] { tc }, targetIndex);
+        
+        targetMode.setMinimized( false );
         
         if (source.isEmpty()) {
             model.removeMode(source);

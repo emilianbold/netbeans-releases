@@ -370,6 +370,55 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 new SplitConstraint[] { new SplitConstraint(Constants.HORIZONTAL, 1, 0.2)});
         }
     }
+
+    /**
+     * User made the given mode floating.
+     * @param mode 
+     * @since 2.30
+     */
+    public void userUndockedMode( ModeImpl mode ) {
+        if( mode.getState() != Constants.MODE_STATE_JOINED ) {
+            throw new IllegalStateException("Mode is already in floating state: " + mode);
+        }
+
+        central.userUndockedMode(mode);
+    }
+
+    /**
+     * User docked the given mode back to the main window.
+     * @param mode 
+     * @since 2.30
+     */
+    public void userDockedMode( ModeImpl mode ) {
+        if( mode.getState() != Constants.MODE_STATE_SEPARATED ) {
+            throw new IllegalStateException("Mode is not in floating state: " + mode);
+        }
+
+        central.userDockedMode(mode);
+    }
+
+    /**
+     * User minimized the whole mode.
+     * @param mode 
+     * @since 2.30
+     */
+    public void userMinimizedMode( ModeImpl mode ) {
+        assertEventDispatchThread();
+        
+        getCentral().userMinimizedMode( mode );
+    }
+
+    /**
+     * User closed the whole mode.
+     * @param mode 
+     * @since 2.30
+     */
+    public void userClosedMode( ModeImpl mode ) {
+        assertEventDispatchThread();
+
+        getCentral().userClosedMode( mode );
+    }
+    
     private static class WrapMode implements Mode {
         private Mode wrap;
         
@@ -612,7 +661,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         
         for(Iterator it = getModes().iterator(); it.hasNext(); ) {
             ModeImpl mode = (ModeImpl)it.next();
-            if (name.equals(mode.getName())) {
+            if (name.equals(mode.getName()) || mode.getOtherNames().contains( name ) ) {
                 return mode;
             }
         }
@@ -1106,7 +1155,13 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 central.slide( tc, mode, central.getSlideSideForMode( mode ) );
 
                 topComponentRequestActive( tc );
+                return;
             }
+        }
+        if( mode.isMinimized() && Switches.isTopComponentAutoSlideInMinimizedModeEnabled() ) {
+            central.slide( tc, mode, central.getSlideSideForMode( mode ) );
+
+            topComponentRequestActive( tc );
         }
     }
     
