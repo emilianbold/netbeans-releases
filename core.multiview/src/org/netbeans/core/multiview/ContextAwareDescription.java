@@ -42,12 +42,14 @@
 package org.netbeans.core.multiview;
 
 import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.util.Lookup;
 
 /** Possibly part of an API in future.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@MimeLocation(subfolderName="MultiView")
 public interface ContextAwareDescription extends MultiViewDescription {
     public ContextAwareDescription createContextAwareDescription(Lookup context);
 }

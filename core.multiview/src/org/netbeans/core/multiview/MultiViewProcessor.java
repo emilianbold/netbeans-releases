@@ -66,7 +66,6 @@ import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
 
 /**
  * Register {@link MultiViewElement}s for given mime types.
@@ -105,7 +104,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 fileBaseName += "-" + binAndMethodNames[1];
             }
             for (String type : mvr.mimeType()) {
-                LayerBuilder.File f = layer(e).file("Editors/" + (type.equals("") ? "" : type + '/') + fileBaseName + ".instance");
+                LayerBuilder.File f = layer(e).file("Editors/" + (type.equals("") ? "" : type + '/') + "MultiView/" + fileBaseName + ".instance");
                 f.methodvalue("instanceCreate", MultiViewFactory.class.getName(), "createMultiViewDescription");
                 f.stringvalue("instanceClass", ContextAwareDescription.class.getName());
                 f.stringvalue("class", binAndMethodNames[0]);
