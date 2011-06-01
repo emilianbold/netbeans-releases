@@ -86,6 +86,8 @@ class ModeParser {
         = "-//NetBeans//DTD Mode Properties 2.2//EN"; // NOI18N
     public static final String INSTANCE_DTD_ID_2_3
         = "-//NetBeans//DTD Mode Properties 2.3//EN"; // NOI18N
+    public static final String INSTANCE_DTD_ID_2_4
+        = "-//NetBeans//DTD Mode Properties 2.4//EN"; // NOI18N
     
     /** Name of extended attribute for order of children */
     private static final String EA_ORDER = "WinSys-TCRef-Order"; // NOI18N
@@ -1059,10 +1061,29 @@ class ModeParser {
                 + " Error: Missing required attribute \"unique\" of element \"name\"."); // NOI18N
                 throw new SAXException("Missing required attribute"); // NOI18N
             }
+            String includes = attrs.getValue("includes"); // NOI18N
+            if (includes != null) {
+                String[] split = includes.split( "," ); //NOI18N
+                Set<String> otherNames = new HashSet<String>( split.length );
+                for( String s : split ) {
+                    s = s.trim();
+                    if( s.isEmpty() )
+                        continue;
+                    otherNames.add( s );
+                }
+                if( otherNames.isEmpty() ) {
+                    PersistenceManager.LOG.log(Level.INFO,
+                    "[WinSys.ModeParser.handleName]" // NOI18N
+                    + " Error: Attribute \"includes\" of element \"name\"" // NOI18N
+                    + " is present but does not contain any valid mode names."); // NOI18N
+                    throw new SAXException("Invalid attribute value"); // NOI18N
+                }
+                modeConfig.otherNames = otherNames;
+            }
         }
 
         /** Reads element "kind" */
-        private void handleKind (Attributes attrs) {
+        private void handleKind (Attributes attrs) throws SAXException {
             String type = attrs.getValue("type"); // NOI18N
             if (type != null) {
                 if ("editor".equals(type)) {
@@ -1071,6 +1092,12 @@ class ModeParser {
                     modeConfig.kind = Constants.MODE_KIND_VIEW;
                 } else if ("sliding".equals(type)) {
                     modeConfig.kind = Constants.MODE_KIND_SLIDING;
+                    if( null != modeConfig.otherNames && !modeConfig.otherNames.isEmpty() ) {
+                        PersistenceManager.LOG.log(Level.INFO,
+                        "[WinSys.ModeParser.handleName]" // NOI18N
+                        + " Error: Sliding modes are not allowed to have additional names."); // NOI18N
+                        throw new SAXException("Invalid attribute value"); // NOI18N
+                    }
                 } else {
                     PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleKind]" // NOI18N
@@ -1091,6 +1118,7 @@ class ModeParser {
             if (side != null) {
                 if (Constants.LEFT.equals(side) ||
                     Constants.RIGHT.equals(side) ||
+                    Constants.TOP.equals(side) ||
                     Constants.BOTTOM.equals(side)) 
                 {
                     modeConfig.side = side;
@@ -1148,6 +1176,26 @@ class ModeParser {
                 + " Error: Missing required attribute \"type\""
                 + " of element \"state\"."); // NOI18N
                 modeConfig.state = Constants.MODE_STATE_JOINED;
+            }
+            String minimized = attrs.getValue("minimized"); // NOI18N
+            if (minimized != null) {
+                if ("true".equals(minimized)) {
+                    if( modeConfig.kind == Constants.MODE_KIND_SLIDING ) {
+                        PersistenceManager.LOG.log(Level.INFO,
+                        "[WinSys.ModeParser.handleState]" // NOI18N
+                        + " Error: Sliding mode cannot be minimized."); // NOI18N
+                        throw new SAXException("Invalid attribute value"); // NOI18N
+                    }
+                    modeConfig.minimized = true;
+                } else if ("false".equals(minimized)) {
+                    modeConfig.minimized = false;
+                } else {
+                    PersistenceManager.LOG.log(Level.INFO,
+                    "[WinSys.ModeParser.handleState]" // NOI18N
+                    + " Warning: Invalid value of attribute \"minimized\"" // NOI18N
+                    + " of element \"state\"."); // NOI18N
+                    modeConfig.minimized = false;
+                }
             }
         }
         
@@ -1399,9 +1447,9 @@ class ModeParser {
             // header
             buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"). // NOI18N
             /*buff.append("<!DOCTYPE mode PUBLIC\n"); // NOI18N
-            buff.append("          \"-//NetBeans//DTD Mode Properties 2.3//EN\"\n"); // NOI18N
-            buff.append("          \"http://www.netbeans.org/dtds/mode-properties2_3.dtd\">\n\n"); // NOI18N*/
-                append("<mode version=\"2.3\">\n"); // NOI18N
+            buff.append("          \"-//NetBeans//DTD Mode Properties 2.4//EN\"\n"); // NOI18N
+            buff.append("          \"http://www.netbeans.org/dtds/mode-properties2_4.dtd\">\n\n"); // NOI18N*/
+                append("<mode version=\"2.4\">\n"); // NOI18N
             
             appendModule(ic, buff);
             appendName(mc, buff);
@@ -1447,7 +1495,19 @@ class ModeParser {
         private void appendName (ModeConfig mc, StringBuffer buff) {
             buff.append("    <name unique=\""); // NOI18N
             buff.append(mc.name);
-            buff.append("\" />\n"); // NOI18N
+            buff.append("\" ");
+            if( null != mc.otherNames && !mc.otherNames.isEmpty() ) {
+                buff.append( " includes=\"" );
+                boolean comma = false;
+                for( String s : mc.otherNames ) {
+                    if( comma )
+                        buff.append( ',' );
+                    buff.append( s );
+                    comma = true;
+                }
+                buff.append("\" ");
+            }
+            buff.append( " />\n"); // NOI18N
         }
 
         private void appendKind (ModeConfig mc, StringBuffer buff) {
@@ -1491,7 +1551,11 @@ class ModeParser {
             } else if (mc.state == Constants.MODE_STATE_SEPARATED) {
                 buff.append("separated"); // NOI18N
             }
-            buff.append("\" />\n"); // NOI18N
+            buff.append("\" ");
+            if( mc.minimized ) {
+                buff.append( " minimized=\"true\" " );// NOI18N
+            }
+            buff.append(" />\n"); // NOI18N
         }
         
         private void appendConstraints (ModeConfig mc, StringBuffer buff) {
