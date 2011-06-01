@@ -131,7 +131,11 @@ public abstract class ActionUtils {
             }
         }
         
-        return actions.toArray(new Action[actions.size()]);
+        Action[] res = actions.toArray(new Action[actions.size()]);
+        for( ActionsFactory factory : Lookup.getDefault().lookupAll( ActionsFactory.class ) ) {
+            res = factory.createPopupActions( tc, res );
+        }
+        return res;
     }
     
     /**** PENDING remove during merge, TabbedListener removed, instead drive directly */
@@ -389,7 +393,7 @@ public abstract class ActionUtils {
     static Object getSharedAccelerator (Object key) {
         return sharedAccelerators.get(key);
     }
-
+    
     // Utility methods <<
 }
 
