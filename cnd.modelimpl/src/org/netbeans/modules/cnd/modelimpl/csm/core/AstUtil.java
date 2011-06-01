@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.PrintStream;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
@@ -311,6 +312,26 @@ public class AstUtil {
             return getLastChildRecursively(child);
         }
     }
+    
+    public static AST getLastNonEOFChildRecursively(AST token) {
+        if( token == null ) {
+            return null;
+        }
+        AST child = token.getFirstChild();
+        if(child == null) {
+            return token;
+        } else {
+            AST lastChild = getLastNonEOFChildRecursively(child);
+            while( child.getNextSibling() != null) {
+                child = child.getNextSibling();
+                AST lastChild2 = getLastNonEOFChildRecursively(child);
+                if(lastChild2.getType() != Token.EOF_TYPE && lastChild2 instanceof CsmAST) {
+                    lastChild = lastChild2;
+                }
+            }
+            return lastChild;
+        }
+    }    
 
     public static CsmAST getFirstCsmAST(AST node) {
         if( node != null ) {
