@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
@@ -58,7 +59,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
@@ -137,11 +137,12 @@ public class OutputTabOperator extends JComponentOperator {
     private static final CopyAction copyAction = new CopyAction();
     private static final FindAction findAction = new FindAction();
     /**
-     * Buttons in the toolbar to the left of the currently active output tab.
+     * Buttons in the tool bar to the left of the currently active output tab.
      * They apply to depend on the currently open tab, so they're placed
      * here instead of OutputOperator. This way it's also more useful.
      */
     private JButtonOperator btnReRun;
+    private JButtonOperator btnReRunWithDifferentParameters;
     private JButtonOperator btnStop;
     private JButtonOperator btnAntSettings;
 
@@ -172,49 +173,61 @@ public class OutputTabOperator extends JComponentOperator {
     }
 
     /**
-     * Returns operator for the Re-Run button in the toolbar on the left of the tab.
+     * Returns operator for the Re-Run button in the tool bar on the left of the tab.
      * The button is inside the parent of the output tab, but applies (depends) to the
      * currently active tab, so the methods are here instead of
      * OutputOperator.
      *
-     * @return
+     * @return JButtonOperator for Re-run button
      */
     public JButtonOperator btnReRun() {
         if (btnReRun == null) {
-            ContainerOperator co = new ContainerOperator(this.getParent());
-            btnReRun = new JButtonOperator(co);
+            btnReRun = new JButtonOperator((JButton) JButtonOperator.waitJComponent(getParent(), "Re-run", true, true));
         }
         return btnReRun;
     }
 
     /**
-     * Returns operator for the Stop button in the toolbar on the left of the tab.
+     * Returns operator for the "Re-run with Different Parameters" button
+     * in the tool bar on the left of the tab. The button is inside the parent
+     * of the output tab, but applies (depends) to the currently active tab,
+     * so the methods are here instead of OutputOperator.
+     *
+     * @return JButtonOperator for Re-run with Different Parameters button
+     */
+    public JButtonOperator btnReRunWithDifferentParameters() {
+        if (btnReRunWithDifferentParameters == null) {
+            btnReRunWithDifferentParameters = new JButtonOperator((JButton) JButtonOperator.waitJComponent(getParent(), "Re-run with Different Parameters", true, true));
+        }
+        return btnReRunWithDifferentParameters;
+    }
+
+    /**
+     * Returns operator for the Stop button in the tool bar on the left of the tab.
      * The button is inside the parent of the output tab, but applies (depends) to the
      * currently active tab, so the methods are here instead of
      * OutputOperator.
      *
-     * @return
+     * @return JButtonOperator for Stop button
      */
     public JButtonOperator btnStop() {
         if (btnStop == null) {
-            ContainerOperator co = new ContainerOperator(this.getParent());
-            btnStop = new JButtonOperator(co, 1);
+            btnStop = new JButtonOperator((JButton) JButtonOperator.waitJComponent(getParent(), "Stop", true, true));
         }
         return btnStop;
     }
 
     /**
-     * Returns operator for the Ant Settings button in the toolbar on the left of the tab.
+     * Returns operator for the Ant Settings button in the tool bar on the left of the tab.
      * The button is inside the parent of the output tab, but applies (depends) to the
      * currently active tab, so the methods are here instead of
      * OutputOperator.
      *
-     * @return
+     * @return JButtonOperator for Ant Settings button
      */
     public JButtonOperator btnAntSettings() {
         if (btnAntSettings == null) {
-            ContainerOperator co = new ContainerOperator(this.getParent());
-            btnAntSettings = new JButtonOperator(co, 2);
+            btnAntSettings = new JButtonOperator((JButton) JButtonOperator.waitJComponent(getParent(), "Ant Settings", true, true));
         }
         return btnAntSettings;
     }
