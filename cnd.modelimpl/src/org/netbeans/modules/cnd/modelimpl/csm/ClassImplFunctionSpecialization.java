@@ -145,7 +145,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         if(base != null && base != this) {
             CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
             if(p instanceof InstantiationProviderImpl) {
-                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), getContainingFile(), getStartOffset(), false);
+                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), false);
                 if(CsmKindUtilities.isClass(baseInst)) {
                     members.addAll(((CsmClass)baseInst).getMembers());
                 }
@@ -161,7 +161,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         if(base != null && base != this) {
             CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
             if(p instanceof InstantiationProviderImpl) {
-                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), getContainingFile(), getStartOffset(), false);
+                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), false);
                 if(baseInst instanceof ClassImpl) {
                     return new MultiIterator<CsmMember>(super.getMembers(filter), ((ClassImpl)baseInst).getMembers(filter));
                 } else if(baseInst instanceof Instantiation.Class) {

@@ -201,7 +201,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
             }
             if(CsmKindUtilities.isTemplate(cls) && specializationDesctiptor != null) {
                 CsmInstantiationProvider instProvider = CsmInstantiationProvider.getDefault();            
-                CsmObject o = instProvider.instantiate((CsmTemplate)cls, specializationDesctiptor.getSpecializationParameters(), getContainingFile(), getStartOffset());
+                CsmObject o = instProvider.instantiate((CsmTemplate)cls, specializationDesctiptor.getSpecializationParameters());
                 while(CsmKindUtilities.isInstantiation(o) ) {
                     o = ((CsmInstantiation)o).getTemplateDeclaration();
                 }

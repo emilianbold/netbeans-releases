@@ -2253,8 +2253,7 @@ abstract public class CsmCompletionQuery {
                         break;
                     }
                 }
-                int contextOffset = exp.getTokenOffset(0);
-                return ip.instantiate(template, params, getFinder().getCsmFile(), contextOffset);
+                return ip.instantiate(template, params);
             }
             return null;
         }

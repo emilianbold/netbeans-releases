@@ -500,6 +500,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     @Override
     public CsmClassifier getClassifier() {
+        return getClassifier(true);        
+    }
+    
+    public CsmClassifier getClassifier(boolean specialize) {
         CsmClassifier classifier = _getClassifier();
         boolean needToRender = true;
         if (CsmBaseUtilities.isValid(classifier)) {
@@ -542,7 +546,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 Resolver resolver = ResolverFactory.createResolver(this);
                 try {
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, this, specialize);
                     } else {
                         return null;
                     }
@@ -550,7 +554,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     ResolverFactory.releaseResolver(resolver);
                 }
             } else {
-                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
+                obj = ip.instantiate((CsmTemplate) classifier, this);
             }
             if (CsmKindUtilities.isClassifier(obj)) {
                 classifier = (CsmClassifier) obj;

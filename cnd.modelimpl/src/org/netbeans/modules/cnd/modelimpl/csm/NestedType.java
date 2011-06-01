@@ -107,6 +107,11 @@ public final class NestedType extends TypeImpl {
 
     @Override
     public CsmClassifier getClassifier() {
+        return getClassifier(true);        
+    }
+    
+    @Override
+    public CsmClassifier getClassifier(boolean specialize) {
         CsmClassifier classifier = _getClassifier();
         if (CsmBaseUtilities.isValid(classifier)) {
             // skip
@@ -134,13 +139,13 @@ public final class NestedType extends TypeImpl {
                 Resolver resolver = ResolverFactory.createResolver(this);
                 try {
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, this, specialize);
                     }
                 } finally {
                     ResolverFactory.releaseResolver(resolver);
                 }
             } else {
-                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
+                obj = ip.instantiate((CsmTemplate) classifier, this);
             }
             if (CsmKindUtilities.isClassifier(obj)) {
                 classifier = (CsmClassifier) obj;
