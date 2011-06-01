@@ -66,14 +66,12 @@ public final class DbxEngineCapabilityProvider implements EngineCapabilityProvid
                 case DERIVE_EXECUTABLE:
                 case RTC_SUPPORT:
 		case RUN_AUTOSTART:
-		    /*
 		case STACK_VERBOSE:
 		case STACK_MAXFRAME:
 		case DYNAMIC_TYPE:
 		case INHERITED_MEMBERS:
 		case STATIC_MEMBERS:
 		case MAX_OBJECT:
-		     */
                     return true;
                 default:
                     return false;
