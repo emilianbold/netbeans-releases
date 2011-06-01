@@ -40,28 +40,26 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler.categorization.api.impl;
+package org.netbeans.modules.profiler.categorization.spi;
 
-import org.netbeans.modules.profiler.categorization.api.impl.CategoryDefinition;
-import org.netbeans.modules.profiler.categorization.api.definitions.CustomCategoryDefinition;
-import org.netbeans.modules.profiler.categorization.api.definitions.PackageCategoryDefinition;
-import org.netbeans.modules.profiler.categorization.api.definitions.SingleTypeCategoryDefinition;
-import org.netbeans.modules.profiler.categorization.api.definitions.SubtypeCategoryDefinition;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
+import org.netbeans.lib.profiler.marker.Mark;
+import org.netbeans.modules.profiler.categorization.api.Category;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public abstract class CategoryDefinitionProcessor {
-    public void process(CategoryDefinition def) {
-        throw new UnsupportedOperationException("Must specify a concrete org.netbeans.modules.profiler.categories.CategoryDefinition implementation");
+public abstract class CategoryDefinition {
+    private Category category;
+
+    public CategoryDefinition(Category category) {
+        this.category = category;
     }
     
-    public abstract void process(SubtypeCategoryDefinition def);
+    public Mark getAssignedMark() {
+        return category.getAssignedMark();
+    }
     
-    public abstract void process(SingleTypeCategoryDefinition def);
-    
-    public abstract void process(CustomCategoryDefinition def);
-    
-    public abstract void process(PackageCategoryDefinition def);
+    public abstract void processWith(CategoryDefinitionProcessor processor);
 }

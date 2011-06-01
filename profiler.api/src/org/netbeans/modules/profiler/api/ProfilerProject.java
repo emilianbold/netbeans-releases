@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,31 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.api;
 
-package org.netbeans.modules.profiler.categorization.api.impl;
-
-import org.netbeans.lib.profiler.marker.Mark;
-import org.netbeans.modules.profiler.categorization.api.Category;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public abstract class CategoryDefinition {
-    private Category category;
+abstract public class ProfilerProject implements Lookup.Provider {
+    final private Object lkpLock = new Object();
+    // @GuardedBy lkpLock
+    private Lookup lkp;
+    private Lookup.Provider provider;
+    
+    protected ProfilerProject(Lookup.Provider project) {
+        this.provider = project;
+    }
 
-    public CategoryDefinition(Category category) {
-        this.category = category;
+    @Override
+    public Lookup getLookup() {
+        synchronized(lkpLock) {
+            if (lkp == null) {
+                lkp = new ProxyLookup(provider.getLookup(), Lookups.fixed(provider, this));
+            }
+            return lkp;
+        }
     }
-    
-    public Mark getAssignedMark() {
-        return category.getAssignedMark();
-    }
-    
-    public abstract void processWith(CategoryDefinitionProcessor processor);
 }

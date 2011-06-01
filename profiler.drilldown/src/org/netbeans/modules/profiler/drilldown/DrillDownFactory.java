@@ -47,12 +47,12 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter;
 import org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter.Evaluator;
 import org.netbeans.modules.profiler.categorization.api.Categorization;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -76,7 +76,7 @@ public class DrillDownFactory implements CCTResultsFilter.EvaluatorProvider {
     }
     final private Set<WeakEvaluator> drillDownEvaluators = Collections.synchronizedSet(new HashSet<WeakEvaluator>());
     
-    public DrillDown createDrillDown(Project project, ProfilerClient client) {
+    public DrillDown createDrillDown(Lookup.Provider project, ProfilerClient client) {
         /*
          * #143850 - drilldown fails when profiling a global attach
          */

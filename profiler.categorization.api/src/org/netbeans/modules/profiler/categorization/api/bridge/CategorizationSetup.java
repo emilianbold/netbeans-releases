@@ -42,7 +42,6 @@
 package org.netbeans.modules.profiler.categorization.api.bridge;
 
 import java.util.Collection;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
@@ -61,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class CategorizationSetup extends SessionListener.Adapter {
 
     @Override
-    public void onStartup(ProfilingSettings ps, Project project) {
+    public void onStartup(ProfilingSettings ps, Lookup.Provider project) {
         setupMarks(ps, project);
         setupStatistics(ps, project);
     }
@@ -75,7 +74,7 @@ public class CategorizationSetup extends SessionListener.Adapter {
         }
     }
 
-    private void setupMarks(ProfilingSettings ps, Project project) {
+    private void setupMarks(ProfilingSettings ps, Lookup.Provider project) {
         boolean isMarksEnabled = (ps.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE) || (ps.getProfilingType() == ProfilingSettings.PROFILE_CPU_PART);
         isMarksEnabled &= Categorization.isAvailable(project);
 
@@ -88,7 +87,7 @@ public class CategorizationSetup extends SessionListener.Adapter {
         }
     }
 
-    private void setupStatistics(ProfilingSettings ps, Project project) {
+    private void setupStatistics(ProfilingSettings ps, Lookup.Provider project) {
         StatisticalModuleContainer statModulesContainer = Lookup.getDefault().lookup(StatisticalModuleContainer.class);
         Collection<? extends StatisticalModule> modules = Lookup.getDefault().lookupAll(StatisticalModule.class);
 

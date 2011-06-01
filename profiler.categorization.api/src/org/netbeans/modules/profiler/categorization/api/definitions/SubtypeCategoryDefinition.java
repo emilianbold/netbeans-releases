@@ -43,7 +43,7 @@
 package org.netbeans.modules.profiler.categorization.api.definitions;
 
 import org.netbeans.modules.profiler.categorization.api.Category;
-import org.netbeans.modules.profiler.categorization.api.impl.CategoryDefinitionProcessor;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 
 /**
  *

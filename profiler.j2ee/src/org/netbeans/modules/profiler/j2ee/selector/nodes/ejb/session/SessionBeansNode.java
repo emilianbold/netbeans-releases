@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.io.IOException;
@@ -65,6 +64,8 @@ import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.profiler.api.Icons;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
+import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
@@ -86,7 +87,7 @@ public class SessionBeansNode extends ContainerNode {
 
             Project project = parent.getLookup().lookup(Project.class);
 
-            final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
+            final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
             final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
 
             for (MetadataModel<EjbJarMetadata> mdModel : listAllMetadata(project)) {

@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.profiler.categorization.api;
 
-import org.netbeans.modules.profiler.categorization.api.impl.CategoryDefinitionProcessor;
-import org.netbeans.modules.profiler.categorization.api.impl.CategoryDefinition;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinition;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;

@@ -39,9 +39,10 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.categorization.api.impl;
+package org.netbeans.modules.profiler.nbimpl.providers;
 
-import org.netbeans.modules.profiler.categorization.api.impl.CategoryDefinitionProcessor;
+import java.util.logging.Level;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,15 +76,25 @@ import org.netbeans.modules.profiler.categorization.api.definitions.CustomCatego
 import org.netbeans.modules.profiler.categorization.api.definitions.PackageCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.SingleTypeCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.SubtypeCategoryDefinition;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
+import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class MarkerProcessor extends CategoryDefinitionProcessor implements Marker {
+@ProjectServiceProvider(service=CategoryDefinitionProcessor.class, projectTypes={
+    @ProjectType(id="org-netbeans-modules-java-j2seproject"),
+    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1201),
+    @ProjectType(id="org-netbeans-modules-apisupport-project"),
+    @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
+    @ProjectType(id="org-netbeans-modules-web-project"),
+    @ProjectType(id="org-netbeans-modules-maven")
+})
+final public class MarkerProcessor extends CategoryDefinitionProcessor implements Marker {
 
     private final static Logger LOGGER = Logger.getLogger(MarkerProcessor.class.getName());
     private MethodMarker mMarker = new MethodMarker();
@@ -93,8 +104,8 @@ public class MarkerProcessor extends CategoryDefinitionProcessor implements Mark
     private ClasspathInfo cpInfo;
     private JavaSource js;
 
-    public MarkerProcessor(Project project) {
-        this.cpInfo = ProjectUtilities.getClasspathInfo(project, true);
+    public MarkerProcessor(final Project prj) {
+        this.cpInfo = ClasspathInfoFactory.infoFor(prj, true);
         this.js = cpInfo != null ? JavaSource.create(cpInfo, new FileObject[0]) : null;
     }
 
@@ -323,8 +334,9 @@ public class MarkerProcessor extends CategoryDefinitionProcessor implements Mark
                 if ((method.getKind() == ElementKind.METHOD) && !method.getModifiers().contains(Modifier.ABSTRACT)) {
                     if ((inclusive && restrictors.contains(method.getSimpleName().toString())) || (!inclusive && !restrictors.contains(method.getSimpleName().toString()))) {
                         try {
+                            ElementUtilities.getBinaryName(type);
                             marker.addMethodMark(ElementUtilities.getBinaryName(type), method.getSimpleName().toString(),
-                                    SourceUtils.getVMMethodSignature(method, controller), mark);
+                                    ElementUtilitiesEx.getBinaryName(method, controller), mark);
                         } catch (NullPointerException e) {
                             e.printStackTrace();
                         }
@@ -347,7 +359,7 @@ public class MarkerProcessor extends CategoryDefinitionProcessor implements Mark
         TypeElement superElement = controller.getElements().getTypeElement(interfaceName);
 
         if (superElement == null) {
-            LOGGER.fine("Couldn't resolve type: " + interfaceName);
+            LOGGER.log(Level.FINE, "Couldn''t resolve type: {0}", interfaceName);
 
             return;
         }

@@ -47,7 +47,7 @@ import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.spi.ProjectProfilingSupport;
+import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
@@ -56,14 +56,16 @@ import org.openide.filesystems.FileObject;
  * @author Jaroslav Bachorik
  */
 @ProjectServiceProvider(projectType={"org-netbeans-modules-web-project", "org-netbeans-modules-maven/war"}, service=ProjectProfilingSupport.class)
-public class WebProfilingSupport extends ProjectProfilingSupport {
+public class WebProfilingSupport implements ProjectProfilingSupport {
+    private Project project;
+    
     public WebProfilingSupport(Project project) {
-        super(project);
+        this.project = project;
     }
 
     @Override
     public String getFilter(boolean useSubprojects) {
-        ClientUtils.SourceCodeSelection[] jspMethods = WebProjectUtils.getJSPRootMethods(getProject(), useSubprojects); // TODO: needs to be computed also for subprojects!
+        ClientUtils.SourceCodeSelection[] jspMethods = WebProjectUtils.getJSPRootMethods(project, useSubprojects); // TODO: needs to be computed also for subprojects!
 
         StringBuffer buffer = new StringBuffer(jspMethods.length * 30);
 
@@ -79,12 +81,12 @@ public class WebProfilingSupport extends ProjectProfilingSupport {
     public SourceCodeSelection[] getRootMethods(FileObject profiledClassFile) {
         if (profiledClassFile == null) {
             // Profile Project, extract root methods from the project
-            return WebProjectUtils.getJSPRootMethods(getProject(), true); // TODO: needs to be computed also for subprojects!
+            return WebProjectUtils.getJSPRootMethods(project, true); // TODO: needs to be computed also for subprojects!
         } else {
             // Profile Single, provide correct root methods
             if (WebProjectUtils.isJSP(profiledClassFile)) {
                 // TODO: create list of jsp-specific methods (execute & all used Beans)
-                return ProjectUtilities.getProjectDefaultRoots(getProject(), new String[2][]);
+                return ProjectUtilities.getProjectDefaultRoots(project, new String[2][]);
             }
         }
         return new SourceCodeSelection[0];
@@ -92,8 +94,8 @@ public class WebProfilingSupport extends ProjectProfilingSupport {
 
     @Override
     public boolean canProfileFile(FileObject fileObject) {
-        return ((WebProjectUtils.isJSP(fileObject) && WebProjectUtils.isWebDocumentSource(fileObject, getProject())) // jsp from /web directory
-               || (WebProjectUtils.isHttpServlet(fileObject) && WebProjectUtils.isWebJavaSource(fileObject, getProject())
-                  && WebProjectUtils.isMappedServlet(fileObject, getProject(), true))); // mapped servlet from /src directory
+        return ((WebProjectUtils.isJSP(fileObject) && WebProjectUtils.isWebDocumentSource(fileObject, project)) // jsp from /web directory               
+                  || (WebProjectUtils.isHttpServlet(fileObject) && WebProjectUtils.isWebJavaSource(fileObject, project)
+                  && WebProjectUtils.isMappedServlet(fileObject, project, true))); // mapped servlet from /src directory
     }
 }

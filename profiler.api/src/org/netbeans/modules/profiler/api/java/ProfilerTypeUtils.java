@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.api.java;
 
-package org.netbeans.modules.profiler.spi;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.client.ClientUtils;
+import java.util.Collection;
+import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-abstract public class ProjectProfilingSupport {
-    private Project project;
-
-    protected ProjectProfilingSupport(Project project) {
+final public class ProfilerTypeUtils {
+    final private Lookup.Provider project;
+    ProfilerTypeUtils(Lookup.Provider project) {
         this.project = project;
     }
-
-    protected Project getProject() {
-        return project;
+    
+    private ProfilerTypeUtilsProvider getProvider() {
+        return Lookup.getDefault().lookup(ProfilerTypeUtilsProvider.class);
     }
-
-    abstract public String getFilter(boolean useSubprojects);
-    abstract public ClientUtils.SourceCodeSelection[] getRootMethods(FileObject profiledClassFile);
-    abstract public boolean canProfileFile(FileObject file);
+    
+    public String[] getSubclasses(String className) {
+        ProfilerTypeUtilsProvider typeUtils = getProvider();
+        assert typeUtils != null;
+        
+        return typeUtils.getSubclasses(className, project);
+    }
+    
+    public FileObject findFile(String className) {
+        ProfilerTypeUtilsProvider typeUtils = getProvider();
+        assert typeUtils != null;
+        
+        return typeUtils.findFile(className, project);
+    }
+    
+    public Collection<String> getMainClasses() {
+        ProfilerTypeUtilsProvider typeUtils = getProvider();
+        assert typeUtils  != null;
+        
+        return typeUtils.getMainClasses(project);
+    }
 }

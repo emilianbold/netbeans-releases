@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.utils;
+package org.netbeans.modules.profiler.projectsupport.utilities;
 
 import org.netbeans.api.java.classpath.*;
 import org.netbeans.api.java.platform.*;
@@ -52,7 +52,6 @@ import org.openide.util.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
 /**
@@ -90,18 +89,18 @@ public class AppletSupport {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public static boolean isApplet(FileObject file) {
-        if (file == null) {
-            return false;
-        }
-
-        // support for unit testing
-        if (unitTestingSupport_isApplet != null) {
-            return unitTestingSupport_isApplet.booleanValue();
-        }
-
-        return SourceUtils.isApplet(file);
-    }
+//    public static boolean isApplet(FileObject file) {
+//        if (file == null) {
+//            return false;
+//        }
+//
+//        // support for unit testing
+//        if (unitTestingSupport_isApplet != null) {
+//            return unitTestingSupport_isApplet.booleanValue();
+//        }
+//
+//        return SourceUtils.isApplet(file);
+//    }
 
     /**
      * @return URL of the html file with the same name as sibling

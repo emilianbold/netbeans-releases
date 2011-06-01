@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.j2ee.stats;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.results.cpu.cct.CPUCCTVisitorAdapter;
 import org.netbeans.lib.profiler.results.cpu.cct.CompositeCPUCCTWalker;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MethodCPUCCTNode;
@@ -63,6 +62,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
+import org.openide.util.Lookup;
 
 
 /**
@@ -228,7 +228,7 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         }
     }
 
-    public boolean supportsProject(Project project) {
+    public boolean supportsProject(Lookup.Provider project) {
         if (isWebProject(project)) {
             System.setProperty("org.netbeans.lib.profiler.servletTracking", "true"); // NOI18N
 
@@ -240,7 +240,7 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         }
     }
 
-    private boolean isWebProject(Project project) {
+    private boolean isWebProject(Lookup.Provider project) {
         if (project == null) {
             return false;
         }

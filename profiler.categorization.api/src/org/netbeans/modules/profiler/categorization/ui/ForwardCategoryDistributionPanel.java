@@ -69,13 +69,12 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.modules.profiler.categorization.api.Categorization;
 import org.netbeans.modules.profiler.categorization.api.Category;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
 import org.netbeans.modules.profiler.utilities.Visitable;
 import org.netbeans.modules.profiler.utilities.Visitor;
+import org.openide.util.Lookup;
 
 
 /**
@@ -258,7 +257,7 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
     }
 
     @Override
-    public boolean supportsProject(Project project) {
+    public boolean supportsProject(Lookup.Provider project) {
         return Categorization.isAvailable(getProject());
     }
     

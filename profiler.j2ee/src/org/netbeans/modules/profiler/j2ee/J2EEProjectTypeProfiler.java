@@ -84,6 +84,7 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utils.IDEUtils;
@@ -97,7 +98,7 @@ import org.openide.DialogDisplayer;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectTypes={
                             @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), 
                             @ProjectType(id="org-netbeans-modules-j2ee-earproject"), 
@@ -432,13 +433,17 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                 props.put("client.urlPart", servletAddress); // NOI18N
             }
         }
-        String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-        props.setProperty("profile.class", profiledClass); //NOI18N
-        // include it in javac.includes so that the compile-single picks it up
-        final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
-                ProjectUtilities.getSourceRoots(project),profiledClassFile), 
-                profiledClassFile);
-        props.setProperty("javac.includes", clazz); //NOI18N
+        // FIXME - method should receive the JavaProfilerSource as the parameter
+        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+        if (src != null) {
+            String profiledClass = src.getTopLevelClass().getVMName();
+            props.setProperty("profile.class", profiledClass); //NOI18N
+            // include it in javac.includes so that the compile-single picks it up
+            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
+                    ProjectUtilities.getSourceRoots(project),profiledClassFile), 
+                    profiledClassFile);
+            props.setProperty("javac.includes", clazz); //NOI18N
+        }
     }
 
     // --- Profiler SPI support --------------------------------------------------------------------------------------------

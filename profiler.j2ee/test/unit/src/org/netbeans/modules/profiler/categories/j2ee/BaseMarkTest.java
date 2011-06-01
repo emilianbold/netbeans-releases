@@ -72,8 +72,8 @@ import org.netbeans.modules.profiler.categorization.api.definitions.PackageCateg
 import org.netbeans.modules.profiler.categorization.api.definitions.SingleTypeCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.SubtypeCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.TypeCategoryDefinition;
-import org.netbeans.modules.profiler.categorization.api.impl.CategoryDefinition;
-import org.netbeans.modules.profiler.categorization.api.impl.CategoryDefinitionProcessor;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinition;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 import org.netbeans.modules.profiler.utilities.Visitable;
 import org.netbeans.modules.profiler.utilities.Visitor;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;

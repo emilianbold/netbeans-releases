@@ -69,6 +69,7 @@ import java.util.Properties;
 import javax.swing.*;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
@@ -81,7 +82,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Ian Formanek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectTypes={@ProjectType(id="org-netbeans-modules-ant-freeform", position=1210)})
 public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
@@ -271,13 +272,17 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
         if (profiledClassFile != null) { // In case the class to profile is explicitely selected (profile-single)
             // 1. specify profiled class name
 
-            final String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-            props.setProperty("profile.class", profiledClass); //NOI18N
+            //FIXME 
+            JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+            if (src != null) {
+                final String profiledClass = src.getTopLevelClass().getVMName();
+                props.setProperty("profile.class", profiledClass); //NOI18N
 
-            // 2. include it in javac.includes so that the compile-single picks it up
-            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
-                    profiledClassFile), profiledClassFile);
-            props.setProperty("javac.includes", clazz); //NOI18N
+                // 2. include it in javac.includes so that the compile-single picks it up
+                final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
+                        profiledClassFile), profiledClassFile);
+                props.setProperty("javac.includes", clazz); //NOI18N
+            }
         }
     }
 

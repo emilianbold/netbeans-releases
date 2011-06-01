@@ -39,14 +39,16 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.impl;
+package org.netbeans.modules.profiler.nbimpl.providers;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -54,12 +56,15 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
-import org.netbeans.modules.profiler.spi.GoToSourceProvider;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.lib.profiler.ProfilerLogger;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
+import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.modules.profiler.spi.java.GoToSourceProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -67,20 +72,21 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.profiler.spi.GoToSourceProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.profiler.spi.java.GoToSourceProvider.class)
 public final class GoToJavaSourceProvider extends GoToSourceProvider {
     @Override
-    public boolean openSource(final Project project, final String className, final String methodName, final String signature, final int line) {
+    public boolean openSource(final Lookup.Provider project, final String className, final String methodName, final String signature, final int line) {
         final AtomicBoolean result = new AtomicBoolean(false);
 
         String javaClassName = getJavaFileName(className);
         
-        ClasspathInfo cpi = project != null ? ProjectUtilities.getClasspathInfo(project, true) : null;
+        ClasspathInfo cpi = project != null ? ClasspathInfoFactory.infoFor((Project)project, true) : null;
         ClassPath cp = cpi != null ? cpi.getClassPath(ClasspathInfo.PathKind.SOURCE) : null;
 
         FileObject sourceFile = cp != null ? cp.findResource(javaClassName) : null;
@@ -105,7 +111,7 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
                         if (!controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).equals(JavaSource.Phase.ELEMENTS_RESOLVED)) {
                             return;
                         }
-                        TypeElement parentClass = SourceUtils.resolveClassByName(className, controller);
+                        TypeElement parentClass = ElementUtilitiesEx.resolveClassByName(className, controller);
                         if (ElementOpen.open(controller.getClasspathInfo(), parentClass)) {
                             Document doc = controller.getDocument();
                             if (doc != null && doc instanceof StyledDocument) {
@@ -114,7 +120,7 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
                                     return;
                                 }
                                 if (methodName != null) {
-                                    ExecutableElement methodElement = SourceUtils.resolveMethodByName(controller, parentClass, methodName, signature);
+                                    ExecutableElement methodElement = ElementUtilitiesEx.resolveMethodByName(controller, parentClass, methodName, signature);
                                     if (methodElement != null && ElementOpen.open(controller.getClasspathInfo(), methodElement)) {
                                         result.set(true);
                                         return;
@@ -130,6 +136,30 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
             return result.get();
         }
         return false;
+    }
+
+    @Override
+    public boolean openFile(final FileObject srcFile, final int offset) {
+        final boolean[] rslt = new boolean[] {false};
+        Runnable action = new Runnable() {
+
+            @Override
+            public void run() {
+                rslt[0] = UiUtils.open(srcFile, offset);
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            action.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(action);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (InvocationTargetException e) {
+                ProfilerLogger.log(e);
+            }
+        }
+        return rslt[0];
     }
 
     private static boolean openAtLine(CompilationController controller, Document doc, String methodName, int line) {

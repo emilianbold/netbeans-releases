@@ -39,52 +39,39 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.spi;
+package org.netbeans.modules.profiler.api.java;
 
-import java.io.IOException;
-import org.netbeans.lib.profiler.common.AttachSettings;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.netbeans.modules.profiler.api.ProfilerProject;
+import org.openide.util.Lookup.Provider;
 
 /**
  *
- * @author Jiri Sedlacek
+ * @author Jaroslav Bachorik
  */
-public abstract class ProjectStorageProvider {
+final public class JavaProfilerProject extends ProfilerProject {
+    final private Object lazyInitLock = new Object();
     
-    /**
-     * Returns attach settings for the provided project or null if not available.
-     * 
-     * @param project project context
-     * @return attach settings for the provided project or null if not available
-     */
-    public abstract AttachSettings loadAttachSettings(Lookup.Provider project) throws IOException;
+    // @GuardedBy lazyInitLock
+    private ProfilerTypeUtils typeUtils = null;
     
-    /**
-     * Saves attach settings in context of the provided project.
-     * 
-     * @param project project context
-     * @param settings attach settings
-     */
-    public abstract void saveAttachSettings(Lookup.Provider project, AttachSettings settings);
+    public static JavaProfilerProject createFrom(Provider nbProject) {
+        JavaProfilerProject jpp = nbProject.getLookup().lookup(JavaProfilerProject.class);
+        if (jpp == null) {
+            jpp = new JavaProfilerProject(nbProject);
+        }
+        return jpp;
+    }
     
-    /**
-     * Returns FileObject which can be used as a settings storage for the provided project or null if not available.
-     * 
-     * @param project project context
-     * @param create if <code>true</code> the storage will be created if not already available
-     * @return FileObject which can be used as a settings storage for the provided project or null if not available
-     * @throws IOException 
-     */
-    public abstract FileObject getSettingsFolder(Lookup.Provider project, boolean create)
-            throws IOException;
+    private JavaProfilerProject(Provider project) {
+        super(project);
+    }
     
-    /**
-     * Returns project context for the provided settings storage FileObject or null if not resolvable.
-     * 
-     * @param settingsFolder settings storage
-     * @return  project context for the provided settings storage FileObject or null if not resolvable
-     */
-    public abstract Lookup.Provider getProjectFromSettingsFolder(FileObject settingsFolder);
-    
+    public ProfilerTypeUtils getTypeUtils() {
+        synchronized(lazyInitLock) {
+            if (typeUtils == null) {
+                typeUtils = new ProfilerTypeUtils(this);
+            }
+        }
+        return typeUtils;
+    }
 }

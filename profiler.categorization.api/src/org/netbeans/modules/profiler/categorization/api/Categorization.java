@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.profiler.categorization.api;
 
-import org.netbeans.modules.profiler.categorization.api.impl.MarkerProcessor;
-import org.netbeans.modules.profiler.categorization.api.impl.CategoryDefinitionProcessor;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,12 +49,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.WeakHashMap;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.Marker;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.modules.profiler.utilities.Visitable;
 import org.netbeans.modules.profiler.utilities.Visitor;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,12 +62,12 @@ import org.openide.util.NbBundle;
  * @author Jaroslav Bachorik
  */
 final public class Categorization implements Marker {
-    private Project project;
+    private Lookup.Provider project;
     private Map<Category, Set<Mark>> inheritedMarkMap;
     private Map<Mark, Category> reverseMap;
     private CategoryContainer root = null;
 
-    public Categorization(Project project) {
+    public Categorization(Lookup.Provider project) {
         this.project = project;
         this.inheritedMarkMap = null;
     }
@@ -159,13 +158,13 @@ final public class Categorization implements Marker {
      * @return Returns TRUE only if there is a {@linkplain CategoryBuilder} registered
      *         in the project lookup
      */
-    public static boolean isAvailable(Project project) {
+    public static boolean isAvailable(Lookup.Provider project) {
         if (project == null) return false;
         return project.getLookup().lookup(CategoryBuilder.class) != null;
     }
 
     public MarkMapping[] getMappings() {
-        MarkerProcessor mp = new MarkerProcessor(project);
+        CategoryDefinitionProcessor mp = project.getLookup().lookup(CategoryDefinitionProcessor.class);
         getRoot().accept(new Visitor<Visitable<Category>, Void, CategoryDefinitionProcessor>() {
 
             public Void visit(Visitable<Category> visitable, CategoryDefinitionProcessor parameter) {
@@ -173,7 +172,7 @@ final public class Categorization implements Marker {
                 return null;
             }
         }, mp);
-        return mp.getMappings();
+        return ((Marker)mp).getMappings();
     }
 
     public Mark[] getMarks() {

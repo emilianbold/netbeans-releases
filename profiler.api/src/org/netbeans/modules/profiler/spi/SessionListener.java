@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.profiler.spi;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -54,8 +54,8 @@ public interface SessionListener {
             public void onShutdown() {}
 
             @Override
-            public void onStartup(ProfilingSettings ps, Project p) {}
+            public void onStartup(ProfilingSettings ps, Lookup.Provider p) {}
         }
-        void onStartup(ProfilingSettings ps, Project p);
+        void onStartup(ProfilingSettings ps, Lookup.Provider p);
         void onShutdown();
 }

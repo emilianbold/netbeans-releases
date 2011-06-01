@@ -44,9 +44,9 @@ package org.netbeans.modules.profiler.j2se;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
-import org.netbeans.modules.profiler.spi.ProjectProfilingSupport;
+import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupport;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
@@ -63,34 +63,36 @@ import org.openide.filesystems.FileObject;
                             @ProjectType(id="org-netbeans-modules-web-project"),
                             @ProjectType(id="org-netbeans-modules-maven")},
                         service=ProjectProfilingSupport.class)
-public class JavaProfilingSupport extends ProjectProfilingSupport {
+public class JavaProfilingSupport implements ProjectProfilingSupport {
     private String[][] packages = new String[2][];
 
+    private Project project;
     public JavaProfilingSupport(Project project) {
-        super(project);
+        this.project = project;
     }
 
     @Override
     public boolean canProfileFile(FileObject file) {
-        if (!"java".equals(file.getExt()) && !"class".equals(file.getExt())) {
-            return false; // NOI18N
-        }
+        // FIXME
+        JavaProfilerSource src = JavaProfilerSource.createFrom(file);
 
-        return SourceUtils.isRunnable(file);
+        return src != null && src.isRunnable();
     }
 
     @Override
     public String getFilter(boolean useSubprojects) {
-        return ProjectUtilities.computeProjectOnlyInstrumentationFilter(getProject(), useSubprojects, packages);
+        return ProjectUtilities.computeProjectOnlyInstrumentationFilter(project, useSubprojects, packages);
     }
 
     @Override
     public SourceCodeSelection[] getRootMethods(FileObject profiledClassFile) {
         if (profiledClassFile == null) {
-            return ProjectUtilities.getProjectDefaultRoots(getProject(), packages);
+            return ProjectUtilities.getProjectDefaultRoots(project, packages);
         } else {
             // Profile Single, provide correct root methods
-            String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
+            // FIXME
+            JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+            String profiledClass = src != null ? src.getTopLevelClass().getQualifiedName() : null;
             if (profiledClass != null) {
                 return new SourceCodeSelection[] { new SourceCodeSelection(profiledClass, "<all>", "") }; // NOI18N // Covers all innerclasses incl. anonymous innerclasses
             } else {

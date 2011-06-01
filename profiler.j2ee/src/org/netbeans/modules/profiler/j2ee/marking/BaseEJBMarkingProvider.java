@@ -57,7 +57,6 @@ import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.MethodMarker;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -70,7 +69,9 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.profiler.categorization.api.CustomMarker;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
+import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 
 
 /**
@@ -97,7 +98,7 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
     protected abstract boolean isValid(ExecutableElement method);
 
     private void addEjbMethods() {
-        final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(getProject());
+        final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(getProject());
             final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
 
             for (MetadataModel<EjbJarMetadata> mdModel : listAllMetadata()) {
@@ -166,7 +167,7 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
                     if (isValid(method)) {
                         try {
                             marker.addMethodMark(ElementUtilities.getBinaryName(type), method.getSimpleName().toString(),
-                                    SourceUtils.getVMMethodSignature(method, controller), getMark());
+                                    ElementUtilitiesEx.getBinaryName(method, controller), getMark());
                         } catch (NullPointerException e) {
                             e.printStackTrace();
                         }

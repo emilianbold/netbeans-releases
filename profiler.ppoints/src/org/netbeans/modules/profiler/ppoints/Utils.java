@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -90,6 +89,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.profiler.api.GeneralIcons;
 import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.GoToSource;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
@@ -273,7 +274,7 @@ public class Utils {
                 }
             } else {
                 renderer.setText(rendererOrig.getText());
-                renderer.setIcon(Icons.getIcon(GeneralIcons.EMPTY));
+                renderer.setIcon(EMPTY_ICON);
             }
 
             return renderer;
@@ -341,6 +342,7 @@ public class Utils {
     private static final String PROJECT_DIRECTORY_MARK = "{$projectDirectory}"; // NOI18N
 
     // TODO: Move to more "universal" location
+    public static final ImageIcon EMPTY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/resources/empty16.gif", false); // NOI18N
     private static final ProjectPresenterRenderer projectRenderer = new ProjectPresenterRenderer();
     private static final ProjectPresenterListRenderer projectListRenderer = new ProjectPresenterListRenderer();
     private static final EnhancedTableCellRenderer scopeRenderer = new ProfilingPointScopeRenderer();
@@ -380,8 +382,9 @@ public class Utils {
         if (documentOffset == -1) {
             return null;
         }
-
-        return SourceUtils.getEnclosingClassName(fileObject, documentOffset);
+        // FIXME
+        JavaProfilerSource src = JavaProfilerSource.createFrom(fileObject);
+        return src != null ? src.getEnclosingClass(documentOffset).getQualifiedName() : null;
     }
     
     public static String getMethodName(CodeProfilingPoint.Location location) {
@@ -397,8 +400,9 @@ public class Utils {
         if (documentOffset == -1) {
             return null;
         }
-
-        return SourceUtils.getEnclosingMethodName(fileObject, documentOffset);
+        // FIXME
+        JavaProfilerSource src = JavaProfilerSource.createFrom(fileObject);
+        return src != null ? src.getEnclosingMethod(documentOffset).getName() : null;
     }
 
     public static CodeProfilingPoint.Location getCurrentLocation(int lineOffset) {
@@ -898,11 +902,7 @@ public class Utils {
             return;
         }
 
-        ProfilerUtils.runInEventDispatchThread(new Runnable() {
-                public void run() {
-                    UiUtils.open(fileObject, documentOffset);
-                } // this MUST use UiUtils since there is no replacement method yet
-            });
+        GoToSource.openFile(fileObject, documentOffset);
     }
 
     private static JavaEditorContext getMostActiveJavaEditorContext() {

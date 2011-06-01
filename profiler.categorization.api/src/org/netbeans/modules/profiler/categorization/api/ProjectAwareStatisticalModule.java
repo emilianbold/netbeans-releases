@@ -43,8 +43,8 @@
 
 package org.netbeans.modules.profiler.categorization.api;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
+import org.openide.util.Lookup;
 
 
 /**
@@ -52,17 +52,17 @@ import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
  * @author Jaroslav Bachorik
  */
 public abstract class ProjectAwareStatisticalModule extends StatisticalModule {
-    private Project project;
+    private Lookup.Provider project;
     
     //~ Methods ------------------------------------------------------------------------------------------------------------------
     public ProjectAwareStatisticalModule() {}
     
-    public abstract boolean supportsProject(Project project);
-    final public void setProject(Project project) {
+    public abstract boolean supportsProject(Lookup.Provider project);
+    final public void setProject(Lookup.Provider project) {
         this.project = project;
     }
     
-    final protected Project getProject() {
+    final protected Lookup.Provider getProject() {
         return project;
     }
 }

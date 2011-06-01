@@ -58,7 +58,6 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.io.IOException;
@@ -69,6 +68,8 @@ import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.profiler.api.Icons;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
+import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
@@ -90,7 +91,7 @@ public class JPAEntitiesNode extends ContainerNode {
 
             Project project = parent.getLookup().lookup(Project.class);
 
-            final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
+            final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
             final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
 
             for (MetadataModel<EntityMappingsMetadata> mdModel : listAllMetadata(project)) {

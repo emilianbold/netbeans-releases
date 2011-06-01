@@ -43,7 +43,7 @@ package org.netbeans.modules.profiler.api;
 
 import java.io.IOException;
 import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.modules.profiler.spi.ProjectStorageProvider;
+import org.netbeans.modules.profiler.spi.project.ProjectStorageProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
