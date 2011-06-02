@@ -42,10 +42,20 @@
 
 package org.netbeans.modules.php.project.connections.spi;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Class representing a remote configuration (e.g. FTP, SFTP).
@@ -54,10 +64,14 @@ import org.openide.util.NbBundle;
  * @see org.netbeans.modules.php.project.connections.RemoteConnections#getRemoteConfigurations()
  */
 public abstract class RemoteConfiguration {
+
+    static final Logger LOGGER = Logger.getLogger(RemoteConfiguration.class.getName());
+    static final RequestProcessor KEYRING_ACCESS = new RequestProcessor();
+
     private final String displayName;
     private final String name;
 
-    private final String passwordKey;
+    final String passwordKey;
 
     /**
      * Create new remote configuration based on the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration}.
@@ -203,25 +217,76 @@ public abstract class RemoteConfiguration {
         if (oldPassword != null) {
             return oldPassword;
         }
-        char[] newPassword = Keyring.read(passwordKey);
-        if (newPassword != null) {
-            String newPasswordString = new String(newPassword);
-            cfg.putValue(key, newPasswordString, true);
-            return newPasswordString;
+        String password = readPasswordFromKeyring();
+        if (password != null) {
+            cfg.putValue(key, password, true);
+        }
+        return password;
+    }
+
+    private String readPasswordFromKeyring() {
+        try {
+            final Future<String> result = KEYRING_ACCESS.submit(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    char[] newPassword = Keyring.read(passwordKey);
+                    if (newPassword != null) {
+                        return new String(newPassword);
+                    }
+                    return null;
+                }
+            });
+            if (SwingUtilities.isEventDispatchThread()) {
+                if (!result.isDone()) {
+                    try {
+                        // let's wait in awt to avoid flashing dialogs
+                        result.get(200, TimeUnit.MILLISECONDS);
+                    } catch (TimeoutException ex) {
+                        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    result.get();
+                                } catch (InterruptedException ex) {
+                                    Thread.currentThread().interrupt();
+                                } catch (ExecutionException ex) {
+                                    LOGGER.log(Level.INFO, null, ex);
+                                }
+                            }
+                        }, NbBundle.getMessage(RemoteConfiguration.class, "MSG_KeyringAccess"));
+                    }
+                }
+            }
+            return result.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
         return null;
     }
 
-    protected void savePassword(String password, String type) {
+    protected void savePassword(final String password, final String type) {
         if (StringUtils.hasText(password)) {
-            Keyring.save(passwordKey, password.toCharArray(),
-                    NbBundle.getMessage(RemoteConfiguration.class, "MSG_PasswordFor", getDisplayName(), type));
+            KEYRING_ACCESS.post(new Runnable() {
+                @Override
+                public void run() {
+                    Keyring.save(passwordKey, password.toCharArray(),
+                            NbBundle.getMessage(RemoteConfiguration.class, "MSG_PasswordFor", getDisplayName(), type));
+                }
+            });
         } else {
             deletePassword();
         }
     }
 
     protected void deletePassword() {
-        Keyring.delete(passwordKey);
+        KEYRING_ACCESS.post(new Runnable() {
+            @Override
+            public void run() {
+                Keyring.delete(passwordKey);
+            }
+        });
     }
+
 }
