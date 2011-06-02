@@ -23,6 +23,7 @@ Other names may be trademarks of their respective owners.
 
         <!-- Start of "About" section -->
 	<mapID target="about_ws" url="webservice/about/about_ws.html" />
+        <mapID target="about_soap" url="webservice/about/about_soap.html" />
         <mapID target="about_rest" url="webservice/about/about_rest.html" />
 	<mapID target="ws_process" url="webservice/about/ws_process.html" />
 	<mapID target="ws_quickref" url="webservice/about/ws_quickref.html" />
@@ -33,7 +34,6 @@ Other names may be trademarks of their respective owners.
 	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
 	<mapID target="create_ws_from_java" url="webservice/create/create_ws_from_java.html" />
         <mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
-	<mapID target="create_wsdl_file" url="webservice/create/create_wsdl_file.html" />
 	<mapID target="add_ws_operation" url="webservice/create/add_ws_operation.html" />
 	<!-- End of "Create" section -->
 	<!-- Start of "Configure" section -->
@@ -47,7 +47,6 @@ Other names may be trademarks of their respective owners.
 	<!-- End of "Build" section -->
 	<!-- Start of "Expose" section -->
         <mapID target="about_deploy_and_test_ws" url="webservice/expose/about_deploy_and_test_ws.html" />
-	<mapID target="test_ws" url="webservice/expose/test_ws.html" />
         <mapID target="test_rest" url="webservice/expose/test_rest.html" />
 	<mapID target="expose_ws" url="webservice/expose/expose_ws.html" />
 	<mapID target="as_setup" url="webservice/expose/as_setup_axis.html" />
