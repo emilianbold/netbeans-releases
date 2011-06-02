@@ -63,9 +63,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.modules.progress.spi.InternalHandle;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -125,55 +125,43 @@ public class PopupPane extends JScrollPane {
     }
     
     public void addListComponent(final ListComponent lst) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    addListComponent(lst);
+        Mutex.EVENT.readAccess(new Runnable() {            
+            public @Override void run() {
+                listComponents.add(lst);
+                if (view.getComponentCount() > 0) {
+                    JComponent previous = (JComponent)view.getComponent(view.getComponentCount() - 1);
+                    previous.setBorder(new BottomLineBorder());
                 }
-            });
-            return;
-        }
-        
-        listComponents.add(lst);
-        if (view.getComponentCount() > 0) {
-            JComponent previous = (JComponent)view.getComponent(view.getComponentCount() - 1);
-            previous.setBorder(new BottomLineBorder());
-        }
-        lst.setBorder(BorderFactory.createEmptyBorder());
-        view.add(lst);
-        if (listComponents.size() > 3) {
-            setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        } else {
-            setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        }
+                lst.setBorder(BorderFactory.createEmptyBorder());
+                view.add(lst);
+                if (listComponents.size() > 3) {
+                    setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+                } else {
+                    setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+                }
+            }
+        });
     }
     
     public void removeListComponent(final InternalHandle handle) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    removeListComponent(handle);
+        Mutex.EVENT.readAccess(new Runnable() {            
+            public @Override void run() {
+                Iterator it = listComponents.iterator();
+                while (it.hasNext()) {
+                    ListComponent comp = (ListComponent)it.next();
+                    if (comp.getHandle() == handle) {
+                        view.remove(comp);
+                        it.remove();
+                        break;
+                    }
                 }
-            });
-            return;
-        }
-        
-        Iterator it = listComponents.iterator();
-        while (it.hasNext()) {
-            ListComponent comp = (ListComponent)it.next();
-            if (comp.getHandle() == handle) {
-                view.remove(comp);
-                it.remove();
-                break;
+                if (listComponents.size() > 3) {
+                    setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+                } else {
+                    setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+                }
             }
-        }
-        if (listComponents.size() > 3) {
-            setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        } else {
-            setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-        }
+        });
     }
 
     public Dimension getPreferredSize() {
@@ -190,21 +178,15 @@ public class PopupPane extends JScrollPane {
      * change in currently selected task.
      */
     public void updateBoldFont(final InternalHandle handle) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    updateBoldFont(handle);
+        Mutex.EVENT.readAccess(new Runnable() {            
+            public @Override void run() {
+                Iterator it = listComponents.iterator();
+                while (it.hasNext()) {
+                    ListComponent comp = (ListComponent)it.next();
+                    comp.markAsActive(handle == comp.getHandle());
                 }
-            });
-            return;
-        }
-        
-        Iterator it = listComponents.iterator();
-        while (it.hasNext()) {
-            ListComponent comp = (ListComponent)it.next();
-            comp.markAsActive(handle == comp.getHandle());
-        }
+            }
+        });
     }
     
     
