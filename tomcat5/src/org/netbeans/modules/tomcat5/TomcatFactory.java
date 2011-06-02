@@ -195,9 +195,20 @@ public final class TomcatFactory implements DeploymentFactory {
         if (!catalinaJar.exists()) {
             catalinaJar = new File(catalinaHome, "server/lib/catalina.jar"); // NOI18N
         }
+        File coyoteJar = new File(catalinaHome, "lib/tomcat-coyote.jar"); // NOI18N
+
         try {
-            URLClassLoader loader = new URLClassLoader(new URL[] { catalinaJar.toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[] {
+                catalinaJar.toURI().toURL(), coyoteJar.toURI().toURL() });
             Class serverInfo = loader.loadClass("org.apache.catalina.util.ServerInfo"); // NOI18N
+            try {
+                Method method = serverInfo.getMethod("getServerNumber", new Class[] {}); // NOI18N
+                String version = (String) method.invoke(serverInfo, new Object[] {});
+                return version;
+            } catch (NoSuchMethodException ex) {
+                // try getServerInfo
+            }
+
             Method method = serverInfo.getMethod("getServerInfo", new Class[] {}); // NOI18N
             String version = (String) method.invoke(serverInfo, new Object[] {});
             int idx = version.indexOf('/');
