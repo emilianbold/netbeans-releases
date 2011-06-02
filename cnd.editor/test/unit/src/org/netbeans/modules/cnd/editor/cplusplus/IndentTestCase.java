@@ -1313,4 +1313,25 @@ public class IndentTestCase extends EditorBase {
             "    return ret;\n" +
             "}\n");
     }
+
+    public void testIndentMacroDefinition() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#define foobar(foo, bar) do {    \\\n"
+                + "    int f = (foo);        \\\n"
+                + "    int b = (bar);        \\\n"
+                + "    f += b;            \\|\n"
+                + "\n"
+                );
+        
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line indent",
+                "#define foobar(foo, bar) do {    \\\n"
+                + "    int f = (foo);        \\\n"
+                + "    int b = (bar);        \\\n"
+                + "    f += b;            \\\n"
+                + "    |\n"
+                + "\n"
+                );
+    }
 }

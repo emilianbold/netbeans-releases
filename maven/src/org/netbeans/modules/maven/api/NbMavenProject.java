@@ -287,14 +287,6 @@ public final class NbMavenProject {
     public URI getWebAppDirectory() {
         return project.getWebAppDirectory();
     }
-
-    /**
-     * Return uris of source roots generated during the build.
-     * @return
-     */
-    public URI[] getGeneratedSourceRoots() {
-        return project.getGeneratedSourceRoots();
-    }
     
     public URI getEarAppDirectory() {
         return project.getEarAppDirectory();

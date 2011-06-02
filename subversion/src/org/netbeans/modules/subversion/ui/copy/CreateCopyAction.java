@@ -77,25 +77,30 @@ public class CreateCopyAction extends ContextAction {
         
     }
 
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_MenuItem_Copy";    // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return    FileInformation.STATUS_MANAGED
                & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return    FileInformation.STATUS_MANAGED 
                & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
                & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
+    @Override
     protected boolean enable(Node[] nodes) {
         return nodes != null && nodes.length == 1 &&  getCachedContext(nodes).getRoots().size() > 0;
     }   
     
+    @Override
     protected void performContextAction(final Node[] nodes) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -138,10 +143,12 @@ public class CreateCopyAction extends ContextAction {
             return;
         }
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 String errorText = validateTargetPath(createCopy);
                 if (errorText == null) {
                     ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
+                        @Override
                         public void perform() {
                             performCopy(createCopy, this, roots);
                         }
@@ -151,6 +158,7 @@ public class CreateCopyAction extends ContextAction {
                     SvnClientExceptionHandler.annotate(errorText);
                     createCopy.setErrorText(errorText);
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             performCopy(createCopy, rp, nodes, roots);
                         }

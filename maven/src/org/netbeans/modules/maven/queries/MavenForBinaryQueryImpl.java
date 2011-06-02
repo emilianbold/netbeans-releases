@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -180,16 +180,15 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     }
     
     private FileObject[] getSrcRoot() {
-        Collection<FileObject> toReturn = new HashSet<FileObject>();
+        Collection<FileObject> toReturn = new LinkedHashSet<FileObject>();
         for (String item : project.getOriginalMavenProject().getCompileSourceRoots()) {
             FileObject fo = FileUtilities.convertStringToFileObject(item);
             if (fo != null) {
                 toReturn.add(fo);
             }
         }
-        URI[] genRoots = project.getGeneratedSourceRoots();
-        for (int i = 0; i < genRoots.length; i++) {
-            FileObject fo = FileUtilities.convertURItoFileObject(genRoots[i]);
+        for (URI genRoot : project.getGeneratedSourceRoots(false)) {
+            FileObject fo = FileUtilities.convertURItoFileObject(genRoot);
             if (fo != null) {
                 toReturn.add(fo);
             }
@@ -226,9 +225,15 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     }
     
     private FileObject[] getTestSrcRoot() {
-        Collection<FileObject> toReturn = new HashSet<FileObject>();
+        Collection<FileObject> toReturn = new LinkedHashSet<FileObject>();
         for (String item : project.getOriginalMavenProject().getTestCompileSourceRoots()) {
             FileObject fo = FileUtilities.convertStringToFileObject(item);
+            if (fo != null) {
+                toReturn.add(fo);
+            }
+        }
+        for (URI genRoot : project.getGeneratedSourceRoots(true)) {
+            FileObject fo = FileUtilities.convertURItoFileObject(genRoot);
             if (fo != null) {
                 toReturn.add(fo);
             }

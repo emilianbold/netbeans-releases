@@ -164,7 +164,24 @@ public final class NativeExecutionService {
 
                     }
 
+                    /**
+                     * As IO could be re-used we need to 'unlock' it
+                     * because it could be 'locked' by previous run...
+                     * (It is always set to read-only mode on run finish)
+                     */
+                    IOTerm.term(descriptor.inputOutput).setReadOnly(!descriptor.inputVisible);
+                    
                     PtySupport.connect(descriptor.inputOutput, process);
+
+                    /**
+                     * We call invokeAndWait here to be sure that connect is 
+                     * done. This is because connection is asynchronious 
+                     * operation that occurs in EDT.
+                     * return from connect() guarantees that event was posted to
+                     * EDT. So our event is queued after that one.
+                     * So as soon as our is processed we are sure that connection
+                     * is done.
+                     */
                     SwingUtilities.invokeAndWait(new Runnable() {
 
                         @Override

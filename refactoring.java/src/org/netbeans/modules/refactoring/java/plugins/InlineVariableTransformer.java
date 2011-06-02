@@ -42,6 +42,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -140,7 +141,12 @@ public class InlineVariableTransformer extends RefactoringVisitor {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             switch(el.getKind()) {
                 case LOCAL_VARIABLE:
-                    BlockTree newOne = make.removeBlockStatement((BlockTree) parent, node);
+                    Tree newOne = null;
+                    if(parent.getKind() == Tree.Kind.CASE) {
+                        newOne = make.removeCaseStatement((CaseTree) parent, node);
+                    } else {
+                        newOne = make.removeBlockStatement((BlockTree) parent, node);
+                    }
                     if (newOne != null) {
                         rewrite(parent, newOne);
                     }

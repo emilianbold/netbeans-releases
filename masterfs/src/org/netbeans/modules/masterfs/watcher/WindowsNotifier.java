@@ -371,10 +371,7 @@ public class WindowsNotifier extends Notifier<Void> {
     }
 
     private void notify(File file) {
-        if (!file.isDirectory()) file = file.getParentFile();
-
-        String path = file.getAbsolutePath();
-        events.add(path);
+        events.add(file.getPath());
     }
 
 

@@ -287,9 +287,9 @@ public final class ProjectManager {
                         //Thread.dumpStack();
                         synchronized (dir2Proj) {
                             dir2Proj.notifyAll();
-                            projectDirectory.addFileChangeListener(projectDeletionListener);
                             if (p != null) {
                                 LOG.log(Level.FINE, "findProject({0}) in {1}: created new project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
+                                projectDirectory.addFileChangeListener(projectDeletionListener);
                                 dir2Proj.put(projectDirectory, Union2.<Reference<Project>,LoadStatus>createFirst(new TimedWeakReference<Project>(p)));
                                 resetLP = true;
                                 return p;

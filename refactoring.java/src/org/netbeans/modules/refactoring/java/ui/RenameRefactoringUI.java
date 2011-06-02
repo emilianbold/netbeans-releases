@@ -90,65 +90,6 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private boolean byPassPakageRename;
     private boolean pkgRename = true;
 
-
-//    RenameRefactoringUI(ElementHandle jmiObject, FileObject folder, boolean packageRename) {
-//        this.jmiObject = jmiObject;
-//        pkgRename = packageRename;
-//        if (jmiObject == null || jmiObject instanceof JavaPackage) {
-//            if (folder == null) {
-//                folder = JavaMetamodel.getManager().getClassPath().findResource(((JavaPackage) jmiObject).getName().replace('.','/'));
-//                if (folder == null) {
-//                    //package declaration is invalid
-//                    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-//                    DataObject dob = (DataObject) nodes[0].getCookie(DataObject.class);
-//                    folder = dob.getFolder().getPrimaryFile();
-//                }
-//            }
-//            this.refactoring = createMoveClassRefactoring(folder, packageRename);
-//            String packageName = jmiObject != null ? ((JavaPackage) jmiObject).getName():null;
-//            if (!packageRename) {
-//                oldName = folder.getName();
-//            } else {
-//                if (packageName != null) {
-//                    oldName = "".equals(packageName) ? NbBundle.getBundle("org.netbeans.modules.java.project.Bundle").getString("LBL_DefaultPackage") : packageName;
-//                } else {
-//                    oldName = ClassPath.getClassPath(folder, ClassPath.SOURCE).getResourceName(folder).replace('/','.');
-//                }
-//            }
-//        } else if (jmiObject instanceof JavaClass) {
-//            this.refactoring = new RenameRefactoring(jmiObject);
-//            Object comp = jmiObject.refImmediateComposite();
-//            if (comp instanceof Resource) {
-//                FileObject fo = JavaModel.getFileObject((Resource)comp);
-//                String name = fo.getName();
-//                for (Iterator iter = ((Resource)comp).getClassifiers().iterator(); iter.hasNext(); ) {
-//                    Object obj = iter.next();
-//                    if (obj instanceof JavaClass) {
-//                        String sName = ((JavaClass) obj).getSimpleName();
-//                        if (name.equals(sName)) {
-//                            name = ((JavaClass) jmiObject).getSimpleName();
-//                            break;
-//                        }
-//                    } // if
-//                } // for
-//                oldName = name;
-//            } else {
-//                oldName = ((JavaClass) jmiObject).getSimpleName();
-//            }
-//        } else {
-//            this.refactoring = new RenameRefactoring(jmiObject);
-//            if (jmiObject instanceof NamedElement) {
-//                if (jmiObject instanceof Resource) {
-//                    oldName = JavaMetamodel.getManager().getDataObject((Resource)jmiObject).getName();
-//                } else
-//                    oldName = ((NamedElement) jmiObject).getName();
-//            } else {
-//                oldName = "";
-//            }
-//        }
-//        dispOldName = oldName;
-//    }
-    
     public RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
         this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
@@ -161,7 +102,6 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         }
         dispOldName = oldName;
 
-        //this(jmiObject, (FileObject) null, true);
     }
     
     public RenameRefactoringUI(FileObject file, TreePathHandle handle, CompilationInfo info) {
@@ -176,7 +116,6 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         dispOldName = oldName;
         ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(file):RetoucheUtils.getClasspathInfoFor(handle);
         refactoring.getContext().add(cpInfo);
-        //this(jmiObject, (FileObject) null, true);
     }
 
     public RenameRefactoringUI(NonRecursiveFolder file) {
@@ -185,21 +124,15 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(file.getFolder()));
         dispOldName = oldName;
         pkgRename = true;
-        //this(jmiObject, (FileObject) null, true);
     }
     
     
-//    private MoveClassRefactoring createMoveClassRefactoring(FileObject folder, boolean packageRename) {
-//        return new MoveClassRefactoring(folder, packageRename);
-//    }
-
     RenameRefactoringUI(FileObject jmiObject, String newName, TreePathHandle handle, CompilationInfo info) {
         if (handle!=null) {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject));
         }
-        //this.jmiObject = jmiObject;
         oldName = newName;
         this.dispOldName = jmiObject.getName();
         ClasspathInfo cpInfo = handle==null?RetoucheUtils.getClasspathInfoFor(jmiObject):RetoucheUtils.getClasspathInfoFor(handle);
@@ -210,28 +143,11 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject.getFolder()));
-        //this.jmiObject = jmiObject;
         oldName = newName;
         this.dispOldName = RetoucheUtils.getPackageName(jmiObject.getFolder());
         fromListener = true;
         pkgRename = true;
     }
-    
-    
-    
-    
-//    RenameRefactoringUI(FileObject folder, String newName, boolean packageRename) {
-//        this.refactoring = createMoveClassRefactoring(folder, packageRename);
-//        pkgRename = packageRename;
-//        oldName = newName;
-//        //[FIXME] this should be oldName of refactored object
-//        this.dispOldName = newName;
-//        fromListener = true;
-//        this.byPassFolder = folder;
-//        this.byPassPakageRename = packageRename;
-//        
-//    }
-    
     
     public boolean isQuery() {
         return false;

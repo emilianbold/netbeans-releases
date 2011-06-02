@@ -69,21 +69,31 @@ public class SunResourceDataLoader extends UniFileLoader {
         super(recognizedObjectClass);
     }
 
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(SunResourceDataLoader.class, "LBL_loaderName"); //NOI18N
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         getExtensions().addMimeType(MIME_TYPE);
     }
 
+    @Override
     protected String actionsContext () {
         return "Loaders/" + MIME_TYPE + "/Actions"; //NOI18N
 
     }
 
+    @Override
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+        if (null == primaryFile) {
+            // I hope soembody up the stack will do something smart with this exception
+            // since they needed to be prepared for it.  If there were no declared exception
+            // on this, I would have thrown an IllegalArgumentException
+            throw new IOException("primaryFile can not be NULL");
+        }
         return new SunResourceDataObject(primaryFile, this);
     }
 

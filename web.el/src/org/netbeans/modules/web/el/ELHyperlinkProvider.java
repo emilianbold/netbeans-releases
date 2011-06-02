@@ -69,14 +69,15 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -153,19 +154,20 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         return null;
     }
 
-    private String getTooltipTextForElement(Pair<Node, ELElement> pair) {
-        FileObject context = pair.second.getSnapshot().getSource().getFileObject();
-        final Element resolvedElement = ELTypeUtilities.create(context).resolveElement(pair.second, pair.first);
-        if (resolvedElement == null) {
-            return null;
-        }
+    private String getTooltipTextForElement(final Pair<Node, ELElement> pair) {
         final String[] result = new String[1];
-        ClasspathInfo cp = ClasspathInfo.create(pair.second.getSnapshot().getSource().getFileObject());
+        final FileObject file = pair.second.getSnapshot().getSource().getFileObject();
+        ClasspathInfo cp = ClasspathInfo.create(file);
         try {
-            JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {
+            JavaSource.create(cp, file).runUserActionTask(new Task<CompilationController>() {
 
                 @Override
                 public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.RESOLVED);
+                    final Element resolvedElement = ELTypeUtilities.resolveElement(CompilationContext.create(file, cc), pair.second, pair.first);
+                    if (resolvedElement == null) {
+                        return;
+                    }
                     DisplayNameElementVisitor dnev = new DisplayNameElementVisitor(cc);
                     dnev.visit(resolvedElement, Boolean.TRUE);
                     result[0] = "<html><body>" + dnev.result.toString(); //NOI18N
@@ -243,15 +245,34 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     private void performGoTo(final Document doc, final int offset, final AtomicBoolean cancel) {
-        Pair<Node, ELElement> nodeElem = resolveNodeAndElement(doc, offset, cancel);
+        final Pair<Node, ELElement> nodeElem = resolveNodeAndElement(doc, offset, cancel);
         if (nodeElem == null) {
             return;
         }
-        FileObject context = nodeElem.second.getSnapshot().getSource().getFileObject();
-        Element javaElement = ELTypeUtilities.create(context).resolveElement(nodeElem.second, nodeElem.first);
-        if (javaElement != null) {
-            ElementOpen.open(ClasspathInfo.create(context), javaElement);
+        final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
+        ClasspathInfo cp = ClasspathInfo.create(file);
+        final AtomicReference<ElementHandle> handleRef = new AtomicReference<ElementHandle>();
+        try {
+            JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.RESOLVED);
+                    Element javaElement = ELTypeUtilities.resolveElement(CompilationContext.create(file, cc), nodeElem.second, nodeElem.first);
+                    if(javaElement != null) {
+                        handleRef.set(ElementHandle.create(javaElement));
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        
+        ElementHandle handle = handleRef.get();
+        if(handle != null) {
+            ElementOpen.open(cp, handle);
+        }
+        
     }
 
     private int[] getELIdentifierSpan(Document doc, int offset) {
@@ -300,6 +321,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             }
         }
 
+        @Override
         public Void visitPackage(PackageElement e, Boolean highlightName) {
             boldStartCheck(highlightName);
 
@@ -310,6 +332,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             return null;
         }
 
+        @Override
         public Void visitType(TypeElement e, Boolean highlightName) {
             return printType(e, null, highlightName);
         }
@@ -348,6 +371,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             return null;
         }
 
+        @Override
         public Void visitVariable(VariableElement e, Boolean highlightName) {
             modifier(e.getModifiers());
 
@@ -380,6 +404,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             return null;
         }
 
+        @Override
         public Void visitExecutable(ExecutableElement e, Boolean highlightName) {
             return printExecutable(e, null, highlightName);
         }
@@ -419,6 +444,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             return null;
         }
 
+        @Override
         public Void visitTypeParameter(TypeParameterElement e, Boolean highlightName) {
             return null;
         }

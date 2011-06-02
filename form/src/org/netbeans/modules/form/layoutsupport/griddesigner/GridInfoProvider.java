@@ -44,11 +44,12 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Color;
 
 /**
  * Provider of information about a specific grid.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public interface GridInfoProvider {
 
@@ -152,7 +153,8 @@ public interface GridInfoProvider {
      * @param g graphics to use for painting.
      * @param component component whose constraint information should be painted.
      * @param selected determines whether the component is selected in the designer.
+     * @param emphColor color derived from grid background, usable for emhasising.
      */
-    void paintConstraints(Graphics g, Component component, boolean selected);
+    void paintConstraints(Graphics g, Component component, boolean selected, Color emphColor);
 
 }

@@ -46,6 +46,7 @@ import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,12 +54,18 @@ import java.util.List;
 import java.util.Map;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Occurrences finder for Expression Language.
@@ -69,7 +76,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
 
     private int caretPosition;
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> occurrences;
+    private final Map<OffsetRange, ColoringAttributes> occurrences = new HashMap<OffsetRange, ColoringAttributes>();
 
     public ELOccurrencesFinder() {
     }
@@ -86,7 +93,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
 
     @Override
     public void run(Result result, SchedulerEvent event) {
-        this.occurrences = Collections.emptyMap();
+        occurrences.clear();
         if (checkAndResetCancel()) {
             return;
         }
@@ -108,7 +115,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
         this.cancelled = true;
     }
 
-    private void computeOccurrences(ELParserResult parserResult) {
+    private void computeOccurrences(final ELParserResult parserResult) {
         ELElement current = parserResult.getElementAt(caretPosition);
         if (current == null) {
             return;
@@ -138,11 +145,25 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
                 }
             });
         }
+        final FileObject file = parserResult.getFileObject();
+        JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
+        try {
+            jsource.runUserActionTask(new Task<CompilationController>() {
 
-        this.occurrences = findMatchingTypes(parserResult, target, matching);
+                @Override
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    occurrences.putAll(findMatchingTypes(CompilationContext.create(file, info), parserResult, target, matching));
+                    
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         if (this.occurrences.isEmpty()) {
             // perhaps the caret is on a resource bundle key node
-            this.occurrences = findMatchingResourceBundleKeys(target, parserResult);
+            occurrences.putAll(findMatchingResourceBundleKeys(target, parserResult));
         }
     }
 
@@ -187,16 +208,15 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
         return result;
     }
 
-    private Map<OffsetRange, ColoringAttributes> findMatchingTypes(ELParserResult parserResult, Pair<ELElement,Node> target, List<Pair<ELElement,Node>> candidates) {
-        ELTypeUtilities typeUtilities = ELTypeUtilities.create(parserResult.getFileObject());
-        Element targetType = typeUtilities.resolveElement(target.first, target.second);
+    private Map<OffsetRange, ColoringAttributes> findMatchingTypes(CompilationContext info, ELParserResult parserResult, Pair<ELElement,Node> target, List<Pair<ELElement,Node>> candidates) {
+        Element targetType = ELTypeUtilities.resolveElement(info, target.first, target.second);
         Map<OffsetRange, ColoringAttributes>  result = new HashMap<OffsetRange, ColoringAttributes>();
 
         for (Pair<ELElement,Node> candidate : candidates) {
             if (checkAndResetCancel()) {
                 return result;
             }
-            Element type = typeUtilities.resolveElement(candidate.first, candidate.second);
+            Element type = ELTypeUtilities.resolveElement(info, candidate.first, candidate.second);
             if (type != null && type.equals(targetType)) {
                 OffsetRange range = candidate.first.getOriginalOffset(candidate.second);
                 result.put(range, ColoringAttributes.MARK_OCCURRENCES);
