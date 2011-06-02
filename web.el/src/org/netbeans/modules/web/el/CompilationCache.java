@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,76 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.el;
 
-package org.netbeans.modules.maven.classpath;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
- * @author  Milos Kleint 
+ * @author marekfukala
  */
-class TestSourceClassPathImpl extends AbstractProjectClassPathImpl {
+public class CompilationCache {
+
+    private Map<Key, Object> map = new HashMap<Key, Object>();
     
-    /**
-     * Creates a new instance of TestSourceClassPathImpl
-     */
-    public TestSourceClassPathImpl(NbMavenProjectImpl proj) {
-        super(proj);
+    public synchronized Object getOrCache(Key key, ValueProvider<?> valueProvider) {
+        Object cached = map.get(key);
+        if(cached == null) {
+            cached = valueProvider.get();
+            map.put(key, cached);
+        }
+        return cached;
     }
     
-    @Override
-    URI[] createPath() {
-        Collection<URI> col = new ArrayList<URI>();
-        col.addAll(Arrays.asList(getMavenProject().getSourceRoots(true)));
-        col.addAll(Arrays.asList(getMavenProject().getGeneratedSourceRoots(true)));
-        //#180020 remote items from resources that are either duplicate or child roots of source roots.
-        List<URI> resources = new ArrayList<URI>(Arrays.asList(getMavenProject().getResources(true)));
-        Iterator<URI> it = resources.iterator();
-        while (it.hasNext()) {
-            URI res = it.next();
-            for (URI srcs : col) {
-                if (res.toString().startsWith(srcs.toString())) {
-                    it.remove();
+    public static Key createKey(Object... items) {
+        return new Key(items);
+    }
+    
+    public static interface ValueProvider<T> {
+        public T get();
+    }
+    
+    public static class Key {
+
+        private Object[] keys;
+        
+        private Key(Object... keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Key other = (Key) obj;
+
+            if (other.keys.length != keys.length) {
+                return false;
+            }
+
+            for (int i = 0; i < keys.length; i++) {
+                if (!keys[i].equals(other.keys[i])) {
+                    return false;
                 }
             }
+
+            return true;
         }
-        col.addAll(resources);
-        
-        URI[] uris = new URI[col.size()];
-        uris = col.toArray(uris);
-        return uris;        
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            for (Object key : keys) {
+                hash = 13 * key.hashCode();
+            }
+            return hash;
+        }
     }
-    
 }

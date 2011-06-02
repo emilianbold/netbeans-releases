@@ -82,7 +82,7 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
         TypeElement type = (TypeElement) targetType;
         // handles only cases where the managed bean name matches the class name and is not 
         // explicitly specified in the annotation
-        String beanName = ELVariableResolvers.findBeanName(type.getQualifiedName().toString(), getFileObject());
+        String beanName = ELVariableResolvers.findBeanName(info, type.getQualifiedName().toString(), getFileObject());
         if (beanName != null && beanName.equalsIgnoreCase(type.getSimpleName().toString())) {
             for (AnnotationMirror ann : info.info().getElements().getAllAnnotationMirrors(type)) {
                 CharSequence annFqn = info.info().getTypeUtilities().getTypeName(ann.getAnnotationType(), TypeNameOptions.PRINT_FQN);

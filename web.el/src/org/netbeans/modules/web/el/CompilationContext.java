@@ -50,8 +50,9 @@ import org.openide.filesystems.FileObject;
  */
 public class CompilationContext {
     
-    private FileObject file;
-    private CompilationInfo info;
+    private final FileObject file;
+    private final CompilationInfo info;
+    private CompilationCache cache;
 
     private CompilationContext(FileObject file, CompilationInfo info) {
         this.file = file;
@@ -68,6 +69,13 @@ public class CompilationContext {
 
     public CompilationInfo info() {
         return info;
+    }
+    
+    public synchronized CompilationCache cache() {
+        if(cache == null) {
+            cache = new CompilationCache();
+        }
+        return cache;
     }
     
 }

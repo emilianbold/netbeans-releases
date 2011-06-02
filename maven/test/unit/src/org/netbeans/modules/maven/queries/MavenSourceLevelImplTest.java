@@ -110,6 +110,30 @@ public class MavenSourceLevelImplTest extends NbTestCase {
         assertEquals("1.4", SourceLevelQuery.getSourceLevel(source));
     }
 
-    // XXX check that level can be specified independently for test sources
+    public void testGeneratedSources() throws Exception { // #187595
+        TestFileUtils.writeFile(wd,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>0</version>" +
+                "<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><version>2.1</version><executions>" +
+                "<execution><id>comp-src</id><phase>compile</phase><goals><goal>compile</goal></goals><configuration><source>1.4</source></configuration></execution>" +
+                "<execution><id>comp-tsrc</id><phase>test-compile</phase><goals><goal>testCompile</goal></goals><configuration><source>1.6</source></configuration></execution>" +
+                "</executions></plugin></plugins></build>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(wd, "src/main/java");
+        FileObject gsrc = FileUtil.createFolder(wd, "target/generated-sources/xjc");
+        gsrc.createData("Whatever.class");
+        FileObject tsrc = FileUtil.createFolder(wd, "src/test/java");
+        FileObject gtsrc = FileUtil.createFolder(wd, "target/generated-test-sources/jaxb");
+        gtsrc.createData("Whatever.class");
+        assertEquals("1.4", SourceLevelQuery.getSourceLevel(src));
+        assertEquals("1.4", SourceLevelQuery.getSourceLevel(gsrc));
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel(tsrc));
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel(gtsrc));
+    }
 
 }

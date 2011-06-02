@@ -48,9 +48,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Class for types B and C in the compound type A::B::C
@@ -107,13 +106,23 @@ public final class NestedType extends TypeImpl {
 
     @Override
     public CsmClassifier getClassifier() {
+        return getClassifier(new ArrayList<CsmInstantiation>(), false);
+    }
+    
+    @Override
+    public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
         CsmClassifier classifier = _getClassifier();
         if (CsmBaseUtilities.isValid(classifier)) {
             // skip
         } else {
             _setClassifier(null);
             if (parentType != null) {
-                CsmClassifier parentClassifier = parentType.getClassifier();
+                CsmClassifier parentClassifier;
+                if(parentType instanceof TypeImpl) {
+                    parentClassifier = ((TypeImpl)parentType).getClassifier(instantiations, false);
+                } else {
+                    parentClassifier = parentType.getClassifier();                        
+                }
                 if (CsmBaseUtilities.isValid(parentClassifier)) {
                     MemberResolverImpl memberResolver = new MemberResolverImpl();
                     classifier = getNestedClassifier(memberResolver, parentClassifier, getOwnText());
@@ -134,21 +143,25 @@ public final class NestedType extends TypeImpl {
                 Resolver resolver = ResolverFactory.createResolver(this);
                 try {
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, this, specialize);
+                        if(CsmKindUtilities.isInstantiation(obj)) {
+                            instantiations.add((CsmInstantiation)obj);
+                        }
                     }
                 } finally {
                     ResolverFactory.releaseResolver(resolver);
                 }
             } else {
-                obj = ip.instantiate((CsmTemplate) classifier, getInstantiationParams(), this, getContainingFile(), getStartOffset());
+                obj = ip.instantiate((CsmTemplate) classifier, this);
             }
             if (CsmKindUtilities.isClassifier(obj)) {
+                obj = specialize((CsmClassifier) obj, instantiations);
                 classifier = (CsmClassifier) obj;
             }
         }
         return classifier;
     }
-
+    
     private List<CharSequence> getFullQName() {
         List<CharSequence> res = new ArrayList<CharSequence>();
         if (parentType instanceof NestedType) {
