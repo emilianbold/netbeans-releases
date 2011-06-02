@@ -96,7 +96,7 @@ public class WindowManagerParser {
     //Used to collect names of all localy stored wstcref files.
     private Set<String> tcRefNameLocalSet = new HashSet<String>(101);
     
-    private static Object SAVING_LOCK = new Object();
+    private static final Object SAVING_LOCK = new Object();
     
     public WindowManagerParser(PersistenceManager pm, String wmName) {
         this.pm = pm;
