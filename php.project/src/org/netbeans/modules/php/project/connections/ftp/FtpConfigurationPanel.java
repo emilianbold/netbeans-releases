@@ -168,6 +168,7 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         initialDirectoryTextField.getDocument().addDocumentListener(documentListener);
         timeoutTextField.getDocument().addDocumentListener(documentListener);
         passiveModeCheckBox.addActionListener(actionListener);
+        ignoreDisconnectErrorsCheckBox.addActionListener(actionListener);
 
         // internals
         anonymousCheckBox.addActionListener(new ActionListener() {
@@ -227,17 +228,20 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         timeoutTextField = new JTextField();
         passiveModeCheckBox = new JCheckBox();
         passwordLabelInfo = new JLabel();
+        ignoreDisconnectErrorsCheckBox = new JCheckBox();
 
         setFocusTraversalPolicy(null);
 
         hostLabel.setLabelFor(hostTextField);
 
         Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.hostLabel.text_1"));
+
         hostTextField.setMinimumSize(new Dimension(150, 19));
 
         portLabel.setLabelFor(portTextField);
 
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.portLabel.text_1"));
+
         portTextField.setMinimumSize(new Dimension(20, 19));
 
         userLabel.setLabelFor(userTextField);
@@ -253,17 +257,17 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
 
         timeoutLabel.setLabelFor(timeoutTextField);
 
-
         Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.timeoutLabel.text_1")); // NOI18N
+
         timeoutTextField.setMinimumSize(new Dimension(20, 19));
         Mnemonics.setLocalizedText(passiveModeCheckBox, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passiveModeCheckBox.text_1"));
 
         passwordLabelInfo.setLabelFor(this);
-
         Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passwordLabelInfo.text_1"));
+        Mnemonics.setLocalizedText(ignoreDisconnectErrorsCheckBox, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.ignoreDisconnectErrorsCheckBox.text"));
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -292,6 +296,9 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
                         .addGap(0, 0, 0))
                     .addComponent(passwordLabelInfo)))
             .addComponent(passiveModeCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(ignoreDisconnectErrorsCheckBox)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -322,6 +329,8 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
                     .addComponent(timeoutLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(passiveModeCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(ignoreDisconnectErrorsCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -355,6 +364,8 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         passiveModeCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passiveModeCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         passwordLabelInfo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passwordLabelInfo.AccessibleContext.accessibleName")); // NOI18N
         passwordLabelInfo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passwordLabelInfo.AccessibleContext.accessibleDescription")); // NOI18N
+        ignoreDisconnectErrorsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.ignoreDisconnectErrorsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -364,6 +375,7 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
     private JCheckBox anonymousCheckBox;
     private JLabel hostLabel;
     private JTextField hostTextField;
+    private JCheckBox ignoreDisconnectErrorsCheckBox;
     private JLabel initialDirectoryLabel;
     private JTextField initialDirectoryTextField;
     private JCheckBox passiveModeCheckBox;
@@ -443,6 +455,14 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         passiveModeCheckBox.setSelected(passiveMode);
     }
 
+    public boolean getIgnoreDisconnectErrors() {
+        return ignoreDisconnectErrorsCheckBox.isSelected();
+    }
+
+    public void setIgnoreDisconnectErrors(boolean ignoreDisconnectErrors) {
+        ignoreDisconnectErrorsCheckBox.setSelected(ignoreDisconnectErrors);
+    }
+
     @Override
     public void read(Configuration cfg) {
         setHostName(cfg.getValue(FtpConnectionProvider.HOST));
@@ -453,6 +473,7 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         setInitialDirectory(cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY));
         setTimeout(cfg.getValue(FtpConnectionProvider.TIMEOUT));
         setPassiveMode(Boolean.valueOf(cfg.getValue(FtpConnectionProvider.PASSIVE_MODE)));
+        setIgnoreDisconnectErrors(Boolean.valueOf(cfg.getValue(FtpConnectionProvider.IGNORE_DISCONNECT_ERRORS)));
     }
 
     @Override
@@ -465,6 +486,7 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         cfg.putValue(FtpConnectionProvider.INITIAL_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(getInitialDirectory(), false));
         cfg.putValue(FtpConnectionProvider.TIMEOUT, getTimeout());
         cfg.putValue(FtpConnectionProvider.PASSIVE_MODE, String.valueOf(isPassiveMode()));
+        cfg.putValue(FtpConnectionProvider.IGNORE_DISCONNECT_ERRORS, String.valueOf(getIgnoreDisconnectErrors()));
     }
 
     private final class DefaultDocumentListener implements DocumentListener {
