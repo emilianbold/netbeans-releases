@@ -62,6 +62,7 @@ import java.util.Set;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -74,7 +75,7 @@ import org.openide.xml.XMLUtil;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectTypes={
                             @ProjectType(id="org-netbeans-modules-apisupport-project"),
                             @ProjectType(id="org-netbeans-modules-apisupport-project-suite")
@@ -96,7 +97,10 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public boolean isFileObjectSupported(final Project project, final FileObject fo) {
-        return SourceUtils.isTest(fo); // profile single only for tests
+        // FIXME
+        JavaProfilerSource src = JavaProfilerSource.createFrom(fo);
+        
+        return src != null ? src.isTest() : false; // profile single only for tests
     }
 
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
@@ -191,8 +195,10 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
     }
 
     public void configurePropertiesForProfiling(final Properties props, final Project project, final FileObject profiledClassFile) {
-        if (profiledClassFile != null) {
-            final String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
+        // FIXME
+        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+        if (src != null) {
+            final String profiledClass = src.getTopLevelClass().getVMName();
             props.setProperty("profile.class", profiledClass); //NOI18N
             // Set for all cases (incl. Profile Project, Profile File) but should only
             // be taken into account when profiling single test

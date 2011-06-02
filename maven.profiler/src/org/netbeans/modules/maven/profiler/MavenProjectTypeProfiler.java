@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectType="org-netbeans-modules-maven")
 public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     

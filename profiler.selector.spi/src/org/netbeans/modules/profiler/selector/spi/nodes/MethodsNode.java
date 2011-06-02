@@ -45,6 +45,8 @@ package org.netbeans.modules.profiler.selector.spi.nodes;
 
 import org.openide.util.NbBundle;
 import java.util.List;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.LanguageIcons;
 
 
 /**
@@ -62,7 +64,7 @@ abstract public class MethodsNode extends ContainerNode {
 
     /** Creates a new instance of MethodsNode */
     public MethodsNode(final ClassNode parent) {
-        super(NbBundle.getMessage(MethodsNode.class, "Methods_DisplayName"), IconResource.METHODS_ICON, parent); // NOI18N
+        super(NbBundle.getMessage(MethodsNode.class, "Methods_DisplayName"), Icons.getIcon(LanguageIcons.METHODS), parent); // NOI18N
     }
 
     protected SelectorChildren getChildren() {

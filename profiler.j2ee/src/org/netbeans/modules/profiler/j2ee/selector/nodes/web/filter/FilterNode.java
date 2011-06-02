@@ -44,8 +44,9 @@
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.filter;
 
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 
@@ -65,7 +66,7 @@ public class FilterNode extends JavaClassNode {
     /** Creates a new instance of ServletNode */
     public FilterNode(ClasspathInfo cpInfo, TypeElement classElement, String filterName, String filterMapping,
                       ContainerNode parent) {
-        super(cpInfo, Utils.FILTER_ICON, classElement, parent);
+        super(cpInfo, Icons.getIcon(JavaEEIcons.FILTER), classElement, parent);
         externalName = filterName;
         mapping = filterMapping;
     }
