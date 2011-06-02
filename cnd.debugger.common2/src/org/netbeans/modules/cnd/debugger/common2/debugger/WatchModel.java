@@ -168,7 +168,7 @@ public final class WatchModel extends VariableModel
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
 	assert ! (node instanceof NativeWatch) : 
 	       "WatchModel.get*(): got a NativeWatch"; // NOI18N
-        if (node instanceof WatchModel.EmptyWatch) {
+        if (node instanceof EmptyWatch) {
             return "<_html><font color=\"#808080\">&lt;" + // [TODO] <_html> tag used as workaround, see TreeModelNode.setName() // NOI18N
                         Catalog.get("CTL_WatchesModel_Empty_Watch_Hint") + // NOI18N
                         "&gt;</font></html>"; // NOI18N
@@ -307,6 +307,9 @@ public final class WatchModel extends VariableModel
     @Override
     public void performDefaultAction(Object o) throws UnknownTypeException {
 	assert !(o instanceof Watch);
+        if (o instanceof EmptyWatch) {
+            NEW_WATCH_ACTION.actionPerformed(null);
+        }
 	// no-op
 	// LATER: super.performDefaultAction(o);
     }
@@ -315,7 +318,7 @@ public final class WatchModel extends VariableModel
 	Catalog.get("ACT_WATCH_Delete"), // NOI18N
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return !(node instanceof WatchModel.EmptyWatch);
+                return !(node instanceof EmptyWatch);
             }
             public void perform (final Object[] nodes) {
 		if (!SwingUtilities.isEventDispatchThread()) {
