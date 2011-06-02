@@ -47,7 +47,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 
 

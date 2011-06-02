@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.profiler.j2ee.impl.icons;
 
-import org.netbeans.modules.profiler.api.LanguageIcons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 
 /**
  *

@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;

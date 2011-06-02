@@ -48,8 +48,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.profiler.api.Icons;
-import org.netbeans.modules.profiler.api.LanguageIcons;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 
 /**
  *

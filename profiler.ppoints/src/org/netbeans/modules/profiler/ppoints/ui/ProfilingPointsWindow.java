@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import java.awt.BorderLayout;
-import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 

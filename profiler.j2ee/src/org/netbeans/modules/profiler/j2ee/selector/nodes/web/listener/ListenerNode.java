@@ -45,7 +45,7 @@ package org.netbeans.modules.profiler.j2ee.selector.nodes.web.listener;
 
 import org.netbeans.api.java.source.ClasspathInfo;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;

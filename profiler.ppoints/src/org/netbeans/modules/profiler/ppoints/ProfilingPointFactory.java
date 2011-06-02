@@ -62,7 +62,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
-import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 

@@ -45,8 +45,8 @@ package org.netbeans.modules.profiler.selector.spi.nodes;
 
 import org.openide.util.NbBundle;
 import java.util.List;
-import org.netbeans.modules.profiler.api.Icons;
-import org.netbeans.modules.profiler.api.LanguageIcons;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 
 
 /**

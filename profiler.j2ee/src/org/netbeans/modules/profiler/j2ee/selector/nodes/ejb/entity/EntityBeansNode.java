@@ -62,7 +62,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;

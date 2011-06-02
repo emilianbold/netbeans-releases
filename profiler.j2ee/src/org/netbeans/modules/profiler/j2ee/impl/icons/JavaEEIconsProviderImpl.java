@@ -43,7 +43,7 @@ package org.netbeans.modules.profiler.j2ee.impl.icons;
 
 import java.awt.Image;
 import java.util.Map;
-import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.spi.IconsProvider;
 import org.openide.util.ImageUtilities;
 

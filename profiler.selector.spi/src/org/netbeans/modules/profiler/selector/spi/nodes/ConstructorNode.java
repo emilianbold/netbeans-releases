@@ -45,8 +45,8 @@ package org.netbeans.modules.profiler.selector.spi.nodes;
 
 import java.util.Set;
 import javax.swing.Icon;
-import org.netbeans.modules.profiler.api.Icons;
-import org.netbeans.modules.profiler.api.LanguageIcons;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 
 /**
  *

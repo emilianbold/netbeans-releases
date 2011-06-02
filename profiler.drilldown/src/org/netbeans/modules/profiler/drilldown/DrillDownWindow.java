@@ -56,8 +56,8 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
-import org.netbeans.modules.profiler.api.GeneralIcons;
-import org.netbeans.modules.profiler.api.Icons;
+import org.netbeans.modules.profiler.api.icons.GeneralIcons;
+import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 
 
