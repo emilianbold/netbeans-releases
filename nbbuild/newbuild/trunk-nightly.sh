@@ -90,7 +90,7 @@ fi
 
 ###################################################################
 #
-# Sign Windows installers
+# Sign Windows ML installers
 #
 ###################################################################
 
@@ -109,7 +109,7 @@ if [ -z $SIGN_PASS ]; then
     exit 1;
 fi
 
-find $DIST/bundles -name "netbeans-*-windows.exe" | xargs -t -I [] java -Xmx1024m -jar $SIGN_CLIENT/Client.jar -file_to_sign [] -user $SIGN_USR -pass $SIGN_PASS -signed_location $DIST/bundles -sign_method microsoft
+find $DIST/ml/bundles -name "netbeans-*-windows.exe" | xargs -t -I [] java -Xmx1024m -jar $SIGN_CLIENT/Client.jar -file_to_sign [] -user $SIGN_USR -pass $SIGN_PASS -signed_location $DIST/bundles -sign_method microsoft
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then

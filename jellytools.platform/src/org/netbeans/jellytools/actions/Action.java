@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
@@ -82,7 +83,7 @@ import org.openide.util.actions.SystemAction;
  * UnsupportedOperationException.<p>
  * Current implementation supports MENU_MODE when menuPath is defined, POPUP_MODE
  * when popupPath is defined, API_MODE when systemActionClass is defined and
- * SHORTCUT_MODE when shorcut is defined (see Action constructors).<p>
+ * SHORTCUT_MODE when shortcut is defined (see Action constructors).<p>
  * Action also can be performed using runtime default mode by calling perform(...).<p>
  * When default mode is not support by the action other modes are tried till
  * supported mode found and action is performed.
@@ -90,7 +91,9 @@ import org.openide.util.actions.SystemAction;
  * <BR>Timeouts used: <BR>
  * Action.WaitAfterShortcutTimeout - time to sleep between shortcuts in sequence (default 0) <BR>
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
+ */
 public class Action {
     
     /** through menu action performing mode */    
@@ -564,12 +567,13 @@ public class Action {
         try {
             // actions has to be invoked in dispatch thread (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
             EventQueue.invokeAndWait(new Runnable() {
+                @Override
                 public void run() {
                     if(SystemAction.class.isAssignableFrom(systemActionClass)) {
                         // SystemAction used in IDE
                         SystemAction.get(systemActionClass).actionPerformed(
                                                 new ActionEvent(new Container(), 0, null));
-                    } else {
+                    } else if (javax.swing.Action.class.isAssignableFrom(systemActionClass)) {
                         // action implements javax.swing.Action
                         try {
                             ((javax.swing.Action)systemActionClass.newInstance()).actionPerformed(
@@ -577,12 +581,21 @@ public class Action {
                         } catch (Exception e) {
                             throw new JemmyException("Exception when trying to create instance of action \""+systemActionClass.getName()+"\".", e);
                         }
+                    } else if (ActionListener.class.isAssignableFrom(systemActionClass)) {
+                        try {
+                            ((ActionListener)systemActionClass.newInstance()).actionPerformed(
+                                                new ActionEvent(new Container(), 0, null));
+                        } catch (Exception e) {
+                            throw new JemmyException("Exception when trying to create instance of action \""+systemActionClass.getName()+"\".", e);
+                        }
+                    } else {
+                        throw new JemmyException("Cannot create instance of action \""+systemActionClass.getName()+"\".");
                     }
                 }
             });
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
-            throw new JemmyException("Interrupted", e);
+            throw new JemmyException("API call failed.", e);
         }
     }
     
@@ -957,6 +970,7 @@ public class Action {
             
         /** returns String representation of shortcut
          * @return String representation of shortcut */        
+        @Override
         public String toString() {
             String s=KeyEvent.getKeyModifiersText(getKeyModifiers());
             return s+(s.length()>0?"+":"")+KeyEvent.getKeyText(getKeyCode());

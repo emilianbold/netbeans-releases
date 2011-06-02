@@ -57,6 +57,8 @@ class InternalTerminalPack extends IOPack {
     private Pty pty = null;
     protected final InputOutput io;
     private String slaveName = null;
+    
+    private static final Boolean fixEraseKeyInTerminal = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
 
     public InternalTerminalPack(TermComponent console, InputOutput io, ExecutionEnvironment exEnv) {
         super(console, exEnv, false);
@@ -73,6 +75,9 @@ class InternalTerminalPack extends IOPack {
         }
         PtySupport.connect(io, pty);
         slaveName = pty.getSlaveName();
+        if (fixEraseKeyInTerminal) {
+            PtySupport.setBackspaceAsEraseChar(exEnv, slaveName);
+        }
         return true;
     }
 

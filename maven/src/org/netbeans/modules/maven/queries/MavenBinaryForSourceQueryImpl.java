@@ -43,16 +43,17 @@
 package org.netbeans.modules.maven.queries;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
@@ -63,39 +64,17 @@ import org.openide.util.Exceptions;
  *
  * @author mkleint
  */
+@SuppressWarnings("DMI_COLLECTION_OF_URLS")
 public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation {
     private final NbMavenProjectImpl project;
-    private HashMap<URL, Res> results;
+    private final Map<URL,Res> results;
     
-    /** Creates a new instance of MavenBinaryForSourceQueryImpl */
     public MavenBinaryForSourceQueryImpl(NbMavenProjectImpl prj) {
         project = prj;
         results = new HashMap<URL, Res>();
     }
     
-    /**
-     * Returns the binary root(s) for a given source root.
-     * <p>
-     * The returned BinaryForSourceQuery.Result must be a singleton. It means that for
-     * repeated calling of this method with the same recognized root the method has to
-     * return the same instance of BinaryForSourceQuery.Result.<br>
-     * The typical implemantation of the findBinaryRoots contains 3 steps:
-     * <ol>
-     * <li>Look into the cache if there is already a result for the root, if so return it</li>
-     * <li>Check if the sourceRoot is recognized, if not return null</li>
-     * <li>Create a new BinaryForSourceQuery.Result for the sourceRoot, put it into the cache
-     * and return it.</li>
-     * </ol>
-     * </p>
-     * <p>
-     * Any absolute URL may be used but typically it will use the <code>file</code>
-     * protocol for directory entries and <code>jar</code> protocol for JAR entries
-     * (e.g. <samp>jar:file:/tmp/foo.jar!/</samp>).
-     * </p>
-     * @param sourceRoot the source path root
-     * @return a result object encapsulating the answer or null if the sourceRoot is not recognized
-     */    
-    public BinaryForSourceQuery.Result findBinaryRoots(URL url) {
+    public @Override BinaryForSourceQuery.Result findBinaryRoots(URL url) {
         if (results.containsKey(url)) {
             return results.get(url);
         }
@@ -111,10 +90,16 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
                 File testSrcFile = testSrc != null ? FileUtil.normalizeFile(new File(testSrc)) : null;
                 toReturn = checkRoot(fil, srcFile, testSrcFile);
                 if (toReturn == null) {
-                    URI[] gens = project.getGeneratedSourceRoots();
-                    for (URI gen : gens) {
-                        // assume generated sources are not test..
+                    for (URI gen : project.getGeneratedSourceRoots(false)) {
                         toReturn = checkRoot(fil, gen, null);
+                        if (toReturn != null) {
+                            break;
+                        }
+                    }
+                }
+                if (toReturn == null) {
+                    for (URI gen : project.getGeneratedSourceRoots(true)) {
+                        toReturn = checkRoot(fil, null, gen);
                         if (toReturn != null) {
                             break;
                         }
@@ -165,29 +150,17 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
 
         }
         
-         /**
-         * Get the binary roots.         
-         * @return array of roots of compiled classes (may be empty but not null)
-         */       
-        public URL[] getRoots() {
-            try         {
-                File binFile = project.getProjectWatcher().getOutputDirectory(isTest);
-
-                return new java.net.URL[]{binFile.toURI().toURL()};
-            }
-            catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return new URL[0];
+        public @Override URL[] getRoots() {
+            return new URL[] {FileUtil.urlForArchiveOrDir(project.getProjectWatcher().getOutputDirectory(isTest))};
         }   
 
-        public void addChangeListener(ChangeListener changeListener) {
+        public @Override void addChangeListener(ChangeListener changeListener) {
             synchronized (listeners) {
                 listeners.add(changeListener);
             }
         }
         
-        public void removeChangeListener(ChangeListener changeListener) {
+        public @Override void removeChangeListener(ChangeListener changeListener) {
             synchronized (listeners) {
                 listeners.remove(changeListener);
             }

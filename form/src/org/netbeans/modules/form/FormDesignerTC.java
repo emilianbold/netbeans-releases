@@ -65,16 +65,23 @@ import org.netbeans.modules.form.assistant.AssistantView;
 import org.openide.actions.FileSystemAction;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
-/**
- *
- * @author Tomas Pavek
- */
+@MultiViewElement.Registration(
+    displayName="#CTL_DesignTabCaption",
+    iconBase=FormEditorSupport.iconURL,
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=FormEditorSupport.MV_FORM_ID,
+    mimeType="text/x-form",
+    position=2000
+)
 public class FormDesignerTC extends TopComponent implements MultiViewElement {
 
     private FormEditorSupport formEditorSupport;
@@ -93,6 +100,10 @@ public class FormDesignerTC extends TopComponent implements MultiViewElement {
     private static String iconURL =
         "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
 
+    public FormDesignerTC(Lookup lkp) {
+        this(lkp.lookup(FormEditorSupport.class));
+    }
+    
     FormDesignerTC(FormEditorSupport formEditorSupport) {
         this.formEditorSupport = formEditorSupport;
         lookup = new FormDesignerLookup();
@@ -352,16 +363,7 @@ public class FormDesignerTC extends TopComponent implements MultiViewElement {
 
     @Override
     public CloseOperationState canCloseElement() {
-        // if this is not the last cloned designer, closing is OK
-        if (!FormEditorSupport.isLastView(multiViewObserver.getTopComponent())) {
-            return CloseOperationState.STATE_OK;
-        }
-
-        // return a placeholder state - to be sure our CloseHandler is called
-        return MultiViewFactory.createUnsafeCloseState(
-            "ID_FORM_CLOSING", // dummy ID // NOI18N
-            MultiViewFactory.NOOP_CLOSE_ACTION,
-            MultiViewFactory.NOOP_CLOSE_ACTION);
+        return formEditorSupport.canCloseElement(multiViewObserver.getTopComponent());
     }
 
     @Override

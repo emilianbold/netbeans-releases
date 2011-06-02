@@ -143,12 +143,27 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     * @param support support that holds the document and operations above it
     */
     public CloneableEditor(CloneableEditorSupport support) {
+        this(support, false);
+    }
+
+    /** Creates new editor component associated with
+    * support object (possibly also with its 
+    * {@link CloneableEditorSupport#CloneableEditorSupport(org.openide.text.CloneableEditorSupport.Env, org.openide.util.Lookup) lookup}.
+    * 
+    * @param support support that holds the document and operations above it
+    * @param associateLookup true, if {@link #getLookup()} should return the lookup
+    *   associated with {@link CloneableEditorSupport}.
+    */
+    public CloneableEditor(CloneableEditorSupport support, boolean associateLookup) {
         super();
         this.support = support;
 
         updateName();
         _setCloseOperation();
         setMinimumSize(new Dimension(10, 10));
+        if (associateLookup) {
+            associateLookup(support.getLookup());
+        }
     }
     @SuppressWarnings("deprecation")
     private void _setCloseOperation() {
@@ -240,6 +255,18 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             return false;
         }
         return !Boolean.TRUE.equals(getClientProperty("oldInitialize")); // NOI18N
+    }
+
+    /** Asks the associated {@link CloneableEditorSupport} to initialize
+     * this editor via its {@link CloneableEditorSupport#initializeCloneableEditor(org.openide.text.CloneableEditor)}
+     * method. By default called from the support on various occasions including
+     * shortly after creation and 
+     * after the {@link CloneableEditor} has been deserialized.
+     * 
+     * @since 6.37 
+     */
+    protected final void initializeBySupport() {
+        cloneableEditorSupport().initializeCloneableEditor(this);
     }
     
     class AWTQuery implements Runnable {
@@ -868,14 +895,27 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
     }
 
-    /** When closing last view, also close the document.
+    /** When closing last view, also close the document. 
+     * Calls {@link #closeLast(boolean) closeLast(true)}.
      * @return <code>true</code> if close succeeded
      */
     @Override
     protected boolean closeLast() {
-        if (!support.canClose()) {
-            // if we cannot close the last window
-            return false;
+        return closeLast(true);
+    }
+    
+    /** Utility method to close the document. 
+     * 
+     * @param ask verify and ask the user whether a document can be closed or not?
+     * @return true if the document was successfully closed
+     * @since 6.37
+     */
+    protected final boolean closeLast(boolean ask) {
+        if (ask) {
+            if (!support.canClose()) {
+                // if we cannot close the last window
+                return false;
+            }
         }
 
         // close everything and do not ask
@@ -1111,6 +1151,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
 
         out.writeObject(new Integer(pos));
+        out.writeBoolean(getLookup() == support.getLookup());
     }
 
     @Override
@@ -1138,6 +1179,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         updateName();
         isComponentOpened = true;
+        if (in.available() > 0) {
+            boolean associate = in.readBoolean();
+            if (associate && support != null) {
+                associateLookup(support.getLookup());
+            }
+        }
     }
 
     /**
@@ -1167,7 +1214,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         if (discard()) {
             throw new java.io.InvalidObjectException("Deserialized component is invalid: " + this); // NOI18N
         } else {
-            support.initializeCloneableEditor(this);
+            initializeBySupport();
 
             return this;
         }

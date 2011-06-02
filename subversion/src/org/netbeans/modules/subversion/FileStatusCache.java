@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.text.DateFormat;
 import java.util.regex.*;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -1231,7 +1232,7 @@ public class FileStatusCache {
         private static final Logger LABELS_CACHE_LOG = Logger.getLogger("org.netbeans.modules.subversion.FileLabelsCache"); //NOI18N
         private final LinkedHashMap<File, FileLabelInfo> fileLabels;
         private static final long VALID_LABEL_PERIOD = 20000; // 20 seconds
-        private static final FileLabelInfo FAKE_LABEL_INFO = new FileLabelInfo("", "", ""); //NOI18N
+        private static final FileLabelInfo FAKE_LABEL_INFO = new FileLabelInfo("", "", "", "", "", ""); //NOI18N
         private final Set<File> filesForLabelRefresh = new HashSet<File>();
         private final RequestProcessor.Task labelInfoRefreshTask;
         private boolean mimeTypeFlag;
@@ -1340,7 +1341,13 @@ public class FileStatusCache {
                             ISVNInfo info = client.getInfoFromWorkingCopy(file);
                             SVNRevision rev = info.getRevision();
                             String revisionString, stickyString, binaryString = null;
+                            String lastRevisionString, lastDateString = null;
                             revisionString = rev != null && !"-1".equals(rev.toString()) ? rev.toString() : ""; //NOI18N
+                            rev = info.getLastChangedRevision();
+                            lastRevisionString = rev != null && !"-1".equals(rev.toString()) ? rev.toString() : ""; //NOI18N
+                            if (info.getLastChangedDate() != null) {
+                                lastDateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(info.getLastChangedDate());
+                            }
                             if (mimeTypeFlag) {
                                 // call svn prop command only when really needed
                                 FileInformation fi = master.getCachedStatus(file);
@@ -1357,7 +1364,7 @@ public class FileStatusCache {
                                 // slower
                                 stickyString = SvnUtils.getCopy(file);
                             }
-                            labels.put(file, new FileLabelInfo(revisionString, binaryString, stickyString));
+                            labels.put(file, new FileLabelInfo(revisionString, binaryString, stickyString, info.getLastCommitAuthor(), lastDateString, lastRevisionString));
                         } catch (SVNClientException ex) {
                             if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                                 try {
@@ -1434,13 +1441,19 @@ public class FileStatusCache {
             private final String revisionString;
             private final String binaryString;
             private final String stickyString;
+            private final String lastRevisionString;
+            private final String lastAuthorString;
+            private final String lastDateString;
             private boolean pickedUp;
             private long timestamp;
 
-            private FileLabelInfo(String revisionString, String binaryString, String stickyString) {
+            private FileLabelInfo (String revisionString, String binaryString, String stickyString, String lastAuthorString, String lastDateString, String lastRevisionString) {
                 this.revisionString = revisionString;
                 this.binaryString = binaryString;
                 this.stickyString = stickyString;
+                this.lastAuthorString = lastAuthorString;
+                this.lastDateString = lastDateString;
+                this.lastRevisionString = lastRevisionString;
                 updateTimestamp();
             }
 
@@ -1485,23 +1498,41 @@ public class FileStatusCache {
                 return stickyString != null ? stickyString : "";            //NOI18N
             }
 
+            public String getLastRevisionString () {
+                return lastRevisionString == null ? "" : lastRevisionString; //NOI18N
+            }
+
+            public String getLastDateString () {
+                return lastDateString == null ? "" : lastDateString; //NOI18N
+            }
+
+            public String getLastAuthorString () {
+                return lastAuthorString == null ? "" : lastAuthorString; //NOI18N
+            }
+
             @Override
             public boolean equals (Object obj) {
                 if (obj instanceof FileLabelInfo) {
                     FileLabelInfo other = (FileLabelInfo) obj;
                     return getRevisionString().equals(other.getRevisionString())
                             && getBinaryString().equals(other.getBinaryString())
-                            && getStickyString().equals(other.getStickyString());
+                            && getStickyString().equals(other.getStickyString())
+                            && getLastAuthorString().equals(other.getLastAuthorString())
+                            && getLastDateString().equals(other.getLastDateString())
+                            && getLastRevisionString().equals(other.getLastRevisionString());
                 }
                 return super.equals(obj);
             }
 
             @Override
-            public int hashCode() {
-                int hash = 3;
-                hash = 53 * hash + (this.revisionString != null ? this.revisionString.hashCode() : 0);
-                hash = 53 * hash + (this.binaryString != null ? this.binaryString.hashCode() : 0);
-                hash = 53 * hash + (this.stickyString != null ? this.stickyString.hashCode() : 0);
+            public int hashCode () {
+                int hash = 7;
+                hash = 71 * hash + (this.revisionString != null ? this.revisionString.hashCode() : 0);
+                hash = 71 * hash + (this.binaryString != null ? this.binaryString.hashCode() : 0);
+                hash = 71 * hash + (this.stickyString != null ? this.stickyString.hashCode() : 0);
+                hash = 71 * hash + (this.lastRevisionString != null ? this.lastRevisionString.hashCode() : 0);
+                hash = 71 * hash + (this.lastAuthorString != null ? this.lastAuthorString.hashCode() : 0);
+                hash = 71 * hash + (this.lastDateString != null ? this.lastDateString.hashCode() : 0);
                 return hash;
             }
         }
