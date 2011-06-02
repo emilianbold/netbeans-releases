@@ -140,7 +140,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     protected Problem handleClass(CompilationContext info, RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
         TypeElement type = (TypeElement) targetType;
         String clazz = type.getQualifiedName().toString();
-        String beanName = ELVariableResolvers.findBeanName(clazz, getFileObject());
+        String beanName = ELVariableResolvers.findBeanName(info, clazz, getFileObject());
         if (beanName != null) {
             ELIndex index = ELIndex.get(handle.getFileObject());
             Collection<? extends IndexResult> result = index.findIdentifierReferences(beanName);
@@ -167,7 +167,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         for (ELElement each : getMatchingElements(result)) {
             //use the Node's original offset since at least the JsfELVariableResolver uses the html snapshot embedded
             //offsets. Since the html is the top level for facelets it will match.
-            List<VariableInfo> variables = ELVariableResolvers.getVariables(each.getSnapshot(), each.getOriginalOffset().getStart()); 
+            List<VariableInfo> variables = ELVariableResolvers.getVariables(info, each.getSnapshot(), each.getOriginalOffset().getStart()); 
 
             //finds all EL AST Node-s representing the refactored property
             //the code tries to resolves the base object either as a bean or as a property
@@ -207,7 +207,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                     String astIdent = node.getImage();
                     
                     //try to resolve the identifier as a bean class
-                    String beanClass = ELVariableResolvers.findBeanClass(astIdent, context);
+                    String beanClass = ELVariableResolvers.findBeanClass(info, astIdent, context);
                     
                     TypeElement fmbType = null;
                     if (beanClass != null) {

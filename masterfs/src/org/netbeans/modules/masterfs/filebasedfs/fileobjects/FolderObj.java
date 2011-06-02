@@ -132,9 +132,28 @@ public final class FolderObj extends BaseFileObj {
         return (name.indexOf("/") == -1) ? factory.getValidFileObject(file, FileObjectFactory.Caller.GetFileObject) : null;
     }
 
+    @Override
+    protected boolean noFolderListeners() {
+        if (noListeners()) {
+            for (FileObject f : computeChildren(true)) {
+                if (f instanceof BaseFileObj) {
+                    BaseFileObj bfo = (BaseFileObj)f;
+                    if (!bfo.noListeners()) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
+    }
   
     @Override
     public final FileObject[] getChildren() {
+        return computeChildren(false);
+    }
+    
+    private FileObject[] computeChildren(boolean onlyExisting) {
         final Map<FileNaming,FileObject> results = new LinkedHashMap<FileNaming,FileObject>();
 
         final ChildrenCache childrenCache = getChildrenCache();
@@ -162,7 +181,9 @@ public final class FolderObj extends BaseFileObj {
             FileInfo fInfo = new FileInfo (fileName.getFile(), 1);
             fInfo.setFileNaming(fileName);
             
-            final FileObject fo = lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
+            final FileObject fo = onlyExisting ?
+                lfs.getCachedOnly(fileName.getFile()) :
+                lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
             if (fo != null) {
                 assert fileName == ((BaseFileObj)fo).getFileName() : 
                     dumpFileNaming(fileName) + "\n" + 

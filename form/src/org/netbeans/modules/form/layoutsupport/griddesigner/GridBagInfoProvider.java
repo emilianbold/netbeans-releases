@@ -122,6 +122,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
         } catch (NoSuchFieldException nsfex) {
             FormUtils.LOGGER.log(Level.INFO, nsfex.getMessage(), nsfex);
         }
+        containerEmphColor = deriveEmphColor(container);
     }
 
     private GridBagLayout getLayout() {
@@ -299,9 +300,10 @@ public class GridBagInfoProvider implements GridInfoProvider {
     }
     
     @Override
-    public void paintConstraints(Graphics g, Component component, boolean selected, Color emphColor) {
+    public void paintConstraints(Graphics g, Component component, boolean selected) {
         assert g instanceof Graphics2D;
         Graphics2D gg = (Graphics2D) g.create();
+        Color emphColor = containerEmphColor;
 
         // component proxy position and size
         Rectangle inner = component.getBounds();
@@ -324,7 +326,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
             Color emphColorTransparent = new Color(emphColor.getRed(), emphColor.getGreen(), emphColor.getBlue(), INSETS_COLOR_ALPHA);
             if( insets.top > 0 ) {
                 gg.setColor(emphColorTransparent);
-                gg.fill(new Rectangle(inner.x - insets.left, inner.y - insets.top, inner.width + insets.left + insets.right, insets.top));
+                gg.fillRect(inner.x - insets.left, inner.y - insets.top, inner.width + insets.left + insets.right, insets.top);
                 gg.setColor(emphColor);
                 gg.drawLine(inner.x - insets.left, inner.y - insets.top, inner.x + inner.width + insets.right, inner.y - insets.top);
                 gg.drawLine(inner.x - insets.left, inner.y - insets.top, inner.x, inner.y);
@@ -332,7 +334,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
             }
             if( insets.bottom > 0 ) {
                 gg.setColor(emphColorTransparent);
-                gg.fill(new Rectangle(inner.x - insets.left, inner.y + inner.height, inner.width + insets.left + insets.right, insets.bottom));
+                gg.fillRect(inner.x - insets.left, inner.y + inner.height, inner.width + insets.left + insets.right, insets.bottom);
                 gg.setColor(emphColor);
                 gg.drawLine(inner.x - insets.left, inner.y + inner.height + insets.bottom, inner.x + inner.width + insets.right, inner.y + inner.height + insets.bottom);
                 gg.drawLine(inner.x - insets.left, inner.y + inner.height + insets.bottom, inner.x, inner.y + inner.height);
@@ -340,7 +342,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
             }
             if( insets.left > 0 ) {
                 gg.setColor(emphColorTransparent);
-                gg.fill(new Rectangle(inner.x - insets.left, inner.y, insets.left, inner.height));
+                gg.fillRect(inner.x - insets.left, inner.y, insets.left, inner.height);
                 gg.setColor(emphColor);
                 gg.drawLine(inner.x - insets.left, inner.y - insets.top, inner.x - insets.left, inner.y + inner.height + insets.bottom);
                 if( insets.top <= 0 ) gg.drawLine(inner.x - insets.left, inner.y, inner.x, inner.y);
@@ -348,7 +350,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
             }
             if( insets.right > 0 ) {
                 gg.setColor(emphColorTransparent);
-                gg.fill(new Rectangle(inner.x + inner.width, inner.y, insets.right, inner.height));
+                gg.fillRect(inner.x + inner.width, inner.y, insets.right, inner.height);
                 gg.setColor(emphColor);
                 gg.drawLine(inner.x + inner.width + insets.right, inner.y - insets.top, inner.x + inner.width + insets.right, inner.y + inner.height + insets.bottom);
                 if( insets.top <= 0 ) gg.drawLine(inner.x + inner.width + insets.right, inner.y, inner.x + inner.width, inner.y);
@@ -364,10 +366,10 @@ public class GridBagInfoProvider implements GridInfoProvider {
             Paint remainderTexture = new TexturePaint(TILE_REMAINDER, remainderTextureRectangle);
             gg.setPaint(remainderTexture);
             if( hRemainder && ( outer.width >= THICKNESS_REMAINDER ) ) {
-                gg.fill(new Rectangle(outer.x + outer.width - THICKNESS_REMAINDER, outer.y, THICKNESS_REMAINDER, outer.height));
+                gg.fillRect(outer.x + outer.width - THICKNESS_REMAINDER, outer.y, THICKNESS_REMAINDER, outer.height);
             }
             if( vRemainder && ( outer.height >= THICKNESS_REMAINDER ) ) {
-                gg.fill(new Rectangle(outer.x, outer.y + outer.height - THICKNESS_REMAINDER, outer.width, THICKNESS_REMAINDER));
+                gg.fillRect(outer.x, outer.y + outer.height - THICKNESS_REMAINDER, outer.width, THICKNESS_REMAINDER);
             }
         }
 
@@ -379,10 +381,10 @@ public class GridBagInfoProvider implements GridInfoProvider {
             Paint relativeTexture = new TexturePaint(TILE_RELATIVE, relativeTextureRectangle);
             gg.setPaint(relativeTexture);
             if( hRelative && ( outer.width >= THICKNESS_RELATIVE ) ) {
-                gg.fill(new Rectangle(outer.x + outer.width - THICKNESS_RELATIVE, outer.y, THICKNESS_RELATIVE, outer.height));
+                gg.fillRect(outer.x + outer.width - THICKNESS_RELATIVE, outer.y, THICKNESS_RELATIVE, outer.height);
             }
             if( vRelative && ( outer.height >= THICKNESS_RELATIVE ) ) {
-                gg.fill(new Rectangle(outer.x, outer.y + outer.height - THICKNESS_RELATIVE, outer.width, THICKNESS_RELATIVE));
+                gg.fillRect(outer.x, outer.y + outer.height - THICKNESS_RELATIVE, outer.width, THICKNESS_RELATIVE);
             }
         }
 
@@ -390,29 +392,40 @@ public class GridBagInfoProvider implements GridInfoProvider {
         int hPad = getIPadX(component);
         int vPad = getIPadY(component);
         if( hPad > 0 || vPad > 0 ) {
-            // derive the emphasizing color from component background
-            Color backColor = component.getBackground();
-            int backBrightness = ( 30 * backColor.getRed() + 59 * backColor.getGreen() + 11 * backColor.getBlue() ) / 100;
-            Color padEmphColor = backBrightness >= 128 ? backColor.darker() : backColor.brighter();
+            Color padEmphColor = deriveEmphColor(component);
             gg.setColor(new Color(padEmphColor.getRed(), padEmphColor.getGreen(), padEmphColor.getBlue(), IPADDING_COLOR_ALPHA));
             int padTop = vPad / 2;
             int padBottom = vPad - padTop;
             int padLeft = hPad / 2;
             int padRight = hPad - padLeft;
             if( padTop > 0 ) {
-                gg.fill(new Rectangle(inner.x, inner.y, inner.width, padTop));
+                gg.fillRect(inner.x, inner.y, inner.width, padTop);
             }
             if( padBottom > 0 ) {
-                gg.fill(new Rectangle(inner.x, inner.y + inner.height-padBottom, inner.width, padBottom));
+                gg.fillRect(inner.x, inner.y + inner.height-padBottom, inner.width, padBottom);
             }
             if( padLeft > 0 ) {
-                gg.fill(new Rectangle(inner.x, inner.y + padTop, padLeft, inner.height - padTop - padBottom));
+                gg.fillRect(inner.x, inner.y + padTop, padLeft, inner.height - padTop - padBottom);
             }
             if( padRight > 0 ) {
-                gg.fill(new Rectangle(inner.x + inner.width - padRight, inner.y + padTop, padRight, inner.height - padTop - padBottom));
+                gg.fillRect(inner.x + inner.width - padRight, inner.y + padTop, padRight, inner.height - padTop - padBottom);
             }
         }
         gg.dispose();
+    }
+
+    private Color containerEmphColor;
+    private static Color deriveEmphColor(Component component) {
+        // derive the color for emphasizing from background
+        Color backColor = component.getBackground();
+        Color emphColor;
+        int backBrightness = (30*backColor.getRed()+59*backColor.getGreen()+11*backColor.getBlue())/100;
+        if (backBrightness >= 128) {
+            emphColor = backColor.darker();
+        } else { // brightening a dark area seems visually less notable than darkening a bright area
+            emphColor = backColor.brighter().brighter();
+        }
+        return emphColor;
     }
 
 }

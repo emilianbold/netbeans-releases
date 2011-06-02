@@ -55,12 +55,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * @author Vladimir Kvashin
@@ -71,6 +74,7 @@ public class WritingQueue {
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.writing.queue.logger"); // NOI18N
 
     private final ExecutionEnvironment execEnv;
+    private final Progress progress;
     
     /** maps remote file name to entry */
     private final Map<String, Entry> entries = new HashMap<String, Entry>();
@@ -79,9 +83,10 @@ public class WritingQueue {
 
     private final Set<String> failed = new HashSet<String>();
     private final Object monitor = new Object();
-
+    
     public WritingQueue(ExecutionEnvironment env) {
         this.execEnv = env;
+        this.progress = new Progress(env);
     }
 
     public static WritingQueue getInstance(ExecutionEnvironment env) {
@@ -106,6 +111,7 @@ public class WritingQueue {
                 entries.put(dstFileName, entry);
             }
             entry.scheduleUpload();
+            progress.entryAdded(entries.size());
         }
     }
 
@@ -253,7 +259,54 @@ public class WritingQueue {
                 } finally {
                     entries.remove(fo.getPath());
                 }
+                progress.entryDone(entries.size());
             }
         }
     }
+    
+    private static class Progress {
+
+        private ProgressHandle progressHandle;
+        private int progressCurrent;
+        private int progressTotal;
+
+        private final ExecutionEnvironment env;
+
+        public Progress(ExecutionEnvironment env) {
+            this.env = env;
+            String msg=NbBundle.getMessage(WritingQueue.class, "WritingQueueProgressTitle", env.getDisplayName());
+        }
+
+        public synchronized  void entryAdded(int entriesCount) {
+            if (progressHandle == null) {
+                progressHandle = createProgress();
+                progressTotal =  entriesCount;
+                progressCurrent = 0;
+                progressHandle.start(0, progressTotal);
+            } else {
+                if (progressTotal < entriesCount/2) {
+                    progressTotal = entriesCount;
+                    progressHandle.finish();
+                    progressHandle = createProgress();
+                    progressHandle.start(progressCurrent, entriesCount);
+                }
+            }
+        }
+                
+        public synchronized void entryDone(int entriesCount) {
+            progressCurrent++;
+            if (progressHandle != null) { // paranoya
+                progressHandle.progress(progressCurrent);
+                if (entriesCount == 0) {
+                    progressHandle.finish();
+                    progressHandle = null;
+                }
+            }
+        }
+        
+        private ProgressHandle createProgress() {
+            String msg=NbBundle.getMessage(WritingQueue.class, "WritingQueueProgressTitle", env.getDisplayName());                
+            return ProgressHandleFactory.createHandle(msg);
+        }
+    }        
 }

@@ -142,7 +142,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                             ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
 
                     if (ELTypeUtilities.isRawObject(ccontext, nodeToResolve)) {
-                        proposeRawObjectProperties(context, prefixMatcher, nodeToResolve, proposals);            
+                        proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);            
                     } else if(ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
                         // seems to be something like "sessionScope.^", so complete beans from the scope
                         proposeBeansFromScope(ccontext, context, prefixMatcher, element, nodeToResolve, proposals);
@@ -290,7 +290,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     private void proposeManagedBeans(CompilationContext info, CodeCompletionContext context,
             PrefixMatcher prefix, ELElement elElement, List<CompletionProposal> proposals) {
 
-        for (VariableInfo bean : ELVariableResolvers.getManagedBeans(getFileObject(context))) {
+        for (VariableInfo bean : ELVariableResolvers.getManagedBeans(info, getFileObject(context))) {
             if (!prefix.matches(bean.name)) {
                 continue;
             }
@@ -317,7 +317,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             scope = scope.substring(0, scope.length() - scopeString.length());
         }
 
-        for (VariableInfo bean : ELVariableResolvers.getBeansInScope(scope, context.getParserResult().getSnapshot())) {
+        for (VariableInfo bean : ELVariableResolvers.getBeansInScope(info, scope, context.getParserResult().getSnapshot())) {
             if (!prefix.matches(bean.name)) {
                 continue;
             }
@@ -329,10 +329,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private void proposeRawObjectProperties(CodeCompletionContext context,
+    private void proposeRawObjectProperties(CompilationContext info, CodeCompletionContext context,
             PrefixMatcher prefix, Node scopeNode, List<CompletionProposal> proposals) {
 
-        for (VariableInfo property : ELVariableResolvers.getRawObjectProperties(scopeNode.getImage(), context.getParserResult().getSnapshot())) {
+        for (VariableInfo property : ELVariableResolvers.getRawObjectProperties(info, scopeNode.getImage(), context.getParserResult().getSnapshot())) {
             if (!prefix.matches(property.name)) {
                 continue;
             }
@@ -346,7 +346,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     private void proposeVariables(CompilationContext info, CodeCompletionContext context,
             PrefixMatcher prefix, ELElement elElement, List<CompletionProposal> proposals) {
 
-        for (VariableInfo bean : ELVariableResolvers.getVariables(context.getParserResult().getSnapshot(), context.getCaretOffset())) {
+        for (VariableInfo bean : ELVariableResolvers.getVariables(info, context.getParserResult().getSnapshot(), context.getCaretOffset())) {
             if (!prefix.matches(bean.name)) {
                 continue;
             }

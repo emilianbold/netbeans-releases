@@ -281,8 +281,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 g.setColor(GridDesigner.SELECTION_COLOR);
                 g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
             }
-            if(!animation) paintConstraints(g);
-            paintSelection(g);
+            if (!animation) {
+                paintConstraints(g);
+                paintSelection(g);
+            }
         }
         if (animation && (animPhase == 1f)) {
             // End of animation
@@ -406,21 +408,12 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
         gClip.clipRect(paneRect.x, paneRect.y, paneRect.width, paneRect.height);
         gClip.translate(shift.x, shift.y);
-        // derive the color for emphasizing from background
-        Color backColor = componentPane.getBackground();
-        Color emphColor;
-        int backBrightness = ( 30 * backColor.getRed() + 59 * backColor.getGreen() + 11 * backColor.getBlue() ) / 100;
-        if( backBrightness >= 128 ) {
-            emphColor = backColor.darker();
-        } else { // brightening a dark area seems visually less notable than darkening a bright area
-            emphColor = backColor.brighter().brighter();
-        }
         for (Component comp : componentPane.getComponents()) {
             if (GridUtils.isPaddingComponent(comp)) {
                 continue;
             }
             boolean selected = selection.contains(comp);
-            gridInfo.paintConstraints(gClip, comp, selected, emphColor);
+            gridInfo.paintConstraints(gClip, comp, selected);
         }
         gClip.dispose();
     }
@@ -431,7 +424,6 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @param g graphics object.
      */
     private void paintSelection(Graphics g) {
-        if (animation) return;
         Graphics gClip = g.create();
         Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
         gClip.clipRect(paneRect.x, paneRect.y, paneRect.width, paneRect.height);
