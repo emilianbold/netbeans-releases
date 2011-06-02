@@ -257,23 +257,6 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return j2eePlatform.getJavaPlatform();
     }
 
-    public JComponent getAdditionalConfigurationComponent(Project project) {
-        if (loadGenConfig == null) {
-            //      Set<String> extSet = new HashSet<String>();
-            //      extSet.add("jmx");
-            loadGenConfig = new LoadGenPanel();
-            //      loadGenConfig.setStartDir(FileUtil.toFile(project.getProjectDirectory()));
-            //      loadGenConfig.setSupportedExtensions(extSet);
-            loadGenConfig.addPropertyChangeListener(LoadGenPanel.PATH, WeakListeners.propertyChange(pcl, loadGenConfig));
-
-            //      loadGenPath = loadGenConfig.getSelectedScript();
-        }
-
-        loadGenConfig.attach(project);
-
-        return loadGenConfig;
-    }
-
     public SelectProfilingTask.SettingsConfigurator getSettingsConfigurator() {
         if (configurator == null) {
             configurator = new DefaultSettingsConfigurator() {
