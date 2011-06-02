@@ -500,10 +500,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     @Override
     public CsmClassifier getClassifier() {
-        return getClassifier(true);        
+        return getClassifier(new ArrayList<CsmInstantiation>(), false);
     }
     
-    public CsmClassifier getClassifier(boolean specialize) {
+    public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
         CsmClassifier classifier = _getClassifier();
         boolean needToRender = true;
         if (CsmBaseUtilities.isValid(classifier)) {
@@ -547,6 +547,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 try {
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
                         obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, this, specialize);
+                        if(CsmKindUtilities.isInstantiation(obj)) {
+                            instantiations.add((CsmInstantiation)obj);
+                        }
                     } else {
                         return null;
                     }
@@ -557,12 +560,58 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 obj = ip.instantiate((CsmTemplate) classifier, this);
             }
             if (CsmKindUtilities.isClassifier(obj)) {
+                obj = specialize((CsmClassifier) obj, instantiations);
                 classifier = (CsmClassifier) obj;
             }
         }
         return classifier;
     }
 
+    public CsmObject specialize(CsmClassifier classifier, List<CsmInstantiation> instantiations) {
+        CsmObject obj = classifier;
+        if(!instantiations.isEmpty()) {
+            List<CsmInstantiation> originalInstantiations = new ArrayList<CsmInstantiation>();
+            while (CsmKindUtilities.isInstantiation(obj)) {
+                originalInstantiations.add((CsmInstantiation)obj);
+                obj = ((CsmInstantiation)obj).getTemplateDeclaration();
+            }
+
+            CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+            if (ip instanceof InstantiationProviderImpl) {
+                Resolver resolver = ResolverFactory.createResolver(this);
+                try {
+                    if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                        for (int i = instantiations.size() - 1; i > 0; i--) {
+                            obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, instantiations.get(i), false);
+                        }
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, instantiations.get(0), true);
+                    }
+                } finally {
+                    ResolverFactory.releaseResolver(resolver);
+                }
+            }
+
+            if(!CsmKindUtilities.isSpecialization(obj)) {
+                while (CsmKindUtilities.isInstantiation(obj)) {
+                    obj = ((CsmInstantiation)obj).getTemplateDeclaration();
+                }
+                if (ip instanceof InstantiationProviderImpl) {
+                    Resolver resolver = ResolverFactory.createResolver(this);
+                    try {
+                        if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                            for (int i = originalInstantiations.size() - 1; i >= 0; i--) {
+                                obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, originalInstantiations.get(i), false);
+                            }
+                        }
+                    } finally {
+                        ResolverFactory.releaseResolver(resolver);
+                    }
+                }
+            }
+        }
+        return obj;
+    }     
+    
     void setOwner(CsmObject owner) {
         this.owner = owner;
     }
