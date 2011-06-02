@@ -108,10 +108,9 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
             }
         }
         FileObject rootFolder = getRootFolder();
-        File rootFolderFile = CndFileUtils.toFile(rootFolder);
         params.putAll(CodeGenerator.generateTemplateParamsForFunctions(
                 getTestFileName().replaceFirst("[.].*", ""), // NOI18N
-                rootFolderFile.getAbsolutePath(),
+                rootFolder.getPath(),
                 fs,
                 ("cpp".equals(wiz.getTemplate().getPrimaryFile().getExt())?CodeGenerator.Language.CPP:CodeGenerator.Language.C))); // NOI18N
 

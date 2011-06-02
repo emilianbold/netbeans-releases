@@ -50,6 +50,7 @@ import java.io.*;
 import java.util.*;
 import javax.swing.JEditorPane;
 import org.netbeans.junit.NbTestCase;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.io.NbMarshalledObject;
@@ -114,6 +115,12 @@ implements CloneableEditorSupport.Env {
         panes = support.getOpenedPanes ();
         assertNotNull ("One again", panes);
         assertEquals ("One is there again", 1, panes.length);
+    }
+    
+    public void testInitializeBySupport() {
+        CloneableEditor ce = new CloneableEditor(support);
+        ce.initializeBySupport();
+        assertEquals("Nodes changed", Node.EMPTY, ce.getActivatedNodes()[0]);
     }
     
     public void testEditorPaneActionMapIsParentOfCloneableEditorActionMap() {
@@ -228,6 +235,12 @@ implements CloneableEditorSupport.Env {
         protected String messageToolTip() {
             return "ToolTip";
         }
+
+        @Override
+        protected void initializeCloneableEditor(CloneableEditor editor) {
+            editor.setActivatedNodes(new Node[] { Node.EMPTY });
+        }
+        
         
     }
 

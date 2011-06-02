@@ -55,10 +55,12 @@ import java.awt.Image;
 import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.JPanel;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.SourceViewMarker;
+import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.io.NbMarshalledObject;
 
@@ -160,6 +162,86 @@ public class MultiViewCloneableTopComponentTest extends AbstractMultiViewTopComp
         MultiViewHandler hand = MultiViews.findMultiViewHandler(tc);
         assertFalse(desc3.equals(Accessor.DEFAULT.extractDescription(hand.getSelectedPerspective())));
         
+    }
+    public void testUpdateNameTellsAll() throws Exception {
+        class P extends CloneableEditor {
+            int cnt;
+            boolean used;
+            
+            @Override
+            public void updateName() {
+                cnt++;
+            }
+        }
+        final P edit1 = new P();
+        final P edit2 = new P();
+        final P edit3 = new P();
+        
+        
+        MVElem elem1 = new MVElem() {
+            @Override
+            public JComponent getVisualRepresentation() {
+                edit1.used = true;
+                return edit1;
+            }
+        };
+        MVElem elem2 = new MVElem() {
+            @Override
+            public JComponent getVisualRepresentation() {
+                edit2.used = true;
+                return edit2;
+            }
+        };
+        MVElem elem3 = new SourceMVElem() {
+            @Override
+            public JComponent getVisualRepresentation() {
+                edit3.used = true;
+                return edit3;
+            }
+        };
+        MultiViewDescription desc1 = new MVDesc("desc1", null, 0, elem1);
+        MultiViewDescription desc2 = new MVDesc("desc2", null, 0, elem2);
+        MultiViewDescription desc3 = new SourceMVDesc("desc3", null, 0, elem3);
+        MultiViewDescription[] descs = new MultiViewDescription[] { desc1, desc2, desc3 };
+        CloneableTopComponent tc = MultiViewFactory.createCloneableMultiView(descs, desc1);
+        
+        tc.open();
+        tc.requestActive();
+        CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)tc;
+        
+        assertTrue("First one is used", edit1.used);
+        assertFalse("Second one is not used", edit2.used);
+        assertFalse("Third one is not used", edit3.used);
+        
+        edit1.cnt = 0;
+        edit2.cnt = 0;
+        edit3.cnt = 0;
+        pane.updateName();
+        
+        assertTrue("First one is used (obviously)", edit1.used);
+        assertFalse("Second one is still not used", edit2.used);
+        assertTrue("Third one is now used", edit3.used);
+        
+        assertEquals("Update name called on first as it is used", 1, edit1.cnt);
+        assertEquals("Update name called on third as it marked", 1, edit3.cnt);
+        assertEquals("No call to 2nd one", 0, edit2.cnt);
+        
+        MultiViewHandler h = MultiViews.findMultiViewHandler(tc);
+        h.requestActive(h.getPerspectives()[1]);
+        h.requestVisible(h.getPerspectives()[1]);
+        
+        edit1.cnt = 0;
+        edit2.cnt = 0;
+        edit3.cnt = 0;
+        pane.updateName();
+        
+        assertTrue("1st is used", edit1.used);
+        assertTrue("2nd is used", edit2.used);
+        assertTrue("3rd is now used", edit3.used);
+        
+        assertEquals("All updateName called: 1st", 1, edit1.cnt);
+        assertEquals("All updateName called: 2nd", 1, edit2.cnt);
+        assertEquals("All updateName called: 3rd", 1, edit3.cnt);
     }
     
     private class SourceMVDesc extends MVDesc implements SourceViewMarker {

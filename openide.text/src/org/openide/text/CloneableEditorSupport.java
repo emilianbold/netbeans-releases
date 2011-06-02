@@ -1324,7 +1324,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Creates and initializes
      * new <code>CloneableEditor</code> component.
-     * Typically do not override this method.
+     * Typically do not override this method (unless you are dealing with 
+     * <a href="@org-netbeans-core-multiview@/overview-summary.html">multiviews</a>).
      * For creating your own <code>CloneableEditor</code> type component
      * override {@link #createCloneableEditor} method.
      *
