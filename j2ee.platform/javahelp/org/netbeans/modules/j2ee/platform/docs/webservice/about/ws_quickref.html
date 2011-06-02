@@ -61,13 +61,17 @@
     </td>
   </tr>
 <tr valign="top"> 
-    <td>Create a web service.</td>
+    <td>Create a JAX-WS web service.</td>
     <td> 
 	    <ul>		    
 		    
 		    <li>Right-click the project and choose New &gt; Web Service.</li>
       </ul>
     </td>
+  </tr>
+  <tr valign="top">
+      <td>Create a RESTful (JAX-RS/Jersey) web service.</td>
+      <td><ul><li>Right-click the project and choose New &gt; RESTful Web Service from Entity Classes/Patterns/Database.</li></ul></td>
   </tr>
   <tr valign="top"> 
     <td>Build a project.</td>
@@ -113,7 +117,11 @@
     <td> 
       <ul>
 		    
-        	    <li><a href="../expose/test_ws.html">Test the web service</a> from the IDE.</li>
+        	    <li>To <a href="../expose/test_ws.html">test a JAX-WS service</a>, go to the Projects window, right-click the web service's node,
+                        and select Test Web Service. You must be able to deploy the service to a running target server.</li>
+                    <li>To <a href="../expose/test_rest.html">test a RESTful web service</a>, go to the Projects window, right-click the project's
+                    node, and select Test RESTful Web Services. You must be able to deploy the service to a running target server. A browser
+                    window opens in which you can test different HTTP methods against the web service's nodes.</li>
       </ul>
     </td>
   </tr>
