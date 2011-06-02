@@ -86,7 +86,6 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionLayers;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
 import org.netbeans.modules.cnd.debugger.common2.utils.ListMap;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 
@@ -135,8 +134,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     // turned on when killEngine is issued
     protected boolean postedKillEngine = false;
-
-    protected FileMapper fmap = FileMapper.getDefault();
 
     protected Location visitedLocation = null;
 
@@ -858,7 +855,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             public void run() {
                 if (isSrcRequested() && haveSource()) {
                     // Locations should already be in local path form.
-		    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
+		    final String mFileName = fmap().engineToWorld(getVisitedLocation().src());
 		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line(), 
                             NativeDebuggerImpl.this);
 		    if (l != null) {
@@ -933,10 +930,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	updateLocation(true, ShowMode.AUTO);
     }
 
-    public FileMapper fmap() {
-	return fmap;
-    }
-    
     public void setSrcOODMessage(String msg) {
         if (msg != null && !srcOOD) {
             // If srcOOD is not set it's quite likley that this is a
