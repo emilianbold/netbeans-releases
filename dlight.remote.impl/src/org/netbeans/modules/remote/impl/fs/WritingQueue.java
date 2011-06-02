@@ -280,15 +280,20 @@ public class WritingQueue {
         public synchronized  void entryAdded(int entriesCount) {
             if (progressHandle == null) {
                 progressHandle = createProgress();
-                progressTotal =  entriesCount;
+                progressTotal =  0;
                 progressCurrent = 0;
-                progressHandle.start(0, progressTotal);
+                progressHandle.start();
             } else {
-                if (progressTotal < entriesCount/2) {
-                    progressTotal = entriesCount;
-                    progressHandle.finish();
-                    progressHandle = createProgress();
-                    progressHandle.start(progressCurrent, entriesCount);
+                if (progressTotal < entriesCount/2) {                    
+                    if (progressTotal == 0) {
+                        progressTotal = entriesCount;
+                        progressHandle.switchToDeterminate(progressCurrent);
+                    } else {
+                        progressTotal = entriesCount;
+                        progressHandle.finish();
+                        progressHandle = createProgress();
+                        progressHandle.start(progressTotal);
+                    }
                 }
             }
         }
@@ -296,7 +301,9 @@ public class WritingQueue {
         public synchronized void entryDone(int entriesCount) {
             progressCurrent++;
             if (progressHandle != null) { // paranoya
-                progressHandle.progress(progressCurrent);
+                if (progressTotal > 0) {
+                    progressHandle.progress(Math.min(progressCurrent, progressTotal));
+                }
                 if (entriesCount == 0) {
                     progressHandle.finish();
                     progressHandle = null;
