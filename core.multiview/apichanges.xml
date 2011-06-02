@@ -113,8 +113,8 @@ is the proper place.
     <change id="MultiViewEditorElement">
         <api name="multiview_text"/>
         <summary>MultiViewEditorElement</summary>
-        <version major="1" minor="22"/>
-        <date day="14" month="4" year="2011"/>
+        <version major="1" minor="24"/>
+        <date day="1" month="6" year="2011"/>
         <author login="jtulach"/>
         <compatibility addition="yes"/>
         <description>
@@ -127,8 +127,8 @@ is the proper place.
     <change id="MultiViews.create.mimetype">
         <api name="multiview_api"/>
         <summary>MultiViews.create for MIME type</summary>
-        <version major="1" minor="22"/>
-        <date day="14" month="4" year="2011"/>
+        <version major="1" minor="24"/>
+        <date day="1" month="6" year="2011"/>
         <author login="jtulach"/>
         <compatibility addition="yes"/>
         <description>
@@ -141,8 +141,8 @@ is the proper place.
     <change id="MultiViewElement.Registration">
         <api name="multiview_spi"/>
         <summary>@MultiViewElement.Registration</summary>
-        <version major="1" minor="22"/>
-        <date day="14" month="4" year="2011"/>
+        <version major="1" minor="24"/>
+        <date day="1" month="6" year="2011"/>
         <author login="jtulach"/>
         <compatibility addition="yes"/>
         <description>
