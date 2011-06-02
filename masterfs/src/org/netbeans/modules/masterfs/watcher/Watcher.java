@@ -42,11 +42,11 @@ package org.netbeans.modules.masterfs.watcher;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.ReferenceQueue;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -55,9 +55,12 @@ import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.watcher.Notifier.KeyRef;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -72,7 +75,7 @@ import org.openide.util.lookup.ServiceProviders;
 public final class Watcher extends AnnotationProvider {
     static final Logger LOG = Logger.getLogger(Watcher.class.getName());
 
-    private final Ext<?> ext;
+    private Ext<?> ext;
     
     public Watcher() {
         // Watcher disabled manually or for some tests
@@ -84,8 +87,50 @@ public final class Watcher extends AnnotationProvider {
         ext = make(getNotifierForPlatform());
     }
     
+    final void installNotifier(Notifier<?> n) {
+        ext = make(n);
+    }
+    
+    private static Ext<?> ext() {
+        final Watcher w = Lookup.getDefault().lookup(Watcher.class);
+        return w == null ? null : w.ext;
+        
+    }
+    
     public static boolean isEnabled() {
-        return Lookup.getDefault().lookup(Watcher.class).ext != null;
+        return ext() != null;
+    }
+    
+    public static boolean isWatched(FileObject fo) {
+        Ext<?> ext = ext();
+        if (ext == null) {
+            return false;
+        }
+        if (fo.isData()) {
+            fo = fo.getParent();
+        }
+        return ext.isWatched(fo);
+    }
+    public static void register(FileObject fo) {
+        Ext<?> ext = ext();
+        if (ext == null) {
+            return;
+        }
+        if (fo.isData()) {
+            fo = fo.getParent();
+        }
+        ext.register(fo);
+    }
+    
+    public static void unregister(FileObject fo) {
+        Ext<?> ext = ext();
+        if (ext == null) {
+            return;
+        }
+        if (fo.isData()) {
+            fo = fo.getParent();
+        }
+        ext.unregister(fo);
     }
 
     public static File wrap(File f, FileObject fo) {
@@ -128,9 +173,15 @@ public final class Watcher extends AnnotationProvider {
         return impl == null ? null : new Ext<KEY>(impl);
     }
 
+    final void clearQueue() throws IOException {
+        ext.clearQueue();
+    }
+
     private class Ext<KEY> extends ProvidedExtensions implements Runnable {
+        private final ReferenceQueue<FileObject> REF = new ReferenceQueue<FileObject>();
         private final Notifier<KEY> impl;
-        private final Map<FileObject, KEY> map = new WeakHashMap<FileObject, KEY>();
+        private final Object LOCK = new Object();
+        private final Set<KeyRef> references = new HashSet<KeyRef>();
         private final Thread watcher;
         private volatile boolean shutdown;
 
@@ -152,51 +203,124 @@ public final class Watcher extends AnnotationProvider {
         public @Override long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
             assert dir instanceof FOFile;
             FileObject fo = ((FOFile)dir).fo;
-            String path = dir.getAbsolutePath();
-
             if (fo == null && !dir.exists()) {
                 return -1;
             }
-
-            assert fo != null : "No fileobject for " + path;
-
-            if (map.containsKey(fo)) {
-                return -1;
-            }
-
-            try {
-                map.put(fo, impl.addWatch(path));
-            } catch (IOException ex) {
-                // XXX: handle resource overflow gracefully
-                LOG.log(Level.WARNING, "Cannot add filesystem watch for {0}", path);
-                LOG.log(Level.INFO, "Exception", ex);
-            }
-
+            assert fo != null : "No fileobject for " + dir;
+            register(fo);
             return -1;
+        }
+        private boolean isWatched(FileObject fo) {
+            assert fo.isFolder() : "Should be a folder: " + fo;
+            try {
+                clearQueue();
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Exception while clearing the queue", ex);
+            }
+            synchronized (LOCK) {
+                KeyRef kr = impl.new KeyRef(fo, null, null);
+                return getReferences().contains(kr);
+            }
+        }
+        
+        final void register(FileObject fo) {
+            assert fo.isFolder() : "Should be a folder: " + fo;
+            try {
+                clearQueue();
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Exception while clearing the queue", ex);
+            }
+            synchronized (LOCK) {
+                KeyRef kr = impl.new KeyRef(fo, null, null);
+                if (getReferences().contains(kr)) {
+                    return;
+                }
+
+                try {
+                    getReferences().add(impl.new KeyRef(fo, impl.addWatch(fo.getPath()), REF));
+                } catch (IOException ex) {
+                    // XXX: handle resource overflow gracefully
+                    LOG.log(Level.WARNING, "Cannot add filesystem watch for {0}", fo.getPath());
+                    LOG.log(Level.INFO, "Exception", ex);
+                }
+            }
+        }
+        
+        final void unregister(FileObject fo) {
+            assert fo.isFolder() : "Should be a folder: " + fo;
+            synchronized (LOCK) {
+                final KeyRef[] equalOne = new KeyRef[1];
+                KeyRef kr = impl.new KeyRef(fo, null, null) {
+                    @Override
+                    public boolean equals(Object obj) {
+                        if (super.equals(obj)) {
+                            equalOne[0] = (KeyRef)obj;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    public int hashCode() {
+                        return super.hashCode();
+                    }
+                };
+                if (!references.contains(kr)) {
+                    return;
+                }
+                assert equalOne[0] != null;
+                getReferences().remove(equalOne[0]);
+                try {
+                    equalOne[0].removeWatch();
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, "Cannot remove filesystem watch for {0}", fo.getPath());
+                    LOG.log(Level.INFO, "Exception", ex);
+                }
+            }
+        }
+        
+        final void clearQueue() throws IOException {
+            for (;;) {
+                KeyRef kr = (KeyRef)REF.poll();
+                if (kr == null) {
+                    break;
+                }
+                synchronized (LOCK) {
+                    getReferences().remove(kr);
+                    kr.removeWatch();
+                }
+            }
         }
 
         @Override public void run() {
             while (!shutdown) {
                 try {
+                    clearQueue();
                     String path = impl.nextEvent();
                     LOG.log(Level.FINEST, "nextEvent: {0}", path); 
-
-                    // XXX: handle the all-dirty message
                     if (path == null) { // all dirty
-                        enqueueAll(map.keySet());
+                        Set<FileObject> set = new HashSet<FileObject>();
+                        synchronized (LOCK) {
+                            for (KeyRef kr : getReferences()) {
+                                set.add(kr.get());
+                            }
+                        }
+                        enqueueAll(set);
                     } else {
                         // don't ask for nonexistent FOs
                         File file = new File(path);
                         final FileObjectFactory factory = FileObjectFactory.getInstance(file);
                         FileObject fo = factory.getCachedOnly(file);
-
-                        // may be null
-                        if (map.containsKey(fo)) {
-                            enqueue(fo);
-                        } else {
+                        if (fo == null) {
                             fo = factory.getCachedOnly(file.getParentFile());
-                            if (map.containsKey(fo)) {
-                                enqueue(fo);
+                        }
+                        if (fo != null) {
+                            synchronized (LOCK) {
+                                KeyRef kr = impl.new KeyRef(fo, null, null);
+                                if (getReferences().contains(kr)) {
+                                    enqueue(fo);
+                                }
                             }
                         }
                     }
@@ -217,6 +341,11 @@ public final class Watcher extends AnnotationProvider {
             watcher.interrupt();
             impl.stop();
             watcher.join(1000);
+        }
+
+        private Set<KeyRef> getReferences() {
+            assert Thread.holdsLock(LOCK);
+            return references;
         }
     }
 
@@ -305,6 +434,4 @@ public final class Watcher extends AnnotationProvider {
         }
         return null;
     }
-
-
 }
