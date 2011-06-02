@@ -48,21 +48,21 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="lib-compile" depends="build-init">
-        <mkdir dir="build/libclasses"/>
-        <javac destdir="build/libclasses" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
+        <mkdir dir="${build.dir}/libclasses"/>
+        <javac destdir="${build.dir}/libclasses" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
             <src path="lib/src"/>
             <classpath>
                 <pathelement location="${netbeans.dest.dir}/ide/modules/ext/xerces-2.8.0.jar"/>
             </classpath>
         </javac>
-        <copy todir="build/libclasses">
+        <copy todir="${build.dir}/libclasses">
             <fileset dir="lib/src" excludes="${jar-excludes}"/>
         </copy>
     </target>
 
     <target name="lib-jar" depends="lib-compile">
         <jar jarfile="${netbeans.dest.dir}/ide/modules/ext/org-netbeans-tax.jar" index="${build.package.index}" compress="${build.package.compress}">
-            <fileset dir="build/libclasses"/>
+            <fileset dir="${build.dir}/libclasses"/>
         </jar>
     </target>
 

@@ -173,7 +173,7 @@ made subject to such option by the copyright holder.
             <extra-compilation-unit>
                 <package-root>lib/src</package-root>
                 <classpath>${xni-impl.jar}</classpath>
-                <built-to>build/libclasses</built-to>
+                <built-to>${build.dir}/libclasses</built-to>
                 <built-to>${cluster}/modules/ext/org-netbeans-tax.jar</built-to>
             </extra-compilation-unit>
         </data>
