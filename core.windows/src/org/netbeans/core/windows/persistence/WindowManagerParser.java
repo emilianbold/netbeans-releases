@@ -492,13 +492,16 @@ public class WindowManagerParser {
                 }
             }
 
-            if( null != merged ) {
+            if( null != merged && merged.tcRefConfigs.length > 0 ) {
                 for( ModeConfig mc : modeCfgList ) {
                     if( null != mc.otherNames && mc.otherNames.contains( merged.name ) ) {
-                        TCRefConfig[] refs = mc.tcRefConfigs;
-                        mc.tcRefConfigs = new TCRefConfig[refs.length + merged.tcRefConfigs.length];
-                        System.arraycopy( refs, 0, mc.tcRefConfigs, 0, refs.length );
-                        System.arraycopy( merged.tcRefConfigs, 0, mc.tcRefConfigs, refs.length, merged.tcRefConfigs.length );
+                        List<TCRefConfig> refs = new ArrayList<TCRefConfig>( Arrays.asList( mc.tcRefConfigs ) );
+                        for( TCRefConfig tcrf : merged.tcRefConfigs ) {
+                            if( !refs.contains( tcrf ) ) {
+                                refs.add( tcrf );
+                            }
+                        }
+                        mc.tcRefConfigs = refs.toArray( new TCRefConfig[refs.size()] );
                         break;
                     }
                 }
