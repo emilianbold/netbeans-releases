@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.el;
 
 import java.util.ArrayList;
@@ -64,14 +63,23 @@ public final class ELVariableResolvers {
      * @param context
      * @return the FQN of the bean or {@code null}.
      */
-    public static String findBeanClass(String beanName, FileObject context) {
-        for (ELVariableResolver resolver : getResolvers()) {
-            String beanClass = resolver.getBeanClass(beanName, context);
-            if (beanClass != null) {
-                return beanClass;
-            }
-        }
-        return null;
+    public static String findBeanClass(CompilationContext compilationContext, final String beanName, final FileObject context) {
+        return (String) compilationContext.cache().getOrCache(
+                CompilationCache.createKey(beanName, context),
+                new CompilationCache.ValueProvider<String>() {
+
+                    @Override
+                    public String get() {
+                        for (ELVariableResolver resolver : getResolvers()) {
+                            String beanClass = resolver.getBeanClass(beanName, context);
+                            if (beanClass != null) {
+                                return beanClass;
+                            }
+                        }
+                        return null;
+
+                    }
+                });
     }
 
     /**
@@ -80,98 +88,112 @@ public final class ELVariableResolvers {
      * @param context
      * @return the bean name or {@code null}.
      */
-    public static String findBeanName(String clazz, FileObject context) {
-        for (ELVariableResolver resolver : getResolvers()) {
-            String beanName = resolver.getBeanName(clazz, context);
-            if (beanName != null) {
-                return beanName;
-            }
-        }
-        return null;
+    public static String findBeanName(CompilationContext compilationContext,
+            final String clazz,
+            final FileObject context) {
+
+        return (String) compilationContext.cache().getOrCache(
+                CompilationCache.createKey(clazz, context),
+                new CompilationCache.ValueProvider<String>() {
+
+                    @Override
+                    public String get() {
+                        for (ELVariableResolver resolver : getResolvers()) {
+                            String beanName = resolver.getBeanName(clazz, context);
+                            if (beanName != null) {
+                                return beanName;
+                            }
+                        }
+                        return null;
+                    }
+                });
     }
 
-//    /**
-//     * Gets the AST node of the expression referred by the EL identifier
-//     * at the given {@code offset}.
-//     * @param snapshot
-//     * @param offset
-//     * @return the node or {@code null}.
-//     */
-//    public static Node getReferredExpression(Snapshot snapshot, int offset) {
-//        for (ELVariableResolver resolver : getResolvers()) {
-//            String expression = resolver.getReferredExpression(snapshot, offset);
-//            if (expression != null) {
-//                try {
-//                    return ELParser.parse(expression);
-//                } catch (ELException e) {
-//                    // not valid EL
-//            }
-//        }
-//        }
-//        return null;
-//    }
+    public static List<ELVariableResolver.VariableInfo> getManagedBeans(
+            CompilationContext compilationContext,
+            final FileObject context) {
 
-    public static List<ELVariableResolver.VariableInfo> getManagedBeans(FileObject context) {
-        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
-        for (ELVariableResolver resolver : getResolvers()) {
-            result.addAll(resolver.getManagedBeans(context));
-        }
-        return result;
+        return (List<ELVariableResolver.VariableInfo>) compilationContext.cache().getOrCache(
+                CompilationCache.createKey(context),
+                new CompilationCache.ValueProvider<List<ELVariableResolver.VariableInfo>>() {
+
+                    @Override
+                    public List<ELVariableResolver.VariableInfo> get() {
+                        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+                        for (ELVariableResolver resolver : getResolvers()) {
+                            result.addAll(resolver.getManagedBeans(context));
+                        }
+                        return result;
+                    }
+                });
+
     }
 
-    public static List<ELVariableResolver.VariableInfo> getVariables(Snapshot snapshot, int offset) {
-        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
-        for (ELVariableResolver resolver : getResolvers()) {
-            result.addAll(resolver.getVariables(snapshot, offset));
-        }
-        return result;
-    }
-    
-//    public static List<ELVariableResolver.VariableInfo> getVariables(Snapshot snapshot, int offset, ELTypeUtilities typeUtilities) {
-//        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
-//        for (ELVariableResolver resolver : getResolvers()) {
-//            Collection<ELVariableResolver.VariableInfo> vinfos = resolver.getVariables(snapshot, offset);
-//            //resove the unresolved variables (they do not have the clazz field properly set, jut the
-//            //expression
-//            for(ELVariableResolver.VariableInfo vi : vinfos) {
-//                if(vi.clazz == null) {
-//                    //unresolved
-//                    ELElement element;
-//                    try {
-//                        Node node = ELParser.parse(vi.expression);
-//                        element = ELElement.valid(node, vi.expression, OffsetRange.NONE, snapshot);
-//                    } catch (ELException ex) {
-//                        ELElement errorElement = ELElement.error(ex, vi.expression, OffsetRange.NONE, snapshot);
-//                        ELSanitizer sanitizer = new ELSanitizer(errorElement);
-//                        element = sanitizer.sanitized();
-//                    }
-//                    typeUtilities.resolveElement(element, node);
-//                }
-//            }
-//
-//            result.addAll(vinfos);
-//        }
-//        return result;
-//    }
+    public static List<ELVariableResolver.VariableInfo> getVariables(
+            CompilationContext compilationContext,
+            final Snapshot snapshot,
+            final int offset) {
 
-    public static List<ELVariableResolver.VariableInfo> getBeansInScope(String scope, Snapshot context) {
-        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
-        for (ELVariableResolver resolver : getResolvers()) {
-            result.addAll(resolver.getBeansInScope(scope, context));
-        }
-        return result;
+        return (List<ELVariableResolver.VariableInfo>) compilationContext.cache().getOrCache(
+                CompilationCache.createKey(snapshot, offset),
+                new CompilationCache.ValueProvider<List<ELVariableResolver.VariableInfo>>() {
+
+                    @Override
+                    public List<ELVariableResolver.VariableInfo> get() {
+                        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+                        for (ELVariableResolver resolver : getResolvers()) {
+                            result.addAll(resolver.getVariables(snapshot, offset));
+                        }
+                        return result;
+                    }
+                });
+
     }
 
-    public static List<ELVariableResolver.VariableInfo> getRawObjectProperties(String name, Snapshot context) {
-        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
-        for (ELVariableResolver resolver : getResolvers()) {
-            result.addAll(resolver.getRawObjectProperties(name, context));
-        }
-        return result;
+    public static List<ELVariableResolver.VariableInfo> getBeansInScope(
+            CompilationContext compilationContext,
+            final String scope,
+            final Snapshot context) {
+
+        return (List<ELVariableResolver.VariableInfo>) compilationContext.cache().getOrCache(
+                CompilationCache.createKey(scope, context),
+                new CompilationCache.ValueProvider<List<ELVariableResolver.VariableInfo>>() {
+
+                    @Override
+                    public List<ELVariableResolver.VariableInfo> get() {
+                        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+                        for (ELVariableResolver resolver : getResolvers()) {
+                            result.addAll(resolver.getBeansInScope(scope, context));
+                        }
+                        return result;
+                    }
+                });
+
+    }
+
+    public static List<ELVariableResolver.VariableInfo> getRawObjectProperties(
+            CompilationContext compilationContext,
+            final String name,
+            final Snapshot context) {
+
+        return (List<ELVariableResolver.VariableInfo>) compilationContext.cache().getOrCache(
+                CompilationCache.createKey(name, context),
+                new CompilationCache.ValueProvider<List<ELVariableResolver.VariableInfo>>() {
+
+                    @Override
+                    public List<ELVariableResolver.VariableInfo> get() {
+                        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+                        for (ELVariableResolver resolver : getResolvers()) {
+                            result.addAll(resolver.getRawObjectProperties(name, context));
+                        }
+                        return result;
+                    }
+                });
+
+
     }
 
     private static Collection<? extends ELVariableResolver> getResolvers() {
         return Lookup.getDefault().lookupAll(ELVariableResolver.class);
     }
-
 }

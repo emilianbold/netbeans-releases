@@ -364,7 +364,7 @@ public final class ELTypeUtilities {
         }
         if (tempClass == null) {
             // managed beans
-            tempClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getSnapshot().getSource().getFileObject());
+            tempClass = ELVariableResolvers.findBeanClass(info, identifier.getImage(), element.getSnapshot().getSource().getFileObject());
         }
         if (tempClass != null) {
             return info.info().getElements().getTypeElement(tempClass);
@@ -373,7 +373,7 @@ public final class ELTypeUtilities {
         // probably a variable
         int offset = element.getOriginalOffset().getStart() + identifier.startOffset();
 
-        Collection<ELVariableResolver.VariableInfo> vis = ELVariableResolvers.getVariables(element.getSnapshot(), offset);
+        Collection<ELVariableResolver.VariableInfo> vis = ELVariableResolvers.getVariables(info, element.getSnapshot(), offset);
         for (ELVariableResolver.VariableInfo vi : vis) {
             if (identifier.getImage().equals(vi.name)) {
                 try {
@@ -434,7 +434,7 @@ public final class ELTypeUtilities {
             public void visit(Node node) throws ELException {
                 if (node instanceof AstIdentifier) {
                     Node parent = node.jjtGetParent();
-                    String beanClass = ELVariableResolvers.findBeanClass(node.getImage(), context);
+                    String beanClass = ELVariableResolvers.findBeanClass(info, node.getImage(), context);
                     if (beanClass == null) {
                         return;
                     }
@@ -538,7 +538,7 @@ public final class ELTypeUtilities {
                                 // in resolving the beans they contain. The code below handles cases
                                 // like sessionScope.myBean => sessionScope is in position parent.jjtGetChild(i - 1)
                                 if (i > 0 && isScopeObject(info, parent.jjtGetChild(i - 1))) {
-                                    final String clazz = ELVariableResolvers.findBeanClass(child.getImage(), elem.getSnapshot().getSource().getFileObject());
+                                    final String clazz = ELVariableResolvers.findBeanClass(info, child.getImage(), elem.getSnapshot().getSource().getFileObject());
                                     if (clazz == null) {
                                         return;
                                     }
