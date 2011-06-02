@@ -70,6 +70,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
 
@@ -474,12 +475,24 @@ public abstract class BaseFileObj extends FileObject {
         return BaseFileObj.attribs.attributes(getFileName().getFile().getAbsolutePath().replace('\\', '/'));//NOI18N
     }
 
+    @Override
     public final void addFileChangeListener(final org.openide.filesystems.FileChangeListener fcl) {
         getEventSupport().add(FileChangeListener.class, fcl);
+        Watcher.register(this);
     }
 
+    @Override
     public final void removeFileChangeListener(final org.openide.filesystems.FileChangeListener fcl) {
         getEventSupport().remove(FileChangeListener.class, fcl);
+        if (noFolderListeners()) {
+            Watcher.unregister(this);
+        }
+    }
+    
+    protected abstract boolean noFolderListeners();
+    
+    final boolean noListeners() {
+        return getEventSupport().getListenerCount() == 0;
     }
 
     @Override

@@ -132,6 +132,11 @@ public class ReplaceForSerialization extends Object implements java.io.Serializa
         }
 
         public void refreshImpl(final boolean expected, boolean fire) {
-    }    
+        }
+
+        @Override
+        protected boolean noFolderListeners() {
+            return true;
+        }
     }
 }
