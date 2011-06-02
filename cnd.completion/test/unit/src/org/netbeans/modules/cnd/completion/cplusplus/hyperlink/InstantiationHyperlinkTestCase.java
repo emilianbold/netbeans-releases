@@ -191,4 +191,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 185657 - Unresolved ids in two dimensional vector usage
         performTest("bug185657.cpp", 854, 25, "bug185657.cpp", 847, 5);
     }
+    
+    public void testBug199079() throws Exception {
+        // Bug 199079 - Unresolved id in case of nested type specialization
+        performTest("bug199079.cpp", 24, 7, "bug199079.cpp", 2, 5);
+    }
+    
 }
