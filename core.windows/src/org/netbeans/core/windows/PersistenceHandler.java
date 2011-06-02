@@ -819,6 +819,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles adding mode to model.
      * @param modeConfig configuration data of added mode
      */
+    @Override
     public synchronized void modeConfigAdded(ModeConfig modeConfig) {
         if(DEBUG) {
             debugLog("WMI.modeConfigAdded mo:" + modeConfig.name); // NOI18N
@@ -830,6 +831,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles removing mode from model.
      * @param modeName unique name of removed mode
      */
+    @Override
     public synchronized void modeConfigRemoved(String modeName) {
         if(DEBUG) {
             debugLog("WMI.modeConfigRemoved mo:" + modeName); // NOI18N
@@ -851,6 +853,7 @@ final public class PersistenceHandler implements PersistenceObserver {
      * @param tcRefNames array of tcIds to pass ordering of new tcRef,
      * if there is no ordering defined tcRef is appended to end of array
      */
+    @Override
     public synchronized void topComponentRefConfigAdded
     (String modeName, TCRefConfig tcRefConfig, String [] tcRefNames) {
         if(DEBUG) {
@@ -881,6 +884,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles removing tcRef from model. 
      * @param tc_id unique id of removed tcRef
      */
+    @Override
     public synchronized void topComponentRefConfigRemoved(String tc_id) {
         if(DEBUG) {
             debugLog("WMI.topComponentRefConfigRemoved tcRef:" + tc_id); // NOI18N
@@ -904,6 +908,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles adding group to model.
      * @param groupConfig configuration data of added group
      */
+    @Override
     public synchronized void groupConfigAdded(GroupConfig groupConfig) {
         if(DEBUG) {
             debugLog("WMI.groupConfigAdded group:" + groupConfig.name); // NOI18N
@@ -914,6 +919,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles removing group from model.
      * @param groupName unique name of removed group
      */
+    @Override
     public synchronized void groupConfigRemoved(String groupName) {
         if(DEBUG) {
             debugLog("WMI.groupConfigRemoved group:" + groupName); // NOI18N
@@ -932,6 +938,7 @@ final public class PersistenceHandler implements PersistenceObserver {
      * @param groupName unique name of parent group
      * @param tcGroupConfig configuration data of added tcGroup
      */
+    @Override
     public synchronized void topComponentGroupConfigAdded(String groupName, TCGroupConfig tcGroupConfig) {
         if(DEBUG) {
             debugLog("WMI.topComponentGroupConfigAdded group:" + groupName + " tcGroup:" + tcGroupConfig.tc_id); // NOI18N
@@ -954,6 +961,7 @@ final public class PersistenceHandler implements PersistenceObserver {
      * @param groupName unique name of parent group
      * @param tc_id unique id of removed tcGroup
      */
+    @Override
     public synchronized void topComponentGroupConfigRemoved(String groupName, String tc_id) {
         if(DEBUG) {
             debugLog("WMI.topComponentGroupConfigRemoved group:" + groupName + " tcGroup:" + tc_id); // NOI18N
