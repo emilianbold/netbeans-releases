@@ -83,6 +83,8 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
     public static final String PROP_TYPE = "type";
     
     private static final String FIRST_ATTACH_TYPE = "org.netbeans.modules.debugger.jpda.ui.JPDAAttachType"; // NOI18N
+    
+    private static final String ERGONOMICS_CLASS = "org.netbeans.modules.ide.ergonomics";   // NOI18N
 
     private static final int TOTAL_SLOTS = 4; // TOTAL_SLOTS - 1 is the maximal number of items that can appear in the attach history
 
@@ -141,6 +143,22 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
             cbAttachTypes.addItem (displayName);
             if (displayName.equals(defaultAttachTypeName)) {
                 defaultIndex = i;
+            }
+        }
+        for (i = defaultIndex; i < k; ) {
+            AttachType at = (AttachType) attachTypes.get (i);
+            if (!at.getClass().getName().startsWith(ERGONOMICS_CLASS)) {
+                // Find some real attach type
+                defaultIndex = i;
+                break;
+            }
+            i++;
+            // Check all indexes, but the default
+            if (i == k) {
+                i = 0;
+            }
+            if (i == defaultIndex) {
+                break;
             }
         }
 
