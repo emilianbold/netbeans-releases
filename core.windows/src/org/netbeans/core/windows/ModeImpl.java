@@ -360,7 +360,11 @@ public final class ModeImpl implements Mode {
     }
     
     public void addUnloadedTopComponent(String tcID) {
-        getCentral().addModeUnloadedTopComponent(this, tcID);
+        addUnloadedTopComponent( tcID, -1 );
+    }
+    
+    public void addUnloadedTopComponent(String tcID, int index) {
+        getCentral().addModeUnloadedTopComponent(this, tcID, index);
     }
     
     public void setUnloadedSelectedTopComponent(String tcID) {

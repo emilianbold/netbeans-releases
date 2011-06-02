@@ -228,7 +228,7 @@ public interface Model {
     public void addModeClosedTopComponent(ModeImpl mode, TopComponent tc);
     // XXX
     /** Adds unloaded TopComponent. */
-    public void addModeUnloadedTopComponent(ModeImpl mode, String tcID);
+    public void addModeUnloadedTopComponent(ModeImpl mode, String tcID, int index);
     // XXX
     public void setModeUnloadedSelectedTopComponent(ModeImpl mode, String tcID);
     /** Remember which top component was the selected one before switching to/from maximized mode */

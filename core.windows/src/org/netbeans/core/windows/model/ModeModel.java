@@ -81,7 +81,7 @@ interface ModeModel {
     /** Adds closed TopComponent. */
     public void addClosedTopComponent(TopComponent tc);
     // XXX
-    public void addUnloadedTopComponent(String tcID);
+    public void addUnloadedTopComponent(String tcID, int index);
     // XXX
     public void setUnloadedSelectedTopComponent(String tcID);
     /** Set top component that was selected before switching to/from maximized mode */

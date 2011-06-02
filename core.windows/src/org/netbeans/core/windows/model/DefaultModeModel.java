@@ -158,9 +158,9 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
-    public void addUnloadedTopComponent(String tcID) {
+    public void addUnloadedTopComponent(String tcID, int index) {
         synchronized(LOCK_TOPCOMPONENTS) {
-            topComponentSubModel.addUnloadedTopComponent(tcID);
+            topComponentSubModel.addUnloadedTopComponent(tcID, index);
         }
     }
     

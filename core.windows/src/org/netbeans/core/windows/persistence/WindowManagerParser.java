@@ -461,9 +461,51 @@ public class WindowManagerParser {
             modeParserMap.remove(modeParser.getName());
         }
         
+        //remove modes still defined in Windows2 folder if they were merged into some other mode
+        mergeModes( modeCfgList );
+        
         wmc.modes = modeCfgList.toArray(new ModeConfig[modeCfgList.size()]);
         
         if (DEBUG) Debug.log(WindowManagerParser.class, "readModes LEAVE");
+    }
+    
+    private void mergeModes( List<ModeConfig> modeCfgList ) {
+        Set<String> mergedModes = new HashSet<String>( 20 );
+        for( ModeConfig modeConfig : modeCfgList ) {
+            if( modeConfig.otherNames == null )
+                continue;
+            mergedModes.addAll( modeConfig.otherNames );
+            ModeParser parser = modeParserMap.get( modeConfig.name );
+            if( null != parser ) {
+                for( String otherName : modeConfig.otherNames ) {
+                    modeParserMap.put( otherName, parser );
+                }
+            }
+        }
+        for( String name : mergedModes ) {
+            ModeConfig merged = null;
+            for( ModeConfig mc : modeCfgList ) {
+                if( name.equals( mc.name ) ) {
+                    modeCfgList.remove( mc );
+                    merged = mc;
+                    break;
+                }
+            }
+
+            if( null != merged ) {
+                for( ModeConfig mc : modeCfgList ) {
+                    if( null != mc.otherNames && mc.otherNames.contains( merged.name ) ) {
+                        TCRefConfig[] refs = mc.tcRefConfigs;
+                        mc.tcRefConfigs = new TCRefConfig[refs.length + merged.tcRefConfigs.length];
+                        System.arraycopy( refs, 0, mc.tcRefConfigs, 0, refs.length );
+                        System.arraycopy( merged.tcRefConfigs, 0, mc.tcRefConfigs, refs.length, merged.tcRefConfigs.length );
+                        break;
+                    }
+                }
+            }
+            
+            ModeParser parser = modeParserMap.remove( name );
+        }
     }
     
     /** Checks if module for given mode exists.

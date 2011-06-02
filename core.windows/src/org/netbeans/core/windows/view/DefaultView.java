@@ -66,6 +66,7 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.WindowSystemSnapshot;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 
 /**
@@ -786,26 +787,18 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     // DnD
     @Override
-    public void userDroppedTopComponents(ModeView modeView, TopComponent[] tcs) {
-        if(tcs.length == 0) {
-            return;
-        }
-        
+    public void userDroppedTopComponents(ModeView modeView, TopComponentDraggable draggable) {
         if(DEBUG) {
             debugLog("User dropped TopComponent's"); // NOI18N
         }
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
-        controllerHandler.userDroppedTopComponents(mode, tcs);
+        controllerHandler.userDroppedTopComponents(mode, draggable);
     }
     
     @Override
-    public void userDroppedTopComponents(ModeView modeView, TopComponent[] tcs, int index) {
-        if(tcs.length == 0) {
-            return;
-        }
-        
+    public void userDroppedTopComponents(ModeView modeView, TopComponentDraggable draggable, int index) {
         if(DEBUG) {
             debugLog("User dropped TopComponent's to index=" + index); // NOI18N
         }
@@ -814,79 +807,61 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
         
         // #37127 Refine the index if the TC is moving inside the mode.
-        int position = Arrays.asList(modeAccessor.getOpenedTopComponents()).indexOf(tcs[0]);
-        if(position > -1 && position <= index) {
-            index--;
+        if( draggable.isTopComponentTransfer() ) {
+            int position = Arrays.asList(modeAccessor.getOpenedTopComponents()).indexOf(draggable.getTopComponent());
+            if(position > -1 && position <= index) {
+                index--;
+            }
         }
                 
-        controllerHandler.userDroppedTopComponents(mode, tcs, index);
+        controllerHandler.userDroppedTopComponents(mode, draggable, index);
     }
     
     @Override
-    public void userDroppedTopComponents(ModeView modeView, TopComponent[] tcs, String side) {
-        if(tcs.length == 0) {
-            return;
-        }
-        
+    public void userDroppedTopComponents(ModeView modeView, TopComponentDraggable draggable, String side) {
         if(DEBUG) {
             debugLog("User dropped TopComponent's to side=" + side); // NOI18N
         }
         
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);
-        controllerHandler.userDroppedTopComponents(mode, tcs, side);
+        controllerHandler.userDroppedTopComponents(mode, draggable, side);
     }
 
     @Override
-    public void userDroppedTopComponentsIntoEmptyEditor(TopComponent[] tcs) {
-        if(tcs.length == 0) {
-            return;
-        }
-
+    public void userDroppedTopComponentsIntoEmptyEditor(TopComponentDraggable draggable) {
         if(DEBUG) {
             debugLog("User dropped TopComponent's into empty editor"); // NOI18N
         }
         
-        controllerHandler.userDroppedTopComponentsIntoEmptyEditor(tcs);
+        controllerHandler.userDroppedTopComponentsIntoEmptyEditor(draggable);
     }
     
     @Override
-    public void userDroppedTopComponentsAround(TopComponent[] tcs, String side) {
-        if(tcs.length == 0) {
-            return;
-        }
-
+    public void userDroppedTopComponentsAround(TopComponentDraggable draggable, String side) {
         if(DEBUG) {
             debugLog("User dropped TopComponent's around, side=" + side); // NOI18N
         }
         
-        controllerHandler.userDroppedTopComponentsAround(tcs, side);
+        controllerHandler.userDroppedTopComponentsAround(draggable, side);
     }
     
     @Override
-    public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side, int modeKind) {
-        if(tcs.length == 0) {
-            return;
-        }
-
+    public void userDroppedTopComponentsAroundEditor(TopComponentDraggable draggable, String side) {
         if(DEBUG) {
             debugLog("User dropped TopComponent's around editor, side=" + side); // NOI18N
         }
         
-        controllerHandler.userDroppedTopComponentsAroundEditor(tcs, side, modeKind);
+        controllerHandler.userDroppedTopComponentsAroundEditor(draggable, side);
     }
     
     @Override
-    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int draggedKind) {
-        if(tcs.length == 0) {
-            return;
-        }
-        
+    public void userDroppedTopComponentsIntoFreeArea(TopComponentDraggable draggable, Rectangle bounds) {
         if(DEBUG) {
             debugLog("User dropped TopComponent's into free area, bounds=" + bounds); // NOI18N
         }
         
-        controllerHandler.userDroppedTopComponentsIntoFreeArea(tcs, bounds, draggedKind);
+        controllerHandler.userDroppedTopComponentsIntoFreeArea(draggable, bounds);
     }
 
     // Sliding

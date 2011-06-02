@@ -718,10 +718,10 @@ final class DefaultModel implements Model {
     
     // XXX
     @Override
-    public void addModeUnloadedTopComponent(ModeImpl mode, String tcID) {
+    public void addModeUnloadedTopComponent(ModeImpl mode, String tcID, int index) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
-            modeModel.addUnloadedTopComponent(tcID);
+            modeModel.addUnloadedTopComponent(tcID, index);
         }
     }
     

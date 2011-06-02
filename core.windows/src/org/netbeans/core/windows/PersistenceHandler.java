@@ -865,6 +865,14 @@ final public class PersistenceHandler implements PersistenceObserver {
         wm.setTopComponentSlidedInDefaultMode( tcRefConfig.tc_id, !tcRefConfig.dockedInDefaultMode );
         wm.setTopComponentMaximizedWhenSlidedIn( tcRefConfig.tc_id, tcRefConfig.slidedInMaximized );
         ModeImpl mode = (ModeImpl) name2mode.get(modeName);
+        if( null == mode ) {
+            for( ModeImpl m : name2mode.values() ) {
+                if( m.getOtherNames().contains( modeName ) ) {
+                    mode = m;
+                    break;
+                }
+            }
+        }
         if (mode != null) {
             initPreviousMode(mode, tcRefConfig);
         }
