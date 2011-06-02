@@ -47,90 +47,18 @@ made subject to such option by the copyright holder.
 
     <import file="../nbbuild/templates/projectized.xml"/>
  
-    <!-- 
-    netbeans-extra is a hook provided to plug in file copying. 
-    If you're adding compile dependencies on 3rd party jars 
-    (jgraph, jdom, etc.), uncomment this section ...
-    -->
-    <target name="jar" depends="zip-rest-hello-world,
-                                zip-rest-customer-db,
-                                zip-rest-customer-db-spring,
-                                zip-rest-customer-db-client,
-                                zip-message-board-war,
-                                zip-lean-service-ecb-war,
-                                zip-fcb-maven-sample-nbm,
-                                zip-rest-crud-maven-sample-app,
-                                projectized-common.jar"/>
+    <target name="jar" depends="zip-examples,projectized-common.jar"/>
 
-    <!-- initialize necessary properties for Identity sample targets-->
-    <target name="init-zip-samples">
-        <property name="rest.samples" value="org/netbeans/modules/websvc/rest/samples"/>
-        <property name="rest.samples.resources" value="src/${rest.samples}/resources"/>
-        <property name="build.rest.samples.resources" value="build/classes/${rest.samples}/resources"/>
-    </target>
-
-    <!-- Target for HelloWorld sample -->
-    <target name="zip-rest-hello-world" depends="init-zip-samples">
-        <zip destfile="${rest.samples.resources}/HelloWorld.zip"
-            update="true">
-        <zipfileset dir="HelloWorld"/>
-        </zip>
+    <target name="zip-examples" depends="compile">
+        <property name="examples" value="${build.classes.dir}/org/netbeans/modules/websvc/rest/samples/resources"/>
+        <zip basedir="HelloWorld" destfile="${examples}/HelloWorld.zip"/>
+        <zip basedir="CustomerDB" destfile="${examples}/CustomerDB.zip"/>
+        <zip basedir="CustomerDBSpring" destfile="${examples}/CustomerDBSpring.zip"/>
+        <zip basedir="CustomerDBClient" destfile="${examples}/CustomerDBClient.zip"/>
+        <zip basedir="MessageBoard" destfile="${examples}/MessageBoard.zip"/>
+        <zip basedir="LeanServiceECBComponentWithAjax" destfile="${examples}/LeanServiceECBComponentWithAjax.zip"/>
+        <zip basedir="FcbMavenModuleProject" destfile="${examples}/FcbMavenModuleProject.zip"/>
+        <zip basedir="RestRCPMvnAppSampleProject" destfile="${examples}/RestRCPMvnAppSampleProject.zip"/>
     </target>
     
-     <!-- Target for CustomerDB sample -->
-    <target name="zip-rest-customer-db" depends="init-zip-samples">
-        <zip destfile="${rest.samples.resources}/CustomerDB.zip"
-            update="true">
-        <zipfileset dir="CustomerDB"/>
-        </zip>
-    </target>
-    
-      <!-- Target for CustomerDBSpring sample -->
-    <target name="zip-rest-customer-db-spring" depends="init-zip-samples">
-        <zip destfile="${rest.samples.resources}/CustomerDBSpring.zip"
-            update="true">
-        <zipfileset dir="CustomerDBSpring"/>
-        </zip>
-    </target>
-    
-      <!-- Target for CustomerDBClient sample -->
-    <target name="zip-rest-customer-db-client" depends="init-zip-samples">
-        <zip destfile="${rest.samples.resources}/CustomerDBClient.zip"
-            update="true">
-        <zipfileset dir="CustomerDBClient"/>
-        </zip>
-    </target>
-
-      <!-- Target for message-board-war sample -->
-    <target name="zip-message-board-war" depends="init-zip-samples">
-        <zip destfile="${rest.samples.resources}/MessageBoard.zip"
-            update="true">
-        <zipfileset dir="MessageBoard"/>
-        </zip>
-    </target>
-
-      <!-- Target for LeanServiceECBSample sample -->
-    <target name="zip-lean-service-ecb-war" depends="init-zip-samples">
-        <zip destfile="${rest.samples.resources}/LeanServiceECBComponentWithAjax.zip"
-            update="true">
-        <zipfileset dir="LeanServiceECBComponentWithAjax"/>
-        </zip>
-    </target>
-
-    <!-- Target for Facebook Module Maven sample -->
-    <target name="zip-fcb-maven-sample-nbm" depends="init-zip-samples">
-        <zip destfile="${rest.samples.resources}/FcbMavenModuleProject.zip"
-            update="true">
-        <zipfileset dir="../maven.samples/samples_src/facebook-module"/>
-        </zip>
-    </target>
-
-    <!-- Target for REST Maven Application sample -->
-    <target name="zip-rest-crud-maven-sample-app" depends="init-zip-samples">
-        <zip destfile="${rest.samples.resources}/RestRCPMvnAppSampleProject.zip"
-            update="true">
-        <zipfileset dir="../maven.samples/samples_src/rest-sample-application"/>
-        </zip>
-    </target>
-
 </project>

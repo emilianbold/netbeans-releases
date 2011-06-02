@@ -13,70 +13,17 @@
     <name>restsample NetBeans Module</name>
     
     <repositories>
-        <!-- this is a remote repository hosting the netbeans api artifacts.
-         the versions of the artifacts are netbeans IDE release based, eg. RELEASE65.
-         You might want to use your own repository. To create one, use the nbm:populate-repository goal.
-          -->
         <repository>
             <id>netbeans</id>
-            <name>repository hosting netbeans.org api artifacts</name>
             <url>http://bits.netbeans.org/maven2/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <repository>
-            <id>netbeans.snapshot</id>
-            <name>repository hosting netbeans.org api snapshot artifacts</name>
-            <url>http://bits.netbeans.org/netbeans/trunk/maven-snapshot</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>
-
-        <repository>
-            <id>codehaus.snapshot</id>
-            <name>repository hosting snapshot of the nbm-maven-plugin</name>
-            <url>http://snapshots.repository.codehaus.org</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
         </repository>
         <repository>
-            <id>apache.snapshot</id>
-            <name>repository hosting snapshot of the maven-compiler-plugin</name>
-            <url>https://repository.apache.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <url>http://download.java.net/maven/2/</url>
             <id>java.net2</id>
-            <layout>default</layout>
-            <name>Repository for library Library[restapi]</name>
+            <url>http://download.java.net/maven/2/</url>
         </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>codehaus.snapshot</id>
-            <name>repository hosting snapshot of the nbm-maven-plugin</name>
-            <url>http://snapshots.repository.codehaus.org</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>apache.snapshot</id>
-            <name>repository hosting snapshot of the maven-compiler-plugin</name>
-            <url>https://repository.apache.org/content/repositories/snapshots</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <dependencies>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-util</artifactId>
-            <version>SNAPSHOT</version>
-        </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>jsr311-api</artifactId>
@@ -99,48 +46,53 @@
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-windows</artifactId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-awt</artifactId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-nodes</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <artifactId>org-netbeans-modules-settings</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-dialogs</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-filesystems</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-explorer</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-actions</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>${netbeans.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -148,15 +100,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <extensions>true</extensions>
             </plugin>
             
             <plugin>
-                <!-- netbeans modules in 6.9+ are 1.6 compatible
-                 2.2 is required to have netbeans api annotations work properly,
-                 if you are not using these annotations, you can fallback to the latest released
-                 maven-compiler-plugin version.
-                -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
