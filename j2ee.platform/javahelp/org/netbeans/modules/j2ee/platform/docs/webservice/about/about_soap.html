@@ -1,0 +1,123 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2011 Sun Microsystems, Inc.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+        <title>About SOAP Web Services</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h1>About SOAP (JAX-WS) Web Services</h1>
+        <p>JAX-WS is a technology for building web services 
+            and clients that communicate using XML. JAX-WS allows developers to 
+            write both message-oriented and RPC-oriented web services. JAX-WS simplifies
+            web services compared to the older JAX-RPC standard by using <em>annotations</em>,
+            a Java EE 5 innovation. </p>
+        <p>A JAX-WS web service consists of an <em>implementation class</em>, which
+            is a Java class that implements the service
+            endpoint. The implementation class defines the service endpoint interface 
+            implicitly, by default. </p> 
+        <p>The implementation class is annotated with @WebService or @WebServiceProvider.
+            The web service's operations are defined in methods in the implementation
+            class. These methods are annotated with @WebMethod.</p>
+        <p>In Java EE 6, the JAX-WS web service can be implemented as a stateless session bean. To
+            use an EJB with a web service in EE 5, you have to create a separate EJB module
+            and add that module to the web application's classpath. You can combine
+            the web application and the EJB module in an 
+            <a href="../../enterprise/general/about_ent_apps.html">Enterprise Application</a>.</p>   
+        <p>In JAX-WS, messages to and from the web service use the XML-based protocol 
+            known as "SOAP". The SOAP specification defines the envelope structure, encoding rules, 
+            and conventions for representing web service invocations and responses. These calls 
+            and responses are transmitted as SOAP messages (XML files) over HTTP.</p>
+
+
+    </ul> 
+
+    <p>JAX-WS depends on the following specifications:</P>
+    <UL>
+        <LI><P><B>SOAP (Simple Object Access Protocol).</B> Defines the
+                mechanism by which a web service is called and how data is returned.
+                For detailed information, refer to the SOAP 1.2 Specification. 
+            </P>
+        <LI><P><B>WSDL (Web Services Description Language).</B> Describes the
+                external interface of a web service. For detailed information, refer
+                to the WSDL 1.1 Specification. 
+            </P>
+        <LI><P><B>UDDI (Universal Discovery, Description, and Integration).</B>
+                Registries contain information about web services, including the
+                location of WSDL files and the location of the running services. The
+                IDE does not let you publish web services to or
+                browse from a UDDI registry, although the WSDL files that you
+                use can come from a variety of sources, including a UDDI registry.</P>
+        <LI><P><B>JAXB (Java Architecture for XML Binding).</B>
+                In contrast to JAX-RPC, that uses its own data binding
+                facilities, JAX-WS delegates data binding related tasks
+                to JAXB. The JAXB 2.0/2.1 specification is developed
+                in parallel with JAX-WS 2.0/2.1.</P>
+    </UL>
+    <p>For more information about JAX-WS web services, see the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://download.oracle.com/javaee/5/tutorial/doc/bnayl.html">
+                <param name="text" value="<html><u>Java EE5 tutorial</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+    
+    <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="ws_process.html">Working with Web Services</a></dd>
+            <dd><a href="ws_quickref.html">Web Service Tasks: Quick Reference</a></dd>
+            <dd><a href="../consume/about_wsc.html">About Web Service Clients</a></dd>
+        </dl>
+        
+        
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a> 
+            <table cellpadding="20" border="0"> 
+                <tr><td>&nbsp;</td></tr> 
+                <tr><td>&nbsp;</td></tr> 
+                <tr><td>&nbsp;</td></tr> 
+            </table> 
+</small>
+</body>
+</html>

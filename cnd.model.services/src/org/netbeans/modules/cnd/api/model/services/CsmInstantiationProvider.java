@@ -104,7 +104,7 @@ public abstract class CsmInstantiationProvider {
      * @param params - template parameters
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset);
+    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params);
 
     /**
      * Returns instantiation of template
@@ -124,7 +124,7 @@ public abstract class CsmInstantiationProvider {
      * @param type - template type
      * @return - instantiation
      */
-    public abstract CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile, int contextOffset);
+    public abstract CsmObject instantiate(CsmTemplate template, CsmType type);
 
     /**
      * Creates specialization parameter based on type.
@@ -177,7 +177,7 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmFile contextFile, int contextOffset) {
+        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params) {
             return template;
         }
 
@@ -187,7 +187,7 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, CsmType type, CsmFile contextFile, int contextOffset) {
+        public CsmObject instantiate(CsmTemplate template, CsmType type) {
             return template;
         }
 

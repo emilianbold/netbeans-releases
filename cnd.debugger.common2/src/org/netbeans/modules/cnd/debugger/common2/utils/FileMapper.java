@@ -66,18 +66,18 @@ public abstract class FileMapper {
 
     public static FileMapper getDefault() {
 	if (Utilities.isWindows())
-	    return new CygwinFileMapper();
+	    return CygwinFileMapper.INSTANCE;
 	else
-	    return new NullFileMapper();
+	    return NullFileMapper.INSTANCE;
     }
 
-    public static FileMapper getDefault(Type kind) {
+    public static FileMapper getByType(Type kind) {
 	switch (kind) {
-	    case NULL:	return new NullFileMapper();
-	    case CYGWIN:return new CygwinFileMapper();
-            case MSYS:  return new MSysFileMapper();
+	    case NULL:	return NullFileMapper.INSTANCE;
+	    case CYGWIN:return CygwinFileMapper.INSTANCE;
+            case MSYS:  return MSysFileMapper.INSTANCE;
 	}
-        return new NullFileMapper();
+        return NullFileMapper.INSTANCE;
     }
 
     public abstract String worldToEngine(String path);
@@ -90,6 +90,7 @@ public abstract class FileMapper {
     }
 
     private static class NullFileMapper extends FileMapper {
+        private static NullFileMapper INSTANCE = new NullFileMapper();
 
 	public String worldToEngine(String path) {
 	    return path;
@@ -110,6 +111,8 @@ public abstract class FileMapper {
      */
 
     private static class CygwinFileMapper extends FileMapper {
+        private static CygwinFileMapper INSTANCE = new CygwinFileMapper();
+        
         @Override
         public String engineToWorld(String path) {
             if (path == null) {
@@ -210,6 +213,8 @@ public abstract class FileMapper {
     }
 
     private static class MSysFileMapper extends FileMapper {
+        private static MSysFileMapper INSTANCE = new MSysFileMapper();
+        
         @Override
         public String engineToWorld(String path) {
             if (path == null) {

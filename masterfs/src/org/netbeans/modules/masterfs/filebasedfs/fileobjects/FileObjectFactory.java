@@ -66,6 +66,7 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
+import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -476,7 +477,7 @@ public final class FileObjectFactory {
     private BaseFileObj shallBeChecked(BaseFileObj fo, boolean noRecListeners) {
         if (fo != null && noRecListeners) {
             FolderObj p = (FolderObj) (fo instanceof FolderObj ? fo : fo.getExistingParent());
-            if (p != null && p.hasRecursiveListener()) {
+            if (p != null && Watcher.isWatched(fo)) {
                 LOG_REFRESH.log(Level.FINER, "skip: {0}", fo);
                 fo = null;
             }

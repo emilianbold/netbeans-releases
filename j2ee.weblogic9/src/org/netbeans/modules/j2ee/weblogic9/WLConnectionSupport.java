@@ -130,9 +130,9 @@ public final class WLConnectionSupport {
                 }
                 
                 String username = deploymentManager.getInstanceProperties().getProperty(
-                        InstanceProperties.USERNAME_ATTR).toString();
+                        InstanceProperties.USERNAME_ATTR);
                 String password = deploymentManager.getInstanceProperties().getProperty(
-                        InstanceProperties.PASSWORD_ATTR).toString();
+                        InstanceProperties.PASSWORD_ATTR);
 
                 Map<String, Object> env = new HashMap<String, Object>();
                 env.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES,
