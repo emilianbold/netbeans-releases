@@ -154,6 +154,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private boolean update_dis = true;
 
     private final VariableBag variableBag = new VariableBag();
+    
+    private FileMapper fmap = FileMapper.getDefault();
 
     /**
      * Utility class to help us deal with 'frame' or 'source file'
@@ -1210,6 +1212,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
     private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
     private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 0); // NOI18N
+
+    public FileMapper fmap() {
+        return fmap;
+    }
     
     public void initializeGdb(FileMapper fmap) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
@@ -1220,7 +1226,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         // for remote always use NULL mapper
         if (getHost().isRemote()) {
-            this.fmap = FileMapper.getDefault(FileMapper.Type.NULL);
+            this.fmap = FileMapper.getByType(FileMapper.Type.NULL);
         } else if (fmap != null) {
             this.fmap = fmap;
         }
