@@ -151,6 +151,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         displayer.addMouseMotionListener(controller);
         installControlButtons();
         dataModel.addChangeListener( new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 showHidePinButton();
                 if( null != dataModel )
@@ -329,10 +330,12 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return isSelected(index) && isActive();
     }
 
+    @Override
     protected final SingleSelectionModel createSelectionModel() {
         return new DefaultTabSelectionModel (displayer.getModel());
     }
 
+    @Override
     public int dropIndexOfPoint(Point p) {
         int result = 0;
         for (int i=0; i < displayer.getModel().size(); i++) {
@@ -395,6 +398,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
 
     /** Registers shortcut for enable/ disable auto-hide functionality */
+    @Override
     public void unregisterShortcuts(JComponent comp) {
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
             remove(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE,
@@ -408,6 +412,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     }
 
     /** Registers shortcut for enable/ disable auto-hide functionality */
+    @Override
     public void registerShortcuts(JComponent comp) {
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
             put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE,
@@ -419,12 +424,14 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             put(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0,
                                 InputEvent.CTRL_DOWN_MASK), TRANSPARENCY_ACTION);
         comp.getActionMap().put(TRANSPARENCY_ACTION, new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 shouldPerformAction(TabbedContainer.COMMAND_TOGGLE_TRANSPARENCY, getSelectionModel().getSelectedIndex(), null);
             }
         });
     }
     
+    @Override
     public Polygon getExactTabIndication(int index) {
         // TBD - the same code is copied in ScrollableTabsUI, should be shared
         // if will not differ
@@ -452,6 +459,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return new EqualPolygon(xpoints, ypoints);
     }
 
+    @Override
     public Polygon getInsertTabIndication(int index) {
         EqualPolygon indication = new EqualPolygon();
         JComponent control = getDisplayer();
@@ -504,6 +512,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return image;
     }
 
+    @Override
     public Rectangle getTabRect(int index, Rectangle destination) {
         if (destination == null) {
             destination = new Rectangle();
@@ -519,6 +528,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return destination;
     }
     
+    @Override
     public int tabForCoordinate(Point p) {
         int max = displayer.getModel().size();
         if (max == 0 || p.y > displayer.getHeight() || p.y < 0 || p.x < 0 || 
@@ -567,14 +577,17 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     private class ViewTabState extends TabState {
 	public ViewTabState () {}
 	
+        @Override
         public int getRepaintPolicy(int tab) {
             return createRepaintPolicy();
         }
         
+        @Override
         public void repaintAllTabs() {
             displayer.repaint();
         }
         
+        @Override
         public void repaintTab (int tab) {
             if (tab < 0 || tab >= displayer.getModel().size()) {
                 //This can happen because we can be notified
@@ -595,10 +608,12 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     }
     
 
+    @Override
     protected void requestAttention (int tab) {
         tabState.addAlarmTab(tab);
     }    
     
+    @Override
     protected void cancelRequestAttention (int tab) {
         tabState.removeAlarmTab(tab);
     }
@@ -620,11 +635,13 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             return isLeft;
         }
 
+        @Override
         public void stateChanged (ChangeEvent ce) {
             displayer.repaint();
             showHidePinButton();
         }
 
+        @Override
         public void propertyChange (PropertyChangeEvent pce) {
             if (TabDisplayer.PROP_ACTIVE.equals (pce.getPropertyName())) {
                 displayer.repaint();
@@ -705,6 +722,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             }
         }
 
+        @Override
         public void indicesAdded(ComplexListDataEvent e) {
             tabState.indicesAdded(e);
         }
@@ -715,6 +733,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
          *
          * @param e The event
          */
+        @Override
         public void indicesRemoved(ComplexListDataEvent e) {
             tabState.indicesRemoved(e);
         }
@@ -727,30 +746,37 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
          *
          * @param e The event
          */
+        @Override
         public void indicesChanged(ComplexListDataEvent e) {
             tabState.indicesChanged(e);
         }
         
+        @Override
         public void intervalAdded (ListDataEvent evt) {
             tabState.intervalAdded(evt);
         }
         
+        @Override
         public void intervalRemoved (ListDataEvent evt) {
             tabState.intervalRemoved(evt);
         }
         
+        @Override
         public void contentsChanged(ListDataEvent evt) {
             tabState.contentsChanged(evt);
         }
 
+        @Override
         public void mouseDragged(MouseEvent e) {
         }
 
+        @Override
         public void mouseMoved(MouseEvent e) {
         }
     } // end of Controller
     
     private class PinAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
             if( null != btnAutoHidePin ) {
                 btnAutoHidePin.performAction( null );
