@@ -71,10 +71,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 
 import com.sun.tools.swdev.glue.dbx.*;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.util.LinkedList;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
@@ -146,6 +142,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RTCWindowAction;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcTopComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
+import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
@@ -909,6 +906,10 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         return rtcController;
     }
 
+    public FileMapper fmap() {
+        return FileMapper.getByType(FileMapper.Type.NULL);
+    }
+
     /**
      * We just got a dbx connection, send all kinds of interesting stuff to it.
      *
@@ -921,7 +922,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
 
         assert isConnected() : "initializeDbx() called when dbx wasn't ready";
-
+        
         manager().initialUnsavedFiles(this);
 
         if (ddi.isCaptured()) {
