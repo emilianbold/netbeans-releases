@@ -63,7 +63,7 @@ public final class SQLConnection {
     private static final Logger logger = DLightLogger.getLogger(SQLConnection.class);
     private Connection connection = null;
     private String logPrefix = ""; // NOI18N
-    private ResultSet EMPTY_RESULT_SET = null;
+    private PreparedStatement emptyResultStatement;
 
     public synchronized Connection getConnection() {
         return connection;
@@ -77,6 +77,7 @@ public final class SQLConnection {
                 log(ex);
             } finally {
                 connection = null;
+                emptyResultStatement = null;
             }
         }
     }
@@ -88,10 +89,10 @@ public final class SQLConnection {
 
         this.connection = connection;
 
-        EMPTY_RESULT_SET = executeQuery("select 1 where 1 = 2"); // NOI18N
-
-        if (EMPTY_RESULT_SET == null) {
-            log("Unable to get EMPTY_RESULT_SET"); // NOI18N
+        try {
+            emptyResultStatement = connection.prepareStatement("select 0 where 1 = 2"); // NOI18N
+        } catch (SQLException ex) {
+            log("Unable to prepare emptyResultStatement"); // NOI18N
         }
 
         if (logger.isLoggable(Level.FINE)) {
@@ -174,7 +175,14 @@ public final class SQLConnection {
             rs = createStatement().executeQuery(sqlQuery);
         } catch (SQLException ex) {
             log(ex);
-            rs = EMPTY_RESULT_SET;
+            if (emptyResultStatement != null) {
+                try {
+                    return emptyResultStatement.executeQuery();
+                } catch (SQLException ex1) {
+                    logger.log(Level.SEVERE, "Unable to get empty ResultSet", ex1); // NOI18N
+                }
+            }
+            rs = null;
         }
 
         return rs;
