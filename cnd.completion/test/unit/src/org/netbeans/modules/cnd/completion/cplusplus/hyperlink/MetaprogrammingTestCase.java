@@ -76,8 +76,8 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
 
     public void testBug172419_2() throws Exception {
         // Bug 172419 - Boost metaprogramming usage problem
-//        performTest("bug172419_2.cpp", 312, 12, "bug172419_2.cpp", 260, 5);
-//        performTest("bug172419_2.cpp", 322, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 312, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 322, 12, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 325, 12, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 331, 12, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 337, 13, "bug172419_2.cpp", 260, 5);
