@@ -48,6 +48,14 @@ made subject to such option by the copyright holder.
     <import file="../default.xml"/>
     <import file="common.xml"/>
     
+    <target name="-build-dir-init" depends="default.init">
+        <property name="_build.dir" location="${nb.build.dir}/${module.name}"/>
+        <condition property="build.dir" value="${_build.dir}">
+            <available type="dir" file="${nb.build.dir}"/>
+        </condition>
+        <property name="build.dir" location="build"/>
+    </target>
+
     <target name="common-init" depends="default.init,-build-dir-init"/>
     <target name="init" depends="basic-init,files-init,build-init,-javac-init,-init-proxy"/>
     
