@@ -41,41 +41,72 @@
  */
 package org.netbeans.modules.web.el;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.openide.filesystems.FileObject;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author marekfukala
  */
-public class CompilationContext {
-    
-    private final FileObject file;
-    private final CompilationInfo info;
-    private CompilationCache cache;
+public class CompilationCache {
 
-    private CompilationContext(FileObject file, CompilationInfo info) {
-        this.file = file;
-        this.info = info;
-    }
+    private Map<Key, Object> map = new HashMap<Key, Object>();
     
-    public static CompilationContext create(FileObject file, CompilationInfo info) {
-        return new CompilationContext(file, info);
-    }
-
-    public FileObject file() {
-        return file;
-    }
-
-    public CompilationInfo info() {
-        return info;
-    }
-    
-    public synchronized CompilationCache cache() {
-        if(cache == null) {
-            cache = new CompilationCache();
+    public synchronized Object getOrCache(Key key, ValueProvider<?> valueProvider) {
+        Object cached = map.get(key);
+        if(cached == null) {
+            cached = valueProvider.get();
+            map.put(key, cached);
         }
-        return cache;
+        return cached;
     }
     
+    public static Key createKey(Object... items) {
+        return new Key(items);
+    }
+    
+    public static interface ValueProvider<T> {
+        public T get();
+    }
+    
+    public static class Key {
+
+        private Object[] keys;
+        
+        private Key(Object... keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Key other = (Key) obj;
+
+            if (other.keys.length != keys.length) {
+                return false;
+            }
+
+            for (int i = 0; i < keys.length; i++) {
+                if (!keys[i].equals(other.keys[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            for (Object key : keys) {
+                hash = 13 * key.hashCode();
+            }
+            return hash;
+        }
+    }
 }
