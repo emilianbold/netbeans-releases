@@ -254,22 +254,21 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
     
-    // someone tell me what's wrong here. correct passphrase is returned yet the private key cannot be unlocked and cert auth fails
-//    public void testSshConnectionPassphrase () throws Exception {
-//        GitClient client = getClient(workDir);
-//        client.setCallback(new DefaultCallback() {
-//            @Override
-//            public String getUsername (String uri, String prompt) {
-//                return "gittester";
-//            }
-//
-//            @Override
-//            public char[] getPassphrase (String uri, String prompt) {
-//                return "qwerty".toCharArray();
-//            }
-//        });
-//        client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
-//    }
+    public void testSshConnectionPassphrase () throws Exception {
+        GitClient client = getClient(workDir);
+        client.setCallback(new DefaultCallback() {
+            @Override
+            public String getUsername (String uri, String prompt) {
+                return "gittester";
+            }
+
+            @Override
+            public char[] getPassphrase (String uri, String prompt) {
+                return "qwerty".toCharArray();
+            }
+        });
+        client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+    }
     
     private static class DefaultCallback implements GitClientCallback {
         @Override
