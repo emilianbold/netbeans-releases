@@ -1339,17 +1339,18 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
         @Override
         public CsmClassifier getClassifier() {
-            return  getClassifier(true);
+            return  getClassifier(new ArrayList<CsmInstantiation>(), false);
         }
         
-        public CsmClassifier getClassifier(boolean specialize) {
+        public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
+            instantiations.add(instantiation);
             if (resolved == null) {
                 if (!instantiationHappened()) {
                     CsmClassifier classifier;
                     if(originalType instanceof TypeImpl) {
-                        classifier = ((TypeImpl)originalType).getClassifier(false);
+                        classifier = ((TypeImpl)originalType).getClassifier(instantiations, false);
                     } else if(originalType instanceof Type) {
-                        classifier = ((Type)originalType).getClassifier(false);                               
+                        classifier = ((Type)originalType).getClassifier(instantiations, false);                               
                     } else {
                         classifier = originalType.getClassifier();                        
                     }
@@ -1379,9 +1380,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                     resolved = classifier;
                 } else {
                     if(instantiatedType instanceof TypeImpl) {
-                        resolved = ((TypeImpl)instantiatedType).getClassifier(false);
+                        resolved = ((TypeImpl)instantiatedType).getClassifier(instantiations, false);
                     } else if(instantiatedType instanceof Type) {
-                        resolved = ((Type)instantiatedType).getClassifier(false);                               
+                        resolved = ((Type)instantiatedType).getClassifier(instantiations, false);                               
                     } else {
                         resolved = instantiatedType.getClassifier();                        
                     }
@@ -1478,15 +1479,23 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
         @Override
         public CsmClassifier getClassifier() {
-            return getClassifier(true);
+            return getClassifier(new ArrayList<CsmInstantiation>(), false);
         }
         
         @Override
-        public CsmClassifier getClassifier(boolean specialize) {
+        public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
+            instantiations.add(instantiation);
             if (resolved == null) {
                 if(!instantiationHappened()) {
                     if (parentType != null) {
-                        CsmClassifier parentClassifier = parentType.getClassifier();
+                        CsmClassifier parentClassifier;
+                        if(parentType instanceof TypeImpl) {
+                            parentClassifier = ((TypeImpl)parentType).getClassifier(instantiations, false);
+                        } else if(parentType instanceof Type) {
+                            parentClassifier = ((Type)parentType).getClassifier(instantiations, false);
+                        } else {
+                            parentClassifier = parentType.getClassifier();                        
+                        }
                         if (CsmBaseUtilities.isValid(parentClassifier)) {
                             MemberResolverImpl memberResolver = new MemberResolverImpl();
                             if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
@@ -1520,9 +1529,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 } 
                 if (resolved == null) {
                     if(instantiatedType instanceof TypeImpl) {
-                        resolved = ((TypeImpl)instantiatedType).getClassifier(false);
+                        resolved = ((TypeImpl)instantiatedType).getClassifier(instantiations, false);
                     } else if(instantiatedType instanceof Type) {
-                        resolved = ((Type)instantiatedType).getClassifier(false);                               
+                        resolved = ((Type)instantiatedType).getClassifier(instantiations, false);                               
                     } else {
                         resolved = instantiatedType.getClassifier();                        
                     }
