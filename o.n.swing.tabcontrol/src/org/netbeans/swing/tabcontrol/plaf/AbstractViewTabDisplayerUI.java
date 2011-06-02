@@ -664,7 +664,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                     }
                 }
             } 
-            if ((i != -1) && e.isPopupTrigger()) {
+            if (e.isPopupTrigger()) {
                 //Post a popup menu show request
                 shouldPerformAction(TabDisplayer.COMMAND_POPUP_REQUEST, i, e);
             }
@@ -699,7 +699,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             tabState.setPressed(-1);
             Point p = e.getPoint();
             int i = getLayoutModel().indexOfPoint(p.x, p.y);
-            if ((i != -1) && e.isPopupTrigger()) {
+            if (e.isPopupTrigger()) {
                 //Post a popup menu show request
                 shouldPerformAction(TabDisplayer.COMMAND_POPUP_REQUEST, i, e);
             }
