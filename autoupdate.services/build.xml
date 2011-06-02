@@ -3,15 +3,15 @@
     <description>Builds, tests, and runs the project org.netbeans.modules.autoupdate.services</description>
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="compile-updater" depends="init">
-        <mkdir dir="build/updaterclasses"/>
-        <javac srcdir="libsrc" destdir="build/updaterclasses" 
+        <mkdir dir="${build.dir}/updaterclasses"/>
+        <javac srcdir="libsrc" destdir="${build.dir}/updaterclasses"
                deprecation="${build.compiler.deprecation}" 
                debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" 
                optimize="${build.compiler.optimize}" source="${javac.source}" 
                target="${javac.target}">
             <compilerarg line="${javac.compilerargs}"/>
         </javac>
-        <copy todir="build/updaterclasses">
+        <copy todir="${build.dir}/updaterclasses">
             <fileset dir="libsrc" excludes="${jar-excludes}"/>
         </copy>
     </target>
@@ -23,7 +23,7 @@
             <manifest>
                 <attribute name="NetBeans-Own-Library" value="true"/>
             </manifest>
-            <fileset dir="build/updaterclasses"/>
+            <fileset dir="${build.dir}/updaterclasses"/>
         </jar>
     </target>
 
