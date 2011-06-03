@@ -219,6 +219,9 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             }
         }
 
+        if (isCancelled())
+            return;
+        
         getHighlightsBag(doc).setHighlights(obag);
         OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
     }

@@ -1394,10 +1394,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     // We set all grid location properties even when
                     // just one changes to avoid unexpected behaviour
                     // caused by GridBagConstraint.RELATIVE or REMAINDER
-                    gridManager.setGridX(selComp, gridX+xDelta);
-                    gridManager.setGridY(selComp, gridY+yDelta);
-                    gridManager.setGridWidth(selComp, width+widthDelta);
-                    gridManager.setGridHeight(selComp, height+heightDelta);
+                    gridManager.setGridPosition(selComp,
+                        gridX+xDelta, gridY+yDelta, width+widthDelta, height+heightDelta);
                     columns = Math.max(columns, gridX+xDelta+width+widthDelta);
                     rows = Math.max(rows, gridY+yDelta+height+heightDelta);
                 }

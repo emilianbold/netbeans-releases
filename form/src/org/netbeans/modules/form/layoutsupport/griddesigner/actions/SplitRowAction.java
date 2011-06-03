@@ -86,7 +86,9 @@ public class SplitRowAction extends AbstractGridAction {
             int y = gridInfo.getGridY(component);
             int height = gridInfo.getGridHeight(component);
             if (y+height-1 == row) {
-                gridManager.setGridHeight(component, ++height);
+                int x = gridInfo.getGridX(component);
+                int width = gridInfo.getGridWidth(component);
+                gridManager.setGridPosition(component, x, y, width, ++height);
             }
         }
 
