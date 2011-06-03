@@ -72,6 +72,12 @@ public class GitException extends Exception {
             this.objectType = objectType;
         }
 
+        public MissingObjectException (String objectName, GitObjectType objectType, Throwable ex) {
+            super(NbBundle.getMessage(GitException.class, "MSG_Exception_ObjectDoesNotExist", new Object[] { objectType.toString(), objectName }), ex); //NOI18N
+            this.objectName = objectName;
+            this.objectType = objectType;
+        }
+
         public String getObjectName () {
             return objectName;
         }
