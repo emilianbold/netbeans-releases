@@ -232,7 +232,6 @@ public class LogViewMgr {
                 LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, fromFile, properties);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
                 Thread t = new Thread(logger);
-                t.setDaemon(true);
                 t.start();
             }
         }
@@ -367,6 +366,11 @@ public class LogViewMgr {
         // created properly and displayed.  However, if the user minimizes the
         // output window or switches to another one, we don't switch back.
         if(io.isClosed()) {
+            try {
+                io.getOut().reset();
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, "ignorable problem", ex);
+            }
             io.select();
 
             // Horrible hack.  closed flag is never reset, so reset it after reopening.
