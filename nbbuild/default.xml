@@ -47,6 +47,8 @@ made subject to such option by the copyright holder.
   <import file="default-properties.xml"/>
   <import file="jdk.xml"/>
 
+  <defaultexcludes add="**/.ade_path/**"/>
+
   <target name="init-tasks" unless="tasks-already-set">
     <taskdef name="jhindexer"
          classname="org.netbeans.nbbuild.JHIndexer"
