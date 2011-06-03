@@ -88,7 +88,7 @@ import org.openide.filesystems.FileObject;
  */
 @ProjectServiceProvider(service=CategoryDefinitionProcessor.class, projectTypes={
     @ProjectType(id="org-netbeans-modules-java-j2seproject"),
-    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1201),
+    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1202),
     @ProjectType(id="org-netbeans-modules-apisupport-project"),
     @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
     @ProjectType(id="org-netbeans-modules-web-project"),
