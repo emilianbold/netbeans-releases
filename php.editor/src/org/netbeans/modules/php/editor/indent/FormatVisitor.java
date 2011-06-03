@@ -146,11 +146,11 @@ public class FormatVisitor extends DefaultVisitor {
                 ts.moveNext();
 	    }
 	}
+	includeWSBeforePHPDoc = true;
 	if (indexBeforeLastComment > 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
 	    for (int i = 0; i < indexBeforeLastComment; i++) {
 		formatTokens.add(beforeTokens.get(i));
 	    }
-	    includeWSBeforePHPDoc = true;
 	    if (node instanceof ClassDeclaration || node instanceof InterfaceDeclaration) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
 		includeWSBeforePHPDoc = false;
@@ -163,7 +163,7 @@ public class FormatVisitor extends DefaultVisitor {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
 //                    }
 		} else {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
+		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELDS, ts.offset()));
 		}
 		includeWSBeforePHPDoc = false;
 	    } else if (node instanceof UseStatement) {
@@ -568,7 +568,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
 	} else {
 	    if (includeWSBeforePHPDoc) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELDS, ts.offset()));
 	    } else {
 		includeWSBeforePHPDoc = true;
 	    }
@@ -578,7 +578,7 @@ public class FormatVisitor extends DefaultVisitor {
 		|| ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof FieldsDeclaration))) {
 	    //addAllUntilOffset(statements.get(index).getEndOffset() + 1);
 	    addRestOfLine();
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELD, ts.offset() + ts.token().length()));
+	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELDS, ts.offset() + ts.token().length()));
 	}
     }
 
