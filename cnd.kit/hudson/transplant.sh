@@ -104,6 +104,8 @@ ant -Djava.awt.headless=true clean build-nozip || fail_rollback
 echo "----------------------------------------------------------"
 echo Pushing changes...
 echo "----------------------------------------------------------"
+cat ${TEMPFILE}
+echo "----------------------------------------------------------"
 echo hg push
 hg push || fail_rollback
 
