@@ -563,7 +563,7 @@ public class FormatVisitor extends DefaultVisitor {
 	    index++;
 	}
 	addAllUntilOffset(node.getStartOffset());
-	if (index < statements.size()
+	if (includeWSBeforePHPDoc && index < statements.size()
 		&& index > 0 && statements.get(index - 1) instanceof FieldsDeclaration) {
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
 	} else {

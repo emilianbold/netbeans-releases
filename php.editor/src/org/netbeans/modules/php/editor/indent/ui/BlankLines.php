@@ -9,7 +9,7 @@ use \ArrayObject;
 const CONNECT_OK = 1;
 class Connection {
 private $field1;
-private $field3 = "example";
+private $field2 = "example";
 public function method($text, $number){
 }
 }
@@ -19,9 +19,13 @@ namespace AnotherProject;
 const CONNECT_OK = 1;
 class Connection {
     /**
-     * comment
+     * comment for field1
      */
-    public $field;
+    public $field1;
+/**
+     * comment for field2
+     */
+    public $field2;
 }
 function connect() {
 }
