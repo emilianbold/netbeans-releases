@@ -542,7 +542,12 @@ public class CommonUtilities {
      * @param pushAction
      */
     public static void actionOnProject(String project, String pushAction) {
-        ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
+        ProjectRootNode prn;
+        try {
+            prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
+        } catch (TimeoutExpiredException e) {
+            prn = new ProjectsTabOperator().getProjectRootNode(project);
+        }
         prn.callPopup().pushMenuNoBlock(pushAction);
     }
     
