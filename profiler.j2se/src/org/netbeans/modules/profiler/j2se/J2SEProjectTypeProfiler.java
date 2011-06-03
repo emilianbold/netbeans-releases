@@ -50,20 +50,20 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
-import org.netbeans.modules.profiler.utils.AppletSupport;
+import org.netbeans.modules.profiler.projectsupport.utilities.AppletSupport;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
 import java.io.*;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
+import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 
@@ -71,7 +71,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectType="org-netbeans-modules-java-j2seproject")
 public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
@@ -115,8 +115,9 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         if (!"java".equals(fo.getExt()) && !"class".equals(fo.getExt())) {
             return false; // NOI18N
         }
-
-        return SourceUtils.isRunnable(fo);
+        // FIXME
+        JavaProfilerSource src = JavaProfilerSource.createFrom(fo);
+        return src != null ? src.isRunnable() : false;
     }
 
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
@@ -125,12 +126,16 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             case TARGET_PROFILE:
                 return "profile"; // NOI18N
             case TARGET_PROFILE_SINGLE:
-
-                if (SourceUtils.isApplet(profiledClassFile)) {
-                    return "profile-applet"; // NOI18N
-                } else {
-                    return "profile-single"; // NOI18N
+                // FIXME
+                JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+                if (src != null) {
+                    if (src.isApplet()) {
+                        return "profile-applet"; // NOI18N
+                    } else {
+                        return "profile-single"; // NOI18N
+                    }
                 }
+                break;
             case TARGET_PROFILE_TEST:
                 return null; // not currently supported // "profile-test"; // NOI18N
             case TARGET_PROFILE_TEST_SINGLE:
@@ -138,6 +143,7 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             default:
                 return null;
         }
+        return null;
     }
 
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
@@ -179,7 +185,7 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             String profiledClass = pp.getProperty("main.class"); // NOI18N
 
             if ((profiledClass == null) || "".equals(profiledClass)
-                    || (SourceUtils.resolveClassByName(profiledClass, project) == null)) { // NOI18N
+                    || (ElementUtilitiesEx.resolveClassByName(profiledClass, project) == null)) { // NOI18N
                 mainClassSetManually = ProjectUtilities.selectMainClass(project, null, ProjectUtilities.getProjectName(project),
                                                                         -1);
 
@@ -211,53 +217,58 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         } else {
             // In case the class to profile is explicitely selected (profile-single)
             // 1. specify profiled class name
-            if (SourceUtils.isApplet(profiledClassFile)) {
-                String jvmargs = props.getProperty("run.jvmargs"); // NOI18N
+            
+            // FIXME
+            JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+            if (src != null) {
+                if (src.isApplet()) {
+                    String jvmargs = props.getProperty("run.jvmargs"); // NOI18N
 
-                URL url = null;
+                    URL url = null;
 
-                // do this only when security policy is not set manually
-                if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") > 0)) { //NOI18N
+                    // do this only when security policy is not set manually
+                    if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") > 0)) { //NOI18N
 
-                    PropertyEvaluator projectProps = getProjectProperties(project);
-                    String buildDirProp = projectProps.getProperty("build.dir"); //NOI18N
-                                                                                 // TODO [M9] what if buildDirProp is null?
+                        PropertyEvaluator projectProps = getProjectProperties(project);
+                        String buildDirProp = projectProps.getProperty("build.dir"); //NOI18N
+                                                                                     // TODO [M9] what if buildDirProp is null?
 
-                    FileObject buildFolder = ProjectUtilities.getOrCreateBuildFolder(project, buildDirProp);
+                        FileObject buildFolder = ProjectUtilities.getOrCreateBuildFolder(project, buildDirProp);
 
-                    AppletSupport.generateSecurityPolicy(project.getProjectDirectory(), buildFolder);
+                        AppletSupport.generateSecurityPolicy(project.getProjectDirectory(), buildFolder);
 
-                    if ((jvmargs == null) || (jvmargs.length() == 0)) {
-                        props.setProperty("run.jvmargs",
-                                          "-Djava.security.policy=" + FileUtil.toFile(buildFolder).getPath() + File.separator
-                                          + "applet.policy"); //NOI18N
-                    } else {
-                        props.setProperty("run.jvmargs",
-                                          jvmargs + " -Djava.security.policy=" + FileUtil.toFile(buildFolder).getPath()
-                                          + File.separator + "applet.policy"); //NOI18N
+                        if ((jvmargs == null) || (jvmargs.length() == 0)) {
+                            props.setProperty("run.jvmargs",
+                                              "-Djava.security.policy=" + FileUtil.toFile(buildFolder).getPath() + File.separator
+                                              + "applet.policy"); //NOI18N
+                        } else {
+                            props.setProperty("run.jvmargs",
+                                              jvmargs + " -Djava.security.policy=" + FileUtil.toFile(buildFolder).getPath()
+                                              + File.separator + "applet.policy"); //NOI18N
+                        }
                     }
-                }
 
-                if (profiledClassFile.existsExt("html") || profiledClassFile.existsExt("HTML")) { //NOI18N
-                    url = ProjectUtilities.copyAppletHTML(project, getProjectProperties(project), profiledClassFile, "html"); //NOI18N
+                    if (profiledClassFile.existsExt("html") || profiledClassFile.existsExt("HTML")) { //NOI18N
+                        url = ProjectUtilities.copyAppletHTML(project, getProjectProperties(project), profiledClassFile, "html"); //NOI18N
+                    } else {
+                        url = ProjectUtilities.generateAppletHTML(project, getProjectProperties(project), profiledClassFile);
+                    }
+
+                    if (url == null) {
+                        return; // TODO: fail?
+                    }
+
+                    props.setProperty("applet.url", url.toString()); // NOI18N
                 } else {
-                    url = ProjectUtilities.generateAppletHTML(project, getProjectProperties(project), profiledClassFile);
+                    final String profiledClass = src.getTopLevelClass().getVMName();
+                    props.setProperty("profile.class", profiledClass); //NOI18N
                 }
 
-                if (url == null) {
-                    return; // TODO: fail?
-                }
-
-                props.setProperty("applet.url", url.toString()); // NOI18N
-            } else {
-                final String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-                props.setProperty("profile.class", profiledClass); //NOI18N
+                // 2. include it in javac.includes so that the compile-single picks it up
+                final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
+                                                                                         profiledClassFile), profiledClassFile);
+                props.setProperty("javac.includes", clazz); //NOI18N
             }
-
-            // 2. include it in javac.includes so that the compile-single picks it up
-            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
-                                                                                     profiledClassFile), profiledClassFile);
-            props.setProperty("javac.includes", clazz); //NOI18N
         }
     }
 

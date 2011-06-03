@@ -50,7 +50,6 @@ import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.ui.NBHTMLLabel;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -69,10 +68,13 @@ import java.util.List;
 import java.util.Properties;
 import javax.swing.*;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 
 /**
@@ -80,7 +82,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Ian Formanek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectTypes={@ProjectType(id="org-netbeans-modules-ant-freeform", position=1210)})
 public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
@@ -270,13 +272,17 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
         if (profiledClassFile != null) { // In case the class to profile is explicitely selected (profile-single)
             // 1. specify profiled class name
 
-            final String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-            props.setProperty("profile.class", profiledClass); //NOI18N
+            //FIXME 
+            JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+            if (src != null) {
+                final String profiledClass = src.getTopLevelClass().getVMName();
+                props.setProperty("profile.class", profiledClass); //NOI18N
 
-            // 2. include it in javac.includes so that the compile-single picks it up
-            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
-                    profiledClassFile), profiledClassFile);
-            props.setProperty("javac.includes", clazz); //NOI18N
+                // 2. include it in javac.includes so that the compile-single picks it up
+                final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
+                        profiledClassFile), profiledClassFile);
+                props.setProperty("javac.includes", clazz); //NOI18N
+            }
         }
     }
 
@@ -333,7 +339,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
         try {
             l = AntScriptUtils.getCallableTargetNames(buildScript);
         } catch (IOException x) {
-            Profiler.getDefault().displayError(MessageFormat.format(ERROR_PARSING_BUILDFILE_MSG,
+            ProfilerDialogs.displayError(MessageFormat.format(ERROR_PARSING_BUILDFILE_MSG,
                     new Object[]{ProjectUtils.getInformation(project).getName()                    }));
 
             return null;
@@ -352,7 +358,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
             final DialogDescriptor dd = new DialogDescriptor(atsp, SELECT_PROFILING_TASK_DIALOG_CAPTION, true,
                     new Object[]{okButton, DialogDescriptor.CANCEL_OPTION                    }, okButton,
                     DialogDescriptor.BOTTOM_ALIGN, null, null);
-            final Dialog d = ProfilerDialogs.createDialog(dd);
+            final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
             d.setVisible(true);
 
             if (dd.getValue() == okButton) {
@@ -364,7 +370,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
                     if (t.getName().equals(targetName)) {
                         if (checkTarget(t.getElement())) {
                             return targetName;
-                        } else if (ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(NO_PROFILER_TASK_MSG,
+                        } else if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NO_PROFILER_TASK_MSG,
                                 NotifyDescriptor.OK_CANCEL_OPTION,
                                 NotifyDescriptor.WARNING_MESSAGE)) == NotifyDescriptor.OK_OPTION) {
                             return targetName;
