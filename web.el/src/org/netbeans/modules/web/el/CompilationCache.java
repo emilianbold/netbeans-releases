@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,63 +37,76 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.el;
 
-package org.netbeans.modules.web.el.hints;
-
-import java.util.List;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.web.el.CompilationContext;
-import org.openide.util.NbBundle;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Base class for EL rules.
  *
- * @author Erno Mononen
+ * @author marekfukala
  */
-abstract class ELRule implements AstRule {
+public class CompilationCache {
 
-    @Override
-    public String getId() {
-        return getClass().getSimpleName();
+    private Map<Key, Object> map = new HashMap<Key, Object>();
+    
+    public synchronized Object getOrCache(Key key, ValueProvider<?> valueProvider) {
+        Object cached = map.get(key);
+        if(cached == null) {
+            cached = valueProvider.get();
+            map.put(key, cached);
+        }
+        return cached;
     }
-
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(ELRule.class, getId() + "_Desc");//NOI18N
+    
+    public static Key createKey(Object... items) {
+        return new Key(items);
     }
-
-    @Override
-    public boolean getDefaultEnabled() {
-        return true;
+    
+    public static interface ValueProvider<T> {
+        public T get();
     }
+    
+    public static class Key {
 
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
+        private Object[] keys;
+        
+        private Key(Object... keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Key other = (Key) obj;
+
+            if (other.keys.length != keys.length) {
+                return false;
+            }
+
+            for (int i = 0; i < keys.length; i++) {
+                if (!keys[i].equals(other.keys[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            for (Object key : keys) {
+                hash = 13 * key.hashCode();
+            }
+            return hash;
+        }
     }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(ELRule.class, getId());
-    }
-
-    @Override
-    public boolean showInTasklist() {
-        return true;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
-
-    protected abstract void run(CompilationContext info, RuleContext context, List<Hint> result);
-
 }

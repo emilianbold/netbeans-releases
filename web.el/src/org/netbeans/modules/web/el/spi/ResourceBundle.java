@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,63 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.el.hints;
-
-import java.util.List;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.web.el.CompilationContext;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.web.el.spi;
 
 /**
- * Base class for EL rules.
- *
- * @author Erno Mononen
+ * @author marekfukala
  */
-abstract class ELRule implements AstRule {
-
-    @Override
-    public String getId() {
-        return getClass().getSimpleName();
+public final class ResourceBundle {
+    
+    private String baseName, var;
+    
+    public ResourceBundle(String baseName, String var) {
+        this.baseName = baseName;
+        this.var = var;
     }
-
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(ELRule.class, getId() + "_Desc");//NOI18N
+    
+    /**
+     * @return fully qualified name of the properties file representing the resource bundle.
+     */
+    public String getBaseName() {
+        return baseName;
     }
-
-    @Override
-    public boolean getDefaultEnabled() {
-        return true;
+    
+    /**
+     * @return variable representing the resource bundle
+     */
+    public String getVar() {
+        return var;
     }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(ELRule.class, getId());
-    }
-
-    @Override
-    public boolean showInTasklist() {
-        return true;
-    }
-
-    @Override
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
-    }
-
-    protected abstract void run(CompilationContext info, RuleContext context, List<Hint> result);
-
+    
 }
