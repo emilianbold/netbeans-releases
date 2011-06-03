@@ -27,15 +27,17 @@
                         <li><a href="../create/about_implement_ws.html">Make implementation decisions</a> for your web service.</li>
                         <li>Do one of the following:
                         <ul>
-                        <li><a href="../create/create_ws_from_scratch.html">Create a web service 
+                        <li><a href="../create/create_ws_from_scratch.html">Create a JAX-WS web service 
                         from Java</a>.
                         When creating a web service from Java, the assumption is that you do
                         not have a WSDL file. However, you <i>can</i> use existing <i>code</i> to 
                         implement your web service.</li>
-                        <li><a href="../create/create_ws_from_wsdl.html">Create a web service from a WSDL File</a></li></ul>
+                        <li><a href="../create/create_ws_from_wsdl.html">Create a JAX-WS web service from a WSDL File</a></li>
+                        <li><a href="../create/create_rest_from_scratch">Create a RESTful web service</a>. RESTful web services
+                        are particularly useful if you need to read and write to a database.</li>
+                        </ul>
                     </ol>
-<p>To use JAX-RPC web services,
-            get the "JAX-RPC Web Services" plugin from the Plugins manager.
+
                 </td>
             </tr>
  
@@ -46,7 +48,7 @@
             </tr>
             <tr valign="top"> 
                 <td align="center"><img src="../../images/circle2.gif" alt="Number 2"><br>
-                <b>Develop the web service</b></td>
+                <b>Develop a JAX-WS web service</b></td>
                 <td> 
                 <ol>
                     <li>In the Projects window or Files window, double-click the files
@@ -54,6 +56,7 @@
                     <li>Use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Source Editor</a> to develop the
                         web service. When you right-click in the Source Editor, you can use the IDE to generate skeleton code for
                         one or more of the following:
+                        
                         <ul>
                             <li><a href="../create/add_ws_operation.html">Adding a web service operation</a></li>
                             <li><a href="../message/create_ws_soap_message.html">Adding a handler</a></li>
@@ -90,9 +93,7 @@
                     tool's features. For a JAX-WS web service that is created from a WSDL file,
                     you can use the <a href="../csh/editor/EditWSAttributesCookieImpl.html">Web
                     Service Attributes editor</a> to customize XML to Java (JAXB) mappings,
-                    WS Security, or other WS* features. For JAX-RPC web services, customize the
-                    <tt>wscompile</tt> tool's features in the Project Properties dialog box,
-                depending on your needs.</li></ol>
+                    WS Security, or other WS* features. </li></ol>
                 </td>
             </tr>
             <tr> 
@@ -106,16 +107,12 @@
                 <b>Deploy the web service</b> </td>
                 <td> 
         
-                    <p>You can deploy a web service as a stand-alone module or as a part of 
-                    a J2EE application.</p>
-                    <ol>
-            
-                        <li>To deploy it as part of a J2EE application, right-click the J2EE application's 
-                        J2EE Modules node, choose Add J2EE Module, select the module that contains 
-                        the web service, and click OK.</li>
-                        <li>Make sure the appropriate server is targeted.</li>
-                        <li>Choose Run &gt; Run Main Project or right-click the project and choose Run.</li>
-                    </ol>
+                    <p>To deploy the web service, simply deploy the web application that contains
+                    the service. If you have a web service that delegates to an EJB module, you can combine the 
+                    service's web application and the EJB module in an 
+                    <a href="../../enterprise/general/about_ent_apps.html">enterprise 
+                        application</a> and deploy the enterprise application.</p>
+                    
                 </td>
             </tr>
             <tr> 
@@ -129,7 +126,7 @@
                 <td> 
                     <ul>
                         <li><a href="../expose/glassfish_tester-ws.html">Test JAX-WS web services</a> or 
-                        <a href="../expose/test_ws.html">test JAX-RPC web services</a>.</li>
+                        <a href="../expose/test_rest.html">test RESTful web services</a>.</li>
                     </ul>
                 </td>
             </tr>
@@ -140,14 +137,13 @@
             </tr>
             <tr valign="top"> 
                 <td align="center"><img src="../../images/circle6.gif" alt="Number 6"><br>
-                <b>Consume a web service</b></td>
+                <b>Consume a SOAP web service</b></td>
                 <td> 
                     <ol>
                         <li><a href="../consume/wsc_create.html">Create the web service client</a>
                         from a local WSDL or a WSDL that is on-line.</li>
                         <li><a href="../expose/glassfish_tester-ws.html">Test JAX-WS web services</a> by using
                         the Glassfish Tester application;
-                        <a href="../expose/test_ws.html">test JAX-RPC web services</a> from the IDE.</li>
                         <li>Once you are sure that the web service is useful to you,
                         use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Source Editor</a> to develop the
                         web service client. When you right-click in the Source Editor, you can use the IDE to generate skeleton code for

@@ -20,18 +20,9 @@ Use is subject to license terms.  *-->
         description of a web service as a set of XML schema files and WSDL files. Based on this
         platform-independent description, you can use the steps that follow to generate
         the implementation files. The WSDL file that you use in the steps below can either be
-        available on disk or via a URL. You can even create the WSDL file yourself, using the IDE,
-        as described in <a href="create_wsdl_file.html">Creating a WSDL File</a>.
+        available on disk or via a URL. </p>
  
-        <ul class="note">
-            <li>
-                For J2EE 1.4 web services, if the WSDL file imports schemas, other WSDL files, or both, from the local file system, the web service will only work
-                if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
-                folder. If you do not do this,
-                the <tt>wscompile</tt> tool
-                will not be able to locate these imported files at the end of the procedure below.
-            </li>
-        </ul>
+        
 
         <p><b>To create a web service from a WSDL file:</b></p>
         <ol>
@@ -45,7 +36,7 @@ Use is subject to license terms.  *-->
         <li>Select Use Provider if you want to bypass the XML &lt;--&gt; Java binding layer and have the service use raw XML when processing requests. Instead of XML &lt;--&gt; binding, the Provider interface is used. This is an advanced feature and is unselected by default.</li> 
         <li>Click Finish.
     
-            <p>For JAX-WS web services (Java EE 5 specification), the IDE 
+            <p>The IDE 
             runs the <tt>wsimport</tt> tool, which reads the WSDL file
             and generates all the required artifacts for web service development, 
             deployment, and invocation. Finally, the IDE generates the skeleton

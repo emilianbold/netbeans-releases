@@ -1089,7 +1089,7 @@ public class Gdb {
                 if (record.isStream()) {
                     String stream = record.stream();
                     if (stream.contains("configured") && stream.contains("mingw")) { //NOI18N
-                        fmap = FileMapper.getDefault(FileMapper.Type.MSYS);
+                        fmap = FileMapper.getByType(FileMapper.Type.MSYS);
                     }
                 }
 
