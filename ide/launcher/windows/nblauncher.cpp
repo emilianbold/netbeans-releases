@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -106,7 +106,7 @@ int NbLauncher::start(int argc, char *argv[]) {
     parseConfigFile((userDir + "\\etc\\" + getAppName() + ".conf").c_str());
     userDir = oldUserDir;
 
-    adjustHeapSize();
+    adjustHeapAndPermGenSize();
     addExtraClusters();
     string nbexecPath;
     if (dirExists(platformDir.c_str())) {
@@ -408,22 +408,52 @@ bool NbLauncher::parseConfigFile(const char* path) {
     return true;
 }
 
-// Search if -Xmx is specified in existing arguments
-// If it isn't it adds it - 20% of available RAM but min is 96M and max 768M
-void NbLauncher::adjustHeapSize() {
+typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
+
+bool NbLauncher::areWeOn32bits() {
+    // find out if we are on 32-bit Windows
+    SYSTEM_INFO siSysInfo;
+    PGNSI pGNSI;
+    pGNSI = (PGNSI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
+            "GetNativeSystemInfo");
+    if (NULL != pGNSI)
+        pGNSI(&siSysInfo);
+    else
+        GetSystemInfo(&siSysInfo);
+    return (siSysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL);
+}
+
+// Search if -Xmx and -XX:MaxPermSize are specified in existing arguments
+// If it isn't compute default values based on 32/64-bits and available RAM
+void NbLauncher::adjustHeapAndPermGenSize() {
     if (nbOptions.find("-J-Xmx") == string::npos) {
-        // find how much memory we have and add -Xmx
+        int maxheap;
+        if (areWeOn32bits())
+            maxheap = 384;
+        else
+            maxheap = 768;
+        // find how much memory we have and add -Xmx as 1/5 of the memory
         MEMORYSTATUS ms = {0};
         GlobalMemoryStatus(&ms);
         int memory = (int)((ms.dwTotalPhys / 1024 / 1024) / 5);
         if (memory < 96) {
             memory = 96;
         }
-        else if (memory > 768) {
-            memory = 768;
+        else if (memory > maxheap) {
+            memory = maxheap;
         }
         char tmp[32];
         snprintf(tmp, 32, " -J-Xmx%dm", memory);
+        nbOptions += tmp;
+    }
+    if (nbOptions.find("-J-XX:MaxPermSize") == string::npos) {
+        int memory;
+        if (areWeOn32bits())
+            memory = 256;
+        else
+            memory = 384;
+        char tmp[32];
+        snprintf(tmp, 32, " -J-XX:MaxPermSize=%dm", memory);
         nbOptions += tmp;
     }
 }
