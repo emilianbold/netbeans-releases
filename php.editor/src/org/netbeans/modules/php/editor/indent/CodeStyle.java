@@ -194,14 +194,26 @@ public final class CodeStyle {
         return preferences.getInt(blankLinesBeforeClassEnd, getDefaultAsInt(blankLinesBeforeClassEnd));
     }
 
-    public int getBlankLinesBeforeField() {
-        return preferences.getInt(blankLinesBeforeField, getDefaultAsInt(blankLinesBeforeField));
+    public int getBlankLinesBeforeFields() {
+        return preferences.getInt(blankLinesBeforeFields, getDefaultAsInt(blankLinesBeforeFields));
+    }
+    
+    public int getBlankLinesBetweenFields() {
+        return preferences.getInt(blankLinesBetweenFields, getDefaultAsInt(blankLinesBetweenFields));
     }
 
-    public int getBlankLinesAfterField() {
-        return preferences.getInt(blankLinesAfterField, getDefaultAsInt(blankLinesAfterField));
+    public int getBlankLinesAfterFields() {
+        return preferences.getInt(blankLinesAfterFields, getDefaultAsInt(blankLinesAfterFields));
     }
 
+    /**
+     * 
+     * @return true it the fields will be group without php doc together (no empty line between them) 
+     */
+    public boolean getBlankLinesGroupFieldsWithoutDoc() {
+	return preferences.getBoolean(blankLinesGroupFieldsWithoutDoc, getDefaultAsBoolean(blankLinesGroupFieldsWithoutDoc));
+    }
+    
     public int getBlankLinesBeforeFunction() {
         return preferences.getInt(blankLinesBeforeFunction, getDefaultAsInt(blankLinesBeforeFunction));
     }
