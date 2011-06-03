@@ -71,6 +71,8 @@ public abstract class RemoteConfiguration {
     private final String displayName;
     private final String name;
 
+    // password keys, for keyring
+    final String deprecatedPasswordKey;
     final String passwordKey;
 
     /**
@@ -85,7 +87,8 @@ public abstract class RemoteConfiguration {
         assert name != null;
         assert displayName != null;
 
-        passwordKey = getClass().getName() + "." + name + ".password"; // NOI18N
+        deprecatedPasswordKey = getClass().getName() + "." + name + ".password"; // NOI18N
+        passwordKey = "php.remote." + name + ".password"; // NOI18N
 
         this.name = name;
         this.displayName = displayName;
@@ -229,7 +232,13 @@ public abstract class RemoteConfiguration {
             final Future<String> result = KEYRING_ACCESS.submit(new Callable<String>() {
                 @Override
                 public String call() throws Exception {
+                    // new password key
                     char[] newPassword = Keyring.read(passwordKey);
+                    if (newPassword != null) {
+                        return new String(newPassword);
+                    }
+                    // deprecated password key
+                    newPassword = Keyring.read(deprecatedPasswordKey);
                     if (newPassword != null) {
                         return new String(newPassword);
                     }
@@ -273,6 +282,8 @@ public abstract class RemoteConfiguration {
                 public void run() {
                     Keyring.save(passwordKey, password.toCharArray(),
                             NbBundle.getMessage(RemoteConfiguration.class, "MSG_PasswordFor", getDisplayName(), type));
+                    // remove old password key
+                    Keyring.delete(deprecatedPasswordKey);
                 }
             });
         } else {
@@ -285,6 +296,8 @@ public abstract class RemoteConfiguration {
             @Override
             public void run() {
                 Keyring.delete(passwordKey);
+                // remove old password key
+                Keyring.delete(deprecatedPasswordKey);
             }
         });
     }
