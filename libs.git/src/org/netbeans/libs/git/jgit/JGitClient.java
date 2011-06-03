@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitClientCallback;
 import org.netbeans.libs.git.GitException.MissingObjectException;
 import org.netbeans.libs.git.GitRemoteConfig;
@@ -77,6 +78,7 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
+import org.netbeans.libs.git.jgit.commands.BlameCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutRevisionCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
@@ -144,6 +146,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         synchronized (listeners) {
             listeners.add(listener);
         }
+    }
+
+    @Override
+    public GitBlameResult blame (File file, String revision, ProgressMonitor monitor) throws MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        BlameCommand cmd = new BlameCommand(repository, file, revision, monitor);
+        cmd.execute();
+        return cmd.getResult();
     }
 
     @Override

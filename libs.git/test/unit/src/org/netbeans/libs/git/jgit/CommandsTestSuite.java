@@ -46,6 +46,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.libs.git.jgit.commands.AddTest;
+import org.netbeans.libs.git.jgit.commands.BlameTest;
 import org.netbeans.libs.git.jgit.commands.BranchTest;
 import org.netbeans.libs.git.jgit.commands.CatTest;
 import org.netbeans.libs.git.jgit.commands.CheckoutTest;
@@ -57,6 +58,7 @@ import org.netbeans.libs.git.jgit.commands.ExportDiffTest;
 import org.netbeans.libs.git.jgit.commands.FetchTest;
 import org.netbeans.libs.git.jgit.commands.GetCommonAncestorTest;
 import org.netbeans.libs.git.jgit.commands.GetRemotesTest;
+import org.netbeans.libs.git.jgit.commands.GetUserTest;
 import org.netbeans.libs.git.jgit.commands.IgnoreTest;
 import org.netbeans.libs.git.jgit.commands.InitTest;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesTest;
@@ -86,6 +88,7 @@ public class CommandsTestSuite extends NbTestSuite {
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
         suite.addTestSuite(AddTest.class);
+        suite.addTestSuite(BlameTest.class);
         suite.addTestSuite(BranchTest.class);
         suite.addTestSuite(CatTest.class);
         suite.addTestSuite(CheckoutTest.class);
@@ -97,6 +100,7 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(FetchTest.class);
         suite.addTestSuite(GetCommonAncestorTest.class);
         suite.addTestSuite(GetRemotesTest.class);
+        suite.addTestSuite(GetUserTest.class);
         suite.addTestSuite(IgnoreTest.class);
         suite.addTestSuite(InitTest.class);
         suite.addTestSuite(ListModifiedIndexEntriesTest.class);
