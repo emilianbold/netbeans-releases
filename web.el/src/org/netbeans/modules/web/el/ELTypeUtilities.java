@@ -269,6 +269,18 @@ public final class ELTypeUtilities {
         }
         return false;
     }
+    
+    public static boolean isResourceBundleVar(CompilationContext info, Node target) {
+        if (!(target instanceof AstIdentifier)) {
+            return false;
+        }
+        ResourceBundles resourceBundles = ResourceBundles.get(info.file());
+        if (!resourceBundles.canHaveBundles()) {
+            return false;
+        }
+        String bundleVar = target.getImage();
+        return resourceBundles.isResourceBundleIdentifier(bundleVar);
+    }
 
     private static TypeMirror getTypeMirrorFor(CompilationContext info, Element element) {
         if (element.getKind() == ElementKind.METHOD) {

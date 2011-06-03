@@ -82,6 +82,7 @@ import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.netbeans.modules.web.el.ResourceBundles;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
+import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -115,12 +116,12 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (prefixMatcher == null) {
             return CodeCompletionResult.NONE;
         }
-        // see if it is bundle key and if so complete them
+        // see if it is bundle key in the array notation and if so complete them
         if (target instanceof AstString) {
             ResourceBundles bundle = ResourceBundles.get(getFileObject(context));
             String bundleIdentifier = bundle.findResourceBundleIdentifier(path);
             if (bundleIdentifier != null) {
-                proposeBundleKeys(context, prefixMatcher, element, bundleIdentifier, (AstString) target, proposals);
+                proposeBundleKeysInArrayNotation(context, prefixMatcher, element, bundleIdentifier, (AstString) target, proposals);
                 return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
             }
         }
@@ -146,11 +147,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     } else if(ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
                         // seems to be something like "sessionScope.^", so complete beans from the scope
                         proposeBeansFromScope(ccontext, context, prefixMatcher, element, nodeToResolve, proposals);
+                    } else if(ELTypeUtilities.isResourceBundleVar(ccontext, nodeToResolve)) {
+                        proposeBundleKeysInDotNotation(context, prefixMatcher, element, nodeToResolve, proposals);
                     } else if(resolved == null) {
                         // not yet working properly
                         //proposeFunctions(context, prefix, element, prefix, typeUtilities, proposals);
                         proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
-                        proposeBundles(context, prefixMatcher, element, proposals);
+                        proposeBundles(ccontext, context, prefixMatcher, element, proposals);
                         proposeVariables(ccontext, context, prefixMatcher, element, proposals);
                         proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
                         proposeKeywords(context, prefixMatcher, proposals);
@@ -371,31 +374,54 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-    private void proposeBundles(CodeCompletionContext context,
+    private void proposeBundles(CompilationContext ccontext, CodeCompletionContext context,
             PrefixMatcher prefix, ELElement elElement, List<CompletionProposal> proposals) {
 
         ResourceBundles resourceBundles = ResourceBundles.get(getFileObject(context));
         if (!resourceBundles.canHaveBundles()) {
             return;
         }
-        for (String bundle : resourceBundles.getBundles()) {
-            if (!prefix.matches(bundle)) {
+        for (ResourceBundle bundle : resourceBundles.getBundles()) {
+            if (!prefix.matches(bundle.getVar())) {
                 continue;
             }
-            ELResourceBundleCompletionItem item = new ELResourceBundleCompletionItem(bundle);
+            ELResourceBundleCompletionItem item = new ELResourceBundleCompletionItem(ccontext.file(), bundle, resourceBundles);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             proposals.add(item);
         }
 
     }
 
-    private void proposeBundleKeys(CodeCompletionContext context,
+    private void proposeBundleKeysInArrayNotation(CodeCompletionContext context,
             PrefixMatcher prefix, ELElement elElement, String bundleKey, AstString target, List<CompletionProposal> proposals) {
 
         if (target.getImage().isEmpty()
                 || elElement.getOriginalOffset(target).getStart() >= context.getCaretOffset()) {
             return;
         }
+        ResourceBundles resourceBundles = ResourceBundles.get(getFileObject(context));
+        if (!resourceBundles.canHaveBundles()) {
+            return;
+        }
+        for (Map.Entry<String, String> entry : resourceBundles.getEntries(bundleKey).entrySet()) {
+            if (!prefix.matches(entry.getKey())) {
+                continue;
+            }
+            ELResourceBundleKeyCompletionItem item = new ELResourceBundleKeyCompletionItem(entry.getKey(), entry.getValue(), elElement);
+            item.setSmart(true);
+            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+            proposals.add(item);
+        }
+    }
+    
+    // "msg.key" notation
+    private void proposeBundleKeysInDotNotation(CodeCompletionContext context,
+            PrefixMatcher prefix, 
+            ELElement elElement, 
+            Node baseObjectNode,
+            List<CompletionProposal> proposals) {
+        
+        String bundleKey = baseObjectNode.getImage();
         ResourceBundles resourceBundles = ResourceBundles.get(getFileObject(context));
         if (!resourceBundles.canHaveBundles()) {
             return;

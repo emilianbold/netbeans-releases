@@ -588,10 +588,10 @@ public class TokenFormatter {
                                         countSpaces = indentRule ? ws.spaces : 1;
                                         lastBracePlacement = docOptions.methodDeclBracePlacement;
                                         break;
-                                    case WHITESPACE_BEFORE_FIELD:
+                                    case WHITESPACE_BEFORE_FIELDS:
                                         newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
                                         break;
-                                    case WHITESPACE_AFTER_FIELD:
+                                    case WHITESPACE_AFTER_FIELDS:
                                         newLines = docOptions.blankLinesAfterField + 1 > newLines ? docOptions.blankLinesAfterField + 1 : newLines;
                                         break;
                                     case WHITESPACE_BETWEEN_FIELDS:
