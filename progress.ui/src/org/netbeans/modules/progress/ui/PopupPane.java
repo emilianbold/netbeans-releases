@@ -42,7 +42,6 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.progress.ui;
 
 import java.awt.Color;
@@ -56,6 +55,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -68,13 +68,11 @@ import org.netbeans.modules.progress.spi.InternalHandle;
 import org.openide.util.Mutex;
 
 /**
- *
  * @author mkleint
  */
 public class PopupPane extends JScrollPane {
     private JPanel view;
-    private HashSet<ListComponent> listComponents;
-    /** Creates a new instance of PopupPane */
+    private Set<ListComponent> listComponents;
     private ListComponent selected;
     
     public PopupPane() {
@@ -112,16 +110,6 @@ public class PopupPane extends JScrollPane {
         
         
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//        addFocusListener(new FocusListener() {
-//            public void focusLost(java.awt.event.FocusEvent e) {
-//                System.out.println("popup focus gained temp?=" + e.isTemporary());
-//            }
-//
-//            public void focusGained(java.awt.event.FocusEvent e) {
-//                System.out.println("popup focus lost temporary?=" + e.isTemporary());
-//            }
-//            
-//        });
     }
     
     public void addListComponent(final ListComponent lst) {
@@ -146,9 +134,9 @@ public class PopupPane extends JScrollPane {
     public void removeListComponent(final InternalHandle handle) {
         Mutex.EVENT.readAccess(new Runnable() {            
             public @Override void run() {
-                Iterator it = listComponents.iterator();
+                Iterator<ListComponent> it = listComponents.iterator();
                 while (it.hasNext()) {
-                    ListComponent comp = (ListComponent)it.next();
+                    ListComponent comp = it.next();
                     if (comp.getHandle() == handle) {
                         view.remove(comp);
                         it.remove();
@@ -164,7 +152,7 @@ public class PopupPane extends JScrollPane {
         });
     }
 
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         int count = view.getComponentCount();
         int height = count > 0 ? view.getComponent(0).getPreferredSize().height : 0;
         int offset = count > 3 ? height * 3 + 5 : (count * height) + 5;
@@ -180,9 +168,7 @@ public class PopupPane extends JScrollPane {
     public void updateBoldFont(final InternalHandle handle) {
         Mutex.EVENT.readAccess(new Runnable() {            
             public @Override void run() {
-                Iterator it = listComponents.iterator();
-                while (it.hasNext()) {
-                    ListComponent comp = (ListComponent)it.next();
+                for (ListComponent comp : listComponents) {
                     comp.markAsActive(handle == comp.getHandle());
                 }
             }
@@ -197,15 +183,15 @@ public class PopupPane extends JScrollPane {
         
         public BottomLineBorder () {}
         
-        public Insets getBorderInsets(Component c) {
+        public @Override Insets getBorderInsets(Component c) {
             return ins;
         }
 
-        public boolean isBorderOpaque() {
+        public @Override boolean isBorderOpaque() {
             return false;
         }
 
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+        public @Override void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
            Color old = g.getColor();
            g.setColor(col);
            g.drawRect(x, y + height - 2,  width, 1);
@@ -223,7 +209,7 @@ public class PopupPane extends JScrollPane {
         return -1;
     }
 
-    public void requestFocus() {
+    public @Override void requestFocus() {
 //#63666 - don't focus any of the tasks explicitly, wait for user action.
 //        if (view.getComponentCount() > 1) {
 //            if (selected == null || !selected.isDisplayable()) {
@@ -240,7 +226,7 @@ public class PopupPane extends JScrollPane {
         MoveDownAction() {
         }
          
-        public void actionPerformed(ActionEvent actionEvent) {
+        public @Override void actionPerformed(ActionEvent actionEvent) {
             int index = -1;
             if (selected != null) {
                 index = findIndex(selected);
@@ -260,7 +246,7 @@ public class PopupPane extends JScrollPane {
         MoveUpAction() {
         }
          
-        public void actionPerformed(ActionEvent actionEvent) {
+        public @Override void actionPerformed(ActionEvent actionEvent) {
             int index = PopupPane.this.view.getComponentCount();
             if (selected != null) {
                 index = findIndex(selected);
@@ -280,7 +266,7 @@ public class PopupPane extends JScrollPane {
     private class CancelAction extends AbstractAction {
         public CancelAction () {}
         
-        public void actionPerformed(ActionEvent actionEvent) {
+        public @Override void actionPerformed(ActionEvent actionEvent) {
             if (selected != null) {
                 Action act = selected.getCancelAction();
                 if (act != null) {
@@ -295,19 +281,9 @@ public class PopupPane extends JScrollPane {
     private class SelectAction extends AbstractAction {
         public SelectAction () {}
         
-        public void actionPerformed(ActionEvent actionEvent) {
+        public @Override void actionPerformed(ActionEvent actionEvent) {
             if (selected != null) {
                 selected.getHandle().requestExplicitSelection();
-            }
-        }
-    }
-    
-    private class ViewAction extends AbstractAction {
-        public ViewAction () {}
-        
-        public void actionPerformed(ActionEvent actionEvent) {
-            if (selected != null) {
-                selected.getHandle().requestView();
             }
         }
     }
