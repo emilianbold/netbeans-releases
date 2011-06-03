@@ -104,6 +104,24 @@ public interface GridManager {
     void setGridHeight(Component component, int gridHeight);
 
     /**
+     * Sets the position of the component in the grid. This method is called
+     * when several position properties (i.e., gridX, gridY, etc.) may be
+     * modified at once. The difference between invocation of this method
+     * and a sequence of the specific methods (like {@code setGridX})
+     * is that some {@code GridManager} may benefit from the knowledge
+     * that several changes belong together. For example, this method
+     * helps {@code GridBagManager} to keep special values like {@code REMAINDER}
+     * width/height where it is appropriate.
+     * 
+     * @param component component whose grid position should be changed.
+     * @param gridX new grid X coordinate of the specified component.
+     * @param gridY new grid Y coordinate of the specified component.
+     * @param gridWidth new grid width of the specified component.
+     * @param gridHeight  new grid height of the specified component.
+     */
+    void setGridPosition(Component component, int gridX, int gridY, int gridWidth, int gridHeight);
+
+    /**
      * Adds a component with the specified grid location.
      *
      * @param component component to add.
