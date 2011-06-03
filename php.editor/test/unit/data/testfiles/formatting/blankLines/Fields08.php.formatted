@@ -8,12 +8,14 @@ class Test {
      * @var string
      */
     protected $field1;
+
     /**
      * Field 2.
      * 
      * @var string
      */
     protected $field2;
+
     /**
      * Field 3.
      * 
