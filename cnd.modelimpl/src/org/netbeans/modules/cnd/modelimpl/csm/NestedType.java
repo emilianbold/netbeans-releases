@@ -106,7 +106,7 @@ public final class NestedType extends TypeImpl {
 
     @Override
     public CsmClassifier getClassifier() {
-        return getClassifier(new ArrayList<CsmInstantiation>(), false);
+        return getClassifier(null, false);
     }
     
     @Override
@@ -119,6 +119,9 @@ public final class NestedType extends TypeImpl {
             if (parentType != null) {
                 CsmClassifier parentClassifier;
                 if(parentType instanceof TypeImpl) {
+                    if (instantiations == null) {
+                        instantiations = new ArrayList<CsmInstantiation>();
+                    }
                     parentClassifier = ((TypeImpl)parentType).getClassifier(instantiations, false);
                 } else {
                     parentClassifier = parentType.getClassifier();                        
@@ -145,6 +148,9 @@ public final class NestedType extends TypeImpl {
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
                         obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, this, specialize);
                         if(CsmKindUtilities.isInstantiation(obj)) {
+                            if (instantiations == null) {
+                                instantiations = new ArrayList<CsmInstantiation>();
+                            }
                             instantiations.add((CsmInstantiation)obj);
                         }
                     }

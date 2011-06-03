@@ -500,7 +500,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     @Override
     public CsmClassifier getClassifier() {
-        return getClassifier(new ArrayList<CsmInstantiation>(), false);
+        return getClassifier(null, false);
     }
     
     public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
@@ -548,6 +548,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
                         obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, this, specialize);
                         if(CsmKindUtilities.isInstantiation(obj)) {
+                            if (instantiations == null) {
+                                instantiations = new ArrayList<CsmInstantiation>();
+                            }
                             instantiations.add((CsmInstantiation)obj);
                         }
                     } else {
@@ -569,7 +572,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     public CsmObject specialize(CsmClassifier classifier, List<CsmInstantiation> instantiations) {
         CsmObject obj = classifier;
-        if(!instantiations.isEmpty()) {
+        if(instantiations != null && !instantiations.isEmpty()) {
             List<CsmInstantiation> originalInstantiations = new ArrayList<CsmInstantiation>();
             while (CsmKindUtilities.isInstantiation(obj)) {
                 originalInstantiations.add((CsmInstantiation)obj);
