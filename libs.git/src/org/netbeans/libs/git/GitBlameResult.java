@@ -39,59 +39,19 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.el.spi;
+package org.netbeans.libs.git;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import java.io.File;
 
 /**
  *
- * @author marekfukala
+ * @author ondra
  */
-public interface ELPlugin {
+public interface GitBlameResult {
 
-    /** Name - id of the ELPlugin */
-    public String getName();
-
-    /** A list of file mimetypes which this plugin is registered for. */
-    public Collection<String> getMimeTypes();
-
-    /** A list of EL implicit objects for given file */
-    public Collection<ImplicitObject> getImplicitObjects(FileObject file);
-
-    /** A list of resource bundles for given file */
-    public List<ResourceBundle> getResourceBundles(FileObject file);
-
-    static class Query {
-
-        public static Collection<? extends ELPlugin> getELPlugins() {
-            Collection<? extends ELPlugin> plugins =
-                    Lookup.getDefault().lookupAll(ELPlugin.class);
-            return plugins;
-        }
-
-        public static Collection<ImplicitObject> getImplicitObjects(FileObject file) {
-            Set<ImplicitObject> result = new HashSet<ImplicitObject>();
-            for (ELPlugin plugin : getELPlugins()) {
-                result.addAll(plugin.getImplicitObjects(file));
-            }
-            return result;
-        }
-
-        public static List<ResourceBundle> getResourceBundles(FileObject file) {
-            List<ResourceBundle> result = new ArrayList<ResourceBundle>();
-             for (ELPlugin plugin : getELPlugins()) {
-                result.addAll(plugin.getResourceBundles(file));
-            }
-            return result;
-        }
-
-        
-    }
+    public File getBlamedFile ();
+    
+    public int getLineCount ();
+    
+    public GitLineDetails getLineDetails (int lineNumber);
 }

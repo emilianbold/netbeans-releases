@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,61 +37,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.el.spi;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+package org.netbeans.libs.git.jgit.commands;
+
+import java.io.File;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.blame.BlameResult;
+import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.GitBlameResult;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.JGitBlameResult;
+import org.netbeans.libs.git.jgit.Utils;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
- * @author marekfukala
+ * @author ondra
  */
-public interface ELPlugin {
+public class BlameCommand extends GitCommand {
 
-    /** Name - id of the ELPlugin */
-    public String getName();
+    private final String revision;
+    private final File file;
+    private final ProgressMonitor monitor;
+    private GitBlameResult result;
 
-    /** A list of file mimetypes which this plugin is registered for. */
-    public Collection<String> getMimeTypes();
-
-    /** A list of EL implicit objects for given file */
-    public Collection<ImplicitObject> getImplicitObjects(FileObject file);
-
-    /** A list of resource bundles for given file */
-    public List<ResourceBundle> getResourceBundles(FileObject file);
-
-    static class Query {
-
-        public static Collection<? extends ELPlugin> getELPlugins() {
-            Collection<? extends ELPlugin> plugins =
-                    Lookup.getDefault().lookupAll(ELPlugin.class);
-            return plugins;
-        }
-
-        public static Collection<ImplicitObject> getImplicitObjects(FileObject file) {
-            Set<ImplicitObject> result = new HashSet<ImplicitObject>();
-            for (ELPlugin plugin : getELPlugins()) {
-                result.addAll(plugin.getImplicitObjects(file));
-            }
-            return result;
-        }
-
-        public static List<ResourceBundle> getResourceBundles(FileObject file) {
-            List<ResourceBundle> result = new ArrayList<ResourceBundle>();
-             for (ELPlugin plugin : getELPlugins()) {
-                result.addAll(plugin.getResourceBundles(file));
-            }
-            return result;
-        }
-
-        
+    public BlameCommand (Repository repository, File file, String revision, ProgressMonitor monitor) {
+        super(repository, monitor);
+        this.file = file;
+        this.revision = revision;
+        this.monitor = monitor;
     }
+
+    @Override
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        org.eclipse.jgit.api.BlameCommand cmd = new Git(repository).blame();
+        cmd.setFilePath(Utils.getRelativePath(getRepository().getWorkTree(), file));
+        if (revision != null) {
+            cmd.setStartCommit(Utils.findCommit(repository, revision));
+        }
+        cmd.setFollowFileRenames(true);
+        BlameResult cmdResult = cmd.call();
+        if (cmdResult != null) {
+            result = new JGitBlameResult(cmdResult, repository);
+        }
+    }
+
+    @Override
+    protected String getCommandDescription () {
+        return new StringBuilder("git blame -l -f ").append(revision).append(" ").append(file).toString(); //NOI18N
+    }
+
+    public GitBlameResult getResult () {
+        return result;
+    }
+
 }

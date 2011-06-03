@@ -52,11 +52,10 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -66,21 +65,21 @@ public class JSFResourceBundlesProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JSFResourceBundlesProvider.class.getName());
 
-    public static List<String> getResourceBundles(WebModule webModule) {
+    public static List<ResourceBundle> getResourceBundles(WebModule webModule) {
        MetadataModel<JsfModel> model = JsfModelFactory.getModel(webModule);
         if (model == null) {
             return Collections.emptyList();
         }
         try {
-            return model.runReadAction(new MetadataModelAction<JsfModel, List<String>>() {
+            return model.runReadAction(new MetadataModelAction<JsfModel, List<ResourceBundle>>() {
 
                 @Override
-                public List<String> run(JsfModel metadata) throws Exception {
+                public List<ResourceBundle> run(JsfModel metadata) throws Exception {
                     List<Application> applications = metadata.getElements(Application.class);
-                    List<String> result = new ArrayList<String>();
+                    List<ResourceBundle> result = new ArrayList<ResourceBundle>();
                     for (Application application : applications) {
-                        for (ResourceBundle bundle : application.getResourceBundles()) {
-                            result.add(bundle.getBaseName());
+                        for (org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle bundle : application.getResourceBundles()) {
+                            result.add(new ResourceBundle(bundle.getBaseName(), bundle.getVar()));
                         }
                     }
                     return result;

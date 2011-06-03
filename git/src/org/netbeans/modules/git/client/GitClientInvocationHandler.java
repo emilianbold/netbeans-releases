@@ -69,6 +69,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
      * Set of commands that do not need to run under repository lock
      */
     private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", //NOI18N
+            "blame", //NOI18N
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
             "exportCommit", //NOI18N
@@ -106,6 +107,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
      * otherwise a FS event will come to Interceptor and trigger the full scan.
      */
     private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener",  //NOI18N
+            "blame", //NOI18N
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
             "createBranch", //NOI18N - does not update index or files in WT

@@ -50,6 +50,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
+import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.editor.JSFResourceBundlesProvider;
 import static org.netbeans.modules.web.el.spi.ImplicitObjectType.*;
 import org.openide.filesystems.FileObject;
@@ -110,7 +111,7 @@ public class FaceletsELPlugin implements ELPlugin {
     }
 
     @Override
-    public List<String> getResourceBundles(FileObject file) {
+    public List<ResourceBundle> getResourceBundles(FileObject file) {
         WebModule wm = WebModule.getWebModule(file);
         if(wm == null) {
             return Collections.emptyList();
