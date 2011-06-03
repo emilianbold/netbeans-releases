@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,57 +40,64 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git;
 
-import java.io.File;
+package org.netbeans.modules.git.ui.blame;
+
+import org.netbeans.editor.SideBarFactory;
+
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+
 
 /**
- *
- * @author ondra
+ * @author Maros Sandor
  */
-public class GitLineDetails {
-    private final GitRevisionInfo revision;
-    private final GitUser author;
-    private final GitUser committer;
-    private final File sourceFile;
-    private final int sourceLine;
-    private final String content;
+public class AnnotationBarManager implements SideBarFactory {
 
-    public GitLineDetails (String content, GitRevisionInfo revision, GitUser author, GitUser committer, File sourceFile, int sourceLine) {
-        this.revision = revision;
-        this.author = author;
-        this.committer = committer;
-        this.sourceFile = sourceFile;
-        this.sourceLine = sourceLine;
-        this.content = content;
-    }
-    
-    public GitUser getAuthor () {
-        return author;
-    }
-    
-    public GitUser getCommitter () {
-        return committer;
+    private static final Object BAR_KEY = new Object();
+
+    /**
+     * Creates initially hidden annotations sidebar.
+     * It's called once by target lifetime.
+     */
+    @Override
+    public JComponent createSideBar(JTextComponent target) {
+        final AnnotationBar ab = new AnnotationBar(target);
+        target.putClientProperty(BAR_KEY, ab);
+        return ab;
     }
 
-    public GitRevisionInfo getRevisionInfo () {
-        return revision;
+    /**
+     * Shows annotations sidebar.
+     */
+    static AnnotationBar showAnnotationBar(JTextComponent target) {
+        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        assert ab != null: "#58828 reappeared!"; // NOI18N
+        ab.annotate();
+        return ab;
     }
 
-    public File getSourceFile () {
-        return sourceFile;
+    /**
+     * Shows annotations sidebar.
+     */
+    public static void hideAnnotationBar(JTextComponent target) {
+        if (target == null) return;
+        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        assert ab != null: "#58828 reappeared!"; // NOI18N
+        ab.hideBar();
     }
 
-    public int getSourceLine () {
-        return sourceLine;
-    }
-
-    public String getContent () {
-        return content;
+    /**
+     * Tests wheteher given editor shows annotations.
+     */
+    public static boolean annotationBarVisible(JTextComponent target) {
+        if (target == null) return false;
+        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        if (ab == null) {
+            return false;
+        }
+        return ab.getPreferredSize().width > 0;
     }
 }
+
