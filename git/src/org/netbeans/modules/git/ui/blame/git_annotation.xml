@@ -43,29 +43,14 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
-    
-    <folder name="VersioningOptionsDialog">
-        <file name="Git.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.git.options.GitAdvancedOption"/>
-        </file>
-    </folder>    
-
-    <folder name="Editors">
-        <folder name="SideBar">
-            <file name="org-netbeans-modules-git-ui-blame-AnnotationBarManager.instance">
-                <attr name="position" intvalue="2300"/>
-            </file>
-        </folder>
-        <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-git-Annotation.xml" url="ui/blame/git_annotation.xml"/>
-        </folder>
-        <folder name="UpToDateStatusProvider">
-            <file name="org-netbeans-modules-git-ui-blame-AnnotationMarkInstaller.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.git.ui.blame.AnnotationMarkInstaller"/>
-            </file>
-        </folder>
-    </folder>
-</filesystem>
+<!DOCTYPE type PUBLIC
+          "-//NetBeans//DTD annotation type 1.0//EN"
+          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+<type name="org-netbeans-modules-git-Annotation"
+      description_key="git_annotation"
+      localizing_bundle="org.netbeans.modules.git.resources.Bundle"
+      visible="true"
+      severity="ok"
+      custom_sidebar_color="0x5890BE"
+      browseable="true"
+/>
