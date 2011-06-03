@@ -71,6 +71,7 @@ import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.Utilities;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -144,7 +145,7 @@ public class EditWatchPanel extends javax.swing.JPanel
 	seed(nativeWatch, watch);
     }
 
-    public void seed(NativeWatch nativeWatch, Watch watch) {
+    public final void seed(NativeWatch nativeWatch, Watch watch) {
 	watchText.setText(EditorBridge.getCurrentSelection());
         watchText.selectAll();
     }
@@ -180,17 +181,11 @@ public class EditWatchPanel extends javax.swing.JPanel
 
 	    add(watchLabel, gbc);
 
-        FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
-        int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
-        String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
 	//Add JEditorPane and context
-        JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
+        JComponent [] editorComponents = createEditorComponent();
 
 	watchText = (JTextComponent) editorComponents[1];
-        if (file != null && line >= 0) {
-            DialogBinding.bindComponentToFile(file, line, 0, 0, watchText);
-        }
-	    watchText.setBorder(new CompoundBorder(watchText.getBorder (),
+        watchText.setBorder(new CompoundBorder(watchText.getBorder (),
 				                   new EmptyBorder (2, 0, 2, 0)));
 
 	    gbc = new GridBagConstraints();
@@ -387,5 +382,29 @@ public class EditWatchPanel extends javax.swing.JPanel
 	// Will come back via isValid() ...
 	// OLD firePropertyChange(Controller.PROP_VALID, null, null);
 	controller.validChanged();
+    }
+    
+    public static JComponent[] createEditorComponent() {
+        FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
+        int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+        
+        String mimeType = "text/plain"; // NOI18N
+        if (file.getMIMEType() != null) {
+            // do not use file.getMIMEType() here because of the IZ 199138
+            String fileMimeType = FileUtil.getMIMEType(file);
+            if (fileMimeType != null) {
+                mimeType = fileMimeType;
+            }
+        }
+        
+	//Add JEditorPane and context
+        JComponent[] editorComponents = Utilities.createSingleLineEditor(mimeType);
+
+	JTextComponent textComponent = (JTextComponent) editorComponents[1];
+        if (file != null && line >= 0) {
+            DialogBinding.bindComponentToFile(file, line, 0, 0, textComponent);
+        }
+        
+        return editorComponents;
     }
 }
