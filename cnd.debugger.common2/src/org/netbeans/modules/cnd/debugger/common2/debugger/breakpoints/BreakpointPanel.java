@@ -81,10 +81,7 @@ import javax.swing.JTextArea;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.DialogBinding;
-import org.netbeans.editor.Utilities;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.debugger.common2.debugger.actions.EditWatchPanel;
 
 
 /**
@@ -107,6 +104,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
      * Override the verbose swing toString
      */
     // interface Object
+    @Override
     public String toString() {
 	String className = getClass().getName();
 	int dotx = className.lastIndexOf('.');
@@ -641,19 +639,9 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
             javaLabel = new javax.swing.JLabel();
             javaCombo = new javax.swing.JComboBox();
 
-
-            // Condition pane with codecompletion
-            FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
-            int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
-            String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
-
             //Add JEditorPane and context
-            JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
+            JComponent [] editorComponents = EditWatchPanel.createEditorComponent();
             conditionPane = (JTextComponent) editorComponents[1];
-            if (file != null && line >= 0) {
-                DialogBinding.bindComponentToFile(file, line, 0, 0, conditionPane);
-            }
-
             JScrollPane conditionSP = (JScrollPane)editorComponents[0];
 
             java.awt.GridBagConstraints gridBagConstraints2;
