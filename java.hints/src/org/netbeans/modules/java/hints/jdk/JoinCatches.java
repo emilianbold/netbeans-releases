@@ -50,12 +50,10 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -78,16 +76,16 @@ public class JoinCatches {
 
     @TriggerPatterns({
         @TriggerPattern(
-                "try ($resources$) { $trystmts$; } catch ($var1) { $catchstmts1$; } catch $inter$ catch ($var2) { $catchstmts2$; } catch $more$"
+                "try ($resources$) { $trystmts$; } catch ($type1 $var1) { $catchstmts1$; } catch $inter$ catch ($type2 $var2) { $catchstmts2$; } catch $more$"
         ),
         @TriggerPattern(
-                "try ($resources$) { $trystmts$; } catch (final $var1) { $catchstmts1$; } catch $inter$ catch (final $var2) { $catchstmts2$; } catch $more$"
+                "try ($resources$) { $trystmts$; } catch (final $type1 $var1) { $catchstmts1$; } catch $inter$ catch (final $type2 $var2) { $catchstmts2$; } catch $more$"
         ),
         @TriggerPattern(
-                "try ($resources$) { $trystmts$; } catch ($var1) { $catchstmts1$; } catch $inter$ catch ($var2) { $catchstmts2$; } catch $more$ finally {$finstmts$;}"
+                "try ($resources$) { $trystmts$; } catch ($type1 $var1) { $catchstmts1$; } catch $inter$ catch ($type2 $var2) { $catchstmts2$; } catch $more$ finally {$finstmts$;}"
         ),
         @TriggerPattern(
-                "try ($resources$) { $trystmts$; } catch (final $var1) { $catchstmts1$; } catch $inter$ catch (final $var2) { $catchstmts2$; } catch $more$ finally {$finstmts$;}"
+                "try ($resources$) { $trystmts$; } catch (final $type1 $var1) { $catchstmts1$; } catch $inter$ catch (final $type2 $var2) { $catchstmts2$; } catch $more$ finally {$finstmts$;}"
         )
     })
     public static ErrorDescription hint(HintContext ctx) {
@@ -106,7 +104,7 @@ public class JoinCatches {
             List<Integer> duplicates = new LinkedList<Integer>();
 
             for (int j = i + 1; j < catches.size(); j++) {
-                if (CopyFinder.isDuplicate(ctx.getInfo(), new TreePath(toTestPath, toTest.getBlock()), new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock()), true, ctx, false, Collections.singleton(excVar), new AtomicBoolean())) {
+                if (CopyFinder.isDuplicate(ctx.getInfo(), new TreePath(toTestPath, toTest.getBlock()), new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock()), true, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), false, Collections.singleton(excVar), new AtomicBoolean())) {
                     TreePath catchPath = new TreePath(ctx.getPath(), catches.get(j));
                     TreePath var = new TreePath(catchPath, ((CatchTree)catches.get(j)).getParameter());
                     Collection<TreePath> statements = new ArrayList<TreePath>();
@@ -149,7 +147,7 @@ public class JoinCatches {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             List<Tree> disjointTypes = new LinkedList<Tree>();
             TryTree tt = (TryTree) tp.getLeaf();
 

@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
 
 /**
  *
@@ -85,6 +86,7 @@ public abstract class BulkSearch {
     public abstract Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath toSearch, BulkPattern pattern, Map<String, Long> timeLog);
 
     public abstract boolean matches(InputStream encoded, BulkPattern pattern);
+    public abstract Map<String, Integer> matchesWithFrequencies(InputStream encoded, BulkPattern pattern);
     
     public abstract boolean matches(CompilationInfo info, TreePath toSearch, BulkPattern pattern);
 
@@ -96,32 +98,46 @@ public abstract class BulkSearch {
 
     public final BulkPattern create(CompilationInfo info, Collection<? extends String> code) {
         List<Tree> patterns = new LinkedList<Tree>();
+        List<AdditionalQueryConstraints> additionalConstraints = new LinkedList<AdditionalQueryConstraints>();
 
         for (String c : code) {
             patterns.add(Utilities.parseAndAttribute(info, c, null));
+            additionalConstraints.add(AdditionalQueryConstraints.empty());
         }
 
-        return create(code, patterns);
+        return create(code, patterns, additionalConstraints);
     }
     
-    public abstract BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns);
+    public abstract BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns, Collection<? extends AdditionalQueryConstraints> additionalConstraints);
 
     public static abstract class BulkPattern {
 
+        private final List<? extends String> patterns;
         private final List<? extends Set<? extends String>> identifiers;
-        private final List<? extends Set<? extends String>> kinds;
+        private final List<List<List<String>>> requiredContent;
+        private final List<AdditionalQueryConstraints> additionalConstraints;
 
-        public BulkPattern(List<? extends Set<? extends String>> identifiers, List<? extends Set<? extends String>> kinds) {
+        public BulkPattern(List<? extends String> patterns, List<? extends Set<? extends String>> identifiers, List<List<List<String>>> requiredContent, List<AdditionalQueryConstraints> additionalConstraints) {
+            this.patterns = patterns;
             this.identifiers = identifiers;//TODO: immutable, maybe clone
-            this.kinds = kinds;
+            this.requiredContent = requiredContent;
+            this.additionalConstraints = additionalConstraints;
+        }
+
+        public List<? extends String> getPatterns() {
+            return patterns;
         }
 
         public List<? extends Set<? extends String>> getIdentifiers() {
             return identifiers;
         }
 
-        public List<? extends Set<? extends String>> getKinds() {
-            return kinds;
+        public List<List<List<String>>> getRequiredContent() {
+            return requiredContent;
+        }
+
+        public List<AdditionalQueryConstraints> getAdditionalConstraints() {
+            return additionalConstraints;
         }
 
     }
@@ -129,31 +145,37 @@ public abstract class BulkSearch {
     public static final class EncodingContext {
 
         private final OutputStream out;
+        private final boolean forDuplicates;
         private Set<? extends String> identifiers;
-        private Set<? extends String> kinds;
+        private List<String> content;
 
-        public EncodingContext(OutputStream out) {
+        public EncodingContext(OutputStream out, boolean forDuplicates) {
             this.out = out;
+            this.forDuplicates = forDuplicates;
         }
 
         public Set<? extends String> getIdentifiers() {
             return identifiers;
         }
 
-        public Set<? extends String> getKinds() {
-            return kinds;
-        }
-
         public OutputStream getOut() {
             return out;
+        }
+
+        public boolean isForDuplicates() {
+            return forDuplicates;
         }
 
         public void setIdentifiers(Set<? extends String> identifiers) {
             this.identifiers = identifiers;
         }
 
-        public void setKinds(Set<? extends String> kinds) {
-            this.kinds = kinds;
+        public void setContent(List<String> content) {
+            this.content = content;
+        }
+
+        public List<String> getContent() {
+            return content;
         }
 
     }

@@ -45,7 +45,11 @@ package org.netbeans.modules.java.hints.jackpot.spi;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.Parameters;
 
@@ -59,12 +63,16 @@ public final class HintDescription {
     private final Kind triggerKind;
     private final PatternDescription triggerPattern;
     private final Worker worker;
+    private final AdditionalQueryConstraints additionalConstraints;
+    private final String hintText;
 
-    private HintDescription(HintMetadata metadata, Kind triggerKind, PatternDescription triggerPattern, Worker worker) {
+    private HintDescription(HintMetadata metadata, Kind triggerKind, PatternDescription triggerPattern, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText) {
         this.metadata = metadata;
         this.triggerKind = triggerKind;
         this.triggerPattern = triggerPattern;
         this.worker = worker;
+        this.additionalConstraints = additionalConstraints;
+        this.hintText = hintText;
     }
 
     //XXX: should not be public
@@ -90,17 +98,26 @@ public final class HintDescription {
         return metadata.suppressWarnings;
     }
 
-    static HintDescription create(HintMetadata metadata, PatternDescription triggerPattern, Worker worker) {
-        return new HintDescription(metadata, null, triggerPattern, worker);
+    public AdditionalQueryConstraints getAdditionalConstraints() {
+        return additionalConstraints;
     }
 
-    static HintDescription create(HintMetadata metadata, Kind triggerKind, Worker worker) {
-        return new HintDescription(metadata, triggerKind, null, worker);
+    //XXX: should not be accessible to public
+    public @CheckForNull String getHintText() {
+        return hintText;
+    }
+
+    static HintDescription create(HintMetadata metadata, PatternDescription triggerPattern, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText) {
+        return new HintDescription(metadata, null, triggerPattern, worker, additionalConstraints, hintText);
+    }
+
+    static HintDescription create(HintMetadata metadata, Kind triggerKind, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText) {
+        return new HintDescription(metadata, triggerKind, null, worker, additionalConstraints, hintText);
     }
 
     @Override
     public String toString() {
-        return "[HintDescription:" + getTriggerPattern().getPattern()+ "]";
+        return "[HintDescription:" + getTriggerPattern() + "/" + getTriggerKind() + "]";
     }
 
     public static final class PatternDescription {
@@ -163,6 +180,12 @@ public final class HintDescription {
         public Iterable<? extends String> getImports() {
             return imports;
         }
+
+        @Override
+        public String toString() {
+            return pattern;
+        }
+
     }
 
     public static interface Worker {
@@ -171,4 +194,16 @@ public final class HintDescription {
 
     }
 
+    public static final class AdditionalQueryConstraints {
+        public final Set<String> requiredErasedTypes;
+
+        public AdditionalQueryConstraints(Set<String> requiredErasedTypes) {
+            this.requiredErasedTypes = Collections.unmodifiableSet(new HashSet<String>(requiredErasedTypes));
+        }
+
+        private static final AdditionalQueryConstraints EMPTY = new AdditionalQueryConstraints(Collections.<String>emptySet());
+        public static AdditionalQueryConstraints empty() {
+            return EMPTY;
+        }
+    }
 }

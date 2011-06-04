@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,9 +13,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,63 +34,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.jackpot.spi;
 
-package org.netbeans.modules.java.hints.jackpot.impl.pm;
+import org.netbeans.api.project.Project;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 
 /**
  *
  * @author lahvac
  */
-public class CopyFinderBasedBulkSearchTest extends BulkSearchTestPerformer {
+public abstract class ProjectDependencyUpgrader {
 
-    public CopyFinderBasedBulkSearchTest(String name) {
-        super(name);
-    }
+    public abstract boolean ensureDependency(Project p, FileObject dep, SpecificationVersion spec, boolean canShowUI);
+    public abstract boolean ensureDependency(Project p, String specification, boolean b);
 
-    @Override
-    protected BulkSearch createSearch() {
-        return new CopyFinderBasedBulkSearch();
-    }
+    protected final boolean showDependencyUpgradeDialog(Project p, String dep, SpecificationVersion currentDependency, SpecificationVersion spec, boolean newDepenency, boolean canShowUI) {
+        if (!canShowUI) return true;
+        
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation("New version: " + spec, "Update spec version.", NotifyDescriptor.YES_NO_OPTION);
 
-    @Override
-    protected boolean verifyIndexingData() {
-        return false;
-    }
-
-    @Override
-    public void testSerialization() throws Exception {
-        //XXX
-    }
-
-    @Override
-    public void testFrequencies() throws Exception {
-        //XXX: serialization is a prerequisite
-    }
-
-    @Override
-    public void testPatternEncodingAndIdentifiers() throws Exception {
-        //XXX
-    }
-
-    @Override
-    public void testNoExponentialTimeComplexity() throws Exception {
-        //XXX
-    }
-
-    @Override
-    public void testCheckIdentifiers2() throws Exception {
-        //not critical, only improves performance on vast amounts of sources,
-        //and NFA based search is used in such case anyway.
-        //XXX
-    }
-
-    @Override
-    public void testCheckIdentifiers3() throws Exception {
-        //not critical, only improves performance on vast amounts of sources,
-        //and NFA based search is used in such case anyway.
-        //XXX
+        return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
     }
 
 }

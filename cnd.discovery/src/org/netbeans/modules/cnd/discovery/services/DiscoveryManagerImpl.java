@@ -334,6 +334,7 @@ public final class DiscoveryManagerImpl {
                                     if (!MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
                                         needCheck.add(path);
                                     }
+                                    ProjectBridge.excludeItemFromOtherConfigurations(item);
                                 }
                             }
                         }
