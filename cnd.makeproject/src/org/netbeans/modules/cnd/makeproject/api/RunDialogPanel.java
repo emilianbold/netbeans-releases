@@ -935,7 +935,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
 
     private String getConfigurationName(MakeConfigurationDescriptor projectDescriptor) {
         String exe =  getExecutablePath();
-        String[] split = exe.split("\\/");
+        String[] split = exe.split("\\/"); // NOI18N
         String name = split[split.length - 1];
         Configuration[] clonedConfs = projectDescriptor.getConfs().toArray();
         String aName = name;
@@ -950,7 +950,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             if (!found) {
                 return aName;
             }
-            aName = name+"_"+i;
+            aName = name+"_"+i; // NOI18N
         }
     }
     
