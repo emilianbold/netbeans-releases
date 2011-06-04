@@ -3797,13 +3797,20 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 cmd = "listi"; // NOI18N
 
             } else {
-		String function = visitedLocation.func();
-		if (function != null) {
-		    start = "-a " + function; // NOI18N
+		long pc = visitedLocation.pc();
+		if (pc > 0) {
+		    String addr = Address.toHexString0x(pc, true);
+		    start = addr + "/" + 100; // NOI18N
 		    cmd = "dis "; // NOI18N
 		} else {
-		    DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
-		    return;
+		    String function = visitedLocation.func();
+		    if (function != null) {
+			start = "-a " + function; // NOI18N
+			cmd = "dis "; // NOI18N
+		    } else {
+			DebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
+			return;
+		    }
 		}
             }
             requestDisHelp(cmd, start);
