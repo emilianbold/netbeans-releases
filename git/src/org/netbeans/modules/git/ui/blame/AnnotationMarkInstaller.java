@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,23 +41,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.editor.semantic;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+package org.netbeans.modules.git.ui.blame;
+
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
 
 /**
+ * ErrorStripe SPI entry point registered at layer.
  *
- * @author Jan Lahoda
+ * @author Maros Sandor
  */
-public class MarkOccurrencesHighlighterFactory extends TaskFactory {
+public final class AnnotationMarkInstaller implements MarkProviderCreator {
+
+    private static final Object PROVIDER_KEY = new Object();
 
     @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new MarkOccurrencesHighlighter(snapshot.getSource().getFileObject()));
+    public MarkProvider createMarkProvider (JTextComponent pane) {
+        AnnotationMarkProvider amp = new AnnotationMarkProvider();
+        pane.putClientProperty(PROVIDER_KEY, amp);
+        return amp;
     }
-
+    
+     static AnnotationMarkProvider getMarkProvider (JTextComponent pane) {
+        return (AnnotationMarkProvider) pane.getClientProperty(PROVIDER_KEY);
+    }
 }

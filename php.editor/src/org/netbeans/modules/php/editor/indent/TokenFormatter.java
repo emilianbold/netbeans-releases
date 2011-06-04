@@ -165,8 +165,10 @@ public class TokenFormatter {
 	public int blankLinesBeforeClassEnd;
 	public int blankLinesAfterClass;
 	public int blankLinesAfterClassHeader;
-	public int blankLinesBeforeField;
-	public int blankLinesAfterField;
+	public int blankLinesBeforeFields;
+	public int blankLinesBetweenFields;
+	public boolean blankLinesGroupFields;
+	public int blankLinesAfterFields;
 	public int blankLinesBeforeFunction;
 	public int blankLinesAfterFunction;
 	public int blankLinesBeforeFunctionEnd;
@@ -283,8 +285,10 @@ public class TokenFormatter {
 	    blankLinesBeforeClassEnd = codeStyle.getBlankLinesBeforeClassEnd();
 	    blankLinesAfterClass = codeStyle.getBlankLinesAfterClass();
 	    blankLinesAfterClassHeader = codeStyle.getBlankLinesAfterClassHeader();
-	    blankLinesBeforeField = codeStyle.getBlankLinesBeforeField();
-	    blankLinesAfterField = codeStyle.getBlankLinesAfterField();
+	    blankLinesBeforeFields = codeStyle.getBlankLinesBeforeFields();
+	    blankLinesBetweenFields = codeStyle.getBlankLinesBetweenFields();
+	    blankLinesGroupFields = codeStyle.getBlankLinesGroupFieldsWithoutDoc();
+	    blankLinesAfterFields = codeStyle.getBlankLinesAfterFields();
 	    blankLinesBeforeFunction = codeStyle.getBlankLinesBeforeFunction();
 	    blankLinesAfterFunction = codeStyle.getBlankLinesAfterFunction();
 	    blankLinesBeforeFunctionEnd = codeStyle.getBlankLinesBeforeFunctionEnd();
@@ -589,14 +593,18 @@ public class TokenFormatter {
                                         lastBracePlacement = docOptions.methodDeclBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FIELDS:
-                                        newLines = docOptions.blankLinesBeforeField + 1 > newLines ? docOptions.blankLinesBeforeField + 1 : newLines;
+                                        newLines = docOptions.blankLinesBeforeFields + 1 > newLines ? docOptions.blankLinesBeforeFields + 1 : newLines;
                                         break;
                                     case WHITESPACE_AFTER_FIELDS:
-                                        newLines = docOptions.blankLinesAfterField + 1 > newLines ? docOptions.blankLinesAfterField + 1 : newLines;
+                                        newLines = docOptions.blankLinesAfterFields + 1 > newLines ? docOptions.blankLinesAfterFields + 1 : newLines;
                                         break;
                                     case WHITESPACE_BETWEEN_FIELDS:
                                         indentRule = true;
-                                        newLines = 1;
+					if (docOptions.blankLinesGroupFields && !isBeforePHPDoc(formatTokens, index)) {
+					    newLines = 1;
+					} else {
+					    newLines = docOptions.blankLinesBetweenFields + 1 > newLines ? docOptions.blankLinesBetweenFields + 1 : newLines;;
+					}
                                         countSpaces = indent;
                                         break;
                                     case WHITESPACE_BEFORE_NAMESPACE:
@@ -1947,6 +1955,15 @@ public class TokenFormatter {
 	    token = tokens.get(--index);
 	}
 	return token.getId() == FormatToken.Kind.LINE_COMMENT;
+    }
+    
+    private boolean isBeforePHPDoc(List<FormatToken> tokens, int index) {
+	FormatToken token = tokens.get(index);
+	while (index > 0 && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT
+		|| token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END)) {
+	    token = tokens.get(++index);
+	}
+	return token.getId() == FormatToken.Kind.DOC_COMMENT_START;
     }
 
     private boolean isBeginLine(List<FormatToken> tokens, int index) {

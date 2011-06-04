@@ -418,7 +418,7 @@ public class PHPFormatterTest extends PHPTestBase {
     
     public void testBLFields07() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.blankLinesAfterField, 3);
+        options.put(FmtOptions.blankLinesAfterFields, 3);
         reformatFileContents("testfiles/formatting/blankLines/Fields07.php", options);
     }
     
@@ -430,6 +430,18 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testBLFields09() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/blankLines/Fields09.php", options);
+    }
+    
+    public void testBLFields10() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/Fields10.php", options);
+    }
+    
+    public void testBLFields11() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.blankLinesBetweenFields, 2);
+	options.put(FmtOptions.blankLinesGroupFieldsWithoutDoc, false);
+        reformatFileContents("testfiles/formatting/blankLines/Fields11.php", options);
     }
     
     public void testBLFunction01() throws Exception {
@@ -502,8 +514,8 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.blankLinesBeforeFunction, 0);
 	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
 	options.put(FmtOptions.blankLinesAfterFunction, 0);
-	options.put(FmtOptions.blankLinesBeforeField, 0);
-	options.put(FmtOptions.blankLinesAfterField, 0);
+	options.put(FmtOptions.blankLinesBeforeFields, 0);
+	options.put(FmtOptions.blankLinesAfterFields, 0);
 	options.put(FmtOptions.blankLinesBeforeNamespace, 0);
 	options.put(FmtOptions.blankLinesAfterNamespace, 0);
 	options.put(FmtOptions.blankLinesBeforeUse, 0);
@@ -521,8 +533,8 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.blankLinesBeforeFunction, 0);
 	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
 	options.put(FmtOptions.blankLinesAfterFunction, 0);
-	options.put(FmtOptions.blankLinesBeforeField, 0);
-	options.put(FmtOptions.blankLinesAfterField, 0);
+	options.put(FmtOptions.blankLinesBeforeFields, 0);
+	options.put(FmtOptions.blankLinesAfterFields, 0);
 	options.put(FmtOptions.blankLinesBeforeNamespace, 0);
 	options.put(FmtOptions.blankLinesAfterNamespace, 0);
 	options.put(FmtOptions.blankLinesBeforeUse, 0);
@@ -540,8 +552,8 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.blankLinesBeforeFunction, 0);
 	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
 	options.put(FmtOptions.blankLinesAfterFunction, 0);
-	options.put(FmtOptions.blankLinesBeforeField, 0);
-	options.put(FmtOptions.blankLinesAfterField, 0);
+	options.put(FmtOptions.blankLinesBeforeFields, 0);
+	options.put(FmtOptions.blankLinesAfterFields, 0);
 	options.put(FmtOptions.blankLinesBeforeNamespace, 0);
 	options.put(FmtOptions.blankLinesAfterNamespace, 0);
 	options.put(FmtOptions.blankLinesBeforeUse, 0);
@@ -559,8 +571,8 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.blankLinesBeforeFunction, 0);
 	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
 	options.put(FmtOptions.blankLinesAfterFunction, 0);
-	options.put(FmtOptions.blankLinesBeforeField, 0);
-	options.put(FmtOptions.blankLinesAfterField, 0);
+	options.put(FmtOptions.blankLinesBeforeFields, 0);
+	options.put(FmtOptions.blankLinesAfterFields, 0);
 	options.put(FmtOptions.blankLinesBeforeNamespace, 0);
 	options.put(FmtOptions.blankLinesAfterNamespace, 0);
 	options.put(FmtOptions.blankLinesBeforeUse, 0);
@@ -578,8 +590,8 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.blankLinesBeforeFunction, 1);
 	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
 	options.put(FmtOptions.blankLinesAfterFunction, 0);
-	options.put(FmtOptions.blankLinesBeforeField, 0);
-	options.put(FmtOptions.blankLinesAfterField, 0);
+	options.put(FmtOptions.blankLinesBeforeFields, 0);
+	options.put(FmtOptions.blankLinesAfterFields, 0);
 	options.put(FmtOptions.blankLinesBeforeNamespace, 0);
 	options.put(FmtOptions.blankLinesAfterNamespace, 0);
 	options.put(FmtOptions.blankLinesBeforeUse, 0);
@@ -597,8 +609,8 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.blankLinesBeforeFunction, 0);
 	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 1);
 	options.put(FmtOptions.blankLinesAfterFunction, 0);
-	options.put(FmtOptions.blankLinesBeforeField, 0);
-	options.put(FmtOptions.blankLinesAfterField, 0);
+	options.put(FmtOptions.blankLinesBeforeFields, 0);
+	options.put(FmtOptions.blankLinesAfterFields, 0);
 	options.put(FmtOptions.blankLinesBeforeNamespace, 0);
 	options.put(FmtOptions.blankLinesAfterNamespace, 0);
 	options.put(FmtOptions.blankLinesBeforeUse, 0);
@@ -616,8 +628,8 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.blankLinesBeforeFunction, 0);
 	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
 	options.put(FmtOptions.blankLinesAfterFunction, 1);
-	options.put(FmtOptions.blankLinesBeforeField, 0);
-	options.put(FmtOptions.blankLinesAfterField, 0);
+	options.put(FmtOptions.blankLinesBeforeFields, 0);
+	options.put(FmtOptions.blankLinesAfterFields, 0);
 	options.put(FmtOptions.blankLinesBeforeNamespace, 0);
 	options.put(FmtOptions.blankLinesAfterNamespace, 0);
 	options.put(FmtOptions.blankLinesBeforeUse, 0);
@@ -635,8 +647,8 @@ public class PHPFormatterTest extends PHPTestBase {
 	options.put(FmtOptions.blankLinesBeforeFunction, 1);
 	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 1);
 	options.put(FmtOptions.blankLinesAfterFunction, 1);
-	options.put(FmtOptions.blankLinesBeforeField, 0);
-	options.put(FmtOptions.blankLinesAfterField, 0);
+	options.put(FmtOptions.blankLinesBeforeFields, 0);
+	options.put(FmtOptions.blankLinesAfterFields, 0);
 	options.put(FmtOptions.blankLinesBeforeNamespace, 0);
 	options.put(FmtOptions.blankLinesAfterNamespace, 0);
 	options.put(FmtOptions.blankLinesBeforeUse, 0);

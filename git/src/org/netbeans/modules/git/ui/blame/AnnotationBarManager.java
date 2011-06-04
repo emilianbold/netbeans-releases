@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,23 +41,63 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.editor.semantic;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+package org.netbeans.modules.git.ui.blame;
+
+import org.netbeans.editor.SideBarFactory;
+
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+
 
 /**
- *
- * @author Jan Lahoda
+ * @author Maros Sandor
  */
-public class MarkOccurrencesHighlighterFactory extends TaskFactory {
+public class AnnotationBarManager implements SideBarFactory {
 
+    private static final Object BAR_KEY = new Object();
+
+    /**
+     * Creates initially hidden annotations sidebar.
+     * It's called once by target lifetime.
+     */
     @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new MarkOccurrencesHighlighter(snapshot.getSource().getFileObject()));
+    public JComponent createSideBar(JTextComponent target) {
+        final AnnotationBar ab = new AnnotationBar(target);
+        target.putClientProperty(BAR_KEY, ab);
+        return ab;
     }
 
+    /**
+     * Shows annotations sidebar.
+     */
+    static AnnotationBar showAnnotationBar(JTextComponent target) {
+        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        assert ab != null: "#58828 reappeared!"; // NOI18N
+        ab.annotate();
+        return ab;
+    }
+
+    /**
+     * Shows annotations sidebar.
+     */
+    public static void hideAnnotationBar(JTextComponent target) {
+        if (target == null) return;
+        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        assert ab != null: "#58828 reappeared!"; // NOI18N
+        ab.hideBar();
+    }
+
+    /**
+     * Tests wheteher given editor shows annotations.
+     */
+    public static boolean annotationBarVisible(JTextComponent target) {
+        if (target == null) return false;
+        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        if (ab == null) {
+            return false;
+        }
+        return ab.getPreferredSize().width > 0;
+    }
 }
+

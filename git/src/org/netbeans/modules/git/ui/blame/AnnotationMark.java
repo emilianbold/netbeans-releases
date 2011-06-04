@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,23 +41,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.editor.semantic;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+package org.netbeans.modules.git.ui.blame;
+
+import java.awt.Color;
+import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
+import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Maros Sandor
  */
-public class MarkOccurrencesHighlighterFactory extends TaskFactory {
+final class AnnotationMark implements Mark {
 
-    @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new MarkOccurrencesHighlighter(snapshot.getSource().getFileObject()));
+    private static final Color COLOR = new Color(0x58,0x90,0xBE);
+
+    private final int line;
+    private final String message;
+
+    public AnnotationMark(int line, String message) {
+        this.line = line;
+        this.message = message;
     }
 
+    public String getShortDescription() {
+        return message;
+    }
+    
+    public int[] getAssignedLines() {
+        return new int[] {line, line};
+    }
+    
+    public Color getEnhancedColor() {
+        return COLOR;
+    }
+    
+    public int getPriority() {
+        return PRIORITY_DEFAULT;
+    }
+    
+    public Status getStatus() {
+        return Status.STATUS_OK;
+    }
+    
+    public int getType() {
+        return TYPE_ERROR_LIKE;
+    }
 }

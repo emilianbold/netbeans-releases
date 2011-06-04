@@ -85,7 +85,8 @@ public class JGitBlameResult implements GitBlameResult {
                 GitUser author = getUser(cachedUsers, result.getSourceAuthor(i));
                 GitUser committer = getUser(cachedUsers, result.getSourceCommitter(i));
                 File sourceFile = getFile(cachedFiles, result.getSourcePath(i), repository.getWorkTree());
-                lineDetails[i] = new GitLineDetails(revInfo, author, committer, sourceFile, result.getSourceLine(i));
+                String content = result.getResultContents().getString(i);
+                lineDetails[i] = new GitLineDetails(content, revInfo, author, committer, sourceFile, result.getSourceLine(i));
             }
         }
     }

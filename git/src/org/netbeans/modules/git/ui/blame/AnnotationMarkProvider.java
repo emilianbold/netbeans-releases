@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,23 +41,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.editor.semantic;
 
-import java.util.Collection;
+package org.netbeans.modules.git.ui.blame;
+
 import java.util.Collections;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+import java.util.List;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 
 /**
+ * ErrorStripe liason, real work is done in AnnotationBar.
  *
- * @author Jan Lahoda
+ * @author Petr Kuzel
  */
-public class MarkOccurrencesHighlighterFactory extends TaskFactory {
+ @SuppressWarnings("unchecked") // Get name clashes with Mark and AnnotationMark
+ final class AnnotationMarkProvider extends MarkProvider {
 
-    @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new MarkOccurrencesHighlighter(snapshot.getSource().getFileObject()));
+    private List<AnnotationMark> marks = Collections.emptyList();
+
+    public void setMarks (List<AnnotationMark> marks) {
+        List old = this.marks;
+        this.marks = marks;
+        firePropertyChange(PROP_MARKS, old, marks);
     }
 
+    @Override
+    public synchronized List getMarks () {
+        return marks;
+    }    
 }

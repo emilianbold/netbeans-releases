@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,23 +41,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.editor.semantic;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+package org.netbeans.modules.git.ui.blame;
+
+import java.io.Reader;
+import java.io.IOException;
+import java.util.List;
 
 /**
+ * Reader over annotation lines. It uses '\n' as
+ * line separator to match Document line separator.
  *
- * @author Jan Lahoda
+ * @author Petr Kuzel
  */
-public class MarkOccurrencesHighlighterFactory extends TaskFactory {
+public final class LinesReader extends  Reader {
 
-    @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new MarkOccurrencesHighlighter(snapshot.getSource().getFileObject()));
+    private List lines;
+    private int lineIndex;
+    private int columnIndex;
+    private boolean closed;
+
+    /**
+     * Creates reader from list of AnnotateLine objects.
+     */
+    LinesReader(List lines) {
+        this.lines = lines;
     }
 
+    public void close() throws IOException {
+        if (closed) throw new IOException("Closed"); // NOI18N
+        closed = true;
+    }
+
+    public int read(char cbuf[], int off, int len) throws IOException {
+        if (closed) throw new IOException("Closed"); // NOI18N
+
+        if (lineIndex >= lines.size()) return -1;
+
+        AnnotateLine aline = (AnnotateLine) lines.get(lineIndex);
+        String line = aline.getContent() + "\n"; // NOI18N
+        int lineLen = line.length();
+        int unread =  lineLen - columnIndex;
+        int toRead = Math.min(unread, len);
+        line.getChars(columnIndex, columnIndex + toRead, cbuf, off);
+        columnIndex += toRead;
+        if (columnIndex >= lineLen) {
+            columnIndex = 0;
+            lineIndex++;
+        }
+        return toRead;
+    }
 }

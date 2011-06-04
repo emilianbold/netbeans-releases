@@ -53,13 +53,15 @@ public class GitLineDetails {
     private final GitUser committer;
     private final File sourceFile;
     private final int sourceLine;
+    private final String content;
 
-    public GitLineDetails (GitRevisionInfo revision, GitUser author, GitUser committer, File sourceFile, int sourceLine) {
+    public GitLineDetails (String content, GitRevisionInfo revision, GitUser author, GitUser committer, File sourceFile, int sourceLine) {
         this.revision = revision;
         this.author = author;
         this.committer = committer;
         this.sourceFile = sourceFile;
         this.sourceLine = sourceLine;
+        this.content = content;
     }
     
     public GitUser getAuthor () {
@@ -82,4 +84,7 @@ public class GitLineDetails {
         return sourceLine;
     }
 
+    public String getContent () {
+        return content;
+    }
 }
