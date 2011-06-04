@@ -157,7 +157,7 @@ made subject to such option by the copyright holder.
     <fail message="You need to have some modules checked out to build NetBeans. For example, try running the 'checkout' target.">
         <condition>
             <not>
-                <available file="../o.n.core"/>
+                <available file="../core.startup/"/>
             </not>
         </condition>
     </fail>
