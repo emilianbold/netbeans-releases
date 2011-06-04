@@ -44,6 +44,7 @@
 
 package org.openide.loaders;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -694,6 +695,22 @@ public class FolderChildrenTest extends NbTestCase {
         assertNodes( arr, new String[] { "A" } );
     }
     
+    public void testFoldersAreNotLeaves() throws Exception {
+        FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/A");
+        FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/B");
+
+        FileObject bb = FileUtil.getConfigFile("/FK");
+
+        DataFolder folder = DataFolder.findFolder(bb);
+
+        Node[] arr = folder.getNodeDelegate().getChildren().getNodes(true);
+
+        assertNodes(arr, new String[]{"A", "B"});
+        
+        assertFalse("No leaf", arr[0].isLeaf());
+        assertFalse("No leaf 2", arr[1].isLeaf());
+    }
+    
     public void testRenameHiddenEntry() throws Exception {
         FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), "two");
         List<FileObject> arr = new ArrayList<FileObject>();
@@ -968,8 +985,13 @@ public class FolderChildrenTest extends NbTestCase {
          * @param aLoader the loader to set
          */
         static void setLoader(Class<? extends DataLoader> aLoader) {
-            loader = aLoader;
-            ((Pool)getDefault()).fireChangeEvent(new ChangeEvent(getDefault()));
+            FormKitDataLoader.assertMode = false;
+            try {
+                loader = aLoader;
+                ((Pool)getDefault()).fireChangeEvent(new ChangeEvent(getDefault()));
+            } finally  {
+                FormKitDataLoader.assertMode = true;
+            }
         }
 
         @Override
@@ -985,6 +1007,7 @@ public class FolderChildrenTest extends NbTestCase {
 
         private static final long serialVersionUID = 1L;
         static int cnt;
+        static boolean assertMode;
 
         public FormKitDataLoader() {
             super(FormKitDataObject.class.getName());
@@ -995,8 +1018,15 @@ public class FolderChildrenTest extends NbTestCase {
             return NbBundle.getMessage(FormKitDataLoader.class, "LBL_FormKit_loader_name");
         }
 
+        @Override
         protected FileObject findPrimaryFile(FileObject fo)
         {
+            if (fo.isFolder()) {
+                return null;
+            }
+            if (assertMode) {
+                assertFalse("No AWT thread queries", EventQueue.isDispatchThread());
+            }
             cnt++;
 
             String ext = fo.getExt();
