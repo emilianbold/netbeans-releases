@@ -596,6 +596,7 @@ public class DiscoveryProjectGeneratorImpl {
                             } else {
                                 if (DEBUG) {System.err.println("Source is header:"+item.getAbsPath());} // NOI18N
                             }
+                            ProjectBridge.excludeItemFromOtherConfigurations(item);
                             isNeedAdd = false;
                         }
                     }
@@ -704,6 +705,7 @@ public class DiscoveryProjectGeneratorImpl {
                     item = added.addItem(item);
                     ProjectBridge.setExclude(item,false);
                     ProjectBridge.setHeaderTool(item);
+                    ProjectBridge.excludeItemFromOtherConfigurations(item);
                 }
             }
         }
@@ -883,7 +885,10 @@ public class DiscoveryProjectGeneratorImpl {
                 Item item = projectBridge.getProjectItem(path);
                 if (item == null){
                     item = projectBridge.createItem(file);
-                    added.addItem(item);
+                    item = added.addItem(item);
+                    if (item != null) {
+                        ProjectBridge.excludeItemFromOtherConfigurations(item);
+                    }
                 } else {
                     if (DEBUG) {System.err.println("Orphan pair found by path "+file);} // NOI18N
                 }
@@ -933,7 +938,10 @@ public class DiscoveryProjectGeneratorImpl {
                     if (item == null){
                         item = projectBridge.createItem(pair.fileConfiguration.getFilePath());
                         pair.item = item;
-                        folder.addItem(item);
+                        item = folder.addItem(item);
+                        if (item != null) {
+                            ProjectBridge.excludeItemFromOtherConfigurations(item);
+                        }
                     }
                     if (lang != null) {
                         setupFile(pair.fileConfiguration, item, lang);
