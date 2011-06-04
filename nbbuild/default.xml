@@ -47,6 +47,8 @@ made subject to such option by the copyright holder.
   <import file="default-properties.xml"/>
   <import file="jdk.xml"/>
 
+  <defaultexcludes add="**/.ade_path/**"/>
+
   <target name="init-tasks" unless="tasks-already-set">
     <taskdef name="jhindexer"
          classname="org.netbeans.nbbuild.JHIndexer"
@@ -154,7 +156,7 @@ made subject to such option by the copyright holder.
     <available property="clusters.file" file="${nb_all}/ide/launcher/netbeans.clusters" value="${nb_all}/ide/launcher/netbeans.clusters"/>
     <!-- fallback for orphaned modules -->
     <property name="clusters.file" value="${netbeans.dest.dir}/etc/netbeans.clusters"/>
-    <loadfile property="cluster.path.evaluated" srcfile="${clusters.file}">
+    <loadfile property="cluster.path.evaluated" srcfile="${clusters.file}" failonerror="false">
         <filterchain>
             <striplinecomments>
                 <comment value="#"/>
@@ -163,6 +165,7 @@ made subject to such option by the copyright holder.
             <striplinebreaks/>
         </filterchain>
     </loadfile>
+    <property name="cluster.path.evaluated" value="${netbeans.dest.dir}"/>
     <path id="cluster.path.id" path="${cluster.path.evaluated}"/>
     <property name="cluster.path.final" refid="cluster.path.id"/>
   </target>

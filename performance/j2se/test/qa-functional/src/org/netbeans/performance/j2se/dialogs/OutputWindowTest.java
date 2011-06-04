@@ -44,14 +44,18 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.j2se.menus.MainMenuTest;
 
 /**
  * Test of Output Window
@@ -89,7 +93,7 @@ public class OutputWindowTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open() {
-        new OutputWindowViewAction().performMenu();
+        MainWindowOperator.getDefault().menuBar().pushMenu("Window|Output|Output", "|");
         return new OutputOperator();
     }
     
