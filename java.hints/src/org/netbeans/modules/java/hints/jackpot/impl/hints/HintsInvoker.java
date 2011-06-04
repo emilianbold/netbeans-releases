@@ -45,7 +45,6 @@ package org.netbeans.modules.java.hints.jackpot.impl.hints;
 import com.sun.source.tree.Tree;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -78,13 +77,13 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.introduce.CopyFinder;
+import org.netbeans.modules.java.hints.introduce.CopyFinder.VariableAssignments;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch.BulkPattern;
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.VariableAssignments;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -175,7 +174,7 @@ public class HintsInvoker {
 
         timeLog.put("Computing Element Based Hints", elementBasedEnd - elementBasedStart);
 
-        List<ErrorDescription> errors = compute(info, startAt, kindHints, patternHints, new LinkedList<MessageImpl>());
+        List<ErrorDescription> errors = join(computeHints(info, startAt, kindHints, patternHints, new LinkedList<MessageImpl>()));
 
         dumpTimeSpentInHints();
         
@@ -192,10 +191,10 @@ public class HintsInvoker {
                                         Map<Kind, List<HintDescription>> hints,
                                         Map<PatternDescription, List<HintDescription>> patternHints,
                                         Collection<? super MessageImpl> problems) {
-        return compute(info, new TreePath(info.getCompilationUnit()), hints, patternHints, problems);
+        return join(computeHints(info, new TreePath(info.getCompilationUnit()), hints, patternHints, problems));
     }
 
-    List<ErrorDescription> compute(CompilationInfo info,
+    public Map<HintDescription, List<ErrorDescription>> computeHints(CompilationInfo info,
                                         TreePath startAt,
                                         Map<Kind, List<HintDescription>> hints,
                                         Map<PatternDescription, List<HintDescription>> patternHints,
@@ -207,17 +206,17 @@ public class HintsInvoker {
             if (from != (-1) && to != (-1)) {
                 return computeHintsInSpan(info, hints, patternHints, problems);
             } else {
-                return computeHints(info, startAt, hints, patternHints, problems);
+                return computeHintsImpl(info, startAt, hints, patternHints, problems);
             }
         }
     }
 
-    List<ErrorDescription> computeHints(CompilationInfo info,
+    Map<HintDescription, List<ErrorDescription>> computeHintsImpl(CompilationInfo info,
                                         TreePath startAt,
                                         Map<Kind, List<HintDescription>> hints,
                                         Map<PatternDescription, List<HintDescription>> patternHints,
                                         Collection<? super MessageImpl> problems) {
-        List<ErrorDescription> errors = new  LinkedList<ErrorDescription>();
+        Map<HintDescription, List<ErrorDescription>> errors = new HashMap<HintDescription, List<ErrorDescription>>();
 
         long kindCount = 0;
 
@@ -259,7 +258,7 @@ public class HintsInvoker {
 
         timeLog.put("Bulk Search", bulkEnd - bulkStart);
 
-        errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
+        mergeAll(errors, doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
 
         long patternEnd = System.currentTimeMillis();
 
@@ -268,7 +267,7 @@ public class HintsInvoker {
         return errors;
     }
 
-    List<ErrorDescription> computeHintsInSpan(CompilationInfo info,
+    Map<HintDescription, List<ErrorDescription>> computeHintsInSpan(CompilationInfo info,
                                         Map<Kind, List<HintDescription>> hints,
                                         Map<PatternDescription, List<HintDescription>> patternHints,
                                         Collection<? super MessageImpl> problems) {
@@ -286,7 +285,7 @@ public class HintsInvoker {
             path = path.getParentPath();
         }
 
-        List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
+        Map<HintDescription, List<ErrorDescription>> errors = new HashMap<HintDescription, List<ErrorDescription>>();
 
         if (!hints.isEmpty()) {
             long kindStart = System.currentTimeMillis();
@@ -312,7 +311,7 @@ public class HintsInvoker {
 
             timeLog.put("Bulk Search", bulkEnd - bulkStart);
 
-            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
+            mergeAll(errors, doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
 
             long patternEnd = System.currentTimeMillis();
 
@@ -320,18 +319,18 @@ public class HintsInvoker {
         }
 
         if (path != null) {
-            errors.addAll(computeSuggestions(info, path, hints, patternHints, problems));
+            mergeAll(errors, computeSuggestions(info, path, hints, patternHints, problems));
         }
 
         return errors;
     }
 
-    List<ErrorDescription> computeSuggestions(CompilationInfo info,
+    Map<HintDescription, List<ErrorDescription>> computeSuggestions(CompilationInfo info,
                                         TreePath workOn,
                                         Map<Kind, List<HintDescription>> hints,
                                         Map<PatternDescription, List<HintDescription>> patternHints,
                                         Collection<? super MessageImpl> problems) {
-        List<ErrorDescription> errors = new  LinkedList<ErrorDescription>();
+        Map<HintDescription, List<ErrorDescription>> errors = new HashMap<HintDescription, List<ErrorDescription>>();
 
         if (!hints.isEmpty()) {
             long kindStart = System.currentTimeMillis();
@@ -397,7 +396,7 @@ public class HintsInvoker {
 //
 //            timeLog.put("Bulk Search", bulkEnd - bulkStart);
 
-            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
+            mergeAll(errors, doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
 
             long patternEnd = System.currentTimeMillis();
 
@@ -407,7 +406,7 @@ public class HintsInvoker {
         return errors;
     }
 
-    public List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints) throws IllegalStateException {
+    public Map<HintDescription, List<ErrorDescription>> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints) throws IllegalStateException {
         return doComputeHints(info, occurringPatterns, patterns, patternHints, new LinkedList<MessageImpl>());
     }
 
@@ -424,8 +423,8 @@ public class HintsInvoker {
         return patternTests;
     }
 
-    private List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints, Collection<? super MessageImpl> problems) throws IllegalStateException {
-        List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
+    private Map<HintDescription, List<ErrorDescription>> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints, Collection<? super MessageImpl> problems) throws IllegalStateException {
+        Map<HintDescription, List<ErrorDescription>> errors = new HashMap<HintDescription, List<ErrorDescription>>();
 
         for (Entry<String, Collection<TreePath>> occ : occurringPatterns.entrySet()) {
             PATTERN_LOOP: for (PatternDescription d : patterns.get(occ.getKey())) {
@@ -438,7 +437,7 @@ public class HintsInvoker {
                         //will not bind to anything anyway (#190449), skip pattern:
                         continue PATTERN_LOOP;
                     }
-                    
+
                     constraints.put(e.getKey(), designedType);
                 }
 
@@ -457,7 +456,7 @@ public class HintsInvoker {
 
                     for (HintDescription hd : patternHints.get(d)) {
                         HintMetadata hm = hd.getMetadata();
-                        HintContext c = new HintContext(info, hm, candidate, verified.variables, verified.multiVariables, verified.variables2Names, problems);
+                        HintContext c = new HintContext(info, hm, candidate, verified.variables, verified.multiVariables, verified.variables2Names, constraints, problems);
 
                         if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))
                             continue;
@@ -465,7 +464,7 @@ public class HintsInvoker {
                         Collection<? extends ErrorDescription> workerErrors = runHint(hd, c);
 
                         if (workerErrors != null) {
-                            errors.addAll(workerErrors);
+                            merge(errors, hd, workerErrors);
                         }
                     }
                 }
@@ -509,7 +508,7 @@ public class HintsInvoker {
         return timeLog;
     }
 
-    private final class ScannerImpl extends CancellableTreePathScanner<Void, List<ErrorDescription>> {
+    private final class ScannerImpl extends CancellableTreePathScanner<Void, Map<HintDescription, List<ErrorDescription>>> {
 
         private final Stack<Set<String>> suppresWarnings = new Stack<Set<String>>();
         private final CompilationInfo info;
@@ -533,7 +532,7 @@ public class HintsInvoker {
             this.hints = hints;
         }
 
-        private void runAndAdd(TreePath path, List<HintDescription> rules, List<ErrorDescription> d) {
+        private void runAndAdd(TreePath path, List<HintDescription> rules, Map<HintDescription, List<ErrorDescription>> d) {
             if (rules != null && !isInGuarded(info, path)) {
                 OUTER: for (HintDescription hd : rules) {
                     if (isCanceled()) {
@@ -552,14 +551,14 @@ public class HintsInvoker {
                     Collection<? extends ErrorDescription> errors = runHint(hd, c);
 
                     if (errors != null) {
-                        d.addAll(errors);
+                        merge(d, hd, errors);
                     }
                 }
             }
         }
 
         @Override
-        public Void scan(Tree tree, List<ErrorDescription> p) {
+        public Void scan(Tree tree, Map<HintDescription, List<ErrorDescription>> p) {
             if (tree == null)
                 return null;
 
@@ -583,7 +582,7 @@ public class HintsInvoker {
         }
 
         @Override
-        public Void scan(TreePath path, List<ErrorDescription> p) {
+        public Void scan(TreePath path, Map<HintDescription, List<ErrorDescription>> p) {
             Kind k = path.getLeaf().getKind();
             boolean b = pushSuppressWarrnings(path);
             try {
@@ -601,7 +600,7 @@ public class HintsInvoker {
             }
         }
 
-        public void scanDoNotGoDeeper(TreePath path, List<ErrorDescription> p) {
+        public void scanDoNotGoDeeper(TreePath path, Map<HintDescription, List<ErrorDescription>> p) {
             Kind k = path.getLeaf().getKind();
             runAndAdd(path, hints.get(k), p);
         }
@@ -687,6 +686,42 @@ public class HintsInvoker {
             long end = System.nanoTime();
             reportSpentTime(hd.getMetadata().id, end - start);
         }
+    }
+
+    public static <K, V> Map<K, List<V>> merge(Map<K, List<V>> to, K key, Collection<? extends V> value) {
+        List<V> toColl = to.get(key);
+
+        if (toColl == null) {
+            to.put(key, toColl = new LinkedList<V>());
+        }
+
+        toColl.addAll(value);
+
+        return to;
+    }
+
+    public static <K, V> Map<K, List<V>> mergeAll(Map<K, List<V>> to, Map<? extends K, ? extends Collection<? extends V>> what) {
+        for (Entry<? extends K, ? extends Collection<? extends V>> e : what.entrySet()) {
+            List<V> toColl = to.get(e.getKey());
+
+            if (toColl == null) {
+                to.put(e.getKey(), toColl = new LinkedList<V>());
+            }
+
+            toColl.addAll(e.getValue());
+        }
+
+        return to;
+    }
+
+    public static List<ErrorDescription> join(Map<?, ? extends List<? extends ErrorDescription>> errors) {
+        List<ErrorDescription> result = new LinkedList<ErrorDescription>();
+
+        for (Entry<?, ? extends Collection<? extends ErrorDescription>> e : errors.entrySet()) {
+            result.addAll(e.getValue());
+        }
+
+        return result;
     }
 
     private static final boolean logTimeSpentInHints = Boolean.getBoolean("java.HintsInvoker.time.in.hints");

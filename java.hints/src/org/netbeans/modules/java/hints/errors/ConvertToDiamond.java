@@ -97,7 +97,7 @@ public class ConvertToDiamond implements ErrorRule<Void> {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath tp, UpgradeUICallback callback) {
+        protected void performRewrite(WorkingCopy copy, TreePath tp, boolean canShowUI) {
             if (tp.getLeaf().getKind() != Kind.PARAMETERIZED_TYPE) {
                 //XXX: warning
                 return ;

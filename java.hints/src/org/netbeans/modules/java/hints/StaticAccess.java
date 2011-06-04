@@ -237,7 +237,7 @@ public class StaticAccess extends AbstractHint {
         }
         
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             Element element = desiredType.resolve(wc);
 
             if (element == null) {

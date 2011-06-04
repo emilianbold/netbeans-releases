@@ -315,7 +315,7 @@ public class ConvertToStringSwitch {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath it, UpgradeUICallback callback) {
+        protected void performRewrite(WorkingCopy copy, TreePath it, boolean canShowUI) {
             TreeMaker make = copy.getTreeMaker();
             List<CaseTree> cases = new LinkedList<CaseTree>();
             List<CatchDescription<TreePath>> resolved = new ArrayList<CatchDescription<TreePath>>(ConvertToSwitch.this.literal2Statement.size() + 1);
