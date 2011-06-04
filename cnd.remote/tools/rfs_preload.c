@@ -168,8 +168,13 @@ static bool pre_open(const char *path, int flags) {
         return true; // recursive!
     }
     if (is_writing(flags)) { // don't need existent content
-        trace("pre open: %s is writing - returning\n", path);
-        return true;
+        // #196728 Remote build problem with touch command on remote Linux host 
+        if (flags & O_TRUNC) {
+            trace("pre open: %s is writing and truncating - returning\n", path);
+            return true;
+        } else {
+            trace("pre open: %s is writing, but not truncating - proceed\n", path);
+        }
     }
     if (my_dir == 0) { // isn't yet initialized?
         trace("pre open: %s not yet initialized - returning\n", path);
