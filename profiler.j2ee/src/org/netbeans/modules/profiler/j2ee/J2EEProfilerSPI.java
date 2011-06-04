@@ -58,7 +58,6 @@ import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.api.*;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
 import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.ErrorManager;
@@ -81,7 +80,11 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.ProjectStorage;
+import org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -275,8 +278,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         String javaVersion = IDEUtils.getPlatformJDKVersion(agentJavaPlatform);
 
         if (javaVersion == null) {
-            Profiler.getDefault()
-                    .displayError(MessageFormat.format(FAILED_DETERMINE_PLATFORM_MSG,
+            ProfilerDialogs.displayError(MessageFormat.format(FAILED_DETERMINE_PLATFORM_MSG,
                                                        new Object[] { agentJavaPlatform.getDisplayName() }));
             lastServerInstanceProperties = null;
 
@@ -308,7 +310,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
 
         ProfilerServerSettings profilerServerSettings = new ProfilerServerSettings(agentJavaPlatform, jvmArgs, env);
 
-        if (verbose && ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(MessageFormat.format(DIRECT_ATTACH_MSG,
+        if (verbose && DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(MessageFormat.format(DIRECT_ATTACH_MSG,
                                                                                               new Object[] {
                                                                                                   agentJavaPlatform.getDisplayName(),
                                                                                                   "" + agentPort
@@ -326,10 +328,9 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             AttachSettings attachSettings = null;
 
             try {
-                attachSettings = NetBeansProfiler.getDefaultNB().loadAttachSettings(mainProject);
+                attachSettings = ProjectStorage.loadAttachSettings(mainProject);
             } catch (IOException e) {
-                Profiler.getDefault()
-                        .displayWarning(MessageFormat.format(FAILED_LOAD_SETTINGS_MSG, new Object[] { e.getMessage() }));
+                ProfilerDialogs.displayWarning(MessageFormat.format(FAILED_LOAD_SETTINGS_MSG, new Object[] { e.getMessage() }));
                 ProfilerLogger.log(e);
             }
 
@@ -337,7 +338,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
                 attachSettings = new AttachSettings();
                 attachSettings.setRemote(false);
                 attachSettings.setDirect(true);
-                NetBeansProfiler.saveAttachSettings(mainProject, attachSettings);
+                ProjectStorage.saveAttachSettings(mainProject, attachSettings);
             }
         }
 
@@ -384,7 +385,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         }
 
         if (notify) {
-            IDEUtils.runInProfilerRequestProcessor(new Runnable() {
+            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                     public void run() {
                         fireHandleProgressEvent(stopAgentStatus);
                     }
@@ -537,7 +538,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             }
         };
 
-        IDEUtils.runInProfilerRequestProcessor(task);
+        ProfilerUtils.runInProfilerRequestProcessor(task);
 
         // return (ProgressObject)this
         return this;
@@ -732,7 +733,11 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         final SessionSettings ss = new SessionSettings();
 
         ps.load(props);
-        ss.load(props);
+        try {
+            ss.load(props);
+        } catch (IllegalArgumentException e) {
+            ProfilerDialogs.displayWarning(e.getLocalizedMessage());
+        }
 
         ProjectTypeProfiler ptp = projectToUse.getLookup().lookup(ProjectTypeProfiler.class);
         if (ptp == null || !ptp.isProfilingSupported(projectToUse)) { // unsupported project

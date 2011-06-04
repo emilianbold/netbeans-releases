@@ -62,12 +62,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ProfilerIDESettings;
+import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.ui.stp.DefaultSettingsConfigurator;
-import org.netbeans.modules.profiler.ui.stp.SelectProfilingTask;
-import org.netbeans.modules.profiler.utils.IDEUtils;
+import org.netbeans.modules.profiler.stp.DefaultSettingsConfigurator;
+import org.netbeans.modules.profiler.stp.SelectProfilingTask;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -86,17 +84,21 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDisplayer;
 
 
 /**
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectTypes={
                             @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), 
                             @ProjectType(id="org-netbeans-modules-j2ee-earproject"), 
@@ -255,23 +257,6 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return j2eePlatform.getJavaPlatform();
     }
 
-    public JComponent getAdditionalConfigurationComponent(Project project) {
-        if (loadGenConfig == null) {
-            //      Set<String> extSet = new HashSet<String>();
-            //      extSet.add("jmx");
-            loadGenConfig = new LoadGenPanel();
-            //      loadGenConfig.setStartDir(FileUtil.toFile(project.getProjectDirectory()));
-            //      loadGenConfig.setSupportedExtensions(extSet);
-            loadGenConfig.addPropertyChangeListener(LoadGenPanel.PATH, WeakListeners.propertyChange(pcl, loadGenConfig));
-
-            //      loadGenPath = loadGenConfig.getSelectedScript();
-        }
-
-        loadGenConfig.attach(project);
-
-        return loadGenConfig;
-    }
-
     public SelectProfilingTask.SettingsConfigurator getSettingsConfigurator() {
         if (configurator == null) {
             configurator = new DefaultSettingsConfigurator() {
@@ -319,14 +304,14 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
 
         if (j2eePlatform == null) {
-            NetBeansProfiler.getDefaultNB().displayError(NO_SERVER_FOUND_MSG);
+            ProfilerDialogs.displayError(NO_SERVER_FOUND_MSG);
 
             return false;
         }
 
         if (!j2eePlatform.supportsProfiling()) {
             // Server doesn't support profiling
-            ProfilerDialogs.notify(new NotifyDescriptor.Message(PROFILING_NOT_SUPPORTED_MSG, NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(PROFILING_NOT_SUPPORTED_MSG);
 
             return false;
         }
@@ -422,7 +407,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                     }
                                                              }, DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null,
                                                              null);
-                Object res = ProfilerDialogs.notify(desc);
+                Object res = DialogDisplayer.getDefault().notify(desc);
 
                 if (res.equals(NotifyDescriptor.YES_OPTION)) {
                     servletAddress = uriPanel.getServletUri();
@@ -431,13 +416,17 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                 props.put("client.urlPart", servletAddress); // NOI18N
             }
         }
-        String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-        props.setProperty("profile.class", profiledClass); //NOI18N
-        // include it in javac.includes so that the compile-single picks it up
-        final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
-                ProjectUtilities.getSourceRoots(project),profiledClassFile), 
-                profiledClassFile);
-        props.setProperty("javac.includes", clazz); //NOI18N
+        // FIXME - method should receive the JavaProfilerSource as the parameter
+        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+        if (src != null) {
+            String profiledClass = src.getTopLevelClass().getVMName();
+            props.setProperty("profile.class", profiledClass); //NOI18N
+            // include it in javac.includes so that the compile-single picks it up
+            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
+                    ProjectUtilities.getSourceRoots(project),profiledClassFile), 
+                    profiledClassFile);
+            props.setProperty("javac.includes", clazz); //NOI18N
+        }
     }
 
     // --- Profiler SPI support --------------------------------------------------------------------------------------------
