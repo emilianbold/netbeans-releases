@@ -42,11 +42,8 @@
 
 package org.netbeans.modules.java.hints.jackpot.impl.hints;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.lang.reflect.Method;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,33 +52,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.type.TypeMirror;
-import junit.framework.TestSuite;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
+import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -655,6 +640,47 @@ public class HintsInvokerTest extends TreeRuleTestBase {
                        "}\n").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testLambda() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "|package test;\n" +
+                       "public class Test {\n" +
+                       "     { new java.io.FileFilter() {public boolean accept(java.io.File f) { return true; } } }\n" +
+                       "}\n",
+                       "2:7-2:89:verifier:HINT");
+    }
+
+    public void testAddCasesToSwitch() throws Exception {
+        performFixTest("test/Test.java",
+                       "|package test;\n" +
+                       "public class Test {\n" +
+                       "     {\n" +
+                       "         E e = null;\n" +
+                       "         switch (e) {\n" +
+                       "             case A: System.err.println(1); break;\n" +
+                       "             case D: System.err.println(2); break;\n" +
+                       "             case E: System.err.println(3); break;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "     public enum E {A, B, C, D, E, F;}\n" +
+                       "}\n",
+                       "4:9-4:15:verifier:HINT",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "     {\n" +
+                       "         E e = null;\n" +
+                       "         switch (e) {\n" +
+                       "             case A: System.err.println(1); break;\n" +
+                       "             case B:case C:\n" +
+//                       "             case C:\n" +
+                       "             case D: System.err.println(2); break;\n" +
+                       "             case E: System.err.println(3); break;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "     public enum E {A, B, C, D, E, F;}\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     private static final Map<String, HintDescription> test2Hint;
 
     static {
@@ -695,6 +721,8 @@ public class HintsInvokerTest extends TreeRuleTestBase {
         test2Hint.put("testChangeFieldType2", test2Hint.get("testChangeFieldType1"));
         test2Hint.put("testChangeFieldType3", test2Hint.get("testChangeFieldType1"));
         test2Hint.put("testIdentifier", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$i", Collections.<String, String>singletonMap("$i", "int"))).setWorker(new WorkerImpl("2")).produce());
+        test2Hint.put("testLambda", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("new $type() { $mods$ $retType $name($params$) { $body$; } }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl()).produce());
+        test2Hint.put("testAddCasesToSwitch", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("switch ($var) { case $c1$; case D: $stmts$; case $c2$; }", Collections.<String,String>singletonMap("$var", "test.Test.E"))).setWorker(new WorkerImpl("switch ($var) { case $c1$ case B: case C: case D: $stmts$; case $c2$ }")).produce());
     }
 
     @Override
@@ -707,7 +735,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
         Map<PatternDescription, List<HintDescription>> pattern2Hint = new HashMap<PatternDescription, List<HintDescription>>();
         RulesManager.sortOut(Collections.singletonList(hd), kind2Hints, pattern2Hint);
 
-        return new HintsInvoker(info, new AtomicBoolean()).computeHints(info, new TreePath(info.getCompilationUnit()), kind2Hints, pattern2Hint, new LinkedList<MessageImpl>());
+        return new HintsInvoker(info, new AtomicBoolean()).computeHints(info, kind2Hints, pattern2Hint);
     }
 
     @Override
@@ -756,7 +784,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
             List<Fix> fixes = new LinkedList<Fix>();
 
             if (fix != null) {
-                fixes.add(JavaFix.rewriteFix(ctx.getInfo(), "Rewrite", ctx.getPath(), fix, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), /*XXX*/Collections.<String, TypeMirror>emptyMap(), imports.toArray(new String[0])));
+                fixes.add(JavaFix.rewriteFix(ctx.getInfo(), "Rewrite", ctx.getPath(), fix, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), ctx.getConstraints(), imports.toArray(new String[0])));
             }
             
             return Collections.singletonList(ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "HINT", fixes.toArray(new Fix[0])));

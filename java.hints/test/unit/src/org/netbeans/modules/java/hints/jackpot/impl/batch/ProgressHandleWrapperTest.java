@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,63 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.jackpot.impl.batch;
 
-package org.netbeans.modules.java.hints.jackpot.impl.pm;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author lahvac
  */
-public class CopyFinderBasedBulkSearchTest extends BulkSearchTestPerformer {
+public class ProgressHandleWrapperTest extends NbTestCase {
 
-    public CopyFinderBasedBulkSearchTest(String name) {
+    public ProgressHandleWrapperTest(String name) {
         super(name);
     }
 
-    @Override
-    protected BulkSearch createSearch() {
-        return new CopyFinderBasedBulkSearch();
+    public void testNoProgress() {
+        ProgressHandleWrapper w = new ProgressHandleWrapper(new ProgressHandleWrapper.ProgressHandleAbstraction() {
+            public void start(int totalWork) {}
+            public void progress(int currentWorkDone) {}
+            public void progress(String message) {}
+            public void finish() {}
+        }, 1);
+        
+        w.finish();
     }
-
-    @Override
-    protected boolean verifyIndexingData() {
-        return false;
-    }
-
-    @Override
-    public void testSerialization() throws Exception {
-        //XXX
-    }
-
-    @Override
-    public void testFrequencies() throws Exception {
-        //XXX: serialization is a prerequisite
-    }
-
-    @Override
-    public void testPatternEncodingAndIdentifiers() throws Exception {
-        //XXX
-    }
-
-    @Override
-    public void testNoExponentialTimeComplexity() throws Exception {
-        //XXX
-    }
-
-    @Override
-    public void testCheckIdentifiers2() throws Exception {
-        //not critical, only improves performance on vast amounts of sources,
-        //and NFA based search is used in such case anyway.
-        //XXX
-    }
-
-    @Override
-    public void testCheckIdentifiers3() throws Exception {
-        //not critical, only improves performance on vast amounts of sources,
-        //and NFA based search is used in such case anyway.
-        //XXX
-    }
-
 }

@@ -43,11 +43,14 @@
 package org.netbeans.modules.java.hints.jackpot.spi;
 
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
@@ -59,13 +62,13 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class HintsRunner {
 
-    public static List<ErrorDescription> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
+    public static Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
         Map<Kind, List<HintDescription>> kindHints = new HashMap<Kind, List<HintDescription>>();
         Map<PatternDescription, List<HintDescription>> patternHints = new HashMap<PatternDescription, List<HintDescription>>();
         
         RulesManager.sortOut(hints, kindHints, patternHints);
 
-        return new HintsInvoker(info, cancel).computeHints(info, kindHints, patternHints);
+        return new HintsInvoker(info, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), kindHints, patternHints, new LinkedList<MessageImpl>());
     }
 
 }

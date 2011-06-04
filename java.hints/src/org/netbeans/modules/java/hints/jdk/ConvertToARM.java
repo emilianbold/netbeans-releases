@@ -318,7 +318,7 @@ public class ConvertToARM {
         protected void performRewrite(
                 final WorkingCopy wc,
                 final TreePath tp,
-                final UpgradeUICallback callback) {
+                final boolean canShowUI) {
             final TreeMaker tm = wc.getTreeMaker();
             final Set<StatementTree> nonNeededStms = new HashSet<StatementTree>();
             for (TreePath stm : cleanUpStms) {

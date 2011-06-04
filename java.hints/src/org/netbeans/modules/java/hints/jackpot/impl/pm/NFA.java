@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.impl.pm;

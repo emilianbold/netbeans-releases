@@ -160,7 +160,7 @@ public class UseSpecificCatch {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             List<Tree> exceptions = new LinkedList<Tree>();
 
             for (TypeMirrorHandle<TypeMirror> h : exceptionHandles) {

@@ -46,10 +46,20 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.DiffContext;
 
@@ -179,6 +189,31 @@ public class UtilitiesTest extends TestBase {
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
 
+    public void testParseAndAttributeMethodDeclarationWithMultiparameters() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "public void t($params$) {}", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.METHOD);
+
+        String golden = " public void t($params$) { }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+
+    public void testParseAndAttributeMethodModifiersVariable() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        String code = "$mods$ $type $name() { $r$; }";
+        Tree result = Utilities.parseAndAttribute(info, code, s);
+
+//        String golden = "$mods$ java.lang.String $name";
+        String golden = "$mods$$type $name() { $r$; }";
+
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " ").trim());
+    }
+
     public void testSimpleExpression() throws Exception {
         prepareTest("test/Test.java", "package test; public class Test{}");
 
@@ -188,37 +223,6 @@ public class UtilitiesTest extends TestBase {
         assertTrue(result.getKind().name(), result.getKind() == Kind.METHOD_INVOCATION);
 
         String golden = "$1.isDirectory()";
-        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
-    }
-
-    public void testToHumanReadableTime() {
-        long time = 202;
-        assertEquals(    "5s", Utilities.toHumanReadableTime(time +=           5 * 1000));
-        assertEquals(  "3m5s", Utilities.toHumanReadableTime(time +=      3 * 60 * 1000));
-        assertEquals("7h3m5s", Utilities.toHumanReadableTime(time += 7 * 60 * 60 * 1000));
-    }
-    
-    public void testCatchMultiparam() throws Exception {
-        prepareTest("test/Test.java", "package test; public class Test{}");
-
-        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
-        Tree result = Utilities.parseAndAttribute(info, "try {\n }\n catch $catch$ finally {\n }\n", s);
-
-        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
-
-        String golden = "try {\n }$catch$ finally {\n }";
-        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
-    }
-    
-    public void testOrdinaryCatch() throws Exception {
-        prepareTest("test/Test.java", "package test; public class Test{}");
-
-        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
-        Tree result = Utilities.parseAndAttribute(info, "try {\n }\n catch (NullPointerException ex) { } finally {\n }\n", s);
-
-        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
-
-        String golden = "try {\n } catch (NullPointerException ex) { } finally {\n }";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
     
@@ -258,6 +262,159 @@ public class UtilitiesTest extends TestBase {
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
 
+    public void testParseAndAttributeType() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "\njava. util \n.List \n", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.MEMBER_SELECT);
+
+        assertEquals(ElementKind.INTERFACE, info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), result)).getKind());
+        assertEquals(info.getElements().getTypeElement("java.util.List"), info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), result)));
+    }
+    
+    public void testCatchMultiparam() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "try {\n }\n catch $catch$ finally {\n }\n", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
+
+        String golden = "try {\n }$catch$ finally {\n }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+
+    public void testCaseMultiparam() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "switch ($v) {case $c1$ case 1: ; case $c2$; case 3: ;}", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.SWITCH);
+
+        String golden = "switch ($v) { $c1$ case 1: ; $c2$ case 3: ; }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
+    public void testOrdinaryCatch() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "try {\n }\n catch (NullPointerException ex) { } finally {\n }\n", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
+
+        String golden = "try {\n } catch (NullPointerException ex) { } finally {\n }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
+    public void testClassPattern() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$mods$ class $name extends java.util.LinkedList { $methods$; }\n", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.CLASS);
+
+        String golden = /*"$mods$" + */" class $name extends java.util.LinkedList { $name() { super(); } $methods$ }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+
+    public void testErrorsForPatterns1() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        SourcePositions[] positions = new SourcePositions[1];
+        Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
+        String code = "foo bar";
+        Tree result = Utilities.parseAndAttribute(info, code, null, positions, errors);
+
+        assertDiagnostics(errors, "7-7:compiler.err.expected");
+        assertPositions(result, positions[0], code, "foo", "foo bar");
+    }
+
+    public void testErrorsForPatterns2() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        SourcePositions[] positions = new SourcePositions[1];
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
+        String code = "$1.isDirectory()";
+        Tree result = Utilities.parseAndAttribute(info, code, s, positions, errors);
+
+        assertDiagnostics(errors, "0-0:compiler.err.cant.resolve.location");
+        assertPositions(result, positions[0], code, "$1", "$1.isDirectory", "$1.isDirectory()");
+    }
+
+    public void testErrorsForPatterns3() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        SourcePositions[] positions = new SourcePositions[1];
+        Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
+        String code = "if ($cond) { foo() } else $else;";
+        Tree result = Utilities.parseAndAttribute(info, code, null, positions, errors);
+
+        assertDiagnostics(errors, "18-18:compiler.err.expected");
+        assertPositions(result, positions[0], code, "$cond", "$else", "$else;", "($cond)", "foo", "foo()", "foo() ", "if ($cond) { foo() } else $else;", "{ foo() }");
+    }
+
+    public void testPositionsForCorrectStatement() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        SourcePositions[] positions = new SourcePositions[1];
+        Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
+        String code = "assert true;";
+        Tree result = Utilities.parseAndAttribute(info, code, null, positions, errors);
+
+        assertTrue(errors.isEmpty());
+        assertPositions(result, positions[0], code, "assert true;", "true");
+    }
+
+    public void testCasePattern() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        SourcePositions[] positions = new SourcePositions[1];
+        Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
+        String code = "case $expr: foo bar $stmts$;\n";
+        Tree result = Utilities.parseAndAttribute(info, code, null, positions, errors);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.CASE);
+
+        String golden = "case $expr: foo bar; $stmts$; ";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+        assertDiagnostics(errors, "19-19:compiler.err.expected");
+        assertPositions(result, positions[0], code, "$expr", "$stmts$", "$stmts$;", "case $expr: foo bar $stmts$;", "foo", "foo bar ");
+    }
+
+    public void testLambdaPattern() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "new $type() {\n $mods$ $resultType $methodName($args$) {\n $statements$;\n }\n }\n", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.NEW_CLASS);
+
+        String golden = "new $type(){ () { super(); } $mods$$resultType $methodName($args$) { $statements$; } }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+
+        Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
+
+        result = Utilities.parseAndAttribute(info, "new $type() {\n $mods$ $resultType $methodName($args$) {\n $statements$;\n }\n }\n", null, errors);
+        assertTrue(result.getKind().name(), result.getKind() == Kind.NEW_CLASS);
+
+        golden = "new $type(){ $mods$$resultType $methodName($args$) { $statements$; } }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+        assertTrue(errors.toString(), errors.isEmpty());
+    }
+
+    public void testToHumanReadableTime() {
+        long time = 202;
+        assertEquals(    "5s", Utilities.toHumanReadableTime(time +=           5 * 1000));
+        assertEquals(  "3m5s", Utilities.toHumanReadableTime(time +=      3 * 60 * 1000));
+        assertEquals("7h3m5s", Utilities.toHumanReadableTime(time += 7 * 60 * 60 * 1000));
+    }
+
     public void testGeneralization() throws Exception {
         performGeneralizationTest("package test;\n" +
                                   "public class Test {\n" +
@@ -294,6 +451,43 @@ public class UtilitiesTest extends TestBase {
 
         assertEquals(generalized.replaceAll("[ \n\t]+", " "),
                      repr.replaceAll("[ \n\t]+", " "));
+    }
+
+    private void assertDiagnostics(Collection<Diagnostic<? extends JavaFileObject>> errors, String... golden) {
+        List<String> actual = new ArrayList<String>(errors.size());
+
+        for (Diagnostic<? extends JavaFileObject> d : errors) {
+            actual.add(d.getStartPosition() + "-" + d.getEndPosition() + ":" + d.getCode());
+        }
+
+        assertEquals(Arrays.asList(golden), actual);
+    }
+
+    private void assertPositions(Tree t, final SourcePositions sp, final String code, String... golden) {
+        final List<String> actual = new ArrayList<String>(golden.length);
+
+        new TreeScanner<Void, Void>() {
+            @Override
+            public Void scan(Tree node, Void p) {
+                if (node != null) {
+                    int start = (int) sp.getStartPosition(null, node);
+                    int end = (int) sp.getEndPosition(null, node);
+
+                    if (start >= 0 && end >= 0) {
+                        actual.add(code.substring(start, end));
+                    }
+                }
+                return super.scan(node, p);
+            }
+        }.scan(t, null);
+
+        Collections.sort(actual);
+
+        List<String> goldenList = new ArrayList<String>(Arrays.asList(golden));
+
+        Collections.sort(goldenList);
+
+        assertEquals(goldenList, actual);
     }
 
 }
