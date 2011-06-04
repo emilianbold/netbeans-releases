@@ -43,7 +43,6 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,11 +55,9 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.watcher.Notifier.KeyRef;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -303,7 +300,10 @@ public final class Watcher extends AnnotationProvider {
                         Set<FileObject> set = new HashSet<FileObject>();
                         synchronized (LOCK) {
                             for (KeyRef kr : getReferences()) {
-                                set.add(kr.get());
+                                final FileObject ref = kr.get();
+                                if (ref != null) {
+                                    set.add(ref);
+                                }
                             }
                         }
                         enqueueAll(set);
