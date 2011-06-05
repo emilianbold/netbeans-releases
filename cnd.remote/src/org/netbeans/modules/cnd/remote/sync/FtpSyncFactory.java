@@ -66,7 +66,7 @@ class FtpSyncFactory extends BaseSyncFactory {
     
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, String workingDir, File... files) {
         return new FtpSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files);
     }
 

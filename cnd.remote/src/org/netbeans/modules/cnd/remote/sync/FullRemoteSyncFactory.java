@@ -64,7 +64,7 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
 
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, String workingDir, File... files) {
         return new FullRemoteSyncWorker(executionEnvironment, out, err, files);
     }
 

@@ -48,7 +48,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -58,7 +60,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PathUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -99,17 +104,17 @@ public class RemoteProjectSupport {
         return privProjectStorage;
     }
 
-    public static File[] getProjectSourceDirs(Project project) {
+    public static File[] getProjectSourceDirs(Project project, AtomicReference<String> runDir) {
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
         if (conf == null) {
             File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
             return new File[] { baseDir };
         } else {
-            return getProjectSourceDirs(project, conf);
+            return getProjectSourceDirs(project, conf, runDir);
         }
     }
 
-    public static File[] getProjectSourceDirs(Project project, MakeConfiguration conf) {
+    public static File[] getProjectSourceDirs(Project project, MakeConfiguration conf, AtomicReference<String> runDir) {
         File baseDir = CndFileUtils.toFile(project.getProjectDirectory());
         if (baseDir == null) {
             return new File[0];
@@ -117,6 +122,15 @@ public class RemoteProjectSupport {
         baseDir = baseDir.getAbsoluteFile();
         if (conf == null) {
             return new File[] { baseDir };
+        }
+        if (runDir != null) {
+            String d = conf.getMakefileConfiguration().getBuildCommandWorkingDirValue();
+            FileSystem fs = conf.getBaseFSPath().getFileSystem();
+            if (!CndPathUtilitities.isPathAbsolute(d)) {
+                d = conf.getBaseFSPath().getPath() + FileSystemProvider.getFileSeparatorChar(fs) + d;
+            }
+            d = FileSystemProvider.normalizeAbsolutePath(d, fs);
+            runDir.set(d);
         }
         // the project itself
         Set<File> sourceFilesAndDirs = new HashSet<File>();
