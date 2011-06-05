@@ -164,8 +164,13 @@ public class RemoteProjectSupport {
     }
 
     private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<File> filesToSync) {
+        addExtraFiles(subMcs, filesToSync, subMcs.getProjectItems());
+        addExtraFiles(subMcs, filesToSync, subMcs.getExternalFileItemsAsArray());
+    }
+    
+    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<File> filesToSync, Item[] items) {
         FileFilter filter = new SharabilityFilter();
-        for (Item item : subMcs.getProjectItems()) {
+        for (Item item : items) {
             File normFile = item.getNormalizedFile();
             if (!filter.accept(normFile)) {
                 // user explicitely added file -> copy it even
