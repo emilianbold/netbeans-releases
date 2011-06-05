@@ -83,7 +83,7 @@ public abstract class RemoteSyncFactory {
      * @return new instance of the RemoteSyncWorker
      */
     public abstract RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files);
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, String workingDir, File... files);
 
     /**
      * Creates an instance of RemoteSyncWorker.
