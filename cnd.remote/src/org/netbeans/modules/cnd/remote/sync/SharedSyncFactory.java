@@ -63,8 +63,8 @@ public class SharedSyncFactory extends BaseSyncFactory {
 
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
-        return new SharedSyncWorker(executionEnvironment, out, err, files);
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, String workingDir, File... files) {
+        return new SharedSyncWorker(executionEnvironment, out, err, workingDir, files);
     }
 
     @Override
