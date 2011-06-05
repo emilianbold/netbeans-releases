@@ -47,6 +47,7 @@ import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,11 +59,12 @@ import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.Kinds;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -685,44 +687,44 @@ public class HintsInvokerTest extends TreeRuleTestBase {
 
     static {
         test2Hint = new HashMap<String, HintDescription>();
-        test2Hint.put("testPattern1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$1.toURL()", Collections.singletonMap("$1", "java.io.File"))).setWorker(new WorkerImpl()).produce());
+        test2Hint.put("testPattern1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("$1.toURL()", Collections.singletonMap("$1", "java.io.File"))).setWorker(new WorkerImpl()).produce());
         test2Hint.put("testPattern2", test2Hint.get("testPattern1"));
-        test2Hint.put("testKind1", HintDescriptionFactory.create().setTriggerKind(Kind.METHOD_INVOCATION).setWorker(new WorkerImpl()).produce());
-        test2Hint.put("testPatternVariable1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("{ $1 $2; $2 = $3; }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("{ $1 $2 = $3; }")).produce());
+        test2Hint.put("testKind1", HintDescriptionFactory.create().setTrigger(new Kinds(EnumSet.of(Kind.METHOD_INVOCATION))).setWorker(new WorkerImpl()).produce());
+        test2Hint.put("testPatternVariable1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("{ $1 $2; $2 = $3; }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("{ $1 $2 = $3; }")).produce());
         Map<String, String> constraints = new HashMap<String, String>();
 
         constraints.put("$1", "boolean");
         constraints.put("$2", "java.lang.Object");
 
-        test2Hint.put("testPatternAssert1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("assert $1 : $2;", constraints)).setWorker(new WorkerImpl()).produce());
-        test2Hint.put("testPatternStatementAndSingleStatementBlockAreSame", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("if ($1) return $2;", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl()).produce());
-        test2Hint.put("testPatternFalseOccurrence", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$1.toURL()", Collections.singletonMap("$1", "java.io.File"))).setWorker(new WorkerImpl()).produce());
-        test2Hint.put("testStatementVariables1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("if ($1) $2; else $3;", constraints)).setWorker(new WorkerImpl("if (!$1) $3; else $2;")).produce());
+        test2Hint.put("testPatternAssert1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("assert $1 : $2;", constraints)).setWorker(new WorkerImpl()).produce());
+        test2Hint.put("testPatternStatementAndSingleStatementBlockAreSame", HintDescriptionFactory.create().setTrigger(PatternDescription.create("if ($1) return $2;", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl()).produce());
+        test2Hint.put("testPatternFalseOccurrence", HintDescriptionFactory.create().setTrigger(PatternDescription.create("$1.toURL()", Collections.singletonMap("$1", "java.io.File"))).setWorker(new WorkerImpl()).produce());
+        test2Hint.put("testStatementVariables1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("if ($1) $2; else $3;", constraints)).setWorker(new WorkerImpl("if (!$1) $3; else $2;")).produce());
         test2Hint.put("testStatementVariables2", test2Hint.get("testStatementVariables1"));
-        test2Hint.put("testMultiStatementVariables1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("{ $pref$; int $i = 3; $inf$; return $i; }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("{ $pref$; float $i = 3; $inf$; return $i; }")).produce());
+        test2Hint.put("testMultiStatementVariables1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("{ $pref$; int $i = 3; $inf$; return $i; }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("{ $pref$; float $i = 3; $inf$; return $i; }")).produce());
         test2Hint.put("testMultiStatementVariables2", test2Hint.get("testMultiStatementVariables1"));
         test2Hint.put("testMultiStatementVariables3", test2Hint.get("testMultiStatementVariables1"));
-        test2Hint.put("testMultiStatementVariablesAndBlocks", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("if ($c) {$s1$; System.err.println(); $s2$; }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("if (!$c) {$s1$; System.err.println(); $s2$; }")).produce());
-        test2Hint.put("testOneStatement2MultipleBlock", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("System.err.println($1);", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("System.err.println($1); System.err.println($1);")).produce());
+        test2Hint.put("testMultiStatementVariablesAndBlocks", HintDescriptionFactory.create().setTrigger(PatternDescription.create("if ($c) {$s1$; System.err.println(); $s2$; }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("if (!$c) {$s1$; System.err.println(); $s2$; }")).produce());
+        test2Hint.put("testOneStatement2MultipleBlock", HintDescriptionFactory.create().setTrigger(PatternDescription.create("System.err.println($1);", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("System.err.println($1); System.err.println($1);")).produce());
         test2Hint.put("testOneStatement2MultipleStatement", test2Hint.get("testOneStatement2MultipleBlock"));
-        test2Hint.put("testMultiple2OneStatement1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("System.err.println($1); System.err.println($2);", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("System.err.println($1);")).produce());
+        test2Hint.put("testMultiple2OneStatement1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("System.err.println($1); System.err.println($2);", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("System.err.println($1);")).produce());
         test2Hint.put("testMultiple2OneStatement2", test2Hint.get("testMultiple2OneStatement1"));
-        test2Hint.put("testMemberSelectInsideMemberSelect", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).produce());
-        test2Hint.put("testPackageInfo", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).produce());
+        test2Hint.put("testMemberSelectInsideMemberSelect", HintDescriptionFactory.create().setTrigger(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).produce());
+        test2Hint.put("testPackageInfo", HintDescriptionFactory.create().setTrigger(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).produce());
         HintMetadata metadata = HintMetadata.create("no-id", "", "", "", true, HintMetadata.Kind.HINT_NON_GUI, HintSeverity.WARNING, Collections.singletonList("test"));
-        test2Hint.put("testSuppressWarnings", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).setMetadata(metadata).produce());
-        test2Hint.put("testRewriteOneToMultipleClassMembers", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("private int i;", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("private int i; public int getI() { return i; }")).produce());
-        test2Hint.put("testImports1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("new LinkedList()", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("new ArrayList()", "import java.util.ArrayList;\n")).produce());
-        test2Hint.put("testImports2", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("LinkedList $0;", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("ArrayList $0;", "import java.util.ArrayList;\n")).produce());
-        test2Hint.put("testMultiParameters", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("java.util.Arrays.asList($1$)", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("java.util.Arrays.asList(\"d\", $1$)")).produce());
-        test2Hint.put("testTypeParametersMethod", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("java.util.Arrays.<$T>asList($1$)", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("java.util.Arrays.<$T>asList(\"d\", $1$)")).produce());
-        test2Hint.put("testTypeParametersNewClass", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("new java.util.HashSet<$T1$>(java.util.Arrays.<$T$>asList($1$))", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("new java.util.HashSet<$T1$>(java.util.Arrays.<$T$>asList(\"d\", $1$))")).produce());
-        test2Hint.put("testChangeFieldType1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$modifiers$ java.lang.String $name = $initializer;", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("$modifiers$ java.lang.CharSequence $name = $initializer;")).produce());
+        test2Hint.put("testSuppressWarnings", HintDescriptionFactory.create().setTrigger(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).setMetadata(metadata).produce());
+        test2Hint.put("testRewriteOneToMultipleClassMembers", HintDescriptionFactory.create().setTrigger(PatternDescription.create("private int i;", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("private int i; public int getI() { return i; }")).produce());
+        test2Hint.put("testImports1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("new LinkedList()", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("new ArrayList()", "import java.util.ArrayList;\n")).produce());
+        test2Hint.put("testImports2", HintDescriptionFactory.create().setTrigger(PatternDescription.create("LinkedList $0;", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("ArrayList $0;", "import java.util.ArrayList;\n")).produce());
+        test2Hint.put("testMultiParameters", HintDescriptionFactory.create().setTrigger(PatternDescription.create("java.util.Arrays.asList($1$)", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("java.util.Arrays.asList(\"d\", $1$)")).produce());
+        test2Hint.put("testTypeParametersMethod", HintDescriptionFactory.create().setTrigger(PatternDescription.create("java.util.Arrays.<$T>asList($1$)", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("java.util.Arrays.<$T>asList(\"d\", $1$)")).produce());
+        test2Hint.put("testTypeParametersNewClass", HintDescriptionFactory.create().setTrigger(PatternDescription.create("new java.util.HashSet<$T1$>(java.util.Arrays.<$T$>asList($1$))", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("new java.util.HashSet<$T1$>(java.util.Arrays.<$T$>asList(\"d\", $1$))")).produce());
+        test2Hint.put("testChangeFieldType1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("$modifiers$ java.lang.String $name = $initializer;", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("$modifiers$ java.lang.CharSequence $name = $initializer;")).produce());
         test2Hint.put("testChangeFieldType2", test2Hint.get("testChangeFieldType1"));
         test2Hint.put("testChangeFieldType3", test2Hint.get("testChangeFieldType1"));
-        test2Hint.put("testIdentifier", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$i", Collections.<String, String>singletonMap("$i", "int"))).setWorker(new WorkerImpl("2")).produce());
-        test2Hint.put("testLambda", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("new $type() { $mods$ $retType $name($params$) { $body$; } }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl()).produce());
-        test2Hint.put("testAddCasesToSwitch", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("switch ($var) { case $c1$; case D: $stmts$; case $c2$; }", Collections.<String,String>singletonMap("$var", "test.Test.E"))).setWorker(new WorkerImpl("switch ($var) { case $c1$ case B: case C: case D: $stmts$; case $c2$ }")).produce());
+        test2Hint.put("testIdentifier", HintDescriptionFactory.create().setTrigger(PatternDescription.create("$i", Collections.<String, String>singletonMap("$i", "int"))).setWorker(new WorkerImpl("2")).produce());
+        test2Hint.put("testLambda", HintDescriptionFactory.create().setTrigger(PatternDescription.create("new $type() { $mods$ $retType $name($params$) { $body$; } }", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl()).produce());
+        test2Hint.put("testAddCasesToSwitch", HintDescriptionFactory.create().setTrigger(PatternDescription.create("switch ($var) { case $c1$; case D: $stmts$; case $c2$; }", Collections.<String,String>singletonMap("$var", "test.Test.E"))).setWorker(new WorkerImpl("switch ($var) { case $c1$ case B: case C: case D: $stmts$; case $c2$ }")).produce());
     }
 
     @Override
@@ -731,11 +733,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
 
         assertNotNull(hd);
 
-        Map<Kind, List<HintDescription>> kind2Hints = new HashMap<Kind, List<HintDescription>>();
-        Map<PatternDescription, List<HintDescription>> pattern2Hint = new HashMap<PatternDescription, List<HintDescription>>();
-        RulesManager.sortOut(Collections.singletonList(hd), kind2Hints, pattern2Hint);
-
-        return new HintsInvoker(info, new AtomicBoolean()).computeHints(info, kind2Hints, pattern2Hint);
+        return new HintsInvoker(info, new AtomicBoolean()).computeHints(info, Collections.singletonList(hd));
     }
 
     @Override

@@ -49,11 +49,12 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,11 +67,12 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.Kinds;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.Exceptions;
@@ -183,13 +185,15 @@ public class CodeHintProviderImpl implements HintProvider {
 
         Worker w = new WorkerImpl(m.getClazz().getName(), m.getName());
 
-        for (Kind k : new HashSet<Kind>(Arrays.asList(kindTrigger.value()))) {
-            addHint(hints, metadata, HintDescriptionFactory.create()
-                                                           .setTriggerKind(k)
-                                                           .setWorker(w)
-                                                           .setMetadata(metadata)
-                                                           .produce());
-        }
+        Set<Kind> kinds = EnumSet.noneOf(Kind.class);
+        
+        kinds.addAll(Arrays.asList(kindTrigger.value()));
+
+        addHint(hints, metadata, HintDescriptionFactory.create()
+                                                       .setTrigger(new Kinds(kinds))
+                                                       .setWorker(w)
+                                                       .setMetadata(metadata)
+                                                       .produce());
     }
     
     private static void processPatternHint(Map<HintMetadata, Collection<HintDescription>> hints, MethodWrapper m, HintMetadata metadata) {
@@ -221,7 +225,7 @@ public class CodeHintProviderImpl implements HintProvider {
         PatternDescription pd = PatternDescription.create(pattern, constraints);
 
         addHint(hints, metadata, HintDescriptionFactory.create()
-                                                       .setTriggerPattern(pd)
+                                                       .setTrigger(pd)
                                                        .setWorker(new WorkerImpl(m.getClazz().getName(), m.getName()))
                                                        .setMetadata(metadata)
                                                        .produce());

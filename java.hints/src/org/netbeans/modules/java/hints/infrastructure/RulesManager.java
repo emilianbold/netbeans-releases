@@ -45,7 +45,6 @@
 package org.netbeans.modules.java.hints.infrastructure;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,8 +59,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.tree.DefaultMutableTreeNode;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -70,6 +67,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.Kinds;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
@@ -78,7 +76,6 @@ import org.netbeans.modules.java.hints.spi.Rule;
 import org.netbeans.modules.java.hints.spi.TreeRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -284,13 +281,11 @@ public class RulesManager implements FileChangeListener {
 
                 List<HintDescription> hd = new LinkedList<HintDescription>();
 
-                for (Kind k : tr.getTreeKinds()) {
-                    hd.add(HintDescriptionFactory.create()
-                                                 .setTriggerKind(k)
-                                                 .setMetadata(hm)
-                                                 .setWorker(new WorkerImpl(tr))
-                                                 .produce());
-                }
+                hd.add(HintDescriptionFactory.create()
+                                             .setTrigger(new Kinds(tr.getTreeKinds()))
+                                             .setMetadata(hm)
+                                             .setWorker(new WorkerImpl(tr))
+                                             .produce());
 
                 metadata.put(hm, hd);
             }
