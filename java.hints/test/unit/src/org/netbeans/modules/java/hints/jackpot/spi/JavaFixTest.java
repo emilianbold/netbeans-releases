@@ -60,7 +60,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.impl.TestBase;
 import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -502,18 +502,14 @@ public class JavaFixTest extends TestBase {
         final String[] split = rule.split("=>");
         assertEquals(2, split.length);
         HintDescription hd = HintDescriptionFactory.create()
-                                                   .setTriggerPattern(PatternDescription.create(split[0], Collections.<String, String>emptyMap()))
+                                                   .setTrigger(PatternDescription.create(split[0], Collections.<String, String>emptyMap()))
                                                    .setWorker(new HintDescription.Worker() {
             @Override public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
                 return Collections.singletonList(ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "", JavaFix.rewriteFix(ctx, "", ctx.getPath(), split[1])));
             }
         }).produce();
 
-        Map<PatternDescription, List<HintDescription>> patternHints = new HashMap<PatternDescription, List<HintDescription>>();
-        HashMap<Kind, List<HintDescription>> kindHints = new HashMap<Kind, List<HintDescription>>();
-
-        RulesManager.sortOut(Collections.singleton(hd), kindHints, patternHints);
-        List<ErrorDescription> computeHints = new HintsInvoker(info, new AtomicBoolean()).computeHints(info, kindHints, patternHints);
+        List<ErrorDescription> computeHints = new HintsInvoker(info, new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
 
         assertEquals(computeHints.toString(), 1, computeHints.size());
 
@@ -528,18 +524,14 @@ public class JavaFixTest extends TestBase {
 	prepareTest("test/Test.java", code);
 
         HintDescription hd = HintDescriptionFactory.create()
-                                                   .setTriggerPattern(PatternDescription.create(rule, Collections.<String, String>emptyMap()))
+                                                   .setTrigger(PatternDescription.create(rule, Collections.<String, String>emptyMap()))
                                                    .setWorker(new HintDescription.Worker() {
             @Override public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
                 return Collections.singletonList(ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "", JavaFix.removeFromParent(ctx, "", ctx.getPath())));
             }
         }).produce();
 
-        Map<PatternDescription, List<HintDescription>> patternHints = new HashMap<PatternDescription, List<HintDescription>>();
-        HashMap<Kind, List<HintDescription>> kindHints = new HashMap<Kind, List<HintDescription>>();
-
-        RulesManager.sortOut(Collections.singleton(hd), kindHints, patternHints);
-        List<ErrorDescription> computeHints = new HintsInvoker(info, new AtomicBoolean()).computeHints(info, kindHints, patternHints);
+        List<ErrorDescription> computeHints = new HintsInvoker(info, new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
 
         assertEquals(computeHints.toString(), 1, computeHints.size());
 

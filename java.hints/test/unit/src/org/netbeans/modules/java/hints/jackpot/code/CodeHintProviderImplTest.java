@@ -57,7 +57,6 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import static org.junit.Assert.*;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -76,8 +75,8 @@ public class CodeHintProviderImplTest {
         Map<HintMetadata, ? extends Collection<? extends HintDescription>> hints = new CodeHintProviderImpl().computeHints();
 
         Set<String> golden = new HashSet<String>(Arrays.asList(
-            "null:$1.toURL():public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern1(org.netbeans.modules.java.hints.jackpot.spi.HintContext)",
-            "METHOD_INVOCATION:null:public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern2(org.netbeans.modules.java.hints.jackpot.spi.HintContext)"
+            "$1.toURL():public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern1(org.netbeans.modules.java.hints.jackpot.spi.HintContext)",
+            "[METHOD_INVOCATION]:public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern2(org.netbeans.modules.java.hints.jackpot.spi.HintContext)"
         ));
 
         for (Collection<? extends HintDescription> hds : hints.values()) {
@@ -92,14 +91,10 @@ public class CodeHintProviderImplTest {
     private static String toString(HintDescription hd) throws Exception {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(hd.getTriggerKind());
+        sb.append(hd.getTrigger());
         sb.append(":");
         
-        PatternDescription p = hd.getTriggerPattern();
-
-        sb.append(p != null ? p.getPattern() : "null");
         //TODO: constraints
-        sb.append(":");
         sb.append(((WorkerImpl) hd.getWorker()).getMethod().toGenericString());
 
         return sb.toString();

@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.java.hints.jackpot.impl.batch;
 
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import java.util.HashMap;
 import java.util.Map;
@@ -126,7 +126,7 @@ public class TestUtils {
         }
 
         HintDescription hd = HintDescriptionFactory.create()
-                                                   .setTriggerPattern(PatternDescription.create(split[0], constr))
+                                                   .setTrigger(PatternDescription.create(split[0], constr))
                                                    .setWorker(w)
                                                    .produce();
 
