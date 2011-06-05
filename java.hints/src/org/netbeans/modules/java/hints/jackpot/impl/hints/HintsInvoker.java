@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -88,8 +89,10 @@ import org.netbeans.modules.java.hints.jackpot.impl.pm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.Kinds;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -161,20 +164,15 @@ public class HintsInvoker {
             }
         }
 
-        Map<Kind, List<HintDescription>> kindHints = new HashMap<Kind, List<HintDescription>>();
-        Map<PatternDescription, List<HintDescription>> patternHints = new HashMap<PatternDescription, List<HintDescription>>();
-
-        RulesManager.sortOut(descs, kindHints, patternHints);
-
         long elementBasedStart = System.currentTimeMillis();
 
-        RulesManager.computeElementBasedHintsXXX(info, cancel, kindHints, patternHints);
+        RulesManager.computeElementBasedHintsXXX(info, cancel, descs);
 
         long elementBasedEnd = System.currentTimeMillis();
 
         timeLog.put("Computing Element Based Hints", elementBasedEnd - elementBasedStart);
 
-        List<ErrorDescription> errors = join(computeHints(info, startAt, kindHints, patternHints, new LinkedList<MessageImpl>()));
+        List<ErrorDescription> errors = join(computeHints(info, startAt, descs, new LinkedList<MessageImpl>()));
 
         dumpTimeSpentInHints();
         
@@ -182,64 +180,70 @@ public class HintsInvoker {
     }
 
     public List<ErrorDescription> computeHints(CompilationInfo info,
-                                        Map<Kind, List<HintDescription>> hints,
-                                        Map<PatternDescription, List<HintDescription>> patternHints) {
-        return computeHints(info, hints, patternHints, new LinkedList<MessageImpl>());
+                                               Iterable<? extends HintDescription> hints) {
+        return computeHints(info, hints, new LinkedList<MessageImpl>());
     }
 
     public List<ErrorDescription> computeHints(CompilationInfo info,
-                                        Map<Kind, List<HintDescription>> hints,
-                                        Map<PatternDescription, List<HintDescription>> patternHints,
-                                        Collection<? super MessageImpl> problems) {
-        return join(computeHints(info, new TreePath(info.getCompilationUnit()), hints, patternHints, problems));
+                                               Iterable<? extends HintDescription> hints,
+                                               Collection<? super MessageImpl> problems) {
+        return join(computeHints(info, new TreePath(info.getCompilationUnit()), hints, problems));
     }
 
     public Map<HintDescription, List<ErrorDescription>> computeHints(CompilationInfo info,
                                         TreePath startAt,
-                                        Map<Kind, List<HintDescription>> hints,
-                                        Map<PatternDescription, List<HintDescription>> patternHints,
+                                        Iterable<? extends HintDescription> hints,
                                         Collection<? super MessageImpl> problems) {
+        Map<Class, List<HintDescription>> triggerKind2Hints = new HashMap<Class, List<HintDescription>>();
+
+        for (Class<? extends Trigger> c : Trigger.TRIGGER_KINDS) {
+            triggerKind2Hints.put(c, new ArrayList<HintDescription>());
+        }
+
+        for (HintDescription hd : hints) {
+            List<HintDescription> sorted = triggerKind2Hints.get(hd.getTrigger().getClass());
+
+            sorted.add(hd);
+        }
+        
         if (caret != -1) {
             TreePath tp = info.getTreeUtilities().pathFor(caret);
-            return computeSuggestions(info, tp, hints, patternHints, problems);
+            return computeSuggestions(info, tp, triggerKind2Hints, problems);
         } else {
             if (from != (-1) && to != (-1)) {
-                return computeHintsInSpan(info, hints, patternHints, problems);
+                return computeHintsInSpan(info, triggerKind2Hints, problems);
             } else {
-                return computeHintsImpl(info, startAt, hints, patternHints, problems);
+                return computeHintsImpl(info, startAt, triggerKind2Hints, problems);
             }
         }
     }
 
-    Map<HintDescription, List<ErrorDescription>> computeHintsImpl(CompilationInfo info,
+    private Map<HintDescription, List<ErrorDescription>> computeHintsImpl(CompilationInfo info,
                                         TreePath startAt,
-                                        Map<Kind, List<HintDescription>> hints,
-                                        Map<PatternDescription, List<HintDescription>> patternHints,
+                                        Map<Class, List<HintDescription>> triggerKind2Hints,
                                         Collection<? super MessageImpl> problems) {
         Map<HintDescription, List<ErrorDescription>> errors = new HashMap<HintDescription, List<ErrorDescription>>();
+        List<HintDescription> kindBasedHints = triggerKind2Hints.get(Kinds.class);
 
-        long kindCount = 0;
+        timeLog.put("[C] Kind Based Hints", (long) kindBasedHints.size());
 
-        for (Entry<Kind, List<HintDescription>> e : hints.entrySet()) {
-            kindCount += e.getValue().size();
-        }
-
-        timeLog.put("[C] Kind Based Hints", kindCount);
-
-        if (!hints.isEmpty()) {
+        if (!kindBasedHints.isEmpty()) {
             long kindStart = System.currentTimeMillis();
 
-            new ScannerImpl(info, cancel, hints).scan(startAt, errors);
+            new ScannerImpl(info, cancel, sortByKinds(kindBasedHints)).scan(startAt, errors);
 
             long kindEnd = System.currentTimeMillis();
 
             timeLog.put("Kind Based Hints", kindEnd - kindStart);
         }
 
-        timeLog.put("[C] Pattern Based Hints", (long) patternHints.size());
+        List<HintDescription> patternBasedHints = triggerKind2Hints.get(PatternDescription.class);
+
+        timeLog.put("[C] Pattern Based Hints", (long) patternBasedHints.size());
 
         long patternStart = System.currentTimeMillis();
 
+        Map<PatternDescription, List<HintDescription>> patternHints = sortByPatterns(patternBasedHints);
         Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
 
         long bulkPatternStart = System.currentTimeMillis();
@@ -267,9 +271,8 @@ public class HintsInvoker {
         return errors;
     }
 
-    Map<HintDescription, List<ErrorDescription>> computeHintsInSpan(CompilationInfo info,
-                                        Map<Kind, List<HintDescription>> hints,
-                                        Map<PatternDescription, List<HintDescription>> patternHints,
+    private Map<HintDescription, List<ErrorDescription>> computeHintsInSpan(CompilationInfo info,
+                                        Map<Class, List<HintDescription>> triggerKind2Hints,
                                         Collection<? super MessageImpl> problems) {
 
         TreePath path = info.getTreeUtilities().pathFor((from + to) / 2);
@@ -286,20 +289,24 @@ public class HintsInvoker {
         }
 
         Map<HintDescription, List<ErrorDescription>> errors = new HashMap<HintDescription, List<ErrorDescription>>();
+        List<HintDescription> kindBasedHints = triggerKind2Hints.get(Kinds.class);
 
-        if (!hints.isEmpty()) {
+        if (!kindBasedHints.isEmpty()) {
             long kindStart = System.currentTimeMillis();
 
-            new ScannerImpl(info, cancel, hints).scan(path, errors);
+            new ScannerImpl(info, cancel, sortByKinds(kindBasedHints)).scan(path, errors);
 
             long kindEnd = System.currentTimeMillis();
 
             timeLog.put("Kind Based Hints", kindEnd - kindStart);
         }
 
-        if (!patternHints.isEmpty()) {
+        List<HintDescription> patternBasedHints = triggerKind2Hints.get(PatternDescription.class);
+
+        if (!patternBasedHints.isEmpty()) {
             long patternStart = System.currentTimeMillis();
 
+            Map<PatternDescription, List<HintDescription>> patternHints = sortByPatterns(patternBasedHints);
             Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
 
             long bulkStart = System.currentTimeMillis();
@@ -319,22 +326,23 @@ public class HintsInvoker {
         }
 
         if (path != null) {
-            mergeAll(errors, computeSuggestions(info, path, hints, patternHints, problems));
+            mergeAll(errors, computeSuggestions(info, path, triggerKind2Hints, problems));
         }
 
         return errors;
     }
 
-    Map<HintDescription, List<ErrorDescription>> computeSuggestions(CompilationInfo info,
+    private Map<HintDescription, List<ErrorDescription>> computeSuggestions(CompilationInfo info,
                                         TreePath workOn,
-                                        Map<Kind, List<HintDescription>> hints,
-                                        Map<PatternDescription, List<HintDescription>> patternHints,
+                                        Map<Class, List<HintDescription>> triggerKind2Hints,
                                         Collection<? super MessageImpl> problems) {
         Map<HintDescription, List<ErrorDescription>> errors = new HashMap<HintDescription, List<ErrorDescription>>();
+        List<HintDescription> kindBasedHints = triggerKind2Hints.get(Kinds.class);
 
-        if (!hints.isEmpty()) {
+        if (!kindBasedHints.isEmpty()) {
             long kindStart = System.currentTimeMillis();
-
+            
+            Map<Kind, List<HintDescription>> hints = sortByKinds(kindBasedHints);
             TreePath proc = workOn;
 
             while (proc != null) {
@@ -347,9 +355,12 @@ public class HintsInvoker {
             timeLog.put("Kind Based Suggestions", kindEnd - kindStart);
         }
 
-        if (!patternHints.isEmpty()) {
+        List<HintDescription> patternBasedHints = triggerKind2Hints.get(PatternDescription.class);
+
+        if (!patternBasedHints.isEmpty()) {
             long patternStart = System.currentTimeMillis();
 
+            Map<PatternDescription, List<HintDescription>> patternHints = sortByPatterns(patternBasedHints);
             Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
 
             //pretend that all the patterns occur on all treepaths from the current path
@@ -408,6 +419,40 @@ public class HintsInvoker {
 
     public Map<HintDescription, List<ErrorDescription>> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints) throws IllegalStateException {
         return doComputeHints(info, occurringPatterns, patterns, patternHints, new LinkedList<MessageImpl>());
+    }
+
+    private static Map<Kind, List<HintDescription>> sortByKinds(List<HintDescription> kindBasedHints) {
+        Map<Kind, List<HintDescription>> result = new EnumMap<Kind, List<HintDescription>>(Kind.class);
+
+        for (HintDescription hd : kindBasedHints) {
+            for (Kind k : ((Kinds) hd.getTrigger()).getKinds()) {
+                List<HintDescription> hints = result.get(k);
+
+                if (hints == null) {
+                    result.put(k, hints = new ArrayList<HintDescription>());
+                }
+
+                hints.add(hd);
+            }
+        }
+
+        return result;
+    }
+
+    private static Map<PatternDescription, List<HintDescription>> sortByPatterns(List<HintDescription> kindBasedHints) {
+        Map<PatternDescription, List<HintDescription>> result = new HashMap<PatternDescription, List<HintDescription>>();
+
+        for (HintDescription hd : kindBasedHints) {
+            List<HintDescription> hints = result.get((PatternDescription) hd.getTrigger());
+
+            if (hints == null) {
+                result.put((PatternDescription) hd.getTrigger(), hints = new ArrayList<HintDescription>());
+            }
+
+            hints.add(hd);
+        }
+
+        return result;
     }
 
     public static Map<String, List<PatternDescription>> computePatternTests(Map<PatternDescription, List<HintDescription>> patternHints) {

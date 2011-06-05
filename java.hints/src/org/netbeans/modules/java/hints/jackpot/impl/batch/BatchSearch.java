@@ -43,16 +43,13 @@ package org.netbeans.modules.java.hints.jackpot.impl.batch;
 
 import org.netbeans.modules.java.hints.introduce.CopyFinder;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch.BulkPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext.MessageKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.util.Context;
@@ -91,6 +88,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
@@ -111,7 +109,7 @@ public class BatchSearch {
 
     public static BatchResult findOccurrences(final Iterable<? extends HintDescription> patterns, final Scope scope, final ProgressHandleWrapper progress) {
         for (HintDescription pattern : patterns) {
-            if (pattern.getTriggerKind() != null || pattern.getTriggerPattern() == null) {
+            if (!(pattern.getTrigger() instanceof PatternDescription)) {
                 throw new UnsupportedOperationException();
             }
         }
@@ -177,7 +175,7 @@ public class BatchSearch {
         Collection<AdditionalQueryConstraints> additionalConstraints = new LinkedList<AdditionalQueryConstraints>();
 
         for (HintDescription pattern : patterns) {
-            String textPattern = pattern.getTriggerPattern().getPattern();
+            String textPattern = ((PatternDescription) pattern.getTrigger()).getPattern();
 
             code.add(textPattern);
             trees.add(Utilities.parseAndAttribute(info, textPattern, null));
@@ -324,12 +322,8 @@ public class BatchSearch {
 
                                     progress.setMessage("processing: " + FileUtil.getFileDisplayName(parameter.getFileObject()));
                                     Resource r = file2Resource.get(parameter.getFileObject());
-                                    Map<PatternDescription, List<HintDescription>> sortedHintsPatterns = new HashMap<PatternDescription, List<HintDescription>>();
-                                    Map<Kind, List<HintDescription>> sortedHintsKinds = new HashMap<Kind, List<HintDescription>>();
 
-                                    RulesManager.sortOut(r.hints, sortedHintsKinds, sortedHintsPatterns);
-
-                                    List<ErrorDescription> hints = new HintsInvoker(parameter, new AtomicBoolean()).computeHints(parameter, sortedHintsKinds, sortedHintsPatterns, problems);
+                                    List<ErrorDescription> hints = new HintsInvoker(parameter, new AtomicBoolean()).computeHints(parameter, r.hints, problems);
 
                                     cont = callback.spansVerified(parameter, r, hints);
                                 } catch (ThreadDeath td) {

@@ -155,6 +155,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.JackpotTrees.ModifiersWildca
 import org.netbeans.modules.java.hints.jackpot.impl.JackpotTrees.VariableWildcard;
 import org.netbeans.modules.java.hints.jackpot.spi.ClassPathBasedHintProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -263,7 +264,7 @@ public class Utilities {
 
         for (Collection<? extends HintDescription> hints : RulesManager.getInstance().allHints.values()) {
             for (HintDescription hd : hints) {
-                if (hd.getTriggerPattern() == null) continue; //TODO: only pattern based hints are currently supported
+                if (!(hd.getTrigger() instanceof PatternDescription)) continue; //TODO: only pattern based hints are currently supported
                 result.add(hd);
             }
         }
