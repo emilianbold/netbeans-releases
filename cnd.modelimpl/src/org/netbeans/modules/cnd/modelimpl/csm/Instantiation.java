@@ -99,15 +99,15 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         this.mapping = mapping;
     }
 
-    @Override
-    public int getStartOffset() {
-        return declaration.getStartOffset();
-    }
-    
-    @Override
-    public int getEndOffset() {
-        return declaration.getEndOffset();
-    }
+//    @Override
+//    public int getStartOffset() {
+//        return declaration.getStartOffset();
+//    }
+//    
+//    @Override
+//    public int getEndOffset() {
+//        return declaration.getEndOffset();
+//    }
 
     // FIX for 146522, we compare toString value until better solution is found
     @Override
@@ -576,7 +576,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         public CsmClassifier getClassifier() {
             if (resolvedClassifier == null) {
                 CsmType t= getAncestorType();
-                resolvedClassifier = t.getClassifier();
+                resolvedClassifier = t.getClassifier();                        
             }
             return resolvedClassifier;
         }
@@ -1094,18 +1094,18 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         protected final CsmType instantiatedType;
         protected final boolean inst;
         protected CsmClassifier resolved;
-//        protected CsmTemplateParameter parameter;
+        protected CsmTemplateParameter parameter;
 
         private Type(CsmType type, CsmInstantiation instantiation) {
             this.instantiation = instantiation;
             inst = type.isInstantiation();
             CsmType origType = type;
             CsmType newType = type;
-//            parameter = null;
+            parameter = null;
 
             if (CsmKindUtilities.isTemplateParameterType(type)) {
                 CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
-//                parameter = paramType.getParameter();
+                parameter = paramType.getParameter();
                 newType = Instantiation.resolveTemplateParameterType(type, instantiation);
                 if (newType != null) {
                     newType = TypeFactory.createType(newType, origType.getPointerDepth(), origType.isReference(), origType.getArrayDepth(), origType.isConst());
@@ -1354,15 +1354,20 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                     } else {
                         classifier = originalType.getClassifier();                        
                     }
-                    if (inst && CsmKindUtilities.isTemplate(classifier) &&
-                            !isTemplateParameterTypeBased()) {
+                    if (inst && CsmKindUtilities.isTemplate(classifier)) {
                         CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
                         CsmObject obj = null;
                         if(ip instanceof InstantiationProviderImpl) {
                             Resolver resolver = ResolverFactory.createResolver(this);
                             try {
                                 if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                                    obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, instantiation, specialize);
+                                    if(!isTemplateParameterTypeBased() || !instantiation.getMapping().keySet().contains(getResolvedTemplateParameter())) {
+                                        obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, instantiation, specialize);
+                                    } else {
+//                                        final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping1 = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>(instantiation.getMapping());
+//                                        mapping1.remove(getResolvedTemplateParameter());
+//                                        obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, mapping1);
+                                    }
                                 } else {
                                     return null;
                                 }
@@ -1428,16 +1433,16 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             return false;
         }        
         
-//        public CsmTemplateParameter getResolvedTemplateParameter() {
-//            CsmType baseType = originalType;
-//            while(baseType instanceof Type) {
-//                if(((Type)baseType).parameter != null) {
-//                    return ((Type)baseType).parameter;
-//                }
-//                baseType = ((Type)baseType).originalType;
-//            }
-//            return null;
-//        }         
+        public CsmTemplateParameter getResolvedTemplateParameter() {
+            CsmType baseType = originalType;
+            while(baseType instanceof Type) {
+                if(((Type)baseType).parameter != null) {
+                    return ((Type)baseType).parameter;
+                }
+                baseType = ((Type)baseType).originalType;
+            }
+            return null;
+        }         
         
         @Override
         public String toString() {
