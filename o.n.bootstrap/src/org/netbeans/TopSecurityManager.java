@@ -310,6 +310,7 @@ public class TopSecurityManager extends SecurityManager {
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
         warnedClassesNH.add("org.netbeans.lib.uihandler.LogFormatter");
         warnedClassesNH.add("org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties"); // AS bundle is not in any cluster
+        warnedClassesNH.add("org.netbeans.modules.apisupport.project.universe.NbPlatform"); // defaultPlatformLocation
     }
 
     /* ----------------- private methods ------------- */
