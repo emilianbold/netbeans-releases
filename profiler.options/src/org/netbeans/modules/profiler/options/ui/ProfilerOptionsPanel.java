@@ -43,11 +43,8 @@
 
 package org.netbeans.modules.profiler.options.ui;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
-import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.openide.util.NbBundle;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -57,6 +54,7 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.*;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 
 
 /**
@@ -247,7 +245,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             resetConfirmationsButton.setEnabled(false);
         } else if (e.getSource() == managePlatformsButton) {
             JavaPlatform platform = getSelectedJavaPlatform();
-            PlatformsCustomizer.showCustomizer(platform);
+            JavaPlatform.showCustomizer(/* FIXX platform */ );
             updateJavaPlatformComboItems();
         } else if (e.getSource() == oomeDetectionChooseDirButton) {
             JFileChooser chooser = new JFileChooser();
@@ -920,7 +918,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         supportedJavaPlatforms.clear();
         supportedJavaPlatformsNames.clear();
 
-        Iterator supportedPlatforms = JavaPlatformSelector.getSupportedPlatforms().iterator();
+        Iterator supportedPlatforms = JavaPlatform.getPlatforms().iterator();
 
         JavaPlatform supportedJavaPlatform;
         String supportedJavaPlatformName;
@@ -935,6 +933,6 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             }
         }
 
-        supportedJavaPlatforms.addAll(JavaPlatformSelector.getSupportedPlatforms());
+        supportedJavaPlatforms.addAll(JavaPlatform.getPlatforms());
     }
 }

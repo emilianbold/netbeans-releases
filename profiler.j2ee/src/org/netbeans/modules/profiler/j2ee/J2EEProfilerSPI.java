@@ -80,6 +80,8 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler;
@@ -267,7 +269,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         int agentPort = J2EEProjectTypeProfiler.generateAgentPort();
 
         // obtain Java platform
-        JavaPlatform agentJavaPlatform = J2EEProjectTypeProfiler.generateAgentJavaPlatform(serverInstanceID);
+        org.netbeans.modules.profiler.api.JavaPlatform agentJavaPlatform = J2EEProjectTypeProfiler.generateAgentJavaPlatform(serverInstanceID);
 
         if (agentJavaPlatform == null) {
             lastServerInstanceProperties = null;
@@ -275,7 +277,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             return null; // cancelled by the user
         }
 
-        String javaVersion = IDEUtils.getPlatformJDKVersion(agentJavaPlatform);
+        String javaVersion = agentJavaPlatform.getPlatformJDKVersion();
 
         if (javaVersion == null) {
             ProfilerDialogs.displayError(MessageFormat.format(FAILED_DETERMINE_PLATFORM_MSG,
@@ -285,7 +287,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             return null;
         }
 
-        String localPlatform = IntegrationUtils.getLocalPlatform(IDEUtils.getPlatformArchitecture(agentJavaPlatform));
+        String localPlatform = IntegrationUtils.getLocalPlatform(agentJavaPlatform.getPlatformArchitecture());
 
         // init JVM arguments
         String[] jvmArgs = new String[2];
@@ -307,8 +309,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             jvmArgs[0] = IntegrationUtils.getProfilerAgentCommandLineArgs(localPlatform, IntegrationUtils.PLATFORM_JAVA_60,
                                                                           false, agentPort);
         }
-
-        ProfilerServerSettings profilerServerSettings = new ProfilerServerSettings(agentJavaPlatform, jvmArgs, env);
+        
+        ProfilerServerSettings profilerServerSettings = new ProfilerServerSettings(convert(agentJavaPlatform), jvmArgs, env);
 
         if (verbose && DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(MessageFormat.format(DIRECT_ATTACH_MSG,
                                                                                               new Object[] {
@@ -759,5 +761,20 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             });
 
         return true;
+    }
+
+    private JavaPlatform convert(org.netbeans.modules.profiler.api.JavaPlatform agentJavaPlatform) {
+        String platformName = agentJavaPlatform.getPlatformId();
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification("j2se", null)); // NOI18N
+
+        for (int i = 0; i < platforms.length; i++) {
+            JavaPlatform platform = platforms[i];
+            String antName = (String) platform.getProperties().get("platform.ant.name"); // NOI18N
+
+            if (antName.equals(platformName)) {
+                return platform;
+            }
+        }
+        throw new IllegalArgumentException("Platfrom "+platformName+" not found"); // NOI18N        
     }
 }

@@ -44,9 +44,6 @@
 package org.netbeans.modules.profiler.nbmodule;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
@@ -59,9 +56,12 @@ import org.w3c.dom.Element;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
@@ -163,17 +163,17 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
             ProfilerLogger.debug("File " + projectDir.getPath()); //NOI18N
         }
 
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification("j2se", null)); // NOI18N
+        org.netbeans.api.java.platform.JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification("j2se", null)); // NOI18N
 
         for (int i = 0; i < platforms.length; i++) {
-            JavaPlatform platform = platforms[i];
+            org.netbeans.api.java.platform.JavaPlatform platform = platforms[i];
 
             if (bootCpEntries.equals(platform.getBootstrapLibraries().entries())) {
                 if (ProfilerLogger.isDebug()) {
                     ProfilerLogger.debug("Platform " + platform.getDisplayName()); //NOI18N
                 }
 
-                return platform;
+                return JavaPlatform.getJavaPlatformById(platform.getProperties().get("platform.ant.name"));
             }
         }
 

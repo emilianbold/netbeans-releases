@@ -43,9 +43,6 @@
 
 package org.netbeans.modules.profiler.j2se;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.profiler.common.SessionSettings;
@@ -59,9 +56,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import java.io.*;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -159,24 +158,11 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             return null; // not provided for some reason
         }
 
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-
-        if (platformName.equals("default_platform")) {
-            return jpm.getDefaultPlatform(); // NOI18N
+        if (platformName.equals("default_platform")) { // NOI18N
+            return JavaPlatform.getDefaultPlatform(); 
         }
 
-        JavaPlatform[] platforms = jpm.getPlatforms(null, new Specification("j2se", null)); // NOI18N
-
-        for (int i = 0; i < platforms.length; i++) {
-            JavaPlatform platform = platforms[i];
-            String antName = (String) platform.getProperties().get("platform.ant.name"); // NOI18N
-
-            if (antName.equals(platformName)) {
-                return platform;
-            }
-        }
-
-        return null;
+        return JavaPlatform.getJavaPlatformById(platformName);
     }
 
     public boolean checkProjectCanBeProfiled(final Project project, final FileObject profiledClassFile) {

@@ -43,9 +43,6 @@
 
 package org.netbeans.modules.profiler.j2ee;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.profiler.client.ClientUtils;
@@ -80,10 +77,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
@@ -247,14 +246,18 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return getServerJavaPlatform(serverInstanceID);
     }
 
-    public static JavaPlatform getServerJavaPlatform(String serverInstanceID) {
+    private static JavaPlatform getServerJavaPlatform(String serverInstanceID) {
         J2eePlatform j2eePlatform = getJ2eePlatform(serverInstanceID);
 
         if (j2eePlatform == null) {
             return null;
         }
 
-        return j2eePlatform.getJavaPlatform();
+        org.netbeans.api.java.platform.JavaPlatform jp = j2eePlatform.getJavaPlatform();
+        if (jp == null) {
+            return null;
+        }
+        return JavaPlatform.getJavaPlatformById(jp.getProperties().get("platform.ant.name")); // NOI18N
     }
 
     public SelectProfilingTask.SettingsConfigurator getSettingsConfigurator() {
@@ -347,10 +350,10 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
         // fix agent startup arguments
         JavaPlatform javaPlatform = getJavaPlatformFromAntName(project, props);
-        props.setProperty("profiler.info.javaPlatform", javaPlatform.getProperties().get("platform.ant.name")); // set the used platform ant property
+        props.setProperty("profiler.info.javaPlatform", javaPlatform.getPlatformId()); // set the used platform ant property
 
-        String javaVersion = IDEUtils.getPlatformJDKVersion(javaPlatform);
-        String localPlatform = IntegrationUtils.getLocalPlatform(IDEUtils.getPlatformArchitecture(javaPlatform));
+        String javaVersion = javaPlatform.getPlatformJDKVersion();
+        String localPlatform = IntegrationUtils.getLocalPlatform(javaPlatform.getPlatformArchitecture());
 
         if (javaVersion.equals(CommonConstants.JDK_15_STRING)) {
             // JDK 1.5 used
@@ -443,13 +446,13 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
 
     public static JavaPlatform generateAgentJavaPlatform(String serverInstanceID) {
-        JavaPlatform platform = IDEUtils.getJavaPlatformByName(ProfilerIDESettings.getInstance().getJavaPlatformForProfiling());
+        JavaPlatform platform = JavaPlatform.getJavaPlatformById(ProfilerIDESettings.getInstance().getJavaPlatformForProfiling());
         JavaPlatform projectPlatform = getServerJavaPlatform(serverInstanceID);
 
         if (platform == null) { // should use the one defined in project
             platform = projectPlatform;
 
-            if ((platform == null) || !MiscUtils.isSupportedJVM(platform.getSystemProperties())) {
+            if (platform == null) {
                 platform = JavaPlatformSelector.getDefault().selectPlatformToUse();
 
                 if (platform == null) {
@@ -511,24 +514,12 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     private static JavaPlatform getJavaPlatformFromAntName(Project project, Properties props) {
         String javaPlatformAntName = props.getProperty("profiler.info.javaPlatform"); // NOI18N
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
 
         if (javaPlatformAntName.equals("default_platform")) {
-            return jpm.getDefaultPlatform();
+            return JavaPlatform.getDefaultPlatform();
         }
 
-        JavaPlatform[] platforms = jpm.getPlatforms(null, new Specification("j2se", null)); //NOI18N
-
-        for (int i = 0; i < platforms.length; i++) {
-            JavaPlatform platform = platforms[i];
-            String antName = platform.getProperties().get("platform.ant.name"); // NOI18N
-
-            if (antName.equals(javaPlatformAntName)) {
-                return platform;
-            }
-        }
-
-        return null;
+        return JavaPlatform.getJavaPlatformById(javaPlatformAntName);
     }
 
     // --- Private methods -------------------------------------------------------------------------------------------------
@@ -542,14 +533,16 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         if (javaPlatformAntName == null) {
             JavaPlatform platform = null;
             J2eePlatform j2eepf = getJ2eePlatform(project); // try to get the J2EE Platform
-
+            String platformId;
+            
             if (j2eepf == null) {
-                platform = JavaPlatformManager.getDefault().getDefaultPlatform(); // no J2EE Platform sepcified; use the IDE default JVM platform
+                platformId = JavaPlatform.getDefaultPlatform().getPlatformId(); // no J2EE Platform sepcified; use the IDE default JVM platform
             } else {
-                platform = j2eepf.getJavaPlatform(); // use the J2EE Platform specified JVM platform
+                Map<String,String> jpprops = j2eepf.getJavaPlatform().getProperties(); // use the J2EE Platform specified JVM platform
+                platformId = jpprops.get("platform.ant.name");
             }
 
-            props.setProperty("profiler.info.javaPlatform", platform.getProperties().get("platform.ant.name")); // set the used platform ant property
+            props.setProperty("profiler.info.javaPlatform", platformId); // set the used platform ant property
         }
     }
 

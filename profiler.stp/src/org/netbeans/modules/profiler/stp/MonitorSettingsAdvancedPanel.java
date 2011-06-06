@@ -44,8 +44,7 @@
 package org.netbeans.modules.profiler.stp;
 
 import javax.swing.event.DocumentEvent;
-import org.netbeans.api.java.platform.JavaPlatform;
-// FIXXX import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.Color;
@@ -450,22 +449,21 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
     }
 
     // --- Private implementation ------------------------------------------------
-    private void updateJavaPlatformCombo(String platformNameToSelect) {
-// FIXXX         
-//        List<JavaPlatform> supportedPlatforms = JavaPlatformSelector.getSupportedPlatforms();
-//        String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
-//        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;
-//
-//        for (int i = 1; i < supportedPlatformNames.length; i++) {
-//            supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();
-//        }
-//
-//        javaPlatformCombo.setModel(new DefaultComboBoxModel(supportedPlatformNames));
-//
-//        if (platformNameToSelect != null) {
-//            javaPlatformCombo.setSelectedItem(platformNameToSelect);
-//        } else {
-//            javaPlatformCombo.setSelectedIndex(0);
-//        }
+    private void updateJavaPlatformCombo(String platformNameToSelect) {        
+        List<JavaPlatform> supportedPlatforms = JavaPlatform.getPlatforms();
+        String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
+        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;
+
+        for (int i = 1; i < supportedPlatformNames.length; i++) {
+            supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();
+        }
+
+        javaPlatformCombo.setModel(new DefaultComboBoxModel(supportedPlatformNames));
+
+        if (platformNameToSelect != null) {
+            javaPlatformCombo.setSelectedItem(platformNameToSelect);
+        } else {
+            javaPlatformCombo.setSelectedIndex(0);
+        }
     }
 }
