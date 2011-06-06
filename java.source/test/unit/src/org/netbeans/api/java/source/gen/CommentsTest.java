@@ -255,10 +255,22 @@ public class CommentsTest extends GeneratorTestBase {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
+            "    \n" +
             "    public void test(int a) {\n" +
             "    }\n\n" +
             "}\n"
             );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    \n" +
+            "    /**\n" +
+            "     * Comentario\n" +
+            "     */\n" +
+            "    public void test(int a) {\n" +
+            "    }\n\n" +
+            "}\n";
         
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -291,8 +303,10 @@ public class CommentsTest extends GeneratorTestBase {
             
         };
         src.runModificationTask(task).commit();
-        System.err.println(TestUtilities.copyFileToString(testFile));
-        assertTrue(TestUtilities.copyFileToString(testFile), TestUtilities.copyFileToString(testFile).contains("Comentario"));
+        
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
 
     public void testAddTwoEndLineCommments() throws Exception {
