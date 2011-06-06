@@ -118,12 +118,12 @@ public class DelegatingVCSTest extends NbTestCase {
         
         Action[] actions = delegate.getGlobalActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
         assertNotNull(actions);
-//        assertEquals(1, actions.length); // broken - see #198145
+        assertEquals(1, actions.length); 
         assertNull(TestAnnotatedVCS.INSTANCE);
         
         actions = delegate.getInitActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
         assertNotNull(actions);
-//        assertEquals(1, actions.length); // broken - see #198145
+        assertEquals(1, actions.length); 
         assertNull(TestAnnotatedVCS.INSTANCE);
         
         delegate.getDelegate(); // awake

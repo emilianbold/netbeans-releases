@@ -180,12 +180,6 @@ import org.openide.util.RequestProcessor;
                 executionEnvironment, files, remoteControllerProcess, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
-        // A workaround for #196453 - Can not build remote project: protocol error
-        int sleep = Integer.getInteger("rfs.instable.sleep", 200); // NOI18N
-        if (sleep > 0) {
-            Thread.sleep(sleep);
-        }
-
         if (!localController.init()) {
             remoteControllerProcess.destroy();
             return false;
