@@ -917,6 +917,14 @@ public class JarFileSystem extends AbstractFileSystem {
                 }
             };
     }
+    
+    @Override
+    final void waitRefreshed() {
+        RequestProcessor.Task t = watcherTask;
+        if (t != null) {
+            t.waitFinished();
+        }
+    }
 
     /** Getter for entry.
     */
