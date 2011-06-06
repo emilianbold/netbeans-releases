@@ -152,6 +152,9 @@ public class AnnotateAction extends GitAction {
     }
 
     private static AnnotateLine [] toAnnotateLines (GitBlameResult result) {
+        if (result == null) {
+            return new AnnotateLine[0];
+        }
         List<AnnotateLine> lines = new ArrayList<AnnotateLine>(result.getLineCount());
         for (int i = 0; i < result.getLineCount(); ++i) {
             lines.add(new AnnotateLine(result.getLineDetails(i), i + 1));
