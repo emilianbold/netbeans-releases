@@ -96,12 +96,12 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     }
     
     @Override
-    public int getStartOffset() {
+    final public int getStartOffset() {
         return PositionManager.getOffset(fileUID, startPosition);
     }
     
     @Override
-    public int getEndOffset() {
+    final public int getEndOffset() {
         return endPosition != 0 ? PositionManager.getOffset(fileUID, endPosition) : PositionManager.getOffset(fileUID, startPosition);
     }
 

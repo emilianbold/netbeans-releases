@@ -56,7 +56,7 @@ public class AntiLoop {
     
     private Set<Object> set;
 
-    private static final int MAX_INHERITANCE_DEPTH = 15;
+    private static final int MAX_INHERITANCE_DEPTH = 25;
 
     public AntiLoop() {
         set = new HashSet<Object>();
