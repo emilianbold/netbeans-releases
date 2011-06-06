@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -63,4 +64,6 @@ public interface SetupProvider {
      * in the latter case, InstalledFileLocator will be used to find the file
      */
     public Map<String, File> getBinaryFiles(ExecutionEnvironment env);
+    
+    public void failed(Collection<File> files, StringBuilder describeProblem);
 }
