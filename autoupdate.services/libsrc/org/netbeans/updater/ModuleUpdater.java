@@ -429,7 +429,7 @@ public final class ModuleUpdater extends Thread {
                                     InputStream is = new FileInputStream(external);
                                     try {
                                         spec.close();
-                                        FileOutputStream os = new FileOutputStream(downloaded);
+                                        OutputStream os = context.createOS(downloaded);
                                         try {
                                             bytesRead = copyStreams(is, os, -1);
                                         } finally {
