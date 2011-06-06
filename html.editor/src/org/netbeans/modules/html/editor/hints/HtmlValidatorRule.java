@@ -76,26 +76,10 @@ public abstract class HtmlValidatorRule extends HtmlRule {
 
             itr.remove(); //remove the processed element so the other rules won't see it
 
-            //tweak the error position if close to embedding boundary
-            int astFrom = e.getStartPosition();
-            int astTo = e.getEndPosition();
-
-            int from = snapshot.getOriginalOffset(astFrom);
-            int to = snapshot.getOriginalOffset(astTo);
-
-            if (from == -1 && to == -1) {
-                //completely unknown position, give up
-                continue;
-            } else if (from == -1 && to != -1) {
-                from = to;
-            } else if (from != -1 && to == -1) {
-                to = from;
-            }
-
             Hint h = new Hint(this,
                     getModifiedErrorMessage(e.getDescription()),
                     e.getFile(),
-                    new OffsetRange(from, to),
+                    EmbeddingUtil.getErrorOffsetRange(e, snapshot),
                     context.getDefaultFixes(),
                     20);
 

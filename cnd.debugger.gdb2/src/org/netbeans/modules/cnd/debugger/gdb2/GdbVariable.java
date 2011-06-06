@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.ModelChangeDelegator;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.VariableModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.WatchModel;
+import org.openide.util.Exceptions;
 
 class GdbVariable extends Variable {
     protected final GdbDebuggerImpl debugger;
@@ -175,14 +176,13 @@ class GdbVariable extends Variable {
         if (waitingForDebugger)
             return new Variable[0];
                 
-	setExpanded(true);
         waitingForDebugger = true;           // reset in setChildren()
         Runnable r = new Runnable() {
            public void run() {
                try {
 		   setChildren();
                } catch (Exception e) {
-                   e.printStackTrace();
+                   Exceptions.printStackTrace(e);
                }
            }
         };
