@@ -75,7 +75,9 @@ public class QmakeProjectWriter {
     /*
      * Project file name is constructed as prefix + confName + suffix.
      */
-    private static final String PROJECT_PREFIX = MakeConfiguration.NBPROJECT_FOLDER + File.separator + "qt-"; // NOI18N
+    
+    // Need to use unix-style separator, FileUtil.createData is unable to create folders otherwise
+    private static final String PROJECT_PREFIX = MakeConfiguration.NBPROJECT_FOLDER + "/qt-"; // NOI18N
     private static final String PROJECT_SUFFIX = ".pro"; // NOI18N
 
     /**
