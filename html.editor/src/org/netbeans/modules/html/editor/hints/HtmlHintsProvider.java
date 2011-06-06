@@ -195,7 +195,35 @@ public class HtmlHintsProvider implements HintsProvider {
         }
         
         HtmlRuleContext htmlRuleContext = new HtmlRuleContext(result, saresult, defaultFixes);
-
+        
+        //filter out fatal errors and remove them from the html validator hints processing
+        Collection<Error> fatalErrors = new ArrayList<Error>();
+        for(Error e : htmlRuleContext.getLeftDiagnostics()) {
+            if(e.getSeverity() == Severity.FATAL) {
+                fatalErrors.add(e);
+            }
+        }
+        for(Error e : fatalErrors) {
+            //remove the fatal error from the list of errors for further processing
+            htmlRuleContext.getLeftDiagnostics().remove(e);
+            
+            String message = new StringBuilder()
+                    .append(e.getDescription())
+                    .append('\n')
+                    .append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_FatalHtmlErrorAddendum"))
+                    .toString();
+            //add a special hint for the fatal error
+            Hint fatalErrorHint = new Hint(new FatalHtmlRule(),
+                    message,
+                    fo,
+                    EmbeddingUtil.getErrorOffsetRange(e, snapshot),
+                    Collections.<HintFix>emptyList(),
+                    5);//looks like lower number o the priority means higher priority
+            
+            hints.add(fatalErrorHint);
+        }
+        
+        //now process the non-fatal errors
         if (isErrorCheckingEnabled(saresult)) {
             
             Map<?,List<? extends AstRule>> allHints = manager.getHints(false, context);
