@@ -112,7 +112,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     private boolean exclusivesCompleted = false;
     /** possibly stacktrace of creator */
     private Throwable createdBy;
-
+    
+    private final Collection<WindowSystemListener> listeners = new ArrayList<WindowSystemListener>(10);
+    
     /** Default constructor. Don't use directly, use getDefault()
      * instead.
      */
@@ -1714,6 +1716,46 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return openedTcs.toArray(new TopComponent[openedTcs.size()]);
         }
         return super.getOpenedTopComponents(mode);
+    }
+
+    @Override
+    public void addWindowSystemListener( WindowSystemListener listener ) {
+        synchronized( listeners ) {
+            listeners.add( listener );
+        }
+    }
+
+    @Override
+    public void removeWindowSystemListener( WindowSystemListener listener ) {
+        synchronized( listeners ) {
+            listeners.remove( listener );
+        }
+    }
+    
+    void fireEvent( WindowSystemEventType type ) {
+        assertEventDispatchThread();
+        
+        Collection<WindowSystemListener> copy = null;
+        synchronized( listeners ) {
+            copy = new ArrayList<WindowSystemListener>( listeners );
+        }
+        WindowSystemEvent e = new WindowSystemEvent( this );
+        for( WindowSystemListener listener : copy ) {
+            switch( type ) {
+                case beforeLoad:
+                    listener.beforeLoad( e );
+                    break;
+                case beforeSave:
+                    listener.beforeSave( e );
+                    break;
+                case afterLoad:
+                    listener.afterLoad( e );
+                    break;
+                case afterSave:
+                    listener.afterSave( e );
+                    break;
+            }
+        }
     }
 
     public boolean isHeavyWeightShowing() {
