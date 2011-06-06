@@ -302,6 +302,7 @@ public class ImportProject implements PropertyChangeListener {
             buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
+        extConf.getProfile().setRunDirectory(workingDirRel);        
         // Include directories
         if (includeDirectories != null && includeDirectories.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(includeDirectories, ";"); // NOI18N
