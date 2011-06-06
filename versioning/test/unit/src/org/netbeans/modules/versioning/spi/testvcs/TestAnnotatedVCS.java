@@ -113,7 +113,7 @@ public class TestAnnotatedVCS extends VersioningSystem {
     
     @ActionID(id = "vcs.delegatetest.init", category = "TestVCS")
     @ActionRegistration(displayName = "InitAction", popupText="InitActionPopup", menuText="InitActionMenu")
-    @ActionReferences({@ActionReference(path="Versioning/TestVCS/Unversioned")})
+    @ActionReferences({@ActionReference(path="Versioning/TestVCS/Actions/Unversioned")})
     public static class InitAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) { }
@@ -121,7 +121,7 @@ public class TestAnnotatedVCS extends VersioningSystem {
     
     @ActionID(id = "vcs.delegatetest.global", category = "TestVCS")
     @ActionRegistration(displayName = "GobalAction", popupText="GlobalActionPopup", menuText="GlobalActionMenu")
-    @ActionReferences({@ActionReference(path="Versioning/TestVCS/Global")})
+    @ActionReferences({@ActionReference(path="Versioning/TestVCS/Actions/Global")})
     public static class GlobalAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) { }
