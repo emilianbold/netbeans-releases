@@ -458,14 +458,43 @@ class RfsLocalController extends NamedRunnable {
         }
     }
 
+    private boolean checkVersion(char version) throws IOException {
+        String versionsString = requestReader.readLine();
+        if (versionsString == null) {
+            return false;
+        }
+        String versionsPattern = "VERSIONS "; // NOI18N
+        if (!versionsString.startsWith(versionsPattern)) {
+            if (err != null) {
+                err.printf("Protocol error, expected %s, got %s\n", versionsPattern, versionsString); //NOI18N
+            }
+            return false;
+        }
+        String[] versionsArray = versionsString.substring(versionsPattern.length()).split(" "); // NOI18N
+        for (String v : versionsArray) {
+            if (v.length() != 1) {
+                if (err != null) {
+                    err.printf("Protocol error: incorrect version format: %s\n", versionsString); //NOI18N
+                }
+                return false;
+            }
+            if (v.charAt(0) == version) {
+                return true;
+            }
+        }
+        return true;
+    }
+    
     /**
      * Feeds remote controller with the list of files and their lengths
      * @return true in the case of success, otherwise false
      * NB: in the case false is returned, no shutdown will be called
      */
-    boolean init() {
-
-        char version = USE_TIMESTAMPS ? '2' : '1';
+    boolean init() throws IOException {
+        char version = USE_TIMESTAMPS ? '4' : '3';
+        if (!checkVersion(version)) {
+            return false;
+        }        
         logger.log(Level.FINE, "Initialization. Version=%c", version);
         if (CHECK_ALIVE && !ProcessUtils.isAlive(remoteControllerProcess)) { // fixup for remote tests unstable failure (caused by jsch issue)
             if (err != null) {
