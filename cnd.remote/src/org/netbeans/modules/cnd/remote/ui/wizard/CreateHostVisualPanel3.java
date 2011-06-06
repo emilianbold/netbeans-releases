@@ -51,9 +51,12 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.text.html.HTMLEditorKit;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.openide.util.NbBundle;
@@ -112,13 +115,22 @@ import org.openide.util.NbBundle;
             }
         });
         List<CompilerSet> sets2 = compilerSetManager.getCompilerSets();
-        StringBuilder st = new StringBuilder();
+        final String html = "<html>";
+        StringBuilder st = new StringBuilder(html);
         for (CompilerSet set : sets2) {
-            if (st.length() > 0) {
-                st.append('\n'); //NOI18N
+            if (st.length() > html.length()) {
+                st.append("<br>\n"); //NOI18N
             }
             st.append(set.getName()).append(" (").append(set.getDirectory()).append(")");//NOI18N
         }
+        RemoteServerRecord record = (RemoteServerRecord) ServerList.get(data.getExecutionEnvironment());
+        if (record != null && record.hasProblems()) {
+            st.append("<br><br>\n");
+            st.append("<font color=red>");
+            st.append(record.getProblems().replace("\n", "<br>\n"));
+        }
+        st.append("</html>");
+        jTextArea1.setEditorKit(new HTMLEditorKit());
         jTextArea1.setText(st.toString());
 
         SyncUtils.arrangeComboBox(cbSyncMode, data.getExecutionEnvironment());
@@ -151,7 +163,7 @@ import org.openide.util.NbBundle;
         jLabel3 = new javax.swing.JLabel();
         cbDefaultToolchain = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jTextArea1 = new javax.swing.JEditorPane();
         labelPlatformValue = new javax.swing.JLabel();
         labelHostnameValue = new javax.swing.JLabel();
         labelUsernameValue = new javax.swing.JLabel();
@@ -179,9 +191,7 @@ import org.openide.util.NbBundle;
         jLabel3.setLabelFor(cbDefaultToolchain);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel3.class, "CreateHostVisualPanel3.jLabel3.text")); // NOI18N
 
-        jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
-        jTextArea1.setRows(1);
         jTextArea1.setOpaque(false);
         jScrollPane1.setViewportView(jTextArea1);
 
@@ -201,7 +211,7 @@ import org.openide.util.NbBundle;
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textHostDisplayName, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+                .addComponent(textHostDisplayName, javax.swing.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(labelPlatform)
@@ -222,10 +232,10 @@ import org.openide.util.NbBundle;
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbSyncMode, 0, 424, Short.MAX_VALUE)
-                    .addComponent(cbDefaultToolchain, 0, 424, Short.MAX_VALUE)))
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                    .addComponent(cbSyncMode, 0, 376, Short.MAX_VALUE)
+                    .addComponent(cbDefaultToolchain, 0, 376, Short.MAX_VALUE)))
             .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -250,7 +260,7 @@ import org.openide.util.NbBundle;
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -272,7 +282,7 @@ import org.openide.util.NbBundle;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JEditorPane jTextArea1;
     private javax.swing.JLabel labelHostname;
     private javax.swing.JLabel labelHostnameValue;
     private javax.swing.JLabel labelPlatform;

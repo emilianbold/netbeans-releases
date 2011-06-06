@@ -162,13 +162,13 @@ public class RemoteServerSetup {
         if (! problematic.isEmpty()) {
             // construct error message
             if (!failed) {
-                StringBuilder message = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment));
+                StringBuilder message = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Start", executionEnvironment));
                 StringBuilder consequences = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Consequences"));
                 for (Map.Entry<SetupProvider, List<BinarySetupMapEntry>> tmp : problematic.entrySet()) {
                     List<File> files = new ArrayList<File>();
                     for (BinarySetupMapEntry entry : tmp.getValue()) {
                         files.add(entry.localFile);
-                        message.append('\n').append(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", 
+                        message.append('\n').append(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Line", 
                                 entry.localFile.getName(), CndPathUtilitities.getDirName(entry.remotePath)));
                     }
                     consequences.append('\n');
