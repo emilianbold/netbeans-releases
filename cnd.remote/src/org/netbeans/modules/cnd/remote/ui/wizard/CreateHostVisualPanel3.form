@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -29,7 +29,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="textHostDisplayName" pref="442" max="32767" attributes="0"/>
+              <Component id="textHostDisplayName" pref="434" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
@@ -56,12 +56,12 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cbSyncMode" pref="424" max="32767" attributes="0"/>
-                  <Component id="cbDefaultToolchain" alignment="0" pref="424" max="32767" attributes="0"/>
+                  <Component id="cbSyncMode" pref="376" max="32767" attributes="0"/>
+                  <Component id="cbDefaultToolchain" alignment="0" pref="376" max="32767" attributes="0"/>
               </Group>
           </Group>
-          <Component id="jScrollPane1" alignment="0" pref="534" max="32767" attributes="0"/>
           <Component id="jSeparator1" alignment="0" pref="534" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" pref="534" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -91,7 +91,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="170" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="169" max="32767" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -198,11 +198,9 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextArea" name="jTextArea1">
+        <Component class="javax.swing.JEditorPane" name="jTextArea1">
           <Properties>
-            <Property name="columns" type="int" value="20"/>
             <Property name="editable" type="boolean" value="false"/>
-            <Property name="rows" type="int" value="1"/>
             <Property name="opaque" type="boolean" value="false"/>
           </Properties>
         </Component>

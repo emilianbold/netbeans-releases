@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -132,6 +132,13 @@ public class HostValidatorImpl implements HostValidator {
             };
             final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
             csm.initialize(false, false, reporter);
+            if (record.hasProblems()) {
+                try {
+                    reporter.append(record.getProblems());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
             runOnFinish = new Runnable() {
 
                 @Override
