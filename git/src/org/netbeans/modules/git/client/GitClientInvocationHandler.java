@@ -77,6 +77,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getBranches",  //NOI18N
             "getCommonAncestor", //NOI18N
             "getConflicts", //NOI18N
+            "getPreviousRevision", //NOI18N
             "getStatus",  //NOI18N
             "getTags", //NOI18N
             "getRemote", //NOI18N
@@ -120,6 +121,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
             "getBranches",  //NOI18N
             "getCommonAncestor", //NOI18N
             "getConflicts", //NOI18N
+            "getPreviousRevision", //NOI18N
             "getStatus",  //NOI18N
             "getRemote", //NOI18N
             "getRemotes", //NOI18N

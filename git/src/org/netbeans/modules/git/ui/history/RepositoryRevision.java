@@ -65,7 +65,7 @@ public class RepositoryRevision {
      * List of events associated with the revision.
      */ 
     private final List<Event> events = new ArrayList<Event>(1);
-    private String commonAncestor;
+    private final Map<File, String> commonAncestors = new HashMap<File, String>();
     private final Set<GitTag> tags;
     private final Set<GitBranch> branches;
 
@@ -119,19 +119,19 @@ public class RepositoryRevision {
         return text.toString();
     }
 
-    String getAncestorCommit (GitClient client, ProgressMonitor pm) throws GitException {
-        if (commonAncestor == null) {
+    String getAncestorCommit (File file, GitClient client, ProgressMonitor pm) throws GitException {
+        String ancestorCommit = commonAncestors.get(file);
+        if (ancestorCommit == null && !commonAncestors.containsKey(file)) {
+            GitRevisionInfo info = null;
             if (getLog().getParents().length == 1) {
-                commonAncestor = getLog().getParents()[0];
+                info = client.getPreviousRevision(file, getLog().getRevision(), pm);
             } else if (getLog().getParents().length > 1) {
-                GitRevisionInfo info;
                 info = client.getCommonAncestor(getLog().getParents(), pm);
-                if (info != null) {
-                    commonAncestor = info.getRevision();
-                }
             }
+            ancestorCommit = info == null ? null : info.getRevision();
+            commonAncestors.put(file, ancestorCommit);
         }
-        return commonAncestor;
+        return ancestorCommit;
     }
 
     public GitBranch[] getBranches () {

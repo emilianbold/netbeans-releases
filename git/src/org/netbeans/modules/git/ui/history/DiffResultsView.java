@@ -363,15 +363,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             if (revision1 == null) {
-                String[] parents = header.getLogInfoHeader().getLog().getParents();
-                if (parents.length == 1) {
-                    revision1 = parents[0];
-                } else {
-                    try {
-                        revision1 = header.getLogInfoHeader().getAncestorCommit(getClient(), NULL_PROGRESS_MONITOR);
-                    } catch (GitException ex) {
-                        LOG.log(Level.INFO, null, ex);
-                    }
+                try {
+                    revision1 = header.getLogInfoHeader().getAncestorCommit(header.getFile(), getClient(), NULL_PROGRESS_MONITOR);
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, null, ex);
                 }
             }
             if (isCanceled()) {
