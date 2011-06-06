@@ -426,7 +426,7 @@ Hg ID:    ${hg.id}
     <touch file="${netbeans.dest.dir}/${one.cluster.name}.built"/>
   </target>
 
-  <target name="zip-cluster-config" depends="init,-define-cluster-path">
+  <target name="zip-cluster-config" depends="init">
     <property name="zip.dir" location="."/>
     <mkdir dir="${zip.dir}"/>
     <property name="zip.name" location="${zip.dir}/NetBeans-${buildnum}-${cluster.config}.zip"/>

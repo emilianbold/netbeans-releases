@@ -68,7 +68,7 @@ public class CacheIndexTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();
-        workDir = new File(System.getProperty("work.dir"));
+        workDir = getWorkDir();
         wc = new File(workDir, getName() + "_wc");
     }
     

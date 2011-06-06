@@ -57,6 +57,7 @@ import org.netbeans.libs.git.jgit.commands.ExportCommitTest;
 import org.netbeans.libs.git.jgit.commands.ExportDiffTest;
 import org.netbeans.libs.git.jgit.commands.FetchTest;
 import org.netbeans.libs.git.jgit.commands.GetCommonAncestorTest;
+import org.netbeans.libs.git.jgit.commands.GetPreviousRevisionTest;
 import org.netbeans.libs.git.jgit.commands.GetRemotesTest;
 import org.netbeans.libs.git.jgit.commands.GetUserTest;
 import org.netbeans.libs.git.jgit.commands.IgnoreTest;
@@ -99,6 +100,7 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(ExportDiffTest.class);
         suite.addTestSuite(FetchTest.class);
         suite.addTestSuite(GetCommonAncestorTest.class);
+        suite.addTestSuite(GetPreviousRevisionTest.class);
         suite.addTestSuite(GetRemotesTest.class);
         suite.addTestSuite(GetUserTest.class);
         suite.addTestSuite(IgnoreTest.class);

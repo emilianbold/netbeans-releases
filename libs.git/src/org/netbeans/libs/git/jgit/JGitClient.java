@@ -92,6 +92,7 @@ import org.netbeans.libs.git.jgit.commands.DeleteTagCommand;
 import org.netbeans.libs.git.jgit.commands.ExportCommitCommand;
 import org.netbeans.libs.git.jgit.commands.ExportDiffCommand;
 import org.netbeans.libs.git.jgit.commands.FetchCommand;
+import org.netbeans.libs.git.jgit.commands.GetPreviousCommitCommand;
 import org.netbeans.libs.git.jgit.commands.GetRemotesCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
@@ -302,6 +303,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     @Override
     public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException {
         GetCommonAncestorCommand cmd = new GetCommonAncestorCommand(gitRepository.getRepository(), revisions, monitor);
+        cmd.execute();
+        return cmd.getRevision();
+    }
+
+    @Override
+    public GitRevisionInfo getPreviousRevision (File file, String revision, ProgressMonitor monitor) throws GitException {
+        GetPreviousCommitCommand cmd = new GetPreviousCommitCommand(gitRepository.getRepository(), file, revision, monitor);
         cmd.execute();
         return cmd.getRevision();
     }

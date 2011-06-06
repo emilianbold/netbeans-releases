@@ -276,6 +276,16 @@ public interface GitClient {
     public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException;
 
     /**
+     * Returns an ancestor revision that modified a given file in any way
+     * @param file limit the result only on revision that actually modified somehow the file
+     * @param revision
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitRevisionInfo getPreviousRevision (File file, String revision, ProgressMonitor monitor) throws GitException;
+
+    /**
      * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
      * @param roots 
      * @param monitor

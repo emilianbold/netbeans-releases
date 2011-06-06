@@ -164,6 +164,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.tax.io</package>
                 <package>org.netbeans.tax.decl</package>
                 <package>org.netbeans.tax.event</package>
+                <package>org.netbeans.tax.spec</package>
                 <package>org.netbeans.modules.xml.tax.cookies</package>
                 <package>org.netbeans.modules.xml.tax.parser</package>
             </friend-packages>

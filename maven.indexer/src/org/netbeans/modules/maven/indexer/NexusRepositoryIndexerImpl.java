@@ -68,7 +68,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -137,14 +136,11 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -303,7 +299,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (info.isLocal()) { // #164593
                     creators.add(new NbIndexCreator());
                 } else {
-                    creators.add(new NotifyingIndexCreator(info));
+                    creators.add(new NotifyingIndexCreator());
                 }
                 try {
                     indexer.addIndexingContextForced(
@@ -513,7 +509,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         }
                     }
                     if (nic != null) {
-                        nic.start();
+                        nic.start(listener);
                     }
                     try {
                         remoteIndexUpdater.fetchAndUpdateIndex(iur);
@@ -550,38 +546,16 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
     /** Just tracks what is being unpacked after a remote index has been downloaded. */
     private static final class NotifyingIndexCreator implements IndexCreator {
-        private final RepositoryInfo beingIndexed;
-        private ProgressHandle handle;
-        private final AtomicBoolean canceled = new AtomicBoolean();
-        NotifyingIndexCreator(RepositoryInfo info) {
-            beingIndexed = info;
-        }
-        private void start() {
-            handle = null;
-            canceled.set(false);
+        private RemoteIndexTransferListener listener;
+        NotifyingIndexCreator() {}
+        private void start(RemoteIndexTransferListener listener) {
+            this.listener = listener;
         }
         private void end() {
-            if (handle != null) {
-                handle.finish();
-                handle = null;
-            }
-            canceled.set(false);
+            listener = null;
         }
         public @Override void updateDocument(ArtifactInfo artifactInfo, Document document) {
-            if (canceled.get()) {
-                throw new Cancellation();
-            }
-            if (handle == null) {
-                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(NexusRepositoryIndexerImpl.class, "LBL_unpacking", beingIndexed.getName()), new Cancellable() {                    {
-                        Cancellation.register(this);
-                    }
-                    public @Override boolean cancel() {
-                        return canceled.compareAndSet(false, true);
-                    }
-                });
-                handle.start();
-            }
-            handle.progress(artifactInfo.groupId + ':' + artifactInfo.artifactId);
+            listener.unpackingProgress(artifactInfo.groupId + ':' + artifactInfo.artifactId);
         }
         public @Override Collection<IndexerField> getIndexerFields() {
             return Collections.emptySet();

@@ -147,9 +147,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <condition property="nbm.distribution" value="${dist.base}/${nbm}"> <!-- compatibility -->
             <isset property="dist.base"/>
         </condition>
-        <!-- good for cluster.config=full; others are in http://bits.netbeans.org/dev/nightly/latest/uc2 -->
-        <!-- could also use http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/nbms -->
-        <property name="dist.base.structured" value="http://bits.netbeans.org/dev/nightly/latest/uc"/>
+        <property name="dist.base.structured" value="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/nbms"/>
         <property name="nbm.distribution" value="${dist.base.structured}/${cluster.dir}/${nbm}"/>
         <property name="nbm.module.author" value=""/>
         <property name="nbm.release.date" value=""/>
