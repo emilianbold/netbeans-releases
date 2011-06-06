@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,22 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.csl.api;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Types of severities (generally for Errors)
- * @author Tor Norbye
+ *
+ * @author marekfukala
  */
-public enum Severity {
-    /** Just an informational hint */
-    INFO,
-    /** The error is only a warning; may be correct, may not be, but user should be alerted */
-    WARNING,
-    /** The error is a problem that must be dealt with */
-    ERROR,
-    /** The fatal error is a problem that usually affects the further file analysis and
-     must be inevitably fixed */    
-    FATAL;
+public class EmbeddingUtil {
+
+    /** tweak the error position if close to embedding boundary */
+    public static OffsetRange getErrorOffsetRange(Error e, Snapshot snapshot) {
+        int astFrom = e.getStartPosition();
+        int astTo = e.getEndPosition();
+
+        int from = snapshot.getOriginalOffset(astFrom);
+        int to = snapshot.getOriginalOffset(astTo);
+
+        if (from == -1 && to == -1) {
+            //completely unknown position, give up
+            return OffsetRange.NONE;
+        } else if (from == -1 && to != -1) {
+            from = to;
+        } else if (from != -1 && to == -1) {
+            to = from;
+        }
+        return new OffsetRange(from, to);
+    }
 }
