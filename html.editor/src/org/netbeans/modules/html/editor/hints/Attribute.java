@@ -64,11 +64,13 @@ public class Attribute extends PatternRule {
         "End of file reached when inside an attribute value. Ignoring tag.",
         "End of file occurred in an attribute name. Ignoring tag.",
         "Attribute without value",
+        
         //HtmlAttributes
         "Attribute .*? is not serializable as XML 1.0",
         
+        //source?
         "Bad value .*? for attribute .*? on element",
-            
+        "Attribute name .*? associated with an element type .*? must be followed by the ' = ' character."
         
     }; //NOI18N
     

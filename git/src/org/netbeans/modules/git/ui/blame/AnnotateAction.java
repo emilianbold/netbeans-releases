@@ -113,7 +113,7 @@ public class AnnotateAction extends GitAction {
         }
     }
 
-    private void showAnnotations (JEditorPane currentPane, final File file, final String revision) {
+    public void showAnnotations (JEditorPane currentPane, final File file, final String revision) {
         if (currentPane == null || file == null) {
             return;
         }

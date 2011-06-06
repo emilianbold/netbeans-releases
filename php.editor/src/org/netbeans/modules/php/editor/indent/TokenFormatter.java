@@ -1249,7 +1249,7 @@ public class TokenFormatter {
 
                                     int caretPosition = caretOffset + delta;
                                     if (caretPosition == formatContext.endOffset() && oldText.length() > 0 && newText.length() > 0 
-                                            && oldText.charAt(0) == ' ' && newText.charAt(0) != ' ') {
+                                            && oldText.charAt(0) == ' ' && newText.charAt(0) != ' ' && 0 != countOfNewLines(oldText)) {
 //                                        int positionOldText = caretPosition - realOffset - 1;
 //                                        if (positionOldText > -1 && positionOldText < oldText.length()
 //                                                && oldText.charAt(positionOldText) == ' '

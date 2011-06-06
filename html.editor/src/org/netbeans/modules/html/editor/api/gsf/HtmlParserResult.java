@@ -272,9 +272,11 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             case ProblemDescription.INFORMATION:
                 return Severity.INFO;
             case ProblemDescription.WARNING:
-            case ProblemDescription.ERROR:
-            case ProblemDescription.FATAL:
                 return Severity.WARNING;
+            case ProblemDescription.ERROR:
+                return Severity.ERROR;
+            case ProblemDescription.FATAL:
+                return Severity.FATAL;
             case ProblemDescription.INTERNAL_ERROR:
                 return Severity.INFO;
             default:

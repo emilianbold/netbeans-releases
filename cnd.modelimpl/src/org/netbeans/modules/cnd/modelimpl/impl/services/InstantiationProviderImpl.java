@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -188,10 +189,14 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
     
     public CsmObject instantiate(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return instantiate(template, mapping, true);
+    }
+    
+    public CsmObject instantiate(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, boolean specialize) {
         CsmObject result = template;
         if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
             result = Instantiation.create(template, mapping);
-            if (CsmKindUtilities.isClassifier(result)) {
+            if (specialize && CsmKindUtilities.isClassifier(result)) {
                 CsmClassifier specialization = specialize((CsmClassifier) result);
                 if (CsmKindUtilities.isTemplate(specialization)) {
                     result = (CsmTemplate) specialization;
@@ -479,39 +484,44 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     List<CsmSpecializationParameter> specParams = specialization.getSpecializationParameters();
                     int match = 0;
                     if (specParams.size() == paramsSize) {
-                        for (int i = 0; i < paramsSize; i++) {
+                        for (int i = 0; i < paramsSize - 1; i++) {
                             CsmSpecializationParameter specParam1 = specParams.get(i);
                             CsmSpecializationParameter param1 = params.get(i);
-                            for (int j = i + 1; j < paramsSize; j++) {
+//                            for (int j = i + 1; j < paramsSize; j++) {
+                            int j = i + 1;
                                 CsmSpecializationParameter specParam2 = specParams.get(j);
                                 CsmSpecializationParameter param2 = params.get(j);
                                 if (specParam1.getText().toString().equals(specParam2.getText().toString())
                                         && param1.getText().toString().equals(param2.getText().toString())) {
                                     match += 1;
                                 }
-                                // it works but does it too slow
-//                                if(specParam1.getText().toString().equals(specParam2.getText().toString()) &&
-//                                        CsmKindUtilities.isTypeBasedSpecalizationParameter(param1) &&
-//                                        CsmKindUtilities.isTypeBasedSpecalizationParameter(param2)) {
-//                                    CsmTypeBasedSpecializationParameter tbp1 = (CsmTypeBasedSpecializationParameter) param1;
-//                                    CsmType type1 = tbp1.getType();
-//                                    if(CsmKindUtilities.isInstantiation(cls)) {
-//                                        type1 = Instantiation.createType(tbp1.getType(), (Instantiation)cls);
-//                                    }
-//                                    CsmClassifier tbsp1Cls = getClassifier(type1, resolver);
-//                                    if (tbsp1Cls != null) {
-//                                        CsmTypeBasedSpecializationParameter tbp2 = (CsmTypeBasedSpecializationParameter) param2;
-//                                        CsmType type2 = tbp2.getType();
-//                                        if(CsmKindUtilities.isInstantiation(cls)) {
-//                                            type2 = Instantiation.createType(tbp2.getType(), (Instantiation)cls);
-//                                        }
-//                                        CsmClassifier tbsp2Cls = getClassifier(type2, resolver);
-//                                        if (tbsp1Cls.getQualifiedName().toString().equals(tbsp2Cls.getQualifiedName().toString())) {
-//                                            match += 1;
-//                                        }
-//                                    }
-//                                }
-                            }
+                                if(TraceFlags.EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING) {
+                                    // it works but does it too slow
+                                    if(specParam1.getText().toString().equals(specParam2.getText().toString()) &&
+                                            CsmKindUtilities.isTypeBasedSpecalizationParameter(param1) &&
+                                            CsmKindUtilities.isTypeBasedSpecalizationParameter(param2)) {
+                                        CsmTypeBasedSpecializationParameter tbp1 = (CsmTypeBasedSpecializationParameter) param1;
+                                        CsmType type1 = tbp1.getType();
+                                        if(CsmKindUtilities.isInstantiation(cls)) {
+                                            type1 = Instantiation.createType(tbp1.getType(), (Instantiation)cls);
+                                        }
+                                        CsmClassifier tbsp1Cls = getClassifier(type1);
+                                        if (tbsp1Cls != null) {
+                                            CsmTypeBasedSpecializationParameter tbp2 = (CsmTypeBasedSpecializationParameter) param2;
+                                            CsmType type2 = tbp2.getType();
+                                            if(CsmKindUtilities.isInstantiation(cls)) {
+                                                type2 = Instantiation.createType(tbp2.getType(), (Instantiation)cls);
+                                            }
+                                            CsmClassifier tbsp2Cls = getClassifier(type2);
+                                            if(tbsp2Cls != null) {
+                                                if (tbsp1Cls.getQualifiedName().toString().equals(tbsp2Cls.getQualifiedName().toString())) {
+                                                    match += 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+//                            }
                         }
                         for (int i = 0; i < paramsSize; i++) {
                             CsmSpecializationParameter specParam = specParams.get(i);

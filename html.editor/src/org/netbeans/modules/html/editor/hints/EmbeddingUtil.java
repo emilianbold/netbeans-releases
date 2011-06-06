@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.cnd.modelutil;
-
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Analog of Set<CsmClass> used for anti loop checks
- * @author Vladimir Kvashin
+ *
+ * @author marekfukala
  */
-public class AntiLoop {
-    
-    private Set<Object> set;
+public class EmbeddingUtil {
 
-    private static final int MAX_INHERITANCE_DEPTH = 25;
+    /** tweak the error position if close to embedding boundary */
+    public static OffsetRange getErrorOffsetRange(Error e, Snapshot snapshot) {
+        int astFrom = e.getStartPosition();
+        int astTo = e.getEndPosition();
 
-    public AntiLoop() {
-        set = new HashSet<Object>();
-    }
-    
-    public AntiLoop(int capacity) {
-        set = new HashSet<Object>(capacity);
-    }
-    
-    
-    public boolean add(CsmClassifier cls) {
-        if (isRecursion(cls)) {
-            return false;
+        int from = snapshot.getOriginalOffset(astFrom);
+        int to = snapshot.getOriginalOffset(astTo);
+
+        if (from == -1 && to == -1) {
+            //completely unknown position, give up
+            return OffsetRange.NONE;
+        } else if (from == -1 && to != -1) {
+            from = to;
+        } else if (from != -1 && to == -1) {
+            to = from;
         }
-        return set.add(cls);
-    }
-
-    public boolean contains(CsmClassifier cls) {
-        if (isRecursion(cls)) {
-            return true;
-        }
-        return set.contains(cls);
-    }
-
-    private static boolean isRecursion(CsmClassifier cls) {
-        if(CsmKindUtilities.isInstantiation(cls)) {
-            int instLevel = MAX_INHERITANCE_DEPTH;
-            CsmInstantiation inst = (CsmInstantiation) cls;
-            while(instLevel > 0 && CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                instLevel--;
-            }
-            if(instLevel <= 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return set.toString();
+        return new OffsetRange(from, to);
     }
 }
