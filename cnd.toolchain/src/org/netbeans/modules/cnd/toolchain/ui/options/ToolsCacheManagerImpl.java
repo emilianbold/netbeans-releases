@@ -249,6 +249,7 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
                     }
                 }
 
+                ServerList.save();
                 saveCompileSetManagers(liveServers);
             }
             @Override
