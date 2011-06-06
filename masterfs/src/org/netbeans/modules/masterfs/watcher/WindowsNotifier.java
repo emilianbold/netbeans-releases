@@ -295,7 +295,7 @@ public class WindowsNotifier extends Notifier<Void> {
 
         if (path.length() < 3 ) throw new IOException("wrong path: " + path);
 
-        String root = path.substring(0, 3);
+        String root = path.substring(0, 3).replace('/', '\\');
         if (root.charAt(1) != ':' || root.charAt(2) != '\\') {
             throw new IOException("wrong path: " + path);
         }
