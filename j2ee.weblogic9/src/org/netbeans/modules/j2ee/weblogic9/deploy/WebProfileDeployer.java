@@ -44,7 +44,6 @@ package org.netbeans.modules.j2ee.weblogic9.deploy;
 import java.io.IOException;
 import java.lang.String;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,15 +62,11 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
