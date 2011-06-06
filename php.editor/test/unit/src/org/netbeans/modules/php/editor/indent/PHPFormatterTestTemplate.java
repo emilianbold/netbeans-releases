@@ -423,6 +423,13 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/templates/issue192220.php", options, true);
     }
+    
+    public void testIssue198616() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/templates/issue198616.php", options, true);
+    }
 
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
         FileObject fo = getTestFile(file);
