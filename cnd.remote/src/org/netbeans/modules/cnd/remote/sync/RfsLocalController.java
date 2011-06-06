@@ -463,14 +463,14 @@ class RfsLocalController extends NamedRunnable {
         if (versionsString == null) {
             return false;
         }
-        String versionsPattern = "VERSIONS ";
+        String versionsPattern = "VERSIONS "; // NOI18N
         if (!versionsString.startsWith(versionsPattern)) {
             if (err != null) {
                 err.printf("Protocol error, expected %s, got %s\n", versionsPattern, versionsString); //NOI18N
             }
             return false;
         }
-        String[] versionsArray = versionsString.substring(versionsPattern.length()).split(" ");
+        String[] versionsArray = versionsString.substring(versionsPattern.length()).split(" "); // NOI18N
         for (String v : versionsArray) {
             if (v.length() != 1) {
                 if (err != null) {
