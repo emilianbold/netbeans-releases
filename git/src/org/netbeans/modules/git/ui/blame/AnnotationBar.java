@@ -66,14 +66,19 @@ import java.util.List;
 import java.util.logging.Level;
 import java.io.*;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.logging.Logger;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
+import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.netbeans.spi.diff.DiffProvider;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -164,12 +169,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Latest annotation comment fetching task launched.
      */
     private RequestProcessor.Task latestAnnotationTask = null;
-
-
-    /**
-     * The log messaages for the file stored in the AnnotationBar;
-     */
-//    private HgLogMessage [] logs;
 
     /**
      * Repository root of annotated file
@@ -495,67 +494,67 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final File originalFile = al == null ? null : al.getFile();
         final boolean revisionCanBeRolledBack = al == null || referencedFile != null ? false : al.canBeRolledBack();
         
-//        diffMenu.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine, originalFile);
-//                pri.runWithRevision(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        SystemAction.get(DiffAction.class).diff(originalFile, pri.getPreviousRevision(), revisionPerLine);
-//                    }
-//                }, true);
-//            }
-//        });
-//        popupMenu.add(diffMenu);
+        diffMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine);
+                pri.runWithRevision(Git.getInstance().getRequestProcessor(), new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemAction.get(DiffAction.class).diff(originalFile, pri.getPreviousRevision(), revisionPerLine.getRevision());
+                    }
+                }, true, null);
+            }
+        });
+        popupMenu.add(diffMenu);
 
-        JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert")); // NOI18N
-//        rollbackMenu.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                revert(file, revisionPerLine);
-//            }
-//        });
-//        popupMenu.add(rollbackMenu);
-        rollbackMenu.setEnabled(revisionCanBeRolledBack);
+        final JMenuItem checkoutMenu = new JMenuItem();
+        checkoutMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                checkout(file, revisionPerLine.getRevision());
+            }
+        });
+        popupMenu.add(checkoutMenu);
+        checkoutMenu.setEnabled(revisionCanBeRolledBack);
 
         // an action showing annotation for previous revisions
         final JMenuItem previousAnnotationsMenu = new JMenuItem();
-//        previousAnnotationsMenu.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine, originalFile);
-//                pri.runWithRevision (new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            HgRevision previousRevision = pri.getPreviousRevision();
-//                            GitUtils.openInRevision(originalFile, previousRevision, !"-1".equals(pri.getPreviousRevision().getRevisionNumber())); //NOI18N
-//                        } catch (IOException ex) {
-//                            //
-//                        }
-//                    }
-//                }, false);
-//            }
-//        });
-//        popupMenu.add(previousAnnotationsMenu);
-//
-//        if(isKenai() && al != null) {
-//            String author = al.getAuthor().toString();
-//            final int lineNr = al.getLineNum();
-//            final KenaiUser ku = kenaiUsersMap.get(author);
-//            if(ku != null) {
-//                popupMenu.addSeparator();
-//                JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
-//                chatMenu.addActionListener(new ActionListener() {
-//                    @Override
-//                    public void actionPerformed(ActionEvent e) {
-//                        ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
-//                    }
-//                });
-//                popupMenu.add(chatMenu);
-//            }
-//        }
+        previousAnnotationsMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine);
+                pri.runWithRevision (Git.getInstance().getRequestProcessor(repositoryRoot), new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String previousRevision = pri.getPreviousRevision();
+                            GitUtils.openInRevision(originalFile, previousRevision, true, pri);
+                        } catch (IOException ex) {
+                            //
+                        }
+                    }
+                }, false, NbBundle.getMessage(AnnotationBar.class, "MSG_Annotation_Progress")); //NOI18N
+            }
+        });
+        popupMenu.add(previousAnnotationsMenu);
+
+        if(isKenai() && al != null) {
+            String author = al.getAuthor().toString();
+            final int lineNr = al.getLineNum();
+            final KenaiUser ku = kenaiUsersMap.get(author);
+            if(ku != null) {
+                popupMenu.addSeparator();
+                JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
+                chatMenu.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
+                    }
+                });
+                popupMenu.add(chatMenu);
+            }
+        }
 
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
@@ -571,32 +570,42 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         diffMenu.setVisible(false);
         previousAnnotationsMenu.setVisible(false);
-        rollbackMenu.setVisible(false);
+        checkoutMenu.setVisible(false);
         separator.setVisible(false);
         if (revisionPerLine != null) {
-            String key = getPreviousRevisionKey(file.getAbsolutePath(), revisionPerLine.getRevision());
-//            HgRevision previousRevision = getPreviousRevisions().get(key); // get from cache
-//            if (previousRevision != null || getPreviousRevision(revisionPerLine) != null) {
-//                if (!getPreviousRevisions().containsKey(key)) {
-//                    // get revision in a bg thread and cache the value
-//                    Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            getParentRevision(originalFile, revisionPerLine);
-//                        }
-//                    });
-//                }
-//                String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
-//                String previousRevisionNumber = previousRevision == null ? null : previousRevision.getRevisionNumber();
-//                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, previousRevisionNumber == null ? loc.getString("LBL_PreviousRevision") : previousRevisionNumber})); //NOI18N
-//                diffMenu.setVisible(originalFile != null);
-//                rollbackMenu.setVisible(true);
-//                separator.setVisible(true);
-//                format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
-//                previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { previousRevisionNumber == null ? loc.getString("LBL_PreviousRevision") : previousRevisionNumber})); //NOI18N
-//                previousAnnotationsMenu.setVisible(originalFile != null);
-//                previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevisionNumber)); //NOI18N
-//            }
+            String previousRevision = getPreviousRevisions().get(revisionPerLine.getRevision()); // get from cache
+            if (previousRevision == null) {
+                // get revision in a bg thread and cache the value
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine);
+                pri.runWithRevision(Git.getInstance().getRequestProcessor(), new Runnable() {
+                    @Override
+                    public void run () {
+                        String prevRev = pri.getPreviousRevision();
+                        if (prevRev != null) {
+                            prevRev = prevRev.substring(0, 7);
+                            String format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
+                            previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { prevRev })); //NOI18N
+                            format = loc.getString("CTL_MenuItem_Checkout"); // NOI18N
+                            checkoutMenu.setText(MessageFormat.format(format, new Object [] { prevRev })); //NOI18N
+                            format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
+                            diffMenu.setText(MessageFormat.format(format, new Object [] { prevRev })); //NOI18N
+                        }
+                    }
+                }, true, null);
+            } else {
+                previousRevision = previousRevision.substring(0, 7);
+            }
+            String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
+            diffMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
+            diffMenu.setVisible(originalFile != null);
+            format = loc.getString("CTL_MenuItem_Checkout"); // NOI18N
+            checkoutMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("CTL_MenuItem_Checkout") : previousRevision})); //NOI18N
+            checkoutMenu.setVisible(true);
+            separator.setVisible(true);
+            format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
+            previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
+            previousAnnotationsMenu.setVisible(originalFile != null);
+            previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevision)); //NOI18N
         }
 
         return popupMenu;
@@ -605,107 +614,72 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Class for running a code after the previous revision is determined, which may take some time
      */
-    private class PreviousRevisionInvoker {
+    private class PreviousRevisionInvoker extends GitProgressSupport {
         private final GitRevisionInfo revisionPerLine;
-        private final File originalFile;
-        private String previousRevision;
+        private String parent;
+        private boolean inAWT;
+        private Runnable runnable;
+        private boolean progressNameSet;
 
-        private PreviousRevisionInvoker(GitRevisionInfo revisionPerLine, File originalFile) {
+        private PreviousRevisionInvoker (GitRevisionInfo revisionPerLine) {
             this.revisionPerLine = revisionPerLine;
-            this.originalFile = originalFile;
         }
 
-        /**
-         * Runs the given runnable after the previous revision is determined
-         * @param runnable
-         */
-        private void runWithRevision (final Runnable runnable, final boolean inAWT) {
-            if (revisionPerLine != null) {
-                // getting the prevoius revision may take some time, running in bg
-                new GitProgressSupport() {
-                    @Override
-                    protected void perform() {
-                        previousRevision = getParentRevision(originalFile, revisionPerLine);
-                        if (!isCanceled() && previousRevision != null) {
-                            if (inAWT) {
-                                EventQueue.invokeLater(runnable);
-                            } else {
-                                getRequestProcessor().post(runnable);
-                            }
-                        }
+        public void runWithRevision (RequestProcessor rp, Runnable runnable, boolean inAWT, String progressName) {
+            this.runnable = runnable;
+            this.inAWT = inAWT;
+            this.progressNameSet = progressName != null;
+            start(rp, repositoryRoot, progressNameSet ? progressName : NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
+        }
+        
+        @Override
+        protected void perform () {
+            if (progressNameSet) {
+                setProgress(NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
+            }
+            String previousRevision = getParentRevision(revisionPerLine);
+            if (!isCanceled() && previousRevision != null) {
+                if (inAWT) {
+                    EventQueue.invokeLater(runnable);
+                } else {
+                    if (progressNameSet) {
+                        setProgress(null);
                     }
-                    
-                    private String getParentRevision (File file, GitRevisionInfo revision) {
-                        String key = getPreviousRevisionKey(file.getAbsolutePath(), revision.getRevision());
-                        String parent = getPreviousRevisions().get(key);
-                        if (parent == null) {
-                            GitRevisionInfo parentInfo = null;
-                            try {
-                                parentInfo = getClient().getCommonAncestor(revision.getParents(), this);
-                            } catch (GitException ex) {
-                                LOG.log(Level.INFO, null, ex);
-                            }
-                            if (parentInfo != null) {
-                                parent = parentInfo.getRevision();
-                            } else {
-//                                parent = getPreviousRevision(revision.getRevision());
-                            }
-                            getPreviousRevisions().put(key, parent);
-                        }
-                        return parent;
-                    }
-                }.start(Git.getInstance().getRequestProcessor(), repositoryRoot,
-                        NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
+                    runnable.run();
+                }
             }
         }
 
-        private String getPreviousRevision() {
-            return previousRevision;
+        private String getParentRevision (GitRevisionInfo revision) {
+            parent = getPreviousRevisions().get(revision.getRevision());
+            if (parent == null) {
+                GitRevisionInfo parentInfo = null;
+                try {
+                    parentInfo = getClient().getCommonAncestor(revision.getParents(), this);
+                } catch (GitException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                }
+                if (parentInfo != null) {
+                    parent = parentInfo.getRevision();
+                }
+                getPreviousRevisions().put(revision.getRevision(), parent);
+            }
+            return parent;
+        }
+
+        private String getPreviousRevision () {
+            return parent;
         }
     }
 
-//    private void revert(final File file, String revision) {
-//        final File root = Mercurial.getInstance().getRepositoryRoot(file);
-//        if(root == null) return;
-//        
-//        File[] files = new File [1];
-//        files[0] = file; 
-//        final RevertModifications revertModifications = new RevertModifications(root, files, revision);
-//        if(!revertModifications.showDialog()) {
-//            return;
-//        }
-//        final String revStr =  revertModifications.getSelectionRevision();
-//        final boolean doBackup = revertModifications.isBackupRequested();
-//
-//        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-//        HgProgressSupport support = new HgProgressSupport() {
-//            @Override
-//            public void perform() {                 
-//                RevertModificationsAction.performRevert(root, revStr, file, doBackup, this.getLogger());
-//            }
-//        };
-//        support.start(rp, root, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
-//    }
-
-//    private String getPreviousRevision(String revision) {
-//        boolean orderedAsc = logs.length > 1 && logs[0].getRevisionAsLong() < logs[1].getRevisionAsLong(); // logs order type
-//        for(int i = 0; i < logs.length; i++) {
-//            if (logs[i].getRevisionNumber().equals(revision)) {
-//                if (orderedAsc) {
-//                    // logs are ordered in an ascending order
-//                    if (i > 0) {
-//                        return logs[i - 1].getHgRevision();
-//                    }
-//                } else {
-//                    // logs are ordered in a descending order
-//                    if (i < logs.length - 1) {
-//                        return logs[i + 1].getHgRevision();
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }
+    private void checkout (final File file, String revision) {
+        final File root = Git.getInstance().getRepositoryRoot(file);
+        if(root == null) return;
+        
+        File[] files = new File [1];
+        files[0] = file; 
+        SystemAction.get(CheckoutPathsAction.class).checkoutFiles(repositoryRoot, new File[] { file }, revision);
+    }
 
     /**
      * Hides the annotation bar from user. 
@@ -818,7 +792,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         if (al.getRevisionInfo() != null) {
             recentStatusMessage = al.getRevisionInfo().getShortMessage();
-            statusBar.setText(StatusBar.CELL_MAIN, al.getRevisionInfo().getRevision().substring(0, 6) + " - " + al.getAuthor().toString() + ": " + recentStatusMessage); // NOI18N
+            statusBar.setText(StatusBar.CELL_MAIN, al.getRevisionInfo().getRevision().substring(0, 7) + " - " + al.getAuthor().toString() + ": " + recentStatusMessage); // NOI18N
         } else {
             clearRecentFeedback();
         }
@@ -883,7 +857,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         if (line.getRevisionInfo() == null) {
             return ""; //NOI18N
         } else {
-            return line.getRevisionInfo().getRevision().substring(0, 6) + " " + line.getAuthorShort(); // NOI18N
+            return line.getRevisionInfo().getRevision().substring(0, 7) + " " + line.getAuthorShort(); // NOI18N
         }
     }
 
@@ -1237,14 +1211,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /** on JTextPane */
     @Override
     public void componentShown(ComponentEvent e) {
-    }
-
-//    public void setLogs(HgLogMessage [] logs) {
-//        this.logs = logs;
-//    }
-
-    private static String getPreviousRevisionKey(String filePath, String revision) {
-        return filePath + "#" + revision;                               //NOI18N
     }
 
     private Map<String, String> getPreviousRevisions () {

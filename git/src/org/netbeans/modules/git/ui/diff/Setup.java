@@ -163,6 +163,14 @@ class Setup extends AbstractDiffSetup {
         };
     }
 
+    Setup (File file, String rev1, String rev2) {
+        baseFile = file;
+        firstRevision = rev1;
+        secondRevision = rev2;
+        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
+        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision);
+    }
+
     public File getBaseFile() {
         return baseFile;
     }
