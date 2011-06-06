@@ -497,7 +497,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         diffMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine);
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
                 pri.runWithRevision(Git.getInstance().getRequestProcessor(), new Runnable() {
                     @Override
                     public void run() {
@@ -523,7 +523,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         previousAnnotationsMenu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine);
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
                 pri.runWithRevision (Git.getInstance().getRequestProcessor(repositoryRoot), new Runnable() {
                     @Override
                     public void run() {
@@ -573,10 +573,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         checkoutMenu.setVisible(false);
         separator.setVisible(false);
         if (revisionPerLine != null) {
-            String previousRevision = getPreviousRevisions().get(revisionPerLine.getRevision()); // get from cache
+            String previousRevision = getPreviousRevisions().get(getKeyFor(originalFile, revisionPerLine.getRevision())); // get from cache
             if (previousRevision == null) {
                 // get revision in a bg thread and cache the value
-                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(revisionPerLine);
+                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
                 pri.runWithRevision(Git.getInstance().getRequestProcessor(), new Runnable() {
                     @Override
                     public void run () {
@@ -585,8 +585,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                             prevRev = prevRev.substring(0, 7);
                             String format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
                             previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { prevRev })); //NOI18N
-                            format = loc.getString("CTL_MenuItem_Checkout"); // NOI18N
-                            checkoutMenu.setText(MessageFormat.format(format, new Object [] { prevRev })); //NOI18N
                             format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
                             diffMenu.setText(MessageFormat.format(format, new Object [] { prevRev })); //NOI18N
                         }
@@ -599,7 +597,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             diffMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
             diffMenu.setVisible(originalFile != null);
             format = loc.getString("CTL_MenuItem_Checkout"); // NOI18N
-            checkoutMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("CTL_MenuItem_Checkout") : previousRevision})); //NOI18N
+            checkoutMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine.getRevision().substring(0, 7) }));
             checkoutMenu.setVisible(true);
             separator.setVisible(true);
             format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
@@ -611,6 +609,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return popupMenu;
     }
 
+    private String getKeyFor (File file, String revision) {
+        return file.getAbsolutePath() + "#" + revision; //NOI18N
+    }
+
     /**
      * Class for running a code after the previous revision is determined, which may take some time
      */
@@ -620,9 +622,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         private boolean inAWT;
         private Runnable runnable;
         private boolean progressNameSet;
+        private final File originalFile;
 
-        private PreviousRevisionInvoker (GitRevisionInfo revisionPerLine) {
+        private PreviousRevisionInvoker (File originalFile, GitRevisionInfo revisionPerLine) {
             this.revisionPerLine = revisionPerLine;
+            this.originalFile = originalFile;
         }
 
         public void runWithRevision (RequestProcessor rp, Runnable runnable, boolean inAWT, String progressName) {
@@ -637,7 +641,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             if (progressNameSet) {
                 setProgress(NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
             }
-            String previousRevision = getParentRevision(revisionPerLine);
+            String previousRevision = getParentRevision(originalFile, revisionPerLine);
             if (!isCanceled() && previousRevision != null) {
                 if (inAWT) {
                     EventQueue.invokeLater(runnable);
@@ -650,19 +654,26 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         }
 
-        private String getParentRevision (GitRevisionInfo revision) {
-            parent = getPreviousRevisions().get(revision.getRevision());
+        private String getParentRevision (File file, GitRevisionInfo revision) {
+            String key = getKeyFor(file, revisionPerLine.getRevision());
+            parent = getPreviousRevisions().get(key);
             if (parent == null) {
                 GitRevisionInfo parentInfo = null;
                 try {
-                    parentInfo = getClient().getCommonAncestor(revision.getParents(), this);
+                    if (revision.getParents().length == 1) {
+                        parentInfo = getClient().getPreviousRevision(file, revision.getRevision(), this);
+                    }
+                    if (parentInfo == null) {
+                        // fallback for merges and initial revisoin
+                        parentInfo = getClient().getCommonAncestor(revision.getParents(), this);
+                    }
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
                 }
                 if (parentInfo != null) {
                     parent = parentInfo.getRevision();
                 }
-                getPreviousRevisions().put(revision.getRevision(), parent);
+                getPreviousRevisions().put(key, parent);
             }
             return parent;
         }
