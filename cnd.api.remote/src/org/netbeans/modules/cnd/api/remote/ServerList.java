@@ -116,6 +116,10 @@ public class ServerList {
     public static void set(List<ServerRecord> records, ServerRecord defaultRecord) {
         getDefault().set(records, defaultRecord);
     }
+    
+    public static void save() {
+        getDefault().save();
+    }
 
     public static ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
         return getDefault().addServer(env, displayName, syncFactory, asDefault, connect);
@@ -219,40 +223,50 @@ public class ServerList {
 
         private ServerRecord record = new DummyServerRecord();
 
+        @Override
         public ServerRecord addServer(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
             return record;
         }
 
+        @Override
         public ServerRecord get(ExecutionEnvironment env) {
             return record;
         }
 
+        @Override
         public ServerRecord get(Project project) {
             return record;
         }
 
+        @Override
         public ServerRecord getDefaultRecord() {
             return record;
         }
 
+        @Override
         public List<ExecutionEnvironment> getEnvironments() {
             return Arrays.asList(record.getExecutionEnvironment());
         }
 
+        @Override
         public Collection<? extends ServerRecord> getRecords() {
             return Arrays.asList(record);
         }
 
+        @Override
         public boolean isValidExecutable(ExecutionEnvironment env, String path) {
             return new File(path).exists();
         }
 
+        @Override
         public void set(List<ServerRecord> records, ServerRecord defaultRecord) {
         }
 
+        @Override
         public void setDefaultRecord(ServerRecord record) {
         }
 
+        @Override
         public ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory) {
             return new DummyServerRecord();
         }
@@ -263,6 +277,10 @@ public class ServerList {
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void save() {
         }
     }
 }

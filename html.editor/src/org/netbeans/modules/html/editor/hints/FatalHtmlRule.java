@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.html.editor.hints;
 
-package org.netbeans.modules.cnd.modelutil;
-
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule.ErrorRule;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.openide.util.NbBundle;
 
 /**
- * Analog of Set<CsmClass> used for anti loop checks
- * @author Vladimir Kvashin
+ *
+ * @author marekfukala
  */
-public class AntiLoop {
-    
-    private Set<Object> set;
+public class FatalHtmlRule implements ErrorRule {
 
-    private static final int MAX_INHERITANCE_DEPTH = 25;
-
-    public AntiLoop() {
-        set = new HashSet<Object>();
+    public enum Code {
+        DEFAULT;
     }
     
-    public AntiLoop(int capacity) {
-        set = new HashSet<Object>(capacity);
-    }
-    
-    
-    public boolean add(CsmClassifier cls) {
-        if (isRecursion(cls)) {
-            return false;
-        }
-        return set.add(cls);
-    }
-
-    public boolean contains(CsmClassifier cls) {
-        if (isRecursion(cls)) {
-            return true;
-        }
-        return set.contains(cls);
-    }
-
-    private static boolean isRecursion(CsmClassifier cls) {
-        if(CsmKindUtilities.isInstantiation(cls)) {
-            int instLevel = MAX_INHERITANCE_DEPTH;
-            CsmInstantiation inst = (CsmInstantiation) cls;
-            while(instLevel > 0 && CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                instLevel--;
-            }
-            if(instLevel <= 0) {
-                return true;
-            }
-        }
-        return false;
+    @Override
+    public Set<?> getCodes() {
+        return Collections.singleton(Code.DEFAULT);
     }
 
     @Override
-    public String toString() {
-        return set.toString();
+    public boolean appliesTo(RuleContext context) {
+        return true;
     }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(FatalHtmlRule.class, "MSG_FatalHtmlRuleName");
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return true;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.ERROR;
+    }
+    
 }
