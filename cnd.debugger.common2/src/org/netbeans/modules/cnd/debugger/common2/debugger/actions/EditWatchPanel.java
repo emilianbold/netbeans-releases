@@ -389,7 +389,7 @@ public class EditWatchPanel extends javax.swing.JPanel
         int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
         
         String mimeType = "text/plain"; // NOI18N
-        if (file.getMIMEType() != null) {
+        if (file != null) {
             // do not use file.getMIMEType() here because of the IZ 199138
             String fileMimeType = FileUtil.getMIMEType(file);
             if (fileMimeType != null) {
