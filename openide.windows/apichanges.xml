@@ -50,6 +50,22 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="roles">
+    <api name="winsys"/>
+    <summary>Support multiple window system layouts.</summary>
+    <version major="6" minor="43"/>
+    <date day="6" month="6" year="2011"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        It is possible to define multiple window system layouts and switch between
+        them either at startup or at runtime.
+    </description>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <class package="org.openide.windows" name="WindowSystemListener"/>
+    <class package="org.openide.windows" name="WindowSystemEvent"/>
+    <issue number="198859"/>
+</change>
 <change id="mainwindow.custom.background">
     <api name="winsys"/>
     <summary>Allow custom painted background in the main IDE window.</summary>
