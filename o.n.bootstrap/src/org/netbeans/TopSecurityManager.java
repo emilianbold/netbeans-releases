@@ -257,9 +257,7 @@ public class TopSecurityManager extends SecurityManager {
     public @Override final void checkPropertyAccess(String x) {
         if ("netbeans.debug.exceptions".equals(x)) { // NOI18N
             // Get rid of this old system property.
-            Class[] ctxt = getClassContext();
-            for (int i = 0; i < ctxt.length; i++) {
-                Class c = ctxt[i];
+            for (Class<?> c : getClassContext()) {
                 if (c != TopSecurityManager.class &&
                         c != System.class &&
                         c != Boolean.class) {
@@ -274,10 +272,8 @@ public class TopSecurityManager extends SecurityManager {
             }
         }
         if ("netbeans.home".equals(x)) { // NOI18N
-            // Get rid of this old system property.
-            Class[] ctxt = getClassContext();
-            for (int i = 0; i < ctxt.length; i++) {
-                Class c = ctxt[i];
+            // Control access to this system property.
+            for (Class<?> c : getClassContext()) {
                 if (c != TopSecurityManager.class &&
                         c != System.class &&
                         c != Boolean.class) {
