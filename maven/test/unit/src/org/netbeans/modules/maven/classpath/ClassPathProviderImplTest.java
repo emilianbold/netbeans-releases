@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.classpath;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -165,12 +164,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         EndorsedClassPathImpl.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         String sha1 = RepositoryUtil.calculateSHA1Checksum(FileUtil.toFile(jar));
-        File tmpJar = FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), sha1 + ".jar"));
-        assertTrue(tmpJar.isFile());
-        FileUtil.refreshFor(tmpJar);
-        FileObject tmpJarFO = FileUtil.toFileObject(tmpJar);
-        assertNotNull(tmpJarFO);
-        assertRoots(cp, tmpJarFO);
+        assertTrue(cp.toString(), cp.toString().contains(sha1 + ".jar"));
         pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertTrue(bcp.toString(), bcp.toString().contains(sha1 + ".jar"));
         d.getFileObject("target").delete();
