@@ -266,7 +266,7 @@ public class TopSecurityManager extends SecurityManager {
                     String n = c.getName();
                     synchronized (warnedClassesNDE) {
                         if (warnedClassesNDE.add(n)) {
-                            System.err.println("Warning: use of system property netbeans.debug.exceptions in " + n + " has been obsoleted in favor of java.util.logging.Logger"); // NOI18N
+                            LOG.log(Level.WARNING, "use of system property netbeans.debug.exceptions has been obsoleted in favor of java.util.logging.Logger at {0}", findCallStackLine(n));
                         }
                     }
                     break;
@@ -284,13 +284,21 @@ public class TopSecurityManager extends SecurityManager {
                     String n = c.getName();
                     synchronized (warnedClassesNH) {
                         if (warnedClassesNH.add(n)) {
-                            System.err.println("Warning: use of system property netbeans.home in " + n + " has been obsoleted in favor of InstalledFileLocator"); // NOI18N
+                            LOG.log(Level.WARNING, "use of system property netbeans.home has been obsoleted in favor of InstalledFileLocator at {0}", findCallStackLine(n)); // NOI18N
                         }
                     }
                     break;
                 }
             }
         }
+    }
+    private static String findCallStackLine(String callerClazz) {
+        for (StackTraceElement line : Thread.currentThread().getStackTrace()) {
+            if (line.getClassName().equals(callerClazz)) {
+                return line.toString();
+            }
+        }
+        return callerClazz;
     }
     private final Set<String> warnedClassesNDE = new HashSet<String>(25);
     private static final Set<String> warnedClassesNH = new HashSet<String>(25);
