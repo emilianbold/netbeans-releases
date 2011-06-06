@@ -87,6 +87,7 @@ public class RemoteServerRecord implements ServerRecord {
     private State state;
     private final Object stateLock;
     private String reason;
+    private String problems;
     private String displayName;
     private RemoteSyncFactory syncFactory;
     private boolean x11forwarding;
@@ -195,6 +196,9 @@ public class RemoteServerRecord implements ServerRecord {
             } else {
                 initPathMap = true;
                 state = State.ONLINE;
+                if (rss.hasProblems()) {
+                    problems = rss.getReason();
+                }
             }
         }
         if (initPathMap) {
@@ -215,6 +219,14 @@ public class RemoteServerRecord implements ServerRecord {
 //            ex.printStackTrace();
 //        }
 //    }
+    
+    public String getProblems() {
+        return problems;
+    }
+    
+    public boolean hasProblems() {
+        return problems != null;
+    }
     
     public boolean resetOfflineState() {
         synchronized (stateLock) {
