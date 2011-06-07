@@ -42,6 +42,7 @@
 package org.netbeans.modules.dlight.spi.indicator;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -258,6 +259,12 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
             if (tooltip != null) {
                 a.putValue(Action.SHORT_DESCRIPTION, tooltip);
+            }
+            
+            Image image = d.getImage();
+            
+            if (image != null) {
+                a.putValue(Action.LARGE_ICON_KEY, image);
             }
             
             result.add(a);
