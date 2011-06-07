@@ -52,7 +52,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.security.acl.NotOwnerException;
 import java.util.Collection;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -92,6 +92,8 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             }
         } catch (IOException ex) {
             Logger.getInstance().fine(ex.toString());
+        } catch (CancellationException ex) {
+            Logger.getInstance().fine(ex.toString()); // TODO:CancellationException error processing
         }
 
         String pidCandidate = null;
@@ -169,7 +171,9 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
 
             return status == 0;
         } catch (InterruptedIOException ex) {
-            throw new CancellationException();
+            // TODO:CancellationException error processing
+            // was: throw new CancellationException();
+            throw new InterruptedException(ex.getMessage());
         } catch (IOException ex) {
             Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
         } catch (JSchException ex) {

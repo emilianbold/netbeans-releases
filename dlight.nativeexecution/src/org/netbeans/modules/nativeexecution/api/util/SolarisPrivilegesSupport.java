@@ -44,7 +44,7 @@ package org.netbeans.modules.nativeexecution.api.util;
 import java.security.acl.NotOwnerException;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 
 /**
  * Supporting class to provide functionality of requesting additional
