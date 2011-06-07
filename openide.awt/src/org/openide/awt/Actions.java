@@ -84,6 +84,7 @@ import org.netbeans.api.actions.Viewable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
 
@@ -817,10 +818,11 @@ public class Actions {
         /** action to associate */
         protected Action action;
         
-        protected PropertyChangeListener listener;
+        private final PropertyChangeListener actionL;
         /** @param comp component
         * @param action the action
         */
+        @SuppressWarnings("OverridableMethodCallInConstructor")
         public Bridge(JComponent comp, Action action) {
             if(comp == null || action == null) {
                 throw new IllegalArgumentException(
@@ -830,13 +832,8 @@ public class Actions {
             this.comp = comp;
             this.action = action;
 
-            // visibility listener
-            listener = new VisL();
-            Bridge.this.comp.addPropertyChangeListener(listener);
-
-            if (Bridge.this.comp.isShowing()) {
-                addNotify();
-            }
+            actionL = WeakListeners.propertyChange(this, action);
+            prepareVisibilityListener();
 
             // associate context help, if applicable
             // [PENDING] probably belongs in ButtonBridge.updateState to make it dynamic
@@ -847,15 +844,22 @@ public class Actions {
             }
         }
 
+        protected void prepareVisibilityListener() {
+            comp.addPropertyChangeListener(new VisL());
+            if (comp.isShowing()) {
+                addNotify();
+            }
+        }
+
         /** Attaches listener to given action */
-        public void addNotify() {
-            action.addPropertyChangeListener(this);
+        final void addNotify() {
+            action.addPropertyChangeListener(actionL);
             updateState(null);
         }
 
         /** Remove the listener */
-        public void removeNotify() {
-            action.removePropertyChangeListener(this);
+        final void removeNotify() {
+            action.removePropertyChangeListener(actionL);
         }
 
         /** @param changedProperty the name of property that has changed
@@ -1156,12 +1160,6 @@ public class Actions {
             super(item, action);
             this.popup = popup;
             
-            if (item instanceof Actions.MenuItem) {
-                // addnotify/remove notify doens't make sense for menus and
-                // popups.
-                MenuBridge.this.comp.removePropertyChangeListener(listener);
-            }
-            
             if (popup) {
                 prepareMargins(item, action);
             } else {
@@ -1170,6 +1168,11 @@ public class Actions {
 
                 // #40824 hack end.
             }
+        }
+
+        protected @Override void prepareVisibilityListener() {
+            // menus and popups generally get no hierarchy events, yet we need to listen to other changes
+            addNotify();
         }
 
         /** @param changedProperty the name of property that has changed
