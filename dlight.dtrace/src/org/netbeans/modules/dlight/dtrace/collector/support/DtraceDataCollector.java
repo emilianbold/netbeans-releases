@@ -61,7 +61,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
@@ -98,6 +97,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
@@ -342,6 +342,8 @@ public final class DtraceDataCollector
             scriptPath = mergeAndUploadScripts(trgExecEnv);
         } catch (IOException ex) {
             DLightLogger.getLogger(DtraceDataCollector.class).log(Level.SEVERE, null, ex);
+        } catch (CancellationException ex) {
+            DLightLogger.getLogger(DtraceDataCollector.class).log(Level.SEVERE, null, ex); // TODO:CancellationException error processing
         }
     }
 
@@ -587,7 +589,7 @@ public final class DtraceDataCollector
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
-    private String mergeAndUploadScripts(ExecutionEnvironment trgEnv) throws IOException {
+    private String mergeAndUploadScripts(ExecutionEnvironment trgEnv) throws IOException, CancellationException {
         Map<String, URL> scriptsMap = new HashMap<String, URL>();
 
         if (multiScriptMode) {

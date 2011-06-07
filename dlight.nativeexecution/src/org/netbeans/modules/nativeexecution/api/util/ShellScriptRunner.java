@@ -64,6 +64,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -109,7 +110,7 @@ public final class ShellScriptRunner {
         this.errorProcessor = errorProcessor;
     }
 
-    public synchronized int execute() throws IOException {
+    public synchronized int execute() throws IOException, CancellationException {
         if (scriptURI == null && script == null) {
             return 0;
         }

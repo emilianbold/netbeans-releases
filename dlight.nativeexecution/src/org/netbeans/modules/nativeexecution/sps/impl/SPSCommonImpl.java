@@ -44,7 +44,7 @@ package org.netbeans.modules.nativeexecution.sps.impl;
 import java.security.acl.NotOwnerException;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

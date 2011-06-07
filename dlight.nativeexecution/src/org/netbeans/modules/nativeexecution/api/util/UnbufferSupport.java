@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -77,7 +78,13 @@ public class UnbufferSupport {
             return;
         }
 
-        final HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
+        HostInfo hinfo;
+        try {
+            hinfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
+            return;
+        }
 
         boolean isMacOS = hinfo.getOSFamily() == HostInfo.OSFamily.MACOSX;
 

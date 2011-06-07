@@ -43,7 +43,7 @@ package org.netbeans.modules.dlight.perfan.tha.api;
 
 import java.awt.EventQueue;
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;

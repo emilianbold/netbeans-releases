@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.dlight.db.h2;
 
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
