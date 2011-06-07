@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,8 +100,10 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     @Override
     protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         long start = System.currentTimeMillis();
-        if (SemanticHighlighter.isVeryBigDocument(request.getDocument())) {
-            return;
+        for (CsmErrorProvider.RequestValidator p : Lookup.getDefault().lookupAll(CsmErrorProvider.RequestValidator.class)) {
+            if(p.isValid(request)) {
+                return;
+            }
         }
         Thread currentThread = Thread.currentThread();
         CsmFile file = request.getFile();
