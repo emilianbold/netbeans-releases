@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -91,8 +91,9 @@ public class LibraryChecker {
         ExecutionEnvironment execEnv = compiler.getExecutionEnvironment();
         CompilerSet compilerSet = compiler.getCompilerSet();
         LinkerDescriptor linker = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
-        String dummySourceFile = createDummySourceFile(execEnv, compiler.getKind());
+        String dummySourceFile = null;
         try {
+            dummySourceFile = createDummySourceFile(execEnv, compiler.getKind());
             String linkerPath = getLinker(compiler, compilerSet).getPath();
             String dummySourcePath = dummySourceFile;
             if (execEnv.isLocal() && Utilities.isWindows()) {
@@ -118,6 +119,8 @@ public class LibraryChecker {
             } finally {
                 process.destroy();
             }
+        } catch (CancellationException ex) {
+            return false; // TODO:CancellationException error processing
         } finally {
             if (execEnv.isLocal()) {
                 new File(dummySourceFile).delete();
@@ -129,7 +132,7 @@ public class LibraryChecker {
         }
     }
 
-    private static String createDummySourceFile(ExecutionEnvironment execEnv, ToolKind compilerKind) throws IOException {
+    private static String createDummySourceFile(ExecutionEnvironment execEnv, ToolKind compilerKind) throws IOException, CancellationException {
         String ext;
         if (compilerKind == PredefinedToolKind.CCompiler) {
             ext = ".c"; // NOI18N

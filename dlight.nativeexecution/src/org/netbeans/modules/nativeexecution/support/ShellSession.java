@@ -49,6 +49,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
@@ -77,7 +78,7 @@ public final class ShellSession {
         }
     }
 
-    private static synchronized NativeProcess startProcess(ExecutionEnvironment env) throws IOException {
+    private static synchronized NativeProcess startProcess(ExecutionEnvironment env) throws IOException, CancellationException {
         NativeProcess result;
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         HostInfo info = HostInfoUtils.getHostInfo(env);
@@ -88,7 +89,7 @@ public final class ShellSession {
         return result;
     }
 
-    public static synchronized String[] execute(final ExecutionEnvironment env, final String command) throws IOException {
+    public static synchronized String[] execute(final ExecutionEnvironment env, final String command) throws IOException, CancellationException {
         NativeProcess process = sessions.get(env);
 
         if (process == null || process.getState() != NativeProcess.State.RUNNING) {
