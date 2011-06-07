@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,6 +34,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.qa.form;
 
@@ -49,43 +47,23 @@ import junit.framework.Test;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
-import org.openide.util.Exceptions;
+import org.netbeans.junit.diff.Diff;
 
 /**
- * A Test based on JellyTestCase. JellyTestCase redirects Jemmy output
- * to a log file provided by NbTestCase. It can be inspected in results.
- * It also sets timeouts necessary for NetBeans GUI testing.
- *
- * Any JemmyException (which is normally thrown as a result of an unsuccessful
- * operation in Jemmy) going from a test is treated by JellyTestCase as a test
- * failure; any other exception - as a test error.
- *
- * Additionally it:
- *    - closes all modal dialogs at the end of the test case (property jemmy.close.modal - default true)
- *    - generates component dump (XML file containing components information) in case of test failure (property jemmy.screen.xmldump - default false)
- *    - captures screen into a PNG file in case of test failure (property jemmy.screen.capture - default true)
- *    - waits at least 1000 ms between test cases (property jelly.wait.no.event - default true)
- *
- * @author Jana Maleckova
- * Created on 29 January 2007, 15:59
- * Test is only for java 1.6 for now
+ * @author Adam Senk adam.senk@oracle.com
  * 
- * <b>Adam Senk</b>
- * 20 April 2011 WORKS
- */
-public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
+ **/
+public class TemplateTest extends ExtJellyTestCase {
 
     public String DATA_PROJECT_NAME = "SampleProject";
     public String PACKAGE_NAME = "Source Package";
@@ -97,7 +75,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     ComponentInspectorOperator cio;
 
     /** Constructor required by JUnit */
-    public OpenTempl_defaultPackTest(String name) {
+    public TemplateTest(String name) {
         super(name);
 
     }
@@ -105,7 +83,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(OpenTempl_defaultPackTest.class).addTest(
+                NbModuleSuite.createConfiguration(TemplateTest.class).addTest(
                 //SWING
                 "testApplet",
                 "testDialog",
@@ -114,9 +92,9 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
                 "testInter",
                 "testMidi",
                 
-                 "testBean",
-                 "testAppl",
-                 "testOkCancel",
+                "testBean",
+                "testAppl",
+                "testOkCancel",
                 //AWT
                 "testAWTApplet",
                 "testAWTDialog",
@@ -129,17 +107,9 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     /** Called before every test case. */
     @Override
     public void setUp() throws IOException {
-        openDataProjects(DATA_PROJECT_NAME);
-        workdirpath = getWorkDir().getParentFile().getAbsolutePath();
-        setTestPackageName("<default package>");
-        setTestProjectName(DATA_PROJECT_NAME);
+
         System.out.println("########  " + getName() + "  #######");
-        System.out.println("OS " + System.getProperty("os.name"));
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+
     }
 
     /** Called after every test case. */
@@ -147,31 +117,27 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public void tearDown() {
     }
 
-    // Add test methods here, they have to start with 'test' name.
-    //method create new project in parent dir to workdir
-    public void begin() throws InterruptedException {
-        DeleteDir.delDir(workdirpath + System.getProperty("file.separator") + DATA_PROJECT_NAME);
-        Thread.sleep(2000);
-        mainWindow = MainWindowOperator.getDefault();
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory(PROJECT_NAME);
-        npwo.selectProject("Java Application");
-        npwo.next();
+    /**
+     * Some initial settings
+     * 
+     * @throws IOException
+     *
+     */
+    public void begin() throws IOException {
 
-        NewJavaProjectNameLocationStepOperator tfo_name = new NewJavaProjectNameLocationStepOperator();
-        tfo_name.txtProjectName().setText(DATA_PROJECT_NAME);
+        openDataProjects(DATA_PROJECT_NAME);
+        workdirpath = getWorkDir().getParentFile().getAbsolutePath();
+        setTestPackageName("<default package>");
+        setTestProjectName(DATA_PROJECT_NAME);
 
-        NewJavaProjectNameLocationStepOperator tfo1_location = new NewJavaProjectNameLocationStepOperator();
-        tfo_name.txtLocation().setText(workdirpath);
-        JButtonOperator bo = new JButtonOperator(npwo, "Finish");
-        //bo.getSource().requestFocus();
-        bo.push();
-
-        log("Project " + DATA_PROJECT_NAME + " was created");
-        Thread.sleep(2000);
 
     }
 
+    /**
+     * Not used in this test case, but it can be usable in the future
+     * 
+     * @throws InterruptedException 
+     */
     public void deleteProject() throws InterruptedException {
         //Project Deleting
         pto = new ProjectsTabOperator();
@@ -197,16 +163,15 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
             log("File " + DATA_PROJECT_NAME + " was deleted correctly");
         }
     }
-    /*
-     * Close document given in parametr.
-     *Is HIGHLY RECOMMENDED close document, after test is finished.
-     */
 
-    public void closeDocument(String documentName) throws InterruptedException {
-        FormDesignerOperator fdo=new FormDesignerOperator(documentName);
+    /*
+     * Switch to source editor
+     */
+    public void switchToSource(String documentName) throws InterruptedException {
+        FormDesignerOperator fdo = new FormDesignerOperator(documentName);
         fdo.source();
         //removeFile(documentName);
-        
+
     }
 
     public void openTemplate(String templateName, String category) throws InterruptedException {
@@ -219,20 +184,20 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         nfwo.next();
         JComboBoxOperator jcb_package = new JComboBoxOperator(nfwo, 1);
         jcb_package.clearText();
+       // jcb_package.enterText("data");
         Thread.sleep(1000);
-
+        
         if (templateName.equals("Bean Form")) {
             nfwo.next();
             JTextFieldOperator class_name = new JTextFieldOperator(nfwo);
             class_name.setText("javax.swing.JButton");
-            nfwo.finish();
-            log(templateName + " is created correctly");
-        } else {
-            nfwo.finish();
-            log(templateName + " is created correctly");
-            Thread.sleep(1000);
-        }
-        
+            //nfwo.finish();
+
+        } 
+        nfwo.finish();
+        Thread.sleep(2000);
+        log(templateName + " is created correctly");
+
     }
 
     public void testTemplateMethod(String templateName, String category, String name) throws InterruptedException, IOException {
@@ -242,14 +207,18 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         System.out.println(getWorkDir());
         createFormAndJavaRefFile(name);
         Thread.sleep(500);
-        closeDocument(name);
-        
+        switchToSource(name);
         Thread.sleep(500);
-        testFormFile(name);
+        boolean testForm=testFormFile(name);
         Thread.sleep(500);
-        testJavaFile(name);
+        boolean testJava=testJavaFile(name);
+        if(testForm&&testJava){
+            assertTrue(true);
+        }else{
+            assertTrue(false);
+        }
         //Thread.sleep(500);
-       
+
 
     }
 
@@ -259,7 +228,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     public void testApplet() throws InterruptedException, IOException, Exception {
 
 
-//        begin();
+        begin();
         testTemplateMethod("JApplet Form", "Swing GUI Forms", "NewJApplet");
 
     }
@@ -325,7 +294,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         testTemplateMethod("OK / Cancel Dialog Sample Form", "Swing GUI Forms", "NewOkCancelDialog");
 
     }
-    
+
     /**AWT Test case 1.
      * Create new Panel template in default package
      */
@@ -334,11 +303,10 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         testTemplateMethod("Panel Form", "AWT GUI Forms", "NewPanel");
 
     }
-    
+
     /**AWT Test case 2.
      * Create new Dialog template in default package
      */
-    
     public void testAWTApplet() throws InterruptedException, IOException, Exception {
 
         testTemplateMethod("Applet Form", "AWT GUI Forms", "NewApplet");
@@ -364,24 +332,42 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
 
     }
 
-    public void testFormFile(String formfile) throws IOException {
-       
+    public boolean testFormFile(String formfile) throws IOException {
 
-        assertFile(new File(getWorkDir() + File.separator + formfile + "Form.ref"), getGoldenFile(File.separatorChar+System.getProperty("os.name")+File.separatorChar+formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
+        File ref=new File(getWorkDir(), formfile + "Form.ref");
+        File goldenBig=getGoldenFile(formfile + "FormFileBig.pass");
+        File goldenSmall=getGoldenFile(formfile + "FormFileSmall.pass");
+        File diffBig=new File(getWorkDir(), formfile + "FormBig.diff");
+        diffBig.createNewFile();
+        File diffSmall=new File(getWorkDir(), formfile + "FormSmall.diff");
+        diffSmall.createNewFile();
+        
+        Diff d = Manager.getSystemDiff();
+        
+        boolean bigger = d.diff(ref,goldenBig,diffBig);
+        boolean smaller = d.diff(ref,goldenSmall,diffSmall);
+        //assertFile(new File(getWorkDir() + File.separator + formfile + "Form.ref"), getGoldenFile(File.separatorChar+System.getProperty("os.name")+File.separatorChar+formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
 
+        if (!bigger || !smaller) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    
+
     public void createFormAndJavaRefFile(String filename) throws IOException {
         try {
             String refFileForm = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
-                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + filename + ".form");
+                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar +  File.separatorChar+ filename + ".form");
 
             getLog(filename + "Form.ref").print(refFileForm);
-            
-            String refFileJava = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
-                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + filename + ".java");
 
-            getRef().print(createRefFile(refFileJava));
+            String refFileJava = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
+                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar +  File.separatorChar+ filename + ".java");
+
+            getLog(filename + "Java.ref").print(createRefFile(refFileJava));
+            
+            //getRef().print(createRefFile(refFileJava));
 
 
         } catch (Exception e) {
@@ -390,11 +376,31 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
 
     }
 
-    public void testJavaFile(String javafile) throws IOException {
+    public boolean testJavaFile(String javafile) throws IOException {
 
+        File ref=new File(getWorkDir() ,javafile + "Java.ref");
+        File goldenBig=getGoldenFile(javafile + "JavaFileBig.pass");
+        File goldenSmall=getGoldenFile(javafile + "JavaFileSmall.pass");
+        File diffBig=new File(getWorkDir(), javafile + "JavaBig.diff");
+        diffBig.createNewFile();
+        File diffSmall=new File(getWorkDir(), javafile + "JavaSmall.diff");
+        diffSmall.createNewFile();
         
-        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(File.separatorChar+System.getProperty("os.name")+File.separatorChar+javafile + "JavaFile" + jdkVersion.replaceAll("jdk", "") + ".pass"), new File(getWorkDir(), javafile + "java.diff"));
+        
+        
+        Diff d = Manager.getSystemDiff();
+        
+        boolean bigger = d.diff(ref,goldenBig,diffBig);
+        boolean smaller = d.diff(ref,goldenSmall,diffSmall);
 
+        //assertFile(ref,golden, diff);
+
+
+        if (!bigger || !smaller) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 

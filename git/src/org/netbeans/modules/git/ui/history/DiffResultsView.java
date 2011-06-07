@@ -170,12 +170,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                             } else {
                                 revOlder = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
                             }
-                            if (r1 == null || revOlder == null || revOlder.getFile() == null || !revOlder.getFile().equals(r1.getFile())) {
+                            if (r1 == null || revOlder == null || revOlder.getFile() == null || !(revOlder.getFile().equals(r1.getFile()) || revOlder.getRenames().contains(r1.getFile()))) {
                                 throw new Exception();
                             }
-                            String revisionOlder = r1.getLogInfoHeader().getLog().getRevision();
-                            String revisionNewer = revOlder.getLogInfoHeader().getLog().getRevision();
-                            showDiff(r1, revisionNewer, revisionOlder, false);
+                            showDiff(r1, revOlder, r1, false);
                         }
                     } catch (Exception e) {
                         showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
@@ -210,7 +208,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         diffView.setDividerLocation(dl);
     }
 
-    protected GitProgressSupport createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected GitProgressSupport createShowDiffTask(RepositoryRevision.Event header, RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
         return new ShowDiffTask(header, revision1, revision2, showLastDifference);
     }
 
@@ -221,7 +219,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
      * @param revision2
      * @param showLastDifference
      */
-    protected void showDiff(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected void showDiff(RepositoryRevision.Event header, RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
         synchronized(this) {
             cancelBackgroundTasks();
             char action = header.getAction();
@@ -256,7 +254,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
         if (rev.getFile() == null) return;
-        showDiff(rev, null, rev.getLogInfoHeader().getLog().getRevision(), showLastDifference);
+        showDiff(rev, null, rev, showLastDifference);
     }
 
     protected void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
@@ -278,7 +276,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         outer:
         for(File root : roots) {
             for(RepositoryRevision.Event evt : revs) {
-                if(root.equals(evt.getFile())) {
+                if (root.equals(evt.getFile()) || evt.getRenames().contains(root)) {
                     event = evt;
                     break outer;
                 }
@@ -348,11 +346,11 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private class ShowDiffTask extends GitProgressSupport {
         
         private final RepositoryRevision.Event header;
-        private String revision1;
-        private final String revision2;
+        private RepositoryRevision.Event revision1;
+        private final RepositoryRevision.Event revision2;
         private boolean showLastDifference;
 
-        public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+        public ShowDiffTask(RepositoryRevision.Event header, RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
             this.header = header;
             this.revision1 = revision1;
             this.revision2 = revision2;
@@ -362,9 +360,11 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         @Override
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
+            File f = revision1 == null ? header.getFile() : revision1.getFile();
+            String revision = revision1 == null ? null : revision1.getLogInfoHeader().getLog().getRevision();
             if (revision1 == null) {
                 try {
-                    revision1 = header.getLogInfoHeader().getAncestorCommit(header.getFile(), getClient(), NULL_PROGRESS_MONITOR);
+                    revision = header.getLogInfoHeader().getAncestorCommit(header.getFile(), getClient(), NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
                 }
@@ -372,8 +372,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             if (isCanceled()) {
                 return;
             }
-            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
-            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
+            final DiffStreamSource s1 = new DiffStreamSource(f, revision, revision);
+            f = revision2 == null ? header.getFile() : revision2.getFile();
+            revision = revision2 == null ? null : revision2.getLogInfoHeader().getLog().getRevision();
+            final DiffStreamSource s2 = new DiffStreamSource(f, revision, revision);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()
