@@ -344,7 +344,9 @@ public final class EvalAnnotation extends Annotation {
     public static void postResult(int rt1, int rt2, int flags,
             String lhs, String rhs,
             String rhs2, String rhs3) {
-        if (rhs2 == null && rhs3 == null) {
+        if (lhs == null) {
+            postResult(rhs);
+        } else if (rhs2 == null && rhs3 == null) {
             // Plain lhs=rhs tooltip
             postResult(lhs + " = " + rhs); // NOI18N
 
