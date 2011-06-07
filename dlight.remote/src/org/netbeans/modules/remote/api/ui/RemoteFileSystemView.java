@@ -48,7 +48,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.UIManager;

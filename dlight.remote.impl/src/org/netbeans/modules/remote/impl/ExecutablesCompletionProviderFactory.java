@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl;
 
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
 import org.netbeans.modules.remote.spi.AutocompletionProviderFactory;
 import org.netbeans.modules.remote.util.ExecSupport;
@@ -80,6 +81,8 @@ public class ExecutablesCompletionProviderFactory implements AutocompletionProvi
             return new Provider(env);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            // don't report cancellatoin exception
         }
 
         return null;
@@ -95,7 +98,7 @@ public class ExecutablesCompletionProviderFactory implements AutocompletionProvi
         private final Scanner scanner;
         private Task[] scanningTasks;
 
-        public Provider(final ExecutionEnvironment env) throws IOException {
+        public Provider(final ExecutionEnvironment env) throws IOException, CancellationException {
             List<String> paths = new ArrayList<String>();
             HostInfo info = HostInfoUtils.getHostInfo(env);
             String pathList = info.getEnvironment().get("PATH"); // NOI18N

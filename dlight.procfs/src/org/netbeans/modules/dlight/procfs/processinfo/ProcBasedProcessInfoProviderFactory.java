@@ -42,7 +42,7 @@
 package org.netbeans.modules.dlight.procfs.processinfo;
 
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;

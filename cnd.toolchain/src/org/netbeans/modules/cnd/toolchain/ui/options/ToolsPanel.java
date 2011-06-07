@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
@@ -81,6 +80,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -992,7 +992,7 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (CancellationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    // don't report CancellationException
                 }
             }
             String versions = null;

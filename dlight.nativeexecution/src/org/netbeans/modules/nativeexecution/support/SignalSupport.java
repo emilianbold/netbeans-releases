@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HelperUtility;
 import java.io.File;
 import java.io.IOException;
@@ -92,7 +93,12 @@ public final class SignalSupport {
         String command = null;
         boolean _useShell = false;
 
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        HostInfo hostInfo;
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (CancellationException ex) {
+            throw new java.util.concurrent.CancellationException(ex.getMessage()); // TODO:CancellationException error processing
+        }
         String shell = hostInfo.getShell();
 
         if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
