@@ -58,7 +58,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 
 /**
@@ -86,7 +86,7 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
     }
 
     public Result check(File localFile, String remotePath)
-            throws NoSuchAlgorithmException, IOException, CheckSumException, InterruptedException, ExecutionException {
+            throws NoSuchAlgorithmException, IOException, CheckSumException, InterruptedException, ExecutionException, CancellationException {
 
         // Find out remote command for calculating md5 sum
 

@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
@@ -125,6 +126,8 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
                 remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
             }
+        } catch (CancellationException ex) {
+            execLog = null;
         } catch (IOException ex) {
             execLog = null;
         }
@@ -155,6 +158,8 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
                     merge = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
                 }
                 env.putenv("LD_LIBRARY_PATH", merge); // NOI18N
+            } catch (CancellationException ex) {
+                // don't report CancellationException
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

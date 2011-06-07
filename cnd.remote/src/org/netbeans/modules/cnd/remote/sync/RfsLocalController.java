@@ -81,6 +81,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
@@ -283,6 +284,8 @@ class RfsLocalController extends NamedRunnable {
             try {
                 runNewFilesDiscovery(true);
                 shutDownNewFilesDiscovery();
+            } catch (CancellationException ex) {
+                // nothing
             } catch (InterruptedIOException ex) {
                 // nothing
             } catch (InterruptedException ex) {
@@ -326,7 +329,7 @@ class RfsLocalController extends NamedRunnable {
         }
     }
 
-    private void runNewFilesDiscovery(boolean srcOnly) throws IOException, InterruptedException {
+    private void runNewFilesDiscovery(boolean srcOnly) throws IOException, InterruptedException, CancellationException {
         if (timeStampFile == null) {
             return;
         }

@@ -115,7 +115,7 @@ import org.openide.util.NbBundle;
             }
         });
         List<CompilerSet> sets2 = compilerSetManager.getCompilerSets();
-        final String html = "<html>";
+        final String html = "<html>"; // NOI18N
         StringBuilder st = new StringBuilder(html);
         for (CompilerSet set : sets2) {
             if (st.length() > html.length()) {
@@ -125,11 +125,11 @@ import org.openide.util.NbBundle;
         }
         RemoteServerRecord record = (RemoteServerRecord) ServerList.get(data.getExecutionEnvironment());
         if (record != null && record.hasProblems()) {
-            st.append("<br><br>\n");
-            st.append("<font color=red>");
-            st.append(record.getProblems().replace("\n", "<br>\n"));
+            st.append("<br><br>\n"); // NOI18N
+            st.append("<font color=red>"); // NOI18N
+            st.append(record.getProblems().replace("\n", "<br>\n")); // NOI18N
         }
-        st.append("</html>");
+        st.append("</html>"); // NOI18N
         jTextArea1.setEditorKit(new HTMLEditorKit());
         jTextArea1.setText(st.toString());
 

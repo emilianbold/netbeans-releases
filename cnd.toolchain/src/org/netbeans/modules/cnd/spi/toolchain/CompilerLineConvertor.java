@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.cnd.spi.toolchain;
 
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
