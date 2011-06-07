@@ -352,6 +352,38 @@ public class JavaFixTest extends TestBase {
 		           "}\n");
     }
 
+    public void testRewriteWithoutParenthesis6() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        System.err.println(\"a\" + 1);\n" +
+                           "    }\n" +
+                           "}\n",
+                           "System.err.println($t)=>D.println($t)",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        D.println(\"a\" + 1);\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+
+    public void testRewriteWithoutParenthesis7() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        new String(\"a\" + 1);\n" +
+                           "    }\n" +
+                           "}\n",
+                           "new String($t)=>new D($t)",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        new D(\"a\" + 1);\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+
     public void testTopLevelRewriteWithoutParenthesis1() throws Exception {
         performRewriteTest("package test;\n" +
                            "public class Test {\n" +

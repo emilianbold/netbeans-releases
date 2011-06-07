@@ -1019,6 +1019,14 @@ public abstract class JavaFix {
 
         if (outter.getKind() == Kind.PARENTHESIZED || inner.getKind() == Kind.PARENTHESIZED) return false;
 
+        if (outter.getKind() == Kind.METHOD_INVOCATION) {
+            if (((MethodInvocationTree) outter).getArguments().contains(original)) return false;
+        }
+
+        if (outter.getKind() == Kind.NEW_CLASS) {
+            if (((NewClassTree) outter).getArguments().contains(original)) return false;
+        }
+        
         Integer innerPriority = OPERATOR_PRIORITIES.get(inner.getKind());
         Integer outterPriority = OPERATOR_PRIORITIES.get(outter.getKind());
 
