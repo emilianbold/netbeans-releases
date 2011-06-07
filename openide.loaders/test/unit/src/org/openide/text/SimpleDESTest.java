@@ -47,6 +47,7 @@ package org.openide.text;
 import java.awt.EventQueue;
 import java.io.PrintStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -68,6 +69,7 @@ public class SimpleDESTest extends NbTestCase {
     
     private FileSystem lfs;
     private DataObject obj;
+    private Logger LOG;
     
     /** Creates a new instance of DefaultSettingsContextTest */
     public SimpleDESTest(String name) {
@@ -86,6 +88,8 @@ public class SimpleDESTest extends NbTestCase {
     @Override
     protected void setUp() throws java.lang.Exception {
         clearWorkDir ();
+        LOG = Logger.getLogger("test." + getName());
+        
         RUNNING = this;
         
         System.setProperty("org.openide.util.Lookup", "org.openide.text.SimpleDESTest$Lkp");
@@ -147,10 +151,17 @@ public class SimpleDESTest extends NbTestCase {
         
         OpenCookie open = obj.getCookie(OpenCookie.class);
         open.open ();
-        waitAWT();
-        
-        javax.swing.text.Document d = c.getDocument();
-        assertNotNull (d);
+        javax.swing.text.Document d = null;
+        for (int i = 0; i < 10; i++) {
+            d = c.getDocument();
+            LOG.log(Level.INFO, "Round {0} document {1}", new Object[]{i, d});
+            if (d != null) {
+                break;
+            }
+            Thread.sleep(100);
+            waitAWT();
+        }
+        assertNotNull ("Document is now openned", d);
         
         d.insertString(0, "Kuk", null);
         

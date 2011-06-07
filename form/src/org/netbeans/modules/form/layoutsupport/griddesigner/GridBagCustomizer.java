@@ -267,8 +267,6 @@ public class GridBagCustomizer implements GridCustomizer {
         customizer = new javax.swing.JPanel();
         leftPanel = new javax.swing.JPanel();
         anchorToolGroup = new javax.swing.JPanel();
-        anchorLabel = new javax.swing.JLabel();
-        anchorSeparator = new javax.swing.JSeparator();
         anchorPanel = new javax.swing.JPanel();
         cAnchorButton = new javax.swing.JToggleButton();
         nAnchorButton = new javax.swing.JToggleButton();
@@ -283,8 +281,6 @@ public class GridBagCustomizer implements GridCustomizer {
         baselineAnchorButton = new javax.swing.JToggleButton();
         bidiAnchorButton = new javax.swing.JToggleButton();
         paddingToolGroup = new javax.swing.JPanel();
-        paddingLabel = new javax.swing.JLabel();
-        paddingSeparator = new javax.swing.JSeparator();
         paddingPanel = new javax.swing.JPanel();
         vMinusPaddingButton = new javax.swing.JButton();
         vPadLabel = new javax.swing.JLabel();
@@ -296,8 +292,6 @@ public class GridBagCustomizer implements GridCustomizer {
         bPadLabel = new javax.swing.JLabel();
         bPlusPaddingButton = new javax.swing.JButton();
         gridSizeToolGroup = new javax.swing.JPanel();
-        gridSizeLabel = new javax.swing.JLabel();
-        gridSizeSeparator = new javax.swing.JSeparator();
         gridSizePanel = new javax.swing.JPanel();
         vGridRelativeButton = new javax.swing.JToggleButton();
         vGridRemainderButton = new javax.swing.JToggleButton();
@@ -310,8 +304,6 @@ public class GridBagCustomizer implements GridCustomizer {
         hGridRemainderButton = new javax.swing.JToggleButton();
         hGridLabel = new javax.swing.JLabel();
         gridPositionToolGroup = new javax.swing.JPanel();
-        gridPositionLabel = new javax.swing.JLabel();
-        gridPositionSeparator = new javax.swing.JSeparator();
         gridPositionPanel = new javax.swing.JPanel();
         xGridMinusButton = new javax.swing.JButton();
         yGridMinusButton = new javax.swing.JButton();
@@ -321,8 +313,6 @@ public class GridBagCustomizer implements GridCustomizer {
         yGridRelativeButton = new javax.swing.JToggleButton();
         rightPanel = new javax.swing.JPanel();
         insetsToolGroup = new javax.swing.JPanel();
-        insetsLabel = new javax.swing.JLabel();
-        insetsSeparator = new javax.swing.JSeparator();
         insetsPanel = new javax.swing.JPanel();
         vInsetLabel = new javax.swing.JLabel();
         vMinusInsetButton = new javax.swing.JButton();
@@ -348,14 +338,10 @@ public class GridBagCustomizer implements GridCustomizer {
         bottomRightCorner = new javax.swing.JLabel();
         crossCenter = new javax.swing.Box.Filler(new java.awt.Dimension(20, 20), new java.awt.Dimension(20, 20), new java.awt.Dimension(20, 20));
         fillToolGroup = new javax.swing.JPanel();
-        fillLabel = new javax.swing.JLabel();
-        fillSeparator = new javax.swing.JSeparator();
         fillPanel = new javax.swing.JPanel();
         hFillButton = new javax.swing.JToggleButton();
         vFillButton = new javax.swing.JToggleButton();
         weightsToolGroup = new javax.swing.JPanel();
-        weightsLabel = new javax.swing.JLabel();
-        weightsSeparator = new javax.swing.JSeparator();
         weightsPanel = new javax.swing.JPanel();
         vWeightLabel = new javax.swing.JLabel();
         vMinusWeightButton = new javax.swing.JButton();
@@ -368,76 +354,81 @@ public class GridBagCustomizer implements GridCustomizer {
 
         FormListener formListener = new FormListener();
 
-        customizer.setPreferredSize(new java.awt.Dimension(310, 360));
+        anchorToolGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchorToolGroup.border.title"))); // NOI18N
 
-        leftPanel.setPreferredSize(new java.awt.Dimension(155, 340));
-
-        anchorToolGroup.setOpaque(false);
-        anchorToolGroup.setPreferredSize(new java.awt.Dimension(145, 100));
-
-        anchorLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchorLabel.text")); // NOI18N
-
-        anchorPanel.setPreferredSize(new java.awt.Dimension(125, 85));
+        anchorPanel.setOpaque(false);
 
         cAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_c.png"))); // NOI18N
         cAnchorButton.setEnabled(false);
         cAnchorButton.setFocusPainted(false);
         cAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        cAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         cAnchorButton.addActionListener(formListener);
 
         nAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_n.png"))); // NOI18N
         nAnchorButton.setEnabled(false);
         nAnchorButton.setFocusPainted(false);
         nAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        nAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         nAnchorButton.addActionListener(formListener);
 
         nwAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_nw.png"))); // NOI18N
         nwAnchorButton.setEnabled(false);
         nwAnchorButton.setFocusPainted(false);
         nwAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        nwAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         nwAnchorButton.addActionListener(formListener);
 
         eAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_e.png"))); // NOI18N
         eAnchorButton.setEnabled(false);
         eAnchorButton.setFocusPainted(false);
         eAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        eAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         eAnchorButton.addActionListener(formListener);
 
         neAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_ne.png"))); // NOI18N
         neAnchorButton.setEnabled(false);
         neAnchorButton.setFocusPainted(false);
         neAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        neAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         neAnchorButton.addActionListener(formListener);
 
         sAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_s.png"))); // NOI18N
         sAnchorButton.setEnabled(false);
         sAnchorButton.setFocusPainted(false);
         sAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        sAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         sAnchorButton.addActionListener(formListener);
 
         seAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_se.png"))); // NOI18N
         seAnchorButton.setEnabled(false);
         seAnchorButton.setFocusPainted(false);
         seAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        seAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         seAnchorButton.addActionListener(formListener);
 
         wAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_w.png"))); // NOI18N
         wAnchorButton.setEnabled(false);
         wAnchorButton.setFocusPainted(false);
         wAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        wAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         wAnchorButton.addActionListener(formListener);
 
         swAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_sw.png"))); // NOI18N
         swAnchorButton.setEnabled(false);
         swAnchorButton.setFocusPainted(false);
         swAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        swAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         swAnchorButton.addActionListener(formListener);
+
+        anchorTypePanel.setOpaque(false);
 
         baselineAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/baseline.png"))); // NOI18N
         baselineAnchorButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.anchor.baselineRelated")); // NOI18N
         baselineAnchorButton.setEnabled(false);
         baselineAnchorButton.setFocusPainted(false);
         baselineAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        baselineAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         baselineAnchorButton.addActionListener(formListener);
 
         bidiAnchorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/bidi.png"))); // NOI18N
@@ -445,6 +436,7 @@ public class GridBagCustomizer implements GridCustomizer {
         bidiAnchorButton.setEnabled(false);
         bidiAnchorButton.setFocusPainted(false);
         bidiAnchorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        bidiAnchorButton.setPreferredSize(new java.awt.Dimension(22, 22));
         bidiAnchorButton.addActionListener(formListener);
 
         javax.swing.GroupLayout anchorTypePanelLayout = new javax.swing.GroupLayout(anchorTypePanel);
@@ -454,17 +446,17 @@ public class GridBagCustomizer implements GridCustomizer {
             .addGroup(anchorTypePanelLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(anchorTypePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(bidiAnchorButton)
-                    .addComponent(baselineAnchorButton))
+                    .addComponent(bidiAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(baselineAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0))
         );
         anchorTypePanelLayout.setVerticalGroup(
             anchorTypePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(anchorTypePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(bidiAnchorButton)
+                .addComponent(bidiAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(baselineAnchorButton)
+                .addComponent(baselineAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -474,50 +466,50 @@ public class GridBagCustomizer implements GridCustomizer {
             anchorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(anchorPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(anchorTypePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(anchorTypePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addGroup(anchorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addGroup(anchorPanelLayout.createSequentialGroup()
-                        .addComponent(swAnchorButton)
+                        .addComponent(swAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(sAnchorButton)
+                        .addComponent(sAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(seAnchorButton))
+                        .addComponent(seAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(anchorPanelLayout.createSequentialGroup()
-                        .addComponent(wAnchorButton)
+                        .addComponent(wAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(cAnchorButton)
+                        .addComponent(cAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(eAnchorButton))
+                        .addComponent(eAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(anchorPanelLayout.createSequentialGroup()
-                        .addComponent(nwAnchorButton)
+                        .addComponent(nwAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(nAnchorButton)
+                        .addComponent(nAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, 0)
-                        .addComponent(neAnchorButton)))
-                .addContainerGap())
+                        .addComponent(neAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         anchorPanelLayout.setVerticalGroup(
             anchorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(anchorPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(anchorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(anchorTypePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(anchorTypePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(anchorPanelLayout.createSequentialGroup()
                         .addGroup(anchorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(nwAnchorButton)
-                            .addComponent(nAnchorButton)
-                            .addComponent(neAnchorButton))
+                            .addComponent(nwAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(nAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(neAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, 0)
                         .addGroup(anchorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(wAnchorButton)
-                            .addComponent(cAnchorButton)
-                            .addComponent(eAnchorButton))
+                            .addComponent(wAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(cAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(eAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, 0)
                         .addGroup(anchorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(swAnchorButton)
-                            .addComponent(sAnchorButton)
-                            .addComponent(seAnchorButton))))
+                            .addComponent(swAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(sAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(seAnchorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -526,86 +518,59 @@ public class GridBagCustomizer implements GridCustomizer {
         anchorToolGroupLayout.setHorizontalGroup(
             anchorToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(anchorToolGroupLayout.createSequentialGroup()
-                .addComponent(anchorLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(anchorSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                .addGap(0, 0, 0))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, anchorToolGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(anchorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(anchorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         anchorToolGroupLayout.setVerticalGroup(
             anchorToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(anchorToolGroupLayout.createSequentialGroup()
-                .addGroup(anchorToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(anchorSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(anchorLabel))
-                .addGap(0, 0, 0)
-                .addComponent(anchorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addComponent(anchorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        paddingToolGroup.setPreferredSize(new java.awt.Dimension(145, 80));
+        paddingToolGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.paddingToolGroup.border.title"))); // NOI18N
 
-        paddingLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.paddingLabel.text")); // NOI18N
-
-        paddingPanel.setPreferredSize(new java.awt.Dimension(140, 65));
+        paddingPanel.setOpaque(false);
 
         vMinusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
         vMinusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.VMinus.toolTipText")); // NOI18N
         vMinusPaddingButton.setEnabled(false);
         vMinusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vMinusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vMinusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vMinusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vMinusPaddingButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vMinusPaddingButton.addActionListener(formListener);
 
         vPadLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         vPadLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/vertical.png"))); // NOI18N
-        vPadLabel.setMaximumSize(new java.awt.Dimension(10, 15));
-        vPadLabel.setMinimumSize(new java.awt.Dimension(10, 15));
         vPadLabel.setPreferredSize(new java.awt.Dimension(10, 15));
 
         vPlusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         vPlusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.VPlus.toolTipText")); // NOI18N
         vPlusPaddingButton.setEnabled(false);
         vPlusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vPlusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vPlusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vPlusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vPlusPaddingButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vPlusPaddingButton.addActionListener(formListener);
 
         hPlusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         hPlusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.HPlus.toolTipText")); // NOI18N
         hPlusPaddingButton.setEnabled(false);
         hPlusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hPlusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hPlusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hPlusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hPlusPaddingButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hPlusPaddingButton.addActionListener(formListener);
 
         hPadLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/horizontal.png"))); // NOI18N
-        hPadLabel.setMaximumSize(new java.awt.Dimension(15, 10));
-        hPadLabel.setMinimumSize(new java.awt.Dimension(15, 10));
         hPadLabel.setPreferredSize(new java.awt.Dimension(15, 10));
 
         hMinusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
         hMinusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.HMinus.toolTipText")); // NOI18N
         hMinusPaddingButton.setEnabled(false);
         hMinusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hMinusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hMinusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hMinusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hMinusPaddingButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hMinusPaddingButton.addActionListener(formListener);
 
         bMinusPaddingButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
         bMinusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.BMinus.toolTipText")); // NOI18N
         bMinusPaddingButton.setEnabled(false);
         bMinusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        bMinusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        bMinusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        bMinusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        bMinusPaddingButton.setPreferredSize(new java.awt.Dimension(22, 22));
         bMinusPaddingButton.addActionListener(formListener);
 
         bPadLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -615,9 +580,7 @@ public class GridBagCustomizer implements GridCustomizer {
         bPlusPaddingButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.padding.BPlus.toolTipText")); // NOI18N
         bPlusPaddingButton.setEnabled(false);
         bPlusPaddingButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        bPlusPaddingButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        bPlusPaddingButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        bPlusPaddingButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        bPlusPaddingButton.setPreferredSize(new java.awt.Dimension(22, 22));
         bPlusPaddingButton.addActionListener(formListener);
 
         javax.swing.GroupLayout paddingPanelLayout = new javax.swing.GroupLayout(paddingPanel);
@@ -644,12 +607,12 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(bPlusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bMinusPaddingButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
         paddingPanelLayout.setVerticalGroup(
             paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(paddingPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(paddingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                         .addComponent(bPadLabel)
@@ -676,103 +639,69 @@ public class GridBagCustomizer implements GridCustomizer {
         paddingToolGroup.setLayout(paddingToolGroupLayout);
         paddingToolGroupLayout.setHorizontalGroup(
             paddingToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(paddingToolGroupLayout.createSequentialGroup()
-                .addComponent(paddingLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(paddingSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE))
-            .addGroup(paddingToolGroupLayout.createSequentialGroup()
-                .addComponent(paddingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addComponent(paddingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         paddingToolGroupLayout.setVerticalGroup(
             paddingToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(paddingToolGroupLayout.createSequentialGroup()
-                .addGroup(paddingToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(paddingSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(paddingLabel))
-                .addGap(0, 0, 0)
-                .addComponent(paddingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addComponent(paddingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        gridSizeToolGroup.setPreferredSize(new java.awt.Dimension(145, 80));
+        gridSizeToolGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.gridSizeToolGroup.border.title"))); // NOI18N
 
-        gridSizeLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.gridSizeLabel.text")); // NOI18N
-
-        gridSizePanel.setPreferredSize(new java.awt.Dimension(140, 62));
+        gridSizePanel.setOpaque(false);
 
         vGridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_relative.png"))); // NOI18N
         vGridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridRelativeButton.toolTipText")); // NOI18N
         vGridRelativeButton.setEnabled(false);
-        vGridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vGridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vGridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridRelativeButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vGridRelativeButton.addActionListener(formListener);
 
         vGridRemainderButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight_remainder.png"))); // NOI18N
         vGridRemainderButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridRemainderButton.toolTipText")); // NOI18N
         vGridRemainderButton.setEnabled(false);
-        vGridRemainderButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vGridRemainderButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vGridRemainderButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridRemainderButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vGridRemainderButton.addActionListener(formListener);
 
         vGridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
         vGridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridMinusButton.toolTipText")); // NOI18N
         vGridMinusButton.setEnabled(false);
-        vGridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vGridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vGridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vGridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridMinusButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vGridMinusButton.addActionListener(formListener);
 
         vGridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         vGridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vGridPlusButton.toolTipText")); // NOI18N
         vGridPlusButton.setEnabled(false);
-        vGridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vGridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vGridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vGridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vGridPlusButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vGridPlusButton.addActionListener(formListener);
 
         vGridLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         vGridLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridheight.png"))); // NOI18N
-        vGridLabel.setMaximumSize(new java.awt.Dimension(10, 15));
-        vGridLabel.setMinimumSize(new java.awt.Dimension(10, 15));
         vGridLabel.setPreferredSize(new java.awt.Dimension(10, 15));
 
         hGridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
         hGridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridMinusButton.toolTipText")); // NOI18N
         hGridMinusButton.setEnabled(false);
         hGridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hGridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hGridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hGridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridMinusButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hGridMinusButton.addActionListener(formListener);
 
         hGridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         hGridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridPlusButton.toolTipText")); // NOI18N
         hGridPlusButton.setEnabled(false);
         hGridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hGridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hGridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hGridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridPlusButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hGridPlusButton.addActionListener(formListener);
 
         hGridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_relative.png"))); // NOI18N
         hGridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridRelativeButton.toolTipText")); // NOI18N
         hGridRelativeButton.setEnabled(false);
-        hGridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hGridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hGridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridRelativeButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hGridRelativeButton.addActionListener(formListener);
 
         hGridRemainderButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth_remainder.png"))); // NOI18N
         hGridRemainderButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hGridRemainderButton.toolTipText")); // NOI18N
         hGridRemainderButton.setEnabled(false);
-        hGridRemainderButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hGridRemainderButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hGridRemainderButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hGridRemainderButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hGridRemainderButton.addActionListener(formListener);
 
         hGridLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridwidth.png"))); // NOI18N
@@ -809,7 +738,7 @@ public class GridBagCustomizer implements GridCustomizer {
         gridSizePanelLayout.setVerticalGroup(
             gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(gridSizePanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(gridSizePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(gridSizePanelLayout.createSequentialGroup()
                         .addComponent(hGridRemainderButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -838,81 +767,53 @@ public class GridBagCustomizer implements GridCustomizer {
         gridSizeToolGroup.setLayout(gridSizeToolGroupLayout);
         gridSizeToolGroupLayout.setHorizontalGroup(
             gridSizeToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gridSizeToolGroupLayout.createSequentialGroup()
-                .addComponent(gridSizeLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gridSizeSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE))
-            .addGroup(gridSizeToolGroupLayout.createSequentialGroup()
-                .addComponent(gridSizePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addComponent(gridSizePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         gridSizeToolGroupLayout.setVerticalGroup(
             gridSizeToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(gridSizeToolGroupLayout.createSequentialGroup()
-                .addGroup(gridSizeToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(gridSizeSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(gridSizeLabel))
                 .addGap(0, 0, 0)
-                .addComponent(gridSizePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(gridSizePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        gridPositionToolGroup.setPreferredSize(new java.awt.Dimension(145, 80));
+        gridPositionToolGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.gridPositionToolGroup.border.title"))); // NOI18N
 
-        gridPositionLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.gridPositionLabel.text")); // NOI18N
-
-        gridPositionPanel.setPreferredSize(new java.awt.Dimension(124, 62));
+        gridPositionPanel.setOpaque(false);
 
         xGridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_w.png"))); // NOI18N
         xGridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xGridMinusButton.toolTipText")); // NOI18N
         xGridMinusButton.setEnabled(false);
-        xGridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        xGridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        xGridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        xGridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        xGridMinusButton.setPreferredSize(new java.awt.Dimension(22, 22));
         xGridMinusButton.addActionListener(formListener);
 
         yGridMinusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_n.png"))); // NOI18N
         yGridMinusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.yGridMinusButton.toolTipText")); // NOI18N
         yGridMinusButton.setEnabled(false);
-        yGridMinusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        yGridMinusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        yGridMinusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        yGridMinusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        yGridMinusButton.setPreferredSize(new java.awt.Dimension(22, 22));
         yGridMinusButton.addActionListener(formListener);
 
         yGridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_s.png"))); // NOI18N
         yGridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.yGridPlusButton.toolTipText")); // NOI18N
         yGridPlusButton.setEnabled(false);
-        yGridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        yGridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        yGridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        yGridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        yGridPlusButton.setPreferredSize(new java.awt.Dimension(22, 22));
         yGridPlusButton.addActionListener(formListener);
 
         xGridPlusButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/anchor_e.png"))); // NOI18N
         xGridPlusButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xGridPlusButton.toolTipText")); // NOI18N
         xGridPlusButton.setEnabled(false);
-        xGridPlusButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        xGridPlusButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        xGridPlusButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        xGridPlusButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        xGridPlusButton.setPreferredSize(new java.awt.Dimension(22, 22));
         xGridPlusButton.addActionListener(formListener);
 
         xGridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridx_relative.png"))); // NOI18N
         xGridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.xGridRelativeButton.toolTipText")); // NOI18N
         xGridRelativeButton.setEnabled(false);
-        xGridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        xGridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        xGridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        xGridRelativeButton.setPreferredSize(new java.awt.Dimension(22, 22));
         xGridRelativeButton.addActionListener(formListener);
 
         yGridRelativeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/gridy_relative.png"))); // NOI18N
         yGridRelativeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.yGridRelativeButton.toolTipText")); // NOI18N
         yGridRelativeButton.setEnabled(false);
-        yGridRelativeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        yGridRelativeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        yGridRelativeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        yGridRelativeButton.setPreferredSize(new java.awt.Dimension(22, 22));
         yGridRelativeButton.addActionListener(formListener);
 
         javax.swing.GroupLayout gridPositionPanelLayout = new javax.swing.GroupLayout(gridPositionPanel);
@@ -932,12 +833,12 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGroup(gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(yGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(xGridRelativeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         gridPositionPanelLayout.setVerticalGroup(
             gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(gridPositionPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(gridPositionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                         .addComponent(xGridMinusButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -958,23 +859,15 @@ public class GridBagCustomizer implements GridCustomizer {
         gridPositionToolGroupLayout.setHorizontalGroup(
             gridPositionToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(gridPositionToolGroupLayout.createSequentialGroup()
-                .addComponent(gridPositionLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gridPositionSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
-            .addGroup(gridPositionToolGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(gridPositionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(gridPositionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         gridPositionToolGroupLayout.setVerticalGroup(
             gridPositionToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gridPositionToolGroupLayout.createSequentialGroup()
-                .addGroup(gridPositionToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(gridPositionSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(gridPositionLabel))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, gridPositionToolGroupLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(gridPositionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(gridPositionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
@@ -982,33 +875,32 @@ public class GridBagCustomizer implements GridCustomizer {
         leftPanelLayout.setHorizontalGroup(
             leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(leftPanelLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(gridPositionToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(gridSizeToolGroup, javax.swing.GroupLayout.Alignment.LEADING, 0, 145, Short.MAX_VALUE)
-                    .addComponent(paddingToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(anchorToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addContainerGap()
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(anchorToolGroup, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(gridPositionToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(gridSizeToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(paddingToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         leftPanelLayout.setVerticalGroup(
             leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(leftPanelLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(anchorToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(paddingToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(gridSizeToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(gridPositionToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(anchorToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(paddingToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(gridSizeToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(gridPositionToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        insetsToolGroup.setPreferredSize(new java.awt.Dimension(135, 195));
+        insetsToolGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.insetsToolGroup.border.title"))); // NOI18N
 
-        insetsLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.insetsLabel.text")); // NOI18N
-
-        insetsPanel.setPreferredSize(new java.awt.Dimension(124, 139));
+        insetsPanel.setOpaque(false);
 
         vInsetLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         vInsetLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/inset_v.png"))); // NOI18N
@@ -1020,18 +912,14 @@ public class GridBagCustomizer implements GridCustomizer {
         vMinusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vMinusInsetButton.toolTipText")); // NOI18N
         vMinusInsetButton.setEnabled(false);
         vMinusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vMinusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vMinusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vMinusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vMinusInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vMinusInsetButton.addActionListener(formListener);
 
         vPlusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         vPlusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vPlusInsetButton.toolTipText")); // NOI18N
         vPlusInsetButton.setEnabled(false);
         vPlusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vPlusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vPlusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vPlusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vPlusInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vPlusInsetButton.addActionListener(formListener);
 
         hInsetLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/inset_h.png"))); // NOI18N
@@ -1043,18 +931,14 @@ public class GridBagCustomizer implements GridCustomizer {
         hMinusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hMinusInsetButton.toolTipText")); // NOI18N
         hMinusInsetButton.setEnabled(false);
         hMinusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hMinusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hMinusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hMinusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hMinusInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hMinusInsetButton.addActionListener(formListener);
 
         hPlusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         hPlusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hPlusInsetButton.toolTipText")); // NOI18N
         hPlusInsetButton.setEnabled(false);
         hPlusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hPlusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hPlusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hPlusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hPlusInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hPlusInsetButton.addActionListener(formListener);
 
         bInsetLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -1064,18 +948,14 @@ public class GridBagCustomizer implements GridCustomizer {
         bMinusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.bMinusInsetButton.toolTipText")); // NOI18N
         bMinusInsetButton.setEnabled(false);
         bMinusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        bMinusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        bMinusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        bMinusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        bMinusInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         bMinusInsetButton.addActionListener(formListener);
 
         bPlusInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         bPlusInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.bPlusInsetButton.toolTipText")); // NOI18N
         bPlusInsetButton.setEnabled(false);
         bPlusInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        bPlusInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        bPlusInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        bPlusInsetButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        bPlusInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         bPlusInsetButton.addActionListener(formListener);
 
         javax.swing.GroupLayout insetsPanelLayout = new javax.swing.GroupLayout(insetsPanel);
@@ -1102,12 +982,12 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(bPlusInsetButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bMinusInsetButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
         insetsPanelLayout.setVerticalGroup(
             insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(insetsPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(insetsPanelLayout.createSequentialGroup()
                         .addGroup(insetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1128,24 +1008,22 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        insetsCross.setOpaque(false);
+
         topLeftCorner.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/corner_tl.png"))); // NOI18N
 
         vPlusTopInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         vPlusTopInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vPlusTopInsetButton.toolTipText")); // NOI18N
         vPlusTopInsetButton.setEnabled(false);
         vPlusTopInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vPlusTopInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vPlusTopInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vPlusTopInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
+        vPlusTopInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vPlusTopInsetButton.addActionListener(formListener);
 
         vMinusTopInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
         vMinusTopInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vMinusTopInsetButton.toolTipText")); // NOI18N
         vMinusTopInsetButton.setEnabled(false);
         vMinusTopInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vMinusTopInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vMinusTopInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vMinusTopInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
+        vMinusTopInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vMinusTopInsetButton.addActionListener(formListener);
 
         topRightCorner.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/corner_tr.png"))); // NOI18N
@@ -1154,36 +1032,28 @@ public class GridBagCustomizer implements GridCustomizer {
         hPlusLeftInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hPlusLeftInsetButton.toolTipText")); // NOI18N
         hPlusLeftInsetButton.setEnabled(false);
         hPlusLeftInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hPlusLeftInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hPlusLeftInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hPlusLeftInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
+        hPlusLeftInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hPlusLeftInsetButton.addActionListener(formListener);
 
         hMinusLeftInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
         hMinusLeftInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hMinusLeftInsetButton.toolTipText")); // NOI18N
         hMinusLeftInsetButton.setEnabled(false);
         hMinusLeftInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hMinusLeftInsetButton.setMaximumSize(new java.awt.Dimension(18, 20));
-        hMinusLeftInsetButton.setMinimumSize(new java.awt.Dimension(18, 20));
-        hMinusLeftInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
+        hMinusLeftInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hMinusLeftInsetButton.addActionListener(formListener);
 
         hMinusRightInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/minus.png"))); // NOI18N
         hMinusRightInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hMinusRightInsetButton.toolTipText")); // NOI18N
         hMinusRightInsetButton.setEnabled(false);
         hMinusRightInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hMinusRightInsetButton.setMaximumSize(new java.awt.Dimension(18, 20));
-        hMinusRightInsetButton.setMinimumSize(new java.awt.Dimension(18, 20));
-        hMinusRightInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
+        hMinusRightInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hMinusRightInsetButton.addActionListener(formListener);
 
         hPlusRightInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         hPlusRightInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hPlusRightInsetButton.toolTipText")); // NOI18N
         hPlusRightInsetButton.setEnabled(false);
         hPlusRightInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hPlusRightInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hPlusRightInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hPlusRightInsetButton.setPreferredSize(new java.awt.Dimension(18, 20));
+        hPlusRightInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hPlusRightInsetButton.addActionListener(formListener);
 
         bottomLeftCorner.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/corner_bl.png"))); // NOI18N
@@ -1192,18 +1062,14 @@ public class GridBagCustomizer implements GridCustomizer {
         vMinusBottomInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vMinusBottomInsetButton.toolTipText")); // NOI18N
         vMinusBottomInsetButton.setEnabled(false);
         vMinusBottomInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vMinusBottomInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vMinusBottomInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vMinusBottomInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
+        vMinusBottomInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vMinusBottomInsetButton.addActionListener(formListener);
 
         vPlusBottomInsetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         vPlusBottomInsetButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vPlusBottomInsetButton.toolTipText")); // NOI18N
         vPlusBottomInsetButton.setEnabled(false);
         vPlusBottomInsetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vPlusBottomInsetButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vPlusBottomInsetButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vPlusBottomInsetButton.setPreferredSize(new java.awt.Dimension(20, 18));
+        vPlusBottomInsetButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vPlusBottomInsetButton.addActionListener(formListener);
 
         bottomRightCorner.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/corner_br.png"))); // NOI18N
@@ -1213,7 +1079,7 @@ public class GridBagCustomizer implements GridCustomizer {
         insetsCrossLayout.setHorizontalGroup(
             insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(insetsCrossLayout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(insetsCrossLayout.createSequentialGroup()
                         .addComponent(topLeftCorner)
@@ -1244,7 +1110,7 @@ public class GridBagCustomizer implements GridCustomizer {
         insetsCrossLayout.setVerticalGroup(
             insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(insetsCrossLayout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(insetsCrossLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(topLeftCorner)
                     .addGroup(insetsCrossLayout.createSequentialGroup()
@@ -1276,44 +1142,30 @@ public class GridBagCustomizer implements GridCustomizer {
         insetsToolGroupLayout.setHorizontalGroup(
             insetsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(insetsToolGroupLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addGroup(insetsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(insetsToolGroupLayout.createSequentialGroup()
-                        .addComponent(insetsLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(insetsSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
-                    .addGroup(insetsToolGroupLayout.createSequentialGroup()
-                        .addGap(0, 0, 0)
-                        .addComponent(insetsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))))
-            .addGroup(insetsToolGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(insetsCross, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(insetsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(insetsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(insetsCross, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         insetsToolGroupLayout.setVerticalGroup(
             insetsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(insetsToolGroupLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, insetsToolGroupLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addGroup(insetsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(insetsLabel)
-                    .addComponent(insetsSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, 0)
-                .addComponent(insetsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(insetsCross, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(insetsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(insetsCross, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        fillToolGroup.setPreferredSize(new java.awt.Dimension(135, 47));
+        fillToolGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fillToolGroup.border.title"))); // NOI18N
 
-        fillLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fillLabel.text")); // NOI18N
-
-        fillPanel.setPreferredSize(new java.awt.Dimension(124, 20));
+        fillPanel.setOpaque(false);
 
         hFillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_h.png"))); // NOI18N
         hFillButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.fill.horizontal")); // NOI18N
         hFillButton.setEnabled(false);
         hFillButton.setFocusPainted(false);
         hFillButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hFillButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hFillButton.addActionListener(formListener);
 
         vFillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/resize_v.png"))); // NOI18N
@@ -1321,6 +1173,7 @@ public class GridBagCustomizer implements GridCustomizer {
         vFillButton.setEnabled(false);
         vFillButton.setFocusPainted(false);
         vFillButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vFillButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vFillButton.addActionListener(formListener);
 
         javax.swing.GroupLayout fillPanelLayout = new javax.swing.GroupLayout(fillPanel);
@@ -1328,16 +1181,19 @@ public class GridBagCustomizer implements GridCustomizer {
         fillPanelLayout.setHorizontalGroup(
             fillPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(fillPanelLayout.createSequentialGroup()
-                .addGap(42, 42, 42)
+                .addGap(50, 50, 50)
                 .addComponent(hFillButton, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(vFillButton, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         fillPanelLayout.setVerticalGroup(
             fillPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(hFillButton)
-            .addComponent(vFillButton)
+            .addGroup(fillPanelLayout.createSequentialGroup()
+                .addGroup(fillPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(hFillButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(vFillButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout fillToolGroupLayout = new javax.swing.GroupLayout(fillToolGroup);
@@ -1345,27 +1201,19 @@ public class GridBagCustomizer implements GridCustomizer {
         fillToolGroupLayout.setHorizontalGroup(
             fillToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(fillToolGroupLayout.createSequentialGroup()
-                .addComponent(fillLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fillSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
-            .addComponent(fillPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(fillPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(49, Short.MAX_VALUE))
         );
         fillToolGroupLayout.setVerticalGroup(
             fillToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(fillToolGroupLayout.createSequentialGroup()
-                .addGroup(fillToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(fillSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(fillLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fillPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, 0)
+                .addComponent(fillPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        weightsToolGroup.setPreferredSize(new java.awt.Dimension(135, 80));
+        weightsToolGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.weightsToolGroup.border.title"))); // NOI18N
 
-        weightsLabel.setText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.weightsLabel.text")); // NOI18N
-
-        weightsPanel.setPreferredSize(new java.awt.Dimension(140, 65));
+        weightsPanel.setOpaque(false);
 
         vWeightLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         vWeightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_vertical.png"))); // NOI18N
@@ -1374,18 +1222,14 @@ public class GridBagCustomizer implements GridCustomizer {
         vMinusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vMinusWeightButton.toolTipText")); // NOI18N
         vMinusWeightButton.setEnabled(false);
         vMinusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vMinusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vMinusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vMinusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vMinusWeightButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vMinusWeightButton.addActionListener(formListener);
 
         vPlusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         vPlusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vPlusWeightButton.toolTipText")); // NOI18N
         vPlusWeightButton.setEnabled(false);
         vPlusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vPlusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vPlusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vPlusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vPlusWeightButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vPlusWeightButton.addActionListener(formListener);
 
         hWeightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_horizontal.png"))); // NOI18N
@@ -1394,36 +1238,28 @@ public class GridBagCustomizer implements GridCustomizer {
         hMinusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hMinusWeightButton.toolTipText")); // NOI18N
         hMinusWeightButton.setEnabled(false);
         hMinusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hMinusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hMinusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hMinusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hMinusWeightButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hMinusWeightButton.addActionListener(formListener);
 
         hPlusWeightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/plus.png"))); // NOI18N
         hPlusWeightButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hPlusWeightButton.toolTipText")); // NOI18N
         hPlusWeightButton.setEnabled(false);
         hPlusWeightButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hPlusWeightButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hPlusWeightButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hPlusWeightButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hPlusWeightButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hPlusWeightButton.addActionListener(formListener);
 
         hWeightEqualizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_horizontal.png"))); // NOI18N
         hWeightEqualizeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.hWeightEqualizeButton.toolTipText")); // NOI18N
         hWeightEqualizeButton.setEnabled(false);
         hWeightEqualizeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        hWeightEqualizeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        hWeightEqualizeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        hWeightEqualizeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        hWeightEqualizeButton.setPreferredSize(new java.awt.Dimension(22, 22));
         hWeightEqualizeButton.addActionListener(formListener);
 
         vWeightEqualizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/layoutsupport/griddesigner/resources/weight_equal_vertical.png"))); // NOI18N
         vWeightEqualizeButton.setToolTipText(org.openide.util.NbBundle.getMessage(GridBagCustomizer.class, "GridBagCustomizer.vWeightEqualizeButton.toolTipText")); // NOI18N
         vWeightEqualizeButton.setEnabled(false);
         vWeightEqualizeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        vWeightEqualizeButton.setMaximumSize(new java.awt.Dimension(20, 20));
-        vWeightEqualizeButton.setMinimumSize(new java.awt.Dimension(20, 20));
-        vWeightEqualizeButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        vWeightEqualizeButton.setPreferredSize(new java.awt.Dimension(22, 22));
         vWeightEqualizeButton.addActionListener(formListener);
 
         javax.swing.GroupLayout weightsPanelLayout = new javax.swing.GroupLayout(weightsPanel);
@@ -1431,6 +1267,7 @@ public class GridBagCustomizer implements GridCustomizer {
         weightsPanelLayout.setHorizontalGroup(
             weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(weightsPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(vWeightLabel)
                 .addGap(0, 0, 0)
                 .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -1447,12 +1284,11 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(hWeightEqualizeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(vWeightEqualizeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
         weightsPanelLayout.setVerticalGroup(
             weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(weightsPanelLayout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(weightsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(vWeightLabel)
                     .addGroup(weightsPanelLayout.createSequentialGroup()
@@ -1477,20 +1313,13 @@ public class GridBagCustomizer implements GridCustomizer {
         weightsToolGroup.setLayout(weightsToolGroupLayout);
         weightsToolGroupLayout.setHorizontalGroup(
             weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(weightsToolGroupLayout.createSequentialGroup()
-                .addComponent(weightsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(weightsSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE))
-            .addComponent(weightsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(weightsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         weightsToolGroupLayout.setVerticalGroup(
             weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(weightsToolGroupLayout.createSequentialGroup()
-                .addGroup(weightsToolGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(weightsSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 3, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(weightsLabel))
                 .addGap(0, 0, 0)
-                .addComponent(weightsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(weightsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
@@ -1501,19 +1330,20 @@ public class GridBagCustomizer implements GridCustomizer {
                 .addGap(0, 0, 0)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(weightsToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(insetsToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(fillToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addComponent(fillToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(insetsToolGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
-                .addComponent(insetsToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(fillToolGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(insetsToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(weightsToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(fillToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(weightsToolGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(22, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout customizerLayout = new javax.swing.GroupLayout(customizer);
@@ -1521,20 +1351,14 @@ public class GridBagCustomizer implements GridCustomizer {
         customizerLayout.setHorizontalGroup(
             customizerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(customizerLayout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(leftPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(rightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(rightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         customizerLayout.setVerticalGroup(
             customizerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(customizerLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(customizerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(leftPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(rightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(leftPanel, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(rightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }
 
@@ -2161,9 +1985,7 @@ public class GridBagCustomizer implements GridCustomizer {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel anchorLabel;
     private javax.swing.JPanel anchorPanel;
-    private javax.swing.JSeparator anchorSeparator;
     private javax.swing.JPanel anchorToolGroup;
     private javax.swing.JPanel anchorTypePanel;
     private javax.swing.JLabel bInsetLabel;
@@ -2180,17 +2002,11 @@ public class GridBagCustomizer implements GridCustomizer {
     private javax.swing.Box.Filler crossCenter;
     private javax.swing.JPanel customizer;
     private javax.swing.JToggleButton eAnchorButton;
-    private javax.swing.JLabel fillLabel;
     private javax.swing.JPanel fillPanel;
-    private javax.swing.JSeparator fillSeparator;
     private javax.swing.JPanel fillToolGroup;
-    private javax.swing.JLabel gridPositionLabel;
     private javax.swing.JPanel gridPositionPanel;
-    private javax.swing.JSeparator gridPositionSeparator;
     private javax.swing.JPanel gridPositionToolGroup;
-    private javax.swing.JLabel gridSizeLabel;
     private javax.swing.JPanel gridSizePanel;
-    private javax.swing.JSeparator gridSizeSeparator;
     private javax.swing.JPanel gridSizeToolGroup;
     private javax.swing.JToggleButton hFillButton;
     private javax.swing.JLabel hGridLabel;
@@ -2213,17 +2029,13 @@ public class GridBagCustomizer implements GridCustomizer {
     private javax.swing.JButton hWeightEqualizeButton;
     private javax.swing.JLabel hWeightLabel;
     private javax.swing.JPanel insetsCross;
-    private javax.swing.JLabel insetsLabel;
     private javax.swing.JPanel insetsPanel;
-    private javax.swing.JSeparator insetsSeparator;
     private javax.swing.JPanel insetsToolGroup;
     private javax.swing.JPanel leftPanel;
     private javax.swing.JToggleButton nAnchorButton;
     private javax.swing.JToggleButton neAnchorButton;
     private javax.swing.JToggleButton nwAnchorButton;
-    private javax.swing.JLabel paddingLabel;
     private javax.swing.JPanel paddingPanel;
-    private javax.swing.JSeparator paddingSeparator;
     private javax.swing.JPanel paddingToolGroup;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JToggleButton sAnchorButton;
@@ -2252,9 +2064,7 @@ public class GridBagCustomizer implements GridCustomizer {
     private javax.swing.JButton vWeightEqualizeButton;
     private javax.swing.JLabel vWeightLabel;
     private javax.swing.JToggleButton wAnchorButton;
-    private javax.swing.JLabel weightsLabel;
     private javax.swing.JPanel weightsPanel;
-    private javax.swing.JSeparator weightsSeparator;
     private javax.swing.JPanel weightsToolGroup;
     private javax.swing.JButton xGridMinusButton;
     private javax.swing.JButton xGridPlusButton;

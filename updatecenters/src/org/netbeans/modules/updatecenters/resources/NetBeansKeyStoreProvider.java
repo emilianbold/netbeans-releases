@@ -61,7 +61,7 @@ import org.openide.modules.InstalledFileLocator;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.autoupdate.KeyStoreProvider.class)
 public final class NetBeansKeyStoreProvider implements KeyStoreProvider {
     
-    public static final String KS_FILE_PATH = "core" + System.getProperty ("file.separator") + "ide.ks";
+    public static final String KS_FILE_PATH = "core/ide.ks";
     private static final String KS_DEFAULT_PASSWORD = "open4all";
     
     public KeyStore getKeyStore() {
@@ -69,7 +69,7 @@ public final class NetBeansKeyStoreProvider implements KeyStoreProvider {
     }
     
     private static File getKeyStoreFile () {
-        File ksFileLocated = InstalledFileLocator.getDefault ().locate (KS_FILE_PATH, null, true);
+        File ksFileLocated = InstalledFileLocator.getDefault ().locate(KS_FILE_PATH, "org.netbeans.modules.updatecenters", true);
         assert ksFileLocated != null : "File found at " + KS_FILE_PATH;
         return ksFileLocated;
     }

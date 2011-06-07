@@ -2822,14 +2822,13 @@ public class CasualDiff {
     // refactor it! make it better
     private int diffCommentLists(JCTree oldT, JCTree newT, List<Comment>oldList,
                                   List<Comment>newList, boolean trailing, int localPointer) {
-        int lastPos = getOldPos(oldT);
         Iterator<Comment> oldIter = oldList.iterator();
         Iterator<Comment> newIter = newList.iterator();
         Comment oldC = safeNext(oldIter);
         Comment newC = safeNext(newIter);
         boolean first = true;
+        boolean firstNewCommentPrinted = false;
         while (oldC != null && newC != null) {
-            lastPos = oldC.pos();
             int cStart = commentStartCorrect(oldC);
             if (first && trailing && localPointer < cStart) {
                 copyTo(localPointer, cStart);
@@ -2842,6 +2841,7 @@ public class CasualDiff {
                 }
                 oldC = safeNext(oldIter);
                 newC = safeNext(newIter);
+                firstNewCommentPrinted = true;
             }
             else if (!listContains(newList, oldC)) {
                 if  (!listContains(oldList, newC)) {
@@ -2856,8 +2856,12 @@ public class CasualDiff {
                 }
             }
             else {
+                if (!firstNewCommentPrinted && !trailing) {
+                    copyTo(localPointer, localPointer = getOldPos(oldT));
+                }
                 printer.print(newC.getText());
                 newC = safeNext(newIter);
+                firstNewCommentPrinted = true;
             }
             localPointer = nextTarget;
         }
@@ -2874,8 +2878,11 @@ public class CasualDiff {
         while (newC != null) {
             if (Style.WHITESPACE != newC.style()) {
 //                printer.print(newC.getText());                
+                if (!firstNewCommentPrinted && !trailing) {
+                    copyTo(localPointer, localPointer = getOldPos(oldT));
+                }
                 printer.printComment(newC, !trailing, false);
-                lastPos += newC.endPos() - newC.pos();
+                firstNewCommentPrinted = true;
             }
             newC = safeNext(oldIter);
         }

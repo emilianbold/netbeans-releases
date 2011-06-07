@@ -70,6 +70,7 @@ import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -77,6 +78,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 public class RecentProjects extends AbstractAction implements Presenter.Menu, Presenter.Popup, PropertyChangeListener {
@@ -84,6 +86,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     /** Key for remembering project in JMenuItem
      */
     private static final String PROJECT_URL_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.Project_URL"; // NOI18N
+    private static final String STATUS_MESSAGE_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.STATUS_MESSAGE_KEY"; // NOI18N
     private final ProjectDirListener prjDirListener = new ProjectDirListener(); 
 
     private UpdatingMenu subMenu;
@@ -151,13 +154,20 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
 
         for (UnloadedProjectInformation p : projects) {
                 URL prjDirURL = p.getURL();
-                FileObject prjDir = URLMapper.findFileObject(prjDirURL);
+                final FileObject prjDir = URLMapper.findFileObject(prjDirURL);
                 if ( prjDirURL == null || prjDir == null || !prjDir.isValid()) {
                     continue;
                 }
                 prjDir.removeFileChangeListener(prjDirListener);            
                 prjDir.addFileChangeListener(prjDirListener);
-                JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon());
+                JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon()) {
+                    public @Override void menuSelectionChanged(boolean isIncluded) {
+                        super.menuSelectionChanged(isIncluded);
+                        if (isIncluded) {
+                            putClientProperty(STATUS_MESSAGE_KEY, StatusDisplayer.getDefault().setStatusText(FileUtil.getFileDisplayName(prjDir), 1));
+                        }
+                    }
+                };
                 menu.add(jmi);
                 jmi.putClientProperty( PROJECT_URL_KEY, prjDirURL );
                 jmi.addActionListener( jmiActionListener );
@@ -188,6 +198,11 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
             
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
+
+                StatusDisplayer.Message statusMessage = (StatusDisplayer.Message) jmi.getClientProperty(STATUS_MESSAGE_KEY);
+                if (statusMessage != null) {
+                    statusMessage.clear(0);
+                }
                 
                 URL url = (URL)jmi.getClientProperty( PROJECT_URL_KEY );                
                 Project project = null;
