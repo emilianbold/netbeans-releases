@@ -60,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -81,6 +82,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl.Accessor;
@@ -319,4 +321,44 @@ public class BatchUtilities {
 //        }
     }
 
+    public static void recursive(FileObject root, FileObject file, Collection<FileObject> collected, ProgressHandleWrapper progress, int depth, Properties timeStamps, Set<String> removedFiles) {
+        if (!VisibilityQuery.getDefault().isVisible(file)) return;
+
+        if (file.isData()) {
+            if (timeStamps != null) {
+                String relativePath = FileUtil.getRelativePath(root, file);
+                String lastModified = Long.toHexString(file.lastModified().getTime());
+
+                removedFiles.remove(relativePath);
+
+                if (lastModified.equals(timeStamps.getProperty(relativePath))) {
+                    return;
+                }
+
+                timeStamps.setProperty(relativePath, lastModified);
+            }
+
+            if (/*???:*/"java".equals(file.getExt()) || "text/x-java".equals(FileUtil.getMIMEType(file, "text/x-java"))) {
+                collected.add(file);
+            }
+        } else {
+            FileObject[] children = file.getChildren();
+
+            if (children.length == 0) return;
+
+            ProgressHandleWrapper inner = depth < 2 ? progress.startNextPartWithEmbedding(ProgressHandleWrapper.prepareParts(children.length)) : null;
+
+            if (inner == null && progress != null) {
+                progress.startNextPart(children.length);
+            } else {
+                progress = null;
+            }
+
+            for (FileObject c : children) {
+                recursive(root, c, collected, inner, depth + 1, timeStamps, removedFiles);
+
+                if (progress != null) progress.tick();
+            }
+        }
+    }
 }
