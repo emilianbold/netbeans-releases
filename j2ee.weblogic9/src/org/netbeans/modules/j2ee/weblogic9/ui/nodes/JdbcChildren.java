@@ -42,28 +42,59 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
  *
  */
-class JdbcChildren extends WLNodeChildren<JdbcRetriever> {
-    
-    JdbcChildren(Lookup lookup ){
-        setKeys( new JdbcRetriever[] { new JdbcRetriever( lookup )});
+class JdbcChildren extends WLNodeChildren {
+
+    private final JdbcChildrenFactory.Retriever retriever;
+
+    private final JdbcChildrenFactory.UnregisterFactory unregisterFactory;
+
+    JdbcChildren(Lookup lookup) {
+        WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
+        assert manager != null;
+
+        // TODO should we use proxy ?
+        if (manager.isWebProfile()) {
+            this.retriever = new WebProfileJdbRetriever(lookup);
+            this.unregisterFactory = null;
+        } else {
+            this.retriever = new JdbRetriever(lookup);
+            this.unregisterFactory = new JdbRetriever.JdbcUnregisterFactory();
+        }
+
+        setKeys(new Object[]{
+                createJDBCResourcesNode(lookup),
+                createJDBCPoolsNode(lookup)});
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.nodes.Children.Keys#createNodes(java.lang.Object)
-     */
+
+    private Node createJDBCPoolsNode(Lookup lookup) {
+        JdbcChildrenFactory factory = new JdbcChildrenFactory(
+                JdbcChildrenFactory.JdbcNodeTypes.POOL, retriever, unregisterFactory, lookup);
+        return new ResourceNode(factory, ResourceNodeType.JDBC_POOL,
+                NbBundle.getMessage(JdbcChildren.class, "LBL_JDBCPools"));
+    }
+
+    private Node createJDBCResourcesNode(Lookup lookup) {
+        JdbcChildrenFactory factory = new JdbcChildrenFactory(
+                JdbcChildrenFactory.JdbcNodeTypes.RESOURCES, retriever, unregisterFactory, lookup);
+        return new ResourceNode(factory, ResourceNodeType.JDBC_RESOURCES,
+                NbBundle.getMessage(JdbcChildren.class, "LBL_JDBCResources"));
+    }
+
     @Override
-    protected Node[] createNodes( JdbcRetriever key ) {
-        JdbcRetriever retriever = (JdbcRetriever) key;
+    protected Node[] createNodes(Object key) {
         retriever.clean();
-        return new Node[] { retriever.createJDBCResourcesNode(),
-                retriever.createJDBCPoolsNode() };
+        return super.createNodes(key);
     }
 }
