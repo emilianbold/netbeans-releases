@@ -63,7 +63,7 @@ public class JSPMarkerMethodProvider extends CustomMarker  {
     }
     
     private void addJspMethods() {
-        ClientUtils.SourceCodeSelection[] jspmethods = WebProjectUtils.getJSPRootMethods(getProject(), true);
+        ClientUtils.SourceCodeSelection[] jspmethods = WebProjectUtils.getJSPRootMethods((Project)getProject(), true);
 
         if (jspmethods != null) {
             for (int i = 0; i < jspmethods.length; i++) {

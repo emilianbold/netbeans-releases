@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
@@ -79,14 +78,14 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
     public void addToCpuResults(final LiveFlatProfilePanel cpuPanel, final JToolBar toolBar, ProfilerClient client, Lookup.Provider project) {
         List<StatisticalModule> additionalStats = new ArrayList<StatisticalModule>();
 
-        dd = Lookup.getDefault().lookup(DrillDownFactory.class).createDrillDown((Project)project, client);
+        dd = Lookup.getDefault().lookup(DrillDownFactory.class).createDrillDown(project, client);
         if (dd != null) {
             StatisticalModuleContainer container = Lookup.getDefault().lookup(StatisticalModuleContainer.class);
             additionalStats.addAll(container.getAllModules());
 
             for(StatisticalModule sm : additionalStats) {
                 if (sm instanceof ProjectAwareStatisticalModule) {
-                    ((ProjectAwareStatisticalModule)sm).setProject((Project)project);
+                    ((ProjectAwareStatisticalModule)sm).setProject(project);
                 }
             }
             DrillDownWindow.getDefault().setDrillDown(dd, additionalStats);

@@ -98,7 +98,7 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
     protected abstract boolean isValid(ExecutableElement method);
 
     private void addEjbMethods() {
-        final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(getProject());
+        final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor((Project)getProject());
             final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
 
             for (MetadataModel<EjbJarMetadata> mdModel : listAllMetadata()) {
@@ -137,9 +137,10 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
     private Set<MetadataModel<EjbJarMetadata>> listAllMetadata() {
         final Set<MetadataModel<EjbJarMetadata>> metadata = new HashSet<MetadataModel<EjbJarMetadata>>();
         Set<Project> projects = new HashSet<Project>();
-
-        projects.add(getProject());
-        ProjectUtilities.fetchSubprojects(getProject(), projects);
+        Project p = (Project) getProject();
+        
+        projects.add(p);
+        ProjectUtilities.fetchSubprojects(p, projects);
 
         for (Project testProject : projects) {
             EjbJarImplementation jar = testProject.getLookup().lookup(EjbJarImplementation.class);

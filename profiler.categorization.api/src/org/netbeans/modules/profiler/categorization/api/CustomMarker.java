@@ -42,24 +42,24 @@
 
 package org.netbeans.modules.profiler.categorization.api;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.Marker;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
 public abstract class CustomMarker implements Marker {
-    private Project project;
+    private Lookup.Provider project;
     private Mark mark;
     
-    public CustomMarker(Project project, Mark assignedMark) {
+    public CustomMarker(Lookup.Provider project, Mark assignedMark) {
         this.project = project;
         this.mark = assignedMark;
     }
 
-    protected Project getProject() {
+    protected Lookup.Provider getProject() {
         return project;
     }
 

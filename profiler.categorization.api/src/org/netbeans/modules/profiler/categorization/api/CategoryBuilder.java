@@ -45,7 +45,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.modules.profiler.categorization.api.definitions.CustomCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.PackageCategoryDefinition;
@@ -76,9 +75,9 @@ public class CategoryBuilder {
     private static final String SHADOW_SUFFIX = "shadow";// NOI18N
     private String projectType;
     private CategoryContainer rootCategory = null;
-    private Project project;
+    private Lookup.Provider project;
     
-    public CategoryBuilder(Project proj, String projectTypeId) {
+    public CategoryBuilder(Lookup.Provider proj, String projectTypeId) {
         project = proj;
         projectType = projectTypeId;
     }
@@ -99,7 +98,7 @@ public class CategoryBuilder {
         return rootCategory;
     }
     
-    final protected Project getProject() {
+    final protected Lookup.Provider getProject() {
         return project;
     }
 
@@ -181,7 +180,7 @@ public class CategoryBuilder {
                             try {
                                 ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
                                 Class<CustomMarker> markerClz = (Class<CustomMarker>) cl.loadClass(instanceClass);
-                                CustomMarker marker = markerClz.getConstructor(Project.class, Mark.class).newInstance(project, newCategory.getAssignedMark());
+                                CustomMarker marker = markerClz.getConstructor(Lookup.Provider.class, Mark.class).newInstance(project, newCategory.getAssignedMark());
                                 if (marker != null) {
                                     newCategory.getDefinitions().add(new CustomCategoryDefinition(newCategory, marker));
                                 }
