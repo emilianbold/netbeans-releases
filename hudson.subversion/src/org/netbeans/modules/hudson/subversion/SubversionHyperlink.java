@@ -95,10 +95,10 @@ class SubversionHyperlink implements OutputListener {
         this.job = job;
     }
 
-    public void outputLineAction(OutputEvent ev) {
+    public @Override void outputLineAction(OutputEvent ev) {
         Helper.noteWillShowDiff(path);
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 String repo = findRepo(module);
                 if (repo == null) {
                     return;
@@ -114,11 +114,11 @@ class SubversionHyperlink implements OutputListener {
         });
     }
 
-    public void outputLineSelected(OutputEvent ev) {
+    public @Override void outputLineSelected(OutputEvent ev) {
         // XXX could focus diff window if open
     }
 
-    public void outputLineCleared(OutputEvent ev) {}
+    public @Override void outputLineCleared(OutputEvent ev) {}
 
     private static Set<String> knownRepos = new HashSet<String>();
     /**
