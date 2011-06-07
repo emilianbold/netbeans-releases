@@ -51,6 +51,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.IndexEnquirer;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.MapIndices;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -83,7 +84,7 @@ public class Scopes {
         }
 
         @Override
-        public MapIndices getIndexMapper() {
+        public MapIndices getIndexMapper(Iterable<? extends HintDescription> hints) {
             return getDefaultIndicesMapper();
         }
     }
@@ -111,7 +112,7 @@ public class Scopes {
         }
 
         @Override
-        public MapIndices getIndexMapper() {
+        public MapIndices getIndexMapper(Iterable<? extends HintDescription> hints) {
             return getDefaultIndicesMapper();
         }
     }
