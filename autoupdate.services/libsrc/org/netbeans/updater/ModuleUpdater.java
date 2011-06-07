@@ -429,7 +429,7 @@ public final class ModuleUpdater extends Thread {
                                     InputStream is = new FileInputStream(external);
                                     try {
                                         spec.close();
-                                        FileOutputStream os = new FileOutputStream(downloaded);
+                                        OutputStream os = context.createOS(downloaded);
                                         try {
                                             bytesRead = copyStreams(is, os, -1);
                                         } finally {
@@ -763,8 +763,9 @@ public final class ModuleUpdater extends Thread {
             }            
         }
     }
-        
-    /** [Copied from org.openide.util.Utilities]
+
+    // [Copied from org.openide.util.Utilities]
+    /**
      * Parses parameters from a given string in shell-like manner.
      * Users of the Bourne shell (e.g. on Unix) will already be familiar
      * with the behavior.
