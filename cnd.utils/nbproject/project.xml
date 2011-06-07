@@ -85,6 +85,7 @@
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.analytics.utils.ui</friend>
+                <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
