@@ -47,7 +47,11 @@ package org.netbeans.core.windows.model;
 
 
 import java.awt.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.SplitConstraint;
@@ -63,6 +67,8 @@ final class DefaultModeModel implements ModeModel {
 
     /** Programatic name of mode. */
     private final String name;
+    
+    private final Set<String> otherNames = new HashSet<String>(3);
 
     private final Rectangle bounds = new Rectangle();
 
@@ -77,7 +83,9 @@ final class DefaultModeModel implements ModeModel {
     private int frameState;
 
     /** Permanent property. */
-    private final boolean permanent;
+    private boolean permanent;
+    
+    private boolean minimized;
 
     /** Sub model which manages TopComponents stuff. */
     private final TopComponentSubModel topComponentSubModel;
@@ -150,9 +158,9 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
-    public void addUnloadedTopComponent(String tcID) {
+    public void addUnloadedTopComponent(String tcID, int index) {
         synchronized(LOCK_TOPCOMPONENTS) {
-            topComponentSubModel.addUnloadedTopComponent(tcID);
+            topComponentSubModel.addUnloadedTopComponent(tcID, index);
         }
     }
     
@@ -250,6 +258,11 @@ final class DefaultModeModel implements ModeModel {
     
     public boolean isPermanent() {
         return this.permanent;
+    }
+    
+    @Override
+    public void makePermanent() {
+        this.permanent = true;
     }
     
     public boolean isEmpty() {
@@ -357,6 +370,25 @@ final class DefaultModeModel implements ModeModel {
         }
         return topComponentContextSubModel;
     }
-    
+
+    @Override
+    public boolean isMinimized() {
+        return minimized;
+    }
+
+    @Override
+    public void setMinimized( boolean minimized ) {
+        this.minimized = minimized;
+    }
+
+    @Override
+    public Collection<String> getOtherNames() {
+        return Collections.unmodifiableSet( otherNames );
+    }
+
+    @Override
+    public void addOtherName( String otherModeName ) {
+        otherNames.add( otherModeName );
+    }
 }
 

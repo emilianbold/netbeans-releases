@@ -68,6 +68,7 @@ import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
 import org.netbeans.core.windows.view.dnd.DragAndDropFeedbackVisualizer;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
@@ -102,10 +103,12 @@ public final class TabbedSlideAdapter implements Tabbed {
         slideBar = new SlideBar(this, (SlideBarDataModel)dataModel, selModel);
     }
     
+    @Override
     public void requestAttention (TopComponent tc) {
         slideBar.setBlinking(tc, true);
     }
     
+    @Override
     public void cancelRequestAttention (TopComponent tc) {
         slideBar.setBlinking(tc, false);
     }
@@ -123,6 +126,7 @@ public final class TabbedSlideAdapter implements Tabbed {
         ((SlideBarDataModel)dataModel).setOrientation(orientation);
     }
 
+    @Override
     public final synchronized void addActionListener(ActionListener listener) {
         if (actionListeners == null) {
             actionListeners = new ArrayList<ActionListener>();
@@ -135,6 +139,7 @@ public final class TabbedSlideAdapter implements Tabbed {
      *
      * @param listener The listener to remove.
      */
+    @Override
     public final synchronized void removeActionListener(ActionListener listener) {
         if (actionListeners != null) {
             actionListeners.remove(listener);
@@ -156,10 +161,12 @@ public final class TabbedSlideAdapter implements Tabbed {
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }    
     
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }
@@ -176,19 +183,23 @@ public final class TabbedSlideAdapter implements Tabbed {
         slideBar.removePropertyChangeListener(name, listener);
     }
     
+    @Override
     public void addTopComponent(String name, Icon icon, TopComponent tc, String toolTip) {
         dataModel.addTab(dataModel.size(), new TabData(tc, icon, name, toolTip));
     }
     
+    @Override
     public TopComponent getSelectedTopComponent() {
         int index = selModel.getSelectedIndex();
         return index < 0 ? null : (TopComponent)dataModel.getTab(index).getComponent();
     }
     
+    @Override
     public TopComponent getTopComponentAt(int index) {
         return (TopComponent)dataModel.getTab(index).getComponent();
     }
     
+    @Override
     public TopComponent[] getTopComponents() {
         int size = dataModel.size();
         TopComponent[] result = new TopComponent[size];
@@ -198,22 +209,27 @@ public final class TabbedSlideAdapter implements Tabbed {
         return result;
     }
     
+    @Override
     public void setActive(boolean active) {
         slideBar.setActive(active);
     }
     
+    @Override
     public void setIconAt(int index, Icon icon) {
         dataModel.setIcon(index, icon);
     }
     
+    @Override
     public void setTitleAt(int index, String title) {
         dataModel.setText(index, title);
     }
     
+    @Override
     public void setToolTipTextAt(int index, String toolTip) {
         // XXX - not supported yet
     }
     
+    @Override
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
         TabData[] data = new TabData[tcs.length];
         int toSelect=-1;
@@ -235,10 +251,12 @@ public final class TabbedSlideAdapter implements Tabbed {
         setSelectedComponent(selected);
     }
     
+    @Override
     public int getTabCount() {
         return dataModel.size();
     }    
     
+    @Override
     public int indexOf(Component tc) {
         int size = dataModel.size();
         for (int i=0; i < size; i++) {
@@ -247,15 +265,18 @@ public final class TabbedSlideAdapter implements Tabbed {
         return -1;
     }
     
+    @Override
     public void insertComponent(String name, Icon icon, Component comp, String toolTip, int position) {
         dataModel.addTab(position, new TabData(comp, icon, name, toolTip));
     }
     
+    @Override
     public void removeComponent(Component comp) {
         int i = indexOf(comp);
         dataModel.removeTab(i);
     }
     
+    @Override
     public void setSelectedComponent(Component comp) {
         int newIndex = indexOf(comp);
         if (selModel.getSelectedIndex() != newIndex) {
@@ -268,22 +289,27 @@ public final class TabbedSlideAdapter implements Tabbed {
         }
     }
     
+    @Override
     public int tabForCoordinate(Point p) {
         return slideBar.tabForCoordinate(p.x, p.y);
     }
     
+    @Override
     public Component getComponent() {
         return slideBar;
     }
 
 /*************** No DnD support yet **************/
     
+    @Override
     public Object getConstraintForLocation(Point location, boolean attachingPossible) {
         int tab = slideBar.nextTabForCoordinate(location.x, location.y);
         return Integer.valueOf(tab);
     }
     
-    public Shape getIndicationForLocation(Point location, TopComponent startingTransfer, Point startingPoint, boolean attachingPossible) {
+    @Override
+    public Shape getIndicationForLocation(Point location, TopComponentDraggable startingTransfer, 
+                            Point startingPoint, boolean attachingPossible) {
         
 //        int tab = tabForCoordinate(location);
         int nextTab = slideBar.nextTabForCoordinate(location.x, location.y);
@@ -332,6 +358,7 @@ public final class TabbedSlideAdapter implements Tabbed {
         return new Rectangle(0, 10, 20, 50);
     }
     
+    @Override
     public Image createImageOfTab(int tabIndex) {
         TabData dt = slideBar.getModel().getTab(tabIndex);
         if (dt.getComponent() instanceof TopComponent) {
@@ -374,6 +401,7 @@ public final class TabbedSlideAdapter implements Tabbed {
     }
     
     /** Add action for disabling slide */
+    @Override
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
         boolean isMDI = WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
         TabData td = slideBar.getModel().getTab(tabIndex);
@@ -395,14 +423,17 @@ public final class TabbedSlideAdapter implements Tabbed {
         return result;
     }
     
+    @Override
     public Rectangle getTabBounds(int tabIndex) {
         return slideBar.getTabBounds(tabIndex);
     }
 
+    @Override
     public boolean isTransparent() {
         return false;
     }
 
+    @Override
     public void setTransparent(boolean transparent) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

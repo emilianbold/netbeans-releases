@@ -52,6 +52,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 
 
 /**
@@ -104,7 +105,7 @@ public interface Tabbed {
     
     public int tabForCoordinate(Point p);
    
-    public Shape getIndicationForLocation(Point location, TopComponent startingTransfer,
+    public Shape getIndicationForLocation(Point location, TopComponentDraggable startingTransfer,
             Point startingPoint, boolean attachingPossible);
     
     public Object getConstraintForLocation(Point location, boolean attachingPossible);
