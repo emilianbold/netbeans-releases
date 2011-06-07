@@ -129,6 +129,7 @@ public class TestFileUtils {
                         ze.setMethod(ZipEntry.STORED);
                         ze.setSize(0);
                         ze.setCrc(0);
+                        ze.setTime(0);
                         zos.putNextEntry(ze);
                         zos.closeEntry();
                     }
@@ -141,6 +142,7 @@ public class TestFileUtils {
             CRC32 crc = new CRC32();
             crc.update(data);
             ze.setCrc(crc.getValue());
+            ze.setTime(0);
             zos.putNextEntry(ze);
             zos.write(data, 0, data.length);
             zos.closeEntry();

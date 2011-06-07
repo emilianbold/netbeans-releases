@@ -155,7 +155,8 @@ made subject to such option by the copyright holder.
     <loadfile property="cluster.path.evaluated" srcfile="${nb_all}/nbbuild/cluster.properties">
         <filterchain>
             <linecontainsregexp><regexp pattern="^nb[.]cluster[.].+[.]dir="/></linecontainsregexp>
-            <replaceregex pattern="^nb[.]cluster[.].+[.]dir=(.+)$" replace="${path.separator}${netbeans.dest.dir}${file.separator}\1" byline="true"/>
+            <replaceregex pattern="^nb[.]cluster[.].+[.]dir=" replace="=" byline="true"/>
+            <replacestring from="=" to="${path.separator}${netbeans.dest.dir}${file.separator}" byline="true"/>
             <striplinebreaks/>
         </filterchain>
     </loadfile>
