@@ -66,6 +66,9 @@ import java.util.Vector;
 import java.util.logging.Level;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -197,6 +200,20 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         repositoryPanel.urlComboBox.addActionListener(this);
         getUrlComboEditor().getDocument().addDocumentListener(this);
         repositoryPanel.urlComboBox.addItemListener(this);
+        repositoryPanel.urlComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (isSelected && comp instanceof JComponent) {
+                    String tt = null;
+                    if (comp.getPreferredSize().getWidth() > repositoryPanel.urlComboBox.getSize().getWidth() && value instanceof RepositoryConnection) {
+                        tt = ((RepositoryConnection) value).getUrl();
+                    }
+                    ((JComponent) comp).setToolTipText(tt);
+                }
+                return comp;
+            }
+        });
         
         onSelectedRepositoryChange();
     }
@@ -393,6 +410,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         } catch (InterruptedException ex) {
             return;
         }
+        repositoryPanel.urlComboBox.setToolTipText(selectedUrlString);
 
         String connPanelType;
 
