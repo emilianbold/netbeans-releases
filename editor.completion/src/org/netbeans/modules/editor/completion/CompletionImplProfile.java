@@ -53,9 +53,11 @@ import javax.swing.Action;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 final class CompletionImplProfile {
     private static final Logger LOG = Logger.getLogger(CompletionImplProfile.class.getName());
+    static final RequestProcessor RP = new RequestProcessor("Completion Slowness"); // NOI18N
 
     private final Object profiler;
     private boolean profiling;
@@ -86,17 +88,22 @@ final class CompletionImplProfile {
         if (!profiling) {
             return;
         }
-        try {
-            stopImpl();
-        } catch (Exception ex) {
-            LOG.log(Level.INFO, "Cannot stop profiling", ex);
-        } finally {
-            profiling = false;
-        }
+        final long now = System.currentTimeMillis();
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    stopImpl(now);
+                } catch (Exception ex) {
+                    LOG.log(Level.INFO, "Cannot stop profiling", ex);
+                }
+            }
+        });
+        profiling = false;
     }
 
-    private void stopImpl() throws Exception {
-        final long now = System.currentTimeMillis();
+    private void stopImpl(long now) throws Exception {
         long delta = now - time;
         LOG.log(Level.FINE, "Profiling stopped at {0}", now);
         ActionListener ss = (ActionListener) profiler;
