@@ -1997,10 +1997,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         } else {
             expr = EvalAnnotation.extractExpr(pos, text);
         }
-
-        if (expr != null) {
-            dataMIEval(expr);
+        
+        if (expr == null || expr.isEmpty()) {
+            return;
         }
+        
+        if (Disassembly.isInDisasm()) {
+            // probably a register - append $ at the beginning
+            if (Character.isLetter(expr.charAt(0))) {
+                expr = '$' + expr;
+            }
+        }
+
+        dataMIEval(expr);
     }
 
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
