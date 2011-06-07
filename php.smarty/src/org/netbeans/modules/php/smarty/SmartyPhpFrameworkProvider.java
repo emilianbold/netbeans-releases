@@ -39,6 +39,9 @@
 package org.netbeans.modules.php.smarty;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -136,17 +139,33 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public boolean isInPhpModule(final PhpModule phpModule) {
         // get php files within the module
-        final FoundSmarty fs = new FoundSmarty();
+        long time = System.currentTimeMillis();
+        try {
+            final FoundSmarty fs = new FoundSmarty();
 
-        if (phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true).get(SMARTY_AVAILABLE, "0").equals("1")) {
-            fs.setFound(true);
-        }
+            if (phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true).get(SMARTY_AVAILABLE, "0").equals("1")) {
+                fs.setFound(true);
+            }
 
-        if (fs.isFound()) {
-            return true;
-        } else {
-            FileObject sourceDirectory = phpModule.getSourceDirectory();
-            return locatedTplFiles(sourceDirectory, SmartyOptions.getInstance().getScanningDepth(), 0);
+            if (fs.isFound()) {
+                return true;
+            } else {
+                ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileObject sourceDirectory = phpModule.getSourceDirectory();
+                        if (locatedTplFiles(sourceDirectory, SmartyOptions.getInstance().getScanningDepth(), 0)) {
+                            phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true).put(SMARTY_AVAILABLE, "1");
+                            fs.setFound(true);
+                        }
+                    }
+                }, NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "MSG_SearchingForSmartyExt"));
+                
+            }
+            return fs.isFound();
+        } finally {
+            Logger.getLogger(SmartyPhpFrameworkProvider.class.getName()).log(
+                    Level.INFO, "Smarty.isInPhpModule total time spent={0} ms", (System.currentTimeMillis() - time));
         }
     }
 
