@@ -1,7 +1,43 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- * Copyright © 2009 Sun Microsystems,
-Inc.  All rights reserved.  
-Use is subject to license terms.  *--> 
+<!-- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2011 Sun Microsystems, Inc.--> 
 <html> 
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -25,6 +61,10 @@ Use is subject to license terms.  *-->
                 </object>
             </li>
         </ul>
+        <p>You can use NetBeans IDE to create a RESTful web service in a Java Web application. You can use the IDE to create
+        either an "empty" service based on a pattern (singleton or item/container) or a service configured to communicate with
+        an existing database. In addition, you can expose any suitable Java class as a RESTful web service by 
+        appending it appropriately.</p>
         
         <p><b>To generate a RESTful web service:</b>        
         
@@ -35,19 +75,21 @@ Use is subject to license terms.  *-->
                 and choose New. Then choose one of the following:
                 
                 <ul>
-                    <li><b>RESTful Web Services from Entity Classes.</b> Creates RESTful web services from a set of entity classes.
-                    <ul class="note">
-                        <li>You can use the 
-                            <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html">
-                            New Entity Classes from Database wizard</a> to generate the 
-                            entity classes from a connected database or from a database schema.
-                        </li>
-                    </ul>
-                    </li>>
+                    <li>
+                        <b>RESTful Web Service from Database.</b> This wizard creates entity classes
+                        from a database and then creates RESTful web services from those entity classes.
+                        <ul class="note"><li><b>Note:</b> If you do not have existing entity classes, it is
+                            safer and more convenient to use this wizard instead of the Entity Classes From
+                            Database wizard followed by the RESTful Web Services from Entity Classes wizard.</li></ul>
+                    </li>
+                    <li><b>RESTful Web Services from Entity Classes.</b> Creates RESTful web services from a set of existing entity classes.
+                    
+                    </li>
+                    
                     <li><b>RESTful Web Services from Patterns.</b>
                     Creates RESTful web services using one of the following patterns:
                     <ul>
-                        <li><b>Singleton.</b> Creates a singleton RESTful resource
+                        <li><b>Simple Root Resource.</b> Creates a RESTful root resource
                         class with GET and PUT methods. This pattern is useful for creating 
                         a simple HelloWorld service and wrapper services for invoking 
                         WSDL-based web services.

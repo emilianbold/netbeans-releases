@@ -209,10 +209,8 @@ Other names may be trademarks of their respective owners.
             <tocitem text="Configuring via Annotations" target="config_ws_annotations" />
             <tocitem text="Configuring via Deployment Descriptors" target="config_ws_dd" />
         </tocitem>  
-        <tocitem text="Building Web Services" >
-            <tocitem text="About Building Web Services" target="about_build_ws" />
-            <tocitem text="About the Web Service Attributes Editor" target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" />
-        </tocitem>
+        
+        
         <tocitem text="Deploying and Testing Web Services" >
             <tocitem text="About Deploying and Testing Web Services" target="about_deploy_and_test_ws" />
             <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 	
@@ -221,17 +219,22 @@ Other names may be trademarks of their respective owners.
             <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
             <tocitem text="Testing a RESTful Web Service" target="test_rest" />
         </tocitem>
-        <tocitem text="Creating Web Service Clients" >
-            <tocitem text="About Web Service Clients" target="about_wsc" />
-            <tocitem text="Working with Web Service Clients" target="wsc_process" />
+        <tocitem text="Creating SOAP Web Service Clients" >
+            <tocitem text="About SOAP Web Service Clients" target="about_wsc" />
+            <tocitem text="Working with SOAP Web Service Clients" target="wsc_process" />
             <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
             <tocitem text="Generating a JAX-WS Web Service Client" target="wsc_create" />
-            <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
-            <tocitem text="Using the Preregistered Web Service Clients" target="wsc_rest" />
             <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
             <tocitem text="Asynchronously Calling a JAX-WS Web Service Operation" target="wsc_call_ws_asynchronous" />
-            <tocitem text="Building a Web Service Client" target="wsc_build" />
             <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
+        </tocitem>
+        <tocitem text="Creating RESTful Web Service Clients">
+            <tocitem text="About RESTful Web Service Clients" target="about_rest_wsc" />
+            <tocitem text="Working with RESTful Web Service Clients" target="wsc_rest_process" />
+            <tocitem text="Generating RESTful Web Service Java Clients" target="wsc_rest_java" />
+            <tocitem text="Generating RESTful Web Service JavaScript Clients" target="wsc_stubs" />
+            <tocitem text="Using the Web Service Manager" target="wsc_rest" />
+
         </tocitem>
         <tocitem text="Creating Handlers" >
             <tocitem text="About Creating Handlers" target="about_ws_soap_message" />
@@ -247,6 +250,7 @@ Other names may be trademarks of their respective owners.
         </tocitem>
         <tocitem text="Configuring Quality of Service">
             <tocitem text="About Quality of Service" target="org.netbeans.modules.websvc.wsitconf.about"/>
+            <tocitem text="About the Web Service Attributes Editor" target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" />
             <tocitem text="Configuring Quality of Service" target="org.netbeans.modules.websvc.wsitconf.access"/>
             <tocitem text="Port Binding" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode"/>
             <tocitem text="Operation">
