@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.discovery.projectimport;
 
 import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;

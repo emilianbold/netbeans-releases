@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IONotifier;
@@ -87,6 +88,8 @@ public final class IOConnector {
             if (tty != null) {
                 try {
                     IONotifier.addPropertyChangeListener(io, new ResizeListener(p.getExecutionEnvironment(), tty));
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -115,6 +118,8 @@ public final class IOConnector {
                 IONotifier.addPropertyChangeListener(io, new ResizeListener(pty.getEnv(), pty.getSlaveName()));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
             }
         }
 
@@ -128,7 +133,7 @@ public final class IOConnector {
         private Dimension pixels;
         private final boolean pxlsAware;
 
-        ResizeListener(final ExecutionEnvironment env, final String tty) throws IOException {
+        ResizeListener(final ExecutionEnvironment env, final String tty) throws IOException, CancellationException {
             final HostInfo hinfo = HostInfoUtils.getHostInfo(env);
             
             if (OSFamily.SUNOS.equals(hinfo.getOSFamily())) {

@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
@@ -158,6 +159,8 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             } else {
                 return lines.toArray(new String[lines.size()]);
             }
+        } catch (CancellationException ex) {
+            RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
         }

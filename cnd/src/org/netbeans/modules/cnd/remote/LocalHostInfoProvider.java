@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.remote;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

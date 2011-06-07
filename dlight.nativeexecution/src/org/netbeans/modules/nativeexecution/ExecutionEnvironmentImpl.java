@@ -44,7 +44,7 @@ package org.netbeans.modules.nativeexecution;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
