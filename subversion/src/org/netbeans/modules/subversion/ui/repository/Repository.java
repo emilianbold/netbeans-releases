@@ -159,6 +159,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         }                        
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == repositoryPanel.removeButton) {
             onRemoveClick();
@@ -221,9 +222,10 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     /**
      * Performs its body outside of AWT. Runs asynchronously if called in AWT
      */
-    public void refreshUrlHistory() {
+    public final void refreshUrlHistory() {
         repositoryPanel.urlComboBox.setEnabled(false);
         Runnable notInAWT = new Runnable() {
+            @Override
             public void run() {
                 List<RepositoryConnection> recentUrls = SvnModuleConfig.getDefault().getRecentUrls();
                 final Set<RepositoryConnection> recentRoots = new LinkedHashSet<RepositoryConnection>();
@@ -247,6 +249,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                 repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));
 
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         if (repositoryPanel.urlComboBox.isEditable()) {
                             JTextComponent textEditor = getUrlComboEditor();
@@ -267,6 +270,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     public void storeRecentUrls() {
         final List<RepositoryConnection> recentUrls = getRecentUrls();
         Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 SvnModuleConfig.getDefault().setRecentUrls(recentUrls);
             }
@@ -303,20 +307,24 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         currentPanel.storeConfigValues();
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         textChanged(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         textChanged(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) { 
         textChanged(e);
     }
 
     private void textChanged(final DocumentEvent e) {     
         Runnable awt = new Runnable() {
+            @Override
             public void run() {
                 if (e.getDocument() == ((JTextComponent) repositoryPanel.urlComboBox.getEditor().getEditorComponent()).getDocument()) {
                     onSelectedRepositoryChange();
@@ -480,6 +488,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
             final String[] svnUrl = new String[1];
             try {
                 Runnable awt = new Runnable() {
+                    @Override
                     public void run() {
                         svnUrl[0] = (String) repositoryPanel.urlComboBox.getEditor().getItem().toString().trim();
                     }
@@ -511,7 +520,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
             // should not happen
             Subversion.LOG.log(Level.SEVERE, null, ex);
             return null;
-        };
+        }
         
         DefaultComboBoxModel dcbm = (DefaultComboBoxModel) repositoryPanel.urlComboBox.getModel();                
         int idx = dcbm.getIndexOf(urlString);        
@@ -543,7 +552,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         }
         for (Iterator it = listeners.iterator();  it.hasNext();) {
             PropertyChangeListener l = (PropertyChangeListener) it.next();
-            l.propertyChange(new PropertyChangeEvent(this, PROP_VALID, new Boolean(oldValue), new Boolean(valid)));
+            l.propertyChange(new PropertyChangeEvent(this, PROP_VALID, oldValue, valid));
         }
     }
 
@@ -570,6 +579,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         model.removeElement(toRemove);        
     }
 
+    @Override
     public void itemStateChanged(ItemEvent evt) {
         if(evt.getStateChange() == ItemEvent.SELECTED) {
             RepositoryConnection rc = (RepositoryConnection) evt.getItem();
@@ -624,7 +634,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         dialog.setVisible(true);
     }
 
-    boolean isSet(int flag) {
+    final boolean isSet(int flag) {
         return (modeMask & flag) != 0;
     }
     
@@ -634,6 +644,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
             super(v);
         }
 
+        @Override
         public void setSelectedItem(Object obj) {
             if(obj instanceof String) {
                 int idx = getIndexOf(obj);
@@ -646,6 +657,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
             super.setSelectedItem(obj);
         }
 
+        @Override
         public int getIndexOf(Object obj) {
             if(obj instanceof String) {
                 obj = createNewRepositoryConnection((String)obj);                
@@ -653,6 +665,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
             return super.getIndexOf(obj);
         }
 
+        @Override
         public void addElement(Object obj) {
             if(obj instanceof String) {
                 obj = createNewRepositoryConnection((String)obj);                
@@ -660,6 +673,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
             super.addElement(obj);
         }
 
+        @Override
         public void insertElementAt(Object obj,int index) {
             if(obj instanceof String) {
                 String str = (String) obj;
@@ -677,6 +691,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
             super.insertElementAt(obj, index);
         }         
 
+        @Override
         public void removeElement(Object obj) {
             int index = getIndexOf(obj);
             if ( index != -1 ) {
