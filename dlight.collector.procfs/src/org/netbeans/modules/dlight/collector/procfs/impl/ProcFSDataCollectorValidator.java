@@ -42,7 +42,7 @@
 package org.netbeans.modules.dlight.collector.procfs.impl;
 
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.util.Computable;

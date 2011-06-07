@@ -42,7 +42,7 @@
 package org.netbeans.modules.remote.impl;
 
 import java.io.File;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
 import org.netbeans.modules.remote.spi.AutocompletionProviderFactory;

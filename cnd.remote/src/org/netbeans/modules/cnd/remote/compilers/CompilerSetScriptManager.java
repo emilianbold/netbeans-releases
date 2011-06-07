@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
@@ -119,6 +120,8 @@ import org.openide.util.Exceptions;
                         i++;
                     }
                 }
+            } catch (CancellationException  ex) {
+                setFailed(ex.getMessage()); // TODO:CancellationException error processing
             } catch (IOException ex) {
                 RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
                 setFailed(ex.getMessage());

@@ -47,7 +47,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import java.util.concurrent.TimeoutException;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.IOException;
 import java.io.InterruptedIOException;

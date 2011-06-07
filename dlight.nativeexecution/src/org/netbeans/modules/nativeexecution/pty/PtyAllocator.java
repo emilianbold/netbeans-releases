@@ -52,11 +52,13 @@ import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyOpenUtility.PtyInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -86,7 +88,12 @@ public final class PtyAllocator {
             throw new IOException("pty_open cannot be located"); // NOI18N
         }
 
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+        HostInfo hostInfo = null;
+        try {
+            hostInfo = HostInfoUtils.getHostInfo(env);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
+        }
 
         if (hostInfo == null) {
             throw new IOException("no hostinfo available for " + env.getDisplayName()); // NOI18N
