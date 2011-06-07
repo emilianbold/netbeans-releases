@@ -68,21 +68,22 @@ public class LayerDataObject extends MultiDataObject {
 
     public LayerDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-        cookies.add(new ValidateXMLSupport(DataObjectAdapters.inputSource(this)));
-        lkp = new ProxyLookup(getCookieSet().getLookup()) {
+        final CookieSet cookies = getCookieSet();
+        final Lookup baseLookup = cookies.getLookup();
+        lkp = new ProxyLookup(baseLookup) {
             final AtomicBoolean checked = new AtomicBoolean();
             protected @Override void beforeLookup(Template<?> template) {
                 if (template.getType() == LayerHandle.class && checked.compareAndSet(false, true)) {
                     FileObject xml = getPrimaryFile();
                     Project p = FileOwnerQuery.getOwner(xml);
                     if (p != null) {
-                        setLookups(getCookieSet().getLookup(), Lookups.singleton(new LayerHandle(p, xml)));
+                        setLookups(baseLookup, Lookups.singleton(new LayerHandle(p, xml)));
                     }
                 }
             }
         };
+        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        cookies.add(new ValidateXMLSupport(DataObjectAdapters.inputSource(this)));
     }
     
     protected @Override Node createNodeDelegate() {

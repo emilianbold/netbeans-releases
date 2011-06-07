@@ -42,9 +42,7 @@ Other names may be trademarks of their respective owners.
         <mapID target="about_annotations" url="webservice/configure/about_annotations.html" />
         <mapID target="config_ws_annotations" url="webservice/configure/config_ws_annotations.html" />
 	<!-- End of "Configure" section -->
-	<!-- Start of "Build" section -->
-	<mapID target="about_build_ws" url="webservice/build/about_build_ws.html" />
-	<!-- End of "Build" section -->
+	
 	<!-- Start of "Expose" section -->
         <mapID target="about_deploy_and_test_ws" url="webservice/expose/about_deploy_and_test_ws.html" />
         <mapID target="test_rest" url="webservice/expose/test_rest.html" />
@@ -54,11 +52,13 @@ Other names may be trademarks of their respective owners.
 	<!-- End of "Expose" section -->
 	<!-- Start of "Consume" section -->
 	<mapID target="about_wsc" url="webservice/consume/about_wsc.html" />
+        <mapID target="about_rest_wsc" url="webservice/consume/about_restful_wsc.html" />
 	<mapID target="wsc_process" url="webservice/consume/wsc_process.html" />
 	<mapID target="wsc_proxy" url="webservice/consume/wsc_proxy.html" />
+        <mapID target="wsc_rest_process" url="webservice/consume/wsc_rest_process.html" />
         <mapID target="wsc_rest" url="webservice/consume/wsc_rest.html" />
+        <mapID target="wsc_rest_java" url="webservice/consume/wsc_rest_java.html" />
 	<mapID target="wsc_stubs" url="webservice/consume/wsc_stubs.html" />
-        <mapID target="wsc_build" url="webservice/consume/wsc_build.html" />
 	<mapID target="wsc_create" url="webservice/consume/wsc_create.html" />
 	<mapID target="wsc_call_ws" url="webservice/consume/wsc_call_ws.html" />
 	<mapID target="wsc_call_ws_asynchronous" url="webservice/consume/wsc_call_ws_asynchronous.html" />

@@ -114,7 +114,7 @@ public class BatchSearch {
             }
         }
 
-        return findOccurrencesLocal(patterns, scope.getIndexMapper(), scope.getTodo(), progress);
+        return findOccurrencesLocal(patterns, scope.getIndexMapper(patterns), scope.getTodo(), progress);
     }
 
     private static BatchResult findOccurrencesLocal(final Iterable<? extends HintDescription> patterns, final MapIndices indexMapper, final Collection<? extends FileObject> todo, final ProgressHandleWrapper progress) {
@@ -183,47 +183,6 @@ public class BatchSearch {
         }
 
         return BulkSearch.getDefault().create(code, trees, additionalConstraints);
-    }
-
-    private static void recursive(FileObject root, FileObject file, Collection<FileObject> collected, ProgressHandleWrapper progress, int depth, Properties timeStamps, Set<String> removedFiles) {
-        if (!VisibilityQuery.getDefault().isVisible(file)) return;
-
-        if (file.isData()) {
-            if (timeStamps != null) {
-                String relativePath = FileUtil.getRelativePath(root, file);
-                String lastModified = Long.toHexString(file.lastModified().getTime());
-
-                removedFiles.remove(relativePath);
-
-                if (lastModified.equals(timeStamps.getProperty(relativePath))) {
-                    return;
-                }
-
-                timeStamps.setProperty(relativePath, lastModified);
-            }
-
-            if (/*???:*/"java".equals(file.getExt()) || "text/x-java".equals(FileUtil.getMIMEType(file, "text/x-java"))) {
-                collected.add(file);
-            }
-        } else {
-            FileObject[] children = file.getChildren();
-
-            if (children.length == 0) return;
-
-            ProgressHandleWrapper inner = depth < 2 ? progress.startNextPartWithEmbedding(ProgressHandleWrapper.prepareParts(children.length)) : null;
-
-            if (inner == null && progress != null) {
-                progress.startNextPart(children.length);
-            } else {
-                progress = null;
-            }
-
-            for (FileObject c : children) {
-                recursive(root, c, collected, inner, depth + 1, timeStamps, removedFiles);
-
-                if (progress != null) progress.tick();
-            }
-        }
     }
 
     public static void getVerifiedSpans(BatchResult candidates, @NonNull ProgressHandleWrapper progress, final VerifiedSpansCallBack callback, final Collection<? super MessageImpl> problems) {
@@ -367,7 +326,7 @@ public class BatchSearch {
 
         public abstract String getDisplayName();
         public abstract Collection<? extends FileObject> getTodo();
-        public abstract MapIndices getIndexMapper();
+        public abstract MapIndices getIndexMapper(Iterable<? extends HintDescription> hints);
         
     }
     
@@ -554,7 +513,7 @@ public class BatchSearch {
 
             final ProgressHandleWrapper innerProgress = progress.startNextPartWithEmbedding(30, 70);
 
-            recursive(src, src, files, innerProgress, 0, null, null);
+            BatchUtilities.recursive(src, src, files, innerProgress, 0, null, null);
 
             LOG.log(Level.FINE, "files: {0}", files);
 

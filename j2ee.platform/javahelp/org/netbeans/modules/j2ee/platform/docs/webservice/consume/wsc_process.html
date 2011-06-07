@@ -5,37 +5,37 @@
  * Use is subject to license terms.
 -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 
-        <title>Working with Web Service Clients</title>
+        <title>Working with SOAP Web Service Clients</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>Working with Web Service Clients</h2>
+        <h2>Working with SOAP Web Service Clients</h2>
 
-        The following table shows how to work with web service clients. 
+        The following table shows how to work with SOAP web service clients. 
         <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
-            process step. The right column contains detail information to accomplish that process."> 
-            
+               process step. The right column contains detail information to accomplish that process."> 
+
             <tr valign="top"> 
                 <td align="center"><img src="../../images/circle1.gif" alt="Number 1"><br>
-                <b>Create the web service client</b></td>
+                    <b>Create the web service client</b></td>
                 <td> 
                     <ol> 
-		    
+
                         <li>From the Projects window or Files window, right-click a node
-                        in the project and choose New &gt; Other.
-                        The New File wizard appears. Under Categories, select Web Services. Under File Types, select Web Service Client.
-                        Click Next.</li>
+                            in the project and choose New &gt; Other.
+                            The New File wizard appears. Under Categories, select Web Services. Under File Types, select Web Service Client.
+                            Click Next.</li>
                         <li><a href="../consume/wsc_create.html">Create the web service client proxies/stubs</a>.</li>
                     </ol>
                     <p>For troubleshooting, see <a href="wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a>.</p>
                     </p>
                 </td>
             </tr>
- 
+
             <tr> 
                 <td colspan="2"> 
                     <hr align="center" width="80%">
@@ -43,15 +43,15 @@
             </tr>
             <tr valign="top"> 
                 <td align="center"><img src="../../images/circle2.gif" alt="Number 2"><br>
-                <b>Develop the web service client application</b></td>
+                    <b>Develop the web service client application</b></td>
                 <td> 
                     <ol>
                         <li>In the Projects window or Files window, double-click the files
-                        that you would like to edit.</li>
+                            that you would like to edit.</li>
                         <li>Use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Source Editor</a> to develop the
-                        web service client.
+                            web service client.
                         <li>When you right-click in the Source Editor, you can use the IDE to generate skeleton code for
-                        <a href="wsc_call_ws.html">calling a web service operation</a>.</li>
+                            <a href="wsc_call_ws.html">calling a web service operation</a>.</li>
                     </ol>
                 </td>
             </tr>
@@ -61,29 +61,30 @@
                     <hr align="center" width="80%">
                 </td>
             </tr>
- 
+
             <tr valign="top"> 
                 <td align="center"> 
                     <img src="../../images/circle3.gif" alt="Number 3"><br>
                     <b>Build the web service client</b>  
                 </td>
-                <td> 
+                <td> <p>Note: In most cases it is not necessary to build the web service client.
+                        The IDE builds the client in the course of deploying it.</p>
                     <Ol><li>Do one of the following: 
-                    <ul>
-                        <li>If the module within which the web service client is implemented
-                        is part of a J2EE application, make sure the J2EE application 
-                        is set as the main project and choose Run &gt; Build 
-                        Main Project (F11).</li>
-                        <li>If the project is a stand-alone application, or if you want to build the 
-                        module without building the other modules in the J2EE application, right-click 
-                        the project's node in the Projects window and choose Build.</li>
-                    </ul></li>
-                    <li>Analyze the result and, if necessary, customize the related
-                    tool's features. For a JAX-WS web service that is created from a WSDL file,
-                    you can use the <a href="../csh/editor/EditWSAttributesCookieImpl.html">Web
-                    Service Attributes editor</a> to customize the <tt>wsimport</tt>
-                    tool's features. For a JAX-RPC web service, customize the <tt>wscompile</tt> tool's features,
-                    depending on your needs, as described in <a href="../consume/wsc_build.html">Building a Web Service Client</a>.</li>
+                            <ul>
+                                <li>If the client is in a Java application or stand-alone Web application,
+                                right-click the application's node and select Build.</li>
+                                <li>If the client is in a JavaEE module in an enterprise application,
+                                    and you want to build the entire application, right-click the enterprise
+                                    application's node and select Build.</li>
+                                <li>If the client is in a JavaEE module in an enterprise application and
+                                    you only want to build the JavaEE module, right-click the module and
+                                    select Build.</li>
+                            </ul></li>
+                        <li>Analyze the result and, if necessary, customize the related
+                            tool's features. For a JAX-WS web service that is created from a WSDL file,
+                            you can use the <a href="../csh/editor/EditWSAttributesCookieImpl.html">Web
+                                Service Attributes editor</a> to customize the <tt>wsimport</tt>
+                            tool's features. </li>
                     </ol>
                 </td>
             </tr>
@@ -94,28 +95,32 @@
             </tr>
             <tr valign="top"> 
                 <td align="center"> 
-                <img src="../../images/circle4.gif" alt="Number 4"><br>
-                <b>Deploy the web service client</b> </td>
+                    <img src="../../images/circle4.gif" alt="Number 4"><br>
+                    <b>Deploy the web service client</b> </td>
                 <td> 
-	    
-                    <p>You can deploy a web service client as a stand-alone module or as a part of 
-                    a J2EE application.</p>
+
+                    <p>You can deploy a web service client as a stand-alone web application or as a part of 
+                        an enterprise application.</p>
                     <ol>
                         <li>Make sure the server to which you want to deploy is targeted. Right-click a project node,
-                        choose Properties and check the Run panel.</li>
+                            choose Properties and check the Run panel.</li>
                         <li>Do one of the following:
-                        <ul>
-                        <li>To deploy the client as part of a J2EE application, right-click the J2EE application's 
-                        J2EE Modules node, choose Add J2EE Module, select the module that contains 
-                        the web service client, and click OK.</li>	
-                        <li>To deploy the client as a stand-alone application,
-                        choose Run &gt; Run Main Project or right-click the project and choose Run.</li></ul>
+                            <ul>
+                                <li>To deploy the client as part of an enterprise application, right-click the enterprise application's 
+                                    JavaEE Modules node, choose Add JavaEE Module, select the module that contains 
+                                    the web service client, and click OK. Then deploy the enterprise application. See 
+                                    <a href="../../enterprise/general/ent_app_deploy.html">Deploying
+                                        an Enterprise Application</a>.</li>	
+                                <li>To deploy the client as a stand-alone web application,
+                                    right-click the project and choose Run or Deploy.  See 
+                                    <a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_webapp.html">
+                                        Deploying a Web Application</a>.</li></ul>
                     </ol>
                     <p>For troubleshooting, see <a href="wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a>.</p>
                 </td>
             </tr>
- 
-  
+
+
         </table>
 
         <hr>

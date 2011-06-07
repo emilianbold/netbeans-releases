@@ -103,6 +103,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakSet;
 
@@ -284,6 +285,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     public CloneableEditorSupport(Env env, Lookup l) {
         super(env);
+        Parameters.notNull("l", l);
         this.lookup = l;
     }
 
