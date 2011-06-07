@@ -1356,7 +1356,11 @@ public final class Dbx extends CommonDbx {
 
 	// Get rid of any pending property edits
 	EditUndo.undo();
-	manager().error(rt, new DbxError(errors), debugger);
+        
+        //suppress register tooltip errors
+        if (rt != DbxDebuggerImpl.RT_EVAL_REGISTER) {
+            manager().error(rt, new DbxError(errors), debugger);
+        }
     }
 
     @Override

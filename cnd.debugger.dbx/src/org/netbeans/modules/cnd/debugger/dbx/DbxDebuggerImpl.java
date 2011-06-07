@@ -179,6 +179,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     private final static int RT_EVAL_AUTO = 3;
     private final static int RT_EVAL_AUTO_LAST = 4;
     private final static int RT_CHASE_AUTO = 5;
+    final static int RT_EVAL_REGISTER = 7;
 
     public DbxDebuggerImpl(ContextProvider ctxProvider) {
         super(ctxProvider);
@@ -1467,6 +1468,10 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void evalResult(int rt, String value) {
+        if (rt == RT_EVAL_REGISTER) {
+            EvalAnnotation.postResult(0, 0, 0, null, value, null, null);
+            return;
+        }
         // CR 6770439, we can not guarantee there is currentEvaluationWindow
         // when expression result come up, this checking is a safety net
         if (currentEvaluationWindow == null) {
@@ -2930,9 +2935,20 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (!isConnected()) {
             return;
         }
-
-	// remember to pathmap if file ever becomes non-null
-        dbx.expr_line_eval(0, 0, expr, pos, null, 0, GPDbxLineEval.COMBO_ALL);
+        
+        if (Disassembly.isInDisasm()) {
+            String text = EvalAnnotation.extractExpr(pos, expr);
+            // probably a register - append $ at the beginning
+            if (text != null && !text.isEmpty()) {
+                if (Character.isLetter(text.charAt(0))) {
+                    text = '$' + text;
+                }
+                dbx.expr_eval(RT_EVAL_REGISTER, DbxEvalFormat.HEXADECIMAL8.getOption() + ' ' + text);
+            }
+        } else {
+            // remember to pathmap if file ever becomes non-null
+            dbx.expr_line_eval(0, 0, expr, pos, null, 0, GPDbxLineEval.COMBO_ALL);
+        }
 
     // result will be sent to us asynchronously via expr_line_eval_result()
     // which will call balloonResult() below.
