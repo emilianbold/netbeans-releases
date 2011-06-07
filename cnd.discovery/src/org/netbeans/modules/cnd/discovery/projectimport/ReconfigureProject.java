@@ -448,6 +448,9 @@ public class ReconfigureProject {
 
             @Override
             public void executionFinished(int rc) {
+                for(ExecutionListener aListener : listeners){
+                    aListener.executionFinished(rc);
+                }
                 if (rc < 0) {
                     return;
                 }
