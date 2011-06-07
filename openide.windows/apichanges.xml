@@ -50,6 +50,20 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="mode.enhancements">
+    <api name="winsys"/>
+    <summary>Added more attributes to Mode DTD to support new winsys features.</summary>
+    <version major="6" minor="44"/>
+    <date day="7" month="6" year="2011"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        New window system features - sliding bar for minimized windows at the top
+        of the main window, drag and drop of the whole window group and minimization
+        of the whole window group - require small additions to Mode DTD.
+    </description>
+    <issue number="199074"/>
+</change>
 <change id="roles">
     <api name="winsys"/>
     <summary>Support multiple window system layouts.</summary>
