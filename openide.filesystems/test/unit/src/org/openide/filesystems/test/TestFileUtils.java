@@ -48,22 +48,32 @@ public class TestFileUtils {
 
     /**
      * Create a new data file with specified initial contents.
+     * No file events should be fired until the resulting file is complete (see {@link FileObject#createAndOpen}).
      * @param root a root folder which should already exist
      * @param path a /-separated path to the new file within that root
      * @param body the complete contents of the new file (in UTF-8 encoding)
      */
     public static FileObject writeFile(FileObject root, String path, String body) throws IOException {
-        FileObject fo = FileUtil.createData(root, path);
-        OutputStream os = fo.getOutputStream();
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
-        pw.print(body);
-        pw.flush();
-        os.close();
-        return fo;
+        int slash = path.lastIndexOf('/');
+        if (slash != -1) {
+            root = FileUtil.createFolder(root, path.substring(0, slash));
+            path = path.substring(slash + 1);
+        }
+        FileObject existing = root.getFileObject(path);
+        OutputStream os = existing != null ? existing.getOutputStream() : root.createAndOpen(path);
+        try {
+            PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
+            pw.print(body);
+            pw.flush();
+        } finally {
+            os.close();
+        }
+        return root.getFileObject(path);
     }
 
     /**
      * Create a new ZIP file.
+     * No file events should be fired until the resulting file is complete (see {@link FileObject#createAndOpen}).
      * @param root a root folder which should already exist
      * @param path a /-separated path to the new ZIP file within that root
      * @param entries a list of entries in the form of "filename:UTF8-contents"; parent dirs created automatically
@@ -71,9 +81,19 @@ public class TestFileUtils {
      * @throws IOException for the usual reasons
      */
     public static FileObject writeZipFile(FileObject root, String path, String... entries) throws IOException {
-        FileObject fo = FileUtil.createData(root, path);
-        org.openide.util.test.TestFileUtils.writeZipFile(fo.getOutputStream(), entries);
-        return fo;
+        int slash = path.lastIndexOf('/');
+        if (slash != -1) {
+            root = FileUtil.createFolder(root, path.substring(0, slash));
+            path = path.substring(slash + 1);
+        }
+        FileObject existing = root.getFileObject(path);
+        OutputStream os = existing != null ? existing.getOutputStream() : root.createAndOpen(path);
+        try {
+            org.openide.util.test.TestFileUtils.writeZipFile(os, entries);
+        } finally {
+            os.close();
+        }
+        return root.getFileObject(path);
     }
 
     /**
