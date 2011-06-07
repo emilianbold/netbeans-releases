@@ -575,10 +575,10 @@ public class ElfReader extends ByteStreamReader {
     public static final class SharedLibraries {
         private List<String> dlls = new ArrayList<String>();
         private List<String> searchPaths = new ArrayList<String>();
-        private void addDll(String dll) {
+        public void addDll(String dll) {
             dlls.add(dll);
         }
-        private void addPath(String path) {
+        public void addPath(String path) {
             searchPaths.add(path);
         }
         public List<String> getDlls() {

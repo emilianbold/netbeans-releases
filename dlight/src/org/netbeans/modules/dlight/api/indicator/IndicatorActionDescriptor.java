@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.api.indicator;
 
+import java.awt.Image;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 
 /**
@@ -53,11 +54,20 @@ public final class IndicatorActionDescriptor {
     private final String displayName;
     private final String tooltip;
     private final VisualizerConfiguration visualizerConfiguration;
-
+    private final Image image;
+    
+    public IndicatorActionDescriptor(String displayName, String tooltip, VisualizerConfiguration visualizerConfiguration, Image image) {
+        this.displayName = displayName;
+        this.tooltip = tooltip;
+        this.visualizerConfiguration = visualizerConfiguration;
+        this.image = image;
+    }    
+    
     public IndicatorActionDescriptor(String displayName, String tooltip, VisualizerConfiguration visualizerConfiguration) {
         this.displayName = displayName;
         this.tooltip = tooltip;
         this.visualizerConfiguration = visualizerConfiguration;
+        this.image = null;
     }
 
     public String getDisplayName() {
@@ -68,6 +78,10 @@ public final class IndicatorActionDescriptor {
         return tooltip;
     }
 
+    public Image getImage() {
+        return image;
+    }
+    
     public VisualizerConfiguration getVisualizerConfiguration() {
         return visualizerConfiguration;
     }
