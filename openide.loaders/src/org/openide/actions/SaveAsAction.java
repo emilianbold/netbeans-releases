@@ -66,6 +66,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -277,7 +278,11 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
     @Override
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         super.removePropertyChangeListener(listener);
-        refreshListeners();
+        Mutex.EVENT.readAccess(new Runnable() { // might be called off EQ by WeakListeners
+            public @Override void run() {
+                refreshListeners();
+            }
+        });
     }
     
     private PropertyChangeListener createRegistryListener() {
