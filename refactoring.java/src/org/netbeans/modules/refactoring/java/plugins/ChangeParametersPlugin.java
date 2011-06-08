@@ -268,7 +268,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 }
             }
             
-            TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring.getParameterInfo(), allMethods, refactoring.getModifiers()), treePathHandle);
+            TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring, allMethods), treePathHandle);
             p = createAndAddElements(a, transform, elements, refactoring);
             if (p != null) {
                 fireProgressListenerStop();
