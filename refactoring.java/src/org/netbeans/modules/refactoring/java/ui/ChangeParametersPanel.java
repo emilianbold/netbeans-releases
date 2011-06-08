@@ -43,10 +43,13 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePath;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -58,15 +61,26 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
+import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -75,13 +89,16 @@ import org.openide.util.NbBundle;
  * parameters, you can add parameters, reorder parameteres or remove not
  * used paramaters (not available yet). You can also change access modifier.
  *
- * @author  Pavel Flaska, Jan Becicka
+ * @author  Pavel Flaska, Jan Becicka, Ralph Ruijs
  */
 public class ChangeParametersPanel extends JPanel implements CustomRefactoringPanel {
 
     TreePathHandle refactoredObj;
+    private int[] parameterSpan;
     ParamTableModel model;
     private ChangeListener parent;
+    private TableTabAction tableTabAction;
+    private TableTabAction tableShiftTabAction;
     
     private static Action editAction = null;
     private String returnType;
@@ -120,14 +137,20 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         this.parent = parent;
         model = new ParamTableModel(columnNames, 0);
         initComponents();
-        
+
         InputMap im = paramTable.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
         ActionMap ptActionMap = paramTable.getActionMap();
+
+        KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
         Action oldTabAction = ptActionMap.get(im.get(tab));
-        ptActionMap.put(im.get(tab), new TableTabAction(oldTabAction));
+        tableTabAction = new TableTabAction(oldTabAction);
+        ptActionMap.put(im.get(tab), tableTabAction);
+        
+        KeyStroke shiftTab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK);
+        Action oldShiftTabAction = ptActionMap.get(im.get(shiftTab));
+        tableShiftTabAction = new TableTabAction(oldShiftTabAction);
+        ptActionMap.put(im.get(shiftTab), tableShiftTabAction);
     }
-    
     private boolean initialized = false;
     public void initialize() {
         try {
@@ -504,6 +527,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private void initTableData(CompilationController info) {
         ExecutableElement method = (ExecutableElement) refactoredObj.resolveElement(info);
+        MethodTree tree = info.getTrees().getTree(method);
+        
+        parameterSpan = info.getTreeUtilities().findMethodParameterSpan(tree);
         
         List<? extends VariableElement> pars = method.getParameters();
 
@@ -580,7 +606,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         TableColumn tc = null;
         while (columns.hasMoreElements()) {
             tc = (TableColumn) columns.nextElement();
-            tc.setCellRenderer(new ParamRenderer());
+            tc.setCellRenderer(new ParamRenderer(paramTable.getDefaultRenderer(String.class)));
+            tc.setCellEditor(new ParamEditor(paramTable.getDefaultEditor(String.class)));
         }
     }
 
@@ -660,14 +687,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     }
 
     private static void autoEdit(JTable tab) {
-        if (tab.editCellAt(tab.getSelectedRow(), tab.getSelectedColumn(), null) &&
-            tab.getEditorComponent() != null)
-        {
-            JTextField field = (JTextField) tab.getEditorComponent();
-            int len = field.getText().length();
-            field.setCaretPosition(field.getText().length());
+        if (tab.editCellAt(tab.getSelectedRow(), tab.getSelectedColumn(), null)
+                && tab.getEditorComponent() != null) {
+            JTextComponent field;
+            if (tab.getEditorComponent() instanceof ChangeParametersButtonPanel) {
+                field = (JTextComponent) ((ChangeParametersButtonPanel) tab.getEditorComponent()).getComp();
+            } else {
+                field = (JTextComponent) tab.getEditorComponent();
+            }
             field.requestFocusInWindow();
-            field.selectAll();
         }
     }
     
@@ -710,7 +738,32 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             autoEdit((JTable) ae.getSource());
         }
     }
-    
+
+    private class TypeAction extends AbstractAction {
+        private final JTable table;
+        private final Object value;
+        private final int row;
+        private final int col;
+
+        private TypeAction(JTable table, Object value, int row, int col) {
+            this.table = table;
+            this.value = value;
+            this.row = row;
+            this.col = col;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            FileObject file = RetoucheUtils.getFileObject(refactoredObj);
+            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), null);
+            if (type != null) {
+                String fqn = type.getQualifiedName().toString();
+                acceptEditedValue();
+                table.setValueAt(fqn, row, col);
+            }
+        }
+    }
+
     private class TableTabAction extends AbstractAction {
         private final Action originalTabAction;
         
@@ -727,32 +780,199 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             }
         }
     }
-    
-    class ParamRenderer extends DefaultTableCellRenderer implements TableCellRenderer {
+
+    class ParamRenderer implements TableCellRenderer {
         Color origBackground;
-        
-        public ParamRenderer() {
+        ChangeParametersButtonPanel buttonpanel;
+        private final TableCellRenderer original;
+
+        public ParamRenderer(TableCellRenderer original) {
             setOpaque(true);
             origBackground = getBackground();
+            buttonpanel = new ChangeParametersButtonPanel();
+            this.original = original;
         }
-        
+
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus,
                                                        int row, int column)
         {
-            super.getTableCellRendererComponent(table,  value, isSelected, hasFocus, row, column);
             boolean isRemovable = model.isRemovable(row);
+            JComponent comp = (JComponent) original.getTableCellRendererComponent(table,  value, isSelected, hasFocus, row, column);
+            if(column == 1 && table.isCellEditable(row, column)) {
+                buttonpanel.setComp(comp);
+                comp = buttonpanel;
+            }
+            
             if (!isSelected) {
                 if (!isRemovable) {
-                    setBackground(UIManager.getColor("Panel.background")); // NOI18N
+                    comp.setBackground(UIManager.getColor("Panel.background")); // NOI18N
                 } else {
-                    setBackground(origBackground);
+                    comp.setBackground(origBackground);
                 }
             }
-            return this;
+            return comp;
         }
-        
+    }
+
+    class ParamEditor implements TableCellEditor {
+
+        private final TableCellEditor original;
+        private JTextComponent editorPane;
+        private int startOffset;
+
+        public ParamEditor(TableCellEditor original) {
+            this.original = original;
+            ((DefaultCellEditor) original).setClickCountToStart(1);
+            startOffset = 0;
+        }
+
+        // This method is called when a cell value is edited by the user.
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int col) {
+            JTextComponent tableCellEditorComponent = (JTextComponent) original.getTableCellEditorComponent(table, value, isSelected, row, col);
+            Component returnValue = tableCellEditorComponent;
+            tableCellEditorComponent.setCaretPosition(tableCellEditorComponent.getText().length());
+            tableCellEditorComponent.selectAll();
+            if (col < 2) {
+                try {
+                    editorPane = new JEditorPane() {
+
+                        @Override
+                        public boolean isFocusCycleRoot() {
+                            return false; // EditorPane should not be focusRoot when it is inside a table.
+                        }
+
+                        @Override
+                        protected void processKeyEvent(KeyEvent e) {
+                            if (e.getKeyCode() == KeyEvent.VK_TAB) {
+                                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                                    if (e.getModifiers() == KeyEvent.SHIFT_DOWN_MASK
+                                            || e.getModifiers() == KeyEvent.SHIFT_MASK) {
+                                        tableShiftTabAction.actionPerformed(new ActionEvent(paramTable,
+                                                ActionEvent.ACTION_PERFORMED,
+                                                null,
+                                                e.getWhen(), ActionEvent.SHIFT_MASK));
+                                    } else {
+                                        tableTabAction.actionPerformed(new ActionEvent(paramTable,
+                                                ActionEvent.ACTION_PERFORMED,
+                                                null,
+                                                e.getWhen(), e.getModifiers()));
+                                    }
+                                }
+                            } else {
+                                super.processKeyEvent(e);
+                            }
+                        }
+                    };
+                    
+                    FileObject fileObject = refactoredObj.getFileObject();
+                    DataObject dob = DataObject.find(fileObject);
+                    editorPane.getDocument().putProperty(
+                            Document.StreamDescriptionProperty,
+                            dob);
+
+                    DialogBinding.bindComponentToFile(fileObject, parameterSpan[0] + 1, parameterSpan[1] - parameterSpan[0], editorPane);                 
+                    
+                    returnValue = editorPane;
+                    
+                    if(col == 0) {
+                        editorPane.setText(model.getValueAt(row, col+1) + " " + value.toString()); //NOI18N
+                        startOffset = ((String)model.getValueAt(row, col + 1)).length() + 1;
+                        int endOffset = value.toString().length() + startOffset;
+                        editorPane.select(startOffset, endOffset);
+                        try {
+                            Position startPos = editorPane.getDocument().createPosition(startOffset);
+                            Position endPos = editorPane.getDocument().createPosition(endOffset);
+                            editorPane.putClientProperty("document-view-start-position", startPos); //NOI18N
+                            editorPane.putClientProperty("document-view-end-position", endPos); //NOI18N
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                    if (col == 1) {
+                        editorPane.setText(value.toString());
+                        editorPane.selectAll();
+                        ChangeParametersButtonPanel buttonPanel = new ChangeParametersButtonPanel();
+                        buttonPanel.setButtonAction(new TypeAction(table, value, row, col));
+                        buttonPanel.setComp(editorPane);
+                        returnValue = buttonPanel;
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return returnValue;
+        }
+
+        public Object getCellEditorValue() {
+            if(editorPane != null) {
+                return editorPane.getText().substring(startOffset).replace(System.getProperty("line.separator"), "").trim(); //NOI18N
+            }
+            return original.getCellEditorValue();
+        }
+
+        public boolean isCellEditable(EventObject anEvent) {
+            return original.isCellEditable(anEvent);
+        }
+
+        public boolean stopCellEditing() {
+            return original.stopCellEditing();
+        }
+
+        public boolean shouldSelectCell(EventObject anEvent) {
+            return original.shouldSelectCell(anEvent);
+        }
+
+        public void removeCellEditorListener(CellEditorListener l) {
+            original.removeCellEditorListener(l);
+        }
+
+        public void cancelCellEditing() {
+            original.cancelCellEditing();
+        }
+
+        public void addCellEditorListener(CellEditorListener l) {
+            original.addCellEditorListener(l);
+        }
     }
     
+    class ChangeParametersButtonPanel extends JPanel {
+        public static final String ELLIPSIS = "\u2026"; //NOI18N
+        private JComponent comp;
+        private JButton button;
+
+        public ChangeParametersButtonPanel() {
+            button = new JButton(ELLIPSIS) {
+
+                @Override
+                public boolean isFocusable() {
+                    return (ChangeParametersButtonPanel.this.getParent() != null);
+                }
+            };
+            setLayout(new BorderLayout(0, 0));
+            add(button, BorderLayout.EAST);
+        }
+
+        public void setComp(JComponent comp) {
+            this.comp = comp;
+            add(comp, BorderLayout.CENTER);
+        }
+
+        public JComponent getComp() {
+            return comp;
+        }
+
+        private void setButtonAction(Action action) {
+            button.setAction(action);
+            button.setText(ELLIPSIS);
+        }
+
+        @Override
+        public void setBackground(Color bg) {
+            super.setBackground(bg);
+        }
+     }
     // end INNERCLASSES
 }
