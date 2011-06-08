@@ -237,8 +237,8 @@ public final class Watcher extends AnnotationProvider {
                     getReferences().add(impl.new KeyRef(fo, impl.addWatch(fo.getPath()), REF));
                 } catch (IOException ex) {
                     // XXX: handle resource overflow gracefully
-                    LOG.log(Level.WARNING, "Cannot add filesystem watch for {0}", fo.getPath());
-                    LOG.log(Level.INFO, "Exception", ex);
+                    LOG.log(Level.WARNING, "Cannot add filesystem watch for {0}: {1}", new Object[] {fo.getPath(), ex});
+                    LOG.log(Level.FINE, null, ex);
                 }
             }
         }
