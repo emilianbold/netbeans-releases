@@ -44,28 +44,40 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.AttributesTestHidden;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystemFactoryHid;
+import org.openide.filesystems.FileSystemTestHid;
 
 /**
  *
  * @author vv159170
  */
 public class RemoteFSTest extends FileSystemFactoryHid {
+    
     private ExecutionEnvironment execEnv = null;
+    private String tmpDir;
+            
     public RemoteFSTest(Test test) {
         super(test);
     }
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(FileSystemTestHid.class);
-//        suite.addTestSuite(FileObjectTestHid.class);
-//        suite.addTestSuite(AttributesTestHidden.class);
-//         
+        suite.addTestSuite(FileSystemTestHid.class);
+        suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(AttributesTestHidden.class);
         return new RemoteFSTest(suite);
     }
 
@@ -76,10 +88,24 @@ public class RemoteFSTest extends FileSystemFactoryHid {
         if (userdir == null) {
             System.setProperty("netbeans.user", System.getProperty("nbjunit.workdir"));
         }
-//        execEnv = ExecutionEnvironmentFactory.createNew("tester", "10.163.21.255");
-//        ConnectionManager.getInstance().connectTo(execEnv);
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        String mspec = rcFile.get("remote.fstest", "platform");
+        execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec);
+        ConnectionManager.getInstance().connectTo(execEnv);
+        tmpDir = mkTemp(execEnv, true);
     }
     
+    private String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        
+        String[] mkTempArgs;
+        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
+            mkTempArgs = directory ? new String[] { "-t", "/tmp", "-d" } : new String[] { "-t", "/tmp" };
+        } else {
+            mkTempArgs = directory ? new String[] { "-d" } : new String[0];
+        }        
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
+        assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
+        return res.output;
+    }    
     
     @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
@@ -94,8 +120,39 @@ public class RemoteFSTest extends FileSystemFactoryHid {
         RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
     }
 
-    private void createRemoteFSResources(RemoteFileSystem rfs, String testName, String[] resources) {
+    @Override
+    protected String getResourcePrefix(String testName, String[] resources) {
+        return tmpDir + '/' + testName;
     }
-
     
+    private void createRemoteFSResources(RemoteFileSystem rfs, String testName, String[] resources) throws IOException {
+        String[] data = new String[resources.length];
+        for (int i = 0; i < resources.length; i++) {
+            String path = resources[i];
+            String type;
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            if (path.endsWith("/")) {
+                type = "d ";
+                path = path.substring(0, path.length() - 1);
+            } else {
+                type = "- ";
+            }
+            data[i] = type + path; 
+        }
+        String base = getResourcePrefix(testName, resources);
+        try {
+            RemoteFileTestBase.createDirStructure(execEnv, base, data);
+            String tmpDirParent = PathUtilities.getDirName(tmpDir);
+            FileObject tmpDirParentFO = FileSystemProvider.getFileObject(execEnv, tmpDirParent); 
+            if (tmpDirParentFO == null) {
+                throw new IOException("Null file object for " + tmpDirParent);
+            }
+            //FileObject tmpDirFO = FileSystemProvider.getFileObject(execEnv, tmpDir);
+            tmpDirParentFO.refresh();
+        } catch (Throwable thr) {
+            throw new IOException(thr.getMessage(), thr);
+        }
+    }    
 }

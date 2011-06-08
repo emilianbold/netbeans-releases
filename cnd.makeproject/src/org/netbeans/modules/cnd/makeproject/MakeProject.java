@@ -906,10 +906,12 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
         /** Return configured project name. */
         private String _getName() {
-            if (name == null) {
-                name = getNameImpl();
+            String res = name;
+            if (res == null) {
+                res = getNameImpl();
+                name = res;
             }
-            return name;
+            return res;
         }
 
         /** Return configured project name. */

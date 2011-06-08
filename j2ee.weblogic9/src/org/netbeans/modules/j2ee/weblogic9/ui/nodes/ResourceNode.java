@@ -82,19 +82,19 @@ class ResourceNode extends AbstractItemNode {
     }
     
     private static final String RESOURCES_ICON = 
-        "org/netbeans/modules/glassfish/common/resources/resources.gif"; // NOI18N
+        "org/netbeans/modules/j2ee/weblogic9/resources/resources.gif"; // NOI18N
     
     private static final String JDBC_RESOURCE_ICON = 
-        "org/netbeans/modules/glassfish/javaee/resources/jdbc.gif"; // NOI18N
+        "org/netbeans/modules/j2ee/weblogic9/resources/jdbc.gif"; // NOI18N
     
     private static final String CONNECTOR_ICON =
-        "org/netbeans/modules/glassfish/javaee/resources/connector.gif"; // NOI18N
+        "org/netbeans/modules/j2ee/weblogic9/resources/connector.gif"; // NOI18N
     
     private static final String JAVAMAIL_ICON =
-        "org/netbeans/modules/glassfish/javaee/resources/javamail.gif"; // NOI18N
+        "org/netbeans/modules/j2ee/weblogic9/resources/javamail.gif"; // NOI18N
     
     private static final String LIBRARY_ICON =
-        "org/netbeans/modules/project/libraries/resources/libraries.gif"; // NOI18N
+        "org/netbeans/modules/j2ee/weblogic9/resources/libraries.gif"; // NOI18N
     
 
     ResourceNode( Children children , ResourceNodeType type , String name , 

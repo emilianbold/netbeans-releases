@@ -92,6 +92,20 @@ public abstract class CsmErrorProvider implements NamedEntity {
         /** Is called once the processing is done */
         void done();
     }
+    
+    
+    public interface RequestValidator {
+
+        /**
+         * Checks should we terminate highlighting for this request or not.
+         *
+         * @param request - request for highlighting
+         * @return disable or not
+         */
+        public boolean isValid(CsmErrorProvider.Request request);
+
+    }
+    
 
     public final void getErrors(Request request, Response response) {
         if (validate(request)) {
