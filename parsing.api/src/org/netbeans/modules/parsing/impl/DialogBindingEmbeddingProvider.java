@@ -71,15 +71,17 @@ public final class DialogBindingEmbeddingProvider extends EmbeddingProvider {
             int column = (Integer)attributes.getValue(path, "dialogBinding.column"); //NOI18N
             int length = (Integer)attributes.getValue(path, "dialogBinding.length"); //NOI18N
 
-            Source base;
+            final Source base;
             if (baseDoc != null) {
                 base = Source.create(baseDoc);
             } else if (baseFile != null) {
                 base = Source.create(baseFile);
             } else {
+                base = null;
+            }
+            if (base == null) {
                 return Collections.<Embedding>emptyList();
             }
-
             Snapshot baseSnapshot = SourceAccessor.getINSTANCE().getCache(base).getSnapshot();
             if (offset == -1) {
                 int lso = SourceAccessor.getINSTANCE().getLineStartOffset(baseSnapshot, line);

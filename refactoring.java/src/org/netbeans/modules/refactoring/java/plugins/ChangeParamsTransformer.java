@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.ParamTag;
+import com.sun.javadoc.SourcePosition;
 import com.sun.javadoc.Tag;
 import com.sun.source.util.Trees;
 import com.sun.source.tree.*;
@@ -53,24 +54,30 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.openide.util.Exceptions;
 
 /**
@@ -81,6 +88,7 @@ import org.openide.util.Exceptions;
 public class ChangeParamsTransformer extends RefactoringVisitor {
 
     private static final Set<Modifier> ALL_ACCESS_MODIFIERS = EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED, Modifier.PUBLIC);
+    private static final int NOPOS = -2;
     private Set<ElementHandle<ExecutableElement>> allMethods;
     /** refactored element is a synthetic default constructor */
     private boolean synthConstructor;
@@ -91,11 +99,13 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     private Boolean constructorRefactoring;
     private final ParameterInfo[] paramInfos;
     private Collection<? extends Modifier> newModifiers;
+    private final ChangeParametersRefactoring refactoring;
 
-    public ChangeParamsTransformer(ChangeParametersRefactoring.ParameterInfo[] paramInfos, Set<ElementHandle<ExecutableElement>> am, Collection<? extends Modifier> newModifiers) {
-        this.paramInfos = paramInfos;
+    public ChangeParamsTransformer(ChangeParametersRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am) {
+        this.refactoring = refactoring;
+        this.paramInfos = refactoring.getParameterInfo();
+        this.newModifiers = refactoring.getModifiers();
         this.allMethods = am;
-        this.newModifiers = newModifiers;
     }
 
     private void init() {
@@ -264,7 +274,11 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 if (originalIndex <0) {
                     vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), p[i].getName(),make.Identifier(p[i].getType()), null);
                 } else {
-                    vt = currentParameters.get(p[i].getOriginalIndex());
+                    VariableTree originalVt = currentParameters.get(p[i].getOriginalIndex());
+                    vt = make.Variable(originalVt.getModifiers(),
+                            originalVt.getName(),
+                            make.Identifier(p[i].getType()),
+                            originalVt.getInitializer());
                 }
                 newParameters.add(vt);
             }
@@ -333,31 +347,92 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     current.getThrows(),
                     current.getBody(),
                     (ExpressionTree) current.getDefaultValue());
-            rewrite(tree, nju);
 
-            ArrayList l = new ArrayList(currentParameters);
-            l.removeAll(newParameters);
-            removeFromJavadoc((ExecutableElement) el,l);
+            Javadoc javadoc = refactoring.getContext().lookup(Javadoc.class);
+            if (javadoc != null) {
+                Comment comment = null;
+                switch (javadoc) {
+                    case UPDATE:
+                        ArrayList removed = new ArrayList(currentParameters);
+                        removed.removeAll(newParameters);
+                        comment = updateJavadoc((ExecutableElement) el, removed, paramInfos);
+                        GeneratorUtilities.get(workingCopy).copyComments(current, nju, true);
+                        make.removeComment(nju, 0, true);
+                        break;
+                    case GENERATE:
+                        comment = generateJavadoc(newParameters, current);
+                        break;
+                }
+                if(comment != null) {
+                    make.addComment(nju, comment, true);
+                }
+            }
+            
+            rewrite(tree, nju);
             return;
         }
     }
 
-    private void removeFromJavadoc(ExecutableElement method, List<? extends VariableTree> parameters) {
+    private Comment updateJavadoc(ExecutableElement method, List<? extends VariableTree> removed, ParameterInfo[] parameters) {
         Doc javadoc = workingCopy.getElementUtilities().javaDocFor(method);
-        params:
-        for (Tag t:javadoc.tags("param")) { //NOI18N
-            for (VariableTree param:parameters) {
-                String text = t.text();
-                int a = text.indexOf(' ');
-                if (a>0) {
-                    text = text.substring(0, a);
-                }
-                if (text.equals(param.getName().toString())) {
-                    removeFromDoc((ParamTag)t);
-                    continue params;
+        List<Tag> paramTags = new LinkedList<Tag>();
+        List<Tag> otherTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags()));
+        List<Tag> returnTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@return"))); // NOI18N
+        List<Tag> throwsTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@throws"))); // NOI18N
+        List<Tag> oldParamTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@param"))); // NOI18N
+
+        otherTags.removeAll(returnTags);
+        otherTags.removeAll(throwsTags);
+        otherTags.removeAll(oldParamTags);
+        
+        params: for (ParameterInfo parameter : parameters) {
+            if(parameter.getOriginalIndex() == -1) {
+                Tag newTag = new ParamTagImpl(parameter.getName(), "the value of " + parameter.getName(), javadoc); // NOI18N
+                paramTags.add(newTag);
+            } else {
+                for (Tag tag : oldParamTags) {
+                    ParamTag paramTag = (ParamTag) tag;
+                    if (parameter.getName().toString().equals(paramTag.parameterName())) {
+                        paramTags.add(tag);
+                        continue params;
+                    }
                 }
             }
         }
+        
+        StringBuilder text = new StringBuilder(javadoc.commentText()).append("\n\n"); // NOI18N
+        text.append(tagsToString(paramTags));
+        text.append(tagsToString(returnTags));
+        text.append(tagsToString(throwsTags));
+        text.append(tagsToString(otherTags));
+        
+        Comment comment = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS, text.toString());
+        return comment;
+    }
+        
+    private Comment generateJavadoc(List<VariableTree> newParameters, MethodTree current) {
+        Tree returnType = current.getReturnType();
+        StringBuilder builder = new StringBuilder("\n"); // NOI18N
+        for (VariableTree variableTree : newParameters) {
+            builder.append(String.format("@param %s the value of %s", variableTree.getName(), variableTree.getName())); // NOI18N
+            builder.append("\n"); // NOI18N
+        }
+        boolean hasReturn = true;
+        if (returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
+            if (((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
+                hasReturn = false;
+            }
+        }
+        if(hasReturn) {
+            builder.append("@return the ").append(returnType).append("\n"); // NOI18N
+        }
+        for (ExpressionTree expressionTree : current.getThrows()) {
+            builder.append("@throws ").append(expressionTree).append("\n"); // NOI18N
+        }
+        Comment comment = Comment.create(
+                Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS,
+                builder.toString());
+        return comment;
     }
 
     private void removeFromDoc(ParamTag t) {
@@ -397,5 +472,75 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     && ((TypeElement) enclosingElement).getNestingKind() == NestingKind.ANONYMOUS;
         }
         return false;
+    }
+
+    private String tagsToString(List<Tag> tags) {
+        StringBuilder sb = new StringBuilder();
+        for (Tag tag : tags) {
+            sb.append(tag.name()).append(" ").append(tag.text()).append("\n"); // NOI18N
+        }
+        return sb.toString();
+    }
+
+    private static class ParamTagImpl implements ParamTag {
+        private final String name;
+        private final String comment;
+        private final Doc holder;
+
+        public ParamTagImpl(String name, String comment, Doc holder) {
+            this.name = name;
+            this.comment = comment;
+            this.holder = holder;
+        }
+
+        @Override
+        public String parameterName() {
+            return name;
+        }
+
+        @Override
+        public String parameterComment() {
+            return comment;
+        }
+
+        @Override
+        public boolean isTypeParameter() {
+            return false; // Not important for the javadoc update
+        }
+
+        @Override
+        public String name() {
+            return "@param"; // NOI18N
+        }
+
+        @Override
+        public Doc holder() {
+            return holder;
+        }
+
+        @Override
+        public String kind() {
+            return name();
+        }
+
+        @Override
+        public String text() {
+            return parameterName() + " " + parameterComment(); // NOI18N
+        }
+
+        @Override
+        public Tag[] inlineTags() {
+            return null; // Not important for the javadoc update
+        }
+
+        @Override
+        public Tag[] firstSentenceTags() {
+            return null; // Not important for the javadoc update
+        }
+
+        @Override
+        public SourcePosition position() {
+            return null; // Not important for the javadoc update
+        }
     }
 }
