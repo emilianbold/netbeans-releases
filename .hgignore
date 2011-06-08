@@ -125,8 +125,6 @@ derby\.log
 ^nbbuild/site\.build\.properties$
 ^nbbuild/external/findbugs/lib$
 ^nbbuild/external/findbugs/plugin$
-^nbbuild/hudson/NBstore$
-^nbbuild/hudson/storepass$
 ^nbi/engine/native/jnilib/solaris-sparc/\.make\.state\.Debug$
 ^nbi/engine/native/jnilib/solaris-x86/\.make\.state\.Debug$
 ^nbi/engine/native/jnilib/windows/vc80\.idb$
