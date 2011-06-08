@@ -83,6 +83,8 @@ public class Node {
     protected JTreeOperator treeOperator;
     /** TreePath of node */
     protected TreePath treePath;
+    /** Path of node names representing this node. */
+    protected String stringPath;
     /** Comparator used for this node instance. */
     private Operator.StringComparator comparator;
     
@@ -133,6 +135,7 @@ public class Node {
             this.treeOperator = treeOperator;
         }
         this.treePath=path;
+        this.stringPath = convertPath(path);
     }
     
     /** Sets comparator fot this node. Comparator is used for all methods
@@ -165,9 +168,9 @@ public class Node {
     /** Getter for TreePath of node.
      * @return TreePath of node */
     public TreePath getTreePath() {
-        if(tree().getRowForPath(treePath) < 0) {
+        if (treePath.getLastPathComponent().toString().isEmpty() || tree().getRowForPath(treePath) < 0) {
             // node was removed or re-created
-            treePath = tree().findPath(convertPath(treePath));
+            treePath = tree().findPath(stringPath);
         }
         return treePath;
     }
@@ -311,7 +314,12 @@ public class Node {
     public boolean isPresent() {
         // do not use getTreePath() in this method
         tree().expandPath(treePath.getParentPath());
-        return tree().getRowForPath(treePath)>=0;
+        int row = tree().getRowForPath(treePath);
+        if (row < 0) {
+            return false;
+        } else {
+            return treePath.equals(tree().getPathForRow(row));
+        }
     }
     
     /** verifies node's popup path for presence (without invocation)
