@@ -274,7 +274,11 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 if (originalIndex <0) {
                     vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), p[i].getName(),make.Identifier(p[i].getType()), null);
                 } else {
-                    vt = currentParameters.get(p[i].getOriginalIndex());
+                    VariableTree originalVt = currentParameters.get(p[i].getOriginalIndex());
+                    vt = make.Variable(originalVt.getModifiers(),
+                            originalVt.getName(),
+                            make.Identifier(p[i].getType()),
+                            originalVt.getInitializer());
                 }
                 newParameters.add(vt);
             }

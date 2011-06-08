@@ -794,9 +794,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 // check box indicating usage of parameter is not editable
                 return false;
             }
-            // otherwise, check that user can change only the values provided
-            // for the new parameter. name change of old paramter is allowed.
-            if(column > 0) {
+            // otherwise, check that user can only change the default value
+            // for new parameters.
+            if(column > 1) {
                 Integer origIdx = (Integer) ((Vector) getDataVector().get(row)).get(3);
                 return origIdx.intValue() == -1 ? true : false;
             }
@@ -876,7 +876,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                                                        boolean isSelected, boolean hasFocus,
                                                        int row, int column)
         {
-            boolean isRemovable = model.isRemovable(row);
+            boolean isEditable = model.isCellEditable(row, column);
             JComponent comp = (JComponent) original.getTableCellRendererComponent(table,  value, isSelected, hasFocus, row, column);
             if(column == 1 && table.isCellEditable(row, column)) {
                 buttonpanel.setComp(comp);
@@ -884,7 +884,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             }
             
             if (!isSelected) {
-                if (!isRemovable) {
+                if (!isEditable) {
                     comp.setBackground(UIManager.getColor("Panel.background")); // NOI18N
                 } else {
                     comp.setBackground(origBackground);

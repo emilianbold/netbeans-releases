@@ -236,6 +236,54 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
     }
+    
+    public void test83483() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "String", null)};
+        performChangeParameters(paramTable, Javadoc.NONE, new Problem(false, "WRN_isNotAssignable"));
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static testMethod(String x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+        paramTable = new ParameterInfo[] {new ParameterInfo(0, "x", "Strings", null)};
+        performChangeParameters(paramTable, Javadoc.NONE, new Problem(false, "WRN_canNotResolve"), new Problem(false, "WRN_isNotAssignable"));
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static testMethod(Strings x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     private void performChangeParameters(ParameterInfo[] paramTable, final Javadoc javadoc, Problem... expectedProblems) throws Exception {
         final ChangeParametersRefactoring[] r = new ChangeParametersRefactoring[1];

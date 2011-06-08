@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -72,6 +74,7 @@ import org.openide.util.lookup.Lookups;
  * @author  Pavel Flaska
  * @author  Tomas Hurka
  * @author  Jan Becicka
+ * @author  Ralph Ruijs
  */
 public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
@@ -156,22 +159,41 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 }
             }
 
-            if (originalIndex==-1) {
             // check parameter type
             String t = parameterInfo.getType();
-            if (t == null)
+            TypeMirror parseType = null;
+            if (t == null || t.length() < 1) {
                 p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
-
-            // check the default value
-            s = parameterInfo.getDefaultValue();
-            if ((s == null || s.length() < 1))
-                p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
- 
+            } else {
+                TypeElement typeElement = javac.getElements().getTypeElement(t);
+                parseType = typeElement == null ? null : typeElement.asType();
+                if(parseType == null) {
+                    TypeElement enclosingTypeElement = javac.getElementUtilities().enclosingTypeElement(method);
+                    parseType = javac.getTreeUtilities().parseType(t, enclosingTypeElement);
+                    if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
+                        p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolve", t, s)); // NOI18N
+                    }
+                }
             }
 
-            if (parameterInfo.getType() != null && parameterInfo.getType().endsWith("...") && i!=paramTable.length-1) {//NOI18N
-                    p = createProblem(p, true, org.openide.util.NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[] {})); // NOI18N
+            if (originalIndex == -1) {
+                // check the default value
+                s = parameterInfo.getDefaultValue();
+                if ((s == null || s.length() < 1)) {
+                    p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
                 }
+            } else {
+                // check if the changed type is assigneble
+                if(parseType != null) {
+                    if(!javac.getTypes().isAssignable(parseType, parameterElement.asType())) {
+                        p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_isNotAssignable", parameterElement.asType().toString(), t)); // NOI18N
+                    }
+                }
+            }
+
+            if (parameterInfo.getType() != null && parameterInfo.getType().endsWith("...") && i != paramTable.length - 1) {//NOI18N
+                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[]{})); // NOI18N
+            }
         }
         return p;    
     }
