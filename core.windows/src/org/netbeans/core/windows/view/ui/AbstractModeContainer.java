@@ -60,6 +60,7 @@ import org.openide.windows.TopComponent;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 
 
 /** 
@@ -229,16 +230,12 @@ public abstract class AbstractModeContainer implements ModeContainer {
     
     protected abstract TopComponentDroppable getModeDroppable();
     
-    protected boolean canDrop(TopComponent transfer) {
-        if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-          || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+    protected boolean canDrop(TopComponentDraggable transfer) {
+        if(transfer.isAllowedToMoveAnywhere()) {
             return true;
         }
         
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
-        int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
-        
-        boolean isNonEditor = kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
+        boolean isNonEditor = transfer.getKind() == Constants.MODE_KIND_VIEW || transfer.getKind() == Constants.MODE_KIND_SLIDING;
         boolean thisIsNonEditor = this.kind == Constants.MODE_KIND_VIEW || this.kind == Constants.MODE_KIND_SLIDING;
         return isNonEditor == thisIsNonEditor;
     }

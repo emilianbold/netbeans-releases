@@ -87,10 +87,10 @@ is divided into following sections:
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
             
-            <fail message="Please build using Ant 1.7.1 or higher.">
+            <fail message="Please build using Ant 1.8.0 or higher.">
                 <condition>
                     <not>
-                        <antversion atleast="1.7.1"/>
+                        <antversion atleast="1.8.0"/>
                     </not>
                 </condition>
             </fail>

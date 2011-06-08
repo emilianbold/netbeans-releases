@@ -43,10 +43,15 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.javadoc.Doc;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePath;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -58,34 +63,52 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
+import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
+import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  * Panel contains components for signature change. There is table with
- * parameters, you can add parameters, reorder parameteres or remove not
- * used paramaters (not available yet). You can also change access modifier.
+ * parameters, you can add parameters, reorder parameters, rename parameters
+ * or remove parameters. You can also change the methods access modifier.
  *
- * @author  Pavel Flaska, Jan Becicka
+ * @author  Pavel Flaska, Jan Becicka, Ralph Ruijs
  */
 public class ChangeParametersPanel extends JPanel implements CustomRefactoringPanel {
+    private static final String UPDATEJAVADOC = "updateJavadoc.changeParameters"; // NOI18N
+    private static final String GENJAVADOC = "generateJavadoc.changeParameters"; // NOI18N
 
     TreePathHandle refactoredObj;
+    private int[] parameterSpan;
     ParamTableModel model;
     private ChangeListener parent;
+    private TableTabAction tableTabAction;
+    private TableTabAction tableShiftTabAction;
     
     private static Action editAction = null;
     private String returnType;
     private String enclosingClassName;
+    private Doc javadocDoc;
     
     private static final String[] modifierNames = {
         "public", // NOI18N
@@ -120,14 +143,20 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         this.parent = parent;
         model = new ParamTableModel(columnNames, 0);
         initComponents();
-        
+
         InputMap im = paramTable.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
         ActionMap ptActionMap = paramTable.getActionMap();
+
+        KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
         Action oldTabAction = ptActionMap.get(im.get(tab));
-        ptActionMap.put(im.get(tab), new TableTabAction(oldTabAction));
+        tableTabAction = new TableTabAction(oldTabAction);
+        ptActionMap.put(im.get(tab), tableTabAction);
+        
+        KeyStroke shiftTab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK);
+        Action oldShiftTabAction = ptActionMap.get(im.get(shiftTab));
+        tableShiftTabAction = new TableTabAction(oldShiftTabAction);
+        ptActionMap.put(im.get(shiftTab), tableShiftTabAction);
     }
-    
     private boolean initialized = false;
     public void initialize() {
         try {
@@ -140,6 +169,16 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     try {
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
                         ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
+                        javadocDoc = info.getElementUtilities().javaDocFor(e);
+                        if(javadocDoc.commentText() == null || javadocDoc.commentText().equals("")) {
+                            chkGenJavadoc.setEnabled(true);
+                            chkGenJavadoc.setVisible(true);
+                            chkUpdateJavadoc.setVisible(false);
+                        } else {
+                            chkUpdateJavadoc.setEnabled(true);
+                            chkUpdateJavadoc.setVisible(true);
+                            chkGenJavadoc.setVisible(false);
+                        }
                         returnType = e.getReturnType().toString();
                         TreePath enclosingClass = JavaRefactoringUtils.findEnclosingClass(info, refactoredObj.resolve(info), true, true, true, true, true);
                         TreePathHandle tph = TreePathHandle.create(enclosingClass, info);
@@ -195,6 +234,23 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         }
         return modifiers;
     }
+    
+    protected Javadoc getJavadoc() {
+        if(chkUpdateJavadoc.isVisible() && chkUpdateJavadoc.isSelected()) {
+            return Javadoc.UPDATE;
+        } else if(chkGenJavadoc.isVisible() && chkGenJavadoc.isSelected()) {
+            return Javadoc.GENERATE;
+        } else {
+            return Javadoc.NONE;
+        }
+    }
+    
+    public enum Javadoc {
+        NONE,
+        UPDATE,
+        GENERATE
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -217,6 +273,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         westPanel = new javax.swing.JScrollPane();
         paramTable = new javax.swing.JTable();
         paramTitle = new javax.swing.JLabel();
+        chkUpdateJavadoc = new javax.swing.JCheckBox();
+        chkGenJavadoc = new javax.swing.JCheckBox();
         previewChange = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
@@ -370,10 +428,40 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(paramTitle, gridBagConstraints);
 
-        previewChange.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getBundle(ChangeParametersPanel.class).getString("LBL_ChangeParsPreview"))); // NOI18N
+        chkUpdateJavadoc.setSelected(((Boolean) RefactoringModule.getOption(UPDATEJAVADOC, Boolean.FALSE)).booleanValue());
+        org.openide.awt.Mnemonics.setLocalizedText(chkUpdateJavadoc, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "LBL_UpdateJavadoc")); // NOI18N
+        chkUpdateJavadoc.setEnabled(false);
+        chkUpdateJavadoc.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chkUpdateJavadocItemStateChanged(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        add(chkUpdateJavadoc, gridBagConstraints);
+
+        chkGenJavadoc.setSelected(((Boolean) RefactoringModule.getOption(GENJAVADOC, Boolean.FALSE)).booleanValue());
+        org.openide.awt.Mnemonics.setLocalizedText(chkGenJavadoc, org.openide.util.NbBundle.getMessage(ChangeParametersPanel.class, "LBL_GenJavadoc")); // NOI18N
+        chkGenJavadoc.setEnabled(false);
+        chkGenJavadoc.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                chkGenJavadocItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        add(chkGenJavadoc, gridBagConstraints);
+
+        previewChange.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getBundle(ChangeParametersPanel.class).getString("LBL_ChangeParsPreview"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(previewChange, gridBagConstraints);
@@ -421,10 +509,22 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         paramTable.changeSelection(rowCount, 0, false, false);
         autoEdit(paramTable);
     }//GEN-LAST:event_addButtonActionPerformed
+
+    private void chkUpdateJavadocItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkUpdateJavadocItemStateChanged
+        Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
+        RefactoringModule.setOption(UPDATEJAVADOC, b); // NOI18N
+    }//GEN-LAST:event_chkUpdateJavadocItemStateChanged
+
+    private void chkGenJavadocItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkGenJavadocItemStateChanged
+        Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
+        RefactoringModule.setOption(GENJAVADOC, b); // NOI18N
+    }//GEN-LAST:event_chkGenJavadocItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JPanel buttonsPanel;
+    private javax.swing.JCheckBox chkGenJavadoc;
+    private javax.swing.JCheckBox chkUpdateJavadoc;
     private javax.swing.JPanel eastPanel;
     private javax.swing.JPanel fillPanel;
     private javax.swing.JComboBox modifiersCombo;
@@ -504,6 +604,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private void initTableData(CompilationController info) {
         ExecutableElement method = (ExecutableElement) refactoredObj.resolveElement(info);
+        MethodTree tree = info.getTrees().getTree(method);
+        
+        parameterSpan = info.getTreeUtilities().findMethodParameterSpan(tree);
         
         List<? extends VariableElement> pars = method.getParameters();
 
@@ -580,7 +683,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         TableColumn tc = null;
         while (columns.hasMoreElements()) {
             tc = (TableColumn) columns.nextElement();
-            tc.setCellRenderer(new ParamRenderer());
+            tc.setCellRenderer(new ParamRenderer(paramTable.getDefaultRenderer(String.class)));
+            tc.setCellEditor(new ParamEditor(paramTable.getDefaultEditor(String.class)));
         }
     }
 
@@ -660,14 +764,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     }
 
     private static void autoEdit(JTable tab) {
-        if (tab.editCellAt(tab.getSelectedRow(), tab.getSelectedColumn(), null) &&
-            tab.getEditorComponent() != null)
-        {
-            JTextField field = (JTextField) tab.getEditorComponent();
-            int len = field.getText().length();
-            field.setCaretPosition(field.getText().length());
+        if (tab.editCellAt(tab.getSelectedRow(), tab.getSelectedColumn(), null)
+                && tab.getEditorComponent() != null) {
+            JTextComponent field;
+            if (tab.getEditorComponent() instanceof ChangeParametersButtonPanel) {
+                field = (JTextComponent) ((ChangeParametersButtonPanel) tab.getEditorComponent()).getComp();
+            } else {
+                field = (JTextComponent) tab.getEditorComponent();
+            }
             field.requestFocusInWindow();
-            field.selectAll();
         }
     }
     
@@ -689,11 +794,13 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 // check box indicating usage of parameter is not editable
                 return false;
             }
-            // otherwise, check that user can change only the values provided
-            // for the new parameter. (name change of old parameters aren't
-            // allowed.
-            Integer origIdx = (Integer) ((Vector) getDataVector().get(row)).get(3);
-            return origIdx.intValue() == -1 ? true : false;
+            // otherwise, check that user can only change the default value
+            // for new parameters.
+            if(column > 1) {
+                Integer origIdx = (Integer) ((Vector) getDataVector().get(row)).get(3);
+                return origIdx.intValue() == -1 ? true : false;
+            }
+            return true;
         }
         
         public boolean isRemovable(int row) {
@@ -710,7 +817,32 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             autoEdit((JTable) ae.getSource());
         }
     }
-    
+
+    private class TypeAction extends AbstractAction {
+        private final JTable table;
+        private final Object value;
+        private final int row;
+        private final int col;
+
+        private TypeAction(JTable table, Object value, int row, int col) {
+            this.table = table;
+            this.value = value;
+            this.row = row;
+            this.col = col;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            FileObject file = RetoucheUtils.getFileObject(refactoredObj);
+            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), null);
+            if (type != null) {
+                String fqn = type.getQualifiedName().toString();
+                acceptEditedValue();
+                table.setValueAt(fqn, row, col);
+            }
+        }
+    }
+
     private class TableTabAction extends AbstractAction {
         private final Action originalTabAction;
         
@@ -727,32 +859,199 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             }
         }
     }
-    
-    class ParamRenderer extends DefaultTableCellRenderer implements TableCellRenderer {
+
+    class ParamRenderer implements TableCellRenderer {
         Color origBackground;
-        
-        public ParamRenderer() {
+        ChangeParametersButtonPanel buttonpanel;
+        private final TableCellRenderer original;
+
+        public ParamRenderer(TableCellRenderer original) {
             setOpaque(true);
             origBackground = getBackground();
+            buttonpanel = new ChangeParametersButtonPanel();
+            this.original = original;
         }
-        
+
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus,
                                                        int row, int column)
         {
-            super.getTableCellRendererComponent(table,  value, isSelected, hasFocus, row, column);
-            boolean isRemovable = model.isRemovable(row);
+            boolean isEditable = model.isCellEditable(row, column);
+            JComponent comp = (JComponent) original.getTableCellRendererComponent(table,  value, isSelected, hasFocus, row, column);
+            if(column == 1 && table.isCellEditable(row, column)) {
+                buttonpanel.setComp(comp);
+                comp = buttonpanel;
+            }
+            
             if (!isSelected) {
-                if (!isRemovable) {
-                    setBackground(UIManager.getColor("Panel.background")); // NOI18N
+                if (!isEditable) {
+                    comp.setBackground(UIManager.getColor("Panel.background")); // NOI18N
                 } else {
-                    setBackground(origBackground);
+                    comp.setBackground(origBackground);
                 }
             }
-            return this;
+            return comp;
         }
-        
+    }
+
+    class ParamEditor implements TableCellEditor {
+
+        private final TableCellEditor original;
+        private JTextComponent editorPane;
+        private int startOffset;
+
+        public ParamEditor(TableCellEditor original) {
+            this.original = original;
+            ((DefaultCellEditor) original).setClickCountToStart(1);
+            startOffset = 0;
+        }
+
+        // This method is called when a cell value is edited by the user.
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected, int row, int col) {
+            JTextComponent tableCellEditorComponent = (JTextComponent) original.getTableCellEditorComponent(table, value, isSelected, row, col);
+            Component returnValue = tableCellEditorComponent;
+            tableCellEditorComponent.setCaretPosition(tableCellEditorComponent.getText().length());
+            tableCellEditorComponent.selectAll();
+            if (col < 2) {
+                try {
+                    editorPane = new JEditorPane() {
+
+                        @Override
+                        public boolean isFocusCycleRoot() {
+                            return false; // EditorPane should not be focusRoot when it is inside a table.
+                        }
+
+                        @Override
+                        protected void processKeyEvent(KeyEvent e) {
+                            if (e.getKeyCode() == KeyEvent.VK_TAB) {
+                                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                                    if (e.getModifiers() == KeyEvent.SHIFT_DOWN_MASK
+                                            || e.getModifiers() == KeyEvent.SHIFT_MASK) {
+                                        tableShiftTabAction.actionPerformed(new ActionEvent(paramTable,
+                                                ActionEvent.ACTION_PERFORMED,
+                                                null,
+                                                e.getWhen(), ActionEvent.SHIFT_MASK));
+                                    } else {
+                                        tableTabAction.actionPerformed(new ActionEvent(paramTable,
+                                                ActionEvent.ACTION_PERFORMED,
+                                                null,
+                                                e.getWhen(), e.getModifiers()));
+                                    }
+                                }
+                            } else {
+                                super.processKeyEvent(e);
+                            }
+                        }
+                    };
+                    
+                    FileObject fileObject = refactoredObj.getFileObject();
+                    DataObject dob = DataObject.find(fileObject);
+                    editorPane.getDocument().putProperty(
+                            Document.StreamDescriptionProperty,
+                            dob);
+
+                    DialogBinding.bindComponentToFile(fileObject, parameterSpan[0] + 1, parameterSpan[1] - parameterSpan[0], editorPane);                 
+                    
+                    returnValue = editorPane;
+                    
+                    if(col == 0) {
+                        editorPane.setText(model.getValueAt(row, col+1) + " " + value.toString()); //NOI18N
+                        startOffset = ((String)model.getValueAt(row, col + 1)).length() + 1;
+                        int endOffset = value.toString().length() + startOffset;
+                        editorPane.select(startOffset, endOffset);
+                        try {
+                            Position startPos = editorPane.getDocument().createPosition(startOffset);
+                            Position endPos = editorPane.getDocument().createPosition(endOffset);
+                            editorPane.putClientProperty("document-view-start-position", startPos); //NOI18N
+                            editorPane.putClientProperty("document-view-end-position", endPos); //NOI18N
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                    if (col == 1) {
+                        editorPane.setText(value.toString());
+                        editorPane.selectAll();
+                        ChangeParametersButtonPanel buttonPanel = new ChangeParametersButtonPanel();
+                        buttonPanel.setButtonAction(new TypeAction(table, value, row, col));
+                        buttonPanel.setComp(editorPane);
+                        returnValue = buttonPanel;
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return returnValue;
+        }
+
+        public Object getCellEditorValue() {
+            if(editorPane != null) {
+                return editorPane.getText().substring(startOffset).replace(System.getProperty("line.separator"), "").trim(); //NOI18N
+            }
+            return original.getCellEditorValue();
+        }
+
+        public boolean isCellEditable(EventObject anEvent) {
+            return original.isCellEditable(anEvent);
+        }
+
+        public boolean stopCellEditing() {
+            return original.stopCellEditing();
+        }
+
+        public boolean shouldSelectCell(EventObject anEvent) {
+            return original.shouldSelectCell(anEvent);
+        }
+
+        public void removeCellEditorListener(CellEditorListener l) {
+            original.removeCellEditorListener(l);
+        }
+
+        public void cancelCellEditing() {
+            original.cancelCellEditing();
+        }
+
+        public void addCellEditorListener(CellEditorListener l) {
+            original.addCellEditorListener(l);
+        }
     }
     
+    class ChangeParametersButtonPanel extends JPanel {
+        public static final String ELLIPSIS = "\u2026"; //NOI18N
+        private JComponent comp;
+        private JButton button;
+
+        public ChangeParametersButtonPanel() {
+            button = new JButton(ELLIPSIS) {
+
+                @Override
+                public boolean isFocusable() {
+                    return (ChangeParametersButtonPanel.this.getParent() != null);
+                }
+            };
+            setLayout(new BorderLayout(0, 0));
+            add(button, BorderLayout.EAST);
+        }
+
+        public void setComp(JComponent comp) {
+            this.comp = comp;
+            add(comp, BorderLayout.CENTER);
+        }
+
+        public JComponent getComp() {
+            return comp;
+        }
+
+        private void setButtonAction(Action action) {
+            button.setAction(action);
+            button.setText(ELLIPSIS);
+        }
+
+        @Override
+        public void setBackground(Color bg) {
+            super.setBackground(bg);
+        }
+     }
     // end INNERCLASSES
 }

@@ -79,8 +79,8 @@ public class FolderArchive implements Archive {
     final File root;
     final Charset encoding;
     
-    private final AtomicBoolean sourceRootInitialized = new AtomicBoolean();
-    private volatile URL sourceRoot;
+    private boolean sourceRootInitialized;
+    private URL sourceRoot;
 
     /** Creates a new instance of FolderArchive */
     public FolderArchive (final File root) {
@@ -170,9 +170,16 @@ public class FolderArchive implements Archive {
     }
 
     private URL getBaseSourceRoot(final URL binRoot) {
-        if (!sourceRootInitialized.getAndSet(true)) {
-            sourceRoot = JavaIndex.getSourceRootForClassFolder(binRoot);
+        synchronized (this) {
+            if (sourceRootInitialized) {
+                return sourceRoot;
+            }
         }
-        return sourceRoot;
+        final URL tmpSourceRoot = JavaIndex.getSourceRootForClassFolder(binRoot);
+        synchronized (this) {
+            sourceRoot = tmpSourceRoot;
+            sourceRootInitialized = true;
+            return sourceRoot;
+        }
     }
 }

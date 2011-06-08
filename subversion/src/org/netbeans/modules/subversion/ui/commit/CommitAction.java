@@ -105,7 +105,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class CommitAction extends ContextAction {
 
-    static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
+    public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
     private static final String PANEL_PREFIX = "commit"; //NOI18N
 
     @Override

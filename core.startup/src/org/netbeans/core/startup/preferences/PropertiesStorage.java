@@ -54,8 +54,14 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
@@ -74,6 +80,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     private final String folderPath;
     private String filePath;
     private boolean isModified;
+    private FileChangeAdapter fileChangeAdapter;
     
     
     static NbPreferences.FileStorage instance(final String absolutePath) {
@@ -326,4 +333,38 @@ class PropertiesStorage implements NbPreferences.FileStorage {
             Exceptions.printStackTrace(ex);
         }
     }
+
+
+     @Override
+     public void attachChangeListener(final ChangeListener changeListener) {
+         try {            
+             fileChangeAdapter = new FileChangeAdapter(){
+
+              @Override
+              public void fileChanged(FileEvent fe) {                  
+                  if(fe.getFile().equals(toPropertiesFile())){
+                      changeListener.stateChanged(new ChangeEvent(PropertiesStorage.this));
+                  }
+              }
+
+              @Override
+              public void fileDeleted(FileEvent fe) {                 
+                  if(fe.getFile().equals(toPropertiesFile())){
+                      changeListener.stateChanged(new ChangeEvent(PropertiesStorage.this));
+                  }
+              }
+
+              @Override
+              public void fileRenamed(FileRenameEvent fe) {                 
+                  if(fe.getFile().equals(toPropertiesFile())){
+                      changeListener.stateChanged(new ChangeEvent(PropertiesStorage.this));
+                  }
+              }
+
+          };
+             SFS_ROOT.getFileSystem().addFileChangeListener(FileUtil.weakFileChangeListener(fileChangeAdapter, SFS_ROOT.getFileSystem()));
+         } catch (FileStateInvalidException ex) {
+             Exceptions.printStackTrace(ex);
+         }
+     }
 }
