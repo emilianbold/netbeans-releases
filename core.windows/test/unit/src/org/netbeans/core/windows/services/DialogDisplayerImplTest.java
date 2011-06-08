@@ -47,6 +47,7 @@ package org.netbeans.core.windows.services;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.Window;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -70,7 +71,8 @@ public class DialogDisplayerImplTest extends NbTestCase {
     private DialogDescriptor childDD;
     private JButton openChild;
     private JButton closeChild;
-    private Dialog child;
+    private Component child;
+    @SuppressWarnings("NonConstantLogger")
     private Logger LOG;
     
     public DialogDisplayerImplTest (String testName) {
@@ -111,6 +113,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
 
     public void testWorksFromAWTImmediatelly () throws Exception {
         class FromAWT implements Runnable {
+            @Override
             public void run () {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ("HowAreYou?");
                 Object r  = dd.notify (nd);
@@ -126,6 +129,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         class BlockAWT implements Runnable {
             public volatile int state;
+            @Override
             public synchronized void run () {
                 state = 1;
                 try {
@@ -176,6 +180,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // make leaf visible
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 owner.setVisible (true);
             }
@@ -186,13 +191,15 @@ public class DialogDisplayerImplTest extends NbTestCase {
 
         // make the child visible
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 child.setVisible (true);
             }
         });
         assertShowing("Child will be visible", true, child);
         
-        assertFalse ("No dialog is owned by leaf dialog.", owner.equals (child.getOwner ()));
+        Window w = SwingUtilities.windowForComponent(child);
+        assertFalse ("No dialog is owned by leaf dialog.", owner.equals (w.getOwner ()));
         assertEquals ("The leaf dialog has no child.", 0, owner.getOwnedWindows ().length);
         
         assertTrue ("Leaf is visible", owner.isVisible ());
@@ -200,6 +207,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // close the leaf window
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 owner.setVisible (false);
             }
@@ -211,6 +219,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // close the child dialog
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 child.setVisible (false);
             }
@@ -228,6 +237,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // make leaf visible
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 owner.setVisible (true);
             }
@@ -238,13 +248,15 @@ public class DialogDisplayerImplTest extends NbTestCase {
 
         // make the child visible
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 child.setVisible (true);
             }
         });
         assertShowing("child is visible too", true, child);
         
-        assertTrue ("The child is owned by leaf dialog.", owner.equals (child.getOwner ()));
+        Window w = (Window)child;
+        assertTrue ("The child is owned by leaf dialog.", owner.equals (w.getOwner ()));
         assertEquals ("The leaf dialog has one child.", 1, owner.getOwnedWindows ().length);
         
         assertTrue ("Leaf is visible", owner.isVisible ());
@@ -252,6 +264,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // close the leaf window
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 owner.setVisible (false);
             }
@@ -272,7 +285,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
     }
     
     private void waitAWT() throws Exception {
-        SwingUtilities.invokeAndWait(new Runnable() { public void run() { } });
+        SwingUtilities.invokeAndWait(new Runnable() { @Override public void run() { } });
     }
 
     private void assertShowing(String msg, boolean showing, Component c) throws InterruptedException {
