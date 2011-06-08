@@ -96,7 +96,7 @@ import org.openide.windows.WindowManager;
      * @param context lookup provider representing the object to displayed in the multiview
      * @param mimeType the mime type to seek for elements in
      * @return multiview component
-     * @since 1.22
+     * @since 1.24
      */
     public static <T extends Serializable & Lookup.Provider> TopComponent createMultiView(
         String mimeType, T context
@@ -114,7 +114,7 @@ import org.openide.windows.WindowManager;
      * @param context lookup representing the object to be displayed in the multiview
      * @param mimeType the mime type to seek for elements in
      * @return cloneable multiview component also implementing {@link Pane} interface
-     * @since 1.22
+     * @since 1.24
      */
     public static <T extends Serializable & Lookup.Provider> CloneableTopComponent createCloneableMultiView(
             String mimeType, T context
