@@ -83,11 +83,11 @@ public interface TopComponentDroppable {
     public ViewElement getDropViewElement();
     
     // XXX
-    /** Checks whether the specified TopComponent can be dropped. */
-    public boolean canDrop(TopComponent transfer, Point location);
+    /** Checks whether the specified given TopComponent or Mode can be dropped. */
+    public boolean canDrop(TopComponentDraggable transfer, Point location);
     
     // XXX
     /** Checks whether this droppable supports kind of winsys transfer.
      * Either <code>Constants.MODE_KIND_EDITOR</code> or <code>Constants.MODE_KIND_VIEW or both. */
-    public boolean supportsKind(int kind, TopComponent transfer);
+    public boolean supportsKind(TopComponentDraggable transfer);
 }

@@ -134,11 +134,13 @@ public class EditorView extends ViewElement {
         this.editorArea = editorArea;
     }
     
+    @Override
     public Component getComponent() {
 //        assureComponentInEditorArea();
         return getEditorAreaComponent();
     }
     
+    @Override
     public boolean updateAWTHierarchy(Dimension availableSpace) {
 //        System.out.println("EditorView:updateAWTHierarchy=" + availableSpace);
         boolean result = false;
@@ -290,9 +292,9 @@ public class EditorView extends ViewElement {
             }
         }
         
+        @Override
         public Shape getIndicationForLocation(Point location) {
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(windowDnDManager.getStartingTransfer());
-            int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
+            int kind = windowDnDManager.getStartingTransfer().getKind();
                         
             if(kind == Constants.MODE_KIND_EDITOR) {
                 Rectangle rect = getBounds();
@@ -313,8 +315,7 @@ public class EditorView extends ViewElement {
                     return new Rectangle(rect.width - (int)(rect.width * ratio), 0, (int)(rect.width * ratio), rect.height);
                 } else if(side == Constants.BOTTOM) {
                     return new Rectangle(0, rect.height - (int)(rect.height * ratio), rect.width, (int)(rect.height * ratio));
-                } else if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-                || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(windowDnDManager.getStartingTransfer())) {
+                } else if(windowDnDManager.getStartingTransfer().isAllowedToMoveAnywhere()) {
                     return rect;
                 } else {
                     return null;
@@ -322,9 +323,9 @@ public class EditorView extends ViewElement {
             }
         };
         
+        @Override
         public Object getConstraintForLocation(Point location) {
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(windowDnDManager.getStartingTransfer());
-            int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
+            int kind = windowDnDManager.getStartingTransfer().getKind();
                         
             if(kind == Constants.MODE_KIND_EDITOR) {
                 return null;
@@ -363,22 +364,23 @@ public class EditorView extends ViewElement {
             return null;
         }
         
+        @Override
         public Component getDropComponent() {
             return this;
         }
         
+        @Override
         public ViewElement getDropViewElement() {
             return editorView;
         }
         
-        public boolean canDrop(TopComponent transfer, Point location) {
-            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
+            if(transfer.isAllowedToMoveAnywhere()) {
                 return true;
             }
             
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
-            int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
+            int kind = transfer.getKind();
 
             if(kind == Constants.MODE_KIND_EDITOR) {
                 return true;
@@ -392,7 +394,8 @@ public class EditorView extends ViewElement {
             }
         }
         
-        public boolean supportsKind(int kind, TopComponent tc) {
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
             return true;
         }
         

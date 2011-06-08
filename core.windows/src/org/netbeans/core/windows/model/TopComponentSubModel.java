@@ -218,9 +218,12 @@ final class TopComponentSubModel {
         return true;
     }
     
-    public boolean addUnloadedTopComponent(String tcID) {
+    public boolean addUnloadedTopComponent(String tcID, int index) {
         if(!tcIDs.contains(tcID)) {
-            tcIDs.add(tcID);
+            if( index >= 0 && index < tcIDs.size() )
+                tcIDs.add(index, tcID);
+            else
+                tcIDs.add(tcID);
         }
         
         return true;

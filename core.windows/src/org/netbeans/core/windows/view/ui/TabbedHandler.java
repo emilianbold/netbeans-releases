@@ -68,9 +68,11 @@ import java.awt.event.AWTEventListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.windows.Switches;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.slides.SlideBar;
 import org.netbeans.core.windows.view.ui.slides.SlideBarActionEvent;
 import org.netbeans.core.windows.view.ui.slides.SlideOperationFactory;
+import org.openide.util.Lookup;
 
 
 /** Helper class which handles <code>Tabbed</code> component inside
@@ -295,7 +297,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     }
     
     // DnD>>
-    public Shape getIndicationForLocation(Point location, TopComponent startingTransfer,
+    public Shape getIndicationForLocation(Point location, TopComponentDraggable startingTransfer,
     Point startingPoint, boolean attachingPossible) {
         return tabbed.getIndicationForLocation(location, startingTransfer,
                                             startingPoint, attachingPossible);
@@ -394,25 +396,30 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
         final Point p = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), c);
 
         final int clickTab = idx;
-        if (clickTab < 0) {
-            return;
+        Lookup context = null;
+        Action[] actions = null;
+        if (clickTab >= 0) {
+
+            TopComponent tc = tab.getTopComponentAt(clickTab);
+            if(tc != null) {
+                // ask also tabbed to possibly alter actions
+                actions = tab.getPopupActions(tc.getActions(), clickTab);
+                if (actions == null) { 
+                    actions = tc.getActions();
+                }
+                if (actions == null || actions.length == 0 )
+                    return;
+                context = tc.getLookup();
+            }
+        }
+        if( null == context ) {
+            actions = tab.getPopupActions(new Action[0], -1);
+            if (actions == null || actions.length == 0 )
+                return;
+            context = Lookup.getDefault();
         }
 
-        TopComponent tc = tab.getTopComponentAt(clickTab);
-        if(tc == null) {
-            return;
-        }
-        
-        // ask also tabbed to possibly alter actions
-        Action[] actions = tab.getPopupActions(tc.getActions(), clickTab);
-        if (actions == null) { 
-            actions = tc.getActions();
-        }
-        if (actions == null || actions.length == 0 )
-            return;
-
-        showPopupMenu(
-            Utilities.actionsToPopup(actions, tc.getLookup()), p, c);
+        showPopupMenu(Utilities.actionsToPopup(actions, context), p, c);
     }
 
     /** Shows given popup on given coordinations and takes care about the
