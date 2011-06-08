@@ -58,6 +58,7 @@ import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -227,6 +228,58 @@ public class DialogDisplayerImplTest extends NbTestCase {
         assertShowing("Child is invisible", false, child);
         
         assertFalse ("Child is dead too", child.isVisible ());
+    }
+    
+    @RandomlyFails
+    public void testLeafNotify() throws Exception {
+        boolean leaf = true;
+        DialogDescriptor ownerDD = new DialogDescriptor (pane, "Owner", true, new Object[] {closeOwner}, null, 0, null, null, leaf);
+        final Dialog owner = DialogDisplayer.getDefault ().createDialog (ownerDD);
+        
+        // make leaf visible
+        postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
+            public void run () {
+                owner.setVisible (true);
+            }
+        });
+        assertShowing("Owner should be visible", true, owner);
+        
+        child = new JButton();
+        final NotifyDescriptor nd = new NotifyDescriptor.Message(child);
+
+        // make the child visible
+        RequestProcessor.getDefault().post(new Runnable () {
+            @Override
+            public void run () {
+                DialogDisplayer.getDefault().notify(nd);
+            }
+        });
+        assertShowing("Child will be visible", true, child);
+        
+        Window w = SwingUtilities.windowForComponent(child);
+        assertFalse ("No dialog is owned by leaf dialog.", owner.equals (w.getOwner ()));
+        assertEquals ("The leaf dialog has no child.", 0, owner.getOwnedWindows ().length);
+        
+        assertTrue ("Leaf is visible", owner.isVisible ());
+        assertTrue ("Child is visible", child.isVisible ());
+        
+        // close the leaf window
+        postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
+            public void run () {
+                owner.setVisible (false);
+            }
+        });
+        assertShowing("Disappear", false, owner);
+        
+        assertFalse ("Leaf is dead", owner.isVisible ());
+        assertTrue ("Child is visible still", child.isVisible ());
+
+        w.setVisible(false);
+        assertShowing("Child is invisible", false, child);
+        
+        assertFalse ("Child is dead too", child.isShowing());
     }
     
     @RandomlyFails
