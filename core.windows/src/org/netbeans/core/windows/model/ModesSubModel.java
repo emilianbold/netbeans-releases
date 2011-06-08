@@ -407,6 +407,21 @@ final class ModesSubModel {
         return result;
     }
     
+    public void dock( ModeImpl prevMode, ModeImpl floatingMode ) {
+        assert modes.contains( prevMode );
+        assert modes.contains( floatingMode );
+        SplitConstraint[] constraints = getModeConstraints( prevMode );
+        boolean editorMode = prevMode.getKind() == Constants.MODE_KIND_EDITOR;
+        if( editorMode ) {
+            editorSplitSubModel.getEditorArea().addMode(floatingMode, constraints);
+            removeMode( prevMode );
+            editorSplitSubModel.removeMode( floatingMode );
+        } else {
+            removeMode( prevMode );
+            editorSplitSubModel.addMode(floatingMode, constraints);
+        }
+    }
+    
     ////////////////////////////////////////////
 
     
