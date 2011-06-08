@@ -1635,15 +1635,27 @@ final class Central implements ControllerHandler {
     
     
     // Compound ones>>
-    /** Creates new mode on side of specified one and puts there the TopComponentS. */
-    private ModeImpl attachModeToSide(ModeImpl attachMode, String side) {
-        // New mode. It is necessary to add it yet.
-        ModeImpl newMode = WindowManagerImpl.getInstance().createModeImpl(
-            ModeImpl.getUnusedModeName(), attachMode.getKind(), false);
+    
+    /**
+     * Creates a new mode on the side of the reference mode.
+     * @param referenceMode
+     * @param side
+     * @param modeName
+     * @param modeKind
+     * @param permanent
+     * @return 
+     */
+    ModeImpl attachModeToSide( ModeImpl referenceMode, String side, String modeName, int modeKind, boolean permanent ) {
+        ModeImpl newMode = WindowManagerImpl.getInstance().createModeImpl(modeName, modeKind, permanent);
 
-        model.addModeToSide(newMode, attachMode, side);
+        model.addModeToSide(newMode, newMode, side);
         
         return newMode;
+    }
+
+    /** Creates new mode on side of specified one and puts there the TopComponentS. */
+    private ModeImpl attachModeToSide(ModeImpl attachMode, String side) {
+        return attachModeToSide( attachMode, side, ModeImpl.getUnusedModeName(), attachMode.getKind(), false);
     }
 
     /** Creates new mode on side of desktop */
@@ -2696,7 +2708,32 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.PROP_ACTIVE_MODE, null, getActiveMode());
         return targetMode;
     }
-  
+
+    void setTopComponentMinimized( TopComponent tc, boolean minimized ) {
+        if( !tc.isOpened() ) {
+            return;
+        }
+        if( isTopComponentMinimized( tc ) == minimized ) {
+            return; //nothing todo
+        }
+        ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+        if( null == mode ) {
+            return;
+        }
+        if( minimized ) {
+            slide( tc, mode, guessSlideSide( tc ) );
+        } else {
+            unSlide( tc, mode );
+        }
+    }
+
+    boolean isTopComponentMinimized( TopComponent tc ) {
+        if( !tc.isOpened() ) {
+            return false;
+        }
+        ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+        return null != mode && mode.getKind() == Constants.MODE_KIND_SLIDING;
+    }
     
     /**
      * @return The mode where the given TopComponent had been before it was moved to sliding or separate mode.
