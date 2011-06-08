@@ -307,6 +307,28 @@ public class TreeUtilitiesTest extends NbTestCase {
         assertNull(span);
     }
     
+    public void testFindMethodParameterSpan1() throws Exception {
+        prepareTest("Test", "package test; public class Test {public void test() {}}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        MethodTree ct = (MethodTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findMethodParameterSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {79 - 30, 80 - 30}));
+    }
+    
+    public void testFindMethodParameterSpan2() throws Exception {
+        prepareTest("Test", "package test; public class Test {public void test(String name) {}}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        MethodTree ct = (MethodTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findMethodParameterSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {79 - 30, 91 - 30}));
+    }
+    
     public void testTreePath124760a() throws Exception {
         prepareTest("Test", "package test; public class Test {public Test(int iii[]){}}");
         
