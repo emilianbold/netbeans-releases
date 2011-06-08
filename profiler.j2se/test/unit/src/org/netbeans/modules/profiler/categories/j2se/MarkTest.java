@@ -56,14 +56,14 @@ import java.util.Set;
 import javax.swing.JComponent;
 
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
-import org.netbeans.modules.profiler.categories.Category;
-import org.netbeans.modules.profiler.categories.CategoryDefinition;
-import org.netbeans.modules.profiler.categories.CategoryDefinitionProcessor;
-import org.netbeans.modules.profiler.categories.definitions.CustomCategoryDefinition;
-import org.netbeans.modules.profiler.categories.definitions.PackageCategoryDefinition;
-import org.netbeans.modules.profiler.categories.definitions.SingleTypeCategoryDefinition;
-import org.netbeans.modules.profiler.categories.definitions.SubtypeCategoryDefinition;
-import org.netbeans.modules.profiler.categories.definitions.TypeCategoryDefinition;
+import org.netbeans.modules.profiler.categorization.api.Category;
+import org.netbeans.modules.profiler.categorization.api.definitions.CustomCategoryDefinition;
+import org.netbeans.modules.profiler.categorization.api.definitions.PackageCategoryDefinition;
+import org.netbeans.modules.profiler.categorization.api.definitions.SingleTypeCategoryDefinition;
+import org.netbeans.modules.profiler.categorization.api.definitions.SubtypeCategoryDefinition;
+import org.netbeans.modules.profiler.categorization.api.definitions.TypeCategoryDefinition;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinition;
+import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 import org.netbeans.modules.profiler.utilities.Visitable;
 import org.netbeans.modules.profiler.utilities.Visitor;
 
