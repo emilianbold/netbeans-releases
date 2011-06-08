@@ -82,6 +82,8 @@ public final class WLConnectionSupport {
                 return action.call();
             } finally {
                 Thread.currentThread().setContextClassLoader(originalLoader);
+                // full weblogic code is setting this, causing CNFE on DWP
+                System.clearProperty("javax.rmi.CORBA.PortableRemoteObjectClass"); // NOI18N
             }
         }
     }
