@@ -695,6 +695,10 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                 potentialCommand (idx, e, state, tcr, scratch);
             } else {
                 tabState.setMousePressedInCloseButton(-1); //just in case
+                if( e.isPopupTrigger() ) {
+                    displayer.repaint();
+                    performCommand (TabDisplayer.COMMAND_POPUP_REQUEST, -1, e);
+                }
             }
         }
 
@@ -762,6 +766,11 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                     makeTabVisible(idx);
                 }
                 potentialCommand (idx, e, state, tcr, scratch);
+            } else {
+                if( e.isPopupTrigger() ) {
+                    displayer.repaint();
+                    performCommand (TabDisplayer.COMMAND_POPUP_REQUEST, -1, e);
+                }
             }
             tabState.setMouseInTabsArea(idx != -1);
             tabState.setPressed(-1);
