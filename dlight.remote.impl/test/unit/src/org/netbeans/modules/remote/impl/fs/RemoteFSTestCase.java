@@ -64,12 +64,12 @@ import org.openide.filesystems.FileSystemTestHid;
  *
  * @author vv159170
  */
-public class RemoteFSTest extends FileSystemFactoryHid {
+public class RemoteFSTestCase extends FileSystemFactoryHid {
     
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
             
-    public RemoteFSTest(Test test) {
+    public RemoteFSTestCase(Test test) {
         super(test);
     }
 
@@ -78,7 +78,7 @@ public class RemoteFSTest extends FileSystemFactoryHid {
         suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(AttributesTestHidden.class);
-        return new RemoteFSTest(suite);
+        return new RemoteFSTestCase(suite);
     }
 
     @Override
