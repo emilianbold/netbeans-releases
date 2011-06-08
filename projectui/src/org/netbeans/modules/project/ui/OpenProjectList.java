@@ -455,20 +455,20 @@ public final class OpenProjectList {
         }
 
         public @Override void resultChanged(LookupEvent ev) {
-            final Set<FileObject> lazyPDirs = new HashSet<FileObject>();
-            for (FileObject fileObject : currentFiles.allInstances()) {
-                Project p = FileOwnerQuery.getOwner(fileObject);
-                if (p != null) {
-                    lazyPDirs.add(p.getProjectDirectory());
-                }
-            }
-            if (!lazyPDirs.isEmpty()) {
-                Hacks.RP.post(new Runnable() {
-                    public @Override void run() {
+            Hacks.RP.post(new Runnable() {
+                public @Override void run() {
+                    Set<FileObject> lazyPDirs = new HashSet<FileObject>();
+                    for (FileObject fileObject : currentFiles.allInstances()) {
+                        Project p = FileOwnerQuery.getOwner(fileObject);
+                        if (p != null) {
+                            lazyPDirs.add(p.getProjectDirectory());
+                        }
+                    }
+                    if (!lazyPDirs.isEmpty()) {
                         getDefault().LOAD.preferredProject(lazyPDirs);
                     }
-                });
-            }
+                }
+            });
         }
 
         final void enter() {
