@@ -43,6 +43,7 @@
 package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
 import java.awt.Component;
+import java.text.MessageFormat;
 import java.util.Collections;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.form.FormEditor;
@@ -156,7 +157,12 @@ public class AddAction extends AbstractGridAction {
             FormModel formModel = container.getFormModel();
             RADComponent metacomp = formModel.getComponentCreator().createComponent(
                     pItem, container, null);
-            if (metacomp.isInModel() // It is not in the model when the addition was canceled
+            if (metacomp == null) {
+                String pattern = NbBundle.getMessage(AddAction.class, "AddAction_CannotAdd"); // NOI18N
+                String msg = MessageFormat.format(pattern, pItem.getNode().getDisplayName());
+                NotifyDescriptor.Message desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+            } else  if (metacomp.isInModel() // It is not in the model when the addition was canceled
                     && (metacomp instanceof RADVisualComponent)) {
                 replicator.addComponent(metacomp);
                 Component comp = (Component)replicator.getClonedComponent(metacomp);
