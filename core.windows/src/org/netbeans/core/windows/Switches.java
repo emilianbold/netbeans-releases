@@ -64,11 +64,19 @@ public final class Switches {
     }
     
     /**
-     * @return True if Drag'n'Drop of the whole Mode (window group) is enabled.
+     * @return True if Drag'n'Drop of the whole view Mode (window group) is enabled.
      * @since 2.30
      */
-    public static boolean isModeDragAndDropEnabled() {
-        return getSwitchValue( "Mode.DragAndDrop.Enabled", true ); //NOI18N
+    public static boolean isViewModeDragAndDropEnabled() {
+        return getSwitchValue( "Mode.View.DragAndDrop.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True if Drag'n'Drop of the whole editor Mode (document group) is enabled.
+     * @since 2.30
+     */
+    public static boolean isEditorModeDragAndDropEnabled() {
+        return getSwitchValue( "Mode.Editor.DragAndDrop.Enabled", true ); //NOI18N
     }
 
     /**
@@ -88,11 +96,19 @@ public final class Switches {
     }
     
     /**
-     * @return True if undocking of the whole Mode (window group) is enabled.
+     * @return True if undocking of the whole view Mode (window group) is enabled.
      * @since 2.30
      */
-    public static boolean isModeUndockingEnabled() {
-        return getSwitchValue( "Mode.Undocking.Enabled", true ); //NOI18N
+    public static boolean isViewModeUndockingEnabled() {
+        return getSwitchValue( "Mode.View.Undocking.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True if undocking of the whole editor Mode (document group) is enabled.
+     * @since 2.30
+     */
+    public static boolean isEditorModeUndockingEnabled() {
+        return getSwitchValue( "Mode.Editor.Undocking.Enabled", true ); //NOI18N
     }
 
     /**
