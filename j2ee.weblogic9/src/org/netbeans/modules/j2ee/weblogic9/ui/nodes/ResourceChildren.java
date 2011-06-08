@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -53,13 +54,13 @@ import org.openide.util.NbBundle;
  */
 class ResourceChildren extends WLNodeChildren<ResourceNode> {
     
-    ResourceChildren(Lookup lookup){
-        setKeys( new ResourceNode[]{ 
+    ResourceChildren(Lookup lookup) {
+        setKeys(new ResourceNode[] { 
                 createJDBCNode(lookup),
-                    createConnectorsNode(lookup),
-                        createJavaMail(lookup),
-                            createLibraries(lookup)});
-                                //createTuxedoResources(lookup)});
+                createConnectorsNode(lookup),
+                createJavaMail(lookup),
+                createLibraries(lookup)});
+                //createTuxedoResources(lookup)});
     } 
 
     private ResourceNode createConnectorsNode( Lookup lookup ) {
@@ -79,7 +80,13 @@ class ResourceChildren extends WLNodeChildren<ResourceNode> {
     }
     
     private ResourceNode createLibraries( Lookup lookup ){
-        return new ResourceNode(new LibrariesChildrenFactory(lookup) , 
+        WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
+        assert manager != null;
+        
+        // TODO proxy for LibrariesChildrenFactory ?
+        return new ResourceNode(manager.isWebProfile()
+                ? new WebProfileLibrariesChildrenFactory(lookup)
+                : new LibrariesChildrenFactory(lookup), 
                 ResourceNodeType.LIBRARY,
                     NbBundle.getMessage(ResourceChildren.class, "LBL_Libraries"));   // NOI18N
     }

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+
 /**
  *
  * @author  Petr Kuzel
@@ -64,7 +66,6 @@ public class SwitchToPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Message")); // NOI18N
 
@@ -77,9 +78,10 @@ public class SwitchToPanel extends javax.swing.JPanel {
         jLabel5.setLabelFor(revisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Revision")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(searchRevisionButton, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Search")); // NOI18N
+        revisionTextField.setText(SVNRevision.HEAD.toString());
+        revisionTextField.setToolTipText(org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_EmptyHint")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_EmptyHint")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(searchRevisionButton, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Search")); // NOI18N
 
         warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Warning")); // NOI18N
@@ -97,12 +99,11 @@ public class SwitchToPanel extends javax.swing.JPanel {
                             .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(urlComboBox, 0, 393, Short.MAX_VALUE)
+                            .add(urlComboBox, 0, 400, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(revisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(searchRevisionButton))
-                            .add(jLabel6))
+                                .add(searchRevisionButton)))
                         .add(10, 10, 10)
                         .add(browseRepositoryButton))
                     .add(warningLabel))
@@ -121,9 +122,7 @@ public class SwitchToPanel extends javax.swing.JPanel {
                     .add(revisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5)
                     .add(searchRevisionButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel6)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(warningLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -132,7 +131,6 @@ public class SwitchToPanel extends javax.swing.JPanel {
         browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Fodlers");
         jLabel5.getAccessibleContext().setAccessibleDescription("Repository Revision");
         searchRevisionButton.getAccessibleContext().setAccessibleDescription("Search Revisions");
-        jLabel6.getAccessibleContext().setAccessibleDescription("(empty means repository HEAD)");
         warningLabel.getAccessibleContext().setAccessibleDescription("Warning - there are locally modified files!");
     }// </editor-fold>//GEN-END:initComponents
     
@@ -140,7 +138,6 @@ public class SwitchToPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseRepositoryButton = new javax.swing.JButton();
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     final javax.swing.JTextField revisionTextField = new javax.swing.JTextField();
     final javax.swing.JButton searchRevisionButton = new javax.swing.JButton();
     final javax.swing.JComboBox urlComboBox = new javax.swing.JComboBox();

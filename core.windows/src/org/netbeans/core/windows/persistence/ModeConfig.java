@@ -47,6 +47,7 @@ package org.netbeans.core.windows.persistence;
 
 
 import java.awt.Rectangle;
+import java.util.Collection;
 import org.netbeans.core.windows.SplitConstraint;
 
 import java.util.Iterator;
@@ -63,6 +64,8 @@ public class ModeConfig {
 
     /** Name of mode. Supposed to be internally for mode identification. */
     public String name;
+    
+    public Collection<String> otherNames;
 
     /** State of mode: 0 = split, 1 = separate. */
     public int state;
@@ -87,6 +90,8 @@ public class ModeConfig {
     public String selectedTopComponentID;
     
     public boolean permanent = true;
+    
+    public boolean minimized = false;
     
     /** Array of TCRefConfigs. */
     public TCRefConfig[] tcRefConfigs;
@@ -157,6 +162,8 @@ public class ModeConfig {
         if (permanent != modeCfg.permanent) {
             return false;
         }
+        if( minimized != modeCfg.minimized )
+            return false;
         //Order of tcRefConfigs is defined
         if (tcRefConfigs.length != modeCfg.tcRefConfigs.length) {
             return false;
@@ -175,6 +182,14 @@ public class ModeConfig {
                     return false;
             }
         } else if( null != slideInSizes || null != modeCfg.slideInSizes ) {
+            return false;
+        }
+        if( null != otherNames && null != modeCfg.otherNames ) {
+            if( otherNames.size() != modeCfg.otherNames.size() )
+                return false;
+            if( !otherNames.containsAll( modeCfg.otherNames ) )
+                return false;
+        } else if( null != otherNames || null != modeCfg.otherNames ) {
             return false;
         }
         if (!previousSelectedTopComponentID.equals(modeCfg.previousSelectedTopComponentID)) {
@@ -203,6 +218,7 @@ public class ModeConfig {
         hash = 37 * hash + frameState;
         hash = 37 * hash + selectedTopComponentID.hashCode();
         hash = 37 * hash + (permanent ? 0 : 1);
+        hash = 37 * hash + (minimized ? 0 : 1);
         for (int i = 0; i < tcRefConfigs.length; i++) {
             hash = 37 * hash + tcRefConfigs[i].hashCode();
         }
@@ -211,6 +227,11 @@ public class ModeConfig {
                 Object key = i.next();
                 hash = 37 * hash + key.hashCode();
                 hash = 37 * hash + slideInSizes.get(key).hashCode();
+            }
+        }
+        if( null != otherNames ) {
+            for( String n : otherNames ) {
+                hash = 37 * hash + n.hashCode();
             }
         }
         hash = 37 * hash + previousSelectedTopComponentID.hashCode();

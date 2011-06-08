@@ -69,6 +69,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -642,6 +643,50 @@ public final class TreeUtilities {
      */
     public int[] findNameSpan(VariableTree var) {
         return findNameSpan(var.getName().toString(), var);
+    }
+    
+    /**Find span of the {@link MethodTree#getParameters()} parameter list in the source.
+     * Returns the position of the opening and closing parentheses of the parameter list
+     * in the source code that was parsed (ie. {@link CompilationInfo.getText()}, which
+     * may differ from the positions in the source document if it has been already altered.
+     * 
+     * @param method method which parameter list should be searched for
+     * @return the span of the parameter list, or null if cannot be found
+     * @since 0.81
+     */
+    public @CheckForNull int[] findMethodParameterSpan(@NonNull MethodTree method) {
+        JCTree jcTree = (JCTree) method;
+        int pos = jcTree.pos;
+        
+        if (pos < 0)
+            return null;
+        
+        TokenSequence<JavaTokenId> tokenSequence = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        tokenSequence.move(pos);
+        
+        int startPos = -1;
+        int endPos = -1;
+        while(tokenSequence.moveNext()) {
+            if(tokenSequence.token().id() == JavaTokenId.LPAREN) {
+                startPos = tokenSequence.offset();
+            }
+            if(tokenSequence.token().id() == JavaTokenId.RPAREN) {
+                endPos = tokenSequence.offset();
+                break;
+            }
+            if(tokenSequence.token().id() == JavaTokenId.LBRACE) {
+                return null;
+            }
+        }
+        
+        if(startPos == -1 || endPos == -1) {
+            return null;
+        }
+        
+        return new int[] {
+            startPos,
+            endPos
+        };
     }
     
     /**Find span of the {@link MemberSelectTree#getIdentifier()} identifier in the source.

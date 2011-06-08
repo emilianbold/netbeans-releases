@@ -45,6 +45,8 @@
 package org.netbeans.modules.subversion.ui.wizards.importstep;
 
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -55,6 +57,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
@@ -63,8 +66,11 @@ import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
+import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.StringSelector;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -92,19 +98,28 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         this.importDirectory = importDirectory;
     }
     
+    @Override
     public HelpCtx getHelp() {    
         return new HelpCtx(ImportStep.class);
     }    
 
+    @Override
     protected JComponent createComponent() {
         if (importPanel == null) {
             importPanel = new ImportPanel();            
             importPanel.messageTextArea.getDocument().addDocumentListener(this);            
             importPanel.repositoryPathTextField.getDocument().addDocumentListener(this);                       
+            importPanel.btnRecentMessages.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    onBrowseRecentMessages();
+                }
+            });
         }            
         return importPanel;              
     }
 
+    @Override
     protected void validateBeforeNext() {
         try {
             support =  new ImportProgressSupport(importPanel.progressPanel, importPanel.progressLabel);  
@@ -121,6 +136,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         }
     }   
         
+    @Override
     public void prepareValidation() {        
     }
 
@@ -149,14 +165,17 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         return valid;
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
@@ -216,14 +235,26 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         }
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
     
+    private void onBrowseRecentMessages() {
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault().getPreferences());
+        String message = selector.getRecentMessage(NbBundle.getMessage(ImportStep.class, "CTL_ImportPanel_RecentTitle"), //NOI18N
+                                               NbBundle.getMessage(ImportStep.class, "CTL_ImportPanel_RecentPrompt"), //NOI18N
+            Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
+        if (message != null) {
+            importPanel.messageTextArea.replaceSelection(message);
+        }
+    }
+
     private class ImportProgressSupport extends WizardStepProgressSupport {
         public ImportProgressSupport(JPanel panel, JLabel label) {
             super(panel);
         }
+        @Override
         public void perform() {
             AbstractStep.WizardMessage invalidMsg = null;
             try {
@@ -295,6 +326,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             }
         }            
 
+        @Override
         public void setEditable(boolean editable) {
             importPanel.browseRepositoryButton.setEnabled(editable);
             importPanel.messageTextArea.setEditable(editable);

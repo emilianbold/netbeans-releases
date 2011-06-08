@@ -71,112 +71,88 @@ import org.openide.util.Lookup;
  * @author ads
  *
  */
-class LibrariesChildrenFactory extends ChildFactory<ResourceNode> 
-    implements RefreshModulesCookie
-{
+public class LibrariesChildrenFactory extends ChildFactory<ResourceNode>
+        implements RefreshModulesCookie {
+
     private static final Logger LOGGER = Logger.getLogger(LibrariesChildrenFactory.class.getName());
-    
-    LibrariesChildrenFactory( Lookup lookup ){
+
+    private final Lookup lookup;
+
+    LibrariesChildrenFactory(Lookup lookup) {
         this.lookup = lookup;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie#refresh()
-     */
+
     @Override
     public void refresh() {
         refresh(false);
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.nodes.ChildFactory#createKeys(java.util.List)
-     */
     @Override
-    protected boolean createKeys( List<ResourceNode> nodes ) {
+    protected boolean createKeys(List<ResourceNode> nodes) {
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
         WLConnectionSupport support = new WLConnectionSupport(manager);
         try {
-            Map<String,String> libraries = support
-                    .executeAction(new WLConnectionSupport.
-                            JMXRuntimeAction<Map<String,String>>()
-                    {
+            Map<String,String> libraries = support.executeAction(
+                    new WLConnectionSupport.JMXRuntimeAction<Map<String,String>>() {
 
-                        @Override
-                        public Map<String,String> call( MBeanServerConnection con ,
-                                ObjectName service )
-                                throws Exception
-                        {
-                            Map<String,String> map = new HashMap<String, String>(); 
+                @Override
+                public Map<String,String> call( MBeanServerConnection con,
+                        ObjectName service) throws Exception {
+                    Map<String,String> map = new HashMap<String, String>();
 
-                            ObjectName domainConfig = (ObjectName) con
-                                    .getAttribute(service,
-                                            "DomainConfiguration"); // NOI18N
-                            
-                            fillLibraries( con, domainConfig,
-                                    "Libraries", map);              // NOI18N
-                            fillLibraries( con, domainConfig,
-                                    "InternalLibraries", map);      // NOI18N
-                            fillLibraries( con, domainConfig,
-                                    "InternalAppDeployments", map); // NOI18N
-                            fillLibraries( con, domainConfig,
-                                    "AppDeployments", map);         // NOI18N
-                            return map;                                     
-                        }
+                    ObjectName domainConfig = (ObjectName) con
+                            .getAttribute(service,
+                                    "DomainConfiguration"); // NOI18N
 
-                        private void fillLibraries(
-                                MBeanServerConnection connection,
-                                ObjectName domainConfig , String attrName, 
-                                Map<String,String> libraries) 
-                                    throws AttributeNotFoundException, 
-                                        InstanceNotFoundException, MBeanException, 
-                                            ReflectionException, IOException
-                        {
-                            ObjectName beans[] = (ObjectName[]) connection
-                                .getAttribute(domainConfig, attrName); 
-                            for (ObjectName bean : beans) {
-                                String type = connection.getAttribute(bean, 
-                                        "Type").toString();            // NOI18N
-                                if ("Library".equals( type )){
-                                    String name = connection.getAttribute(bean, 
-                                            "Name").toString();// NOI18N
-                                    Object path = connection.getAttribute(bean, 
-                                        "AbsoluteInstallDir");          // NOI18N
-                                    if ( path == null ){
-                                        path = connection.getAttribute(bean, 
-                                            "AbsoluteSourcePath");      // NOI18N
-                                    }
-                                    if ( path == null ){
-                                        path = name ;
-                                    }
-                                    libraries.put( path.toString() , name );
-                                }
-                            }
-                        }
-                    });
+                    fillLibraries( con, domainConfig,
+                            "Libraries", map);              // NOI18N
+                    fillLibraries( con, domainConfig,
+                            "InternalLibraries", map);      // NOI18N
+                    fillLibraries( con, domainConfig,
+                            "InternalAppDeployments", map); // NOI18N
+                    fillLibraries( con, domainConfig,
+                            "AppDeployments", map);         // NOI18N
+                    return map;
+                }
+            });
             for (Entry<String, String > entry : libraries.entrySet()) {
                 String path = entry.getKey();
                 String name = entry.getValue();
-                nodes.add(new ResourceNode(Children.LEAF, ResourceNodeType.LIBRARY, 
+                nodes.add(new ResourceNode(Children.LEAF, ResourceNodeType.LIBRARY,
                         name, path ));
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.log(Level.INFO, null, e);
         }
-                
+
         return true;
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.openide.nodes.ChildFactory#createNodeForKey(java.lang.Object)
-     */
+
+    private void fillLibraries(MBeanServerConnection connection, ObjectName domainConfig,
+            String attrName, Map<String,String> libraries)
+        throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+
+        ObjectName beans[] = (ObjectName[]) connection.getAttribute(domainConfig, attrName);
+        for (ObjectName bean : beans) {
+            String type = connection.getAttribute(bean, "Type").toString(); // NOI18N
+            if ("Library".equals( type )) { // NOI18N
+                String name = connection.getAttribute(bean, "Name").toString(); // NOI18N
+                Object path = connection.getAttribute(bean, "AbsoluteInstallDir"); // NOI18N
+                if (path == null) {
+                    path = connection.getAttribute(bean, "AbsoluteSourcePath");      // NOI18N
+                }
+                if (path == null) {
+                    path = name ;
+                }
+                libraries.put(path.toString(), name);
+            }
+        }
+    }
+
     @Override
     protected Node createNodeForKey( ResourceNode key ) {
         return key;
     }
-
-    private Lookup lookup;
 
 }
