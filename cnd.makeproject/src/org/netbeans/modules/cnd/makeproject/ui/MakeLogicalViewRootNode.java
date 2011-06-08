@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ActionProvider;
@@ -150,6 +151,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
         pi.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, pi));
         ToolsCacheManager.addChangeListener(this);
+        MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+        confProvider.addPropertyChangeListener(this);
+
     }
 
     @Override
