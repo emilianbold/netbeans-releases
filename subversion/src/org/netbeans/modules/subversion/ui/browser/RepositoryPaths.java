@@ -248,7 +248,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         RepositoryFile[] selectedFiles = browser.getRepositoryFiles();
 
         if(selectedFiles.length > 0) {                
-            StringBuffer paths = new StringBuffer();
+            StringBuilder paths = new StringBuilder();
             for (int i = 0; i < selectedFiles.length; i++) {
                 paths.append(selectedFiles[i].getPath());
                 if(i < selectedFiles.length - 1) {
@@ -271,6 +271,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 revisionTextField.setText(repositoryFiles[0].getRevision().toString());
             }
@@ -300,6 +301,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         dialogDescriptor.setValid(false);
         
         svnSearch.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 //if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
                     dialogDescriptor.setValid(svnSearch.getSelectedRevision() != null);
@@ -338,6 +340,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         return SvnUtils.getSVNRevision(revisionString);        
     }           
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == browseButton) {
             browseRepository();
@@ -348,14 +351,17 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         validateUserInput();
     }
@@ -394,7 +400,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }
 
     private void fireValidPropertyChanged(boolean oldValue, boolean valid) {
-        getChangeSupport().firePropertyChange(new PropertyChangeEvent(this, PROP_VALID, new Boolean(oldValue), new Boolean(valid)));        
+        getChangeSupport().firePropertyChange(new PropertyChangeEvent(this, PROP_VALID, oldValue, valid));        
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {

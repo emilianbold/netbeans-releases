@@ -177,6 +177,7 @@ public class RevertModifications implements PropertyChangeListener {
         return ret;       
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {
             if(okButton != null) {
@@ -214,14 +215,17 @@ public class RevertModifications implements PropertyChangeListener {
             return panel.revertNewFilesCheckBox.isSelected();
         }
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             validateUserInput();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             validateUserInput();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             validateUserInput();
         }
@@ -262,10 +266,12 @@ public class RevertModifications implements PropertyChangeListener {
             super(button);
         }
 
+        @Override
         RevertModifications.RevisionInterval getRevisionInterval() {
             return null;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setOneCommitFieldsEnabled(false);
             setMoreCommitsFieldsEnabled(false);
@@ -289,16 +295,19 @@ public class RevertModifications implements PropertyChangeListener {
             oneRevisionPath.addPropertyChangeListener(RevertModifications.this);
         }
 
+        @Override
         RevertModifications.RevisionInterval getRevisionInterval() {
             SVNRevision revision = getRevision(oneRevisionPath);
             RevisionInterval ret = new RevisionInterval(revision);
             return ret;
         }
 
+        @Override
         void validateUserInput() {
             validateRevision(getRevision(oneRevisionPath));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setOneCommitFieldsEnabled(true);
             setMoreCommitsFieldsEnabled(false);
@@ -335,6 +344,7 @@ public class RevertModifications implements PropertyChangeListener {
             endPath.addPropertyChangeListener(RevertModifications.this);
         }
 
+        @Override
         RevertModifications.RevisionInterval getRevisionInterval() {                       
             SVNRevision revision1 = getRevision(startPath);
             SVNRevision revision2 = getRevision(endPath);
@@ -345,6 +355,7 @@ public class RevertModifications implements PropertyChangeListener {
             return getResortedRevisionInterval(revision1, revision2);            
         }
 
+        @Override
         void validateUserInput() {
             if(!validateRevision(getRevision(startPath))) {
                 return;
@@ -354,6 +365,7 @@ public class RevertModifications implements PropertyChangeListener {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setMoreCommitsFieldsEnabled(true);
             setOneCommitFieldsEnabled(false);
