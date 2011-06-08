@@ -1046,7 +1046,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="localclean" depends="clean-cluster-flags">
     <delete dir="${test.user.dir}"/>
     <delete includeEmptyDirs="true">
-      <fileset dir="${nb.build.dir}" erroronmissingdir="false">
+      <fileset dir="${nb.build.dir}" erroronmissingdir="false" defaultexcludes="false">
         <exclude name="nbantext.jar"/>
       </fileset>
     </delete>
