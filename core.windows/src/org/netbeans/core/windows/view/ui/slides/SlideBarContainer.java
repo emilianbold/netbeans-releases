@@ -64,6 +64,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.SlidingView;
 import org.netbeans.core.windows.view.ViewElement;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.AbstractModeContainer;
 import org.netbeans.core.windows.view.ui.ModeComponent;
@@ -95,10 +96,13 @@ public final class SlideBarContainer extends AbstractModeContainer {
     private SlidingView getSlidingView() {
         return (SlidingView)super.getModeView();
     }
+    
+    @Override
     public void requestAttention (TopComponent tc) {
         tabbedHandler.requestAttention(tc);
     }
 
+    @Override
     public void cancelRequestAttention (TopComponent tc) {
         tabbedHandler.cancelRequestAttention (tc);
     }    
@@ -112,22 +116,27 @@ public final class SlideBarContainer extends AbstractModeContainer {
         return tabbedHandler.getTabBounds(tabIndex);
     }
 
+    @Override
     protected Component getModeComponent() {
         return panel;
     }
     
+    @Override
     protected Tabbed createTabbed() {
         return new TabbedSlideAdapter(((SlidingView)modeView).getSide());
     }
     
+    @Override
     protected boolean isAttachingPossible() {
         return false;
     }
 
+    @Override
     protected TopComponentDroppable getModeDroppable() {
         return panel;
     }    
     
+    @Override
     protected void updateActive(boolean active) {
         // #48588 - when in SDI, slidein needs to front the editor frame.
         if(active) {
@@ -138,6 +147,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
         }
     }
     
+    @Override
     public boolean isActive() {
         Window window = SwingUtilities.getWindowAncestor(panel);
         // #54791 - just a doublecheck, IMHO should not happen anymore
@@ -145,6 +155,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
         return window == null ? false : window.isActive();
     }    
     
+    @Override
     protected void updateTitle(String title) {
         // XXX - we have no title?
     }
@@ -224,41 +235,51 @@ public final class SlideBarContainer extends AbstractModeContainer {
                 setOpaque( false);
         }
         
+        @Override
         public ModeView getModeView() {
             return modeContainer.getModeView();
         }
         
+        @Override
         public int getKind() {
             return modeContainer.getKind();
         }
         
         // TopComponentDroppable>>
+        @Override
         public Shape getIndicationForLocation(Point location) {
             return modeContainer.getIndicationForLocation(location);
         }
         
+        @Override
         public Object getConstraintForLocation(Point location) {
             return modeContainer.getConstraintForLocation(location);
         }
         
+        @Override
         public Component getDropComponent() {
             return modeContainer.getDropComponent();
         }
         
+        @Override
         public ViewElement getDropViewElement() {
             return modeContainer.getDropModeView();
         }
         
-        public boolean canDrop(TopComponent transfer, Point location) {
-            return modeContainer.canDrop(transfer);
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
+            return modeContainer.canDrop(transfer) && !transfer.isModeTransfer();
         }
         
-        public boolean supportsKind(int kind, TopComponent transfer) {
-            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-                  || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
+            if(transfer.isModeTransfer())
+                return false;
+            
+            if(transfer.isAllowedToMoveAnywhere()) {
                  return true;
             }
-            boolean isNonEditor = kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
+            boolean isNonEditor = transfer.getKind() == Constants.MODE_KIND_VIEW || transfer.getKind() == Constants.MODE_KIND_SLIDING;
             boolean thisIsNonEditor = getKind() == Constants.MODE_KIND_VIEW || getKind() == Constants.MODE_KIND_SLIDING;
 
             return (isNonEditor == thisIsNonEditor);

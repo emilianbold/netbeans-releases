@@ -62,6 +62,14 @@ public final class Switches {
     public static boolean isTopComponentDragAndDropEnabled() {
         return getSwitchValue( "TopComponent.DragAndDrop.Enabled", true ); //NOI18N
     }
+    
+    /**
+     * @return True if Drag'n'Drop of the whole Mode (window group) is enabled.
+     * @since 2.30
+     */
+    public static boolean isModeDragAndDropEnabled() {
+        return getSwitchValue( "Mode.DragAndDrop.Enabled", true ); //NOI18N
+    }
 
     /**
      * @param tc
@@ -78,6 +86,14 @@ public final class Switches {
     public static boolean isTopComponentUndockingEnabled() {
         return getSwitchValue( "TopComponent.Undocking.Enabled", true ); //NOI18N
     }
+    
+    /**
+     * @return True if undocking of the whole Mode (window group) is enabled.
+     * @since 2.30
+     */
+    public static boolean isModeUndockingEnabled() {
+        return getSwitchValue( "Mode.Undocking.Enabled", true ); //NOI18N
+    }
 
     /**
      * @param tc
@@ -93,6 +109,14 @@ public final class Switches {
      */
     public static boolean isTopComponentSlidingEnabled() {
         return getSwitchValue( "TopComponent.Sliding.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True if the whole Mode (window group) can be minimized (slided out).
+     * @since 2.30
+     */
+    public static boolean isModeSlidingEnabled() {
+        return getSwitchValue( "Mode.Sliding.Enabled", true ); //NOI18N
     }
 
     /**
@@ -125,6 +149,23 @@ public final class Switches {
      */
     public static boolean isEditorTopComponentClosingEnabled() {
         return getSwitchValue( "Editor.TopComponent.Closing.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True if TopComponents should automatically slide-out when opened
+     * in a minimized mode.
+     * @since 2.30
+     */
+    public static boolean isTopComponentAutoSlideInMinimizedModeEnabled() {
+        return getSwitchValue( "TopComponent.Auto.Slide.In.Minimized.Mode.Enabled", true ); //NOI18N
+    }
+
+    /**
+     * @return True if it is possible to close the whole Mode of view TopComponents.
+     * @since 2.30
+     */
+    public static boolean isModeClosingEnabled() {
+        return getSwitchValue( "Mode.Closing.Enabled", true ); //NOI18N
     }
 
     /**

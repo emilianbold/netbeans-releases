@@ -336,6 +336,13 @@ final public class PersistenceHandler implements PersistenceObserver {
                 mc.name, mc.kind, mc.state, mc.permanent, mc.constraints);
         }
         name2mode.put(mc.name, mode);
+        if( mc.minimized )
+            mode.setMinimized( mc.minimized );
+        if( null != mc.otherNames ) {
+            for( String s : mc.otherNames ) {
+                mode.addOtherName( s );
+            }
+        }
         
         return mode;
     }
@@ -356,7 +363,8 @@ final public class PersistenceHandler implements PersistenceObserver {
                 while (it.hasNext()) {
                     ModeImpl md = (ModeImpl)it.next();
 
-                    if (tcRefConfig.previousMode.equals(md.getName())) {
+                    if (tcRefConfig.previousMode.equals(md.getName()) 
+                            || md.getOtherNames().contains( tcRefConfig.previousMode ) ) {
                         previous = md;
                         break;
                     }
@@ -391,7 +399,8 @@ final public class PersistenceHandler implements PersistenceObserver {
         while (it.hasNext()) {
             ModeImpl md = (ModeImpl) it.next();
 
-            if (tcRefConfig.previousMode.equals(md.getName())) {
+            if (tcRefConfig.previousMode.equals(md.getName())
+                    || md.getOtherNames().contains( tcRefConfig.previousMode ) ) {
                 previous = md;
                 break;
             }
@@ -409,6 +418,11 @@ final public class PersistenceHandler implements PersistenceObserver {
     
     private ModeImpl initModeFromConfig(ModeImpl mode, ModeConfig mc, boolean initPrevModes) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        if( null != mc.otherNames ) {
+            for( String s : mc.otherNames ) {
+                mode.addOtherName( s );
+            }
+        }
         for (int j = 0; j < mc.tcRefConfigs.length; j++) {
             TCRefConfig tcRefConfig = mc.tcRefConfigs[j];
             if(DEBUG) {
@@ -447,6 +461,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             relBounds.height / 100.0F);
         mode.setBounds(bounds);
         mode.setFrameState(mc.frameState);
+        mode.setMinimized( mc.minimized );
         
         return mode;
     }
@@ -708,6 +723,10 @@ final public class PersistenceHandler implements PersistenceObserver {
             modeCfg.previousSelectedTopComponentID = prevSelectedTCID;
         }
         
+        modeCfg.minimized = mode.isMinimized();
+        
+        modeCfg.otherNames = mode.getOtherNames();
+        
         // TopComponents:
         List<TCRefConfig> tcRefCfgList = new ArrayList<TCRefConfig>();
         List<String> openedTcIDs = mode.getOpenedTopComponentsIDs();
@@ -800,6 +819,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles adding mode to model.
      * @param modeConfig configuration data of added mode
      */
+    @Override
     public synchronized void modeConfigAdded(ModeConfig modeConfig) {
         if(DEBUG) {
             debugLog("WMI.modeConfigAdded mo:" + modeConfig.name); // NOI18N
@@ -811,6 +831,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles removing mode from model.
      * @param modeName unique name of removed mode
      */
+    @Override
     public synchronized void modeConfigRemoved(String modeName) {
         if(DEBUG) {
             debugLog("WMI.modeConfigRemoved mo:" + modeName); // NOI18N
@@ -832,6 +853,7 @@ final public class PersistenceHandler implements PersistenceObserver {
      * @param tcRefNames array of tcIds to pass ordering of new tcRef,
      * if there is no ordering defined tcRef is appended to end of array
      */
+    @Override
     public synchronized void topComponentRefConfigAdded
     (String modeName, TCRefConfig tcRefConfig, String [] tcRefNames) {
         if(DEBUG) {
@@ -843,6 +865,14 @@ final public class PersistenceHandler implements PersistenceObserver {
         wm.setTopComponentSlidedInDefaultMode( tcRefConfig.tc_id, !tcRefConfig.dockedInDefaultMode );
         wm.setTopComponentMaximizedWhenSlidedIn( tcRefConfig.tc_id, tcRefConfig.slidedInMaximized );
         ModeImpl mode = (ModeImpl) name2mode.get(modeName);
+        if( null == mode ) {
+            for( ModeImpl m : name2mode.values() ) {
+                if( m.getOtherNames().contains( modeName ) ) {
+                    mode = m;
+                    break;
+                }
+            }
+        }
         if (mode != null) {
             initPreviousMode(mode, tcRefConfig);
         }
@@ -862,6 +892,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles removing tcRef from model. 
      * @param tc_id unique id of removed tcRef
      */
+    @Override
     public synchronized void topComponentRefConfigRemoved(String tc_id) {
         if(DEBUG) {
             debugLog("WMI.topComponentRefConfigRemoved tcRef:" + tc_id); // NOI18N
@@ -885,6 +916,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles adding group to model.
      * @param groupConfig configuration data of added group
      */
+    @Override
     public synchronized void groupConfigAdded(GroupConfig groupConfig) {
         if(DEBUG) {
             debugLog("WMI.groupConfigAdded group:" + groupConfig.name); // NOI18N
@@ -895,6 +927,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     /** Handles removing group from model.
      * @param groupName unique name of removed group
      */
+    @Override
     public synchronized void groupConfigRemoved(String groupName) {
         if(DEBUG) {
             debugLog("WMI.groupConfigRemoved group:" + groupName); // NOI18N
@@ -913,6 +946,7 @@ final public class PersistenceHandler implements PersistenceObserver {
      * @param groupName unique name of parent group
      * @param tcGroupConfig configuration data of added tcGroup
      */
+    @Override
     public synchronized void topComponentGroupConfigAdded(String groupName, TCGroupConfig tcGroupConfig) {
         if(DEBUG) {
             debugLog("WMI.topComponentGroupConfigAdded group:" + groupName + " tcGroup:" + tcGroupConfig.tc_id); // NOI18N
@@ -935,6 +969,7 @@ final public class PersistenceHandler implements PersistenceObserver {
      * @param groupName unique name of parent group
      * @param tc_id unique id of removed tcGroup
      */
+    @Override
     public synchronized void topComponentGroupConfigRemoved(String groupName, String tc_id) {
         if(DEBUG) {
             debugLog("WMI.topComponentGroupConfigRemoved group:" + groupName + " tcGroup:" + tc_id); // NOI18N
