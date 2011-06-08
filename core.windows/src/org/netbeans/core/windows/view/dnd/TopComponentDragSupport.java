@@ -305,13 +305,13 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         int tabIndex = tabbed.tabForCoordinate(p);
         tc = tabIndex != -1 ? tabbed.getTopComponentAt(tabIndex) : null;
         if (tc == null) {
-            if( Switches.isModeDragAndDropEnabled() ) {
-                TopComponent[] tcs = tabbed.getTopComponents();
-                if( null != tcs && tcs.length > 0 ) {
-                    ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tcs[0] );
-                    if( null != mode ) {
-                        draggable = new TopComponentDraggable( mode );
-                    }
+            TopComponent[] tcs = tabbed.getTopComponents();
+            if( null != tcs && tcs.length > 0 ) {
+                ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tcs[0] );
+                if( null != mode && ((mode.getKind() == Constants.MODE_KIND_EDITOR && Switches.isEditorModeDragAndDropEnabled())
+                                        ||
+                                    (mode.getKind() == Constants.MODE_KIND_VIEW && Switches.isViewModeDragAndDropEnabled())) ) {
+                    draggable = new TopComponentDraggable( mode );
                 }
             }
         } else {

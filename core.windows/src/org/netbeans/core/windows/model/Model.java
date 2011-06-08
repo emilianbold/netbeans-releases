@@ -297,6 +297,8 @@ public interface Model {
     public Collection<String> getModeOtherNames(ModeImpl mode);
     /** @since 2.30 */
     public void addModeOtherName(ModeImpl mode, String otherModeName);
+    /** @since 2.31 */
+    public void dockMode( ModeImpl prevMode, ModeImpl floatingMode );
     
     // Info about previous top component context, used by sliding kind of modes
     
@@ -381,6 +383,7 @@ public interface Model {
     public void setSplitWeights( ModelElement[] snapshots, double[] splitWeights );
     // controller updates <<
     ////////////////////////
+
 
     
 }

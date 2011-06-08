@@ -1041,6 +1041,17 @@ final class DefaultModel implements Model {
             modeModel.addOtherName( otherModeName );
     }
 
+    @Override
+    public void dockMode( ModeImpl prevMode, ModeImpl floatingMode ) {
+        ModeModel modeModel = getModelForMode(floatingMode);
+        if( null != modeModel ) {
+            synchronized(LOCK_MODES) {
+                modesSubModel.dock( prevMode, floatingMode );
+            }
+            modeModel.setState( Constants.MODE_STATE_JOINED );
+        }
+    }
+
     // End of mode specific.
 
     

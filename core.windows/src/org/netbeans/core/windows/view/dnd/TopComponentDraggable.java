@@ -103,8 +103,11 @@ public final class TopComponentDraggable {
     }
 
     boolean isUndockingEnabled() {
-        if( isModeTransfer() )
-            return Switches.isModeDragAndDropEnabled();
+        if( isModeTransfer() ) {
+            if( getKind() == Constants.MODE_KIND_EDITOR )
+                return Switches.isEditorModeUndockingEnabled();
+            return Switches.isViewModeUndockingEnabled();
+        }
         return Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled( tc );
     }
 
