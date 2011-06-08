@@ -46,6 +46,8 @@ package org.netbeans.modules.mercurial.ui.log;
 
 import org.openide.util.NbBundle;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -108,6 +110,11 @@ public abstract class SearchHistoryAction extends ContextAction {
             final File roots[] = HgUtils.getActionRoots(context);
             if (roots != null && roots.length > 0) {
                 repositoryRoot = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+            } else {
+                File repo = HgUtils.getRootFile(context);
+                if (repo != null) {
+                    Logger.getLogger(SearchHistoryAction.class.getName()).log(Level.INFO, "getActionRoots() returns empty, yet context contains {0} as root", repo); //NOI18N
+                }
             }
         }
         return repositoryRoot;
