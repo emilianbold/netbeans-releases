@@ -50,6 +50,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmStandaloneFileProviderImpl.NativeProjectImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.RequestProcessor;
@@ -85,7 +86,13 @@ public class FakeRegistrationWorker {
                 }
             }
             FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, list, libsAlreadyParsed, disposing);
-            FAKE_REGISTRATION_WORKER.post(r);
+            if (project.getPlatformProject() instanceof NativeProjectImpl) {
+                // parallel execution for standalone project causes deadlock
+                // see Bug 198949 - Test failed with "Timeout occurred"
+                r.run();
+            } else {
+                FAKE_REGISTRATION_WORKER.post(r);
+            }
         }
         try {
             countDownLatch.await();
