@@ -80,7 +80,7 @@ public class MakeMasterJNLPTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeMasterJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeMasterJNLP\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <jnlp dir='" + output + "'  >" +
@@ -143,7 +143,7 @@ public class MakeMasterJNLPTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeMasterJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeMasterJNLP\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" + 
             "  <jnlp dir='" + output + "'  >" +

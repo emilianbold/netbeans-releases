@@ -156,8 +156,7 @@ final class ModuleListParser {
                     }
                 }
             }
-            File scanCache = new File(root, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar +
-                    "private" + File.separatorChar + "scan-cache-" + String.format("%H", root) + "-" + (doFastScan ? "standard" : "full") + ".ser");
+            File scanCache = new File(System.getProperty("java.io.tmpdir"), "nb-scan-cache-" + String.format("%H", root) + "-" + (doFastScan ? "standard" : "full") + ".ser");
             if (scanCache.isFile()) {
                 if (project != null) {
                     project.log("Loading module list from " + scanCache);
@@ -778,7 +777,8 @@ final class ModuleListParser {
             if (nball == null) {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File(properties.get("basedir")));
             }
-            if (!build.equals(new File(new File(nball, "nbbuild"), "netbeans"))) {
+            String nbBuildDir = properties.get("nb.build.dir");
+            if (!build.equals(new File(new File(nball, "nbbuild"), "netbeans")) && !(nbBuildDir != null && build.equals(new File(nbBuildDir, "netbeans")))) {
                 // Potentially orphaned module to be built against specific binaries, plus perhaps other source deps.
                 if (!build.isDirectory()) {
                     throw new IOException("No such netbeans.dest.dir: " + build);

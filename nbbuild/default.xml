@@ -52,82 +52,82 @@ made subject to such option by the copyright holder.
   <target name="init-tasks" unless="tasks-already-set">
     <taskdef name="jhindexer"
          classname="org.netbeans.nbbuild.JHIndexer"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="makenbm"
          classname="org.netbeans.nbbuild.MakeNBM"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="makejnlp"
          classname="org.netbeans.nbbuild.MakeJNLP"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="makemasterjnlp"
          classname="org.netbeans.nbbuild.MakeMasterJNLP"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="genlist"
          classname="org.netbeans.nbbuild.MakeListOfNBM"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="setcluster"
          classname="org.netbeans.nbbuild.SetCluster"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="getmodulename"
          classname="org.netbeans.nbbuild.GetModuleName"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="createmodulexml"
          classname="org.netbeans.nbbuild.CreateModuleXML"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="locjar"
          classname="org.netbeans.nbbuild.LocalizedJar"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="locjhindexer"
          classname="org.netbeans.nbbuild.LocJHIndexer"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="locmakenbm"
          classname="org.netbeans.nbbuild.LocMakeNBM"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="parseprojectxml"
          classname="org.netbeans.nbbuild.ParseProjectXml"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="jarwithmoduleattributes"
          classname="org.netbeans.nbbuild.JarWithModuleAttributes"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="arch"
          classname="org.netbeans.nbbuild.Arch"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="autoupdate"
          classname="org.netbeans.nbbuild.AutoUpdate"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="fixdependencies"
          classname="org.netbeans.nbbuild.FixDependencies"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="sortsuitemodules"
          classname="org.netbeans.nbbuild.SortSuiteModules"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="verifyclasslinkage"
          classname="org.netbeans.nbbuild.VerifyClassLinkage"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="checklicense"
          classname="org.netbeans.nbbuild.CheckLicense"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="fixtestdeps"
          classname="org.netbeans.nbbuild.FixTestDependencies"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="shorterpaths"
          classname="org.netbeans.nbbuild.ShorterPaths"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="convertimport"
          classname="org.netbeans.nbbuild.ConvertImport"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="hgid"
          classname="org.netbeans.nbbuild.HgId"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <typedef name="pathfileset" classname="org.netbeans.nbbuild.PathFileSet"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <taskdef name="parsemanifest" classname="org.netbeans.nbbuild.ParseManifest"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
     <typedef name="islocked" classname="org.netbeans.nbbuild.IsLocked"
-         classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+         classpath="${nbantext.jar}"/>
+    <taskdef name="subant-junit" classname="org.netbeans.nbbuild.SubAntJUnitReport" classpath="${nbantext.jar}"/>
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="${nbantext.jar}"/>
+    <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="${nbantext.jar}"/>
     <property name="tasks-already-set" value="true"/>
   </target>
 

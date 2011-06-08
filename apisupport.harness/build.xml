@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                 <attribute name="NetBeans-Own-Library" value="true"/>
             </manifest>
             <!-- XXX would be more maintainable to use depfind.sf.net / genjar.sf.net / sadun-util.sf.net/pack.html -->
-            <zipfileset src="${nb_all}/nbbuild/nbantext.jar" includes="${bundled.tasks}"/>
+            <zipfileset src="${nbantext.jar}" includes="${bundled.tasks}"/>
             <zipfileset file="taskdefs.properties" fullpath="org/netbeans/nbbuild/taskdefs.properties"/>
         </jar>
     </target>

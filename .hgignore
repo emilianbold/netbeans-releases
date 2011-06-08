@@ -118,7 +118,6 @@ derby\.log
 ^nbbuild/testuserdir$
 ^nbbuild/NetBeans-.*\.log$
 ^nbbuild/l10ndist$
-^nbbuild/nbantext\.jar$
 ^nbbuild/nbms$
 ^nbbuild/user\.build\.properties$
 ^nbbuild/moduledefs-tmp\.properties$
