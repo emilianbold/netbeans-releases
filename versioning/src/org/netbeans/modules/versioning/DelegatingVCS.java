@@ -86,10 +86,15 @@ public class DelegatingVCS extends VersioningSystem {
 
     VersioningSystem getDelegate() {
         if(delegate == null) {
+            VersioningManager.getInstance().flushNullOwners();   
             delegate = (VersioningSystem) map.get("delegate");                  // NOI18N
             Accessor.IMPL.moveChangeListeners(this, delegate);
         }
         return delegate;
+    }
+    
+    Integer getPriority() {
+        return Utils.getPriority(getDelegate());
     }
     
     @Override
@@ -170,7 +175,6 @@ public class DelegatingVCS extends VersioningSystem {
     
     void awake() {
         getDelegate(); // awake delegate
-        VersioningManager.getInstance().flushNullOwners();      
     }
     
     Action[] getActions(VCSContext ctx, ActionDestination actionDestination) {
