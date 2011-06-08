@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
-import org.netbeans.modules.subversion.ui.wizards.*;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -74,7 +74,8 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
         mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_EndingRevision")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(mergeAfterEmptyLabel, org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_EmptyHint")); // NOI18N
+        mergeEndRevisionTextField.setText(SVNRevision.HEAD.toString());
+        mergeEndRevisionTextField.setToolTipText(org.openide.util.NbBundle.getMessage(MergeSinceOriginPanel.class, "CTL_MergeSincePanel_EmptyHint")); // NOI18N
 
         mergeEndUrlComboBox.setEditable(true);
 
@@ -95,19 +96,14 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(mergeAfterEmptyLabel)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(mergeEndSearchButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(mergeEndBrowseRevisionButton))
-                            .add(mergeEndUrlComboBox, 0, 309, Short.MAX_VALUE))
+                        .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(mergeEndBrowseButton))))
+                        .add(mergeEndSearchButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(mergeEndBrowseRevisionButton))
+                    .add(mergeEndUrlComboBox, 0, 309, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(mergeEndBrowseButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -124,8 +120,6 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
                         .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(mergeEndSearchButton)
                         .add(mergeEndBrowseRevisionButton)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mergeAfterEmptyLabel)
                 .addContainerGap())
         );
 
@@ -141,7 +135,6 @@ public class MergeSinceOriginPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JLabel mergeAfterEmptyLabel = new javax.swing.JLabel();
     final javax.swing.JLabel mergeAfterRevisionLabel = new javax.swing.JLabel();
     final javax.swing.JButton mergeEndBrowseButton = new javax.swing.JButton();
     final javax.swing.JButton mergeEndBrowseRevisionButton = new javax.swing.JButton();

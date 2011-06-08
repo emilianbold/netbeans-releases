@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.subversion.ui.update;
 
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+
 /**
  *
  * @author  Tomas Stupka
@@ -62,14 +64,14 @@ public class UpdateToPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel9 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle"); // NOI18N
-        jLabel9.setText(bundle.getString("CTL_UpdateToPanel_EmptyHint")); // NOI18N
-
         jLabel4.setLabelFor(revisionTextField);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("CTL_UpdateToPanel_Revision")); // NOI18N
+
+        revisionTextField.setText(SVNRevision.HEAD.toString());
+        revisionTextField.setToolTipText(org.openide.util.NbBundle.getMessage(UpdateToPanel.class, "CTL_UpdateToPanel_EmptyHint")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(revisionSearchButton, bundle.getString("CTL_UpdateToPanel_Search")); // NOI18N
 
@@ -86,12 +88,9 @@ public class UpdateToPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel4)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel9)
-                            .add(layout.createSequentialGroup()
-                                .add(revisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(revisionSearchButton))))
+                        .add(revisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(revisionSearchButton))
                     .add(warningLabel))
                 .addContainerGap())
         );
@@ -103,8 +102,6 @@ public class UpdateToPanel extends javax.swing.JPanel {
                     .add(jLabel4)
                     .add(revisionSearchButton)
                     .add(revisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel9)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(warningLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -117,7 +114,6 @@ public class UpdateToPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.ButtonGroup buttonGroup = new javax.swing.ButtonGroup();
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel9;
     final javax.swing.JButton revisionSearchButton = new javax.swing.JButton();
     final javax.swing.JTextField revisionTextField = new javax.swing.JTextField();
     final javax.swing.JLabel warningLabel = new javax.swing.JLabel();

@@ -52,7 +52,9 @@ import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.logging.Level;
+import javax.swing.InputVerifier;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -139,6 +141,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
 
         if(revisionTextField!=null) {
             this.revisionTextField = revisionTextField;
+            revisionTextField.setInputVerifier(new RevisionInputVerifier());
             revisionTextField.getDocument().addDocumentListener(this);
             this.searchRevisionButton = searchRevisionButton;
             this.browseRevisionButton = browseRevisionButton;
@@ -149,6 +152,19 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                 browseRevisionButton.addActionListener(this);
             }
         }                
+    }
+    
+    private static class RevisionInputVerifier extends InputVerifier {
+        @Override
+        public boolean verify (JComponent input) {
+            if (input instanceof JTextComponent) {
+                JTextComponent comp = (JTextComponent) input;
+                if (comp.getText().trim().isEmpty()) {
+                    comp.setText(SVNRevision.HEAD.toString());
+                }
+            }
+            return true;
+        }
     }
 
     public void setupBehavior(String browserPurpose, int browserMode, String browserHelpID, String searchHelpID) {
