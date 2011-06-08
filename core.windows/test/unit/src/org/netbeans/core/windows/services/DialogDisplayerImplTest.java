@@ -44,8 +44,11 @@
 
 package org.netbeans.core.windows.services;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -68,13 +71,20 @@ public class DialogDisplayerImplTest extends NbTestCase {
     private JButton openChild;
     private JButton closeChild;
     private Dialog child;
+    private Logger LOG;
     
     public DialogDisplayerImplTest (String testName) {
         super (testName);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
     
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
         dd = new DialogDisplayerImpl (RESULT);
         closeOwner = new JButton ("Close this dialog");
         childDD = new DialogDescriptor ("Child", "Child", false, null);
@@ -170,7 +180,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
                 owner.setVisible (true);
             }
         });
-        while (!owner.isVisible ()) {}
+        assertShowing("Owner should be visible", true, owner);
         
         child = DialogDisplayer.getDefault ().createDialog (childDD);
 
@@ -180,7 +190,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
                 child.setVisible (true);
             }
         });
-        while (!child.isVisible ()) {}
+        assertShowing("Child will be visible", true, child);
         
         assertFalse ("No dialog is owned by leaf dialog.", owner.equals (child.getOwner ()));
         assertEquals ("The leaf dialog has no child.", 0, owner.getOwnedWindows ().length);
@@ -194,7 +204,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
                 owner.setVisible (false);
             }
         });
-        while (owner.isVisible ()) {}
+        assertShowing("Disappear", false, owner);
         
         assertFalse ("Leaf is dead", owner.isVisible ());
         assertTrue ("Child is visible still", child.isVisible ());
@@ -205,7 +215,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
                 child.setVisible (false);
             }
         });        
-        while (child.isVisible ()) {}
+        assertShowing("Child is invisible", false, child);
         
         assertFalse ("Child is dead too", child.isVisible ());
     }
@@ -222,7 +232,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
                 owner.setVisible (true);
             }
         });
-        while (!owner.isVisible ()) {}
+        assertShowing("Owner is visible", true, owner);
         
         child = DialogDisplayer.getDefault ().createDialog (childDD);
 
@@ -232,7 +242,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
                 child.setVisible (true);
             }
         });
-        while (!child.isVisible ()) {}
+        assertShowing("child is visible too", true, child);
         
         assertTrue ("The child is owned by leaf dialog.", owner.equals (child.getOwner ()));
         assertEquals ("The leaf dialog has one child.", 1, owner.getOwnedWindows ().length);
@@ -246,7 +256,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
                 owner.setVisible (false);
             }
         });
-        while (owner.isVisible ()) {}
+        assertShowing("Onwer is invisible", false, owner);
         
         assertFalse ("Leaf is dead", owner.isVisible ());
         assertFalse ("Child is dead too", child.isVisible ());
@@ -263,5 +273,16 @@ public class DialogDisplayerImplTest extends NbTestCase {
     
     private void waitAWT() throws Exception {
         SwingUtilities.invokeAndWait(new Runnable() { public void run() { } });
+    }
+
+    private void assertShowing(String msg, boolean showing, Component c) throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            if (c.isShowing() == showing) {
+                break;
+            }
+            LOG.log(Level.INFO, "Another round ({0}): {1}", new Object[]{i, c});
+            Thread.sleep(100);
+        }
+        assertEquals(msg, showing, c.isShowing());
     }
 }
