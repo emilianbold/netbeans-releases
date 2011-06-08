@@ -191,11 +191,11 @@ public class Actions {
             }
         }
         Bridge b = new MenuBridge(item, action, popup);
+        b.prepare();
 
         if (item instanceof Actions.MenuItem) {
             ((Actions.MenuItem)item).setBridge(b);
         }
-        b.updateState(null);
         item.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
     }
 
@@ -206,7 +206,7 @@ public class Actions {
     */
     public static void connect(JCheckBoxMenuItem item, BooleanStateAction action, boolean popup) {
         Bridge b = new CheckMenuBridge(item, action, popup);
-        b.updateState(null);
+        b.prepare();
     }
 
     /** Connects buttons to action.
@@ -252,7 +252,7 @@ public class Actions {
             }
         }
         Bridge b = new ButtonBridge(button, action);
-        b.updateState(null);
+        b.prepare();
     }
 
     /** Connects buttons to action.
@@ -261,7 +261,7 @@ public class Actions {
     */
     public static void connect(AbstractButton button, BooleanStateAction action) {
         Bridge b = new BooleanButtonBridge(button, action);
-        b.updateState(null);
+        b.prepare();
     }
 
     /** Sets the text for the menu item or other subclass of AbstractButton.
@@ -822,7 +822,6 @@ public class Actions {
         /** @param comp component
         * @param action the action
         */
-        @SuppressWarnings("OverridableMethodCallInConstructor")
         public Bridge(JComponent comp, Action action) {
             if(comp == null || action == null) {
                 throw new IllegalArgumentException(
@@ -833,7 +832,6 @@ public class Actions {
             this.action = action;
 
             actionL = WeakListeners.propertyChange(this, action);
-            prepareVisibilityListener();
 
             // associate context help, if applicable
             // [PENDING] probably belongs in ButtonBridge.updateState to make it dynamic
@@ -844,10 +842,12 @@ public class Actions {
             }
         }
 
-        protected void prepareVisibilityListener() {
+        protected void prepare() {
             comp.addPropertyChangeListener(new VisL());
             if (comp.isShowing()) {
                 addNotify();
+            } else {
+                updateState(null);
             }
         }
 
@@ -1170,9 +1170,13 @@ public class Actions {
             }
         }
 
-        protected @Override void prepareVisibilityListener() {
-            // menus and popups generally get no hierarchy events, yet we need to listen to other changes
-            addNotify();
+        protected @Override void prepare() {
+            if (popup) {
+                // popups generally get no hierarchy events, yet we need to listen to other changes
+                addNotify();
+            } else {
+                super.prepare();
+            }
         }
 
         /** @param changedProperty the name of property that has changed
@@ -1668,9 +1672,7 @@ public class Actions {
         */
         public SubMenu(Action aAction, SubMenuModel model, boolean popup) {
             bridge = new SubMenuBridge(new JMenuItem(), this, aAction, model, popup);
-
-            // set at least the name to have reasonable bounds
-            bridge.updateState(Action.NAME);
+            bridge.prepare();
         }
         
         public JComponent[] getMenuPresenters() {
