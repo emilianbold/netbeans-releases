@@ -249,12 +249,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 //            @Override
 //            public void run() {
                 synchronized (this) {
-                    boolean serverLib = false;
                     if (isServerRegistered(serverInstanceID)) {
                         try {
                             ServerInstance.LibraryManager libManager = Deployment.getDefault().getServerInstance(serverInstanceID).getLibraryManager();
                             if (libManager != null) {
-                                serverLib = true;
                                 Set<ServerLibrary> libs = new HashSet<ServerLibrary>();
                                 libs.addAll(libManager.getDeployedLibraries());
                                 libs.addAll(libManager.getDeployableLibraries());
@@ -280,7 +278,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         }
                     }
 
-                    if (!serverLib) {
+                    if (serverJsfLibraries.isEmpty()) {
                         File[] cp;
                         J2eePlatform platform = null;
                         try {

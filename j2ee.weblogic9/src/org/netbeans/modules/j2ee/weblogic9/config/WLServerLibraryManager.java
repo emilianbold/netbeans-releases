@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
@@ -67,6 +68,10 @@ import org.openide.util.NbBundle;
 public class WLServerLibraryManager implements ServerLibraryManager {
 
     private static final Logger LOGGER = Logger.getLogger(WLServerLibraryManager.class.getName());
+
+    private static final String DWP_JSF_SPEC_TITLE = "JavaServer Faces"; // NOI18N
+
+    private static final Version DWP_JSF_SPEC_VERSION = Version.fromJsr277OrDottedNotationWithFallback("2.0"); // NOI18N
 
     private final WLDeploymentManager manager;
 
@@ -112,6 +117,24 @@ public class WLServerLibraryManager implements ServerLibraryManager {
     // this handles only archives
     @Override
     public Set<ServerLibrary> getDeployableLibraries() {
+        if (manager.isWebProfile()) {
+            // we are handling jsf in DWP here - it should not be offered via this
+            // API method, but for legacy apps the missing/deploy machinery has to
+            // be available
+            Map<ServerLibrary, File> deployable = support.getDeployableFiles();
+            for (Iterator<Map.Entry<ServerLibrary, File>> it = deployable.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<ServerLibrary, File> entry = it.next();
+                ServerLibrary lib = entry.getKey();
+                if (DWP_JSF_SPEC_TITLE.equals(lib.getSpecificationTitle())
+                        && DWP_JSF_SPEC_VERSION.equals(lib.getSpecificationVersion())
+                        // defensive check on size
+                        && entry.getValue().length() < 10240) {
+                    it.remove();
+                    break;
+                }
+            }
+            return deployable.keySet();
+        }
         return support.getDeployableFiles().keySet();
     }
 
