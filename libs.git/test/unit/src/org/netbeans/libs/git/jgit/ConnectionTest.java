@@ -182,6 +182,27 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.listRemoteBranches("ssh://tester:vsdsvsds@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
+    public void testSshConnectionCanceled () throws Exception {
+        GitClient client = getClient(workDir);
+        GitClientCallback callback = new DefaultCallback() {
+            @Override
+            public String getUsername (String uri, String prompt) {
+                return null;
+            }
+
+            @Override
+            public char[] getPassword (String uri, String prompt) {
+                return null;
+            }
+        };
+        client.setCallback(callback);
+        try {
+            client.listRemoteBranches("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        } catch (GitException.AuthorizationException ex) {
+            assertEquals("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", ex.getRepositoryUrl());
+        }
+    }
+
     public void testSshConnectionCredentialsFromCallback () throws Exception {
         GitClient client = getClient(workDir);
         GitClientCallback callback = new DefaultCallback() {
