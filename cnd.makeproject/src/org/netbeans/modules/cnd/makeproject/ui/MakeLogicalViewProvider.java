@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
@@ -80,8 +81,10 @@ import org.openidex.search.SearchInfo;
  */
 public class MakeLogicalViewProvider implements LogicalViewProvider {
 
+    private static final String brokenLinkBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
     private static final String brokenProjectBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
     private static final String brokenIncludeImgPath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenIncludeBadge.png"; // NOI18N
+    static final Image brokenLinkBadge = loadToolTipImage(brokenLinkBadgePath, "BrokenLinkTxt"); // NOI18N
     static final Image brokenProjectBadge = loadToolTipImage(brokenProjectBadgePath, "BrokenProjectTxt"); // NOI18N
     static final Image brokenIncludeBadge = loadToolTipImage(brokenIncludeImgPath, "BrokenIncludeTxt"); // NOI18N
 
@@ -443,8 +446,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     // Private innerclasses ----------------------------------------------------
-    public static boolean hasBrokenLinks() {
-        return false;
+    public boolean hasBrokenLinks() {
+        List<BrokenLink> errs = BrokenLinks.getBrokenLinks(project);
+        return !errs.isEmpty();
     }
 
     private static Image loadToolTipImage(String imgResouce, String textResource) {
