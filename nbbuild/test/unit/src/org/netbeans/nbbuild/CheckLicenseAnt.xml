@@ -3,7 +3,7 @@
 <project name="Test" basedir="." default="all" >
   <taskdef name="checkl"
     classname="org.netbeans.nbbuild.CheckLicense"
-    classpath="${nb_all}/nbbuild/nbantext.jar"
+    classpath="${nbantext.jar}"
   />
 <target name="all" >
   <checkl>

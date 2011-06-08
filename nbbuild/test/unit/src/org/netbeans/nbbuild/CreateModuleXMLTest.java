@@ -71,7 +71,7 @@ public class CreateModuleXMLTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" + 
             "  <createmodulexml xmldir='" + output + "' >" +
@@ -103,7 +103,7 @@ public class CreateModuleXMLTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <createmodulexml xmldir='" + output + "' >" +
@@ -137,7 +137,7 @@ public class CreateModuleXMLTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <createmodulexml xmldir='" + output + "' updatetrackingroot='" + getWorkDir() +"' >" +

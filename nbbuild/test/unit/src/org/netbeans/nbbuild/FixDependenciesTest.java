@@ -64,7 +64,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix>" +
             "  <replace codenamebase=\"org.openide.util\">" +
@@ -115,7 +115,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix>" +
             "  <replace codenamebase=\"org.openide.util\">" +
@@ -147,7 +147,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix>" +
             "  <replace codenamebase=\"org.openide.util\">" +
@@ -175,7 +175,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix>" +
             "  <replace codenamebase=\"org.openide.util\">" +
@@ -215,7 +215,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix>" +
             "  <replace codenamebase=\"org.openide.util\">" +
@@ -257,7 +257,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix>" +
             "  <replace codenamebase=\"org.openide\" >" +
@@ -308,7 +308,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix>" +
             "  <replace codenamebase=\"org.openide.util\">" +
@@ -369,7 +369,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix>" +
             "  <replace codenamebase=\"org.openide.util\">" +
@@ -439,7 +439,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix antfile=\"${buildscript}\" buildtarget=\"verify\" cleantarget=\"clean\" >" +
             "  <replace codenamebase=\"org.openide\" >" +
@@ -543,7 +543,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix >" +
             "  <replace codenamebase='org.openide'>\n" +  
@@ -639,7 +639,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Separate namespaces\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix antfile=\"${buildscript}\" buildtarget=\"verify\" cleantarget='verify'>" +
             "  <fileset dir=\"" + xml.getParent () + "\">" +
@@ -704,7 +704,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix antfile=\"${buildscript}\" buildtarget=\"verify\" cleantarget=\"clean\" >" +
             "  <replace codenamebase=\"org.openide\" >" +
@@ -777,7 +777,7 @@ public class FixDependenciesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "<fix antfile=\"${buildscript}\" buildtarget=\"verify\" cleantarget=\"clean\" >" +
             "  <replace codenamebase=\"org.openide\" addcompiletime='true' >" +

@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="Test Test Dependecies" basedir="." default="all" >
-    <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nbantext.jar}"/>
 
     <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties">

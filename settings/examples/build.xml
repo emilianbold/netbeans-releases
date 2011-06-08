@@ -52,9 +52,9 @@ made subject to such option by the copyright holder.
     <property name="nb_all" location="../../o.n.core/.."/>
     <property name="license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
 
-    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/build/nbantext.jar"/>
+    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_all}/nbbuild/build/nbantext.jar"/>
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_all}/nbbuild/build/nbantext.jar"/>
 
     <target name="compile">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">

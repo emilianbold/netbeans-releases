@@ -68,7 +68,7 @@ public class CheckLicenseTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checkl fragment='Sun Public' >" +
             "   <fileset dir='" + license.getParent() + "'>" +
@@ -107,7 +107,7 @@ public class CheckLicenseTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checkl fragment='Sun Public' fail='whenpresent' >" +
             "   <fileset dir='" + license.getParent() + "'>" +
@@ -144,7 +144,7 @@ public class CheckLicenseTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checkl fragment='Sun Public' >" +
             "   <fileset dir='" + license.getParent() + "'>" +
@@ -175,7 +175,7 @@ public class CheckLicenseTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checkl fragment='Sun Public' fail='whenpresent'>" +
             "   <fileset dir='" + license.getParent() + "'>" +
@@ -206,7 +206,7 @@ public class CheckLicenseTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checkl fragment='Sun Public' fail='whenmissing' >" +
             "   <fileset dir='" + license.getParent() + "'>" +
@@ -468,7 +468,7 @@ public class CheckLicenseTest extends TestBase {
         String script =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
     "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
-    "  <taskdef name=\"checklicense\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+    "  <taskdef name=\"checklicense\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nbantext.jar}\"/>" +
     "<target name=\"all\" >" +
 "        <checklicense >\n" +
 "            <fileset dir='${dir}'>\n" +

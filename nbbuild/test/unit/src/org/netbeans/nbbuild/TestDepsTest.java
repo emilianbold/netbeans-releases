@@ -62,14 +62,7 @@ public class TestDepsTest extends TestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        String prop = System.getProperty("nb_all");
-        assertNotNull("${nb_all} defined", prop);
-        File nball = new File(prop);
-        for (File cache : new File(nball, "nbbuild/nbproject/private").listFiles()) {
-            if (cache.getName().matches("scan-cache-.+[.]ser") && !cache.delete()) {
-                throw new IOException(cache.getName());
-            }
-        }
+        ModuleListParserTest.deleteCaches();
     }
     
     public void testDepsTest () throws Exception {
