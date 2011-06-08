@@ -167,6 +167,8 @@ public abstract class ActionUtils {
             if( Switches.isTopComponentUndockingEnabled()) {
                 actions.add(createDisabledAction("CTL_UndockWindowAction"));
             }
+            if( Switches.isModeUndockingEnabled() )
+                actions.add( new UndockModeAction( mode) );
         } else if (kind == Constants.MODE_KIND_VIEW) {
             if( Switches.isViewTopComponentClosingEnabled() ) {
                 actions.add(createDisabledAction("CTL_CloseWindowAction"));
