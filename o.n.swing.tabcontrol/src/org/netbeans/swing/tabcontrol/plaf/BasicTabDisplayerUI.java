@@ -141,6 +141,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
     /**
      * Overridden to initialize the <code>tabState</code> and <code>defaultRenderer</code>.
      */
+    @Override
     protected void install() {
         super.install();
         tabState = createTabState();
@@ -157,6 +158,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         }
     }
 
+    @Override
     protected void uninstall() {
         tabState = null;
         defaultRenderer = null;
@@ -228,19 +230,23 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         rect.height = displayer.getHeight() - ins.bottom - ins.top;
     }
 
+    @Override
     protected MouseListener createMouseListener() {
         return new BasicDisplayerMouseListener();
     }
 
+    @Override
     protected PropertyChangeListener createPropertyChangeListener() {
         return new BasicDisplayerPropertyChangeListener();
     }
 
+    @Override
     public Polygon getExactTabIndication(int index) {
         Rectangle r = getTabRect(index, scratch);
         return getTabCellRenderer(index).getTabShape(tabState.getState(index), r);
     }
 
+    @Override
     public Polygon getInsertTabIndication(int index) {
         Polygon p;
         if (index == getLastVisibleTab() + 1) {
@@ -255,6 +261,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         return p;
     }
 
+    @Override
     public int tabForCoordinate(Point p) {
         if (displayer.getModel().size() == 0) {
             return -1;
@@ -269,6 +276,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         return tabIndex;
     }
 
+    @Override
     public Rectangle getTabRect(int idx, Rectangle rect) {
         if (rect == null) {
             rect = new Rectangle();
@@ -299,6 +307,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         return rect;
     }
 
+    @Override
     public Image createImageOfTab(int index) {
         TabData td = displayer.getModel().getTab(index);
         
@@ -322,6 +331,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         return image;
     }
 
+    @Override
     public int dropIndexOfPoint(Point p) {
         Point p2 = toDropPoint(p);
         int start = getFirstVisibleTab();
@@ -361,6 +371,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
      * their cell renderers,
      * then calls paintAfterTabs
      */
+    @Override
     public final void paint(Graphics g, JComponent c) {
         assert c == displayer;
         
@@ -483,6 +494,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         return displayer.getModel().size() - 1;
     }
 
+    @Override
     protected ChangeListener createSelectionListener() {
         return new BasicSelectionListener();
     }
@@ -499,15 +511,18 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         //do nothing
     }
     
+    @Override
     protected final void requestAttention (int tab) {
         tabState.addAlarmTab(tab);
     }
     
+    @Override
     protected final void cancelRequestAttention (int tab) {
         tabState.removeAlarmTab(tab);
     }
     
 
+    @Override
     protected void modelChanged() {
         tabState.clearTransientStates();
         //DefaultTabSelectionModel automatically updates its selected index when things
@@ -551,6 +566,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
 
     protected class BasicTabState extends TabState {
 
+        @Override
         public int getState(int tab) {
             if (displayer.getModel().size() == 0) {
                 return TabState.NOT_ONSCREEN;
@@ -565,6 +581,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             return result;
         }
 
+        @Override
         protected void repaintAllTabs() {
             //XXX would be nicer to just repaint the tabs area,
             //but we also need to repaint below all the tabs in the
@@ -573,11 +590,13 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             displayer.repaint();
         }
 
+        @Override
         public int getRepaintPolicy(int tab) {
             //Defined in createRepaintPolicy()
             return repaintPolicy;
         }
 
+        @Override
         protected void repaintTab(int tab) {
             if (tab == -1 || tab > displayer.getModel().size()) {
                 return;
@@ -590,6 +609,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         }
     }
     
+    @Override
     protected ModelListener createModelListener() {
         return new BasicModelListener();
     }    
@@ -597,6 +617,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
     private class BasicDisplayerPropertyChangeListener
             extends DisplayerPropertyChangeListener {
 
+        @Override
         protected void activationChanged() {
             tabState.setActive(displayer.isActive());
         }
@@ -610,6 +631,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             return tabForCoordinate(lastKnownMouseLocation);
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             int idx = updateMouseLocation(e);
             if (idx == -1) {
@@ -623,16 +645,19 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             potentialCommand (idx, e, state, tcr, scratch);
         }
 
+        @Override
         public void mouseDragged(MouseEvent e) {
             mouseMoved (e);
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
             int idx = updateMouseLocation(e);
             tabState.setMouseInTabsArea(true);
             tabState.setContainsMouse(idx);
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
             updateMouseLocation(e);
             tabState.setMouseInTabsArea(false);
@@ -640,6 +665,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             tabState.setCloseButtonContainsMouse(-1);
         }
 
+        @Override
         public void mouseMoved(MouseEvent e) {
             int idx = updateMouseLocation(e);
             tabState.setMouseInTabsArea(true);
@@ -662,6 +688,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
 
         private int lastPressedTab = -1;
         private long pressTime = -1;
+        @Override
         public void mousePressed(MouseEvent e) {
             int idx = updateMouseLocation(e);
             tabState.setPressed(idx);
@@ -756,6 +783,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             }
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
             int idx = updateMouseLocation(e);
             if (idx != -1) {
@@ -777,6 +805,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             tabState.setMousePressedInCloseButton(-1);
         }
 
+        @Override
         public final void mouseWheelMoved(MouseWheelEvent e) {
             updateMouseLocation(e);
             processMouseWheelEvent(e);
@@ -787,6 +816,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
      * with the new selected index from the selection model when it changes.
      */
     protected class BasicSelectionListener implements ChangeListener {
+        @Override
         public void stateChanged(ChangeEvent e) {
             assert e.getSource() == selectionModel : "Unknown event source: "
                     + e.getSource();
@@ -804,28 +834,34 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
      * "attention" mode, if any.
      */
     protected class BasicModelListener extends AbstractTabDisplayerUI.ModelListener {
+        @Override
         public void contentsChanged(ListDataEvent e) {
             super.contentsChanged(e);
             tabState.contentsChanged(e);
         }
 
+        @Override
         public void indicesAdded(ComplexListDataEvent e) {
             super.indicesAdded(e);
             tabState.indicesAdded(e);
         }
 
+        @Override
         public void indicesChanged(ComplexListDataEvent e) {
             tabState.indicesChanged(e);
         }
 
+        @Override
         public void indicesRemoved(ComplexListDataEvent e) {
             tabState.indicesRemoved(e);
         }
 
+        @Override
         public void intervalAdded(ListDataEvent e) {
             tabState.intervalAdded(e);
         }
 
+        @Override
         public void intervalRemoved(ListDataEvent e) {
             tabState.intervalRemoved(e);
         }
