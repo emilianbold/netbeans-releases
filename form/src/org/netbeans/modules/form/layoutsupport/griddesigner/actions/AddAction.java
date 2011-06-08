@@ -44,7 +44,9 @@ package org.netbeans.modules.form.layoutsupport.griddesigner.actions;
 
 import java.awt.Component;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
@@ -162,8 +164,7 @@ public class AddAction extends AbstractGridAction {
                 String msg = MessageFormat.format(pattern, pItem.getNode().getDisplayName());
                 NotifyDescriptor.Message desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
-            } else  if (metacomp.isInModel() // It is not in the model when the addition was canceled
-                    && (metacomp instanceof RADVisualComponent)) {
+            } else if (isSubComponent(metacomp, container)) {
                 replicator.addComponent(metacomp);
                 Component comp = (Component)replicator.getClonedComponent(metacomp);
                 gridManager.setGridX(comp, context.getFocusedColumn());
@@ -178,6 +179,16 @@ public class AddAction extends AbstractGridAction {
             return null;
         }
 
+    }
+
+    private static boolean isSubComponent(RADComponent metacomp, RADVisualContainer container) {
+        if (metacomp instanceof RADVisualComponent) {
+            RADVisualComponent component = (RADVisualComponent)metacomp;
+            List<RADVisualComponent> components = Arrays.asList(container.getSubComponents());
+            return components.contains(component);
+        } else {
+            return false;
+        }
     }
 
 }
