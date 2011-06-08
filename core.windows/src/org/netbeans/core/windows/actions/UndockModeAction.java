@@ -119,7 +119,12 @@ public final class UndockModeAction extends AbstractAction {
     @Override
     public boolean isEnabled() {
         updateName();
-        return getMode2WorkWith() != null && Switches.isModeUndockingEnabled();
+        ModeImpl contextMode = getMode2WorkWith();
+        if( null == contextMode )
+            return false;
+        if( contextMode.getKind() == Constants.MODE_KIND_EDITOR )
+            return Switches.isEditorModeUndockingEnabled();
+        return contextMode.getKind() == Constants.MODE_KIND_VIEW && Switches.isViewModeUndockingEnabled();
     }
 
     private void updateName() {

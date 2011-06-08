@@ -2072,7 +2072,7 @@ final class Central implements ControllerHandler {
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode( newMode, draggable.getTopComponent() );
         } else {
-            replaceMode( newMode, draggable.getMode() );
+            dockMode( newMode, draggable.getMode() );
         }
         
         updateViewAfterDnD(true);
@@ -2082,20 +2082,24 @@ final class Central implements ControllerHandler {
     public void userDroppedTopComponentsIntoEmptyEditor(TopComponentDraggable draggable) {
         // PENDING
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode("editor"); // NOI18N
-        if( null == mode ) {
+        if( null == mode || mode.getState() == Constants.MODE_STATE_SEPARATED ) {
             for( ModeImpl m : getModes() ) {
-                if( m.getKind() == Constants.MODE_KIND_EDITOR ) {
+                if( m.getKind() == Constants.MODE_KIND_EDITOR && m.getState() == Constants.MODE_STATE_JOINED ) {
                     mode = m;
                     break;
                 }
             }
         }
-        if( null == mode )
+        if( null == mode || mode == draggable.getMode() ) {
+            if( draggable.isModeTransfer() && draggable.getMode().getKind() == Constants.MODE_KIND_EDITOR ) {
+                userDockedMode( draggable.getMode() );
+            }
             return;
+        }
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode(mode, draggable.getTopComponent());
         } else {
-            replaceMode( mode, draggable.getMode() );
+            dockMode( mode, draggable.getMode() );
         }
         updateViewAfterDnD(true);
     }
@@ -2106,7 +2110,7 @@ final class Central implements ControllerHandler {
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode( newMode, draggable.getTopComponent() );
         } else {
-            replaceMode( newMode, draggable.getMode() );
+            dockMode( newMode, draggable.getMode() );
         }
 
         updateViewAfterDnD(true);
@@ -2118,7 +2122,7 @@ final class Central implements ControllerHandler {
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode( newMode, draggable.getTopComponent() );
         } else {
-            replaceMode( newMode, draggable.getMode() );
+            dockMode( newMode, draggable.getMode() );
         }
         updateViewAfterDnD(true);
     }
@@ -2194,7 +2198,7 @@ final class Central implements ControllerHandler {
         switchMaximizedMode(null);
 
         TopComponent selectedTC = mode.getSelectedTopComponent();
-        
+
         if( !mode.isPermanent() ) {
             for( TopComponent tc : mode.getOpenedTopComponents() ) {
                 userDockedTopComponent( tc, mode );
@@ -2227,15 +2231,7 @@ final class Central implements ControllerHandler {
                         mergeModes( mode, previousMode, -1 );
                         mode = null;
                     } else {
-                        for( TopComponent tc : previousMode.getOpenedTopComponents() ) {
-                            mode.addOpenedTopComponent( tc );
-                        }
-                        for( String id : previousMode.getClosedTopComponentsIDs() ) {
-                            mode.addUnloadedTopComponent( id );
-                        }
-                        SplitConstraint[] constraints = previousMode.getConstraints();
-                        model.setModeConstraints( mode, constraints );
-                        model.removeMode( previousMode );
+                        dockMode( previousMode, mode );
                     }
                 }
             }
@@ -2357,19 +2353,21 @@ final class Central implements ControllerHandler {
         }
     }
     
-    private void replaceMode( ModeImpl oldMode, ModeImpl newMode ) {
-        List<TopComponent> opened = oldMode.getOpenedTopComponents();
+    private void dockMode( ModeImpl prevMode, ModeImpl floatingMode ) {
+        ModeImpl floatingPrevMode = getPreviousMode( floatingMode );
+        List<TopComponent> opened = prevMode.getOpenedTopComponents();
         for( TopComponent tc : opened ) {
-            newMode.addOpenedTopComponent( tc );
+            floatingMode.addOpenedTopComponent( tc );
         }
-        for( String tcID: oldMode.getClosedTopComponentsIDs() ) {
-            newMode.addUnloadedTopComponent( tcID );
+        for( String tcID: prevMode.getClosedTopComponentsIDs() ) {
+            floatingMode.addUnloadedTopComponent( tcID );
         }
-        SplitConstraint[] constraints = oldMode.getConstraints();
-        int state = oldMode.getState();
-        model.removeMode( oldMode );
-        newMode.setConstraints( constraints );
-        model.setModeState( newMode, state );
+        model.dockMode( prevMode, floatingMode );
+        setPreviousMode( floatingMode, null );
+        setPreviousConstraints( floatingMode, null );
+        if( null != floatingPrevMode && floatingPrevMode.getTopComponentsIDs().isEmpty() ) {
+            model.removeMode( floatingPrevMode );
+        }
     }
 
     /**

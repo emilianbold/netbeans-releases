@@ -104,6 +104,8 @@ public abstract class ActionUtils {
             if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
+            if( Switches.isEditorModeUndockingEnabled() )
+                actions.add( new UndockModeAction( mode) );
         } else if (kind == Constants.MODE_KIND_VIEW) {
             if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
                 actions.add(new CloseWindowAction(tc));
@@ -120,7 +122,7 @@ public abstract class ActionUtils {
             if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
-            if( Switches.isModeUndockingEnabled() )
+            if( Switches.isViewModeUndockingEnabled() )
                 actions.add( new UndockModeAction( mode) );
             if( Switches.isModeSlidingEnabled() )
                 actions.add( new MinimizeModeAction( mode) );
@@ -167,6 +169,8 @@ public abstract class ActionUtils {
             if( Switches.isTopComponentUndockingEnabled()) {
                 actions.add(createDisabledAction("CTL_UndockWindowAction"));
             }
+            if( Switches.isEditorModeUndockingEnabled() )
+                actions.add( new UndockModeAction( mode) );
         } else if (kind == Constants.MODE_KIND_VIEW) {
             if( Switches.isViewTopComponentClosingEnabled() ) {
                 actions.add(createDisabledAction("CTL_CloseWindowAction"));
@@ -182,7 +186,7 @@ public abstract class ActionUtils {
             if( Switches.isTopComponentUndockingEnabled() ) {
                 actions.add(createDisabledAction("CTL_UndockWindowAction"));
             }
-            if( Switches.isModeUndockingEnabled() )
+            if( Switches.isViewModeUndockingEnabled() )
                 actions.add( new UndockModeAction( mode) );
             if( Switches.isModeSlidingEnabled() )
                 actions.add( new MinimizeModeAction( mode) );
