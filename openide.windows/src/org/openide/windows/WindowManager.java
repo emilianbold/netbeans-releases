@@ -637,6 +637,62 @@ public abstract class WindowManager extends Object implements Serializable {
         this.activeComponent = new WeakReference<TopComponent>(activeComponent);
     }
     
+    /**
+     * Register window system listener to receive notifications when the window
+     * system loads or saves.
+     * @since 6.43
+     */
+    public void addWindowSystemListener( WindowSystemListener listener ) {
+    }
+    
+    /**
+     * Remove window system listener.
+     * @since 6.43
+     */
+    public void removeWindowSystemListener( WindowSystemListener listener ) {
+    }
+    
+    /**
+     * <p>Switches the window system to a new role (perspective).</p> 
+     * <p>A role may customize the default window layout by adding/removing TopComponents,
+     * changing window positions and/or sizes etc. Roles are defined in XML
+     * layers in folder <code>Window2/Roles</code>. Each role has a unique name corresponding
+     * to a sub-folder in <code>Window2/Roles</code>. The content of a role sub-folder has
+     * the same syntax and meaning as the default window layout in <code>Windows2</code> folder.
+     * The content of role sub-folder is merged with the defaults in Windows2 folder
+     * when the window system loads. User's changes to the window layout are persisted
+     * per role. So user's customizations in role <b>A</b> are not propagated to
+     * role <b>B</b> and vice versa.</p> 
+     * <p>The default implementation of this method in core.windows module does
+     * the following:
+     * <ol>
+     * <li>Hide the main window.</li>
+     * <li>Save the current window layout of the current role.</li>
+     * <li>Load new window layout from the given role.</li>
+     * <li>Show the main window.</li>
+     * </ol>
+     * The whole operation may take a few seconds to complete.</p>
+     * <p>If the window system has been already loaded then the method must be
+     * called from EDT thread, otherwise it's safe to set the initial startup
+     * role in e.g. <code>ModuleInstall.restored()</code> method.</p>
+     * @param roleName Name of the new role to switch to or null to switch
+     * to the default window layout.
+     * @since 6.43
+     * @see #getRole() 
+     */
+    public void setRole( String roleName ) {
+    }
+    
+    /**
+     * @return The name of the current role or null if the default window system
+     * layout is being used.
+     * @since 6.43
+     * @see #setRole(java.lang.String) 
+     */
+    public String getRole() {
+        return null;
+    }
+    
     /** A manager that handles operations on top components.
      * It is always attached to a {@link TopComponent}.
      * @deprecated Do not use anymore. This interface is replaced by bunch of protected methods

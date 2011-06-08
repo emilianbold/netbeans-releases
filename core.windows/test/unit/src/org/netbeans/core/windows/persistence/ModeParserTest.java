@@ -113,6 +113,9 @@ public class ModeParserTest extends NbTestCase {
         
         //Check data
         assertEquals("Mode state",Constants.MODE_STATE_JOINED,modeCfg.state);
+        assertFalse("Mode minimized",modeCfg.minimized);
+        
+        assertNull( "Other mode names", modeCfg.otherNames);
         
         assertNotNull("Mode constraints are null",modeCfg.constraints);
         assertEquals("Mode constraints are not empty",0,modeCfg.constraints.length);
@@ -337,6 +340,35 @@ public class ModeParserTest extends NbTestCase {
         
         System.out.println("ModeParserTest.testLoadMode07 FINISH");
     }
+
+    /** Test of a minimized mode with additional names.
+     */
+    public void testLoadMode08 () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testLoadMode08 START");
+        
+        ModeParser modeParser = createModeParser("data/valid/Windows/Modes","mode08");
+        
+        ModeConfig modeCfg = modeParser.load();
+        
+        //Check loaded data
+        assertNotNull("Could not load data.",modeCfg);
+        
+        InternalConfig internalCfg = modeParser.getInternalConfig();
+        
+        assertNotNull("Could not load internal data.",internalCfg);
+        
+        //Check data
+        assertTrue("Mode minimized",modeCfg.minimized);
+        
+        assertEquals("Other names",2,modeCfg.otherNames.size());
+        
+        assertTrue("Other names",modeCfg.otherNames.contains( "mode00") );
+        assertTrue("Other names",modeCfg.otherNames.contains( "mode01") );
+        
+        
+        System.out.println("ModeParserTest.testLoadMode08 FINISH");
+    }
     
     /** Test of saving
      */
@@ -459,6 +491,26 @@ public class ModeParserTest extends NbTestCase {
         System.out.println("ModeParserTest.testSaveMode07 FINISH");
     }
     
+    /** Test of saving a minimized mode with other names.
+     */
+    public void testSaveMode08 () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testSaveMode08 START");
+        
+        ModeParser modeParser = createModeParser("data/valid/Windows/Modes","mode08");
+        
+        ModeConfig modeCfg1 = modeParser.load();
+        
+        modeParser.save(modeCfg1);
+        
+        ModeConfig modeCfg2 = modeParser.load();
+        
+        //Compare data
+        assertTrue("Compare configuration data",modeCfg1.equals(modeCfg2));
+                
+        System.out.println("ModeParserTest.testSaveMode08 FINISH");
+    }
+    
     ////////////////////////////////
     //Testing INVALID data
     ////////////////////////////////
@@ -537,6 +589,44 @@ public class ModeParserTest extends NbTestCase {
         }
         
         fail("Mismatch of file name and value of attribute \"unique\" of element \"name\" was not detected.");
+    }
+    
+    /** Test of file name and value of attribute "unique" mismatch.
+     */
+    public void testLoadMode05Invalid () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testLoadMode05Invalid START");
+        
+        ModeParser modeParser = createModeParser("data/invalid/Windows/Modes","mode05");
+        
+        try {
+            modeParser.load();
+        } catch (IOException exc) {
+            //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+            System.out.println("ModeParserTest.testLoadMode05Invalid FINISH");
+            return;
+        }
+        
+        fail("Sliding mode is not allowed to be minimized.");
+    }
+    
+    /** Test of file name and value of attribute "unique" mismatch.
+     */
+    public void testLoadMode06Invalid () throws Exception {
+        System.out.println("");
+        System.out.println("ModeParserTest.testLoadMode06Invalid START");
+        
+        ModeParser modeParser = createModeParser("data/invalid/Windows/Modes","mode06");
+        
+        try {
+            modeParser.load();
+        } catch (IOException exc) {
+            //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+            System.out.println("ModeParserTest.testLoadMode06Invalid FINISH");
+            return;
+        }
+        
+        fail("Sliding mode is not allowed to have other mode names.");
     }
     
     private ModeParser createModeParser (String path, String name) {
