@@ -44,10 +44,10 @@
 package org.netbeans.modules.profiler.ppoints;
 
 import java.io.File;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
 import org.openide.ErrorManager;
 import java.util.Properties;
+import org.openide.util.Lookup;
 
 
 /**
@@ -67,11 +67,11 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
-        Paired(String name, Location startLocation, Location endLocation, Project project, ProfilingPointFactory factory) {
+        Paired(String name, Location startLocation, Location endLocation, Lookup.Provider project, ProfilingPointFactory factory) {
             this(name, startLocation, endLocation, project, factory, false);
         }
         
-        Paired(String name, Location startLocation, Location endLocation, Project project, ProfilingPointFactory factory, boolean existing) {
+        Paired(String name, Location startLocation, Location endLocation, Lookup.Provider  project, ProfilingPointFactory factory, boolean existing) {
             super(name, project, factory, existing);
             this.startLocation = startLocation;
             this.endLocation = endLocation;
@@ -204,11 +204,11 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
-        Single(String name, Location location, Project project, ProfilingPointFactory factory) {
+        Single(String name, Location location, Lookup.Provider  project, ProfilingPointFactory factory) {
             this(name, location, project, factory, false);
         }
         
-        Single(String name, Location location, Project project, ProfilingPointFactory factory, boolean existing) {
+        Single(String name, Location location, Lookup.Provider  project, ProfilingPointFactory factory, boolean existing) {
             super(name, project, factory, existing);
             this.location = location;
         }
@@ -341,11 +341,11 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
             return hash;
         }
 
-        public static Location load(Project project, int index, Properties properties) {
+        public static Location load(Lookup.Provider  project, int index, Properties properties) {
             return load(project, index, null, properties);
         }
 
-        public static Location load(Project project, int index, String prefix, Properties properties) {
+        public static Location load(Lookup.Provider  project, int index, String prefix, Properties properties) {
             String absPrefix = (prefix == null) ? (index + "_") : (index + "_" + prefix); // NOI18N
             String relUrl = properties.getProperty(absPrefix + PROPERTY_LOCATION_FILE, null);
             String lineStr = properties.getProperty(absPrefix + PROPERTY_LOCATION_LINE, null);
@@ -367,11 +367,11 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
             return location;
         }
 
-        public void store(Project project, int index, Properties properties) {
+        public void store(Lookup.Provider  project, int index, Properties properties) {
             store(project, index, null, properties);
         }
 
-        public void store(Project project, int index, String prefix, Properties properties) {
+        public void store(Lookup.Provider  project, int index, String prefix, Properties properties) {
             String absPrefix = (prefix == null) ? (index + "_") : (index + "_" + prefix); // NOI18N
             properties.put(absPrefix + PROPERTY_LOCATION_FILE, Utils.getRelativePath(project, file));
             properties.put(absPrefix + PROPERTY_LOCATION_LINE, Integer.toString(line));
@@ -403,10 +403,10 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
     static final String PROPERTY_ANNOTATION = "p_annotation"; // NOI18N
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    CodeProfilingPoint(String name, Project project, ProfilingPointFactory factory) {
+    CodeProfilingPoint(String name, Lookup.Provider  project, ProfilingPointFactory factory) {
         this(name, project, factory, false);
     }
-    CodeProfilingPoint(String name, Project project, ProfilingPointFactory factory, boolean existing) {
+    CodeProfilingPoint(String name, Lookup.Provider  project, ProfilingPointFactory factory, boolean existing) {
         super(name, project, factory, existing);
     }
 

@@ -43,8 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
 import org.netbeans.lib.profiler.common.Profiler;
@@ -82,8 +80,10 @@ import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
 // FIXXXimport org.netbeans.modules.profiler.utils.Utilities;
 import org.netbeans.modules.profiler.api.ProjectStorage;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 
 
 /**
@@ -242,8 +242,7 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         private String getHeaderProject() {
             return MessageFormat.format(HEADER_PROJECT_STRING,
                                         new Object[] {
-                                            ProjectUtils.getInformation(TakeSnapshotProfilingPoint.this.getProject())
-                                                        .getDisplayName()
+                                            ProjectUtilities.getDisplayName(TakeSnapshotProfilingPoint.this.getProject())
                                         });
         }
 
@@ -434,10 +433,10 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
     private boolean resetResults = false;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    public TakeSnapshotProfilingPoint(String name, Location location, Project project, ProfilingPointFactory factory) {
+    public TakeSnapshotProfilingPoint(String name, Location location, Lookup.Provider project, ProfilingPointFactory factory) {
         this(name, location, project, factory, false);
     }
-    public TakeSnapshotProfilingPoint(String name, Location location, Project project, ProfilingPointFactory factory, boolean existing) {
+    public TakeSnapshotProfilingPoint(String name, Location location, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         super(name, location, project, factory, existing);
         getChangeSupport().addPropertyChangeListener(this);
     }

@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.ui.components.table.HTMLLabelTableCellRenderer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
@@ -57,6 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import org.openide.util.Lookup;
 
 
 /**
@@ -121,7 +121,7 @@ public abstract class ProfilingPoint {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private final ProfilingPointFactory factory;
-    private Project project; // Project for which the Profiling Point is defined
+    private Lookup.Provider project; // Project for which the Profiling Point is defined
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private ResultsRenderer resultsRenderer;
     private String name; // Name of the Profiling Point, must be unique within a project
@@ -130,11 +130,11 @@ public abstract class ProfilingPoint {
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
-    ProfilingPoint(String name, Project project, ProfilingPointFactory factory) {
+    ProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
         this(name, project, factory, false);
     }
     
-    ProfilingPoint(String name, Project project, ProfilingPointFactory factory, boolean existing) {
+    ProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         this.name = name;
         this.project = project;
         this.factory = factory;
@@ -174,7 +174,7 @@ public abstract class ProfilingPoint {
         return name;
     }
 
-    public Project getProject() {
+    public Lookup.Provider getProject() {
         return project;
     }
     

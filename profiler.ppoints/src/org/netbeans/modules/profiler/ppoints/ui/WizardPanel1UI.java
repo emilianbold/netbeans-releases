@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ui.UIConstants;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.components.JExtendedTable;
@@ -71,9 +70,10 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.openide.util.Lookup;
 
 
 /**
@@ -182,7 +182,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         return ppointTypeTable.getSelectedRow();
     }
 
-    public void setSelectedProject(Project project) {
+    public void setSelectedProject(Lookup.Provider project) {
         if (project != null) {
             ppointProjectCombo.setSelectedItem(project);
         }
@@ -193,9 +193,9 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         }
     }
 
-    public Project getSelectedProject() {
-        if (ppointProjectCombo.getSelectedItem() instanceof Project) {
-            return (Project) ppointProjectCombo.getSelectedItem();
+    public Lookup.Provider getSelectedProject() {
+        if (ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider) {
+            return (Lookup.Provider) ppointProjectCombo.getSelectedItem();
         } else {
             return null;
         }
@@ -414,10 +414,10 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     }
 
     private void initProjectsCombo() {
-        Project[] projects = ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
+        Lookup.Provider[] projects = ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
         ppointProjectCombo.removeAllItems();
 
-        for (Project project : projects) {
+        for (Lookup.Provider project : projects) {
             ppointProjectCombo.addItem(project);
         }
 
@@ -425,7 +425,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     }
 
     private void refresh() {
-        if (ppointProjectCombo.getSelectedItem() instanceof Project && (ppointProjectCombo.getItemAt(0) == SELECT_PROJECT_STRING)) {
+        if (ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider && (ppointProjectCombo.getItemAt(0) == SELECT_PROJECT_STRING)) {
             ppointProjectCombo.removeItem(SELECT_PROJECT_STRING);
         }
 
@@ -446,7 +446,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
 
         boolean ppointTypeSelected = selectedIndex != -1;
         boolean ppointProjectSelected = (ppointProjectCombo.getSelectedItem() != null)
-                                        && ppointProjectCombo.getSelectedItem() instanceof Project;
+                                        && ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider;
         boolean isValid = ppointTypeSelected && ppointProjectSelected;
 
         if (isValid) {

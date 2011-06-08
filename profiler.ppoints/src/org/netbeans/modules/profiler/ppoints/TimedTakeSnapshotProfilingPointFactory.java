@@ -43,16 +43,16 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.profiler.ppoints.ui.TimedTakeSnapshotCustomizer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import java.text.MessageFormat;
 import java.util.Properties;
 import javax.swing.Icon;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
+import org.openide.util.Lookup;
 
 
 /**
@@ -94,7 +94,7 @@ public class TimedTakeSnapshotProfilingPointFactory extends CodeProfilingPointFa
         return TAKE_SNAPSHOT_PP_TYPE;
     }
 
-    public TimedTakeSnapshotProfilingPoint create(Project project) {
+    public TimedTakeSnapshotProfilingPoint create(Lookup.Provider project) {
         if (project == null) {
             project = Utils.getCurrentProject(); // project not defined, will be detected from most active Editor or Main Project will be used
         }
@@ -102,7 +102,7 @@ public class TimedTakeSnapshotProfilingPointFactory extends CodeProfilingPointFa
         String name = Utils.getUniqueName(getType(),
                                           MessageFormat.format(PP_DEFAULT_NAME,
                                                                new Object[] {
-                                                                   "", ProjectUtils.getInformation(project).getDisplayName()
+                                                                   "", ProjectUtilities.getDisplayName(project)
                                                                }), project);
 
         return new TimedTakeSnapshotProfilingPoint(name, project, this);
@@ -132,7 +132,7 @@ public class TimedTakeSnapshotProfilingPointFactory extends CodeProfilingPointFa
         return new TimedTakeSnapshotCustomizer(getType(), getIcon());
     }
 
-    protected ProfilingPoint loadProfilingPoint(Project project, Properties properties, int index) {
+    protected ProfilingPoint loadProfilingPoint(Lookup.Provider project, Properties properties, int index) {
         String name = properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_NAME, null); // NOI18N
         String enabledStr = properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_ENABLED, null); // NOI18N
         String type = properties.getProperty(index + "_" + TimedTakeSnapshotProfilingPoint.PROPERTY_TYPE, null); // NOI18N

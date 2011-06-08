@@ -43,8 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.modules.profiler.ppoints.ui.ResetResultsCustomizer;
@@ -68,6 +66,8 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.openide.util.Lookup;
 
 
 /**
@@ -204,8 +204,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
         private String getHeaderProject() {
             return MessageFormat.format(HEADER_PROJECT_STRING,
                                         new Object[] {
-                                            ProjectUtils.getInformation(ResetResultsProfilingPoint.this.getProject())
-                                                        .getDisplayName()
+                                            ProjectUtilities.getDisplayName(ResetResultsProfilingPoint.this.getProject())
                                         });
         }
 
@@ -321,10 +320,10 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
     private WeakReference<Report> reportReference;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    public ResetResultsProfilingPoint(String name, Location location, Project project, ProfilingPointFactory factory) {
+    public ResetResultsProfilingPoint(String name, Location location, Lookup.Provider project, ProfilingPointFactory factory) {
         this(name, location, project, factory, false);
     }
-    public ResetResultsProfilingPoint(String name, Location location, Project project, ProfilingPointFactory factory, boolean existing) {
+    public ResetResultsProfilingPoint(String name, Location location, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         super(name, location, project, factory, existing);
         getChangeSupport().addPropertyChangeListener(this);
     }

@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
 import org.netbeans.modules.profiler.spi.LoadGenPlugin;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +82,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 
 
 /**
@@ -146,7 +146,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
     private JTextField scriptTextField;
     private LocationCustomizer locationBeginCustomizer;
     private LocationCustomizer locationEndCustomizer;
-    private Project project;
+    private Lookup.Provider project;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -207,7 +207,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
         return Math.max(ownCaptionAreaWidth, locationBeginCustomizer.getPreferredCaptionAreaWidth());
     }
 
-    public void setProject(Project aProject) {
+    public void setProject(Lookup.Provider aProject) {
         project = aProject;
     }
 
@@ -228,7 +228,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
             if (scriptPath.length() > 0) {
                 fileChooser.setCurrentDirectory(new File(scriptPath).getParentFile());
             } else {
-                fileChooser.setCurrentDirectory(FileUtil.toFile(project.getProjectDirectory()));
+                fileChooser.setCurrentDirectory(FileUtil.toFile(ProjectUtilities.getProjectDirectory(project)));
             }
 
             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {

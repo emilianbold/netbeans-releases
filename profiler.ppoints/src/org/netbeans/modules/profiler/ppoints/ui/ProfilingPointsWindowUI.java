@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.ui.UIConstants;
 import org.netbeans.lib.profiler.ui.UIUtils;
@@ -96,11 +95,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 
 
 /**
@@ -225,8 +225,8 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         setSorting(1, SortableTableModel.SORT_ORDER_ASC);
     }
 
-    public Project getSelectedProject() {
-        return (projectsCombo.getSelectedItem() instanceof Project) ? (Project) projectsCombo.getSelectedItem() : null;
+    public Lookup.Provider getSelectedProject() {
+        return (projectsCombo.getSelectedItem() instanceof Lookup.Provider) ? (Lookup.Provider) projectsCombo.getSelectedItem() : null;
     }
 
     // NOTE: this method only sets sortBy and sortOrder, it doesn't refresh UI!
@@ -468,7 +468,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
         columnNames = new String[] { SCOPE_COLUMN_NAME, PROJECT_COLUMN_NAME, PP_COLUMN_NAME, RESULTS_COLUMN_NAME };
         columnToolTips = new String[] { SCOPE_COLUMN_TOOLTIP, PROJECT_COLUMN_TOOLTIP, PP_COLUMN_TOOLTIP, RESULTS_COLUMN_TOOLTIP };
-        columnTypes = new Class[] { Integer.class, Project.class, ProfilingPoint.class, ProfilingPoint.ResultsRenderer.class };
+        columnTypes = new Class[] { Integer.class, Lookup.Provider.class, ProfilingPoint.class, ProfilingPoint.ResultsRenderer.class };
         columnRenderers = new TableCellRenderer[] { scopeRenderer, projectRenderer, profilingPointRenderer, null // dynamic
                           };
         columnWidths = new int[] { 50, 165, -1, // dynamic
@@ -858,7 +858,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     }
 
     private void updateProjectsCombo() {
-        Project[] projects = ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
+        Lookup.Provider[] projects = ProjectUtilities.getSortedProjects(ProjectUtilities.getOpenedProjects());
         Vector items = new Vector(projects.length + 1);
 
         for (int i = 0; i < projects.length; i++) {

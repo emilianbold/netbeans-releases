@@ -43,9 +43,9 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
 import java.util.Properties;
+import org.openide.util.Lookup;
 
 
 /**
@@ -147,11 +147,11 @@ public abstract class TimedGlobalProfilingPoint extends GlobalProfilingPoint {
             return hash;
         }
 
-        public static TimeCondition load(Project project, int index, Properties properties) {
+        public static TimeCondition load(Lookup.Provider project, int index, Properties properties) {
             return load(project, index, null, properties);
         }
 
-        public static TimeCondition load(Project project, int index, String prefix, Properties properties) {
+        public static TimeCondition load(Lookup.Provider project, int index, String prefix, Properties properties) {
             String absPrefix = (prefix == null) ? (index + "_") : (index + "_" + prefix); // NOI18N
             String startTimeStr = properties.getProperty(absPrefix + PROPERTY_TIMECOND_STARTTIME, null);
             String repeatsStr = properties.getProperty(absPrefix + PROPERTY_TIMECOND_REPEATS, null);
@@ -174,11 +174,11 @@ public abstract class TimedGlobalProfilingPoint extends GlobalProfilingPoint {
             return condition;
         }
 
-        public void store(Project project, int index, Properties properties) {
+        public void store(Lookup.Provider project, int index, Properties properties) {
             store(project, index, null, properties);
         }
 
-        public void store(Project project, int index, String prefix, Properties properties) {
+        public void store(Lookup.Provider project, int index, String prefix, Properties properties) {
             String absPrefix = (prefix == null) ? (index + "_") : (index + "_" + prefix); // NOI18N
             properties.put(absPrefix + PROPERTY_TIMECOND_STARTTIME, Long.toString(startTime));
             properties.put(absPrefix + PROPERTY_TIMECOND_REPEATS, Boolean.toString(repeats));
@@ -204,10 +204,10 @@ public abstract class TimedGlobalProfilingPoint extends GlobalProfilingPoint {
     private TimeCondition condition;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    TimedGlobalProfilingPoint(String name, Project project, ProfilingPointFactory factory) {
+    TimedGlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
         this(name, project, factory, false);
     }
-    TimedGlobalProfilingPoint(String name, Project project, ProfilingPointFactory factory, boolean existing) {
+    TimedGlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         super(name, project, factory, existing);
         condition = new TimeCondition();
     }

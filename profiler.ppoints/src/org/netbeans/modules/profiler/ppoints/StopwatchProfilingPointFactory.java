@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.ppoints.ui.StopwatchCustomizer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -54,6 +53,7 @@ import java.util.Properties;
 import javax.swing.Icon;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
+import org.openide.util.Lookup;
 
 
 /**
@@ -97,7 +97,7 @@ public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
         return RESET_RESULTS_PP_TYPE;
     }
 
-    public ProfilingPoint create(Project project) {
+    public ProfilingPoint create(Lookup.Provider project) {
         if (project == null) {
             project = Utils.getCurrentProject(); // project not defined, will be detected from most active Editor or Main Project will be used
         }
@@ -159,7 +159,7 @@ public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
         return new StopwatchCustomizer(getType(), getIcon());
     }
 
-    protected ProfilingPoint loadProfilingPoint(Project project, Properties properties, int index) {
+    protected ProfilingPoint loadProfilingPoint(Lookup.Provider project, Properties properties, int index) {
         String name = properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_NAME, null); // NOI18N
         String enabledStr = properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_ENABLED, null); // NOI18N
         CodeProfilingPoint.Location startLocation = CodeProfilingPoint.Location.load(project, index, START_LOCATION_PREFIX,

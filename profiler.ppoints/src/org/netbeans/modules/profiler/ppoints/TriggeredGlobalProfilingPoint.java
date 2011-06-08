@@ -43,9 +43,9 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
 import java.util.Properties;
+import org.openide.util.Lookup;
 
 
 /**
@@ -135,11 +135,11 @@ public abstract class TriggeredGlobalProfilingPoint extends GlobalProfilingPoint
             return hash;
         }
 
-        public static TriggerCondition load(Project project, int index, Properties properties) {
+        public static TriggerCondition load(Lookup.Provider project, int index, Properties properties) {
             return load(project, index, null, properties);
         }
 
-        public static TriggerCondition load(Project project, int index, String prefix, Properties properties) {
+        public static TriggerCondition load(Lookup.Provider project, int index, String prefix, Properties properties) {
             String absPrefix = (prefix == null) ? (index + "_") : (index + "_" + prefix); // NOI18N
             String metricStr = properties.getProperty(absPrefix + PROPERTY_TRIGGCOND_METRIC, null);
             String valueStr = properties.getProperty(absPrefix + PROPERTY_TRIGGCOND_VALUE, null);
@@ -161,11 +161,11 @@ public abstract class TriggeredGlobalProfilingPoint extends GlobalProfilingPoint
             return condition;
         }
 
-        public void store(Project project, int index, Properties properties) {
+        public void store(Lookup.Provider project, int index, Properties properties) {
             store(project, index, null, properties);
         }
 
-        public void store(Project project, int index, String prefix, Properties properties) {
+        public void store(Lookup.Provider project, int index, String prefix, Properties properties) {
             String absPrefix = (prefix == null) ? (index + "_") : (index + "_" + prefix); // NOI18N
             properties.put(absPrefix + PROPERTY_TRIGGCOND_METRIC, Integer.toString(metric));
             properties.put(absPrefix + PROPERTY_TRIGGCOND_VALUE, Long.toString(value));
@@ -190,10 +190,10 @@ public abstract class TriggeredGlobalProfilingPoint extends GlobalProfilingPoint
     private TriggerCondition condition;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    TriggeredGlobalProfilingPoint(String name, Project project, ProfilingPointFactory factory) {
+    TriggeredGlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
         this(name, project, factory, false);
     }
-    TriggeredGlobalProfilingPoint(String name, Project project, ProfilingPointFactory factory, boolean existing) {
+    TriggeredGlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         super(name, project, factory, existing);
         condition = new TriggerCondition();
     }

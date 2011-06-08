@@ -43,8 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.modules.profiler.ppoints.ui.StopwatchCustomizer;
@@ -68,6 +66,8 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.openide.util.Lookup;
 
 
 /**
@@ -257,7 +257,7 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
         private String getHeaderProject() {
             return MessageFormat.format(HEADER_PROJECT_STRING,
                                         new Object[] {
-                                            ProjectUtils.getInformation(StopwatchProfilingPoint.this.getProject()).getDisplayName()
+                                            ProjectUtilities.getDisplayName(StopwatchProfilingPoint.this.getProject())
                                         });
         }
 
@@ -427,10 +427,10 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
     private WeakReference<Report> reportReference;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    public StopwatchProfilingPoint(String name, Location startLocation, Location endLocation, Project project, ProfilingPointFactory factory) {
+    public StopwatchProfilingPoint(String name, Location startLocation, Location endLocation, Lookup.Provider project, ProfilingPointFactory factory) {
         this(name, startLocation, endLocation, project, factory, false);
     }
-    public StopwatchProfilingPoint(String name, Location startLocation, Location endLocation, Project project, ProfilingPointFactory factory, boolean existing) {
+    public StopwatchProfilingPoint(String name, Location startLocation, Location endLocation, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         super(name, startLocation, endLocation, project, factory, existing);
         getChangeSupport().addPropertyChangeListener(this);
     }

@@ -43,8 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint.HitEvent;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.modules.profiler.ppoints.ui.LoadGeneratorCustomizer;
@@ -73,6 +71,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 
 
 /**
@@ -313,7 +312,7 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
         private String getHeaderProject() {
             return MessageFormat.format(HEADER_PROJECT_STRING,
                                         new Object[] {
-                                            ProjectUtils.getInformation(LoadGenProfilingPoint.this.getProject()).getDisplayName()
+                                            ProjectUtilities.getDisplayName(LoadGenProfilingPoint.this.getProject())
                                         });
         }
 
@@ -437,10 +436,10 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Creates a new instance of LoadGenProfilingPoint */
-    public LoadGenProfilingPoint(String name, Location startLocation, Location endLocation, Project project, ProfilingPointFactory factory) {
+    public LoadGenProfilingPoint(String name, Location startLocation, Location endLocation, Lookup.Provider project, ProfilingPointFactory factory) {
         this(name, startLocation, endLocation, project, factory, false);
     }
-    public LoadGenProfilingPoint(String name, Location startLocation, Location endLocation, Project project, ProfilingPointFactory factory, boolean existing) {
+    public LoadGenProfilingPoint(String name, Location startLocation, Location endLocation, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         super(name, startLocation, endLocation, project, factory, existing);
         getChangeSupport().addPropertyChangeListener(this);
     }

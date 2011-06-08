@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,28 +34,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.projectsupport.utilities;
 
-package org.netbeans.modules.profiler.ppoints;
-
-import org.openide.util.Lookup;
-
+import java.util.Set;
+import javax.swing.Icon;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.spi.ProjectUtilitiesProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup.Provider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Abstract superclass for all Profiling Points defined globally for profiling session
  *
- * @author Jiri Sedlacek
+ * @author Tomas Hurka
  */
-public abstract class GlobalProfilingPoint extends ProfilingPoint {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-    GlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
-        this(name, project, factory, false);
-    }
-    GlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
-        super(name, project, factory, existing);
+@ServiceProvider(service = ProjectUtilitiesProvider.class)
+public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
+
+    @Override
+    public Icon getIcon(Provider project) {
+        return ProjectUtilities.getProjectIcon((Project)project);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+    @Override
+    public Provider getMainProject() {
+        return ProjectUtilities.getMainProject();
+    }
 
-    abstract void hit(long hitValue);
+    @Override
+    public String getDisplayName(Provider project) {
+        return ProjectUtilities.getProjectName((Project)project);
+    }
+
+    @Override
+    public FileObject getProjectDirectory(Provider project) {
+        return ((Project)project).getProjectDirectory();
+    }
+
+    @Override
+    public Provider[] getOpenedProjects() {
+        return ProjectUtilities.getOpenedProjects();
+    }
+
+    @Override
+    public void fetchSubprojects(Provider project, Set<Provider> subprojects) {
+        ProjectUtilities.fetchSubprojects((Project)project, (Set)subprojects);
+    }
+
+    @Override
+    public Provider[] getSortedProjects(Provider[] openedProjects) {
+        return ProjectUtilities.getSortedProjects((Project[])openedProjects);
+    }
 }

@@ -43,8 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.lib.profiler.client.ProfilingPointsProcessor;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
@@ -99,7 +97,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -136,8 +134,8 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
             switch (sortBy) {
                 case CommonConstants.SORTING_COLUMN_DEFAULT:
                 case SORT_BY_PROJECT:
-                    return ProjectUtils.getInformation(pp1.getProject()).getDisplayName()
-                                       .compareTo(ProjectUtils.getInformation(pp2.getProject()).getDisplayName());
+                    return ProjectUtilities.getDisplayName(pp1.getProject())
+                                       .compareTo(ProjectUtilities.getDisplayName(pp2.getProject()));
                 case SORT_BY_SCOPE:
 
                     int v1 = pp1.getFactory().getScope();
@@ -322,7 +320,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private Set<ProfilingPoint> dirtyProfilingPoints = Collections.synchronizedSet(new HashSet());
     private Vector<ValidityAwarePanel> customizers = new Vector();
-    private final Vector<Project> openedProjects = new Vector();
+    private final Vector<Lookup.Provider> openedProjects = new Vector();
     private Vector<ProfilingPoint> profilingPoints = new Vector();
     private ProfilingPointFactory[] profilingPointFactories = new ProfilingPointFactory[0];
     private boolean profilingInProgress = false; // collecting data
@@ -355,7 +353,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         return defaultInstance;
     }
 
-    public List<ProfilingPoint> getCompatibleProfilingPoints(Project project, ProfilingSettings profilingSettings, boolean sorted) {
+    public List<ProfilingPoint> getCompatibleProfilingPoints(Lookup.Provider project, ProfilingSettings profilingSettings, boolean sorted) {
  
         List<ProfilingPoint> projectProfilingPoints = sorted ? getSortedProfilingPoints(project, 1, false)
                                                              : getProfilingPoints(project, ProfilerIDESettings.
@@ -382,7 +380,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         return profilingPointFactories;
     }
 
-    public List<ProfilingPoint> getProfilingPoints(Project project,
+    public List<ProfilingPoint> getProfilingPoints(Lookup.Provider project,
                                                    boolean inclSubprojects,
                                                    boolean inclUnavailable) {
         return getProfilingPoints(ProfilingPoint.class, project,
@@ -390,16 +388,16 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     public <T extends ProfilingPoint> List<T> getProfilingPoints(Class<T> ppClass,
-                                                                 Project project,
+                                                                 Lookup.Provider project,
                                                                  boolean inclSubprojects) {
         return getProfilingPoints(ppClass, project, inclSubprojects, true);
     }
 
     public <T extends ProfilingPoint> List<T> getProfilingPoints(Class<T> ppClass,
-                                                                 Project project,
+                                                                 Lookup.Provider project,
                                                                  boolean inclSubprojects,
                                                                  boolean inclUnavailable) {
-        Set<Project> projects = new HashSet();
+        Set<Lookup.Provider> projects = new HashSet();
 
         if (project == null) {
             synchronized (openedProjects) { projects.addAll(openedProjects); }
@@ -439,7 +437,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         }
     }
 
-    public List<ProfilingPoint> getSortedProfilingPoints(Project project, int sortBy, boolean sortOrder) {
+    public List<ProfilingPoint> getSortedProfilingPoints(Lookup.Provider project, int sortBy, boolean sortOrder) {
         List<ProfilingPoint> sortedProfilingPoints = getProfilingPoints(project, ProfilerIDESettings.getInstance().
                                                                         getIncludeProfilingPointsDependencies(), false);
         Collections.sort(sortedProfilingPoints, new ProfilingPointsComparator(sortBy, sortOrder));
@@ -464,7 +462,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     // TODO: should optionally support also subprojects/project references
-    public RuntimeProfilingPoint[] createCodeProfilingConfiguration(Project project, ProfilingSettings profilingSettings) {
+    public RuntimeProfilingPoint[] createCodeProfilingConfiguration(Lookup.Provider project, ProfilingSettings profilingSettings) {
         
         checkProfilingPoints(); // NOTE: Probably not neccessary but we need to be sure here
         
@@ -492,7 +490,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     // TODO: should optionally support also subprojects/project references
-    public GlobalProfilingPoint[] createGlobalProfilingConfiguration(Project project, ProfilingSettings profilingSettings) {
+    public GlobalProfilingPoint[] createGlobalProfilingConfiguration(Lookup.Provider project, ProfilingSettings profilingSettings) {
         
         checkProfilingPoints(); // NOTE: Probably not neccessary but we need to be sure here
         
@@ -811,12 +809,12 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
                || propertyName.equals(ProfilingPoint.PROPERTY_PROJECT) || propertyName.equals(ProfilingPoint.PROPERTY_RESULTS);
     }
 
-    private static boolean containsProject(Collection<Project> c, Project p) {
+    private static boolean containsProject(Collection<Lookup.Provider> c, Lookup.Provider p) {
         if (p != null) {
-            FileObject projectDir = p.getProjectDirectory();
+            FileObject projectDir = ProjectUtilities.getProjectDirectory(p);
             
-            for (Project in : c) {
-                if (in.getProjectDirectory().equals(projectDir)) {
+            for (Lookup.Provider in : c) {
+                if (ProjectUtilities.getProjectDirectory(in).equals(projectDir)) {
                     return true;
                 }
             }
@@ -824,15 +822,15 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         return false;
     }
 
-    private Set<Project> getOpenSubprojects(Project project) {
-        Set<Project> subprojects = new HashSet();
+    private Set<Lookup.Provider> getOpenSubprojects(Lookup.Provider project) {
+        Set<Lookup.Provider> subprojects = new HashSet();
         ProjectUtilities.fetchSubprojects(project, subprojects);
 
         if (subprojects.isEmpty()) return subprojects;
 
-        Set<Project> openSubprojects = new HashSet();
+        Set<Lookup.Provider> openSubprojects = new HashSet();
         synchronized(openedProjects) {
-            for (Project openProject : openedProjects)
+            for (Lookup.Provider openProject : openedProjects)
                 if (containsProject(subprojects, openProject))
                     openSubprojects.add(openProject);
         }
@@ -1020,7 +1018,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         deannotate(profilingPoint.getAnnotations());
     }
 
-    private void loadProfilingPoints(Project project) {
+    private void loadProfilingPoints(Lookup.Provider project) {
         for (ProfilingPointFactory factory : profilingPointFactories) {
             try {
                 addProfilingPoints(factory.loadProfilingPoints(project), true);
@@ -1031,17 +1029,17 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     private synchronized void processOpenedProjectsChanged() {
-        Vector<Project> lastOpenedProjects = new Vector();
+        Vector<Lookup.Provider> lastOpenedProjects = new Vector();
         synchronized (openedProjects) { lastOpenedProjects.addAll(openedProjects); }
         refreshOpenedProjects();
 
-        for (Project project : lastOpenedProjects) {
+        for (Lookup.Provider project : lastOpenedProjects) {
             if (!containsProject(openedProjects, project)) {
                 projectClosed(project);
             }
         }
 
-        for (Project openProject : openedProjects) {
+        for (Lookup.Provider openProject : openedProjects) {
             if (!containsProject(lastOpenedProjects, openProject)) {
                 projectOpened(openProject);
             }
@@ -1050,20 +1048,20 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         firePropertyChanged(PROPERTY_PROJECTS_CHANGED);
     }
 
-    private void projectClosed(Project project) {
+    private void projectClosed(Lookup.Provider project) {
         unloadProfilingPoints(project);
     }
 
-    private void projectOpened(Project project) {
+    private void projectOpened(Lookup.Provider project) {
         loadProfilingPoints(project);
     }
 
     private void refreshOpenedProjects() {
         openedProjects.clear();
 
-        Project[] openProjects = ProjectUtilities.getOpenedProjects();
+        Lookup.Provider[] openProjects = ProjectUtilities.getOpenedProjects();
 
-        for (Project openProject : openProjects) {
+        for (Lookup.Provider openProject : openProjects) {
             openedProjects.add(openProject);
         }
     }
@@ -1114,7 +1112,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     private synchronized void storeProfilingPoints(ProfilingPoint[] profilingPointsArr) {
         if (ignoreStoreProfilingPoints) return;
         
-        Set<Project> projects = new HashSet();
+        Set<Lookup.Provider> projects = new HashSet();
         Set<ProfilingPointFactory> factories = new HashSet();
 
         for (ProfilingPoint profilingPoint : profilingPointsArr) {
@@ -1126,7 +1124,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         for (ProfilingPointFactory factory : factories) {
             if (factory == null) continue;
 
-            for (Project project : projects) {
+            for (Lookup.Provider project : projects) {
                 try {
                     factory.saveProfilingPoints(project);
                 } catch (IOException ex) {
@@ -1134,14 +1132,14 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
                             MessageFormat.format(CANNOT_STORE_PP_MSG,
                                new Object[] {
                                    factory.getType(),
-                                   ProjectUtils.getInformation(project).getDisplayName()
+                                   ProjectUtilities.getDisplayName(project)
                                }), NotifyDescriptor.ERROR_MESSAGE));
                 }
             }
         }
     }
 
-    private void unloadProfilingPoints(Project project) {
+    private void unloadProfilingPoints(Lookup.Provider project) {
         List<ProfilingPoint> closedProfilingPoints = getProfilingPoints(project, false, true);
         List<ProfilingPoint> dirtyClosedProfilingPoints = new ArrayList();
 

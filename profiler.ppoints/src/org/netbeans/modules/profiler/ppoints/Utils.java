@@ -43,10 +43,7 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
+import javax.swing.Icon;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
 import org.netbeans.lib.profiler.ui.components.table.EnhancedTableCellRenderer;
@@ -90,12 +87,11 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.GoToSource;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
-import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 
 
 /**
@@ -262,10 +258,9 @@ public class Utils {
             renderer.setEnabled(rendererOrig.isEnabled());
             renderer.setBorder(rendererOrig.getBorder());
 
-            if ((value != null) && value instanceof Project) {
-                ProjectInformation pi = ProjectUtils.getInformation((Project) value);
-                renderer.setText(pi.getDisplayName());
-                renderer.setIcon(pi.getIcon());
+            if ((value != null) && value instanceof Lookup.Provider) {
+                renderer.setText(ProjectUtilities.getDisplayName((Lookup.Provider)value));
+                renderer.setIcon(ProjectUtilities.getIcon((Lookup.Provider)value));
 
                 if (ProjectUtilities.getMainProject() == value) {
                     renderer.setFontEx(renderer.getFont().deriveFont(Font.BOLD)); // bold for main project
@@ -302,7 +297,7 @@ public class Utils {
         }
 
         protected void setValue(JTable table, Object value, int row, int column) {
-            if ((value != null) && (value instanceof Project || value instanceof ProfilingPoint)) {
+            if ((value != null) && (value instanceof Lookup.Provider || value instanceof ProfilingPoint)) {
                 if (table != null) {
                     setFont(table.getFont());
                 }
@@ -314,10 +309,10 @@ public class Utils {
                     label.setEnabled(true);
                 }
 
-                ProjectInformation pi = ProjectUtils.getInformation((Project) value);
-                label.setText(pi.getDisplayName());
-                label.setIcon(table.isEnabled() ? pi.getIcon()
-                                                : new ImageIcon(GrayFilter.createDisabledImage(((ImageIcon) pi.getIcon()).getImage())));
+                final Icon icon = ProjectUtilities.getIcon((Lookup.Provider)value);
+                label.setText(ProjectUtilities.getDisplayName((Lookup.Provider)value));
+                label.setIcon(table.isEnabled() ? icon
+                                                : new ImageIcon(GrayFilter.createDisabledImage(((ImageIcon) icon).getImage())));
                 label.setFont((ProjectUtilities.getMainProject() == value) ? font.deriveFont(Font.BOLD) : font); // bold for main project
             } else {
                 label.setText(""); //NOI18N
@@ -356,7 +351,7 @@ public class Utils {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public static String getAbsolutePath(Project project, String sourceFileRelativePath) {
+    public static String getAbsolutePath(Lookup.Provider project, String sourceFileRelativePath) {
         if (project == null) { // no project context for file
 
             File file = new File(sourceFileRelativePath);
@@ -365,7 +360,7 @@ public class Utils {
         }
 
         return new File(sourceFileRelativePath.replace(PROJECT_DIRECTORY_MARK,
-                                                       FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath()))
+                                                       FileUtil.toFile(ProjectUtilities.getProjectDirectory(project)).getAbsolutePath()))
                                                                                                                                                                                                                                                                                                                                                                        .getAbsolutePath(); // expand relative path to absolute
     }
 
@@ -437,8 +432,8 @@ public class Utils {
                                                lineOffset /* TODO: get real line offset if lineOffset isn't OFFSET_START nor OFFSET_END */);
     }
 
-    public static Project getCurrentProject() {
-        Project currentProject = getMostActiveJavaProject();
+    public static Lookup.Provider getCurrentProject() {
+        Lookup.Provider currentProject = getMostActiveJavaProject();
 
         if (currentProject == null) {
             currentProject = ProjectUtilities.getMainProject();
@@ -731,7 +726,7 @@ public class Utils {
                                     NotifyDescriptor.WARNING_MESSAGE));
     }
 
-    public static Project getMostActiveJavaProject() {
+    public static Lookup.Provider getMostActiveJavaProject() {
         JavaEditorContext mostActiveContext = getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
@@ -744,7 +739,7 @@ public class Utils {
             return null;
         }
 
-        return FileOwnerQuery.getOwner(mostActiveFileObject);
+return null;// FIXXX        return FileOwnerQuery.getOwner(mostActiveFileObject);
     }
 
     public static ListCellRenderer getPresenterListRenderer() {
@@ -792,12 +787,12 @@ public class Utils {
         return projectRenderer;
     }
 
-    public static String getRelativePath(Project project, String sourceFileAbsolutePath) {
+    public static String getRelativePath(Lookup.Provider project, String sourceFileAbsolutePath) {
         if (project == null) {
             return sourceFileAbsolutePath; // no project context for file
         }
-
-        String projectDirectoryAbsolutePath = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
+        final FileObject projectDirectory = ProjectUtilities.getProjectDirectory(project);
+        String projectDirectoryAbsolutePath = FileUtil.toFile(projectDirectory).getAbsolutePath();
 
         if (!sourceFileAbsolutePath.startsWith(projectDirectoryAbsolutePath)) {
             return sourceFileAbsolutePath; // file not placed in project directory
@@ -806,7 +801,7 @@ public class Utils {
         File file = FileUtil.normalizeFile(new File(sourceFileAbsolutePath));
 
         return PROJECT_DIRECTORY_MARK + "/" // NOI18N
-               + FileUtil.getRelativePath(project.getProjectDirectory(), FileUtil.toFileObject(file)); // file placed in project directory => relative path used
+               + FileUtil.getRelativePath(projectDirectory, FileUtil.toFileObject(file)); // file placed in project directory => relative path used
     }
 
     public static EnhancedTableCellRenderer getScopeRenderer() {
@@ -832,7 +827,7 @@ public class Utils {
         return startupMillis + ((hiResTimeStamp - statupInCounts) / countsInMillis);
     }
 
-    public static String getUniqueName(String name, String nameSuffix, Project project) {
+    public static String getUniqueName(String name, String nameSuffix, Lookup.Provider project) {
         List<ProfilingPoint> projectProfilingPoints = ProfilingPointsManager.getDefault().getProfilingPoints(project, false, true);
         List<String> projectProfilingPointsNames = new LinkedList();
 

@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
 //import org.netbeans.lib.profiler.client.MonitoredData;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.DataManagerListener;
@@ -52,6 +51,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.lib.profiler.client.MonitoredData;
 import org.netbeans.lib.profiler.common.Profiler;
+import org.openide.util.Lookup;
 
 
 /**
@@ -68,7 +68,7 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
     private List<TimedGlobalProfilingPoint> scheduledTimedPPs = new LinkedList();
     private List<TriggeredGlobalProfilingPoint> scheduledTriggeredPPs = new LinkedList();
     private ProfilingSettings profilingSettings;
-    private Project profiledProject;
+    private Lookup.Provider profiledProject;
     private GlobalProfilingPoint[] gpp;
     private boolean isRunning = false;
     private long currentHeapSize;

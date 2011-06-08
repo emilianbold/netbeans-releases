@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.ppoints.GlobalProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointWizard;
@@ -55,9 +54,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import java.awt.Dialog;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 
 
 /**
@@ -94,7 +94,7 @@ public class InsertProfilingPointAction extends NodeAction {
         return ACTION_NAME;
     }
 
-    public void performAction(Project project) {
+    public void performAction(Lookup.Provider project) {
         if (ProfilingPointsManager.getDefault().isProfilingSessionInProgress()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                     PROFILING_IN_PROGRESS_MSG,
@@ -149,6 +149,6 @@ public class InsertProfilingPointAction extends NodeAction {
     }
 
     protected void performAction(Node[] nodes) {
-        performAction((Project) null);
+        performAction((Lookup.Provider)null);
     }
 }

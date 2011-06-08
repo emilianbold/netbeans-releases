@@ -43,8 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -64,7 +62,9 @@ import java.util.Properties;
 import javax.swing.Icon;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.ProjectStorage;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
+import org.openide.util.Lookup;
 
 
 /**
@@ -121,7 +121,7 @@ public abstract class ProfilingPointFactory {
         return create(null);
     }
 
-    public abstract ProfilingPoint create(Project project);
+    public abstract ProfilingPoint create(Lookup.Provider project);
 
     public abstract boolean supportsCPU();
 
@@ -145,7 +145,7 @@ public abstract class ProfilingPointFactory {
 
     protected abstract ValidityAwarePanel createCustomizer(); // Creates an instance of ValidityAwarePanel (called once)
 
-    protected abstract ProfilingPoint loadProfilingPoint(Project project, Properties properties, int index);
+    protected abstract ProfilingPoint loadProfilingPoint(Lookup.Provider project, Properties properties, int index);
 
     protected abstract void storeProfilingPoint(ProfilingPoint profilingPoint, int index, Properties properties);
 
@@ -163,7 +163,7 @@ public abstract class ProfilingPointFactory {
         return safeCustomizer;
     }
 
-    ProfilingPoint[] loadProfilingPoints(Project project)
+    ProfilingPoint[] loadProfilingPoints(Lookup.Provider project)
                                   throws IOException, InvalidPropertiesFormatException {
         List<ProfilingPoint> profilingPoints = new LinkedList();
         Properties properties = new Properties();
@@ -185,8 +185,8 @@ public abstract class ProfilingPointFactory {
                 } else {
                     ErrorManager.getDefault()
                                 .log(ErrorManager.ERROR,
-                                     "Invalid " + getType() + " Profiling Point format at index " + index + " in project "
-                                     + ProjectUtils.getInformation(project).getDisplayName()); // NOI18N
+                                     "Invalid " + getType() + " Profiling Point format at index " + index + " in project "  // NOI18N
+                                     + ProjectUtilities.getDisplayName(project));
                 }
 
                 index++;
@@ -199,13 +199,13 @@ public abstract class ProfilingPointFactory {
         return profilingPointsArr;
     }
 
-    void saveProfilingPoints(Project project) throws IOException {
+    void saveProfilingPoints(Lookup.Provider project) throws IOException {
         saveProfilingPoints((ProfilingPoint[]) ProfilingPointsManager.getDefault()
                                                                      .getProfilingPoints(getProfilingPointsClass(), project, false)
                                                                      .toArray(new ProfilingPoint[0]), project);
     }
 
-    private FileObject getProfilingPointsStorage(Project project)
+    private FileObject getProfilingPointsStorage(Lookup.Provider project)
                                           throws IOException {
         FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, false);
 
@@ -221,7 +221,7 @@ public abstract class ProfilingPointFactory {
         return profilingPointsStorage;
     }
 
-    private FileObject createProfilingPointsStorage(Project project)
+    private FileObject createProfilingPointsStorage(Lookup.Provider project)
                                              throws IOException {
         FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
         String profilingPointClassNameFull = getProfilingPointsClass().getName();
@@ -231,7 +231,7 @@ public abstract class ProfilingPointFactory {
         return profilingPointsStorage;
     }
 
-    private void deleteProfilingPointsStorage(Project project)
+    private void deleteProfilingPointsStorage(Lookup.Provider project)
                                        throws IOException {
         FileObject profilingPointsStorage = getProfilingPointsStorage(project);
 
@@ -250,7 +250,7 @@ public abstract class ProfilingPointFactory {
         }
     }
 
-    private void saveProfilingPoints(ProfilingPoint[] profilingPoints, Project project)
+    private void saveProfilingPoints(ProfilingPoint[] profilingPoints, Lookup.Provider project)
                               throws IOException {
         if (profilingPoints.length > 0) {
             FileObject profilingPointsStorage = getProfilingPointsStorage(project);

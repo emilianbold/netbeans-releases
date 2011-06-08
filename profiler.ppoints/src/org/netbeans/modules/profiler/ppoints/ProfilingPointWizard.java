@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityListener;
 import org.netbeans.modules.profiler.ppoints.ui.WizardPanel1UI;
@@ -61,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 
 
 /**
@@ -74,7 +74,7 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
     class WizardPanel1 extends WizardPanel {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
-        private Project selectedProjectRef;
+        private Lookup.Provider selectedProjectRef;
         private int selectedPPFactoryIndexRef;
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
@@ -320,7 +320,7 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
 
     private Dimension preferredPanelSize = null;
     private ProfilingPoint profilingPoint;
-    private Project selectedProject;
+    private Lookup.Provider selectedProject;
     private WizardDescriptor wizardDescriptor;
 
     // --- Wizard runtime implementation -----------------------------------------
@@ -350,7 +350,7 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
         return getWizardDescriptor(null);
     }
 
-    public WizardDescriptor getWizardDescriptor(Project project) {
+    public WizardDescriptor getWizardDescriptor(Lookup.Provider project) {
         ValidityAwarePanel showingCustomizer = ProfilingPointsManager.getDefault().getShowingCustomizer();
 
         if (showingCustomizer != null) {

@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ui.components.ThinBevelBorder;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
@@ -89,6 +88,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 
@@ -410,7 +410,7 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
 
         if (chooserFrame.isVisible()) {
             ProfilingPointFactory ppFactory = chooserFrame.getProfilingPointFactory();
-            Project project = Utils.getCurrentProject();
+            Lookup.Provider project = Utils.getCurrentProject();
 
             if ((ppFactory != null) && (project != null)) {
                 ProfilingPoint ppoint = ppFactory.create(project);

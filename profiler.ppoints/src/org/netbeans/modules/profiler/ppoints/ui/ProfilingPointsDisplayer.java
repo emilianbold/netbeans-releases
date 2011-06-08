@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
@@ -62,6 +61,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 
 /**
@@ -102,7 +102,7 @@ public class ProfilingPointsDisplayer extends JPanel implements HelpCtx.Provider
         return HELP_CTX;
     }
 
-    public static void displayProfilingPoints(Project project, ProfilingSettings settings) {
+    public static void displayProfilingPoints(Lookup.Provider project, ProfilingSettings settings) {
         ProfilingPointsDisplayer ppd = getDefault();
         ppd.setupDisplay(project, settings);
 
@@ -148,7 +148,7 @@ public class ProfilingPointsDisplayer extends JPanel implements HelpCtx.Provider
         add(listScroll, BorderLayout.CENTER);
     }
 
-    private void setupDisplay(Project project, ProfilingSettings settings) {
+    private void setupDisplay(Lookup.Provider project, ProfilingSettings settings) {
         List<ProfilingPoint> compatibleProfilingPoints = ProfilingPointsManager.getDefault()
                                                                                .getCompatibleProfilingPoints(project, settings,
                                                                                                              true);

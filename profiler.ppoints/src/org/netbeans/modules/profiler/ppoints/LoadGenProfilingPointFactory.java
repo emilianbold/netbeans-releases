@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.ppoints.ui.LoadGeneratorCustomizer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.netbeans.modules.profiler.spi.LoadGenPlugin;
@@ -130,7 +129,7 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
         return LOADGEN_PP_TYPE;
     }
 
-    public ProfilingPoint create(Project project) {
+    public ProfilingPoint create(Lookup.Provider project) {
         if (project == null) {
             project = Utils.getCurrentProject(); // project not defined, will be detected from most active Editor or Main Project will be used
         }
@@ -192,7 +191,7 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
         return new LoadGeneratorCustomizer(getType(), getIcon());
     }
 
-    protected ProfilingPoint loadProfilingPoint(Project project, Properties properties, int index) {
+    protected ProfilingPoint loadProfilingPoint(Lookup.Provider project, Properties properties, int index) {
         String name = properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_NAME, null); // NOI18N
         String enabledStr = properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_ENABLED, null); // NOI18N
         String scriptFile = properties.getProperty(index + "_" + LoadGenProfilingPoint.PROPERTY_SCRIPTNAME, null); // NOI18N

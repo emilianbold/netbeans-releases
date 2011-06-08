@@ -43,8 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.client.ClientUtils;
@@ -80,8 +78,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProjectStorage;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 // FIXXXimport org.netbeans.modules.profiler.utils.Utilities;
 
 
@@ -204,8 +204,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
         private String getHeaderProject() {
             return MessageFormat.format(HEADER_PROJECT_STRING,
                                         new Object[] {
-                                            ProjectUtils.getInformation(TimedTakeSnapshotProfilingPoint.this.getProject())
-                                                        .getDisplayName()
+                                            ProjectUtilities.getDisplayName(TimedTakeSnapshotProfilingPoint.this.getProject())
                                         });
         }
 
@@ -381,10 +380,10 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
     private boolean resetResults = false;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    public TimedTakeSnapshotProfilingPoint(String name, Project project, ProfilingPointFactory factory) {
+    public TimedTakeSnapshotProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
         this(name, project, factory, false);
     }
-    public TimedTakeSnapshotProfilingPoint(String name, Project project, ProfilingPointFactory factory, boolean existing) {
+    public TimedTakeSnapshotProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         super(name, project, factory, existing);
         getChangeSupport().addPropertyChangeListener(this);
     }
