@@ -77,13 +77,20 @@ public class ModuleListParserTest extends TestBase {
         return file(root, relpath).getAbsolutePath();
     }
 
+    static void deleteCaches() throws IOException {
+        for (File cache : new File(System.getProperty("java.io.tmpdir")).listFiles()) {
+            if (cache.getName().matches("nb-scan-cache-.+[.]ser") && !cache.delete()) {
+                throw new IOException(cache.getName());
+            }
+        }
+    }
+
     protected @Override void setUp() throws Exception {
         super.setUp();
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         nball = new File(prop);
-        new File(nball, "nbbuild/nbproject/private/scan-cache-full.ser").delete();
-        new File(nball, "nbbuild/nbproject/private/scan-cache-standard.ser").delete();
+        deleteCaches();
     }
 
     public void testScanSourcesInNetBeansOrg() throws Exception {

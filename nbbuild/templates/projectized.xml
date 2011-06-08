@@ -49,9 +49,9 @@ made subject to such option by the copyright holder.
     <import file="common.xml"/>
     
     <target name="-build-dir-init" depends="default.init">
-        <property name="_build.dir" location="${nb.build.dir}/${module.name}"/>
-        <condition property="build.dir" value="${_build.dir}">
-            <available type="dir" file="${nb.build.dir}"/>
+        <property name="_build.dir" location=""/>
+        <condition property="build.dir" value="${nb.build.dir}${file.separator}modules${file.separator}${module.name}">
+            <istrue value="${nb.build.dir.nondefault}"/>
         </condition>
         <property name="build.dir" location="build"/>
     </target>
@@ -92,9 +92,8 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     </target>
 
     <target name="build-init" depends="basic-init,jdk-6-check,set-buildnumber">
-        <property name="public.package.jar.dir" location="${nb_all}/nbbuild/build/public-package-jars"/>
+        <property name="public.package.jar.dir" location="${nb.build.dir}/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
-        <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
         <parseprojectxml
                 project="."
                 publicpackagesproperty="public.packages"
@@ -166,7 +165,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
                 <equals arg1="${cluster.dir}" arg2="${cluster.dir.fallback}"/>
             </not>
         </condition>
-        <property name="jnlp.dest.dir" location="${nb_all}/nbbuild/build/jnlp"/>
+        <property name="jnlp.dest.dir" location="${nb.build.dir}/jnlp"/>
         <property name="build.javahelp.dir" location="${build.dir}/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
@@ -203,7 +202,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
             <istrue value="${requires.nb.javac}"/>
         </condition>
-        <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nbantext.jar}"/>
         <fail message="Delete standalone/suite-related metadata from netbeans.org modules">
             <condition>
                 <or>
@@ -218,17 +217,17 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
 
     <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
     <target name="-release.files" depends="projectized-common.-release.files">
-        <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nbantext.jar}"/>
         <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
             <manifest dir=".">
                 <include name="external/binaries-list"/>
             </manifest>
         </downloadbinaries>
-        <taskdef name="releasefilesextra" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesExtra" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="releasefilesextra" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesExtra" classpath="${nbantext.jar}"/>
         <releasefilesextra property="release.files.extra"/>
     </target>
     <target name="release" depends="projectized-common.release">
-        <taskdef name="releasefilescopy" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesCopy" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="releasefilescopy" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesCopy" classpath="${nbantext.jar}"/>
         <releasefilescopy cluster="${cluster}"/>
     </target>
 
@@ -361,7 +360,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <mkdir dir="${build.dir}"/>
         <property name="license.file.override" location="${build.dir}/license"/>
         <property name="extra.license.files" value=""/>
-        <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nbantext.jar}"/>
         <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}"/>
     </target>
 
@@ -404,7 +403,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
                    db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
             <classpath>
-                <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
+                <pathelement location="${nbantext.jar}"/>
                 <fileset dir="${nb_all}">
                     <include name="javahelp/external/jhall*.jar"/>
                 </fileset>
@@ -522,7 +521,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <fail unless="javahelp.hs">Must set javahelp.hs property</fail>
         <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
             <classpath>
-                <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
+                <pathelement location="${nbantext.jar}"/>
                 <fileset dir="${nb_all}/javahelp/external">
                     <include name="jh*.jar"/>
                 </fileset>
@@ -642,7 +641,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <property name="sigtest.file" location="${sigtest.basedir}/${code.name.base.dashes}.sig"/>
         <property name="sigtest.public.packages" value="${public.packages}"/>
         <property name="sigtest.fail.on.error" value="true"/>
-        <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nbantext.jar}"/>
         <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest.jar"/> 
         <property file="${manifest.mf}" prefix="mf."/>
         <condition property="mf.OpenIDE-Module-Specification-Version" value="${spec.version.base}"> <!-- fallback -->
@@ -668,7 +667,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         </condition>
         <property name="sigtest.check.type" value="check"/>
 
-        <typedef name="exportedapi" classname="org.netbeans.nbbuild.ExportedAPICondition" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <typedef name="exportedapi" classname="org.netbeans.nbbuild.ExportedAPICondition" classpath="${nbantext.jar}"/>
         <condition property="sigtest.mail" value="api-changes@netbeans.org">
             <or>
                 <exportedapi/>
@@ -713,7 +712,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     </target>
     
     <target name="findbugs" depends="build-init,jar,findbugs-init">
-        <property name="report.dir" location="${nb_all}/nbbuild/build/findbugs"/>
+        <property name="report.dir" location="${nb.build.dir}/findbugs"/>
         <mkdir dir="${report.dir}"/>
         <property name="report.file" location="${report.dir}/${code.name.base.dashes}.xml"/>
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${findbugs.home}/lib/findbugs-ant.jar"/>

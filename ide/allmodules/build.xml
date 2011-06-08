@@ -3,7 +3,7 @@
     <target name="regenerate-project.xml">
         <property file="../../nbbuild/cluster.properties"/>
         <property file="../../nbbuild/build.properties"/>
-        <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="../../nbbuild/nbantext.jar"/>
+        <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="../../nbbuild/build/nbantext.jar"/>
         <checkmoduleconfigs nbroot="../.." masterprojectxml="nbproject/project.xml"/>
     </target>
 </project>

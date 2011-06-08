@@ -364,7 +364,7 @@ cause it to fail.
     <target name="javadoc-stage-arch" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
         <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
             <classpath>
-                <pathelement location="../nbantext.jar"/>
+                <pathelement location="${nbantext.jar}"/>
             </classpath>
         </taskdef>
         <!-- Warn about incorrect question version, but do not make build fail: -->
@@ -381,7 +381,7 @@ cause it to fail.
     <target name="javadoc-stage-export-interfaces" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.interfaces.should.not.be.generated">
         <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
             <classpath>
-                <pathelement location="../nbantext.jar"/>
+                <pathelement location="${nbantext.jar}"/>
             </classpath>
         </taskdef>
         <!-- Warn about incorrect question version, but do not make build fail: -->
@@ -474,7 +474,7 @@ cause it to fail.
     <target name="javadoc-stage-check" depends="javadoc-stage-replace" unless="javadoc.up.to.date">
         <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
             <classpath>
-                <pathelement location="../nbantext.jar"/>
+                <pathelement location="${nbantext.jar}"/>
             </classpath>
         </taskdef>
         <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}"

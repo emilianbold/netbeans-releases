@@ -75,7 +75,7 @@ public class PrintIconTest extends TestBase {
         File f = extractString (
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<project name='Test Arch' basedir='.' default='all' >" +
-            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nbantext.jar}'/>" +
             "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
@@ -125,7 +125,7 @@ public class PrintIconTest extends TestBase {
         File f = extractString (
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<project name='Test Arch' basedir='.' default='all' >" +
-            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nbantext.jar}'/>" +
             "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
@@ -179,7 +179,7 @@ public class PrintIconTest extends TestBase {
         File f = extractString (
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<project name='Test Arch' basedir='.' default='all' >" +
-            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nbantext.jar}'/>" +
             "<target name='all' >" +
             "  <printicon duplicates='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +
@@ -226,7 +226,7 @@ public class PrintIconTest extends TestBase {
         File f = extractString (
             "<?xml version='1.0' encoding='UTF-8'?>" +
             "<project name='Test Arch' basedir='.' default='all' >" +
-            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nb_all}/nbbuild/nbantext.jar'/>" +
+            "  <taskdef name='printicon' classname='org.netbeans.nbbuild.PrintIcon' classpath='${nbantext.jar}'/>" +
             "<target name='all' >" +
             "  <printicon difference='" + out + "'>" +
             "    <firstpool dir='" + img.getParent() + "'>" +

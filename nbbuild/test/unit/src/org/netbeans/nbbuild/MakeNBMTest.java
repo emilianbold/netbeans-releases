@@ -97,7 +97,7 @@ public class MakeNBMTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"makenbm\" classname=\"org.netbeans.nbbuild.MakeNBM\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"makenbm\" classname=\"org.netbeans.nbbuild.MakeNBM\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" + 
             "  <makenbm file='" + output + "/x.nbm'" +

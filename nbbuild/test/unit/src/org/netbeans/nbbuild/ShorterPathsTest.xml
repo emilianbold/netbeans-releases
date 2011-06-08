@@ -24,7 +24,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="Shorter Paths Test" basedir="." default="all" >
-    <taskdef name="shorterpaths" classname="org.netbeans.nbbuild.ShorterPaths" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="shorterpaths" classname="org.netbeans.nbbuild.ShorterPaths" classpath="${nbantext.jar}"/>
 
     <target name="all" >
         <property name="nb.root.test.prop" location="${test.modules.dir}"/>
