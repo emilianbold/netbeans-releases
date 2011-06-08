@@ -44,6 +44,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -59,8 +60,10 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Refactoring used for changing method signature. It changes method declaration
@@ -74,6 +77,9 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
     private ChangeParametersRefactoring refactoring;
     private TreePathHandle treePathHandle;
+    private RenameRefactoring[] renameDelegates;
+    private boolean inited;
+    
     /**
      * Creates a new instance of change parameters refactoring.
      *
@@ -86,22 +92,33 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
     @Override
     public Problem checkParameters() {
-        //TODO:
-        return null;
+        
+        initDelegates();
+        
+        Problem p = null;
+        for (RenameRefactoring renameRefactoring : renameDelegates) {
+            p = chainProblems(p, renameRefactoring.checkParameters());
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+        }
+        return p;
     }
 
     @Override
-    public Problem fastCheckParameters(CompilationController javac) throws IOException {
+    public Problem fastCheckParameters(final CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
         ParameterInfo paramTable[] = refactoring.getParameterInfo();
         Problem p=null;
         for (int i = 0; i< paramTable.length; i++) {
-            int origIndex = paramTable[i].getOriginalIndex();
-     
-            if (origIndex==-1) {
+            ParameterInfo parameterInfo = paramTable[i];
+            final ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
+            int originalIndex = parameterInfo.getOriginalIndex();
+            final VariableElement parameterElement = originalIndex == -1 ? null : method.getParameters().get(originalIndex);
+            
             // check parameter name
             String s;
-            s = paramTable[i].getName();
+            s = parameterInfo.getName();
             if ((s == null || s.length() < 1))
                 p = createProblem(p, true, newParMessage("ERR_parname")); // NOI18N
             else {
@@ -109,44 +126,51 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier",s)); // NOI18N
                 }
             }
+            for (int j = 0; j < paramTable.length; j++) {
+                ParameterInfo pInfo = paramTable[j];
+                if(pInfo.getName().equals(s) && i != j) {
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ParamAlreadyUsed", s)); // NOI18N
+                }
+            }
 
-            ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
             TreeScanner<Boolean, String> scanner = new TreeScanner<Boolean, String>() {
-                    @Override
-                    public Boolean visitVariable(VariableTree vt, String p) {
-                         super.visitVariable(vt, p);
-                         return vt.getName().contentEquals(p);
-                    }
 
-                    @Override
-                    public Boolean reduce(Boolean left, Boolean right) {
-                        return (left == null ? false : left) || (right == null ? false : right);
-                    }
+                @Override
+                public Boolean visitVariable(VariableTree vt, String p) {
+                    super.visitVariable(vt, p);
+                    TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), vt);
+                    Element element = javac.getTrees().getElement(path);
+                    
+                    return vt.getName().contentEquals(p) && !element.equals(parameterElement);
+                }
 
+                @Override
+                public Boolean reduce(Boolean left, Boolean right) {
+                    return (left == null ? false : left) || (right == null ? false : right);
+                }
             };
 
             if (scanner.scan(javac.getTrees().getTree(method), s)) {
                 if (!isParameterBeingRemoved(method, s, paramTable)) {
-                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", s));
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", s)); // NOI18N
                 }
             }
 
-
+            if (originalIndex==-1) {
             // check parameter type
-            String t = paramTable[i].getType();
+            String t = parameterInfo.getType();
             if (t == null)
                 p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
 
             // check the default value
-            s = paramTable[i].getDefaultValue();
+            s = parameterInfo.getDefaultValue();
             if ((s == null || s.length() < 1))
                 p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
  
             }
-            ParameterInfo in = paramTable[i];
 
-            if (in.getType() != null && in.getType().endsWith("...") && i!=paramTable.length-1) {//NOI18N
-                    p = createProblem(p, true, org.openide.util.NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[] {}));
+            if (parameterInfo.getType() != null && parameterInfo.getType().endsWith("...") && i!=paramTable.length-1) {//NOI18N
+                    p = createProblem(p, true, org.openide.util.NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[] {})); // NOI18N
                 }
         }
         return p;    
@@ -231,10 +255,21 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
     public Problem prepare(RefactoringElementsBag elements) {
         Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStart(ProgressEvent.START, a.size() + 1);
+        initDelegates();
+        fireProgressListenerStep();
         if (!a.isEmpty()) {
+            Problem p = null;
+            for (RenameRefactoring renameRefactoring : renameDelegates) {
+                p = chainProblems(p, renameRefactoring.prepare(elements.getSession()));
+                if (p != null && p.isFatal()) {
+                    fireProgressListenerStop();
+                    return p;
+                }
+            }
+            
             TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring.getParameterInfo(), allMethods, refactoring.getModifiers()), treePathHandle);
-            Problem p = createAndAddElements(a, transform, elements, refactoring);
+            p = createAndAddElements(a, transform, elements, refactoring);
             if (p != null) {
                 fireProgressListenerStop();
                 return p;
@@ -249,6 +284,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             case CHECKPARAMETERS:
             case FASTCHECKPARAMETERS:    
             case PRECHECK:
+            case PREPARE:
                 ClasspathInfo cpInfo = getClasspathInfo(refactoring);
                 return JavaSource.create(cpInfo, treePathHandle.getFileObject());
         }
@@ -272,7 +308,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
         Element el = treePathHandle.resolveElement(info);
         if (!(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
-            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType")); // NOI18N
             return preCheckProblem;
         }
 
@@ -282,13 +318,13 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
 
         if (info.getElementUtilities().enclosingTypeElement(el).getKind() == ElementKind.ANNOTATION_TYPE) {
-            preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_MethodsInAnnotationsNotSupported"));
+            preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_MethodsInAnnotationsNotSupported")); // NOI18N
             return preCheckProblem;
         }
         
         for (ExecutableElement e : RetoucheUtils.getOverridenMethods((ExecutableElement) el, info)) {
             if (RetoucheUtils.isFromLibrary(e, info.getClasspathInfo())) { //NOI18N
-                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_CannnotRefactorLibrary", el));
+                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_CannnotRefactorLibrary", el)); // NOI18N
             }
         }
                     
@@ -296,4 +332,60 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         return preCheckProblem;
     }
     
+    private void initDelegates() {
+        if (inited) {
+            return;
+        }
+        final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
+
+        Problem p = null;
+        try {
+            getJavaSource(Phase.PREPARE).runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController javac) throws Exception {
+                    javac.toPhase(JavaSource.Phase.RESOLVED);
+                    ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
+                    List<? extends VariableElement> parameters = method.getParameters();
+
+                    ParameterInfo paramTable[] = refactoring.getParameterInfo();
+                    for (int i = 0; i < paramTable.length; i++) {
+                        ParameterInfo param = paramTable[i];
+                        int origIndex = param.getOriginalIndex();
+                        if (origIndex != -1) {
+                            VariableElement variable = parameters.get(origIndex);
+                            if(!variable.getSimpleName().contentEquals(param.getName())) {
+                                TreePath path = javac.getTrees().getPath(variable);
+                                RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(path, javac)));
+                                renameRefactoring.setNewName(param.getName());
+                                renameRefactoring.setSearchInComments(true);
+                                renameRefactoringsList.add(renameRefactoring);
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        renameDelegates = renameRefactoringsList.toArray(new RenameRefactoring[0]);
+        inited = true;
+    }
+
+    private static Problem chainProblems(Problem p, Problem p1) {
+        Problem problem;
+
+        if (p == null) {
+            return p1;
+        }
+        if (p1 == null) {
+            return p;
+        }
+        problem = p;
+        while (problem.getNext() != null) {
+            problem = problem.getNext();
+        }
+        problem.setNext(p1);
+        return p;
+    }
 }

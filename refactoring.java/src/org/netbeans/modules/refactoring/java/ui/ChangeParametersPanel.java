@@ -86,8 +86,8 @@ import org.openide.util.NbBundle;
 
 /**
  * Panel contains components for signature change. There is table with
- * parameters, you can add parameters, reorder parameteres or remove not
- * used paramaters (not available yet). You can also change access modifier.
+ * parameters, you can add parameters, reorder parameters, rename parameters
+ * or remove parameters. You can also change the methods access modifier.
  *
  * @author  Pavel Flaska, Jan Becicka, Ralph Ruijs
  */
@@ -718,10 +718,12 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 return false;
             }
             // otherwise, check that user can change only the values provided
-            // for the new parameter. (name change of old parameters aren't
-            // allowed.
-            Integer origIdx = (Integer) ((Vector) getDataVector().get(row)).get(3);
-            return origIdx.intValue() == -1 ? true : false;
+            // for the new parameter. name change of old paramter is allowed.
+            if(column > 0) {
+                Integer origIdx = (Integer) ((Vector) getDataVector().get(row)).get(3);
+                return origIdx.intValue() == -1 ? true : false;
+            }
+            return true;
         }
         
         public boolean isRemovable(int row) {
