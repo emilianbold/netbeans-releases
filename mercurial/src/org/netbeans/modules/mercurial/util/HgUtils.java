@@ -931,6 +931,8 @@ itor tabs #66700).
             } else {
                 return null;
             }
+        } else if (map.isEmpty()) {
+            return new File[0];
         } else {
             List<File> l = map.get(map.keySet().iterator().next());
             return l.toArray(new File[l.size()]);

@@ -42,9 +42,11 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import com.jcraft.jsch.JSchException;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import org.eclipse.jgit.JGitText;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.lib.Repository;
@@ -53,6 +55,7 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -128,5 +131,23 @@ abstract class TransportCommand extends GitCommand {
         }
         transport.setCredentialsProvider(getCredentialsProvider());
         return transport;
+    }
+    
+    protected void handleException (TransportException e) throws GitException.AuthorizationException, GitException {
+        String message = e.getMessage();
+        int pos;
+        if ((pos = message.indexOf(": " + JGitText.get().notAuthorized)) != -1) { //NOI18N
+            String repositoryUrl = message.substring(0, pos);
+            throw new GitException.AuthorizationException(repositoryUrl, message, e);
+        } else if (message.contains(JGitText.get().notAuthorized)) { //NOI18N
+            throw new GitException.AuthorizationException(message, e);
+        } else if ((pos = message.toLowerCase().indexOf(": auth cancel")) != -1) { //NOI18N
+            String repositoryUrl = message.substring(0, pos);
+            throw new GitException.AuthorizationException(repositoryUrl, message, e);
+        } else if (e.getCause() instanceof JSchException) {
+            throw new GitException.AuthorizationException(message, e);
+        } else {
+            throw new GitException(e.getMessage(), e);
+        }
     }
 }
