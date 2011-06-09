@@ -538,76 +538,79 @@ public class CommandRunner extends BasicTask<OperationState> {
                     Logger.getLogger("glassfish").log(Level.FINE, "HTTP Command: {0}", commandUrl); // NOI18N
 
                     conn = urlToConnectTo.openConnection();
-                    if(conn instanceof HttpURLConnection) {
-                        hconn = (HttpURLConnection) conn;
+                    if (conn instanceof HttpURLConnection) {
+                        int respCode = 0;
+                        URL oldUrlToConnectTo;
+                        do { // deal with possible redirects from 3.1
+                            oldUrlToConnectTo = urlToConnectTo;
+                            hconn = (HttpURLConnection) conn;
 
-                        if (conn instanceof HttpsURLConnection) {
-                            // let's just trust any server that we connect to...
-                            // we aren't send them money or secrets...
-                            TrustManager[] tm = new TrustManager[]{
-                                new X509TrustManager() {
+                            if (conn instanceof HttpsURLConnection) {
+                                // let's just trust any server that we connect to...
+                                // we aren't send them money or secrets...
+                                TrustManager[] tm = new TrustManager[]{
+                                    new X509TrustManager() {
 
-                                @Override
-                                    public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-                                        return;
+                                        @Override
+                                        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                                            return;
+                                        }
+
+                                        @Override
+                                        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                                            return;
+                                        }
+
+                                        @Override
+                                        public X509Certificate[] getAcceptedIssuers() {
+                                            return null;
+                                        }
                                     }
+                                };
 
-                                @Override
-                                    public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
-                                        return;
-                                    }
+                                SSLContext context = null;
+                                try {
+                                    context = SSLContext.getInstance("SSL");
+                                    context.init(null, tm, null);
+                                    ((HttpsURLConnection) hconn).setSSLSocketFactory(context.getSocketFactory());
+                                    ((HttpsURLConnection) hconn).setHostnameVerifier(new HostnameVerifier() {
 
-                                @Override
-                                    public X509Certificate[] getAcceptedIssuers() {
-                                        return null;
-                                    }
+                                        @Override
+                                        public boolean verify(String string, SSLSession ssls) {
+                                            return true;
+                                        }
+                                    });
+                                } catch (Exception ex) {
+                                    // if there is an issue here... there will be another exception later
+                                    // which will take care of the user interaction...
+                                    Logger.getLogger("glassfish").log(Level.INFO, "trust manager problem: " + urlToConnectTo, ex); // NOI18N
                                 }
-                            };
 
-                            SSLContext context = null;
-                            try {
-                                context = SSLContext.getInstance("SSL");
-                                context.init(null, tm, null);
-                                ((HttpsURLConnection)hconn).setSSLSocketFactory(context.getSocketFactory());
-                                ((HttpsURLConnection)hconn).setHostnameVerifier(new HostnameVerifier() {
-
-                                    @Override
-                                    public boolean verify(String string, SSLSession ssls) {
-                                        return true;
-                                    }
-
-                                });
-                            } catch (Exception ex) {
-                                // if there is an issue here... there will be another exception later
-                                // which will take care of the user interaction...
-                                Logger.getLogger("glassfish").log(Level.INFO, "trust manager problem: " + urlToConnectTo,ex); // NOI18N
                             }
 
-                        }
-
-                        // Set up standard connection characteristics
-                        hconn.setAllowUserInteraction(false);
-                        hconn.setDoInput(true);
-                        hconn.setUseCaches(false);
-                        hconn.setRequestMethod(serverCmd.getRequestMethod());
-                        hconn.setDoOutput(serverCmd.getDoOutput());
-                        String contentType = serverCmd.getContentType();
-                        if(contentType != null && contentType.length() > 0) {
-                            hconn.setRequestProperty("Content-Type", contentType); // NOI18N
-                            hconn.setChunkedStreamingMode(0);
-                        } else {
-                            // work around that helps prevent tickling the
-                            // GF issue that is the root cause of 195384.
-                            //
-                            // GF doesn't expect to get image content, so it doesn't
-                            // try to handle the content... which prevents the
-                            // exception, according to Tim Quinn.
-                            hconn.setRequestProperty("Content-Type", "image/png");
-                        }
-                        hconn.setRequestProperty("User-Agent", "hk2-agent"); // NOI18N
-                        if (serverCmd.acceptsGzip()) {
-                            hconn.setRequestProperty("Accept-Encoding", "gzip");
-                        }
+                            // Set up standard connection characteristics
+                            hconn.setAllowUserInteraction(false);
+                            hconn.setDoInput(true);
+                            hconn.setUseCaches(false);
+                            hconn.setRequestMethod(serverCmd.getRequestMethod());
+                            hconn.setDoOutput(serverCmd.getDoOutput());
+                            String contentType = serverCmd.getContentType();
+                            if (contentType != null && contentType.length() > 0) {
+                                hconn.setRequestProperty("Content-Type", contentType); // NOI18N
+                                hconn.setChunkedStreamingMode(0);
+                            } else {
+                                // work around that helps prevent tickling the
+                                // GF issue that is the root cause of 195384.
+                                //
+                                // GF doesn't expect to get image content, so it doesn't
+                                // try to handle the content... which prevents the
+                                // exception, according to Tim Quinn.
+                                hconn.setRequestProperty("Content-Type", "image/png");
+                            }
+                            hconn.setRequestProperty("User-Agent", "hk2-agent"); // NOI18N
+                            if (serverCmd.acceptsGzip()) {
+                                hconn.setRequestProperty("Accept-Encoding", "gzip");
+                            }
 
 //                        // Set up an authorization header with our credentials
 //                        Hk2Properties tp = tm.getHk2Properties();
@@ -616,24 +619,32 @@ public class CommandRunner extends BasicTask<OperationState> {
 //                        hconn.setRequestProperty("Authorization", // NOI18N
 //                                                 "Basic " + auth); // NOI18N
 
-                        // Establish the connection with the server
-                        Authenticator.setDefault(AUTH);
-                        hconn.connect();
-                        // Send data to server if necessary
-                        handleSend(hconn);
+                            // Establish the connection with the server
+                            Authenticator.setDefault(AUTH);
+                            hconn.connect();
+                            // Send data to server if necessary
+                            handleSend(hconn);
 
-                        int respCode = hconn.getResponseCode();
-                        if(respCode == HttpURLConnection.HTTP_UNAUTHORIZED ||
-                                respCode == HttpURLConnection.HTTP_FORBIDDEN) {
-                            // connection to manager has not been allowed
-                            authorized = false;
-                            String messageId = "MSG_AuthorizationFailed";  // NOI18N
-                            if (ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null) {
-                                messageId = "MSG_AuthorizationFailedRemote"; // NOI18N
+                            respCode = hconn.getResponseCode();
+                            if (respCode == HttpURLConnection.HTTP_UNAUTHORIZED
+                                    || respCode == HttpURLConnection.HTTP_FORBIDDEN) {
+                                // connection to manager has not been allowed
+                                authorized = false;
+                                String messageId = "MSG_AuthorizationFailed";  // NOI18N
+                                if (ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null) {
+                                    messageId = "MSG_AuthorizationFailedRemote"; // NOI18N
+                                }
+                                return fireOperationStateChanged(OperationState.FAILED,
+                                        messageId, serverCmd.toString(), instanceName);
+                            } else if (respCode == HttpURLConnection.HTTP_MOVED_TEMP
+                                    || respCode == HttpURLConnection.HTTP_MOVED_PERM) {
+                                String newUrl = hconn.getHeaderField("Location");
+                                Logger.getLogger("glassfish").log(Level.FINER, "moved to {0}", newUrl);
+                                urlToConnectTo = new URL(newUrl);
+                                conn = urlToConnectTo.openConnection();
+                                hconn.disconnect();
                             }
-                            return fireOperationStateChanged(OperationState.FAILED,
-                                    messageId, serverCmd.toString(), instanceName);
-                        }
+                        } while (urlToConnectTo != oldUrlToConnectTo);
 
                         // !PW FIXME log status for debugging purposes
                         if(Boolean.getBoolean("org.netbeans.modules.hk2.LogManagerCommands")) { // NOI18N
@@ -697,7 +708,12 @@ public class CommandRunner extends BasicTask<OperationState> {
         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
         boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
         int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
-        URI uri = new URI(Utils.getHttpListenerProtocol(host,port), null, host, port, cmdSrc + cmd, query, null); // NOI18N
+        String protocol = "http";
+        String url = ip.get(GlassfishModule.URL_ATTR);
+        if (null == url || !url.contains("ee6wc")) {
+            protocol = Utils.getHttpListenerProtocol(host,port);
+        }
+        URI uri = new URI(protocol, null, host, port, cmdSrc + cmd, query, null); // NOI18N
         return uri.toASCIIString().replace("+", "%2b"); // these characters don't get handled by GF correctly... best I can tell.
     }
 
