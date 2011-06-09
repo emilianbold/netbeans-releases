@@ -41,25 +41,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.actions;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.RuntimeViewAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class RuntimeViewActionTest extends JellyTestCase {
-    public static final String[] tests = new String[] {
-        "testPerformMenu", "testPerformAPI"
-    };
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -67,47 +60,24 @@ public class RuntimeViewActionTest extends JellyTestCase {
     public RuntimeViewActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new RuntimeViewActionTest("testPerformMenu"));
-        suite.addTest(new RuntimeViewActionTest("testPerformAPI"));
-//        suite.addTest(new RuntimeViewActionTest("testPerformShortcut"));
-        return suite;
-         */
-        return createModuleTest(RuntimeViewActionTest.class, 
-                tests);
+        return createModuleTest(RuntimeViewActionTest.class);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         RuntimeTabOperator.invoke().close();
         new RuntimeViewAction().performMenu();
         new RuntimeTabOperator();
     }
-    
+
     /** Test performAPI */
     public void testPerformAPI() {
         new RuntimeTabOperator().close();
         new RuntimeViewAction().performAPI();
         new RuntimeTabOperator();
     }
-    
-    /** Test performShortcut */
-    public void testPerformShortcut() {
-        new RuntimeTabOperator().close();
-        new RuntimeViewAction().performShortcut();
-        new RuntimeTabOperator();
-    }
-    
 }

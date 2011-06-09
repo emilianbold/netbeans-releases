@@ -45,17 +45,18 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Window|Services" main menu item or
- * "org.netbeans.core.ide.ServicesTabAction".
+/** Used to call "Window|Services" main menu item.
  * @see Action
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
+ * @author Adam Sotona
+ */
 public class RuntimeViewAction extends Action {
-    private static final String runtimeMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
-                                           + "|"
-                                           + Bundle.getStringTrimmed("org.netbeans.core.ide.Bundle", "CTL_ServicesTabAction");
 
-    /** creates new RuntimeViewAction instance */    
+    private static final String runtimeMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
+            + "|"
+            + Bundle.getStringTrimmed("org.netbeans.core.ide.Bundle", "CTL_ServicesTabAction");
+
+    /** creates new RuntimeViewAction instance */
     public RuntimeViewAction() {
-        super(runtimeMenu, null, "org.netbeans.core.ide.ServicesTabAction");
+        super(runtimeMenu, null, "Actions/Window/org-netbeans-core-ide-ServicesTabAction.instance");
     }
 }

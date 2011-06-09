@@ -70,6 +70,10 @@ import org.netbeans.jemmy.operators.Operator.ComponentVisualizer;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.actions.SystemAction;
 
 
@@ -123,6 +127,8 @@ public class Action {
     protected String popupPath;
     /** SystemAction class of current action or null when API_MODE is not supported */    
     protected Class systemActionClass;
+    /** Path to action instance FileObject in layer or null when API_MODE is not supported or systemActionClass is used. */
+    protected String layerInstancePath;
 
     /** Array of key strokes or null when SHORTCUT_MODE is not supported. */
     protected KeyStroke[] keystrokes;
@@ -175,21 +181,18 @@ public class Action {
      * @deprecated Use {@link Action#Action(String menuPath, String popupPath, String systemActionClass, KeyStroke[] keystrokes)} instead.
     */
     public Action(String menuPath, String popupPath, String systemActionClass, Shortcut[] shortcuts) {
-        this.menuPath = menuPath;
-        this.popupPath = popupPath;
-        if (systemActionClass==null) {
-            this.systemActionClass = null;
-        } else try {
-            this.systemActionClass = Class.forName(systemActionClass);
-        } catch (ClassNotFoundException e) {
-            this.systemActionClass = null;
-        }
+        this(menuPath, popupPath, systemActionClass, convertShortcuts(shortcuts));
+    }
+    
+    private static KeyStroke[] convertShortcuts(Shortcut[] shortcuts) {
+        KeyStroke[] keystrokes = null;
         if(shortcuts != null) {
-            this.keystrokes = new KeyStroke[shortcuts.length];
+            keystrokes = new KeyStroke[shortcuts.length];
             for(int i=0;i<shortcuts.length;i++) {
-                this.keystrokes[i] = KeyStroke.getKeyStroke(shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers());
+                keystrokes[i] = KeyStroke.getKeyStroke(shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers());
             }
         }
+        return keystrokes;
     }
      
     /** creates new Action instance
@@ -242,6 +245,9 @@ public class Action {
         this.popupPath = popupPath;
         if (systemActionClass==null) {
             this.systemActionClass = null;
+        } else if (systemActionClass.endsWith(".instance")) {
+            // action defined declaratively in annotation (e.g. ServicesTab)
+            this.layerInstancePath = systemActionClass;
         } else try {
             this.systemActionClass = Class.forName(systemActionClass);
         } catch (ClassNotFoundException e) {
@@ -561,7 +567,7 @@ public class Action {
      * @throws UnsupportedOperationException when action does not support API mode */
     @SuppressWarnings("unchecked")
     public void performAPI() {
-        if (systemActionClass==null) {
+        if (systemActionClass==null && layerInstancePath == null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not support API call.");
         }
         try {
@@ -569,7 +575,17 @@ public class Action {
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    if(SystemAction.class.isAssignableFrom(systemActionClass)) {
+                    if (layerInstancePath != null) {
+                        // action defined declaratively in annotation (e.g. ServicesTab)
+                        try {
+                            FileObject fo = FileUtil.getConfigFile(layerInstancePath);
+                            DataObject dob = DataObject.find(fo);
+                            javax.swing.Action action = (javax.swing.Action) ((InstanceCookie) dob).instanceCreate();
+                            action.actionPerformed(new ActionEvent(new Container(), 0, null));
+                        } catch (Exception e) {
+                            throw new JemmyException("Cannot perform declaratively defined action  \"" + layerInstancePath + "\".", e);
+                        }
+                    } else if(SystemAction.class.isAssignableFrom(systemActionClass)) {
                         // SystemAction used in IDE
                         SystemAction.get(systemActionClass).actionPerformed(
                                                 new ActionEvent(new Container(), 0, null));
