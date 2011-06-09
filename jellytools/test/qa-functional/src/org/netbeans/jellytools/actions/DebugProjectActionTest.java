@@ -45,54 +45,42 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.junit.NbTestSuite;
 
 /** org.netbeans.jellytools.actions.DebugProjectAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class DebugProjectActionTest extends JellyTestCase {
-    
-    public static final String[] tests = new String[]
-    {"testPerformPopup", "testPerformMenu", "testPerformShortcut"};
-    
+
+    public static final String[] tests = new String[]{"testPerformPopup", "testPerformMenu", "testPerformShortcut"};
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public DebugProjectActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new DebugProjectActionTest("testPerformPopup"));
-        suite.addTest(new DebugProjectActionTest("testPerformMenu"));
-        suite.addTest(new DebugProjectActionTest("testPerformShortcut"));
-        return suite;
-         */
         return createModuleTest(DebugProjectActionTest.class, tests);
     }
-    
     private static MainWindowOperator.StatusTextTracer statusTextTracer;
 
     /** Method called before all test cases. */
     @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");  // NOI18N
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
-        if(statusTextTracer == null) {
+        if (statusTextTracer == null) {
             // increase timeout to 60 seconds
             MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
             statusTextTracer = MainWindowOperator.getDefault().getStatusTextTracer();
@@ -107,16 +95,16 @@ public class DebugProjectActionTest extends JellyTestCase {
         try {
             // "SampleWebProject (debug)"
             String outputTarget = Bundle.getString(
-                    "org.apache.tools.ant.module.run.Bundle", "TITLE_output_target", 
-                    new Object[] {"SampleProject", null, "debug"});  // NOI18N
+                    "org.apache.tools.ant.module.run.Bundle", "TITLE_output_target",
+                    new Object[]{"SampleProject", null, "debug"});  // NOI18N
             // "Building SampleProject (debug)..."
             String buildingMessage = Bundle.getString(
                     "org.apache.tools.ant.module.run.Bundle", "FMT_running_ant",
-                    new Object[] {outputTarget});
+                    new Object[]{outputTarget});
             // "Finished building SampleProject (debug)"
             String finishedMessage = Bundle.getString(
-                    "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", 
-                    new Object[] {outputTarget});
+                    "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status",
+                    new Object[]{outputTarget});
             // wait status text "Building SampleProject (debug)..."
             statusTextTracer.waitText(buildingMessage);
             // wait status text "Finished building SampleProject (debug)."
@@ -131,19 +119,12 @@ public class DebugProjectActionTest extends JellyTestCase {
             statusTextTracer.stop();
         }
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test performPopup. */
     public void testPerformPopup() {
         new DebugProjectAction().performPopup(ProjectsTabOperator.invoke().getProjectRootNode("SampleProject")); // NOI18N
     }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         // Set as Main Project
@@ -151,10 +132,9 @@ public class DebugProjectActionTest extends JellyTestCase {
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode("SampleProject")); // NOI18N
         new DebugProjectAction().performMenu();
     }
-    
+
     /** Test performShortcut */
     public void testPerformShortcut() {
         new DebugProjectAction().performShortcut();
     }
-    
 }

@@ -45,78 +45,61 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of org.netbeans.jellytools.actions.PropertiesAction.
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class PropertiesActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public PropertiesActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new PropertiesActionTest("testPerformMenu"));
-        suite.addTest(new PropertiesActionTest("testPerformPopup"));
-        suite.addTest(new PropertiesActionTest("testPerformAPI"));
-        suite.addTest(new PropertiesActionTest("testPerformShortcut"));
-        return suite;
-         */
         return createModuleTest(PropertiesActionTest.class);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     private static Node node;
-    
+
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");  // NOI18N
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
-        if(node == null) {
+        if (node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         }
     }
-    
+
+    @Override
     public void tearDown() {
         new PropertySheetOperator("SampleClass1.java").close();  //NOI18N
     }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         new PropertiesAction().performMenu(node);
     }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         new PropertiesAction().performPopup(node);
     }
-    
+
     /** Test performAPI */
     public void testPerformAPI() {
         new PropertiesAction().performAPI(node);
     }
-    
+
     /** Test performShortcut */
     public void testPerformShortcut() {
         new PropertiesAction().performShortcut(node);

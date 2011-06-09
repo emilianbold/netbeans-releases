@@ -45,60 +45,43 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.DeleteAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class DeleteActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public DeleteActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new DeleteActionTest("testPerformPopup"));
-        suite.addTest(new DeleteActionTest("testPerformMenu"));
-        suite.addTest(new DeleteActionTest("testPerformAPI"));
-        suite.addTest(new DeleteActionTest("testPerformShortcut"));
-        return suite;
-         */
         return createModuleTest(DeleteActionTest.class);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     private static Node node;
-    
-    public void setUp() throws IOException {        
-        System.out.println("### "+getName()+" ###");  // NOI18N
+
+    @Override
+    public void setUp() throws IOException {
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
-        if(node == null) {
+        if (node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         }
     }
-    
+
+    @Override
     public void tearDown() {
         // "Delete"
         String deleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete"); // NOI18N
@@ -108,22 +91,22 @@ public class DeleteActionTest extends JellyTestCase {
         // See issue http://www.netbeans.org/issues/show_bug.cgi?id=56672.
         closeAllModal();
     }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         new DeleteAction().performPopup(node);
     }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         new DeleteAction().performMenu(node);
     }
-    
+
     /** Test performAPI.  */
     public void testPerformAPI() {
         new DeleteAction().performAPI(node);
     }
-    
+
     /** Test performShortcut. */
     public void testPerformShortcut() {
         new DeleteAction().performShortcut(node);

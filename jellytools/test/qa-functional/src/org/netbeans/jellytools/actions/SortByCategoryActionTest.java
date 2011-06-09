@@ -45,17 +45,14 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of SortByCategoryAction calss.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class SortByCategoryActionTest extends JellyTestCase {
 
@@ -65,30 +62,18 @@ public class SortByCategoryActionTest extends JellyTestCase {
     public SortByCategoryActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new SortByCategoryActionTest("testPerformPopup"));
-        return suite;
-         */
         return createModuleTest(SortByCategoryActionTest.class);
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
     }
 
     @Override
     protected void setUp() throws IOException {
         openDataProjects("SampleProject");
     }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
