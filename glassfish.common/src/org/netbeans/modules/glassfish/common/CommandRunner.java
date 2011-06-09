@@ -443,8 +443,20 @@ public class CommandRunner extends BasicTask<OperationState> {
 
     public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries, boolean resourcesChanged)  {
         LogViewMgr.displayOutput(ip,null);
+        boolean preserve = computePreserveSessions(ip).booleanValue();
         return execute(new Commands.RedeployCommand(moduleName, contextRoot,
-                computePreserveSessions(ip), libraries, resourcesChanged));
+                preserve, libraries, resourcesChanged, computeAdditionalParam(ip, preserve)));
+    }
+
+    private static String computeAdditionalParam(Map<String,String> ip, boolean preserve) {
+        String retval = null;
+        if (preserve) {
+            String url = ip.get(GlassfishModule.URL_ATTR);
+            if (null != url && url.contains("ee6wc")) { // NOI18N
+                retval = "keepState=true"; // NOI18N
+            }
+        }
+        return retval;
     }
 
     private static Boolean computePreserveSessions(Map<String,String> ip) {
