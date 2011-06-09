@@ -54,7 +54,7 @@ public class BigFileValidator implements CsmErrorProvider.RequestValidator {
 
     @Override
     public boolean isValid(CsmErrorProvider.Request request) {
-        return SemanticHighlighter.isVeryBigDocument(request.getDocument());
+        return !SemanticHighlighter.isVeryBigDocument(request.getDocument());
     }
     
 }
