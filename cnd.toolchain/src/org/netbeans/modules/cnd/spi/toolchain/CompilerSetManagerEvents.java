@@ -51,6 +51,7 @@ import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.toolchain.compilerset.SPIAccessor;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -95,13 +96,21 @@ public final class CompilerSetManagerEvents {
                 ConnectionNotifier.addTask(executionEnvironment, new ConnectionNotifier.NamedRunnable(task.getName()) {
                     @Override
                     protected void runImpl() {
-                        // nothing :)
+                        record.checkSetupAfterConnection(new Runnable(){
+                            @Override
+                            public void run() {
+                                ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
+                                CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
+                                csm.initialize(false, true, null);
+                                cacheManager.applyChanges();
+                            }
+                        });
                     }
                 });
             }
         }
     }
-
+    
     private CompilerSetManagerEvents(ExecutionEnvironment env) {
         this.executionEnvironment = env;
         this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManager.get(executionEnvironment)).isComplete();

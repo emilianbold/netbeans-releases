@@ -107,6 +107,13 @@ public interface ServerRecord {
     public boolean setUp();
     
     public void validate(boolean force);
+    
+    /**
+     * Setup tools for new restored host
+     * 
+     * @param task initialization of tools
+     */
+    public void checkSetupAfterConnection(Runnable task);
 
     public RemoteSyncFactory getSyncFactory();
 
