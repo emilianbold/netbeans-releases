@@ -41,69 +41,52 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.OpenAction.
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class OpenActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public OpenActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new OpenActionTest("testPerformPopup"));
-        suite.addTest(new OpenActionTest("testPerformAPI"));
-        return suite;
-         */
         return createModuleTest(OpenActionTest.class);
     }
 
     @Override
     protected void setUp() throws IOException {
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         new OpenAction().performPopup(node);
         new EditorOperator("SampleClass1.java").closeDiscard();
     }
-    
+
     /** Test performAPI  */
     public void testPerformAPI() {
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         new OpenAction().performAPI(node);
         new EditorOperator("SampleClass1.java").closeDiscard();
     }
-    
 }
