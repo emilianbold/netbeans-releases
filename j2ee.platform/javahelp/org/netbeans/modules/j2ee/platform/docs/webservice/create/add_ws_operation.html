@@ -12,7 +12,8 @@ Use is subject to license terms.  *-->
         <h2>Adding a Web Service Operation</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
         <p>After you create a web service, you implement its operations in the implementation class. You can add operations
-        manually in the Source Editor or by using the Add Operation dialog box. In the latter case, the IDE automatically
+            manually in the Source Editor, by using the <a href="soap_ws_designer.html">Web Service
+            Designer</a>, or by using the Add Operation dialog box. In the latter case, the IDE automatically
         declares the operation in the Service Endpoint Interface (the "interface"), if there is one (it is optional in the
         JAX-WS programming model) and adds a skeleton method in the implementation class.</p>
         <ul class="note">
@@ -22,15 +23,14 @@ Use is subject to license terms.  *-->
 
         <b>To add a web service operation:</b>
         <ol>
-            <li>Open the Add Operation dialog box in one of two ways from the Projects window:
-            <ul><li>Expand the Web Services node, right-click the web service
+            <li>Open the Add Operation dialog box in one of three ways:
+            <ul><li>In the Projects window, wxpand the Web Services node, right-click the web service
                 instance node, and choose Add Operation.</li>
-                <li>Expand the Source Packages node, expand the package that
-                contains the web service, and double-click the web service's
-                implementation class so that it opens in the Source Editor.
-                Right-click anywhere in the body of a class and choose 
-                Web Service &gt; Add Operation.
-                This command is only enabled when you click within the body of the class (after the class declaration).</li>
+                <li>Open the web service's implementation class in the Source Editor.
+                Right-click anywhere in the body of the class and choose 
+                Web Service &gt; Add Operation.<br>
+                <li>In the implementation's <a href="soap_ws_designer.html">Design view</a>,
+                click the Add Operation button.</li>
             </ul>
             <li>Define the name, return type, parameters, and exceptions of the web service
             operation. For example, do the following if you want to create this operation:
@@ -54,10 +54,9 @@ Use is subject to license terms.  *-->
                 <p>The IDE adds the skeleton of the operation to the implementation class and 
                 declares it in the interface.</p></li>
                 <li>In the Source Editor, implement the web service operation. For
-                example, for JAX-RPC you could add
+                example, you could add
                 <tt>return a + b;</tt> between the braces. Do this in the implementation class, not
-                in the interface. For JAX-RPC, if your web service is named <tt>CalculatorWS</tt>, the implementation class
-                is named <tt>CalculatorWSImpl</tt> or <tt>CalculatorWSBean</tt> and the interface is named <tt>CalculatorWSSEI</tt>.</li>
+                in the interface (if you have a separate interface class). </li>
             </ol></li>
         </ol>
    

@@ -196,8 +196,8 @@ Other names may be trademarks of their respective owners.
                 <tocitem text="How to Create an Empty JAX-WS Web Service" target="create_ws_from_scratch" />
                 <tocitem text="How to Create a JAX-WS Web Service from a Java Class" target="create_ws_from_java" />
                 <tocitem text="How to Create a JAX-WS Web Service from a WSDL File" target="create_ws_from_wsdl" />
-
                 <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
+                <tocitem text="Using the SOAP Web Service Designer" target="ws_designer" />
             </tocitem>
             
                 

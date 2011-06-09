@@ -326,7 +326,7 @@ public class EditorModule extends ModuleInstall {
             TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
          }
 
-         if (LOG.isLoggable(Level.INFO)) {
+         if (LOG.isLoggable(Level.FINE)) {
              WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
                 public void run() {
                     try {
