@@ -112,7 +112,7 @@ is the proper place.
         <change>
             <api name="versioning_spi"/>
             <summary>New @VersioningSystem.Registration annotation</summary>
-            <version major="1" minor="19"/>
+            <version major="1" minor="24"/>
             <date day="23" month="5" year="2011"/>
             <author login="tstupka"/>
             <compatibility addition="yes"/>
