@@ -102,7 +102,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
          * @param request - request for highlighting
          * @return disable or not
          */
-        public boolean isValid(CsmErrorProvider.Request request);
+        public boolean isValid(CsmErrorProvider provider, CsmErrorProvider.Request request);
 
     }
     
