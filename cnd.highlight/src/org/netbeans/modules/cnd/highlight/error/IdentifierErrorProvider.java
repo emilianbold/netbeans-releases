@@ -101,7 +101,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         long start = System.currentTimeMillis();
         for (CsmErrorProvider.RequestValidator p : Lookup.getDefault().lookupAll(CsmErrorProvider.RequestValidator.class)) {
-            if(p.isValid(request)) {
+            if(!p.isValid(this, request)) {
                 return;
             }
         }
