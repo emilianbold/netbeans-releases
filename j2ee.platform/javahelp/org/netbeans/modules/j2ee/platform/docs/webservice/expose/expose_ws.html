@@ -13,18 +13,22 @@
 
         <h2>Deploying a Web Service</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-        <p>Unless the module (EJB module or web application module) in which the web service 
-        is implemented is designed to be deployed as a stand-alone module, you should 
-        always deploy it by deploying the enterprise application that contains it. If 
+        <p>Deploy applications containing web services either as stand-alone
+            web applications or as part of an enterprise application. If 
         you run the Run or Deploy commands on an individual module that 
         is part of an enterprise application, the IDE only deploys that module itself. 
         Any changes you have made in the other modules in the project are not propagated 
         to the server.</p>
+        <ul class="note">
+            <li>By default, after you deploy a web or enterprise application the first time,
+            the IDE automatically redeploys the application every time you save changes
+            to that application.</li>
+        </ul>
   
         <p><b>To expose a web service from within an enterprise application project:</b></p>
         <ol>
-            <li>In the Projects window, add the web application module
-            or add the EJB module to the enterprise application.</li>
+            <li>In the Projects window, add the web application as a Java EE module
+            to the enterprise application.</li>
             <li>Right-click the enterprise application project and choose one of the 
                 following: 
                 <ul>
@@ -36,9 +40,9 @@
                 </ul>
             </li>
         </ol>
-        <p><b>To expose a web service from within a module project:</b></p>
+        <p><b>To expose a web service on its own:</b></p>
         <ul>
-            <li>Right-click the module project and choose one of the 
+            <li>Right-click the web application or the Java EE module and choose one of the 
                 following: 
                 <ul><li><b>Run.</b> Only takes the 
                     minimal steps needed to run the project. For example, if you only changed one file,
