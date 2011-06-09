@@ -53,8 +53,8 @@ import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 public class BigFileValidator implements CsmErrorProvider.RequestValidator {
 
     @Override
-    public boolean isValid(CsmErrorProvider.Request request) {
-        return SemanticHighlighter.isVeryBigDocument(request.getDocument());
+    public boolean isValid(CsmErrorProvider provider, CsmErrorProvider.Request request) {
+        return !SemanticHighlighter.isVeryBigDocument(request.getDocument());
     }
     
 }
