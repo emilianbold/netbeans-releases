@@ -45,58 +45,45 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.NewFileAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class NewFileActionTest extends JellyTestCase {
-    public static final String[] tests = new String[] { "testPerformPopup", 
-                "testPerformMenu", "testPerformAPI", "testPerformShortcut"};
-    
+
+    public static final String[] tests = new String[]{
+        "testPerformPopup",
+        "testPerformMenu",
+        "testPerformAPI",
+        "testPerformShortcut"};
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public NewFileActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new NewFileActionTest("testPerformPopup"));
-        suite.addTest(new NewFileActionTest("testPerformMenu"));
-        suite.addTest(new NewFileActionTest("testPerformAPI"));
-        suite.addTest(new NewFileActionTest("testPerformShortcut"));
-        return suite;
-         */
         return createModuleTest(NewFileActionTest.class, tests);
     }
 
     @Override
     protected void setUp() throws IOException {
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
@@ -107,19 +94,19 @@ public class NewFileActionTest extends JellyTestCase {
         new NewFileAction(javaClassLabel).performPopup(node);
         new WizardOperator(javaClassLabel).close();
     }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         new NewFileAction().performMenu();
         new NewFileWizardOperator().close();
     }
-    
+
     /** Test performAPI */
     public void testPerformAPI() {
         new NewFileAction().performAPI();
         new NewFileWizardOperator().close();
     }
-    
+
     /** Test performShortcut */
     public void testPerformShortcut() {
         new NewFileAction().performShortcut();
@@ -129,5 +116,4 @@ public class NewFileActionTest extends JellyTestCase {
         // See issue http://www.netbeans.org/issues/show_bug.cgi?id=56672.
         closeAllModal();
     }
-    
 }

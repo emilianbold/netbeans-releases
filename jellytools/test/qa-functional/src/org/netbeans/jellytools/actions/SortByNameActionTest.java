@@ -46,8 +46,6 @@ package org.netbeans.jellytools.actions;
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -55,11 +53,10 @@ import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.util.PNGEncoder;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of SortByNameAction class.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class SortByNameActionTest extends JellyTestCase {
 
@@ -69,36 +66,24 @@ public class SortByNameActionTest extends JellyTestCase {
     public SortByNameActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new SortByNameActionTest("testPerformPopup"));
-        return suite;
-         */
         return createModuleTest(SortByNameActionTest.class);
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
     }
 
     @Override
     protected void setUp() throws IOException {
         openDataProjects("SampleProject");
     }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         new PropertiesAction().perform(node);
         PropertySheetOperator pso = new PropertySheetOperator("SampleClass1.java"); // NOI18N
-        if(pso.tblSheet().getRowCount() == 0) {
+        if (pso.tblSheet().getRowCount() == 0) {
             // property sheet not initialized properly => try it once more
             pso.close();
             int oldDispatching = JemmyProperties.getCurrentDispatchingModel();
@@ -114,7 +99,7 @@ public class SortByNameActionTest extends JellyTestCase {
         // set default sorting
         pso.sortByCategory();
         int oldCount = pso.tblSheet().getRowCount();
-        log("oldCount="+oldCount);
+        log("oldCount=" + oldCount);
         assertTrue("Property sheet mustn't be empty.", oldCount != 0); // NOI18N
         try {
             PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screen1-AfterSortByCategory.png");
@@ -123,7 +108,7 @@ public class SortByNameActionTest extends JellyTestCase {
         }
         new SortByNameAction().perform(pso);
         int newCount = pso.tblSheet().getRowCount();
-        log("newCount="+newCount);
+        log("newCount=" + newCount);
         try {
             PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screen2-AfterSortByName.png");
         } catch (Exception e) {

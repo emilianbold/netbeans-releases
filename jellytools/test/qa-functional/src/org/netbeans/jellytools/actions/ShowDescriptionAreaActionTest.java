@@ -46,52 +46,37 @@ package org.netbeans.jellytools.actions;
 import java.awt.Container;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of ShowDescriptionAreaAction class.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek 
  */
 public class ShowDescriptionAreaActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public ShowDescriptionAreaActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new ShowDescriptionAreaActionTest("testPerformPopup"));
-        return suite;
-         */
         return createModuleTest(ShowDescriptionAreaActionTest.class);
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
     }
 
     @Override
     protected void setUp() throws IOException {
         openDataProjects("SampleProject");
     }
-    
+
     /** simple test case
      */
     public void testPerformPopup() {
@@ -102,7 +87,7 @@ public class ShowDescriptionAreaActionTest extends JellyTestCase {
         pso.lblDescriptionHeader();
         new ShowDescriptionAreaAction().perform(pso);
         // check whether description area is not shown
-        Object label = JLabelOperator.findJLabel((Container)pso.getSource(), ComponentSearcher.getTrueChooser("JLabel")); //NOI18N
+        Object label = JLabelOperator.findJLabel((Container) pso.getSource(), ComponentSearcher.getTrueChooser("JLabel")); //NOI18N
         new ShowDescriptionAreaAction().perform(pso);
         // check whether description area is shown
         pso.lblDescriptionHeader();

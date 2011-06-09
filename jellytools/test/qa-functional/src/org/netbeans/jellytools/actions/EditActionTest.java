@@ -45,53 +45,37 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.EditAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class EditActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public EditActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new EditActionTest("testPerformPopup"));
-        suite.addTest(new EditActionTest("testPerformAPI"));
-        return suite;
-         */
         return createModuleTest(EditActionTest.class);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     private static Node node;
-    
+
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");  // NOI18N
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
-        if(node == null) {
+        if (node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|properties.properties"); // NOI18N
         }
     }
@@ -101,7 +85,7 @@ public class EditActionTest extends JellyTestCase {
         new EditAction().performPopup(node);
         new EditorOperator("properties").closeDiscard(); //NOI18N
     }
-    
+
     /** Test performAPI */
     public void testPerformAPI() {
         new EditAction().performAPI(node);

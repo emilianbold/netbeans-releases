@@ -47,8 +47,6 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -57,12 +55,11 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of org.netbeans.jellytools.actions.ActionNoBlock
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class ActionNoBlockTest extends JellyTestCase {
 
@@ -83,27 +80,13 @@ public class ActionNoBlockTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new ActionNoBlockTest("testPerformMenu"));
-        suite.addTest(new ActionNoBlockTest("testPerformPopupOnNodes"));
-        suite.addTest(new ActionNoBlockTest("testPerformPopupOnComponent"));
-        suite.addTest(new ActionNoBlockTest("testPerformAPI"));
-        suite.addTest(new ActionNoBlockTest("testPerformShortcut"));
-        return suite;
-         */
         return createModuleTest(ActionNoBlockTest.class, tests);
     }
     
+    @Override
     public void setUp() throws IOException {
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
     }
     
     /** simple test case
@@ -128,9 +111,7 @@ public class ActionNoBlockTest extends JellyTestCase {
         };
         String deletePopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete");
         new ActionNoBlock(null, deletePopup).perform(nodes);
-        // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
-        new NbDialogOperator(safeDeleteTitle).cancel();
+        new NbDialogOperator("Confirm Multiple Object Deletion").no();
         String openPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         new ActionNoBlock(null, openPopup).perform(nodes[0]);
     }

@@ -45,68 +45,51 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.SaveAsTemplateOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.SaveAsTemplateAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class SaveAsTemplateActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public SaveAsTemplateActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new SaveAsTemplateActionTest("testPerformPopup"));
-        suite.addTest(new SaveAsTemplateActionTest("testPerformAPI"));
-        return suite;
-         */
         return createModuleTest(SaveAsTemplateActionTest.class,
                 "testPerformPopup", "testPerformAPI");
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     private static Node node;
-    
+
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");  // NOI18N
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
-        if(node == null) {
+        if (node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         }
     }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         new SaveAsTemplateAction().performPopup(node);
         new SaveAsTemplateOperator().close();
     }
-    
+
     /** Test performAPI */
     public void testPerformAPI() {
         new SaveAsTemplateAction().performAPI(node);
         new SaveAsTemplateOperator().close();
     }
-    
 }

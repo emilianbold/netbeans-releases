@@ -44,17 +44,14 @@
 package org.netbeans.jellytools.actions;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.ProjectViewAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class ProjectViewActionTest extends JellyTestCase {
 
@@ -64,32 +61,20 @@ public class ProjectViewActionTest extends JellyTestCase {
     public ProjectViewActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new ProjectViewActionTest("testPerformMenu"));
-        return suite;
-         */
-        return createModuleTest(ProjectViewActionTest.class, "testPerformMenu");
+        return createModuleTest(ProjectViewActionTest.class);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test performMenu */
     public void testPerformMenu() throws InterruptedException {
 
         //Make sure the menu has time to load (workaround for the case the menu
         //is not fully loaded at the beginning of the test.
         new Action(Bundle.getStringTrimmed(
-            "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
+                "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
 
         Thread.sleep(1000);
 

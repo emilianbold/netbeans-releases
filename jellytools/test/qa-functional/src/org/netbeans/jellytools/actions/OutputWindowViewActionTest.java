@@ -41,19 +41,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.actions;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test OutputWindowViewAction.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class OutputWindowViewActionTest extends JellyTestCase {
 
@@ -63,44 +59,29 @@ public class OutputWindowViewActionTest extends JellyTestCase {
     public OutputWindowViewActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new OutputWindowViewActionTest("testPerformMenu"));
-        suite.addTest(new OutputWindowViewActionTest("testPerformAPI"));
-        suite.addTest(new OutputWindowViewActionTest("testPerformShortcut"));
-        return suite;
-         */
         return createModuleTest(OutputWindowViewActionTest.class);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test performMenu() method. */
     public void testPerformMenu() {
         OutputOperator.invoke().close();
         new OutputWindowViewAction().performMenu();
         new OutputOperator().close();
     }
-    
+
     /** Test performAPI() method. */
     public void testPerformAPI() {
         new OutputWindowViewAction().performAPI();
         new OutputOperator().close();
     }
-    
+
     /** Test performShortcut(). */
     public void testPerformShortcut() {
         new OutputWindowViewAction().performShortcut();
         new OutputOperator().close();
     }
-    
 }

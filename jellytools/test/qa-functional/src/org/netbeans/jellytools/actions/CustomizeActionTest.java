@@ -45,70 +45,55 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.CustomizeAction.
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class CustomizeActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public CustomizeActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new CustomizeActionTest("testPerformPopup"));
-        suite.addTest(new CustomizeActionTest("testPerformAPI"));
-        return suite;
-         */
         return createModuleTest(CustomizeActionTest.class, "testPerformPopup", "testPerformAPI");
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     // "Customizer Dialog"
     private static String CUSTOMIZER_DIALOG_TITLE;
     private static Node node;
 
+    @Override
     public void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");  // NOI18N
+        System.out.println("### " + getName() + " ###");  // NOI18N
         CUSTOMIZER_DIALOG_TITLE = Bundle.getString("org.netbeans.core.windows.services.Bundle", "CTL_Customizer_dialog_title");
         openDataProjects("SampleProject");
-        if(node == null) {
+        if (node == null) {
             node = new Node(new SourcePackagesNode("SampleProject"), "sample1|properties.properties"); // NOI18N
         }
     }
-    
+
+    @Override
     public void tearDown() {
         new JDialogOperator(CUSTOMIZER_DIALOG_TITLE).close();
     }
-    
+
     /** Test performPopup. */
     public void testPerformPopup() {
         new CustomizeAction().performPopup(node);
     }
-    
+
     /** Test performAPI. */
     public void testPerformAPI() {
         new CustomizeAction().performAPI(node);
