@@ -79,8 +79,14 @@ public class Hk2WSNode extends Hk2ItemNode {
                     Map<String, String> ip = commonModule.getInstanceProperties();
                     String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
                     String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
-                    result = Utils.getHttpListenerProtocol(host, httpPort)
-                            + "://" + host + ":" + httpPort + "/" + ws.getTestURL();
+                    String url = ip.get(GlassfishModule.URL_ATTR);
+                    if (url == null || !url.contains("ee6wc")) {
+                        result = Utils.getHttpListenerProtocol(host, httpPort)
+                                + "://" + host + ":" + httpPort + "/" + ws.getTestURL();
+                    } else {
+                        result = "http"
+                                + "://" + host + ":" + httpPort + "/" + ws.getTestURL();
+                    }
                     if (result.endsWith("//")) {
                         result = result.substring(0, result.length() - 1);
                     }
@@ -103,8 +109,14 @@ public class Hk2WSNode extends Hk2ItemNode {
             Map<String, String> ip = commonModule.getInstanceProperties();
             String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
             String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
-            result = Utils.getHttpListenerProtocol(host, httpPort)
-                    + "://" + host + ":" + httpPort + "/" + ws.getWsdlUrl();
+            String url = ip.get(GlassfishModule.URL_ATTR);
+            if (url == null || !url.contains("ee6wc")) {
+                result = Utils.getHttpListenerProtocol(host, httpPort)
+                        + "://" + host + ":" + httpPort + "/" + ws.getTestURL();
+            } else {
+                result = "http"
+                        + "://" + host + ":" + httpPort + "/" + ws.getTestURL();
+            }
             if (result.endsWith("//")) {
                 result = result.substring(0, result.length() - 1);
             }
