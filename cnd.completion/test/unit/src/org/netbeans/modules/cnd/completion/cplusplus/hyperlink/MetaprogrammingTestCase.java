@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import org.netbeans.junit.RandomlyFails;
+
 /**
  * @author Nikolay Krasilnikov
  */
@@ -75,6 +77,7 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
         performTest("bug172419.cpp", 59, 10, "bug172419.cpp", 42, 5);
     }    
 
+    @RandomlyFails
     public void testBug172419_2() throws Exception {
         // Bug 172419 - Boost metaprogramming usage problem
         performTest("bug172419_2.cpp", 293, 12, "bug172419_2.cpp", 260, 5);
