@@ -156,6 +156,18 @@ public class RemoteServerRecord implements ServerRecord {
         }
         StatusDisplayer.getDefault().setStatusText(msg);        
     }
+
+    @Override
+    public void checkSetupAfterConnection(Runnable task) {
+        if (!isOnline()) {
+            resetOfflineState();
+            init(null);
+            if (isOnline()) {
+                task.run();
+            }
+        }
+    }
+
     
     /**
      * Start the initialization process. This should <b>never</b> be done from the AWT Event
