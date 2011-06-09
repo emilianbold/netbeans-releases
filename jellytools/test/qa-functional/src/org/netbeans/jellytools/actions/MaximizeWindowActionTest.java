@@ -41,57 +41,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
- package org.netbeans.jellytools.actions;
+package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.MaximizeWindowAction and 
  * org.netbeans.jellytools.actions.RestoreWindowAction.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class MaximizeWindowActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name
      */
     public MaximizeWindowActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new MaximizeWindowActionTest("testPerformPopup"));
-        suite.addTest(new MaximizeWindowActionTest("testPerformAPI"));
-        return suite;
-         */
         return createModuleTest(MaximizeWindowActionTest.class);
-    }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
     }
 
     @Override
     protected void setUp() throws IOException {
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
     }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         // test editor TopComponent
@@ -106,7 +91,7 @@ public class MaximizeWindowActionTest extends JellyTestCase {
         new MaximizeWindowAction().performPopup(pto);
         new RestoreWindowAction().performPopup(pto);
     }
-    
+
     /** Test performAPI  */
     public void testPerformAPI() {
         // test editor TopComponent
@@ -121,5 +106,4 @@ public class MaximizeWindowActionTest extends JellyTestCase {
         new MaximizeWindowAction().performAPI(pto);
         new RestoreWindowAction().performAPI();
     }
-    
 }

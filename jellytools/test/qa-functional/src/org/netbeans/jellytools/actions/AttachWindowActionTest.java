@@ -41,25 +41,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.actions;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.FavoritesOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test AttachWindowAction.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class AttachWindowActionTest extends JellyTestCase {
 
-    public static final String[] tests = new String[] {
+    public static final String[] tests = new String[]{
         "testPerformAPI"
     };
 
@@ -69,29 +65,18 @@ public class AttachWindowActionTest extends JellyTestCase {
     public AttachWindowActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new AttachWindowActionTest("testPerformAPI"));
-        return suite;
-         */
         return createModuleTest(AttachWindowActionTest.class, tests);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
+    @Override
     public void setUp() {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
     }
-    
+
     /** Test performAPI() method. */
     public void testPerformAPI() {
         ProjectsTabOperator projectsOper = ProjectsTabOperator.invoke();
