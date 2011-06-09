@@ -437,5 +437,12 @@ public final class TabbedSlideAdapter implements Tabbed {
     public void setTransparent(boolean transparent) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public Rectangle getTabsArea() {
+        Rectangle res = slideBar.getBounds();
+        res.setLocation( 0, 0 );
+        return res;
+    }
 }
 
