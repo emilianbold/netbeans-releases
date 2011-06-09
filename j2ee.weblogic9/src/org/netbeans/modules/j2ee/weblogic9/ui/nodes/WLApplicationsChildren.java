@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -58,10 +59,17 @@ import org.openide.util.NbBundle;
 public class WLApplicationsChildren extends WLNodeChildren {
     
     WLApplicationsChildren(Lookup lookup) {
-        setKeys(new Object[] {
-                createEarApplicationsNode(lookup),
-                createEjbModulesNode(lookup),
-                createWebApplicationsNode(lookup)});
+        WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
+        assert manager != null;
+        if (manager.isWebProfile()) {
+            setKeys(new Object[] {
+                    createWebApplicationsNode(lookup)});            
+        } else {
+            setKeys(new Object[] {
+                    createEarApplicationsNode(lookup),
+                    createEjbModulesNode(lookup),
+                    createWebApplicationsNode(lookup)});
+        }
     }
     
     /*

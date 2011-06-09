@@ -211,6 +211,10 @@ public class WebProfileJdbRetriever implements JdbcChildrenFactory.Retriever {
     private void loadDeployedDataSource(String path, List<JDBCDataBean> list,
             String deplName) {
         try {
+            if (!path.endsWith(".xml")) { // NOI18N
+                return;
+            }
+
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
             JdbcConfigHandler handler = new JdbcConfigHandler();
             FileObject jdbcConfig = FileUtil.toFileObject( FileUtil.
