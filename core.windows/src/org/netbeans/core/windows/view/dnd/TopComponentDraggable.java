@@ -98,7 +98,7 @@ public final class TopComponentDraggable {
     public boolean isAllowedToMoveAnywhere() {
         boolean res = Constants.SWITCH_MODE_ADD_NO_RESTRICT;
         if( isTopComponentTransfer() )
-            res &= WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(tc);
+            res |= WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(tc);
         return res;
     }
 
