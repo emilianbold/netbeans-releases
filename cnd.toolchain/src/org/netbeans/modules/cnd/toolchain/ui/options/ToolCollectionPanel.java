@@ -603,7 +603,10 @@ import org.openide.util.Utilities;
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    boolean exists = ServerList.isValidExecutable(manager.getExecutionEnvironment(), txt);
+                    boolean exists = false;
+                    if (ServerList.get(manager.getExecutionEnvironment()).isOnline()) {
+                        exists = ServerList.isValidExecutable(manager.getExecutionEnvironment(), txt);
+                    }
                     lastValid.put(tool, exists);
                     updateField(field, exists, tool);
                 }
