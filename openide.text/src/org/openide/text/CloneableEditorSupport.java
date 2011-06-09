@@ -1740,6 +1740,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  Mutex.EVENT.readAccess(query);
                                                  return;
                                              }
+                                             if (t.getCause() instanceof IOException) {
+                                                 IOException ioe = (IOException)t.getCause();
+                                                 DialogDisplayer.getDefault().notify(
+                                                     new NotifyDescriptor.Message(
+                                                        ioe.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                                                 return;
+                                             }
                                              prepareDocumentRuntimeException = t;
                                              throw t;
                                          }
