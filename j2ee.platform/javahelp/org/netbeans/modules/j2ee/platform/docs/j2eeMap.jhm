@@ -35,6 +35,7 @@ Other names may be trademarks of their respective owners.
 	<mapID target="create_ws_from_java" url="webservice/create/create_ws_from_java.html" />
         <mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
 	<mapID target="add_ws_operation" url="webservice/create/add_ws_operation.html" />
+        <mapID target="ws_designer" url="webservice/create/soap_ws_designer.html" />
 	<!-- End of "Create" section -->
 	<!-- Start of "Configure" section -->
 	<mapID target="config_ws_about" url="webservice/configure/config_ws_about.html" />

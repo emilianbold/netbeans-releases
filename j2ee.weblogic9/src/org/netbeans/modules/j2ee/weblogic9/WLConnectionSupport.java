@@ -58,7 +58,6 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -68,6 +67,9 @@ public final class WLConnectionSupport {
 
     private final WLDeploymentManager deploymentManager;
 
+    // full weblogic code is setting this, causing CNFE on DWP
+    private static final String PORTABLE_OBJECT_PROPERTY = "javax.rmi.CORBA.PortableRemoteObjectClass"; // NOI18N
+
     public WLConnectionSupport(WLDeploymentManager deploymentManager) {
         this.deploymentManager = deploymentManager;
     }
@@ -76,14 +78,21 @@ public final class WLConnectionSupport {
         synchronized (deploymentManager) {
             ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 
+            String portable = System.getProperty(PORTABLE_OBJECT_PROPERTY);
+
             Thread.currentThread().setContextClassLoader(
                     WLDeploymentFactory.getInstance().getClassLoader(deploymentManager));
             try {
                 return action.call();
             } finally {
                 Thread.currentThread().setContextClassLoader(originalLoader);
-                // full weblogic code is setting this, causing CNFE on DWP
-                System.clearProperty("javax.rmi.CORBA.PortableRemoteObjectClass"); // NOI18N
+
+                // this is not really safe considering other threads, but it is the best we can do
+                if (portable == null) {
+                    System.clearProperty(PORTABLE_OBJECT_PROPERTY);
+                } else {
+                    System.setProperty(PORTABLE_OBJECT_PROPERTY, portable);
+                }
             }
         }
     }
