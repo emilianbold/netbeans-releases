@@ -123,6 +123,12 @@ public interface Tabbed {
     /** Returns bounds of tab with given index */
     public Rectangle getTabBounds(int tabIndex);
     
+    /**
+     * @return Bounds of the area which displays the tab headers.
+     * @since 2.32
+     */
+    public Rectangle getTabsArea();
+    
     public boolean isTransparent();
     
     public void setTransparent( boolean transparent );
