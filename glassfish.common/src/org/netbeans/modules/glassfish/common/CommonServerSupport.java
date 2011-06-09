@@ -640,8 +640,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     }
 
     public boolean isReallyRunning() {
-        return isRunning(getHostName(), getAdminPortNumber(), properties.get(DISPLAY_NAME_ATTR))
-                && isReady(false,30,TimeUnit.SECONDS);
+        return //isRunning(getHostName(), getAdminPortNumber(), properties.get(DISPLAY_NAME_ATTR)) &&
+                isReady(false,30,TimeUnit.SECONDS);
     }
 
     public boolean isReady(boolean retry, int timeout, TimeUnit units) {
