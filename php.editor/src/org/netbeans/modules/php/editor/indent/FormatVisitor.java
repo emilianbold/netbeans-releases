@@ -708,7 +708,7 @@ public class FormatVisitor extends DefaultVisitor {
 	scan(node.getFunctionName());
         List<Expression> parameters = node.getParameters();
 	if (parameters != null && parameters.size() > 0) {
-            boolean addIndentation = !(path.get(1) instanceof Assignment);
+            boolean addIndentation = !(path.get(1) instanceof Assignment || (path.size() > 2 && path.get(1) instanceof MethodInvocation && path.get(2) instanceof Assignment));
             if (addIndentation) {
                 formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
             }
