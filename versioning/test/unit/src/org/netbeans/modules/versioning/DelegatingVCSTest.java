@@ -153,7 +153,7 @@ public class DelegatingVCSTest extends NbTestCase {
         delegate.addPropertyChangeListener(l1);
         delegate.addPropertyChangeListener(l2);
         
-        delegate.awake();
+        delegate.getDelegate(); // forces delegate creation
         assertNotNull(TestAnnotatedVCS.INSTANCE);        
         
         events1.clear();

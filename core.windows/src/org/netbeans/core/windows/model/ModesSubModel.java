@@ -417,8 +417,9 @@ final class ModesSubModel {
             removeMode( prevMode );
             editorSplitSubModel.removeMode( floatingMode );
         } else {
-            removeMode( prevMode );
+            editorSplitSubModel.removeMode(floatingMode);
             editorSplitSubModel.addMode(floatingMode, constraints);
+            removeMode( prevMode );
         }
     }
     
