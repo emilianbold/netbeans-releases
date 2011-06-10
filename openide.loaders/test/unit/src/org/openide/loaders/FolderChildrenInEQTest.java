@@ -41,6 +41,13 @@
  */
 package org.openide.loaders;
 
+import java.util.concurrent.CountDownLatch;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.Mutex;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -50,9 +57,45 @@ public class FolderChildrenInEQTest extends FolderChildrenTest {
     public FolderChildrenInEQTest(String testName) {
         super(testName);
     }
-
+    
     @Override
     protected boolean runInEQ() {
         return true;
     }
+    
+    public void testDeadlockWaitingForDelayedNode() throws Exception {
+        Pool.setLoader(FormKitDataLoader.class);
+        
+        FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/A");
+        
+        FileObject bb = FileUtil.getConfigFile("/FK");
+        final DataFolder folder = DataFolder.findFolder(bb);
+        final Node node = folder.getNodeDelegate();
+        
+        
+        Node[] one = node.getChildren().getNodes(true);
+        assertNodes(one, "A");
+        
+        FormKitDataLoader.waiter = new CountDownLatch(1);
+        FileUtil.createData(FileUtil.getConfigRoot(), "FK/B");
+        Node[] arr = Children.MUTEX.readAccess(new Mutex.ExceptionAction<Node[]>() {
+            @Override
+            public Node[] run() throws Exception {
+                // don't deadlock
+                return node.getChildren().getNodes(true);
+            }
+        });
+
+        assertNodes(arr, "A", "B");
+        assertEquals("Second node does not have data object yet", null, arr[1].getLookup().lookup(DataObject.class));
+        
+        FormKitDataLoader.waiter.countDown();
+        arr = node.getChildren().getNodes(true);
+        
+        assertNotNull("We have data object now", arr[1].getLookup().lookup(DataObject.class));
+        
+        assertFalse("No leaf", arr[0].isLeaf());
+        assertTrue("File B is leaf", arr[1].isLeaf());
+    }
+    
 }
