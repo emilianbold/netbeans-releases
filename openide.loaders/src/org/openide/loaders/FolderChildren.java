@@ -253,7 +253,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             for (Node n : arr) {
                 if (n instanceof DelayedNode) {
                     DelayedNode dn = (DelayedNode)n;
-                    if (dn.waitFinished()) {
+                    if (checkChildrenMutex() && dn.waitFinished()) {
                         stop = false;
                     }
                 }
