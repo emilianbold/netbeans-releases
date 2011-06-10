@@ -81,7 +81,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -151,15 +150,14 @@ public class ShowFailures extends AbstractAction implements Runnable {
                         return new TestsuiteNode(suiteName, filtered);
                     }
                     public @Override Node createTestMethodNode(final Testcase testcase, Project project) {
-                        return new TestMethodNode(testcase, project, Lookups.singleton(new OpenableInBrowser() {
-                            public @Override String getUrl() {
-                                return url + "testReport/" + testcase.getClassName().replaceFirst("[.][^.]+$", "") + "/" + testcase.getClassName().replaceFirst(".+[.]", "") + "/" + testcase.getName() + "/";
-                            }
-                        })) {
+                        return new TestMethodNode(testcase, project) {
                             public @Override Action[] getActions(boolean context) {
                                 return new Action[] {
-                                    // XXX singleton disabled since TR window has no activatedNodes (and no other parent of ResultTreeView implements Lookup.Provider)
-                                    OpenUrlAction.get(OpenUrlAction.class).createContextAwareInstance(Lookups.singleton(this)),
+                                    OpenUrlAction.forOpenable(new OpenableInBrowser() {
+                                        public @Override String getUrl() {
+                                            return url + "testReport/" + testcase.getClassName().replaceFirst("[.][^.]+$", "") + "/" + testcase.getClassName().replaceFirst(".+[.]", "") + "/" + testcase.getName() + "/";
+                                        }
+                                    }),
                                     new DiffViewAction(testcase),
                                 };
                             }
