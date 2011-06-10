@@ -78,7 +78,6 @@ public class ImageNode extends Node {
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
     static final DeleteAction deleteAction = new DeleteAction();
-    static final RenameAction renameAction = new RenameAction();
     static final SaveAsTemplateAction saveAsTemplateAction = new SaveAsTemplateAction();
     static final PropertiesAction propertiesAction = new PropertiesAction();
    
@@ -90,7 +89,6 @@ public class ImageNode extends Node {
             copyAction,
             pasteAction,
             deleteAction,
-            renameAction,
             saveAsTemplateAction,
             propertiesAction
         });
@@ -123,7 +121,7 @@ public class ImageNode extends Node {
 
     /** performs RenameAction with this node */    
     public void rename() {
-        renameAction.perform(this);
+        new ActionNoBlock(null, "Refactor|Rename...").perform(this);
     }
 
     /** performs SaveAsTemplateAction with this node */    
