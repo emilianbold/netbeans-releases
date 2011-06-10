@@ -2273,6 +2273,11 @@ public class PHPFormatterTest extends PHPTestBase {
         options.put(FmtOptions.continuationIndentSize, 4);
         reformatFileContents("testfiles/formatting/spaces/issue195562.php", options);
     }
+    
+    public void testIssue196405() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue196405.php", options);
+    }
 
     protected void reformatFileContents(String file, IndentPrefs preferences, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
