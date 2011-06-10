@@ -48,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -203,6 +204,26 @@ public class Utils {
      */
     public static final String escapePath(String path) {
         return path.replace("\\", "\\\\").replace("$", "\\$"); // NOI18N
+    }
+
+    /**
+     * Determine if a local port is occupied.
+     *
+     * @param port
+     * @return true, if the local port is in use.
+     */
+    public static boolean isLocalPortOccupied(int port) {
+        ServerSocket ss = null;
+        boolean retVal = true;
+        try {
+            ss = new ServerSocket(port);
+            retVal = false;
+        } catch (IOException ioe) {
+            // do nothing
+        } finally {
+            if (null != ss) {try { ss.close(); } catch (IOException ioe) {} }
+        }
+        return retVal;
     }
 
     /**

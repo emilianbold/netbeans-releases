@@ -105,19 +105,18 @@ public class Hk2PluginPropertiesTest {
             } catch (IOException ioe) {
                 // it looks like there is an app server running... let's pound on it
                 System.out.println("isRunning "+host+":4848");
-                poundOnIt(host, port, expResult, result);
+                poundOnIt(host, port, true);
             }
         } else {
             System.out.println("isRunning "+host+":4848");
-            poundOnIt(host, "4848", true, true);
+            poundOnIt(host, "4848", Hk2PluginProperties.isRunning(host, "4848"));
         }
     }
 
-    private void poundOnIt(String host, String port, boolean expResult, boolean result) {
-        result = Hk2PluginProperties.isRunning(host, port);
-        expResult = true;
+    private void poundOnIt(String host, String port, boolean expResult) {
+        boolean result = Hk2PluginProperties.isRunning(host, port);
         assertEquals(expResult, result);
-        for (int i = 0; i < 4000; i++) {
+        for (int i = 0; result && i < 4000; i++) {
             Hk2PluginProperties.isRunning(host, port);
         }
     }

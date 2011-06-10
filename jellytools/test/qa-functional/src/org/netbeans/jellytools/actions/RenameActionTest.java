@@ -41,43 +41,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.RenameAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class RenameActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public RenameActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new RenameActionTest("testPerformPopup"));
-        suite.addTest(new RenameActionTest("testPerformAPI"));
-        return suite;
-         */
         return createModuleTest(RenameActionTest.class);
     }
 
@@ -85,28 +75,19 @@ public class RenameActionTest extends JellyTestCase {
     protected void setUp() throws IOException {
         openDataProjects("SampleProject");
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     private static final String RENAME_TITLE = Bundle.getString("org.openide.actions.Bundle", "CTL_RenameTitle");
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         Node node = new Node(new FilesTabOperator().getProjectNode("SampleProject"), "build.xml"); // NOI18N
         new RenameAction().performPopup(node);
         new JDialogOperator(RENAME_TITLE).close();
     }
-    
+
     /** Test performAPI */
     public void testPerformAPI() {
         Node node = new Node(new FilesTabOperator().getProjectNode("SampleProject"), "src|sample1|SampleClass1.java"); // NOI18N
         new RenameAction().performAPI(node);
         new JDialogOperator(RENAME_TITLE).close();
     }
-    
 }
