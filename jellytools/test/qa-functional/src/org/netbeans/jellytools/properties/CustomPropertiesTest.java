@@ -46,7 +46,6 @@ package org.netbeans.jellytools.properties;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JDialog;
-import junit.framework.TestSuite;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -54,8 +53,8 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 /** Tests of all custom properties which extend org.netbeans.jellytools.properties.Property
  * and reside in package org.netbeans.jellytools.properties.
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase {
 
@@ -68,78 +67,51 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
     public CustomPropertiesTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static junit.framework.Test suite() {
-        return new TestSuite();
-        /*
-        junit.framework.TestSuite suite = new org.netbeans.junit.NbTestSuite();
-        suite.addTest(new CustomPropertiesTest("testStringProperty"));
-        suite.addTest(new CustomPropertiesTest("testStringArrayProperty"));
-        suite.addTest(new CustomPropertiesTest("testPointProperty"));
-        suite.addTest(new CustomPropertiesTest("testDimensionProperty"));
-        suite.addTest(new CustomPropertiesTest("testRectangleProperty"));
-        suite.addTest(new CustomPropertiesTest("testColorProperty"));
-        suite.addTest(new CustomPropertiesTest("testFontProperty"));
-        suite.addTest(new CustomPropertiesTest("testFileProperty"));
-        suite.addTest(new CustomPropertiesTest("testClasspathProperty"));
-        suite.addTest(new CustomPropertiesTest("testProcessDescriptorProperty"));
-        suite.addTest(new CustomPropertiesTest("testServiceTypeProperty"));
-        suite.addTest(new CustomPropertiesTest("testClose"));
-        return suite;
-         */
-        /*
-        return createModuleTest(CustomPropertiesTest.class, 
-        "testStringProperty",
-        "testStringArrayProperty",
-        "testPointProperty",
-        "testDimensionProperty",
-        "testRectangleProperty",
-        "testColorProperty",
-        "testFontProperty",
-        "testFileProperty",
-        "testClasspathProperty",
-        "testProcessDescriptorProperty",
-        "testServiceTypeProperty",
-        "testClose");
-         */
+        return createModuleTest(CustomPropertiesTest.class,
+                "testStringProperty",
+                "testStringArrayProperty",
+                "testPointProperty",
+                "testDimensionProperty",
+                "testRectangleProperty",
+                "testColorProperty",
+                "testFontProperty",
+                "testFileProperty",
+                "testClasspathProperty",
+                "testProcessDescriptorProperty",
+                "testClose");
     }
-    
+
     /** Method called before each testcase. */
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");  // NOI18N
-        openDataProjects("SampleProject");
-        if(testNode == null) {
+        System.out.println("### " + getName() + " ###");  // NOI18N
+        if (testNode == null) {
             testNode = new TestNode();
             testNode.showProperties();
         }
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
+
     /** Test org.netbeans.jellytools.properties.StringProperty. */
     public void testStringProperty() {
         StringProperty p = new StringProperty(new PropertySheetOperator(TestNode.NODE_NAME), "String");  // NOI18N
         p.setStringValue("test value");  // NOI18N
         assertEquals("test value", p.getStringValue());  // NOI18N
     }
-    
+
     /** Test org.netbeans.jellytools.properties.StringArrayProperty. */
     public void testStringArrayProperty() {
-        StringArrayProperty p=new StringArrayProperty(new PropertySheetOperator(TestNode.NODE_NAME), "String []");  // NOI18N
-        String s[]=new String[]{"aa", "bb"};  // NOI18N
+        StringArrayProperty p = new StringArrayProperty(new PropertySheetOperator(TestNode.NODE_NAME), "String []");  // NOI18N
+        String s[] = new String[]{"aa", "bb"};  // NOI18N
         p.setStringArrayValue(s);
-        String s2[]=p.getStringArrayValue();
+        String s2[] = p.getStringArrayValue();
         assertEquals(s[0], s2[0]);
         assertEquals(s[1], s2[1]);
     }
-    
+
     /** Test org.netbeans.jellytools.properties.PointProperty. */
     public void testPointProperty() {
         PointProperty p = new PointProperty(new PropertySheetOperator(TestNode.NODE_NAME), "Point");  // NOI18N
@@ -148,7 +120,7 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
         assertEquals(s[0], "10");  // NOI18N
         assertEquals(s[1], "20");  // NOI18N
     }
-    
+
     /** Test org.netbeans.jellytools.properties.RectangleProperty. */
     public void testRectangleProperty() {
         RectangleProperty p = new RectangleProperty(new PropertySheetOperator(TestNode.NODE_NAME), "Rectangle");  // NOI18N
@@ -159,7 +131,7 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
         assertEquals(s[2], "30");  // NOI18N
         assertEquals(s[3], "40");  // NOI18N
     }
-    
+
     /** Test org.netbeans.jellytools.properties.DimensionProperty. */
     public void testDimensionProperty() {
         DimensionProperty p = new DimensionProperty(new PropertySheetOperator(TestNode.NODE_NAME), "Dimension");  // NOI18N
@@ -168,7 +140,7 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
         assertEquals(s[0], "10");  // NOI18N
         assertEquals(s[1], "20");  // NOI18N
     }
-    
+
     /** Test org.netbeans.jellytools.properties.ColorProperty. */
     public void testColorProperty() {
         ColorProperty p = new ColorProperty(new PropertySheetOperator(TestNode.NODE_NAME), "Color");  // NOI18N
@@ -179,44 +151,44 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
         p.setColorValue(c);
         assertEquals(c, p.getColorValue());
     }
-    
+
     /** Test org.netbeans.jellytools.properties.FontProperty. */
     public void testFontProperty() {
         PropertySheetOperator pso = new PropertySheetOperator(TestNode.NODE_NAME);
         FontProperty p = new FontProperty(pso, "Font");  // NOI18N
         try {
-            p.setFontValue("Serif", p.STYLE_BOLDITALIC, "14");  // NOI18N
+            p.setFontValue("Serif", FontProperty.STYLE_BOLDITALIC, "14");  // NOI18N
         } catch (TimeoutExpiredException e) {
             // sometimes it fails on Solaris
-            log("jemmy.log", "ERROR: "+e.getMessage());
+            log("jemmy.log", "ERROR: " + e.getMessage());
             JDialog fontDialog = JDialogOperator.findJDialog(p.getName(), false, false);
-            if(fontDialog != null) {
+            if (fontDialog != null) {
                 log("jemmy.log", "   Closing Font dialog.");
                 new NbDialogOperator(fontDialog).close();
             }
             log("jemmy.log", "   Trying to set font once more");
-            p.setFontValue("Serif", p.STYLE_BOLDITALIC, "14");  // NOI18N
+            p.setFontValue("Serif", FontProperty.STYLE_BOLDITALIC, "14");  // NOI18N
         }
         // need to change selection because it gets editable otherwise
         pso.tblSheet().selectCell(0, 0);
         String s[] = p.getFontValue();
         // need to change selection because it gets editable otherwise
         pso.tblSheet().selectCell(0, 0);
-        assertTrue(s[0].indexOf("Serif")>=0);  // NOI18N
-        assertEquals(p.STYLE_BOLDITALIC, s[1]);
+        assertTrue(s[0].indexOf("Serif") >= 0);  // NOI18N
+        assertEquals(FontProperty.STYLE_BOLDITALIC, s[1]);
         assertEquals("14", s[2]);  // NOI18N
     }
-    
+
     /** Test org.netbeans.jellytools.properties.FileProperty. */
     public void testFileProperty() throws Exception {
         FileProperty p = new FileProperty(new PropertySheetOperator(TestNode.NODE_NAME), "File");  // NOI18N
         p.setFileValue(getWorkDir());
         assertEquals(getWorkDir(), p.getFileValue());
         log("init file");
-        p.setFileValue(new File(getWorkDir(), getName()+".log").getAbsolutePath());
-        assertEquals(new File(getWorkDir(), getName()+".log"), p.getFileValue());
+        p.setFileValue(new File(getWorkDir(), getName() + ".log").getAbsolutePath());
+        assertEquals(new File(getWorkDir(), getName() + ".log"), p.getFileValue());
     }
-    
+
     /** Test org.netbeans.jellytools.properties.ClasspathProperty. */
     public void testClasspathProperty() throws Exception {
         ClasspathProperty p = new ClasspathProperty(new PropertySheetOperator(TestNode.NODE_NAME), "NbClassPath");  // NOI18N
@@ -226,7 +198,7 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
         assertEquals(s[0].toLowerCase(), s2[0].toLowerCase());
         assertEquals(s[1].toLowerCase(), s2[1].toLowerCase());
     }
-    
+
     /** Test org.netbeans.jellytools.properties.ProcessDescriptorProperty. */
     public void testProcessDescriptorProperty() {
         ProcessDescriptorProperty p = new ProcessDescriptorProperty(new PropertySheetOperator(TestNode.NODE_NAME), "NbProcessDescriptor");  // NOI18N
@@ -235,7 +207,7 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
         assertEquals("test process", s[0]);  // NOI18N
         assertEquals("test arguments", s[1]);  // NOI18N
     }
-    
+
     /** Close property sheet. */
     public void testClose() {
         new PropertySheetOperator(TestNode.NODE_NAME).close();

@@ -46,7 +46,6 @@ package org.netbeans.jellytools.nodes;
 import java.awt.Toolkit;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.SaveAsTemplateOperator;
@@ -54,12 +53,12 @@ import org.netbeans.jellytools.testutils.NodeUtils;
 
 /** Test of org.netbeans.jellytools.nodes.UnrecognizedNode
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class UnrecognizedNodeTest extends JellyTestCase {
-    
-    public static final String[] tests = new String[] {
+
+    public static final String[] tests = new String[]{
         "testVerifyPopup",
         "testOpen",
         "testCut",
@@ -69,94 +68,74 @@ public class UnrecognizedNodeTest extends JellyTestCase {
         "testSaveAsTemplate",
         "testProperties"
     };
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public UnrecognizedNodeTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new UnrecognizedNodeTest("testVerifyPopup"));
-        suite.addTest(new UnrecognizedNodeTest("testOpen"));
-        suite.addTest(new UnrecognizedNodeTest("testCut"));
-        suite.addTest(new UnrecognizedNodeTest("testCopy"));
-        suite.addTest(new UnrecognizedNodeTest("testDelete"));
-        suite.addTest(new UnrecognizedNodeTest("testRename"));
-        suite.addTest(new UnrecognizedNodeTest("testSaveAsTemplate"));
-        suite.addTest(new UnrecognizedNodeTest("testProperties"));
-        return suite;
-         */
-        return createModuleTest(UnrecognizedNodeTest.class, 
-        tests);                
+        return createModuleTest(UnrecognizedNodeTest.class, tests);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     protected static UnrecognizedNode unrecognizedNode = null;
-    
+
     /** Finds node before each test case. */
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
         // find node
-        if(unrecognizedNode == null) {
+        if (unrecognizedNode == null) {
             unrecognizedNode = new UnrecognizedNode(new SourcePackagesNode("SampleProject"), "sample1|unrecognized");  // NOI18N
         }
     }
-    
+
     /** Test verifyPopup  */
     public void testVerifyPopup() {
         unrecognizedNode.verifyPopup();
     }
-    
+
     /** Test open */
     public void testOpen() {
         unrecognizedNode.open();
         new EditorOperator("unrecognized").closeDiscard();  // NOI18N
     }
-    
+
     /** Test cut */
     public void testCut() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         unrecognizedNode.cut();
         NodeUtils.testClipboard(clipboard1);
     }
-    
+
     /** Test copy */
     public void testCopy() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         unrecognizedNode.copy();
         NodeUtils.testClipboard(clipboard1);
     }
-    
+
     /** Test delete  */
     public void testDelete() {
         unrecognizedNode.delete();
         NodeUtils.closeConfirmDeleteDialog();
     }
-    
+
     /** Test rename */
     public void testRename() {
         unrecognizedNode.rename();
         NodeUtils.closeRenameDialog();
     }
-    
+
     /** Test properties */
     public void testProperties() {
         unrecognizedNode.properties();
         NodeUtils.closeProperties("unrecognized"); // NOI18N
     }
-    
+
     /** Test saveAsTemplate */
     public void testSaveAsTemplate() {
         unrecognizedNode.saveAsTemplate();
