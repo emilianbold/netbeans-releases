@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -496,16 +497,27 @@ public final class Stamps {
             File tmpFile = new File(cacheFile.getParentFile(), cacheFile.getName() + "." + fileCounter++);
             tmpFile.delete(); // delete any leftover file from previous session
             boolean renamed = false;
-            for (int i = 0; i < 5; i++) {
+            Random r = null;
+            for (int i = 0; i < 10; i++) {
                 renamed = cacheFile.renameTo(tmpFile); // try to rename it
                 if (renamed) {
                     break;
                 }
-                LOG.fine("cannot rename (#" + i + "): " + cacheFile); // NOI18N
+                LOG.log(Level.INFO, "cannot rename (#{0}): {1}", new Object[]{i, cacheFile}); // NOI18N
                 // try harder
                 System.gc();
                 System.runFinalization();
-                LOG.fine("after GC"); // NOI18N
+                LOG.info("after GC"); // NOI18N
+                if (r == null) {
+                    r = new Random();
+                }
+                try {
+                    final int ms = r.nextInt(1000) + 1;
+                    Thread.sleep(ms);
+                    LOG.log(Level.INFO, "Slept {0} ms", ms);
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.INFO, "Interrupted", ex); // NOI18N
+                }
             }
             if (!renamed) {
                 // still delete on exit, so next start is ok
@@ -581,7 +593,8 @@ public final class Stamps {
                 dos.close();
                 LOG.log(Level.FINE, "Done Storing cache {0}", cacheFile);
             } catch (IOException ex) {
-                LOG.log(Level.WARNING, "Error saving cache " + cacheFile, ex); // NOI18N
+                LOG.log(Level.WARNING, "Error saving cache {0}", cacheFile);
+                LOG.log(Level.INFO, ex.getMessage(), ex); // NOI18N
                 delete = true;
             } finally {
                 if (os != null) {
