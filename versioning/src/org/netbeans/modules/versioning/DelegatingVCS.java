@@ -82,13 +82,19 @@ public class DelegatingVCS extends VersioningSystem {
         // populate properties
         putProperty(VersioningSystem.PROP_DISPLAY_NAME, map.get("displayName"));// NOI18N
         putProperty(VersioningSystem.PROP_MENU_LABEL, map.get("menuLabel"));    // NOI18N
+        
+        VersioningManager.LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", map.get("displayName")); // NOI18N
     }
 
     VersioningSystem getDelegate() {
         if(delegate == null) {
             VersioningManager.getInstance().flushNullOwners();   
             delegate = (VersioningSystem) map.get("delegate");                  // NOI18N
-            Accessor.IMPL.moveChangeListeners(this, delegate);
+            if(delegate != null) {
+                Accessor.IMPL.moveChangeListeners(this, delegate);
+            } else {
+                VersioningManager.LOG.log(Level.WARNING, "Couldn't create delegate for : {0}", map.get("displayName")); // NOI18N
+            }
         }
         return delegate;
     }
@@ -131,8 +137,8 @@ public class DelegatingVCS extends VersioningSystem {
                         "will awake VCS {0} because of metadata folder {1}",// NOI18N 
                         new Object[]{getProperty(PROP_DISPLAY_NAME), file}); 
 
-                awake(); 
-                return getDelegate().getTopmostManagedAncestor(file);
+                VersioningSystem vs = getDelegate(); 
+                return vs != null ? vs.getTopmostManagedAncestor(file) : null;
             } 
             if(hasMetadata(file)) {
                 VersioningManager.LOG.log(
@@ -141,8 +147,8 @@ public class DelegatingVCS extends VersioningSystem {
                         new Object[]{getProperty(PROP_DISPLAY_NAME), file});
                 
                 
-                awake();
-                return getDelegate().getTopmostManagedAncestor(file);
+                VersioningSystem vs = getDelegate(); 
+                return vs != null ? vs.getTopmostManagedAncestor(file) : null;
             }
         } else {
             return getDelegate().getTopmostManagedAncestor(file);
@@ -171,10 +177,6 @@ public class DelegatingVCS extends VersioningSystem {
             }
         }
         return metadataFolderNames;
-    }
-    
-    void awake() {
-        getDelegate(); // awake delegate
     }
     
     Action[] getActions(VCSContext ctx, ActionDestination actionDestination) {

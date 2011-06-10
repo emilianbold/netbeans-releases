@@ -57,6 +57,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
@@ -213,7 +214,8 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             startingPoint = null;
             startingComponent = null;
         }
-        
+        if(me.isConsumed())
+            return;
         if(evt.getID() != MouseEvent.MOUSE_DRAGGED) {
             return;
         }
@@ -305,13 +307,16 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         int tabIndex = tabbed.tabForCoordinate(p);
         tc = tabIndex != -1 ? tabbed.getTopComponentAt(tabIndex) : null;
         if (tc == null) {
-            TopComponent[] tcs = tabbed.getTopComponents();
-            if( null != tcs && tcs.length > 0 ) {
-                ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tcs[0] );
-                if( null != mode && ((mode.getKind() == Constants.MODE_KIND_EDITOR && Switches.isEditorModeDragAndDropEnabled())
-                                        ||
-                                    (mode.getKind() == Constants.MODE_KIND_VIEW && Switches.isViewModeDragAndDropEnabled())) ) {
-                    draggable = new TopComponentDraggable( mode );
+            Rectangle tabsArea = tabbed.getTabsArea();
+            if( tabsArea.contains( p ) ) {
+                TopComponent[] tcs = tabbed.getTopComponents();
+                if( null != tcs && tcs.length > 0 ) {
+                    ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tcs[0] );
+                    if( null != mode && ((mode.getKind() == Constants.MODE_KIND_EDITOR && Switches.isEditorModeDragAndDropEnabled())
+                                            ||
+                                        (mode.getKind() == Constants.MODE_KIND_VIEW && Switches.isViewModeDragAndDropEnabled())) ) {
+                        draggable = new TopComponentDraggable( mode );
+                    }
                 }
             }
         } else {

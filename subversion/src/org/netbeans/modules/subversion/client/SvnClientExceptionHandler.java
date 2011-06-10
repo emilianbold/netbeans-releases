@@ -252,6 +252,31 @@ public class SvnClientExceptionHandler {
         }
     }
 
+    public static boolean handleAuth (SVNUrl url) {
+        SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
+        String sUrl = url.toString();
+        if(support.isKenai(sUrl)) {
+            return support.showLogin() && support.getPasswordAuthentication(sUrl, true) != null;
+        } else {
+            Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
+            repository.selectUrl(url, true);
+
+            JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
+            String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
+            Object option = repository.show(title, new HelpCtx(SvnClientExceptionHandler.class), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")},    // NOI18N
+                    retryButton);
+
+            boolean ret = (option == retryButton);
+            if(ret) {
+                RepositoryConnection rc = repository.getSelectedRC();
+                String username = rc.getUsername();
+                char[] password = rc.getPassword();
+                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+            }
+            return ret;
+        }
+    }
+
     private boolean handleNoCertificateError() throws SVNClientException {
         
         SVNUrl url = getSVNUrl(); // get the remote host url
