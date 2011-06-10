@@ -1103,6 +1103,8 @@ public class CasualDiff {
                         parens ? new JavaTokenId[] { JavaTokenId.LPAREN, JavaTokenId.RPAREN } : null,
                         pos,
                         Measure.ARGUMENT,
+                        diffContext.style.spaceBeforeSemi(),
+                        diffContext.style.spaceAfterSemi(),
                         false,
                         ";" //NOI18N
                 );
@@ -1874,7 +1876,7 @@ public class CasualDiff {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
             if (oldT.isEnum()) {
-                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT, true, ",");  //NOI18N
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), true, ",");  //NOI18N
                 copyTo(pos, bounds[1]);
                 return bounds[1];
             } else {
@@ -2237,7 +2239,7 @@ public class CasualDiff {
             int pos,
             Comparator<JCTree> measure)
     {
-        return diffParameterList(oldList, newList, makeAround, pos, measure, false, ",");   //NOI18N
+        return diffParameterList(oldList, newList, makeAround, pos, measure, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), false, ",");   //NOI18N
     }
     private int diffParameterList(
             List<? extends JCTree> oldList,
@@ -2245,6 +2247,8 @@ public class CasualDiff {
             JavaTokenId[] makeAround,
             int pos,
             Comparator<JCTree> measure,
+            boolean spaceBefore,
+            boolean spaceAfter,
             boolean isEnum,
             String separator)
     {
@@ -2305,7 +2309,7 @@ public class CasualDiff {
                 // insert new element
                 case INSERT: {
                     if (wasComma) {
-                        if (diffContext.style.spaceAfterComma()) {
+                        if (spaceAfter) {
                             printer.print(" ");
                         }
                     }
@@ -2322,7 +2326,7 @@ public class CasualDiff {
                 // just copy existing element
                 case NOCHANGE:
                     if (oldIndex++ == 0 && wasComma) {
-                        if (diffContext.style.spaceAfterComma()) {
+                        if (spaceAfter) {
                             printer.print(" ");
                         }
                     }
@@ -2335,10 +2339,17 @@ public class CasualDiff {
                     int start = tokenSequence.offset();
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-                    int end = bounds[1];
-                    if (isEnum &&
-                        (tokenSequence.token().id() == JavaTokenId.SEMICOLON || tokenSequence.token().id() == JavaTokenId.COMMA)) {
+                    int end;
+                    if (isEnum) {
+                        if ((tokenSequence.token().id() == JavaTokenId.SEMICOLON || tokenSequence.token().id() == JavaTokenId.COMMA)) {
+                            end = tokenSequence.offset();
+                        } else {
+                            end = bounds[1];
+                        }
+                    } else if (oldIndex < oldList.size()) {
                         end = tokenSequence.offset();
+                    } else {
+                        end = bounds[1];
                     }
                     copyTo(start, pos = end, printer);
                     wasLeadingDelete = false;
@@ -2347,6 +2358,9 @@ public class CasualDiff {
                     break;
             }
             if (commaNeeded(result, item)) {
+                if ((item.operation == Operation.INSERT || (oldIndex == oldList.size() && j + 1 < result.length && result[j + 1].operation == Operation.INSERT)) && spaceBefore) {
+                    printer.print(" ");
+                }
                 printer.print(separator);
                 wasComma = true;
             } else {
@@ -2519,6 +2533,11 @@ public class CasualDiff {
             printer.print(makeAround[1].fixedText());
         }
         return pos;
+    }
+
+    protected int diffUnionType(JCTypeUnion oldT, JCTypeUnion newT, int[] bounds) {
+        int localPointer = bounds[0];
+        return diffParameterList(oldT.alternatives, newT.alternatives, null, localPointer, Measure.MEMBER, diffContext.style.spaceAroundBinaryOps(), diffContext.style.spaceAroundBinaryOps(), false, "|");
     }
 
     private boolean commaNeeded(ResultItem[] arr, ResultItem item) {
@@ -3284,6 +3303,9 @@ public class CasualDiff {
           case JCTree.MODIFIERS:
               retVal = diffModifiers((JCModifiers) oldT, (JCModifiers) newT, parent, elementBounds[0]);
               copyTo(retVal, elementBounds[1]);
+              break;
+          case JCTree.TYPEUNION:
+              retVal = diffUnionType((JCTypeUnion) oldT, (JCTypeUnion) newT, elementBounds);
               break;
           default:
               // handle special cases like field groups and enum constants
