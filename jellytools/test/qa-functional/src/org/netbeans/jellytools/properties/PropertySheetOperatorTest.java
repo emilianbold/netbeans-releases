@@ -55,88 +55,87 @@ import org.netbeans.junit.NbTestSuite;
 /**
  * Test of org.netbeans.jellytools.properties.PropertySheetOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class PropertySheetOperatorTest extends JellyTestCase {
-    
-    public static Test suite() {
-        return (NbTestSuite) createModuleTest(PropertySheetOperatorTest.class, 
-        "testInvoke",
-        "testTblSheet",
-        "testGetDescriptionHeader",
-        "testGetDescription",
-        "testSortByName",
-        "testSortByCategory",
-        "testShowDescriptionArea",
-        "testVerify",
-        // have to be the last
-        "testClose");
-    }
 
+    public static Test suite() {
+        return (NbTestSuite) createModuleTest(PropertySheetOperatorTest.class,
+                "testInvoke",
+                "testTblSheet",
+                "testGetDescriptionHeader",
+                "testGetDescription",
+                "testSortByName",
+                "testSortByCategory",
+                "testShowDescriptionArea",
+                "testVerify",
+                // have to be the last
+                "testClose");
+    }
     private static String SAMPLE_NODE_NAME = "SampleClass1.java";
     private static PropertySheetOperator pso;
-     
+
     /** Open sample property sheet and create PropertySheetOperator */
     @Override
     protected void setUp() throws Exception {
-        System.out.println("### "+getName()+" ###");  // NOI18N
+        System.out.println("### " + getName() + " ###");  // NOI18N
         openDataProjects("SampleProject");
-        if(pso == null && !getName().equals("testInvoke")) {    // NOI18N
+        if (pso == null && !getName().equals("testInvoke")) {    // NOI18N
             // opens properties window
             Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
             Node sampleClass1 = new Node(sample1, SAMPLE_NODE_NAME);
             new PropertiesAction().performAPI(sampleClass1);
             pso = new PropertySheetOperator(PropertySheetOperator.MODE_PROPERTIES_OF_ONE_OBJECT,
-                                            SAMPLE_NODE_NAME);
+                    SAMPLE_NODE_NAME);
         }
     }
-    
+
     /** Clean up after each test case. */
     @Override
     protected void tearDown() {
     }
-    
+
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
     public PropertySheetOperatorTest(java.lang.String testName) {
         super(testName);
     }
-    
+
     /** Test of invoke method. */
     public void testInvoke() {
         Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
         new Node(sample1, SAMPLE_NODE_NAME).select();
         PropertySheetOperator.invoke();
-        new PropertySheetOperator(PropertySheetOperator.MODE_PROPERTIES_OF_ONE_OBJECT, 
-                                  SAMPLE_NODE_NAME).close();
+        new PropertySheetOperator(PropertySheetOperator.MODE_PROPERTIES_OF_ONE_OBJECT,
+                SAMPLE_NODE_NAME).close();
     }
-    
+
     /** Test of tblSheet method */
     public void testTblSheet() {
         pso.tblSheet();
     }
-    
+
     /** Test of btHelp method */
     public void testBtHelp() {
         pso.btHelp();
     }
-    
+
     /** Test of getDescriptionHeader method */
     public void testGetDescriptionHeader() {
         pso.tblSheet().selectCell(0, 0);
         String expected = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Properties");
         assertEquals("Wrong description header was found.", expected, pso.getDescriptionHeader());
     }
-    
+
     /** Test of getDescription method */
     public void testGetDescription() {
         pso.tblSheet().selectCell(0, 0);
         String expected = Bundle.getString("org.openide.nodes.Bundle", "HINT_Properties");
-        assertTrue("Wrong description was found. Should be '"+expected+"' but was '"+pso.getDescription()+"'.",
+        assertTrue("Wrong description was found. Should be '" + expected + "' but was '" + pso.getDescription() + "'.",
                 pso.getDescription().indexOf(expected) > 0);
     }
-    
+
     /** Test of sortByName method */
     public void testSortByName() {
         int oldCount = pso.tblSheet().getRowCount();
@@ -150,7 +149,7 @@ public class PropertySheetOperatorTest extends JellyTestCase {
         pso.sortByCategory();
         assertTrue("Sort by category failed.", oldCount < pso.tblSheet().getRowCount());
     }
-    
+
     /** Test of showDescriptionArea method */
     public void testShowDescriptionArea() {
         pso.showDescriptionArea();
@@ -162,7 +161,7 @@ public class PropertySheetOperatorTest extends JellyTestCase {
         label = pso.findSubComponent(new JLabelOperator.JLabelFinder());
         assertNotNull("Description area was not shown.", label);
     }
-    
+
     /** Test of verify method */
     public void testVerify() {
         pso.verify();
@@ -172,5 +171,4 @@ public class PropertySheetOperatorTest extends JellyTestCase {
     public void testClose() {
         pso.close();
     }
-    
 }
