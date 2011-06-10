@@ -705,6 +705,45 @@ public class FolderChildrenTest extends NbTestCase {
         assertNodes( arr, new String[] { "A" } );
     }
     
+    public void testNodesHaveDataObjectInLookup() throws Exception {
+        FileObject fa = FileUtil.createData(FileUtil.getConfigRoot(), "FK/A");
+        FileObject fb = FileUtil.createData(FileUtil.getConfigRoot(), "FK/B");
+    
+        FileObject bb = FileUtil.getConfigFile("/FK");
+
+        DataFolder folder = DataFolder.findFolder(bb);
+        final CountDownLatch latch = new CountDownLatch(1);
+        FormKitDataLoader.waiter = latch;
+        // wake up in 3s
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                latch.countDown();
+            }
+        }, 3000);
+        
+        Pool.setLoader(FormKitDataLoader.class);
+        final Children ch = folder.getNodeDelegate().getChildren();
+        int cnt = ch.getNodesCount(true);
+        assertEquals("Two children", 2, cnt);
+
+        FileObject af = ch.getNodeAt(0).getLookup().lookup(FileObject.class);
+        assertEquals("The right file a", fa, af);
+        FileObject bf = ch.getNodeAt(1).getLookup().lookup(FileObject.class);
+        assertEquals("The right file b", fb, bf);
+
+        FormKitDataLoader.assertMode = false;
+        DataObject a = ch.getNodeAt(0).getLookup().lookup(DataObject.class);
+        DataObject b = ch.getNodeAt(1).getLookup().lookup(DataObject.class);
+        
+        latch.countDown();
+        
+        assertNotNull("Obj A found", a);
+        assertNotNull("Obj B found", b);
+        
+        assertEquals("Right primary File A", fa, a.getPrimaryFile());
+        assertEquals("Right primary File B", fb, b.getPrimaryFile());
+    }
     public void testFoldersAreNotLeaves() throws Exception {
         FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/A");
         FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/B");

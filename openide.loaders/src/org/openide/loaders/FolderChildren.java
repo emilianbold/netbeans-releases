@@ -58,9 +58,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.*;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /** Watches over a folder and represents its
 * child data objects by nodes.
@@ -383,12 +386,19 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         refreshChildren(RefreshMode.SHALLOW);
     }
     
-    private final class DelayedNode extends FilterNode implements Runnable {
+    private final class DelayedNode extends FilterNode 
+    implements Runnable, InstanceContent.Convertor<DelayedNode,DataObject>{
         private final FolderChildrenPair pair;
         private volatile RequestProcessor.Task task;
 
         public DelayedNode(FolderChildrenPair pair) {
-            this(pair, new AbstractNode(Children.LEAF));
+            this(pair, new InstanceContent());
+        }
+        
+        private DelayedNode(FolderChildrenPair pair, InstanceContent ic) {
+            this(pair, new AbstractNode(Children.LEAF, new AbstractLookup(ic)));
+            ic.add(pair.primaryFile);
+            ic.add(this, this);
         }
         
         private DelayedNode(FolderChildrenPair pair, AbstractNode an) {
@@ -419,6 +429,31 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             }
             task.waitFinished();
             return true;
+        }
+
+        @Override
+        public DataObject convert(DelayedNode obj) {
+            try {
+                return DataObject.find(pair.primaryFile);
+            } catch (DataObjectNotFoundException ex) {
+                err.log(Level.INFO, "Cannot convert " + pair.primaryFile, ex);
+                return null;
+            }
+        }
+
+        @Override
+        public Class<? extends DataObject> type(DelayedNode obj) {
+            return DataObject.class;
+        }
+
+        @Override
+        public String id(DelayedNode obj) {
+            return type(obj).getName();
+        }
+
+        @Override
+        public String displayName(DelayedNode obj) {
+            return id(obj);
         }
     }
 }
