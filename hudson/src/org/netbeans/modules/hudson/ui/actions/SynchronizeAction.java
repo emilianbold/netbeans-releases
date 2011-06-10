@@ -44,48 +44,32 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
-/**
- * Action which synchronize instance's jobs
- *
- * @author Michal Mocnak
- */
-public class SynchronizeAction extends NodeAction {
+@ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.SynchronizeAction")
+@ActionRegistration(displayName="#LBL_SynchronizeAction", iconInMenu=false)
+@ActionReference(path=HudsonInstance.ACTION_PATH, position=500)
+@Messages("LBL_SynchronizeAction=&Synchronize")
+public class SynchronizeAction implements ActionListener {
+
+    private final List<HudsonInstanceImpl> instances;
+
+    public SynchronizeAction(List<HudsonInstanceImpl> instances) {
+        this.instances = instances;
+    }
     
-    protected void performAction(Node[] nodes) {
-        for (Node node : nodes) {
-            HudsonInstanceImpl instance = node.getLookup().lookup(HudsonInstanceImpl.class);
-            
-            if(instance != null)
-                instance.synchronize();
+    public @Override void actionPerformed(ActionEvent e) {
+        for (HudsonInstanceImpl instance : instances) {
+            instance.synchronize();
         }
     }
-    
-    protected boolean enable(Node[] nodes) {
-        for (Node node : nodes) {
-            HudsonInstanceImpl instance = node.getLookup().lookup(HudsonInstanceImpl.class);
-            
-            if (instance != null)
-                return true;
-        }
-        
-        return false;
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(OpenUrlAction.class, "LBL_SynchronizeAction"); // NOI18N
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+
 }
