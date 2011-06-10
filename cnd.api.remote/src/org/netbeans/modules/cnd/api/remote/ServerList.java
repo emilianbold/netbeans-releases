@@ -207,6 +207,10 @@ public class ServerList {
         @Override
         public void validate(boolean force) {
         }
+        
+        @Override
+        public void checkSetupAfterConnection(Runnable task) {
+        }
 
         @Override
         public boolean getX11Forwarding() {
