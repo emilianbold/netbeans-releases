@@ -43,7 +43,11 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -52,6 +56,7 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -93,6 +98,31 @@ public class JavacParserTest extends NbTestCase {
                 }
                 assertEquals(Phase.PARSED, parameter.toPhase(Phase.PARSED));
                 assertNotNull(parameter.getCompilationUnit());
+            }
+        }, true);
+    }
+
+    public void test199332() throws Exception {
+        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT, true);
+        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_SERIAL, true);
+
+        FileObject f2 = createFile("test/Test2.java", "package test; class Test2 implements Runnable, java.io.Serializable {}");
+        JavaSource js = JavaSource.forFileObject(f2);
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                assertTrue(Phase.RESOLVED.compareTo(parameter.toPhase(Phase.RESOLVED)) <= 0);
+                assertEquals(parameter.getDiagnostics().toString(), 2, parameter.getDiagnostics().size());
+
+                Set<String> codes = new HashSet<String>();
+
+                for (Diagnostic d : parameter.getDiagnostics()) {
+                    codes.add(d.getCode());
+                }
+
+                assertEquals(new HashSet<String>(Arrays.asList("compiler.warn.missing.SVUID", "compiler.err.does.not.override.abstract")), codes);
             }
         }, true);
     }
