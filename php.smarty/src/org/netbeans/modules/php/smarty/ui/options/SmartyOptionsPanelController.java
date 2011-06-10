@@ -98,6 +98,12 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
             smartyOptionsPanel.setError(NbBundle.getMessage(SmartyOptionsPanel.class, "WRN_EmptyDelimiterFields"));
             return false;
         }
+        
+        // too deep level for scanning 
+        if (smartyOptionsPanel.getDepthOfScanning() > 1) {
+            smartyOptionsPanel.setWarning(NbBundle.getMessage(SmartyOptionsPanel.class, "WRN_TooDeepScanningLevel"));
+            return true;
+        }
 
         // everything ok
         smartyOptionsPanel.setWarning(" "); // NOI18N

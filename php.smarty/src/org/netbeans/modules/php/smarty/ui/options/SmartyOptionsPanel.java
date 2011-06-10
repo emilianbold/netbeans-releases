@@ -45,8 +45,11 @@
 
 package org.netbeans.modules.php.smarty.ui.options;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
@@ -88,24 +91,18 @@ public class SmartyOptionsPanel extends JPanel {
         setCloseDelimiter(SmartyOptions.getInstance().getDefaultCloseDelimiter());
         setDepthOfScanning(SmartyOptions.getInstance().getScanningDepth());
 
-        openDelimiterTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-            public void removeUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-            public void changedUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-            private void processUpdate() {
+        openDelimiterTextField.getDocument().addDocumentListener(new SmartyDocumentListener());
+        closeDelimiterTextField.getDocument().addDocumentListener(new SmartyDocumentListener());
+        depthOfScanningComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
                 fireChange();
             }
         });
     }
 
     private void setDepthOfScanningComboBox() {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             depthOfScanningComboBox.addItem(String.valueOf(i));
         }
     }
@@ -142,7 +139,7 @@ public class SmartyOptionsPanel extends JPanel {
 
     public void setWarning(String message) {
         errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
+        errorLabel.setForeground(Color.ORANGE); // NOI18N
         errorLabel.setText(message);
     }
 
@@ -292,4 +289,20 @@ public class SmartyOptionsPanel extends JPanel {
     private JTextField openDelimiterTextField;
     // End of variables declaration//GEN-END:variables
 
+    private final class SmartyDocumentListener implements DocumentListener {
+        
+        public void insertUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+        public void removeUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+        public void changedUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+        private void processUpdate() {
+            fireChange();
+        }
+    }
+    
 }
