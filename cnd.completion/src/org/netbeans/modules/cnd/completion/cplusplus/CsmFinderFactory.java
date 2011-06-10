@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -88,15 +87,15 @@ public final class CsmFinderFactory {
      * The key is ClassPath on which we are already listening. The purpose
      * of this map is to not attach one listener on the classpath multiple times.
      */
-    private WeakHashMap cpListening = new WeakHashMap();
+    //private WeakHashMap cpListening = new WeakHashMap();
     /** Weak map whose value is always null and only key is relevant.
      * The key is fakeJCClass used in web/jsp => XXX
      */
-    private WeakHashMap fakeClasses = new WeakHashMap();
+    //private WeakHashMap fakeClasses = new WeakHashMap();
     /** This is property change listener listening on classpaths and 
      * invalidating cache when cp has changed. It must be wrapped in weak
      * listener to allow cp to be garbage collected. */
-    private static PropertyChangeListener cpListener;
+    //private static PropertyChangeListener cpListener;
     /** Cached global finder. Access to this variable must be always
      * synchronized on CACHE_LOCK instance. */
     private SoftReference globalFinder;
@@ -104,7 +103,7 @@ public final class CsmFinderFactory {
     /** Object used as lock for cache updating synchronization. */
     private final Object CACHE_LOCK = new Object();
     /** Was FakeFinder initialized? Use it in CompoundFinder? */
-    private boolean useFakeFinder = false;
+    //private boolean useFakeFinder = false;
 
     private CsmFinderFactory() {
 //        cpListener = new ClassPathListener();
