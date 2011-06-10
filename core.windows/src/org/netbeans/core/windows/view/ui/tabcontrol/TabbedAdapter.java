@@ -551,6 +551,11 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     public Rectangle getTabBounds(int tabIndex) {
         return getTabRect(tabIndex, new Rectangle());
     }
+    
+    @Override
+    public Rectangle getTabsArea() {
+        return getUI().getTabsArea();
+    }
 
     /********* implementation of WinsysInfoForTabbed ********/
     

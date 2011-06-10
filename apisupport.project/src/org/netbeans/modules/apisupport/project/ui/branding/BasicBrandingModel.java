@@ -135,6 +135,13 @@ public class BasicBrandingModel {
     private BrandingSupport.BundleKey wsEnableResizing = null;
     private BrandingSupport.BundleKey wsEnableMinimumSize = null;
     private BrandingSupport.BundleKey wsEnableMaximization = null;
+    private BundleKey wsEnableAutoSlideInMinimizedMode = null;
+    private BundleKey wsEnableEditorModeUndocking = null;
+    private BundleKey wsEnableModeClosing = null;
+    private BundleKey wsEnableEditorModeDnD = null;
+    private BundleKey wsEnableModeSliding = null;
+    private BundleKey wsEnableViewModeDnD = null;
+    private BundleKey wsEnableViewModeUndocking = null;
     
     /**all above splash BundleKeys in set*/
     private final Set<BrandingSupport.BundleKey> winsysKeys = new HashSet<BrandingSupport.BundleKey>();
@@ -620,7 +627,42 @@ public class BasicBrandingModel {
                 "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/Bundle.properties",//NOI18N
                 "TopComponent.Maximization.Enabled");//NOI18N
+            
+        wsEnableAutoSlideInMinimizedMode = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "TopComponent.Auto.Slide.In.Minimized.Mode.Enabled");//NOI18N
         
+        wsEnableEditorModeUndocking = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "Mode.Editor.Undocking.Enabled");//NOI18N
+        
+        wsEnableModeClosing = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "Mode.Closing.Enabled");//NOI18N
+        
+        wsEnableEditorModeDnD = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "Mode.Editor.DragAndDrop.Enabled");//NOI18N
+        
+        wsEnableModeSliding = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "Mode.Sliding.Enabled");//NOI18N
+        
+        wsEnableViewModeDnD = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "Mode.View.DragAndDrop.Enabled");//NOI18N
+        
+        wsEnableViewModeUndocking = getBranding().getBundleKey(
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/Bundle.properties",//NOI18N
+                "Mode.View.Undocking.Enabled");//NOI18N
+
         winsysKeys.clear();
         
         if (wsEnableClosingEditors != null) {
@@ -647,6 +689,21 @@ public class BasicBrandingModel {
         if (wsEnableSliding != null) {
             winsysKeys.add(wsEnableSliding);
         }
+        if( wsEnableAutoSlideInMinimizedMode != null )
+            winsysKeys.add(wsEnableAutoSlideInMinimizedMode);
+        if( wsEnableEditorModeUndocking != null )
+            winsysKeys.add(wsEnableEditorModeUndocking);
+        if( wsEnableModeClosing != null )
+            winsysKeys.add(wsEnableModeClosing);
+        if( wsEnableEditorModeDnD != null )
+            winsysKeys.add(wsEnableEditorModeDnD);
+        if( wsEnableModeSliding != null )
+            winsysKeys.add(wsEnableModeSliding);
+        if( wsEnableViewModeDnD != null )
+            winsysKeys.add(wsEnableViewModeDnD);
+        if( wsEnableViewModeUndocking != null )
+            winsysKeys.add(wsEnableViewModeUndocking);
+
         winsysKeys.remove(null);
 
         generalResourceBundleKeys.clear();
@@ -792,6 +849,34 @@ public class BasicBrandingModel {
 
     public @CheckForNull BundleKey getWsEnableSliding() {
         return wsEnableSliding;
+    }
+
+    public @CheckForNull BundleKey getWsEnableAutoSlideInMinimizedMode() {
+        return wsEnableAutoSlideInMinimizedMode;
+    }
+
+    public @CheckForNull BundleKey getWsEnableEditorModeDnD() {
+        return wsEnableEditorModeDnD;
+    }
+
+    public @CheckForNull BundleKey getWsEnableEditorModeUndocking() {
+        return wsEnableEditorModeUndocking;
+    }
+
+    public @CheckForNull BundleKey getWsEnableModeClosing() {
+        return wsEnableModeClosing;
+    }
+
+    public @CheckForNull BundleKey getWsEnableModeSliding() {
+        return wsEnableModeSliding;
+    }
+
+    public @CheckForNull BundleKey getWsEnableViewModeDnD() {
+        return wsEnableViewModeDnD;
+    }
+
+    public @CheckForNull BundleKey getWsEnableViewModeUndocking() {
+        return wsEnableViewModeUndocking;
     }
 
     SuiteProperties getSuiteProperties() {
