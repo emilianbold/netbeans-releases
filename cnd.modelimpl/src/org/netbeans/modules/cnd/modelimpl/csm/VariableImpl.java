@@ -393,7 +393,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return (def == null) ? null : (CsmVariableDefinition) def;
     }
 
-    private CsmScope _getScope() {
+    private synchronized CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);

@@ -238,7 +238,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         ns.removeNamespaceDefinition(this);
     }
 
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (this.namespaceRef == null) {
             // restore container from it's UID
             this.namespaceRef = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(this.namespaceUID);
@@ -246,7 +246,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
     }
     
-    private NamespaceImpl _getNamespaceImpl() {
+    private synchronized NamespaceImpl _getNamespaceImpl() {
         NamespaceImpl impl = this.namespaceRef;
         if (impl == null) {
             impl = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(this.namespaceUID);
