@@ -97,24 +97,23 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
                 return;
             }
 
-            // XXX: why is this not done by LineParser ?
-            final OffsetsBag bag = new OffsetsBag(document, true);
-            Element root = NbDocument.findLineRootElement((StyledDocument)document);
-            int count = root.getElementCount();
-            try {
-                for(int i = 0; i < count; i++){
-                    Element elm = root.getElement(i);
-                    if (BLOCK_HEADER_PATTERN.matcher(document.getText(elm.getStartOffset(), elm.getEndOffset() - elm.getStartOffset()).trim()).find()) {
-                        bag.addHighlight(elm.getStartOffset(), elm.getEndOffset(), commandHighlight);
-                    }
-                }
-            } catch (BadLocationException ex) {
-                //ignore
-                return;
-            }
-
             document.render(new Runnable() {
                 public void run() {
+                    // XXX: why is this not done by LineParser ?
+                    final OffsetsBag bag = new OffsetsBag(document, true);
+                    Element root = NbDocument.findLineRootElement((StyledDocument) document);
+                    int count = root.getElementCount();
+                    try {
+                        for (int i = 0; i < count; i++) {
+                            Element elm = root.getElement(i);
+                            if (BLOCK_HEADER_PATTERN.matcher(document.getText(elm.getStartOffset(), elm.getEndOffset() - elm.getStartOffset()).trim()).find()) {
+                                bag.addHighlight(elm.getStartOffset(), elm.getEndOffset(), commandHighlight);
+                            }
+                        }
+                    } catch (BadLocationException ex) {
+                        //ignore
+                        return;
+                    }
                     headersBag.setHighlights(bag);
                 }
             });
@@ -178,26 +177,27 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
                 return;
             }
 
-            List<PPBlockInfo> blockList = (List<PPBlockInfo>)document.getProperty(DocumentPreprocessor.PREPROCESSOR_BLOCK_LIST);
-            if (blockList == null) return;
-
-            final OffsetsBag bag = new OffsetsBag(document, true);
-            LOG.log(Level.FINE, "Dumping lineset({0})", blockList.size()); //NOI18N
-            for (PPBlockInfo b : blockList) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "lineBlock: type={0}, startLine={1}, endLine={2}, active={3}", //NOI18N
-                            new Object [] { b.getType(), b.getStartLine(), b.getEndLine(), b.isActive() });
-                }
-                StyledDocument doc = (StyledDocument)document;
-                bag.addHighlight(
-                        NbDocument.findLineRootElement(doc).getElement(b.getStartLine() - 1).getStartOffset(),
-                        NbDocument.findLineRootElement(doc).getElement(b.getEndLine() - 1).getEndOffset(),
-                        b.isActive() ? activeBlockHighlight : inactiveBlockHighlight);
-            }
-            LOG.log(Level.FINE, "-------------------"); //NOI18N
-
             document.render(new Runnable() {
                 public void run() {
+                    List<PPBlockInfo> blockList = (List<PPBlockInfo>) document.getProperty(DocumentPreprocessor.PREPROCESSOR_BLOCK_LIST);
+                    if (blockList == null) {
+                        return;
+                    }
+
+                    final OffsetsBag bag = new OffsetsBag(document, true);
+                    LOG.log(Level.FINE, "Dumping lineset({0})", blockList.size()); //NOI18N
+                    for (PPBlockInfo b : blockList) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "lineBlock: type={0}, startLine={1}, endLine={2}, active={3}", //NOI18N
+                                    new Object[]{b.getType(), b.getStartLine(), b.getEndLine(), b.isActive()});
+                        }
+                        StyledDocument doc = (StyledDocument) document;
+                        bag.addHighlight(
+                                NbDocument.findLineRootElement(doc).getElement(b.getStartLine() - 1).getStartOffset(),
+                                NbDocument.findLineRootElement(doc).getElement(b.getEndLine() - 1).getEndOffset(),
+                                b.isActive() ? activeBlockHighlight : inactiveBlockHighlight);
+                    }
+                    LOG.log(Level.FINE, "-------------------"); //NOI18N
                     blocksBag.setHighlights(bag);
                 }
             });
