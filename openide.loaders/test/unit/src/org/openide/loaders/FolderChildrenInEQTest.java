@@ -85,9 +85,6 @@ public class FolderChildrenInEQTest extends FolderChildrenTest {
                 return node.getChildren().getNodes(true);
             }
         });
-
-        assertNodes(arr, "A", "B");
-        assertEquals("Second node does not have data object yet", null, arr[1].getLookup().lookup(DataObject.class));
         
         FormKitDataLoader.waiter.countDown();
         arr = node.getChildren().getNodes(true);
