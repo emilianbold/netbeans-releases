@@ -55,6 +55,7 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -124,7 +125,9 @@ public class HudsonJobNode extends AbstractNode {
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(StartJobAction.class));
         actions.add(null);
-        actions.add(SystemAction.get(OpenUrlAction.class));
+        if (job instanceof OpenableInBrowser) {
+            actions.add(OpenUrlAction.forOpenable((OpenableInBrowser) job));
+        }
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
