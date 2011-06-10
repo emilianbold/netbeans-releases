@@ -52,12 +52,12 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
@@ -109,7 +109,9 @@ class HudsonJobBuildNode extends AbstractNode {
             actions.add(UI.showFailuresAction(build));
         }
         actions.add(null);
-        actions.add(SystemAction.get(OpenUrlAction.class));
+        if (build instanceof OpenableInBrowser) {
+            actions.add(OpenUrlAction.forOpenable((OpenableInBrowser) build));
+        }
         return actions.toArray(new Action[actions.size()]);
     }
 

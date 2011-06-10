@@ -49,11 +49,11 @@ import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
@@ -91,7 +91,9 @@ class HudsonMavenModuleBuildNode extends AbstractNode {
             actions.add(UI.showFailuresAction(module));
         }
         actions.add(null);
-        actions.add(SystemAction.get(OpenUrlAction.class));
+        if (module instanceof OpenableInBrowser) {
+            actions.add(OpenUrlAction.forOpenable((OpenableInBrowser) module));
+        }
         return actions.toArray(new Action[actions.size()]);
     }
 
