@@ -908,7 +908,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
     static private DataObject getDOFromNode (Node n) {
         DataObject dobj = n.getLookup ().lookup (DataObject.class);
-        assert dobj != null : "DataObject for node " + n;
+        if (dobj == null) {
+            throw new NullPointerException("DataObject can not be found for node " + n);
+        }
         return dobj;
     }
     
