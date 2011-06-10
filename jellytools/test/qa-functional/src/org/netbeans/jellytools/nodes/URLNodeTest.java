@@ -53,12 +53,12 @@ import org.netbeans.jellytools.testutils.NodeUtils;
 
 /** Test of org.netbeans.jellytools.nodes.URLNode
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class URLNodeTest extends JellyTestCase {
-    
-    public static final String[] tests = new String[] {
+
+    public static final String[] tests = new String[]{
         "testVerifyPopup",
         "testCut",
         "testCopy",
@@ -67,51 +67,39 @@ public class URLNodeTest extends JellyTestCase {
         "testSaveAsTemplate",
         "testProperties"
     };
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public URLNodeTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new URLNodeTest("testVerifyPopup"));
-        suite.addTest(new URLNodeTest("testCut"));
-        suite.addTest(new URLNodeTest("testCopy"));
-        suite.addTest(new URLNodeTest("testDelete"));
-        suite.addTest(new URLNodeTest("testRename"));
-        suite.addTest(new URLNodeTest("testSaveAsTemplate"));
-        suite.addTest(new URLNodeTest("testProperties"));
-        return suite;
-         */
-        return createModuleTest(URLNodeTest.class, 
-        tests);
+        return createModuleTest(URLNodeTest.class, tests);
     }
-    
+
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
     public static void main(java.lang.String[] args) {
         TestRunner.run(suite());
     }
-    
     protected static URLNode urlNode = null;
-    
+
     /** Finds node before each test case. */
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
         // find node
-        if(urlNode == null) {
+        if (urlNode == null) {
             urlNode = new URLNode(new SourcePackagesNode("SampleProject"), "sample1|url.url");  // NOI18N
         }
     }
-    
+
     /** Test verifyPopup */
     public void testVerifyPopup() {
         urlNode.verifyPopup();
@@ -123,36 +111,35 @@ public class URLNodeTest extends JellyTestCase {
         urlNode.cut();
         NodeUtils.testClipboard(clipboard1);
     }
-    
+
     /** Test copy  */
     public void testCopy() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         urlNode.copy();
         NodeUtils.testClipboard(clipboard1);
     }
-    
+
     /** Test delete  */
     public void testDelete() {
         urlNode.delete();
         NodeUtils.closeConfirmDeleteDialog();
     }
-    
+
     /** Test rename  */
     public void testRename() {
         urlNode.rename();
         NodeUtils.closeRenameDialog();
     }
-    
+
     /** Test properties  */
     public void testProperties() {
         urlNode.properties();
         NodeUtils.closeProperties("url"); //NOI18N
     }
-    
+
     /** Test saveAsTemplate  */
     public void testSaveAsTemplate() {
         urlNode.saveAsTemplate();
         new SaveAsTemplateOperator().close();
     }
-    
 }

@@ -102,4 +102,10 @@
 
     <!--mark occurrences:-->
     <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
+    
+    <!-- code coverage --> 
+    <fontcolor name="covered" default="covered" />
+    <fontcolor name="uncovered" default="uncovered" />
+    <fontcolor name="inferred" default="inferred" />
+    <fontcolor name="partial" default="partial" />
 </fontscolors>

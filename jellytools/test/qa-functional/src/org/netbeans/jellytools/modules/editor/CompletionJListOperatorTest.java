@@ -41,45 +41,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools.modules.editor;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
-import org.netbeans.junit.NbTest;
 
 /**
  * Tests if CompletionJListOperator works properly when the completion list
  * is invoked by typing ".", pressing Ctrl+Space and by 
  * calling  CompletionJListOperator.showCompletion().
  *
- * @author Vojtech.Sigler@Sun.COM
+ * @author Vojtech Sigler
  */
 public class CompletionJListOperatorTest extends JellyTestCase {
 
-
-    private static String[] tests = new String[]
-    {
+    private static String[] tests = new String[]{
         "testCompletionDot", "testCompletionInvoke", "testCompletionCtrlSpace"
     };
-
     private static EditorOperator eo;
 
-    public CompletionJListOperatorTest(String isTestName)
-    {
+    public CompletionJListOperatorTest(String isTestName) {
         super(isTestName);
     }
 
-    protected void setUp() throws IOException
-    {
-        System.out.println("### "+getName()+" ###");
+    @Override
+    protected void setUp() throws IOException {
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         new OpenAction().perform(node);
@@ -88,51 +83,44 @@ public class CompletionJListOperatorTest extends JellyTestCase {
         eo.insert("System.out");
     }
 
-    protected void tearDown()
-    {
-        eo.closeDiscardAll();
+    @Override
+    protected void tearDown() {
+        EditorOperator.closeDiscardAll();
     }
 
-
-    public static NbTest suite()
-    {
-        return (NbTest) createModuleTest(CompletionJListOperatorTest.class,
-        tests);
+    public static Test suite() {
+        return createModuleTest(CompletionJListOperatorTest.class, tests);
     }
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public void testCompletionDot() throws Exception
-    {        
+    public void testCompletionDot() throws Exception {
         eo.typeKey('.');
 
         CompletionJListOperator lrComplOp = new CompletionJListOperator();
         lrComplOp.getCompletionItems();
-                
+
         lrComplOp.clickOnItem("println()", new StringComparator() {
-            public boolean equals(String caption, String match)
-            {
+
+            @Override
+            public boolean equals(String caption, String match) {
                 return caption.contains(match);
             }
         }, 2); //doubleclick
 
         assertTrue("The line does not contain the clicked item from CompletionList!",
                 eo.contains("System.out.println()"));
-        
+
     }
 
-    public void testCompletionInvoke() throws Exception
-    {
+    public void testCompletionInvoke() throws Exception {
         eo.insert(".");
 
         CompletionJListOperator lrComplOp = CompletionJListOperator.showCompletion();
-        lrComplOp.getCompletionItems();        
+        lrComplOp.getCompletionItems();
 
         lrComplOp.clickOnItem("println()", new StringComparator() {
-            public boolean equals(String caption, String match)
-            {
+
+            @Override
+            public boolean equals(String caption, String match) {
                 return caption.contains(match);
             }
         }, 2); //doubleclick
@@ -141,8 +129,7 @@ public class CompletionJListOperatorTest extends JellyTestCase {
                 eo.contains("System.out.println()"));
     }
 
-    public void testCompletionCtrlSpace() throws Exception
-    {
+    public void testCompletionCtrlSpace() throws Exception {
         eo.insert(".");
 
         eo.txtEditorPane().typeKey(KeyEvent.VK_SPACE, ' ', InputEvent.CTRL_DOWN_MASK); //press ctrl+space
@@ -151,8 +138,9 @@ public class CompletionJListOperatorTest extends JellyTestCase {
         lrComplOp.getCompletionItems();
 
         lrComplOp.clickOnItem("println()", new StringComparator() {
-            public boolean equals(String caption, String match)
-            {
+
+            @Override
+            public boolean equals(String caption, String match) {
                 return caption.contains(match);
             }
         }, 2); //doubleclick

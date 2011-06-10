@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.awt.Dialog;
 import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.Solution;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -55,37 +57,27 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class ResolveReferenceAction extends AbstractAction {
+
     private Project project;
-    
+
     /** Creates a new instance of BrowserAction */
     public ResolveReferenceAction(Project project) {
         super(NbBundle.getBundle(ResolveReferenceAction.class).getString("CTL_ResolveReferenceAction"), // NOI18N
-               null );
-	this.project = project;
-    }
-    
-        
-    @Override
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-        List<BrokenLink> brokenLinks = BrokenLinks.getBrokenLinks(project); // NOI18N
-        StringBuilder buf = new StringBuilder();
-        for(BrokenLink error : brokenLinks) {
-            buf.append(NbBundle.getBundle(ResolveReferenceAction.class).getString("Link_Problem_Text")); // NOI18N
-            buf.append('\n'); // NOI18N
-            buf.append(error.getProblem());
-            buf.append('\n'); // NOI18N
-            buf.append(NbBundle.getBundle(ResolveReferenceAction.class).getString("Link_Solution_Text")); // NOI18N
-            int i = 1;
-            for(Solution solution : error.getSolutions()) {
-                buf.append('\n'); // NOI18N
-                buf.append(i);
-                buf.append(". "); // NOI18N
-                buf.append(solution.getDescription());
-                i++;
-            }
-        }
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(buf.toString(), NotifyDescriptor.ERROR_MESSAGE));
-        return;
+                null);
+        this.project = project;
     }
 
+    @Override
+    public void actionPerformed(java.awt.event.ActionEvent ev) {
+        List<BrokenLink> brokenLinks = BrokenLinks.getBrokenLinks(project);
+        ResolveReferencePanel panel = new ResolveReferencePanel(brokenLinks);
+        DialogDescriptor dd = new DialogDescriptor(panel,
+                NbBundle.getMessage(ResolveReferenceAction.class, "Link_Dialog_Title"), true,
+                new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        dialog.dispose();
+        return;
+    }
 }

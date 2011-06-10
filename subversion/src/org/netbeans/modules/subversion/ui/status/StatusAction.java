@@ -144,10 +144,10 @@ public class StatusAction  extends ContextAction {
         Map<File, ISVNLock> locks = new HashMap<File, ISVNLock>();
         try {
             statuses = client.getStatus(root, true, false, contactServer); // cache refires events
-            if (SvnModuleConfig.getDefault().isGetRemoteLocks()) {
+            if (contactServer && SvnModuleConfig.getDefault().isGetRemoteLocks()) {
                 try {
                     ISVNInfo info = client.getInfoFromWorkingCopy(root);
-                    if (info != null && info.getUrl() != null) {
+                    if (info != null && info.getUrl() != null && !info.isCopied()) {
                         ISVNDirEntryWithLock[] entries = client.getListWithLocks(info.getUrl(), info.getRevision(), info.getRevision(), true);
                         if (entries != null) {
                             for (ISVNDirEntryWithLock entry : entries) {
@@ -158,7 +158,8 @@ public class StatusAction  extends ContextAction {
                         }
                     }
                 } catch (SVNClientException ex) {
-                    Subversion.LOG.log(Level.INFO, null, ex);
+                    Subversion.LOG.log(SvnClientExceptionHandler.isNotUnderVersionControl(ex.getMessage())
+                            || SvnClientExceptionHandler.isWrongUrl(ex.getMessage()) ? Level.FINE : Level.INFO, null, ex);
                 }
             }
         } catch (SVNClientException ex) {
