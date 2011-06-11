@@ -49,7 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
-import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+import org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
