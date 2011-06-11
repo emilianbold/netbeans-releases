@@ -44,6 +44,7 @@ package org.netbeans.modules.quicksearch.recent;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -69,20 +70,10 @@ public class RecentSearches {
 
     private LinkedList<ItemResult> recent;
     private static RecentSearches instance;
+    private static final char dateSep = ':';
 
     private RecentSearches() {
-        recent = new LinkedList<ItemResult>() {
-
-            @Override
-            public String toString() {
-                StringBuffer buf = new StringBuffer();
-                for(ItemResult td : this) {
-                    buf.append(td.getDisplayName() + ":" + td.getDate().getTime() + ",");
-                }
-                return buf.toString();
-            }
-
-        };
+        recent = new LinkedList<ItemResult>();
         readRecentFromPrefs(); //read recent searhces from preferences
     }
     
@@ -115,7 +106,7 @@ public class RecentSearches {
         }
         result.setDate(now);
         recent.addFirst(result);
-        prefs().put(RECENT_SEARCHES, stripHTMLnames(recent.toString()));
+        storeRecentToPrefs();
     }
     
     public List<ItemResult> getSearches() {
@@ -134,22 +125,32 @@ public class RecentSearches {
     private Preferences prefs() {
         return NbPreferences.forModule(RecentSearches.class);
     }
+    
+    private void storeRecentToPrefs() {
+        Iterator<ItemResult> it = recent.iterator();
+        for (int i = 0; i < MAX_ITEMS; i++) {
+            if (it.hasNext()) {
+                ItemResult td = it.next();
+                prefs().put(RECENT_SEARCHES + i, stripHTMLnames(td.getDisplayName()) + dateSep + td.getDate().getTime());
+            } else {
+                prefs().put(RECENT_SEARCHES + i, "");
+            }
+        }
+    }
 
     private void readRecentFromPrefs() {
-        String[] items = prefs().get(RECENT_SEARCHES, "").split(","); // NOI18N
-        if (items[0].length() != 0) {
-            for (int i = 0; i < items.length; i++) {
-                int semicolonPos = items[i].lastIndexOf(":"); // NOI18N
-                if (semicolonPos >= 0) {
-                    try {
-                        final String name = items[i].substring(0, semicolonPos);
-                        final long time = Long.parseLong(items[i].substring(semicolonPos + 1));
-                        ItemResult incomplete = new ItemResult(null, new FakeAction(name), name, new Date(time));
-                        recent.add(incomplete);
-                    } catch (NumberFormatException nfe) {
-                        Logger l = Logger.getLogger(RecentSearches.class.getName());
-                        l.log(Level.INFO, "Failed to read recent searches", items);
-                    }
+        for (int i = 0; i < MAX_ITEMS; i++) {
+            String item = prefs().get(RECENT_SEARCHES + i, "");
+            int semicolonPos = item.lastIndexOf(dateSep); // NOI18N
+            if (semicolonPos >= 0) {
+                try {
+                    final String name = item.substring(0, semicolonPos);
+                    final long time = Long.parseLong(item.substring(semicolonPos + 1));
+                    ItemResult incomplete = new ItemResult(null, new FakeAction(name), name, new Date(time));
+                    recent.add(incomplete);
+                } catch (NumberFormatException nfe) {
+                    Logger l = Logger.getLogger(RecentSearches.class.getName());
+                    l.log(Level.INFO, "Failed to read recent searches", item);
                 }
             }
         }
