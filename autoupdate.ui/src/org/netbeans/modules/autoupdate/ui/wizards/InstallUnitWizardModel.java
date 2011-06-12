@@ -87,7 +87,14 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         return doOperation;
     }
     
+    @Override
     public OperationContainer getBaseContainer () {
+        OperationContainer c = getBaseContainerImpl();
+        assert support != null : "Container: " + c + " but null support";
+        return c;
+    }
+    
+    private OperationContainer getBaseContainerImpl() {
         if (updateContainer != null) {
             support = updateContainer.getSupport ();
             return updateContainer;
