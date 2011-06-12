@@ -29,14 +29,32 @@ Integer integer
 applicationScope[]
 cc
 cookie[]
-facesContext
+javax.faces.context.FacesConte
 headerValues[]
 header[]
 initParam[]
-pageContext
+Integer integer
+javax.servlet.jsp.PageContext 
 pageScope[]
 paramValues[]
 param[]
 requestScope[]
 sessionScope[]
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
 End cursor position = 945
