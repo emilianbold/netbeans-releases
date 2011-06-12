@@ -47,7 +47,7 @@ import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.MethodMarker;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
-import org.netbeans.modules.profiler.categories.CustomMarker;
+import org.netbeans.modules.profiler.categorization.api.CustomMarker;
 
 /**
  *
@@ -63,7 +63,7 @@ public class JSPMarkerMethodProvider extends CustomMarker  {
     }
     
     private void addJspMethods() {
-        ClientUtils.SourceCodeSelection[] jspmethods = WebProjectUtils.getJSPRootMethods(getProject(), true);
+        ClientUtils.SourceCodeSelection[] jspmethods = WebProjectUtils.getJSPRootMethods((Project)getProject(), true);
 
         if (jspmethods != null) {
             for (int i = 0; i < jspmethods.length; i++) {

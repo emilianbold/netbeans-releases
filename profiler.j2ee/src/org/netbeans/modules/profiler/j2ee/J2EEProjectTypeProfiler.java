@@ -43,9 +43,6 @@
 
 package org.netbeans.modules.profiler.j2ee;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.profiler.client.ClientUtils;
@@ -62,12 +59,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ProfilerIDESettings;
+import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.ui.stp.DefaultSettingsConfigurator;
-import org.netbeans.modules.profiler.ui.stp.SelectProfilingTask;
-import org.netbeans.modules.profiler.utils.IDEUtils;
+import org.netbeans.modules.profiler.stp.DefaultSettingsConfigurator;
+import org.netbeans.modules.profiler.stp.SelectProfilingTask;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -82,21 +77,27 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.profiler.api.JavaPlatform;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDisplayer;
 
 
 /**
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectTypes={
                             @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), 
                             @ProjectType(id="org-netbeans-modules-j2ee-earproject"), 
@@ -245,31 +246,18 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return getServerJavaPlatform(serverInstanceID);
     }
 
-    public static JavaPlatform getServerJavaPlatform(String serverInstanceID) {
+    private static JavaPlatform getServerJavaPlatform(String serverInstanceID) {
         J2eePlatform j2eePlatform = getJ2eePlatform(serverInstanceID);
 
         if (j2eePlatform == null) {
             return null;
         }
 
-        return j2eePlatform.getJavaPlatform();
-    }
-
-    public JComponent getAdditionalConfigurationComponent(Project project) {
-        if (loadGenConfig == null) {
-            //      Set<String> extSet = new HashSet<String>();
-            //      extSet.add("jmx");
-            loadGenConfig = new LoadGenPanel();
-            //      loadGenConfig.setStartDir(FileUtil.toFile(project.getProjectDirectory()));
-            //      loadGenConfig.setSupportedExtensions(extSet);
-            loadGenConfig.addPropertyChangeListener(LoadGenPanel.PATH, WeakListeners.propertyChange(pcl, loadGenConfig));
-
-            //      loadGenPath = loadGenConfig.getSelectedScript();
+        org.netbeans.api.java.platform.JavaPlatform jp = j2eePlatform.getJavaPlatform();
+        if (jp == null) {
+            return null;
         }
-
-        loadGenConfig.attach(project);
-
-        return loadGenConfig;
+        return JavaPlatform.getJavaPlatformById(jp.getProperties().get("platform.ant.name")); // NOI18N
     }
 
     public SelectProfilingTask.SettingsConfigurator getSettingsConfigurator() {
@@ -319,14 +307,14 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         J2eePlatform j2eePlatform = getJ2eePlatform(project);
 
         if (j2eePlatform == null) {
-            NetBeansProfiler.getDefaultNB().displayError(NO_SERVER_FOUND_MSG);
+            ProfilerDialogs.displayError(NO_SERVER_FOUND_MSG);
 
             return false;
         }
 
         if (!j2eePlatform.supportsProfiling()) {
             // Server doesn't support profiling
-            ProfilerDialogs.notify(new NotifyDescriptor.Message(PROFILING_NOT_SUPPORTED_MSG, NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(PROFILING_NOT_SUPPORTED_MSG);
 
             return false;
         }
@@ -362,10 +350,10 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
         // fix agent startup arguments
         JavaPlatform javaPlatform = getJavaPlatformFromAntName(project, props);
-        props.setProperty("profiler.info.javaPlatform", javaPlatform.getProperties().get("platform.ant.name")); // set the used platform ant property
+        props.setProperty("profiler.info.javaPlatform", javaPlatform.getPlatformId()); // set the used platform ant property
 
-        String javaVersion = IDEUtils.getPlatformJDKVersion(javaPlatform);
-        String localPlatform = IntegrationUtils.getLocalPlatform(IDEUtils.getPlatformArchitecture(javaPlatform));
+        String javaVersion = javaPlatform.getPlatformJDKVersion();
+        String localPlatform = IntegrationUtils.getLocalPlatform(javaPlatform.getPlatformArchitecture());
 
         if (javaVersion.equals(CommonConstants.JDK_15_STRING)) {
             // JDK 1.5 used
@@ -422,7 +410,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                     }
                                                              }, DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null,
                                                              null);
-                Object res = ProfilerDialogs.notify(desc);
+                Object res = DialogDisplayer.getDefault().notify(desc);
 
                 if (res.equals(NotifyDescriptor.YES_OPTION)) {
                     servletAddress = uriPanel.getServletUri();
@@ -431,13 +419,17 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                 props.put("client.urlPart", servletAddress); // NOI18N
             }
         }
-        String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
-        props.setProperty("profile.class", profiledClass); //NOI18N
-        // include it in javac.includes so that the compile-single picks it up
-        final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
-                ProjectUtilities.getSourceRoots(project),profiledClassFile), 
-                profiledClassFile);
-        props.setProperty("javac.includes", clazz); //NOI18N
+        // FIXME - method should receive the JavaProfilerSource as the parameter
+        JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
+        if (src != null) {
+            String profiledClass = src.getTopLevelClass().getVMName();
+            props.setProperty("profile.class", profiledClass); //NOI18N
+            // include it in javac.includes so that the compile-single picks it up
+            final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
+                    ProjectUtilities.getSourceRoots(project),profiledClassFile), 
+                    profiledClassFile);
+            props.setProperty("javac.includes", clazz); //NOI18N
+        }
     }
 
     // --- Profiler SPI support --------------------------------------------------------------------------------------------
@@ -454,13 +446,13 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
 
     public static JavaPlatform generateAgentJavaPlatform(String serverInstanceID) {
-        JavaPlatform platform = IDEUtils.getJavaPlatformByName(ProfilerIDESettings.getInstance().getJavaPlatformForProfiling());
+        JavaPlatform platform = JavaPlatform.getJavaPlatformById(ProfilerIDESettings.getInstance().getJavaPlatformForProfiling());
         JavaPlatform projectPlatform = getServerJavaPlatform(serverInstanceID);
 
         if (platform == null) { // should use the one defined in project
             platform = projectPlatform;
 
-            if ((platform == null) || !MiscUtils.isSupportedJVM(platform.getSystemProperties())) {
+            if (platform == null) {
                 platform = JavaPlatformSelector.getDefault().selectPlatformToUse();
 
                 if (platform == null) {
@@ -522,24 +514,12 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     private static JavaPlatform getJavaPlatformFromAntName(Project project, Properties props) {
         String javaPlatformAntName = props.getProperty("profiler.info.javaPlatform"); // NOI18N
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
 
         if (javaPlatformAntName.equals("default_platform")) {
-            return jpm.getDefaultPlatform();
+            return JavaPlatform.getDefaultPlatform();
         }
 
-        JavaPlatform[] platforms = jpm.getPlatforms(null, new Specification("j2se", null)); //NOI18N
-
-        for (int i = 0; i < platforms.length; i++) {
-            JavaPlatform platform = platforms[i];
-            String antName = platform.getProperties().get("platform.ant.name"); // NOI18N
-
-            if (antName.equals(javaPlatformAntName)) {
-                return platform;
-            }
-        }
-
-        return null;
+        return JavaPlatform.getJavaPlatformById(javaPlatformAntName);
     }
 
     // --- Private methods -------------------------------------------------------------------------------------------------
@@ -553,14 +533,16 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         if (javaPlatformAntName == null) {
             JavaPlatform platform = null;
             J2eePlatform j2eepf = getJ2eePlatform(project); // try to get the J2EE Platform
-
+            String platformId;
+            
             if (j2eepf == null) {
-                platform = JavaPlatformManager.getDefault().getDefaultPlatform(); // no J2EE Platform sepcified; use the IDE default JVM platform
+                platformId = JavaPlatform.getDefaultPlatform().getPlatformId(); // no J2EE Platform sepcified; use the IDE default JVM platform
             } else {
-                platform = j2eepf.getJavaPlatform(); // use the J2EE Platform specified JVM platform
+                Map<String,String> jpprops = j2eepf.getJavaPlatform().getProperties(); // use the J2EE Platform specified JVM platform
+                platformId = jpprops.get("platform.ant.name");
             }
 
-            props.setProperty("profiler.info.javaPlatform", platform.getProperties().get("platform.ant.name")); // set the used platform ant property
+            props.setProperty("profiler.info.javaPlatform", platformId); // set the used platform ant property
         }
     }
 
