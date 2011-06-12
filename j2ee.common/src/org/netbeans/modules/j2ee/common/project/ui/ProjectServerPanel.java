@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -62,14 +63,15 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -695,35 +697,40 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         boolean gfv3Found = false;
         boolean gfv3ee6Found = false;
         for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
-            String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedTypes().contains(j2eeModuleType)) {
-                ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
-                // decide whether this server should be preselected
-                if (selectedItem == null || !gfv3ee6Found) {
-                    if (selectedServerInstanceID != null) {
-                        if (selectedServerInstanceID.equals(serverInstanceID)) {
-                            selectedItem = serverWrapper;
-                        }
-                    } else {
-                        // preselect the best server ;)
-                        // FIXME replace with PriorityQueue mechanism
-                        String shortName = Deployment.getDefault().getServerID(serverInstanceID);
-                        if ("gfv3ee6".equals(shortName)) { // NOI18N
-                            selectedItem = serverWrapper;
-                            gfv3ee6Found = true;
-                        } else if ("gfv3".equals(shortName) && !gfv3ee6Found) { // NOI18N
-                            selectedItem = serverWrapper;
-                            gfv3Found = true;
-                        } else if ("J2EE".equals(shortName) && !(gfv3ee6Found || gfv3Found)) { // NOI18N
-                            selectedItem = serverWrapper;
-                            sjasFound = true;
-                        } else if ("JBoss4".equals(shortName) && !(gfv3ee6Found || gfv3Found || sjasFound)) { // NOI18N
-                            selectedItem = serverWrapper;
+            try {
+                ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
+                String displayName = si.getDisplayName();
+                J2eePlatform j2eePlatform = si.getJ2eePlatform();
+                if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedTypes().contains(j2eeModuleType)) {
+                    ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
+                    // decide whether this server should be preselected
+                    if (selectedItem == null || !gfv3ee6Found) {
+                        if (selectedServerInstanceID != null) {
+                            if (selectedServerInstanceID.equals(serverInstanceID)) {
+                                selectedItem = serverWrapper;
+                            }
+                        } else {
+                            // preselect the best server ;)
+                            // FIXME replace with PriorityQueue mechanism
+                            String shortName = si.getServerID();
+                            if ("gfv3ee6".equals(shortName)) { // NOI18N
+                                selectedItem = serverWrapper;
+                                gfv3ee6Found = true;
+                            } else if ("gfv3".equals(shortName) && !gfv3ee6Found) { // NOI18N
+                                selectedItem = serverWrapper;
+                                gfv3Found = true;
+                            } else if ("J2EE".equals(shortName) && !(gfv3ee6Found || gfv3Found)) { // NOI18N
+                                selectedItem = serverWrapper;
+                                sjasFound = true;
+                            } else if ("JBoss4".equals(shortName) && !(gfv3ee6Found || gfv3Found || sjasFound)) { // NOI18N
+                                selectedItem = serverWrapper;
+                            }
                         }
                     }
+                    servers.add(serverWrapper);
                 }
-                servers.add(serverWrapper);
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         for (ServerInstanceWrapper item : servers) {
