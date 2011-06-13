@@ -48,6 +48,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 
 
 /**
@@ -119,7 +121,7 @@ public abstract class PackageNode extends ContainerNode {
 
     /** Creates a new instance of PackageNode */
     public PackageNode(final String name, final ContainerNode parent) {
-        super(name, stripName(defaultizeName(name)), IconResource.PACKAGE_ICON, parent);
+        super(name, stripName(defaultizeName(name)), Icons.getIcon(LanguageIcons.PACKAGE), parent);
     }
 
     final protected SelectorChildren getChildren() {

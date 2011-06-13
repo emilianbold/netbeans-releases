@@ -45,13 +45,13 @@ package org.netbeans.modules.maven.profiler;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.NetBeansProfiler;
+import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
                         projectType="org-netbeans-modules-maven")
 public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     
@@ -98,7 +98,7 @@ public class MavenProjectTypeProfiler extends AbstractProjectTypeProfiler {
     }
     
     public JavaPlatform getProjectJavaPlatform(Project project) {
-        return JavaPlatform.getDefault();
+        return JavaPlatform.getDefaultPlatform();
     }
 
     public boolean isProfilingSupported(Project project) {
