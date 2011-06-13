@@ -896,6 +896,13 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
     
+    /** Creates a new mode on the side of the given mode 
+     * @since 2.32
+     */
+    public ModeImpl attachModeToSide(ModeImpl referenceMode, String side, String modeName, int modeKind, boolean permanent) {
+        return central.attachModeToSide(referenceMode, side, modeName, modeKind, permanent);
+    }
+    
     /** Indicates whether windows system shows GUI. */
     public boolean isVisible() {
         return central.isVisible();
@@ -1023,6 +1030,25 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
 
         central.userDockedTopComponent(tc, mode);
+    }
+    /**
+     * 
+     * @param tc
+     * @param minimized 
+     * @since 2.32
+     */
+    public void setTopComponentMinimized( TopComponent tc, boolean minimized ) {
+        central.setTopComponentMinimized( tc, minimized );
+    }
+    
+    /**
+     * 
+     * @param tc
+     * @return 
+     * @since 2.32
+     */
+    public boolean isTopComponentMinimized( TopComponent tc ) {
+        return central.isTopComponentMinimized( tc );
     }
 
     // PENDING>>
