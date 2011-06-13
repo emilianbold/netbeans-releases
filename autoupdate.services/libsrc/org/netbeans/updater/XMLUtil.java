@@ -44,6 +44,7 @@
 
 package org.netbeans.updater;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -184,7 +185,7 @@ public final class XMLUtil extends Object {
                     return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_6.dtd").toString());
                 } else {
                     if (systemID.endsWith(".dtd")) {
-                        return new InputSource();
+                        return new InputSource(new ByteArrayInputStream(new byte[0]));
                     }
                     URL u = new URL(systemID);
                     URLConnection oc = u.openConnection();
