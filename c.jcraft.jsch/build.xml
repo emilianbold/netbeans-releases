@@ -43,6 +43,17 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="libs.jsch" default="netbeans" basedir=".">
+<project name="c.jcraft.jsch" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/jsch-0.1.44.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="com.jcraft.jsch"/>
+                <attribute name="Bundle-Version" value="0.1.44"/>
+                <attribute name="Export-Package" value="com.jcraft.jsch"/>
+                <attribute name="Require-Bundle" value="com.jcraft.jzlib;resolution:=optional"/>
+            </manifest>
+        </jar>
+    </target>
 </project>

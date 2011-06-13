@@ -54,6 +54,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.TestFileUtils;
 
 /**
  *
@@ -83,6 +84,7 @@ public class EnabledAutoloadTest extends NbTestCase {
         jars.mkdirs();
 
         j1 = SetupHid.createTestJAR(getDataDir(), jars, "simple-module.jar", null);
+        System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     public void testDependOnAutoload() throws Exception {
@@ -115,4 +117,34 @@ public class EnabledAutoloadTest extends NbTestCase {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
+
+    public void testAutoloadBundles() throws Exception {
+        ModuleManager mgr = Main.getModuleSystem().getManager();
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            File jar1 = new File(getWorkDir(), "j1.jar");
+            TestFileUtils.writeZipFile(jar1,
+                    "META-INF/MANIFEST.MF:Bundle-SymbolicName: m1\nExport-Package: m1\nBundle-Version: 1.0\n",
+                    "m1/res:ource");
+            Module m1 = mgr.create(jar1, null, false, true, false);
+            File jar2 = new File(getWorkDir(), "j2.jar");
+            TestFileUtils.writeZipFile(jar2,
+                    "META-INF/MANIFEST.MF:Bundle-SymbolicName: m2\nExport-Package: m2\nBundle-Version: 1.0\nRequire-Bundle: m1\n",
+                    "m2/res:ource");
+            Module m2 = mgr.create(jar2, null, false, true, false);
+            File jar3 = new File(getWorkDir(), "j3.jar");
+            TestFileUtils.writeZipFile(jar3,
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: m3\nOpenIDE-Module-Module-Dependencies: m2\nOpenIDE-Module-Public-Packages: -\n");
+            Module m3 = mgr.create(jar3, null, false, false, false);
+            mgr.enable(m3);
+            assertTrue(m3.isEnabled());
+            assertTrue(m2.isEnabled());
+            assertTrue(m1.isEnabled());
+            assertNotNull(m3.getClassLoader().getResource("m2/res"));
+            assertNotNull(m2.getClassLoader().getResource("m1/res"));
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
 }
