@@ -109,7 +109,7 @@ public class LoginFileSystem extends MultiFileSystem {
  */
 public abstract class FileSystem implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(FileSystem.class.getName());
+    static final Logger LOG = Logger.getLogger(FileSystem.class.getName());
 
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -8931487924240189180L;
