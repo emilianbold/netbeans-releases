@@ -50,7 +50,9 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.common</friend>
+                <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
+                <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.j2ee.specs.support.api</package>
                 <package>org.netbeans.modules.j2ee.specs.support.spi</package>
