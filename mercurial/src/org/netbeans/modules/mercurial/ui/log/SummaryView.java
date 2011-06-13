@@ -730,8 +730,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
 
                     // add revision
+                    StringBuilder labelBuilder = new StringBuilder();
+                    // add branch labels
+                    for (String s : container.getLog().getBranches()) {
+                        labelBuilder.append(s).append(' ');
+                    }
+                    // add tag labels
+                    for (String s : container.getLog().getTags()) {
+                        labelBuilder.append(s).append(' ');
+                    }
                     sd.insertString(0, container.getLog().getRevisionNumber() +
-                            " (" + container.getLog().getCSetShortID() + ")", null); // NOI18N
+                            " (" + (labelBuilder.length() == 0 ? //NOI18N
+                            container.getLog().getCSetShortID() :
+                            labelBuilder.toString() + "- " + container.getLog().getCSetShortID().substring(0, 7)) + ")", null); //NOI18N
                     sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
 
                     // add author

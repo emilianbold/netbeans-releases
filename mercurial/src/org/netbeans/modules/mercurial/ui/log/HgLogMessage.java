@@ -77,6 +77,8 @@ public class HgLogMessage {
     private String rootURL;
     private OutputLogger logger;
     private HashMap<File, HgRevision> ancestors = new HashMap<File, HgRevision>();
+    private final String[] branches;
+    private final String[] tags;
 
     private void updatePaths(List<String> pathsStrings, String path, List<String> filesShortPaths, char status) {
         if (filesShortPaths.isEmpty()) {
@@ -93,7 +95,7 @@ public class HgLogMessage {
     }
 
     public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String username, String desc, String date, String id,
-            String parents, String fm, String fa, String fd, String fc) {
+            String parents, String fm, String fa, String fd, String fc, String branches, String tags) {
 
         this.rootURL = rootURL;
         this.rev = new HgRevision(id, rev);
@@ -144,6 +146,16 @@ public class HgLogMessage {
             for (String fileSP : filesShortPaths) {
                 paths.add(new HgLogMessageChangedPath(fileSP, ' '));
             }
+        }
+        if (branches.isEmpty()) {
+            this.branches = new String[0];
+        } else {
+            this.branches = branches.split("\t");
+        }
+        if (tags.isEmpty()) {
+            this.tags = new String[0];
+        } else {
+            this.tags = tags.split("\t");
         }
     }
 
@@ -245,6 +257,14 @@ public class HgLogMessage {
 
     public void setTimeZoneOffset(String timeZoneOffset) {
         this.timeZoneOffset = timeZoneOffset;
+    }
+
+    public String[] getBranches () {
+        return branches;
+    }
+
+    public String[] getTags () {
+        return tags;
     }
 
     @Override

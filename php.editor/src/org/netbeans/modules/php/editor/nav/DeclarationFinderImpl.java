@@ -97,7 +97,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             return OffsetRange.NONE;
         }
         ts.move(caretOffset);
+        int startTSOffset = 0;
         if (ts.moveNext()) {
+            startTSOffset = ts.offset();
             Token<PHPTokenId> token = ts.token();
             PHPTokenId id = token.id();
             if (id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) {
@@ -185,6 +187,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 }
 
             }
+        }
+        if (caretOffset == startTSOffset) {
+            // if there is not a refence, and the curet is just beetween two tokens, 
+            // try the previous token. See issue #199329
+            return getReferenceSpan(ts, caretOffset - 1);
         }
         return OffsetRange.NONE;
     }
