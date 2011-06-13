@@ -49,6 +49,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
@@ -64,9 +66,15 @@ import org.openide.nodes.Node;
  * @author Tomas Holy
  */
 public class TableViewTest extends NbTestCase {
+    private static final Logger LOG = Logger.getLogger(TableViewTest.class.getName());
 
     public TableViewTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 60000;
     }
 
     public static final class AWTExceptionHandler {
@@ -101,7 +109,10 @@ public class TableViewTest extends NbTestCase {
         });
 
         dlg.setVisible(true);
-        Thread.sleep(1000);
+        while (!dlg.isShowing()) {
+            LOG.log(Level.INFO, "Not showing yet {0}", dlg);
+            Thread.sleep(1000);
+        }
 
         Point p = tvp.view.getLocationOnScreen();
         long now = System.currentTimeMillis();
