@@ -86,6 +86,7 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     private final MessageInfoFetcher defaultMessageInfoFetcher;
     private MessageInfoFetcher messageInfofetcher;
     private HgProgressSupport hgProgressSupport;
+    private static final String MARK_ACTIVE_HEAD = "*"; //NOI18N
 
     /** Creates new form ReverModificationsPanel */
     public ChangesetPickerPanel(File repo, File[] files) {
@@ -119,6 +120,9 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
                 revStr = HG_TIP;
             } else {
                 revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+                if (revStr.endsWith(MARK_ACTIVE_HEAD)) {
+                    revStr = revStr.substring(0, revStr.length() - 1);
+                }
                 changesetStr = messages == null ? "" : messages[revisionsComboBox.getSelectedIndex()].getCSetShortID(); //NOI18N
             }
         }
@@ -345,11 +349,19 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             size = messages.length;
             int i = 0 ;
             while(i < size){
-                StringBuilder sb = new StringBuilder().append(messages[i].getRevisionNumber()).append(" (").append(messages[i].getCSetShortID()); //NOI18N
+                StringBuilder sb = new StringBuilder().append(messages[i].getRevisionNumber());
                 if (parentRevision != null && parentRevision.getRevisionNumber().equals(messages[i].getRevisionNumber())) {
-                    sb.append(" - ").append(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_ChangesetPickerPanel.currentHead")); //NOI18N
+                    sb.append(MARK_ACTIVE_HEAD);
                 }
-                sb.append(")"); //NOI18N
+                StringBuilder labels = new StringBuilder();
+                for (String branch : messages[i].getBranches()) {
+                    labels.append(branch).append(' ');
+                }
+                for (String tag : messages[i].getTags()) {
+                    labels.append(tag).append(' ');
+                    break; // just one tag
+                }
+                sb.append(" (").append(labels).append(labels.length() == 0 ? "" : "- ").append(messages[i].getCSetShortID().substring(0, 7)).append(")"); //NOI18N
                 targetRevsSet.add(sb.toString());
                 i++;
             }
