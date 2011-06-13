@@ -132,7 +132,7 @@ public class MergeAction extends ContextAction {
                         public void run() {
                             try {
                                 String revStr = null;
-                                MergeRevisions mergeDlg = new MergeRevisions(root, new File[] {root});
+                                MergeRevisions mergeDlg = new MergeRevisions(root, null);
                                 if (!mergeDlg.showDialog()) {
                                     return;
                                 }
