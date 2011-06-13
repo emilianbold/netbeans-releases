@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,6 +79,8 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
@@ -127,18 +130,25 @@ public class FolderChildrenTest extends NbTestCase {
         for (int i = 0; i < arr.length; i++) {
             arr[i].delete();
         }
+        FormKitDataLoader.waiter = null;
     }
 
     public void testCorrectLoggerName() throws Exception {
         FileObject fo = FileUtil.getConfigRoot();
         Node n = DataFolder.findFolder(fo).getNodeDelegate();
         Enumeration<String> en = java.util.logging.LogManager.getLogManager().getLoggerNames();
+        StringBuilder sb = new StringBuilder();
+        boolean ok = false;
         while(en.hasMoreElements()) {
             String log = en.nextElement();
             if (log.startsWith("org.openide.loaders.FolderChildren")) {
-                assertEquals("org.openide.loaders.FolderChildren", log);
+                sb.append(log).append("\n");
+                if ("org.openide.loaders.FolderChildren".equals(log)) {
+                    ok = true;
+                }
             }
         }
+        assertTrue(sb.toString(), ok);
     }
 
     @RandomlyFails // NB-Core-Build #2858
@@ -398,7 +408,7 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
 
-    private void assertNodes( Node[] nodes, String names[] ) {
+    final void assertNodes( Node[] nodes, String... names) {
         Object t = Arrays.asList(nodes);
         assertEquals( "Wrong number of nodes: " + t, names.length, nodes.length );
 
@@ -695,10 +705,49 @@ public class FolderChildrenTest extends NbTestCase {
         assertNodes( arr, new String[] { "A" } );
     }
     
+    public void testNodesHaveDataObjectInLookup() throws Exception {
+        FileObject fa = FileUtil.createData(FileUtil.getConfigRoot(), "FK/A");
+        FileObject fb = FileUtil.createData(FileUtil.getConfigRoot(), "FK/B");
+    
+        FileObject bb = FileUtil.getConfigFile("/FK");
+
+        DataFolder folder = DataFolder.findFolder(bb);
+        final CountDownLatch latch = new CountDownLatch(1);
+        FormKitDataLoader.waiter = latch;
+        // wake up in 3s
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                latch.countDown();
+            }
+        }, 3000);
+        
+        Pool.setLoader(FormKitDataLoader.class);
+        final Children ch = folder.getNodeDelegate().getChildren();
+        int cnt = ch.getNodesCount(true);
+        assertEquals("Two children", 2, cnt);
+
+        FileObject af = ch.getNodeAt(0).getLookup().lookup(FileObject.class);
+        assertEquals("The right file a", fa, af);
+        FileObject bf = ch.getNodeAt(1).getLookup().lookup(FileObject.class);
+        assertEquals("The right file b", fb, bf);
+
+        FormKitDataLoader.assertMode = false;
+        DataObject a = ch.getNodeAt(0).getLookup().lookup(DataObject.class);
+        DataObject b = ch.getNodeAt(1).getLookup().lookup(DataObject.class);
+        
+        latch.countDown();
+        
+        assertNotNull("Obj A found", a);
+        assertNotNull("Obj B found", b);
+        
+        assertEquals("Right primary File A", fa, a.getPrimaryFile());
+        assertEquals("Right primary File B", fb, b.getPrimaryFile());
+    }
     public void testFoldersAreNotLeaves() throws Exception {
         FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/A");
         FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/B");
-
+    
         FileObject bb = FileUtil.getConfigFile("/FK");
 
         DataFolder folder = DataFolder.findFolder(bb);
@@ -710,7 +759,7 @@ public class FolderChildrenTest extends NbTestCase {
         assertFalse("No leaf", arr[0].isLeaf());
         assertFalse("No leaf 2", arr[1].isLeaf());
     }
-    
+
     public void testRenameHiddenEntry() throws Exception {
         FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), "two");
         List<FileObject> arr = new ArrayList<FileObject>();
@@ -1008,6 +1057,7 @@ public class FolderChildrenTest extends NbTestCase {
         private static final long serialVersionUID = 1L;
         static int cnt;
         static boolean assertMode;
+        static volatile CountDownLatch waiter;
 
         public FormKitDataLoader() {
             super(FormKitDataObject.class.getName());
@@ -1028,6 +1078,13 @@ public class FolderChildrenTest extends NbTestCase {
                 assertFalse("No AWT thread queries", EventQueue.isDispatchThread());
             }
             cnt++;
+            if (waiter != null) {
+                try {
+                    waiter.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
 
             String ext = fo.getExt();
             if (ext.equals(FORM_EXTENSION))
