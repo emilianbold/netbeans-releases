@@ -69,8 +69,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
-import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -97,7 +97,7 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
             if (instance == null) 
                 throw new IllegalStateException(
                 (NbBundle.getMessage(InstancePropertiesImpl.class, "MSG_InstanceNotExists", url))); //NOI18N
-            fo = ServerRegistry.getInstance().getInstanceFileObject(url);
+            fo = getInstanceFileObject(url);
             if (fo == null)
                 throw new IllegalStateException(
                 (NbBundle.getMessage(InstancePropertiesImpl.class, "MSG_InstanceNotExists", url))); //NOI18N
@@ -105,6 +105,21 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
         }
         return fo;
     }
+    
+    static FileObject getInstanceFileObject(String url) {
+        FileObject installedServersDir = FileUtil.getConfigFile(ServerRegistry.DIR_INSTALLED_SERVERS);
+        if (installedServersDir == null) {
+            return null;
+        }
+        FileObject[] installedServers = installedServersDir.getChildren();
+        for (int i=0; i<installedServers.length; i++) {
+            String val = (String) installedServers[i].getAttribute(URL_ATTR);
+            if (val != null && val.equals(url))
+                return installedServers[i];
+        }
+        return null;
+    }
+
     
     // InstanceListener methods
     public void instanceRemoved(String instance) {

@@ -266,6 +266,15 @@ public abstract class InstanceProperties {
         return ip;
     }
 
+    public static InstanceProperties createMemoryInstancePropertiesWithoutUI(String url, String username, 
+            String password, String displayName, Map<String, String> initialProperties) throws InstanceCreationException {
+        ServerRegistry registry = ServerRegistry.getInstance();
+        registry.addInstance(url, username, password, displayName, true, true, initialProperties);
+        ServerInstance inst = registry.getServerInstance(url);
+        InstanceProperties ip = inst.getInstanceProperties();
+        return ip;
+    }
+    
     /**
      * Removes the given server instance from the JavaEE server registry,
      * making it unavailable to JavaEE projects.
