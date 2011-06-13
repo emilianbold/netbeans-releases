@@ -44,11 +44,13 @@ package org.netbeans.modules.cloud.amazon.serverplugin;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.cloud.amazon.ui.serverplugin.AmazonJ2EEServerWizardIterator;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
  *
@@ -65,6 +67,11 @@ public class AmazonOptionalDeploymentManagerFactory extends OptionalDeploymentMa
         return null;
     }
 
+    @Override
+    public InstantiatingIterator getAddInstanceIterator() {
+        return new AmazonJ2EEServerWizardIterator();
+    }
+    
     @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
         throw new UnsupportedOperationException("Not supported yet.");
