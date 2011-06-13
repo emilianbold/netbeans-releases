@@ -80,9 +80,10 @@ public class ExternalProcessBuilderTest extends NbTestCase {
         creator = creator.addArgument("my \"arg 4\"");
         creator = creator.addArgument("my\\arg5");
         creator = creator.addArgument("\"my arg6\"");
+        creator = creator.addArgument("C:\\Program Files\\App");
 
         List<String> arg = creator.buildArguments();
-        assertEquals(6, arg.size());
+        assertEquals(7, arg.size());
 
         assertEquals("myarg1", arg.get(0));
         assertEquals("\"my arg 2\"", arg.get(1));
@@ -90,6 +91,7 @@ public class ExternalProcessBuilderTest extends NbTestCase {
         assertEquals("\"my \\\"arg 4\\\"\"", arg.get(3));
         assertEquals("my\\\\arg5", arg.get(4));
         assertEquals("\"my arg6\"", arg.get(5));
+        assertEquals("\"C:\\\\Program Files\\\\App\"", arg.get(6));
     }
 
     public void testPath() {

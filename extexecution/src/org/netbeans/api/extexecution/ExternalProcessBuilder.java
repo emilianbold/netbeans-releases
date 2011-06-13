@@ -269,7 +269,11 @@ public final class ExternalProcessBuilder implements Callable<Process> {
     public Process call() throws IOException {
         List<String> commandList = new ArrayList<String>();
 
-        commandList.add(executable);
+        if (Utilities.isWindows() && !ESCAPED_PATTERN.matcher(executable).matches()) {
+            commandList.add(escapeString(executable));
+        } else {
+            commandList.add(executable);
+        }
 
         List<String> args = buildArguments();
         commandList.addAll(args);

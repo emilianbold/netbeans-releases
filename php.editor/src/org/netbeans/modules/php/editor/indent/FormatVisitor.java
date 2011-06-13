@@ -837,6 +837,7 @@ public class FormatVisitor extends DefaultVisitor {
 		    addFormatToken(formatTokens);
 		}
 	    }
+            ts.movePrevious();
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT, ts.offset()));
