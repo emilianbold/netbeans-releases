@@ -140,7 +140,7 @@ public class SimpleLookup extends Lookup {
         dataChanged();
     }
 
-    private final void dataChanged() {
+    private void dataChanged() {
         LOG.log(FINER, "dataChanged()");                                //NOI18N
 
         notifyResults();
@@ -341,6 +341,7 @@ public class SimpleLookup extends Lookup {
             super();
         }
 
+        @Override
         protected Collection<? extends T> allInstancesImpl() {
             if (LOG.isLoggable(FINEST)) {
                 LOG.log(FINEST,
@@ -350,6 +351,7 @@ public class SimpleLookup extends Lookup {
             return CollectionUtils.unmodifiableList(getInstances());
         }
 
+        @Override
         protected Collection<? extends Item<T>> allItemsImpl() {
             if (LOG.isLoggable(FINEST)) {
                 LOG.log(FINEST,
@@ -364,6 +366,7 @@ public class SimpleLookup extends Lookup {
             return CollectionUtils.unmodifiableList((Item<T>[]) items);
         }
 
+        @Override
         protected Set<Class<? extends T>> allClassesImpl() {
             if (LOG.isLoggable(FINEST)) {
                 LOG.log(FINEST,
@@ -403,6 +406,7 @@ public class SimpleLookup extends Lookup {
             return (T[]) SimpleLookup.this.data;
         }
 
+        @Override
         protected boolean updateData(boolean listenersRegistered) {
             boolean dataChanged;
 
@@ -481,6 +485,7 @@ public class SimpleLookup extends Lookup {
             this.requestedInstance = requestedInstance;
         }
 
+        @Override
         protected Collection<? extends T> allInstancesImpl() {
             if (LOG.isLoggable(FINEST)) {
                 LOG.log(FINEST,
@@ -493,6 +498,7 @@ public class SimpleLookup extends Lookup {
                    : Collections.<T>emptyList();
         }
 
+        @Override
         protected Collection<? extends Item<T>> allItemsImpl() {
             if (LOG.isLoggable(FINEST)) {
                 LOG.log(FINEST,
@@ -508,6 +514,7 @@ public class SimpleLookup extends Lookup {
                    : Collections.<Item<T>>emptyList();
         }
 
+        @Override
         protected Set<Class<? extends T>> allClassesImpl() {
             if (LOG.isLoggable(FINEST)) {
                 LOG.log(FINEST,
@@ -554,6 +561,7 @@ public class SimpleLookup extends Lookup {
             return (T) result;
         }
 
+        @Override
         protected boolean updateData(boolean listenersRegistered) {
             boolean dataChanged;
 
