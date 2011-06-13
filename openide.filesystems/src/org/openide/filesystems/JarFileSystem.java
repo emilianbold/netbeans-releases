@@ -79,6 +79,7 @@ import java.util.zip.ZipException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /** A virtual filesystem based on a JAR archive.
@@ -124,8 +125,8 @@ public class JarFileSystem extends AbstractFileSystem {
     private File root = new File("."); // NOI18N
 
     /** Watches modification on root file */
-    private transient RequestProcessor.Task watcherTask = null;
-    private transient RequestProcessor.Task closeTask = null;
+    private transient volatile RequestProcessor.Task watcherTask = null;
+    private transient volatile RequestProcessor.Task closeTask = null;
     private transient long lastModification = 0;
     private static final Logger LOGGER = Logger.getLogger(JarFileSystem.class.getName());
 
@@ -223,8 +224,9 @@ public class JarFileSystem extends AbstractFileSystem {
 
         // Nobody uses this JarFileSystem => stop watcher, close JarFile and throw away cache.
         if (aliveCount == 0) {
-            if (watcherTask != null) {
-                watcherTask.cancel();
+            Task w = watcherTask;
+            if (w != null) {
+                w.cancel();
                 watcherTask = null;
             }
 
@@ -874,7 +876,7 @@ public class JarFileSystem extends AbstractFileSystem {
                     return newCache;
                 } catch (Throwable t) {
                     // jar is invalid; perhaps it's being rebuilt
-                    // don't touch filesystem
+                    // don'w touch filesystem
                     return Cache.INVALID;
                 }
             }
@@ -910,8 +912,9 @@ public class JarFileSystem extends AbstractFileSystem {
                         }
                     } finally {
                         /** reschedule watcherTask*/
-                        if (watcherTask != null) {
-                            watcherTask.schedule(checkTime);
+                        Task w = watcherTask;
+                        if (w != null) {
+                            w.schedule(checkTime);
                         }
                     }
                 }
@@ -920,9 +923,9 @@ public class JarFileSystem extends AbstractFileSystem {
     
     @Override
     final void waitRefreshed() {
-        RequestProcessor.Task t = watcherTask;
-        if (t != null) {
-            t.waitFinished();
+        Task w = watcherTask;
+        if (w != null) {
+            w.waitFinished();
         }
     }
 
