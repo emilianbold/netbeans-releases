@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -215,8 +216,7 @@ public class SimpleLookup extends Lookup {
         private final LookupListener[] listenersArray
                                        = new LookupListener[0];
         private final LookupEvent lookupEvent = new LookupEvent(this);
-        private final List<LookupListener> listeners
-                                   = new CopyOnWriteArrayList<LookupListener>();
+        private final Set<LookupListener> listeners = Collections.synchronizedSet(new LinkedHashSet<LookupListener>());
 
         protected Collection<? extends T> allInstances;
         protected Collection<? extends Item<T>> allItems;
@@ -275,18 +275,15 @@ public class SimpleLookup extends Lookup {
 
         @Override
         public void addLookupListener(LookupListener l) {
-            assert listeners.getClass() == CopyOnWriteArrayList.class : "synchronization required"; //NOI18N
             listeners.add(l);
         }
 
         @Override
-        synchronized public void removeLookupListener(LookupListener l) {
-            assert listeners.getClass() == CopyOnWriteArrayList.class : "synchronization required"; //NOI18N
+        public void removeLookupListener(LookupListener l) {
             listeners.remove(l);
         }
 
         protected LookupListener[] getListeners() {
-            assert listeners.getClass() == CopyOnWriteArrayList.class : "synchronization required"; //NOI18N
             return listeners.toArray(listenersArray);
         }
 
