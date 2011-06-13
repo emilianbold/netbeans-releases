@@ -220,7 +220,11 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                     }
                 } else {
                     if (NbPresenter.currentModalDialog != null) {
-                        presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
+                        if (NbPresenter.currentModalDialog.isLeaf()) {
+                            presenter = new NbPresenter(descriptor, WindowManager.getDefault().getMainWindow(), true);
+                        } else {
+                            presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
+                        }
                     } else {
                         Frame f = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
                             instanceof Frame ? 
