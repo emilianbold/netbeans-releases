@@ -1647,8 +1647,8 @@ final class Central implements ControllerHandler {
      */
     ModeImpl attachModeToSide( ModeImpl referenceMode, String side, String modeName, int modeKind, boolean permanent ) {
         ModeImpl newMode = WindowManagerImpl.getInstance().createModeImpl(modeName, modeKind, permanent);
-
-        model.addModeToSide(newMode, newMode, side);
+        
+        model.addModeToSide(newMode, referenceMode, side);
         
         return newMode;
     }
