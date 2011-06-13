@@ -43,6 +43,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.JSplitPane;
@@ -206,7 +207,7 @@ public class AttachWindowAction extends Action {
                     sourceTc.open();
                     sourceTc.requestActive();
                 } else {
-                    callWindowManager("attachTopComponentToSide", sourceTc, mode, sideConstant);
+                    attachTopComponent(sourceTc, mode, sideConstant);
                 }
             }
         });
@@ -226,29 +227,39 @@ public class AttachWindowAction extends Action {
         }
     }
 
-    static Object callWindowManager(String method, Object... args) {
-        return callWindowManager(WindowManager.getDefault().getClass(), method, args);
-    }
-
-    private static Object callWindowManager(Class clazz, String method, Object... args) {
-        for (Method m : clazz.getDeclaredMethods()) {
-            if (!method.equals(m.getName())) {
-                continue;
-            }
-            if (args == null && m.getParameterTypes().length > 0 ||
-                    args != null && m.getParameterTypes().length != args.length) {
-                continue;
-            }
-            try {
-                return m.invoke(WindowManager.getDefault(), args);
-            } catch (Exception ex) {
-                throw (IllegalStateException)new IllegalStateException("Cannot execute " + method).initCause(ex);
-            }
+    private static Class classForName(String className) throws ClassNotFoundException {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
         }
-        return callWindowManager(clazz.getSuperclass(), method, args);
     }
-
-
+    
+    /** Uses Central.userDroppedTopComponents(ModeImpl mode, TopComponentDraggable draggable, String side)
+     * to attach source TopComponent to target Mode according to sideConstant
+     * value.
+     * @param sourceTc source TopComponent
+     * @param mode target mode
+     * @param sideConstant side constant
+     */
+    private static void attachTopComponent(TopComponent sourceTc, Mode mode, String sideConstant) {
+        try {
+            Class centralClass = classForName("org.netbeans.core.windows.Central");
+            Class tcdClass = classForName("org.netbeans.core.windows.view.dnd.TopComponentDraggable");
+            Class modeImplClass = classForName("org.netbeans.core.windows.ModeImpl");
+            Method attachMethod = centralClass.getMethod("userDroppedTopComponents", modeImplClass, tcdClass, String.class);
+            Method getCentralMethod = WindowManager.getDefault().getClass().getDeclaredMethod("getCentral", (Class<?>[]) null);
+            getCentralMethod.setAccessible(true);
+            Object centralInstance = getCentralMethod.invoke(WindowManager.getDefault(), (Object[]) null);
+            Constructor tcdConstructor = tcdClass.getDeclaredConstructor(TopComponent.class);
+            tcdConstructor.setAccessible(true);
+            Object tcdInstance = tcdConstructor.newInstance(sourceTc);
+            attachMethod.setAccessible(true);
+            attachMethod.invoke(centralInstance, mode, tcdInstance, sideConstant);
+        } catch (Exception e) {
+            throw new JemmyException("Cannot attach TopComponent.", e);
+        }
+    }
     
     /** Throws UnsupportedOperationException because AttachWindowAction doesn't have
      * representation on nodes.
