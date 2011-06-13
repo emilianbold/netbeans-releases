@@ -269,7 +269,7 @@ public final class ExternalProcessBuilder implements Callable<Process> {
     public Process call() throws IOException {
         List<String> commandList = new ArrayList<String>();
 
-        commandList.add(executable);
+        commandList.add(escapeString(executable));
 
         List<String> args = buildArguments();
         commandList.addAll(args);
