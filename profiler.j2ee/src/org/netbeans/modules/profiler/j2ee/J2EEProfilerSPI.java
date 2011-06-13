@@ -58,7 +58,6 @@ import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.api.*;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -84,7 +83,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectStorage;
-import org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler;
+import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 
@@ -263,13 +262,13 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
      */
     public ProfilerServerSettings getSettings(String serverInstanceID, boolean verbose) {
         // obtain agent ID
-        int agentID = J2EEProjectTypeProfiler.generateAgentID();
+        int agentID = J2EEProjectProfilingSupportProvider.generateAgentID();
 
         // obtain agent port
-        int agentPort = J2EEProjectTypeProfiler.generateAgentPort();
+        int agentPort = J2EEProjectProfilingSupportProvider.generateAgentPort();
 
         // obtain Java platform
-        org.netbeans.modules.profiler.api.JavaPlatform agentJavaPlatform = J2EEProjectTypeProfiler.generateAgentJavaPlatform(serverInstanceID);
+        org.netbeans.modules.profiler.api.JavaPlatform agentJavaPlatform = J2EEProjectProfilingSupportProvider.generateAgentJavaPlatform(serverInstanceID);
 
         if (agentJavaPlatform == null) {
             lastServerInstanceProperties = null;
@@ -433,8 +432,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
      * allows the Profiler to correctly detect STATE_STARTING.
      */
     public void notifyStarting() {
-        profilerAgentID = J2EEProjectTypeProfiler.getLastAgentID();
-        profilerAgentPort = J2EEProjectTypeProfiler.getLastAgentPort();
+        profilerAgentID = J2EEProjectProfilingSupportProvider.getLastAgentID();
+        profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
 
         NetBeansProfiler.getDefaultNB().cleanForProfilingOnPort(profilerAgentPort); // try to kill an agent on port if some exists
 
@@ -741,14 +740,13 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             ProfilerDialogs.displayWarning(e.getLocalizedMessage());
         }
 
-        ProjectTypeProfiler ptp = projectToUse.getLookup().lookup(ProjectTypeProfiler.class);
-        if (ptp == null || !ptp.isProfilingSupported(projectToUse)) { // unsupported project
+        if (!ProjectProfilingSupport.get(projectToUse).isProfilingSupported()) { // unsupported project
             lastServerInstanceProperties = null;
 
             return false;
         }
 
-        lastServerInstanceProperties = InstanceProperties.getInstanceProperties(J2EEProjectTypeProfiler.getServerInstanceID(projectToUse));
+        lastServerInstanceProperties = InstanceProperties.getInstanceProperties(J2EEProjectProfilingSupportProvider.getServerInstanceID(projectToUse));
 
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

@@ -53,11 +53,9 @@ import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.lib.profiler.ui.components.ImagePanel;
 import org.netbeans.lib.profiler.ui.components.VerticalLayout;
 import org.netbeans.lib.profiler.ui.components.XPStyleBorder;
-// FIXXX import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -71,8 +69,8 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -83,16 +81,20 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
+import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
+import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.SettingsCustomizer;
+import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
+import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.stp.icons.STPIcons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-//import org.openide.util.Lookup;
 
 
 /**
@@ -104,7 +106,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
 
     // --- SettingsConfigurator Interface ----------------------------------------
-    public static interface SettingsConfigurator {
+    static interface SettingsConfigurator {
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         //    public SettingsContainerPanel.Contents getAnalyzerConfigurator();
@@ -112,9 +114,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
         public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify,
                                boolean enableOverride);
-
-        // Provides extra component for ProjectTypeProfiler-specific settings
-        public JPanel getCustomSettingsPanel();
 
         public SettingsContainerPanel.Contents getMemoryConfigurator();
 
@@ -129,14 +128,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         // Creates ProfilingSettings to be used for profiling based on settings set by setSettings
         public ProfilingSettings createFinalSettings();
 
-        // Loads custom settings from project's properties
-        public void loadCustomSettings(Properties properties);
-
         // Resets the context
         public void reset();
-
-        // Stores custom settings from project's properties
-        public void storeCustomSettings(Properties properties);
 
         // Updates settings according to the UI
         public void synchronizeSettings();
@@ -267,8 +260,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private WeakReference<WelcomePanel> welcomePanelReference;
     private SimpleFilter[] predefinedInstrFilters;
 
-    // used for lazy-computing default root methods & project-related instrumentation filters
-    private String[][] projectPackages;
     private boolean enableOverride;
     private boolean internalComboChange = false;
     private boolean isAttach;
@@ -492,20 +483,17 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
     SimpleFilter getResolvedPredefinedFilter(SimpleFilter key) {
 // FIXXX         
-//        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-//
-//        int resolvedIndex = predefinedInstrFilterKeys.indexOf(key); // takes some time for long filter values
-//
-//        if (resolvedIndex == -1) {
-//            return null; // Should never happen
-//        }
-//
+        int resolvedIndex = predefinedInstrFilterKeys.indexOf(key); // takes some time for long filter values
+
+        if (resolvedIndex == -1) {
+            return null; // Should never happen
+        }
+
 //        if (predefinedInstrFilters[resolvedIndex] == null) {
 //            predefinedInstrFilters[resolvedIndex] = ptp.computePredefinedInstrumentationFilter(project, key, projectPackages);
 //        }
-//
-//        return predefinedInstrFilters[resolvedIndex];
-        return null;
+
+        return predefinedInstrFilters[resolvedIndex];
     }
 
     void setSubmitButton(JButton submitButton) {
@@ -547,11 +535,11 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         }
 
         // NOTE: ideally TaskPresenter.createFinalSettings().contains should be used but this is cheaper
-        if (Utils.isMonitorSettings(profilingSettings)) {
+        if (ProfilingSettings.isMonitorSettings(profilingSettings)) {
             return taskMonitor;
-        } else if (Utils.isCPUSettings(profilingSettings)) {
+        } else if (ProfilingSettings.isCPUSettings(profilingSettings)) {
             return taskCPU;
-        } else if (Utils.isMemorySettings(profilingSettings)) {
+        } else if (ProfilingSettings.isMemorySettings(profilingSettings)) {
             return taskMemory;
         } else {
             return null;
@@ -593,7 +581,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
         submitButton = null;
 
-        projectPackages = null;
         predefinedInstrFilters = null;
         predefinedInstrFilterKeys = null;
         dd = null;
@@ -616,25 +603,23 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
                 if (project != null) {
 // FIXXX                     
-//                    boolean rootMethodsPending = settings.instrRootMethodsPending;
-//                    boolean predefinedFilterPending = predefinedInstrFilterKeys.contains(settings.getSelectedInstrumentationFilter());
-//
-//                    if (rootMethodsPending || predefinedFilterPending) {
-//                        // Lazily compute default root methods
-//                        if (rootMethodsPending) {
-//                            settings.setInstrumentationRootMethods(org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project)
-//                                                                                   .getDefaultRootMethods(project, profiledFile,
-//                                                                                                          settings
-//                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .getProfileUnderlyingFramework(),
-//                                                                                                          projectPackages));
-//                        }
-//
-//                        // Lazily compute instrumentation filters
-//                        if (predefinedFilterPending) {
-//                            settings.setSelectedInstrumentationFilter(getResolvedPredefinedFilter((SimpleFilter) settings
-//                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .getSelectedInstrumentationFilter()));
-//                        }
-//                    }
+                    boolean rootMethodsPending = settings.instrRootMethodsPending;
+                    boolean predefinedFilterPending = predefinedInstrFilterKeys.contains(settings.getSelectedInstrumentationFilter());
+
+                    if (rootMethodsPending || predefinedFilterPending) {
+                        // Lazily compute default root methods
+                        if (rootMethodsPending) {
+                            if (settings.getProfileUnderlyingFramework())
+                                settings.setInstrumentationRootMethods(new ClientUtils.SourceCodeSelection[0]);
+                            else
+                                settings.setInstrumentationRootMethods(ProjectContentsSupport.get(project).getProfilingRoots(profiledFile, false)); // TODO: true/false based on selected filter
+                        }
+
+                        // Lazily compute instrumentation filters
+                        if (predefinedFilterPending) {
+                            settings.setSelectedInstrumentationFilter(getResolvedPredefinedFilter((SimpleFilter) settings.getSelectedInstrumentationFilter()));
+                        }
+                    }
                 }
                 
                 return settings;
@@ -1043,15 +1028,12 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 SelectProfilingTask.this.project = project;
 
                 if (project != null) {
-                    projectPackages = new String[2][];
-// FIXXX                     
-//                    predefinedInstrFilterKeys = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project)
-//                                                                .getPredefinedInstrumentationFilters(project);
-//                    predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
-                    predefinedInstrFilters = null;
-                    predefinedInstrFilterKeys = null;
+                    // FIXXX predefinedInstrFilterKeys = ProjectContentsSupport.get(project).getPredefinedInstrumentationFilters();
+                    predefinedInstrFilterKeys = Collections.EMPTY_LIST;
+                    predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
+//                    predefinedInstrFilters = null;
+//                    predefinedInstrFilterKeys = null;
                 } else {
-                    projectPackages = null;
                     predefinedInstrFilters = null;
                     predefinedInstrFilterKeys = null;
                 }
@@ -1069,7 +1051,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     configurator = Utils.getSettingsConfigurator(project);
                     configurator.setContext(project, profiledFile, isAttach, isModify, enableOverride);
 
-                    JPanel customSettings = configurator.getCustomSettingsPanel();
+                    SettingsCustomizer customizer = ProfilingSettingsSupport.get(project).getSettingsCustomizer();
+                    JPanel customSettings = customizer == null ? null : customizer.getCustomSettingsPanel(isAttach, isModify);
 
                     if (customSettings != null) {
                         customSettingsPanelContainer.removeAll();
@@ -1099,13 +1082,13 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     ArrayList<ProfilingSettings> memorySettings = new ArrayList();
 
                     for (ProfilingSettings settings : profilingSettings) {
-                        if (Utils.isMonitorSettings(settings)) {
+                        if (ProfilingSettings.isMonitorSettings(settings)) {
                             monitorSettings.add(settings);
                         }
                         //else if (Utils.isAnalyzerSettings(settings)) analyzerSettings.add(settings);
-                        else if (Utils.isCPUSettings(settings)) {
+                        else if (ProfilingSettings.isCPUSettings(settings)) {
                             cpuSettings.add(settings);
-                        } else if (Utils.isMemorySettings(settings)) {
+                        } else if (ProfilingSettings.isMemorySettings(settings)) {
                             memorySettings.add(settings);
                         }
                     }
@@ -1175,30 +1158,11 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         ArrayList<Project> projectsArray = new ArrayList(projects.length);
 
         for (int i = 0; i < projects.length; i++) {
-            if (isProjectTypeSupportedForAttach(projects[i])) {
+            if (ProjectProfilingSupport.get(projects[i]).isAttachSupported()) {
                 projectsArray.add(projects[i]);
             }
         }
 
         return projectsArray.toArray(new Project[projectsArray.size()]);
-    }
-
-    private static boolean isProjectTypeSupported(final Project project) {
-// FIXXX         
-//        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-//
-//        if (ptp.isProfilingSupported(project)) {
-//            return true;
-//        }
-//
-//        return ProjectUtilities.hasAction(project, "profile"); //NOI18N
-        return true;
-    }
-    
-    private static boolean isProjectTypeSupportedForAttach(Project project) {
-// FIXXX         
-//        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-//        return ptp.isAttachSupported(project);
-        return true;
     }
 }

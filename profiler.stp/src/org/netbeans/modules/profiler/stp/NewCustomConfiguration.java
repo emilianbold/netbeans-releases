@@ -219,11 +219,11 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
 
         String typeString = ""; // NOI18N
 
-        if (Utils.isMonitorSettings(type)) {
+        if (ProfilingSettings.isMonitorSettings(type)) {
             typeString = " (" + MONITOR_STRING + ")"; // NOI18N
-        } else if (Utils.isCPUSettings(type)) {
+        } else if (ProfilingSettings.isCPUSettings(type)) {
             typeString = " (" + CPU_STRING + ")"; // NOI18N
-        } else if (Utils.isMemorySettings(type)) {
+        } else if (ProfilingSettings.isMemorySettings(type)) {
             typeString = " (" + MEMORY_STRING + ")"; // NOI18N
         }
         
@@ -582,11 +582,11 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         originalSettings = originalConfiguration;
         availableSettings = availableConfigurations;
 
-        monitorTypeRadio.setEnabled(Utils.isMonitorSettings(originalSettings));
+        monitorTypeRadio.setEnabled(ProfilingSettings.isMonitorSettings(originalSettings));
         monitorTypeRadio.setSelected(monitorTypeRadio.isEnabled());
-        cpuTypeRadio.setEnabled(Utils.isCPUSettings(originalSettings));
+        cpuTypeRadio.setEnabled(ProfilingSettings.isCPUSettings(originalSettings));
         cpuTypeRadio.setSelected(cpuTypeRadio.isEnabled());
-        memoryTypeRadio.setEnabled(Utils.isMemorySettings(originalSettings));
+        memoryTypeRadio.setEnabled(ProfilingSettings.isMemorySettings(originalSettings));
         memoryTypeRadio.setSelected(memoryTypeRadio.isEnabled());
         hideTypeSettings();
 
@@ -620,11 +620,11 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         originalSettings = originalConfiguration;
         availableSettings = availableConfigurations;
 
-        monitorTypeRadio.setEnabled(Utils.isMonitorSettings(originalSettings));
+        monitorTypeRadio.setEnabled(ProfilingSettings.isMonitorSettings(originalSettings));
         monitorTypeRadio.setSelected(monitorTypeRadio.isEnabled());
-        cpuTypeRadio.setEnabled(Utils.isCPUSettings(originalSettings));
+        cpuTypeRadio.setEnabled(ProfilingSettings.isCPUSettings(originalSettings));
         cpuTypeRadio.setSelected(cpuTypeRadio.isEnabled());
-        memoryTypeRadio.setEnabled(Utils.isMemorySettings(originalSettings));
+        memoryTypeRadio.setEnabled(ProfilingSettings.isMemorySettings(originalSettings));
         memoryTypeRadio.setSelected(memoryTypeRadio.isEnabled());
         hideTypeSettings();
 
@@ -644,11 +644,11 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         originalSettings = null;
         availableSettings = availableConfigurations;
 
-        monitorTypeRadio.setEnabled(Utils.isMonitorSettings(type));
+        monitorTypeRadio.setEnabled(ProfilingSettings.isMonitorSettings(type));
         monitorTypeRadio.setSelected(monitorTypeRadio.isEnabled());
-        cpuTypeRadio.setEnabled(Utils.isCPUSettings(type));
+        cpuTypeRadio.setEnabled(ProfilingSettings.isCPUSettings(type));
         cpuTypeRadio.setSelected(cpuTypeRadio.isEnabled());
-        memoryTypeRadio.setEnabled(Utils.isMemorySettings(type));
+        memoryTypeRadio.setEnabled(ProfilingSettings.isMemorySettings(type));
         memoryTypeRadio.setSelected(memoryTypeRadio.isEnabled());
         hideTypeSettings();
 

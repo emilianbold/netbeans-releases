@@ -49,7 +49,6 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
-// FIXXX import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.IOException;
@@ -89,43 +88,7 @@ public class Utils {
     //  public static boolean iAnalyzerSettings(int type) {
     //    return type == ProfilingSettings.PROFILE_ANALYZE;
     //  }
-    public static boolean isCPUSettings(ProfilingSettings settings) {
-        if (settings == null) {
-            return false;
-        }
-
-        return isCPUSettings(settings.getProfilingType());
-    }
-
-    public static boolean isCPUSettings(int type) {
-        return (type == ProfilingSettings.PROFILE_CPU_ENTIRE) || (type == ProfilingSettings.PROFILE_CPU_PART)
-               || (type == ProfilingSettings.PROFILE_CPU_STOPWATCH);
-    }
-
-    public static boolean isMemorySettings(ProfilingSettings settings) {
-        if (settings == null) {
-            return false;
-        }
-
-        return isMemorySettings(settings.getProfilingType());
-    }
-
-    public static boolean isMemorySettings(int type) {
-        return (type == ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS) || (type == ProfilingSettings.PROFILE_MEMORY_LIVENESS);
-    }
-
-    public static boolean isMonitorSettings(ProfilingSettings settings) {
-        if (settings == null) {
-            return false;
-        }
-
-        return isMonitorSettings(settings.getProfilingType());
-    }
-
-    public static boolean isMonitorSettings(int type) {
-        return type == ProfilingSettings.PROFILE_MONITOR;
-    }
-
+    
     public static String getProjectName(Project project) {
         if (project == null) {
             return SelectProfilingTask.EXTERNAL_APPLICATION_STRING;
@@ -137,9 +100,6 @@ public class Utils {
     }
 
     public static SelectProfilingTask.SettingsConfigurator getSettingsConfigurator(Project project) {
-// FIXXX         
-//        ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
-//
 //        SelectProfilingTask.SettingsConfigurator configurator = ptp.getSettingsConfigurator();
 //        if (configurator == null) return DefaultSettingsConfigurator.SHARED_INSTANCE;
 //

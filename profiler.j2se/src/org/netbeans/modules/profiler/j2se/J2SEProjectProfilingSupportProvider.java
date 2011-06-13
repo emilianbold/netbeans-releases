@@ -46,7 +46,6 @@ package org.netbeans.modules.profiler.j2se;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.profiler.common.SessionSettings;
-import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.projectsupport.utilities.AppletSupport;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.support.ant.*;
@@ -56,13 +55,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import java.io.*;
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 
@@ -70,9 +69,9 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
-                        projectType="org-netbeans-modules-java-j2seproject")
-public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider.class, 
+                        projectType="org-netbeans-modules-java-j2seproject") // NOI18N
+public final class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private static class MyPropertyProvider implements PropertyProvider {
@@ -110,48 +109,17 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public boolean isFileObjectSupported(final Project project, final FileObject fo) {
+    @Override
+    public boolean isFileObjectSupported(FileObject fo) {
         if (!"java".equals(fo.getExt()) && !"class".equals(fo.getExt())) {
             return false; // NOI18N
         }
-        // FIXME
-        JavaProfilerSource src = JavaProfilerSource.createFrom(fo);
-        return src != null ? src.isRunnable() : false;
+        return super.isFileObjectSupported(fo);
     }
 
-    public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
-                                        final FileObject profiledClassFile) {
-        switch (type) {
-            case TARGET_PROFILE:
-                return "profile"; // NOI18N
-            case TARGET_PROFILE_SINGLE:
-                // FIXME
-                JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-                if (src != null) {
-                    if (src.isApplet()) {
-                        return "profile-applet"; // NOI18N
-                    } else {
-                        return "profile-single"; // NOI18N
-                    }
-                }
-                break;
-            case TARGET_PROFILE_TEST:
-                return null; // not currently supported // "profile-test"; // NOI18N
-            case TARGET_PROFILE_TEST_SINGLE:
-                return "profile-test-single"; // NOI18N
-            default:
-                return null;
-        }
-        return null;
-    }
-
-    // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
-    public boolean isProfilingSupported(final Project project) {
-        return true;
-    }
-
-    public JavaPlatform getProjectJavaPlatform(Project project) {
-        PropertyEvaluator props = getProjectProperties(project);
+    @Override
+    public JavaPlatform getProjectJavaPlatform() {
+        PropertyEvaluator props = getProjectProperties(getProject());
         String platformName = props.getProperty("platform.active"); // NOI18N
 
         if (platformName == null) {
@@ -165,8 +133,10 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return JavaPlatform.getJavaPlatformById(platformName);
     }
 
-    public boolean checkProjectCanBeProfiled(final Project project, final FileObject profiledClassFile) {
+    @Override
+    public boolean checkProjectCanBeProfiled(final FileObject profiledClassFile) {
         if (profiledClassFile == null) {
+            Project project = getProject();
             final PropertyEvaluator pp = getProjectProperties(project);
             String profiledClass = pp.getProperty("main.class"); // NOI18N
 
@@ -190,11 +160,12 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                } */
             return true;
         } else {
-            return isFileObjectSupported(project, profiledClassFile);
+            return isFileObjectSupported(profiledClassFile);
         }
     }
 
-    public void configurePropertiesForProfiling(final Properties props, final Project project, final FileObject profiledClassFile) {
+    @Override
+    public void configurePropertiesForProfiling(final Properties props, final FileObject profiledClassFile) {
         if (profiledClassFile == null) {
             if (mainClassSetManually != null) {
                 props.put("main.class", mainClassSetManually); // NOI18N
@@ -207,6 +178,7 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             // FIXME
             JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
             if (src != null) {
+                Project project = getProject();
                 if (src.isApplet()) {
                     String jvmargs = props.getProperty("run.jvmargs"); // NOI18N
 
@@ -258,8 +230,9 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         }
     }
 
-    public void setupProjectSessionSettings(final Project project, final SessionSettings ss) {
-        final PropertyEvaluator pp = getProjectProperties(project);
+    @Override
+    public void setupProjectSessionSettings(SessionSettings ss) {
+        final PropertyEvaluator pp = getProjectProperties(getProject());
 
         if (mainClassSetManually == null) {
             String mainClass = pp.getProperty("main.class"); // NOI18N
@@ -279,16 +252,19 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         ss.setJVMArgs((jvmArgs != null) ? jvmArgs : ""); // NOI18N
     }
 
+    @Override
     public boolean supportsSettingsOverride() {
         return true; // supported for J2SE project
     }
 
-    public boolean supportsUnintegrate(Project project) {
+    @Override
+    public boolean supportsUnintegrate() {
         return true;
     }
 
-    public void unintegrateProfiler(Project project) {
-        ProjectUtilities.unintegrateProfiler(project);
+    @Override
+    public void unintegrateProfiler() {
+        ProjectUtilities.unintegrateProfiler(getProject());
     }
 
     // --- Private methods -------------------------------------------------------------------------------------------------
@@ -390,5 +366,9 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                                                                          });
 
         return pe;
+    }
+    
+    public J2SEProjectProfilingSupportProvider(Project project) {
+        super(project);
     }
 }

@@ -46,11 +46,9 @@ package org.netbeans.modules.profiler.nbmodule;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
-import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import java.util.List;
@@ -63,7 +61,7 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.xml.XMLUtil;
@@ -75,13 +73,13 @@ import org.openide.xml.XMLUtil;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider.class, 
                         projectTypes={
                             @ProjectType(id="org-netbeans-modules-apisupport-project"),
                             @ProjectType(id="org-netbeans-modules-apisupport-project-suite")
                         }
 )
-public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfiler {
+public final class NbModuleProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // -----
@@ -96,35 +94,19 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public boolean isFileObjectSupported(final Project project, final FileObject fo) {
+    @Override
+    public boolean isFileObjectSupported(final FileObject fo) {
         // FIXME
         JavaProfilerSource src = JavaProfilerSource.createFrom(fo);
-        
         return src != null ? src.isTest() : false; // profile single only for tests
     }
 
-    public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
-                                        final FileObject profiledClass) {
-        switch (type) {
-            case TARGET_PROFILE:
-                return "profile"; //NOI18N
-            case TARGET_PROFILE_TEST_SINGLE:
-                return "profile-test-single-nb"; //NOI18N
-            default:
-                return null; // not applicable for NBM projects
-        }
+    @Override
+    public JavaPlatform getProjectJavaPlatform() {
+        return getProjectJavaPlatform(getProject());
     }
-
-    // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
-    public boolean isProfilingSupported(final Project project) {
-        return true;
-    }
-
-    public FileObject getProjectBuildScript(Project project) {
-        return project.getProjectDirectory().getFileObject("build.xml"); //NOI18N
-    }
-
-    public JavaPlatform getProjectJavaPlatform(Project project) {
+    
+    private JavaPlatform getProjectJavaPlatform(Project project) {
         final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
         FileObject projectDir = project.getProjectDirectory();
 
@@ -184,17 +166,14 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
         return null;
     }
 
-    public boolean checkProjectCanBeProfiled(final Project project, final FileObject profiledClassFile) {
-        return true; // no check performed in nbmodule project
-    }
-    
     private static String getTestType(FileObject testFile) {
         String testPath = testFile.getPath();
         if (testPath.contains(TEST_TYPE_QA_FUNCTIONAL)) return TEST_TYPE_QA_FUNCTIONAL;
         else return TEST_TYPE_UNIT;
     }
 
-    public void configurePropertiesForProfiling(final Properties props, final Project project, final FileObject profiledClassFile) {
+    @Override
+    public void configurePropertiesForProfiling(final Properties props, final FileObject profiledClassFile) {
         // FIXME
         JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
         if (src != null) {
@@ -212,7 +191,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
                 // create temporary link in /tmp directory and use it instead of directory with space
                 String libsDir = Profiler.getDefault().getLibsDir();
                 props.setProperty("profiler.info.jvmargs.agent", IntegrationUtils.fixLibsDirPath(libsDir, agentArg)); //NOI18N
-            } else if (Utilities.isWindows() && isNbSourceModule(project)) {
+            } else if (Utilities.isWindows() && isNbSourceModule(getProject())) {
                 // Profiler is installed in directory with space on Windows
                 // surround the whole -agentpath argument with quotes for NB source module
                 agentArg = "\"" + agentArg + "\""; //NOI18N
@@ -253,4 +232,10 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
         // Module is a NB source module (neither suite component nor standalone)
         return true;
     }
+    
+    
+    public NbModuleProjectProfilingSupportProvider(Project project) {
+        super(project);
+    }
+    
 }

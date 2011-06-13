@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.profiler.j2se;
+package org.netbeans.modules.profiler.j2ee;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
+import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupport;
-import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.modules.profiler.spi.project.ProjectContentsSupportProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(projectTypes={
-                            @ProjectType(id="org-netbeans-modules-java-j2seproject"),
-                            @ProjectType(id="org-netbeans-modules-ant-freeform", position=1201),
-                            @ProjectType(id="org-netbeans-modules-apisupport-project"),
-                            @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
-                            @ProjectType(id="org-netbeans-modules-web-project"),
-                            @ProjectType(id="org-netbeans-modules-maven")},
-                        service=ProjectProfilingSupport.class)
-public class JavaProfilingSupport implements ProjectProfilingSupport {
-    private String[][] packages = new String[2][];
-
-    private Project project;
-    public JavaProfilingSupport(Project project) {
-        this.project = project;
-    }
+@ProjectServiceProvider(projectType={"org-netbeans-modules-web-project", "org-netbeans-modules-maven/war"}, service=ProjectContentsSupportProvider.class)
+public final class WebProjectContentsSupportProvider extends ProjectContentsSupportProvider {
+    
+    private final Project project;
+    
 
     @Override
-    public boolean canProfileFile(FileObject file) {
-        // FIXME
-        JavaProfilerSource src = JavaProfilerSource.createFrom(file);
-
-        return src != null && src.isRunnable();
-    }
-
-    @Override
-    public String getFilter(boolean useSubprojects) {
-        return ProjectUtilities.computeProjectOnlyInstrumentationFilter(project, useSubprojects, packages);
-    }
-
-    @Override
-    public SourceCodeSelection[] getRootMethods(FileObject profiledClassFile) {
+    public ClientUtils.SourceCodeSelection[] getProfilingRoots(FileObject profiledClassFile, boolean profileSubprojects) {
         if (profiledClassFile == null) {
-            return ProjectUtilities.getProjectDefaultRoots(project, packages);
+            // Profile Project, extract root methods from the project
+            return WebProjectUtils.getJSPRootMethods(project, profileSubprojects);
         } else {
             // Profile Single, provide correct root methods
-            // FIXME
-            JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-            String profiledClass = src != null ? src.getTopLevelClass().getQualifiedName() : null;
-            if (profiledClass != null) {
-                return new SourceCodeSelection[] { new SourceCodeSelection(profiledClass, "<all>", "") }; // NOI18N // Covers all innerclasses incl. anonymous innerclasses
-            } else {
-                return new SourceCodeSelection[0];
+            if (WebProjectUtils.isJSP(profiledClassFile)) {
+                // TODO: create list of jsp-specific methods (execute & all used Beans)
+                return ProjectUtilities.getProjectDefaultRoots(project, new String[2][]);
             }
         }
+        return null;
     }
 
+    @Override
+    public String getInstrumentationFilter(boolean profileSubprojects) {
+        ClientUtils.SourceCodeSelection[] jspMethods = WebProjectUtils.getJSPRootMethods(project, profileSubprojects);
+
+        StringBuilder buffer = new StringBuilder(jspMethods.length * 30);
+
+        if (jspMethods != null) {
+            for (int i = 0; i < jspMethods.length; i++) {
+                buffer.append(jspMethods[i].getClassName()).append(' '); // NOI18N
+            }
+        }
+        return buffer.toString().trim();
+    }
+    
+    
+    public WebProjectContentsSupportProvider(Project project) {
+        this.project = project;
+    }
+    
 }

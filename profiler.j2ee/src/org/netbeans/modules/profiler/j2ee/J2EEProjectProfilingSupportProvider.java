@@ -57,12 +57,8 @@ import org.netbeans.lib.profiler.utils.formatting.Formattable;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
-import org.netbeans.modules.profiler.stp.DefaultSettingsConfigurator;
-import org.netbeans.modules.profiler.stp.SelectProfilingTask;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -71,22 +67,16 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 import org.w3c.dom.Document;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
-import org.netbeans.modules.profiler.utils.IDEUtils;
+import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -97,14 +87,14 @@ import org.openide.DialogDisplayer;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectTypeProfiler.class, 
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider.class, 
                         projectTypes={
                             @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), 
                             @ProjectType(id="org-netbeans-modules-j2ee-earproject"), 
                             @ProjectType(id="org-netbeans-modules-web-project")
                         }
 )
-public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
+public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfilingSupportProvider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private static class JSPNameFormatter implements org.netbeans.lib.profiler.utils.formatting.MethodNameFormatter {
@@ -161,11 +151,11 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     // -----
     // I18N String constants                                                                                     "J2EEProjectTypeProfiler_ModifyBuildScriptManuallyMsg"); // NOI18N
-    private static final String PROFILING_NOT_SUPPORTED_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
+    private static final String PROFILING_NOT_SUPPORTED_MSG = NbBundle.getMessage(J2EEProjectProfilingSupportProvider.class,
                                                                                   "J2EEProjectTypeProfiler_ProfilingNotSupportedMsg"); // NOI18N
-    private static final String SKIP_BUTTON_NAME = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
+    private static final String SKIP_BUTTON_NAME = NbBundle.getMessage(J2EEProjectProfilingSupportProvider.class,
                                                                        "J2EEProjectTypeProfiler_SkipButtonName"); // NOI18N
-    private static final String NO_SERVER_FOUND_MSG = NbBundle.getMessage(J2EEProjectTypeProfiler.class,
+    private static final String NO_SERVER_FOUND_MSG = NbBundle.getMessage(J2EEProjectProfilingSupportProvider.class,
                                                                           "J2EEProjectTypeProfiler_NoServerFoundMsg"); // NOI18N                                                                                                                       // -----
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.profiler.j2ee"); // NOI18N
 
@@ -176,24 +166,11 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     // stores last used agent port
     private static int lastAgentPort = 5140;
 
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private SelectProfilingTask.SettingsConfigurator configurator;
-    private LoadGenPanel loadGenConfig = null;
-
-    private String loadGenPath = null;
-    private PropertyChangeListener pcl = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(LoadGenPanel.PATH)) {
-                loadGenPath = (String) evt.getNewValue();
-            }
-        }
-    };
-
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
-    public J2EEProjectTypeProfiler() {
+    public J2EEProjectProfilingSupportProvider(Project project) {
+        super(project);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -218,26 +195,9 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
 
-    public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
-                                        final FileObject profiledClass) {
-        switch (type) {
-            case TARGET_PROFILE:
-                return "profile"; // NOI18N
-            case TARGET_PROFILE_TEST:
-                return null; // not currently supported // "profile-test"; // NOI18N
-            case TARGET_PROFILE_TEST_SINGLE:
-                return "profile-test-single"; // NOI18N
-            default:
-                return null;
-        }
-    }
-
-    public boolean isProfilingSupported(final Project project) {
-        return true;
-    }
-
-    public JavaPlatform getProjectJavaPlatform(Project project) {
-        String serverInstanceID = getServerInstanceID(project);
+    @Override
+    public JavaPlatform getProjectJavaPlatform() {
+        String serverInstanceID = getServerInstanceID(getProject());
 
         if (serverInstanceID == null) {
             return null;
@@ -260,51 +220,15 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return JavaPlatform.getJavaPlatformById(jp.getProperties().get("platform.ant.name")); // NOI18N
     }
 
-    public SelectProfilingTask.SettingsConfigurator getSettingsConfigurator() {
-        if (configurator == null) {
-            configurator = new DefaultSettingsConfigurator() {
-                    public LoadGenPanel getCustomSettingsPanel() {
-                        if (isAttach() || isModify()) {
-                            return null; // TODO: would be better to show LoadGenPanel disabled for Modify Profile
-                        }
-
-                        if (loadGenConfig == null) {
-                            loadGenConfig = new LoadGenPanel();
-                            loadGenConfig.addPropertyChangeListener(LoadGenPanel.PATH,
-                                                                    WeakListeners.propertyChange(pcl, loadGenConfig));
-                        }
-
-                        loadGenConfig.attach(getProject());
-
-                        return loadGenConfig;
-                    }
-
-                    public void loadCustomSettings(Properties properties) {
-                        if (loadGenConfig != null) {
-                            loadGenConfig.loadCustomSettings(properties);
-                        }
-                    }
-                    ;
-                    public void storeCustomSettings(Properties properties) {
-                        if (loadGenConfig != null) {
-                            loadGenConfig.storeCustomSettings(properties);
-                        }
-                    }
-                    ;
-                };
-        }
-
-        return configurator;
-    }
-
-    public boolean checkProjectCanBeProfiled(final Project project, final FileObject profiledClassFile) {
+    @Override
+    public boolean checkProjectCanBeProfiled(FileObject profiledClassFile) {
         // Unsupported project type
-        if (!isProfilingSupported(project)) {
+        if (!isProfilingSupported()) {
             return false;
         }
 
         // Check if server supports profiling
-        J2eePlatform j2eePlatform = getJ2eePlatform(project);
+        J2eePlatform j2eePlatform = getJ2eePlatform(getProject());
 
         if (j2eePlatform == null) {
             ProfilerDialogs.displayError(NO_SERVER_FOUND_MSG);
@@ -325,11 +249,22 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             return true;
         } else {
             // Profile single
-            return isFileObjectSupported(project, profiledClassFile);
+            return isFileObjectSupported(profiledClassFile);
         }
     }
+    
+    @Override
+    public boolean isFileObjectSupported(FileObject file) {
+        Project project = getProject();
+        return ((WebProjectUtils.isJSP(file) && WebProjectUtils.isWebDocumentSource(file, project)) // jsp from /web directory               
+                  || (WebProjectUtils.isHttpServlet(file) && WebProjectUtils.isWebJavaSource(file, project)
+                  && WebProjectUtils.isMappedServlet(file, project, true)) // mapped servlet from /src directory
+                  || super.isFileObjectSupported(file)); // regular java file
+    }
 
-    public void configurePropertiesForProfiling(final Properties props, final Project project, final FileObject profiledClassFile) {
+    @Override
+    public void configurePropertiesForProfiling(final Properties props, final FileObject profiledClassFile) {
+        Project project = getProject();
         initAntPlatform(project, props);
         // set forceRestart
         props.setProperty("profiler.j2ee.serverForceRestart", "true"); // NOI18N
@@ -371,6 +306,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
         generateAgentPort(); // sets lastAgentPort
 
+        String loadGenPath = LoadGenPanel.hasInstance() ? LoadGenPanel.instance().getSelectedScript() : null;
         if (loadGenPath != null) {
             props.setProperty("profiler.loadgen.path", loadGenPath); // TODO factor out "profiler.loadgen.path" to a constant
         }
@@ -398,7 +334,7 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             if (servletAddress != null) {
                 ServletUriPanel uriPanel = new ServletUriPanel(servletAddress);
                 DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                                             org.openide.util.NbBundle.getMessage(J2EEProjectTypeProfiler.class,
+                                                             org.openide.util.NbBundle.getMessage(J2EEProjectProfilingSupportProvider.class,
                                                                                                   "TTL_setServletExecutionUri"),
                                                              true, // NOI18N
                                                              new Object[] {
@@ -470,7 +406,9 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         return getLastAgentPort();
     }
 
-    public void setupProjectSessionSettings(final Project project, final SessionSettings ss) {
+    @Override
+    public void setupProjectSessionSettings(SessionSettings ss) {
+        Project project = getProject();
         // settings required for code fragment profiling
         final PropertyEvaluator pp = getProjectProperties(project);
         ss.setMainClass(""); // NOI18N
@@ -486,16 +424,19 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
         ss.setWorkingDir(""); // NOI18N
     }
 
+    @Override
     public boolean supportsSettingsOverride() {
         return true; // supported for J2EE project
     }
 
-    public boolean supportsUnintegrate(Project project) {
+    @Override
+    public boolean supportsUnintegrate() {
         return true;
     }
 
-    public void unintegrateProfiler(Project project) {
-        ProjectUtilities.unintegrateProfiler(project);
+    @Override
+    public void unintegrateProfiler() {
+        ProjectUtilities.unintegrateProfiler(getProject());
     }
 
     private static J2eePlatform getJ2eePlatform(final Project project) {
@@ -604,9 +545,9 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
         PropertyEvaluator pe = PropertyUtils.sequentialPropertyEvaluator(null,
                                                                          new PropertyProvider[] {
-                                                                             new J2EEProjectTypeProfiler.MyPropertyProvider(privateProps),
-                                                                             new J2EEProjectTypeProfiler.MyPropertyProvider(userPropsProps),
-                                                                             new J2EEProjectTypeProfiler.MyPropertyProvider(projectProps)
+                                                                             new J2EEProjectProfilingSupportProvider.MyPropertyProvider(privateProps),
+                                                                             new J2EEProjectProfilingSupportProvider.MyPropertyProvider(userPropsProps),
+                                                                             new J2EEProjectProfilingSupportProvider.MyPropertyProvider(projectProps)
                                                                          });
 
         return pe;

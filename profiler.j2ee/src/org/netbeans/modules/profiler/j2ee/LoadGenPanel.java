@@ -113,9 +113,20 @@ public class LoadGenPanel extends javax.swing.JPanel {
   }
   
   /** Creates new form LoadGenPanel */
-  public LoadGenPanel() {
+  private LoadGenPanel() {
     initComponents();
   }
+  
+  // Singleton model to allow easy access from both J2EEProjectTypeProfiler and J2EEProfilingSettingsSupportProvider
+  private static LoadGenPanel INSTANCE = null;
+  public static synchronized LoadGenPanel instance() {
+      if (!hasInstance()) INSTANCE = new LoadGenPanel();
+      return INSTANCE;
+  }
+  public static synchronized boolean hasInstance() {
+      return INSTANCE != null;
+  }
+  //
   
   /** This method is called from within the constructor to
    * initialize the form.

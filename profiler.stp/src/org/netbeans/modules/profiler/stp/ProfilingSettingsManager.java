@@ -58,6 +58,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import org.netbeans.modules.profiler.api.ProjectStorage;
+import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
+import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.SettingsCustomizer;
 import org.openide.filesystems.FileSystem;
 
 
@@ -161,12 +163,9 @@ public class ProfilingSettingsManager {
                                                                                                              "0")); // NOI18N
                             } catch (Exception e) {
                             }
-
-                            SelectProfilingTask.SettingsConfigurator configurator = Utils.getSettingsConfigurator(projectF);
-
-                            if (configurator != null) {
-                                configurator.loadCustomSettings(properties);
-                            }
+                            
+                            SettingsCustomizer customizer = ProfilingSettingsSupport.get(projectF).getSettingsCustomizer();
+                            if (customizer != null) customizer.loadCustomSettings(properties);
                         }
                     }
                 });
@@ -260,11 +259,8 @@ public class ProfilingSettingsManager {
 
                         properties.put(PROP_LAST_SELECTED_SETTINGS_INDEX, Integer.toString(lastSelectedProfilingSettingsIndex));
 
-                        SelectProfilingTask.SettingsConfigurator configurator = Utils.getSettingsConfigurator(projectF);
-
-                        if (configurator != null) {
-                            configurator.storeCustomSettings(properties);
-                        }
+                        SettingsCustomizer customizer = ProfilingSettingsSupport.get(projectF).getSettingsCustomizer();
+                        if (customizer != null) customizer.storeCustomSettings(properties);
 
                         storeSettings(profilingSettingsStorage, properties);
                     }
