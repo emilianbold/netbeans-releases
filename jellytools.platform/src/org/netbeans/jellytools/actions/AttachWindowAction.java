@@ -227,6 +227,28 @@ public class AttachWindowAction extends Action {
         }
     }
 
+    static Object callWindowManager(String method, Object... args) {
+        return callWindowManager(WindowManager.getDefault().getClass(), method, args);
+    }
+
+    private static Object callWindowManager(Class clazz, String method, Object... args) {
+        for (Method m : clazz.getDeclaredMethods()) {
+            if (!method.equals(m.getName())) {
+                continue;
+            }
+            if (args == null && m.getParameterTypes().length > 0 ||
+                    args != null && m.getParameterTypes().length != args.length) {
+                continue;
+            }
+            try {
+                return m.invoke(WindowManager.getDefault(), args);
+            } catch (Exception ex) {
+                throw (IllegalStateException)new IllegalStateException("Cannot execute " + method).initCause(ex);
+            }
+        }
+        return callWindowManager(clazz.getSuperclass(), method, args);
+    }
+    
     private static Class classForName(String className) throws ClassNotFoundException {
         try {
             return Class.forName(className);
