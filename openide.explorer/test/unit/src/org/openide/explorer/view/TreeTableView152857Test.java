@@ -48,6 +48,8 @@ import java.awt.Dialog;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
@@ -67,6 +69,7 @@ import org.openide.util.Exceptions;
  * @author  Jiri Rechtacek
  */
 public class TreeTableView152857Test extends NbTestCase {
+    private static final Logger LOG = Logger.getLogger(TreeTableView152857Test.class.getName());
 
     private TTV view;
 
@@ -88,9 +91,7 @@ public class TreeTableView152857Test extends NbTestCase {
 
         DialogDescriptor dd = new DialogDescriptor (view, "", false, null);
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
-        d.setVisible (true);
-
-        Thread.sleep (1000);
+        makeVisible(d);
         ((StringKeys) root.getChildren ()).doSetKeys (new String [] {"1", "2"});
         Thread.sleep (1000);
 
@@ -108,8 +109,7 @@ public class TreeTableView152857Test extends NbTestCase {
         view = new TTV (root);
         DialogDescriptor dd = new DialogDescriptor (view, "", false, null);
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
-        d.setVisible (true);
-        Thread.sleep (1000);
+        makeVisible(d);
         SwingUtilities.invokeAndWait (new Runnable () {
             public void run () {
                 view.view.tree.setSelectionRow (3);
@@ -124,6 +124,14 @@ public class TreeTableView152857Test extends NbTestCase {
         d.setVisible (false);
     }
 
+    private void makeVisible(Dialog d) throws InterruptedException {
+        d.setVisible(true);
+        while (!d.isShowing()) {
+            LOG.log(Level.INFO, "Waiting for is showing: {0}", d);
+            Thread.sleep (1000);
+        }
+    }
+
     public void testSelectedNodes () throws PropertyVetoException, InterruptedException, InvocationTargetException {
         StringKeys children = new StringKeys (true);
         children.doSetKeys (new String [] {"1", "3", "2"});
@@ -132,8 +140,7 @@ public class TreeTableView152857Test extends NbTestCase {
         view = new TTV (root);
         DialogDescriptor dd = new DialogDescriptor (view, "", false, null);
         Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
-        d.setVisible (true);
-        Thread.sleep (1000);
+        makeVisible(d);
         view.getExplorerManager ().setSelectedNodes (new Node [] { aChild });
         final int rows [] = new int [1];
         SwingUtilities.invokeAndWait (new Runnable () {
@@ -158,8 +165,7 @@ public class TreeTableView152857Test extends NbTestCase {
         view = new TTV(root);
         DialogDescriptor dd = new DialogDescriptor(view, "", false, null);
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        d.setVisible(true);
-        Thread.sleep(1000);
+        makeVisible(d);
 
         view.sort(0, true);
         Thread.sleep(1000);
@@ -215,8 +221,7 @@ public class TreeTableView152857Test extends NbTestCase {
         view = new TTV(root);
         DialogDescriptor dd = new DialogDescriptor(view, "", false, null);
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-        d.setVisible(true);
-        Thread.sleep(1000);
+        makeVisible(d);
         assertEquals(0, ta.getChildCount());
 
         view.sort(0, false);
