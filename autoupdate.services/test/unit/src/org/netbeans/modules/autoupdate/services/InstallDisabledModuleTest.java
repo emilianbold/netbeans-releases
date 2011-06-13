@@ -105,6 +105,10 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
     boolean incrementNumberOfModuleConfigFiles() {
         return false;
     }
+    @Override
+    boolean writeDownConfigFile() {
+        return true;
+    }
 
     protected String moduleCodeNameBaseForTest() {
         return "com.sun.testmodule.cluster"; //NOI18N

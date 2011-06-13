@@ -190,6 +190,10 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     boolean incrementNumberOfModuleConfigFiles() {
         return true;
     }
+
+    boolean writeDownConfigFile() {
+        return incrementNumberOfModuleConfigFiles();
+    }
     
     /*public void installModuleDirect(UpdateUnit toInstall) throws Exception {
         installModuleImpl(toInstall, false);
@@ -293,10 +297,14 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             if (incrementNumberOfModuleConfigFiles()) {
                 assertTrue (fileChanges[0]);
             } else {
-                if (fileChanges[2]) {
-                    AssertionFailedError afe = new AssertionFailedError("We don't expect any changes");
-                    afe.initCause(exceptions[2]);
-                    throw afe;
+                if (writeDownConfigFile()) {
+                    assertTrue("We expect a change in a config file", fileChanges[2]);
+                } else {
+                    if (fileChanges[2]) {
+                        AssertionFailedError afe = new AssertionFailedError("We don't expect any changes");
+                        afe.initCause(exceptions[2]);
+                        throw afe;
+                    }
                 }
                 return installElement;
             }
