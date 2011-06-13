@@ -41,9 +41,15 @@
  */
 package org.netbeans.modules.profiler.projectsupport.utilities;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.profiler.spi.ProjectUtilitiesProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup.Provider;
@@ -52,9 +58,12 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  * @author Tomas Hurka
+ * @author Jiri Sedlacek
  */
 @ServiceProvider(service = ProjectUtilitiesProvider.class)
 public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
+    
+    private Set<ChangeListener> listeners;
 
     @Override
     public Icon getIcon(Provider project) {
@@ -89,5 +98,49 @@ public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
     @Override
     public Provider[] getSortedProjects(Provider[] openedProjects) {
         return ProjectUtilities.getSortedProjects((Project[])openedProjects);
+    }
+    
+    /**
+     * Adds a listener to be notified when set of open projects changes.
+     * @param listener listener to be added
+     */
+    @Override
+    public synchronized void addOpenProjectsListener(ChangeListener listener) {
+        listeners().add(listener);
+    }
+    
+    /**
+     * Removes a listener to be notified when set of open projects changes.
+     * @param listener listener to be removed
+     */
+    @Override
+    public synchronized void removeOpenProjectsListener(ChangeListener listener) {
+        if (hasListeners()) listeners.remove(listener);
+        if (!hasListeners()) listeners = null;
+    }
+    
+    private synchronized Set<ChangeListener> listeners() {
+        if (!hasListeners()) listeners = new HashSet<ChangeListener>();
+        return listeners;
+    }
+    
+    private synchronized boolean hasListeners() {
+        return listeners != null;
+    }
+    
+    
+    public ProjectUtilitiesProviderImpl() {
+        OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                synchronized(ProjectUtilitiesProviderImpl.this) {
+                    if (!hasListeners()) return;
+
+                    if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+                        for (ChangeListener listener : listeners)
+                            listener.stateChanged(new ChangeEvent(evt));
+                    }
+                }
+            }
+        });
     }
 }

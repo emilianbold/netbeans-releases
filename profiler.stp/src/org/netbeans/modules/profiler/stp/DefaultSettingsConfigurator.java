@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.stp;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
@@ -51,11 +50,11 @@ import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsDisplayer;
 import org.openide.filesystems.FileObject;
 import java.util.Properties;
 import java.util.Vector;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
+import org.openide.util.Lookup;
 
 
 /**
@@ -76,7 +75,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         private CPUSettingsBasicPanel basicSettingsPanel;
         private FileObject profiledFile;
         private ProfilingSettings settings;
-        private Project project;
+        private Lookup.Provider project;
         private ProfilingSettingsSupport pss;
         private Vector<ChangeListener> changeListeners = new Vector();
         private boolean enableOverride;
@@ -106,7 +105,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             return basicSettingsPanel;
         }
 
-        public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify,
+        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify,
                                boolean enableOverride) {
             this.project = project;
             pss = ProfilingSettingsSupport.get(project);
@@ -306,7 +305,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         private MemorySettingsAdvancedPanel advancedSettingsPanel = new MemorySettingsAdvancedPanel();
         private MemorySettingsBasicPanel basicSettingsPanel = new MemorySettingsBasicPanel();
         private ProfilingSettings settings;
-        private Project project;
+        private Lookup.Provider project;
         private ProfilingSettingsSupport pss;
         private Vector<ChangeListener> changeListeners = new Vector();
         private boolean enableOverride;
@@ -335,7 +334,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             return basicSettingsPanel;
         }
 
-        public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify,
+        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify,
                                boolean enableOverride) {
             this.project = project;
             pss = ProfilingSettingsSupport.get(project);
@@ -497,7 +496,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         private MonitorSettingsAdvancedPanel advancedSettingsPanel;
         private MonitorSettingsBasicPanel basicSettingsPanel;
         private ProfilingSettings settings;
-        private Project project;
+        private Lookup.Provider project;
         private ProfilingSettingsSupport pss;
         private Vector<ChangeListener> changeListeners = new Vector();
         private boolean enableOverride;
@@ -526,7 +525,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             return basicSettingsPanel;
         }
 
-        public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify,
+        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify,
                                boolean enableOverride) {
             this.project = project;
             pss = ProfilingSettingsSupport.get(project);
@@ -662,7 +661,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
     // --- Instance variables ----------------------------------------------------
     private ProfilingSettings settings;
-    private Project project;
+    private Lookup.Provider project;
     private boolean enableOverride;
     private boolean isAttach;
     private boolean isModify;
@@ -674,7 +673,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
         return cpuContents;
     }
 
-    public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify, boolean enableOverride) {
+    public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify, boolean enableOverride) {
         this.project = project;
         this.profiledFile = profiledFile;
         this.enableOverride = enableOverride;
@@ -777,7 +776,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
     }
 
     // --- Protected interface ---------------------------------------------------
-    protected Project getProject() {
+    protected Lookup.Provider getProject() {
         return project;
     }
 

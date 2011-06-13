@@ -44,18 +44,16 @@
 
 package org.netbeans.modules.profiler.stp;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.ProfilingSettings;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import org.netbeans.modules.profiler.api.ProjectStorage;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.attach.AttachWizard;
+import org.openide.util.Lookup;
 
 
 /**
@@ -69,7 +67,7 @@ public class Utils {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public static AttachSettings getAttachSettings(Project project) {
+    public static AttachSettings getAttachSettings(Lookup.Provider project) {
         AttachSettings attachSettings = null;
     
         try {
@@ -89,17 +87,15 @@ public class Utils {
     //    return type == ProfilingSettings.PROFILE_ANALYZE;
     //  }
     
-    public static String getProjectName(Project project) {
+    public static String getProjectName(Lookup.Provider project) {
         if (project == null) {
             return SelectProfilingTask.EXTERNAL_APPLICATION_STRING;
         }
 
-        ProjectInformation pi = ProjectUtils.getInformation(project);
-
-        return pi.getDisplayName();
+        return ProjectUtilities.getDisplayName(project);
     }
 
-    public static SelectProfilingTask.SettingsConfigurator getSettingsConfigurator(Project project) {
+    static SelectProfilingTask.SettingsConfigurator getSettingsConfigurator(Lookup.Provider project) {
 //        SelectProfilingTask.SettingsConfigurator configurator = ptp.getSettingsConfigurator();
 //        if (configurator == null) return DefaultSettingsConfigurator.SHARED_INSTANCE;
 //
@@ -129,7 +125,7 @@ public class Utils {
         return horizontalSeparator;
     }
 
-    public static AttachSettings selectAttachSettings(Project project) {
+    public static AttachSettings selectAttachSettings(Lookup.Provider project) {
         AttachSettings attachSettings = getAttachSettings(project);
 
         if (attachSettings == null) {

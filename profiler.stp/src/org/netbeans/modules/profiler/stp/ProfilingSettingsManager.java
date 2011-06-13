@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.stp;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.openide.ErrorManager;
@@ -61,6 +60,7 @@ import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.SettingsCustomizer;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
 
 
 /**
@@ -122,7 +122,7 @@ public class ProfilingSettingsManager {
         return defaultInstance;
     }
 
-    public ProfilingSettingsDescriptor getProfilingSettings(Project project) {
+    public ProfilingSettingsDescriptor getProfilingSettings(Lookup.Provider project) {
         final List<ProfilingSettings> profilingSettings = new LinkedList();
         final int[] lastSelectedProfilingSettingsIndex = new int[] { -1 };
 
@@ -131,7 +131,7 @@ public class ProfilingSettingsManager {
             FileObject settingsStorage = ProjectStorage.getSettingsFolder(project, false);
             if (settingsStorage != null) {
                 // make final copies for atomic action
-                final Project projectF = project;
+                final Lookup.Provider projectF = project;
 //                final ProfilingSettings[] profilingSettingsF = profilingSettings;
 //                final ProfilingSettings lastSelectedProfilingSettingsF = lastSelectedProfilingSettings;
                 
@@ -206,7 +206,7 @@ public class ProfilingSettingsManager {
     }
 
     public void storeProfilingSettings(ProfilingSettings[] profilingSettings, ProfilingSettings lastSelectedProfilingSettings,
-                                       Project project) {
+                                       Lookup.Provider project) {
         try {
             // ensure that default settings will be saved, should not happen
             if ((profilingSettings == null) || (profilingSettings.length < DEFAULT_SETTINGS_COUNT)) {
@@ -227,7 +227,7 @@ public class ProfilingSettingsManager {
             }
 
             // make final copies for atomic action
-            final Project projectF = project;
+            final Lookup.Provider projectF = project;
             final ProfilingSettings[] profilingSettingsF = profilingSettings;
             final ProfilingSettings lastSelectedProfilingSettingsF = lastSelectedProfilingSettings;
             
@@ -271,7 +271,7 @@ public class ProfilingSettingsManager {
         }
     }
 
-    private FileObject getProfilingSettingsStorage(Project project)
+    private FileObject getProfilingSettingsStorage(Lookup.Provider project)
                                             throws IOException {  
         FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
         FileObject profilingSettingsStorage = projectSettingsFolder.getFileObject(PROFILING_SETTINGS_STORAGE_FILENAME,
@@ -287,7 +287,7 @@ public class ProfilingSettingsManager {
                };
     }
 
-    private FileObject createProfilingSettingsStorage(Project project)
+    private FileObject createProfilingSettingsStorage(Lookup.Provider project)
                                                throws IOException {   
         FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
         FileObject profilingSettingsStorage = projectSettingsFolder.createData(PROFILING_SETTINGS_STORAGE_FILENAME,

@@ -43,10 +43,9 @@
 
 package org.netbeans.modules.profiler.stp;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.filters.SimpleFilter;
@@ -64,8 +63,6 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -81,6 +78,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
@@ -90,11 +88,12 @@ import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.SettingsCustomizer;
 import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.stp.icons.STPIcons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 
 
 /**
@@ -112,7 +111,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         //    public SettingsContainerPanel.Contents getAnalyzerConfigurator();
         public SettingsContainerPanel.Contents getCPUConfigurator();
 
-        public void setContext(Project project, FileObject profiledFile, boolean isAttach, boolean isModify,
+        public void setContext(Lookup.Provider project, FileObject profiledFile, boolean isAttach, boolean isModify,
                                boolean enableOverride);
 
         public SettingsContainerPanel.Contents getMemoryConfigurator();
@@ -143,11 +142,11 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
         private AttachSettings attachSettings;
         private ProfilingSettings profilingSettings;
-        private Project project;
+        private Lookup.Provider project;
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
-        Configuration(Project project, ProfilingSettings profilingSettings, AttachSettings attachSettings) {
+        Configuration(Lookup.Provider project, ProfilingSettings profilingSettings, AttachSettings attachSettings) {
             this.project = project;
             this.profilingSettings = profilingSettings;
             this.attachSettings = attachSettings;
@@ -163,7 +162,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             return profilingSettings;
         }
 
-        public Project getProject() {
+        public Lookup.Provider getProject() {
             return project;
         }
     }
@@ -247,7 +246,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private JSeparator projectsChooserSeparator;
     private List<SimpleFilter> predefinedInstrFilterKeys;
     private Object lastAttachProject; // Actually may be also EXTERNAL_APPLICATION_STRING, is reset to null when project is closed
-    private Project project;
+    private Lookup.Provider project;
     private SettingsConfigurator configurator;
     private SettingsContainerPanel settingsContainerPanel;
     private TaskChooser taskChooser;
@@ -311,7 +310,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public static Configuration selectAttachProfilerTask(Project project) { // profiledFile = null, enableOverride = false,
+    public static Configuration selectAttachProfilerTask(Lookup.Provider project) { // profiledFile = null, enableOverride = false,
         // Running this code in EDT would cause deadlock
         assert !SwingUtilities.isEventDispatchThread();
 
@@ -353,7 +352,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         return null;
     }
 
-    public static Configuration selectModifyProfilingTask(Project project, FileObject profiledFile, boolean isAttach) { // profiledFile = null, enableOverride = false,
+    public static Configuration selectModifyProfilingTask(Lookup.Provider project, FileObject profiledFile, boolean isAttach) { // profiledFile = null, enableOverride = false,
         // Running this code in EDT would cause deadlock
         assert !SwingUtilities.isEventDispatchThread();
 
@@ -397,7 +396,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     // --- Public interface ------------------------------------------------------
-    public static Configuration selectProfileProjectTask(Project project, FileObject profiledFile, boolean enableOverride) {
+    public static Configuration selectProfileProjectTask(Lookup.Provider project, FileObject profiledFile, boolean enableOverride) {
         // Running this code in EDT would cause deadlock
         assert !SwingUtilities.isEventDispatchThread();
         
@@ -635,26 +634,21 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     private void initClosedProjectHook() {
-        OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (lastAttachProject == null) {
+        ProjectUtilities.addOpenProjectsListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                Lookup.Provider[] openedProjects = ProjectUtilities.getOpenedProjects();
+
+                for (Lookup.Provider openedProject : openedProjects) {
+                    if (lastAttachProject == openedProject) {
                         return;
                     }
-
-                    if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                        Project[] openedProjects = ProjectUtilities.getOpenedProjects();
-
-                        for (Project openedProject : openedProjects) {
-                            if (lastAttachProject == openedProject) {
-                                return;
-                            }
-                        }
-
-                        // lastAttachProject points to a closed project
-                        lastAttachProject = null; // NOTE: projectsChooserCombo should not be opened, no need to remove the project
-                    }
                 }
-            });
+
+                // lastAttachProject points to a closed project
+                lastAttachProject = null; // NOTE: projectsChooserCombo should not be opened, no need to remove the project
+            }
+        });
     }
 
     // --- UI definition ---------------------------------------------------------
@@ -778,7 +772,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
                     // Store settings of last project
                     if (lastAttachProject != null) {
-                        storeSettings((lastAttachProject == EXTERNAL_APPLICATION_STRING) ? null : (Project) lastAttachProject);
+                        storeSettings((lastAttachProject == EXTERNAL_APPLICATION_STRING) ? null : (Lookup.Provider) lastAttachProject);
                     }
 
                     if ((comboSelection == null) || (comboSelection == SELECT_PROJECT_TO_ATTACH_STRING)) {
@@ -793,8 +787,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     if (comboSelection == EXTERNAL_APPLICATION_STRING) {
                         updateProject(null);
                         lastAttachProject = EXTERNAL_APPLICATION_STRING;
-                    } else if (comboSelection instanceof Project) {
-                        updateProject((Project) comboSelection);
+                    } else if (comboSelection instanceof Lookup.Provider) {
+                        updateProject((Lookup.Provider) comboSelection);
                         lastAttachProject = comboSelection;
                     }
 
@@ -937,9 +931,9 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         }
     }
 
-    private void setupAttachProfiler(Project project) {
-        if ((project == null) && lastAttachProject instanceof Project) {
-            project = (Project) lastAttachProject;
+    private void setupAttachProfiler(Lookup.Provider project) {
+        if ((project == null) && lastAttachProject instanceof Lookup.Provider) {
+            project = (Lookup.Provider) lastAttachProject;
         }
 
         this.profiledFile = null;
@@ -961,7 +955,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         updateProject(project);
     }
 
-    private void setupModifyProfiling(Project project, FileObject profiledFile, boolean isAttach) {
+    private void setupModifyProfiling(Lookup.Provider project, FileObject profiledFile, boolean isAttach) {
         this.profiledFile = profiledFile;
         this.enableOverride = false;
         this.isAttach = isAttach;
@@ -980,7 +974,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         updateProject(project);
     }
 
-    private void setupProfileProject(Project project, FileObject profiledFile, boolean enableOverride) {
+    private void setupProfileProject(Lookup.Provider project, FileObject profiledFile, boolean enableOverride) {
         this.profiledFile = profiledFile;
         this.enableOverride = enableOverride;
         this.isAttach = false;
@@ -996,7 +990,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         storeSettings(project);
     }
 
-    private void storeSettings(final Project targetProject) {
+    private void storeSettings(final Lookup.Provider targetProject) {
         synchronizeCurrentSettings();
 
         final ArrayList<ProfilingSettings> profilingSettings = new ArrayList();
@@ -1020,7 +1014,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             });
     }
 
-    private void updateProject(final Project project) {
+    private void updateProject(final Lookup.Provider project) {
         Runnable projectUpdater = new Runnable() {
             public void run() {
                 projectCleanup();
@@ -1132,7 +1126,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private void updateProjectsCombo(Object projectToSelect) { // Actually may be also EXTERNAL_APPLICATION_STRING
         internalComboChange = true;
 
-        Project[] projects = ProjectUtilities.getSortedProjects(getOpenedProjectsForAttach());
+        Lookup.Provider[] projects = ProjectUtilities.getSortedProjects(getOpenedProjectsForAttach());
 
         if (projectToSelect == null) {
             projectsChooserCombo.addItem(SELECT_PROJECT_TO_ATTACH_STRING);
@@ -1140,7 +1134,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
         projectsChooserCombo.addItem(EXTERNAL_APPLICATION_STRING);
 
-        for (Project project : projects) {
+        for (Lookup.Provider project : projects) {
             projectsChooserCombo.addItem(project);
         }
 
@@ -1153,9 +1147,9 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         internalComboChange = false;
     }
     
-    private static Project[] getOpenedProjectsForAttach() {
-        Project[] projects = ProjectUtilities.getOpenedProjects();
-        ArrayList<Project> projectsArray = new ArrayList(projects.length);
+    private static Lookup.Provider[] getOpenedProjectsForAttach() {
+        Lookup.Provider[] projects = ProjectUtilities.getOpenedProjects();
+        ArrayList<Lookup.Provider> projectsArray = new ArrayList(projects.length);
 
         for (int i = 0; i < projects.length; i++) {
             if (ProjectProfilingSupport.get(projects[i]).isAttachSupported()) {
@@ -1163,6 +1157,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             }
         }
 
-        return projectsArray.toArray(new Project[projectsArray.size()]);
+        return projectsArray.toArray(new Lookup.Provider[projectsArray.size()]);
     }
 }

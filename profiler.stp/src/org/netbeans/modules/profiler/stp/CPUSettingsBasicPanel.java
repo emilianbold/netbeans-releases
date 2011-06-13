@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.stp;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
@@ -86,6 +85,7 @@ import org.netbeans.modules.profiler.stp.ui.PreferredInstrFilterPanel;
 import org.netbeans.modules.profiler.stp.ui.QuickFilterPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Lookup;
 
 
 /**
@@ -164,7 +164,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     private JRadioButton stopwatchRadio;
     private List<SimpleFilter> preferredInstrFilters;
     private Object selectedInstrumentationFilter = SimpleFilter.NO_FILTER;
-    private Project project; // TODO: implement reset or remove!!!
+    private Lookup.Provider project; // TODO: implement reset or remove!!!
     private Runnable profilingPointsDisplayer;
     private SimpleFilter quickFilter;
     private ClientUtils.SourceCodeSelection[] rootMethods = new ClientUtils.SourceCodeSelection[0];
@@ -184,7 +184,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public void setContext(Project project, List<SimpleFilter> preferredInstrFilters, Runnable profilingPointsDisplayer) {
+    public void setContext(Lookup.Provider project, List<SimpleFilter> preferredInstrFilters, Runnable profilingPointsDisplayer) {
         this.project = project;
         this.profilingPointsDisplayer = profilingPointsDisplayer;
         this.preferredInstrFilters = preferredInstrFilters;

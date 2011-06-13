@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.stp;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.openide.util.NbBundle;
 import java.awt.Color;
@@ -57,6 +56,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
+import org.openide.util.Lookup;
 
 
 /**
@@ -97,7 +97,7 @@ public class AttachSettingsPanel extends JPanel {
     private JLabel attachModeLabel;
 
     // --- Instance variables declaration ----------------------------------------
-    private Project project;
+    private Lookup.Provider project;
     private boolean settingsValid; // set for null settings when <Select project to attach to> is selected
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ public class AttachSettingsPanel extends JPanel {
         attachModeHintLabel.setEnabled(enabled);
     }
 
-    public void setSettings(Project project, boolean settingsValid) {
+    public void setSettings(Lookup.Provider project, boolean settingsValid) {
         this.project = project;
         this.settingsValid = settingsValid;
         settings = Utils.getAttachSettings(project);
