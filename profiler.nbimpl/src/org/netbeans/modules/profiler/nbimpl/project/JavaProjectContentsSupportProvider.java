@@ -96,5 +96,11 @@ public class JavaProjectContentsSupportProvider extends ProjectContentsSupportPr
             }
         }
     }
+    
+    @Override
+    public void reset() {
+        packages[0] = new String[0];
+        packages[1] = new String[0];
+    }
 
 }

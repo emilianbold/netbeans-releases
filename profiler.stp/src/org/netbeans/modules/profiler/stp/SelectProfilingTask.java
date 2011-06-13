@@ -66,7 +66,6 @@ import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.BorderFactory;
@@ -200,6 +199,10 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                                                                                  "SelectProfilingTask_ChooserComboAccessDescr"); // NOI18N
     private static final String WORKDIR_INVALID_MSG = NbBundle.getMessage(SelectProfilingTask.class,
                                                                                  "SelectProfilingTask_WorkDirInvalidMsg"); // NOI18N
+    private static final String PROJECT_CLASSES_FILTER = NbBundle.getMessage(SelectProfilingTask.class,
+                                                                                 "SelectProfilingTask_ProfileProjectClassesString"); // NOI18N
+    private static final String PROJECT_SUBPROJECTS_CLASSES_FILTER = NbBundle.getMessage(SelectProfilingTask.class,
+                                                                                 "SelectProfilingTask_ProfileProjectSubprojectClassesString"); // NOI18N
                                                                                                                                  // -----
 
     // --- Constants declaration -------------------------------------------------
@@ -212,6 +215,9 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
     // --- Instance variables declaration ----------------------------------------
     private static SelectProfilingTask defaultInstance;
+    
+    private static SimpleFilter PROJECT_FILTER = new SimpleFilter(PROJECT_CLASSES_FILTER, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, ""); // NOI18N
+    private static SimpleFilter PROJECT_SUBPROJECTS_FILTER = new SimpleFilter(PROJECT_SUBPROJECTS_CLASSES_FILTER, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, ""); // NOI18N
 
     // --- UI components declaration ---------------------------------------------
     private static final Image BACKGROUND_IMAGE = UIUtils.isNimbus() ? null : Icons.getImage(STPIcons.STP_GRAPHICS);
@@ -481,16 +487,18 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     SimpleFilter getResolvedPredefinedFilter(SimpleFilter key) {
-// FIXXX         
         int resolvedIndex = predefinedInstrFilterKeys.indexOf(key); // takes some time for long filter values
 
         if (resolvedIndex == -1) {
             return null; // Should never happen
         }
 
-//        if (predefinedInstrFilters[resolvedIndex] == null) {
-//            predefinedInstrFilters[resolvedIndex] = ptp.computePredefinedInstrumentationFilter(project, key, projectPackages);
-//        }
+        if (predefinedInstrFilters[resolvedIndex] == null) {
+            predefinedInstrFilters[resolvedIndex] = new SimpleFilter(
+                    key.getFilterName(), key.getFilterType(),
+                    ProjectContentsSupport.get(project).getInstrumentationFilter(
+                    key == PROJECT_SUBPROJECTS_FILTER));
+        }
 
         return predefinedInstrFilters[resolvedIndex];
     }
@@ -565,6 +573,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         }
 
         projectCleanup();
+        
+        ProjectContentsSupport.get(project).reset();
 
         project = null;
         profiledFile = null;
@@ -1013,6 +1023,20 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 }
             });
     }
+    
+    private static List<SimpleFilter> getProjectDefaultInstrFilters(Lookup.Provider project) {
+        List<SimpleFilter> v = new ArrayList<SimpleFilter>();
+
+//        if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
+            v.add(PROJECT_FILTER);
+//        }
+
+        if (ProjectUtilities.hasSubprojects(project)) {
+            v.add(PROJECT_SUBPROJECTS_FILTER);
+        }
+
+        return v;
+    }
 
     private void updateProject(final Lookup.Provider project) {
         Runnable projectUpdater = new Runnable() {
@@ -1023,7 +1047,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
                 if (project != null) {
                     // FIXXX predefinedInstrFilterKeys = ProjectContentsSupport.get(project).getPredefinedInstrumentationFilters();
-                    predefinedInstrFilterKeys = Collections.EMPTY_LIST;
+                    predefinedInstrFilterKeys = getProjectDefaultInstrFilters(project);
                     predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
 //                    predefinedInstrFilters = null;
 //                    predefinedInstrFilterKeys = null;

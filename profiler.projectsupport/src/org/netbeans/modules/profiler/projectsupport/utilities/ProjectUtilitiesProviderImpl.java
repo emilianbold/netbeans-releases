@@ -89,6 +89,11 @@ public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
     public Provider[] getOpenedProjects() {
         return ProjectUtilities.getOpenedProjects();
     }
+    
+    @Override
+    public boolean hasSubprojects(Provider project) {
+        return ProjectUtilities.hasSubprojects((Project)project);
+    }
 
     @Override
     public void fetchSubprojects(Provider project, Set<Provider> subprojects) {

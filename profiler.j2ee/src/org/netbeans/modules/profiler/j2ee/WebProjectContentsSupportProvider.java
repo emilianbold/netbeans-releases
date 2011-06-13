@@ -55,6 +55,8 @@ import org.openide.filesystems.FileObject;
 @ProjectServiceProvider(projectType={"org-netbeans-modules-web-project", "org-netbeans-modules-maven/war"}, service=ProjectContentsSupportProvider.class)
 public final class WebProjectContentsSupportProvider extends ProjectContentsSupportProvider {
     
+    private final String[][] packages = new String[2][];
+    
     private final Project project;
     
 
@@ -67,7 +69,7 @@ public final class WebProjectContentsSupportProvider extends ProjectContentsSupp
             // Profile Single, provide correct root methods
             if (WebProjectUtils.isJSP(profiledClassFile)) {
                 // TODO: create list of jsp-specific methods (execute & all used Beans)
-                return ProjectUtilities.getProjectDefaultRoots(project, new String[2][]);
+                return ProjectUtilities.getProjectDefaultRoots(project, packages);
             }
         }
         return null;
@@ -85,6 +87,12 @@ public final class WebProjectContentsSupportProvider extends ProjectContentsSupp
             }
         }
         return buffer.toString().trim();
+    }
+    
+    @Override
+    public void reset() {
+        packages[0] = new String[0];
+        packages[1] = new String[0];
     }
     
     

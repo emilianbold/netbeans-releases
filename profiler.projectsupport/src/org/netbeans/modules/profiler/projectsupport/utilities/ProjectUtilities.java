@@ -88,7 +88,6 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
@@ -100,17 +99,6 @@ import org.openide.util.Lookup;
 public class ProjectUtilities {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
     private static final Logger LOGGER = Logger.getLogger(ProjectUtilities.class.getName());
-    private static final String PROFILE_PROJECT_CLASSES_STRING = NbBundle.getMessage(ProjectUtilities.class,
-            "ProjectUtilities_ProfileProjectClassesString"); // NOI18N
-    private static final String PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING = NbBundle.getMessage(ProjectUtilities.class,
-            "ProjectUtilities_ProfileProjectSubprojectClassesString"); // NOI18N
-    public static final SimpleFilter FILTER_PROJECT_ONLY = new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING,
-            SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
-            "{$project.classes.only}"); // NOI18N
-    public static final SimpleFilter FILTER_PROJECT_SUBPROJECTS_ONLY = new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING,
-            SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
-            "{$project.subprojects.classes.only}"); // NOI18N
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
     /**
      * @return The current main project or null if no project is main.
@@ -256,19 +244,19 @@ public class ProjectUtilities {
         }
     }
 
-    public static java.util.List<SimpleFilter> getProjectDefaultInstrFilters(Project project) {
-        java.util.List<SimpleFilter> v = new ArrayList<SimpleFilter>();
-
-        if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
-            v.add(FILTER_PROJECT_ONLY);
-        }
-
-        if (hasSubprojects(project)) {
-            v.add(FILTER_PROJECT_SUBPROJECTS_ONLY);
-        }
-
-        return v;
-    }
+//    public static java.util.List<SimpleFilter> getProjectDefaultInstrFilters(Project project) {
+//        java.util.List<SimpleFilter> v = new ArrayList<SimpleFilter>();
+//
+//        if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
+//            v.add(FILTER_PROJECT_ONLY);
+//        }
+//
+//        if (hasSubprojects(project)) {
+//            v.add(FILTER_PROJECT_SUBPROJECTS_ONLY);
+//        }
+//
+//        return v;
+//    }
 
     public static ClientUtils.SourceCodeSelection[] getProjectDefaultRoots(Project project, String[][] projectPackagesDescr) {
         computeProjectPackages(project, true, projectPackagesDescr);
@@ -372,17 +360,17 @@ public class ProjectUtilities {
         }
     }
 
-    public static SimpleFilter computeProjectOnlyInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
-            String[][] projectPackagesDescr) {
-        // TODO: projectPackagesDescr[1] should only contain packages from subprojects, currently contains also toplevel project packages
-        if (FILTER_PROJECT_ONLY.equals(predefinedInstrFilter)) {
-            return new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, false, projectPackagesDescr));
-        } else if (FILTER_PROJECT_SUBPROJECTS_ONLY.equals(predefinedInstrFilter)) {
-            return new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, true, projectPackagesDescr));
-        }
-
-        return null;
-    }
+//    public static SimpleFilter computeProjectOnlyInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
+//            String[][] projectPackagesDescr) {
+//        // TODO: projectPackagesDescr[1] should only contain packages from subprojects, currently contains also toplevel project packages
+//        if (FILTER_PROJECT_ONLY.equals(predefinedInstrFilter)) {
+//            return new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, false, projectPackagesDescr));
+//        } else if (FILTER_PROJECT_SUBPROJECTS_ONLY.equals(predefinedInstrFilter)) {
+//            return new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, true, projectPackagesDescr));
+//        }
+//
+//        return null;
+//    }
 
     public static String computeProjectOnlyInstrumentationFilter(Project project, boolean useSubprojects,
             String[][] projectPackagesDescr) {
@@ -411,9 +399,9 @@ public class ProjectUtilities {
         }
     }
 
-    public static boolean isIncludeSubprojects(SimpleFilter filter) {
-        return FILTER_PROJECT_SUBPROJECTS_ONLY.equals(filter);
-    }
+//    public static boolean isIncludeSubprojects(SimpleFilter filter) {
+//        return FILTER_PROJECT_SUBPROJECTS_ONLY.equals(filter);
+//    }
 
     public static String getDefaultPackageClassNames(Project project) {
         Collection<String> classNames = getDefaultPackageClassNamesSet(project);
@@ -579,7 +567,7 @@ public class ProjectUtilities {
         }
     }
 
-    private static boolean hasSubprojects(Project project) {
+    public static boolean hasSubprojects(Project project) {
         SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
 
         if (spp == null) {
