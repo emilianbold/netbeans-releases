@@ -212,7 +212,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         }
     }
     
-    private static class AddServerInstanceWizardIterator implements WizardDescriptor.InstantiatingIterator {
+    private static class AddServerInstanceWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
         private AddServerInstanceWizard wd;
         public boolean showingChooser;
         private WizardDescriptor.InstantiatingIterator iterator;
