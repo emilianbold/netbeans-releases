@@ -194,7 +194,7 @@ public final class SearchBar extends JPanel {
                              Math.max( 0, bgColor.getBlue() - 20 ) );        
         setBackground(bgColor);
         setForeground(UIManager.getColor("textText")); //NOI18N
-
+        
         PropertyChangeListener pcl = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -473,6 +473,7 @@ public final class SearchBar extends JPanel {
 
         // configure match case check box
         matchCaseCheckBox = new JCheckBox();
+        matchCaseCheckBox.setBackground(bgColor);
         Mnemonics.setLocalizedText(matchCaseCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_MatchCase")); // NOI18N
         matchCaseCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -485,6 +486,7 @@ public final class SearchBar extends JPanel {
         processButton(matchCaseCheckBox);
 
         wholeWordsCheckBox = new JCheckBox();
+        wholeWordsCheckBox.setBackground(bgColor);
         Mnemonics.setLocalizedText(wholeWordsCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_WholeWords")); // NOI18N
         wholeWordsCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -498,6 +500,7 @@ public final class SearchBar extends JPanel {
         processButton(wholeWordsCheckBox);
         
         regexpCheckBox = new JCheckBox();
+        regexpCheckBox.setBackground(bgColor);
         Mnemonics.setLocalizedText(regexpCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Regexp")); // NOI18N
         regexpCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -512,6 +515,7 @@ public final class SearchBar extends JPanel {
         processButton(regexpCheckBox);
         
         highlightCheckBox = new JCheckBox();
+        highlightCheckBox.setBackground(bgColor);
         Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight")); // NOI18N
         highlightCheckBox.addActionListener(new ActionListener() {
             @Override
