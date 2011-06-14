@@ -216,6 +216,17 @@ public final class Switches {
         return getSwitchValue( "Splitter.Respect.MinimumSize.Enabled", true ); //NOI18N
     }
     
+    /**
+     * 
+     * @return True if it is possible to dock document windows together with
+     * non-document windows and vice-versa. The switch has the same meaning
+     * as system property <code>netbeans.winsys.allow.dock.anywhere</code>.
+     * @since 2.33
+     */
+    public static boolean isMixingOfEditorsAndViewsEnabled() {
+        return getSwitchValue( "Mix.Editors.And.Views.Enabled", true ); //NOI18N
+    }
+    
     private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
         boolean result = defaultValue;
         try {

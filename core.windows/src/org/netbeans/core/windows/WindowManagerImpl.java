@@ -1188,6 +1188,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             }
         }
         boolean alreadyOpened = mode.getOpenedTopComponents().contains( tc );
+        
+        TopComponentTracker.getDefault().add( tc, mode );
 
         // XXX PENDING If necessary, unmaximize the state, but exclude sliding modes
         // Consider to put it in addOpenedTopComponent, to do it in one step.
@@ -1676,13 +1678,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return An array of TopComponents that are opened in editor modes (i.e. editor windows).
      */
     public TopComponent[] getEditorTopComponents() {
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         ArrayList<TopComponent> editors = new ArrayList<TopComponent>();
-        Set<? extends Mode> modes = getModes();
-        for(Mode mode: modes) {
-            ModeImpl modeImpl = findModeImpl( mode.getName() ); // XXX probably useless
-            if( modeImpl.getKind() == Constants.MODE_KIND_EDITOR ) {
-                editors.addAll( modeImpl.getOpenedTopComponents() );
-            }
+        for( TopComponent tc : getRegistry().getOpened() ) {
+            if( tcTracker.isViewTopComponent( tc ) )
+                continue;
+            editors.add( tc );
         }
         return editors.toArray( new TopComponent[editors.size()] );
     }
@@ -1692,12 +1693,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * or null if editor mode(s) is empty.
      */
     public TopComponent getArbitrarySelectedEditorTopComponent() {
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         Set modes = getModes();
         for( Iterator i=modes.iterator(); i.hasNext(); ) {
             Mode mode = (Mode)i.next();
             ModeImpl modeImpl = findModeImpl( mode.getName() );
             if( modeImpl.getKind() == Constants.MODE_KIND_EDITOR ) {
-                return mode.getSelectedTopComponent();
+                TopComponent tc = mode.getSelectedTopComponent();
+                if( null != tc && tcTracker.isEditorTopComponent( tc ) )
+                    return tc;
             }
         }
         return null;
@@ -1724,13 +1728,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      *
      */
     public void closeNonEditorViews() {
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         for(ModeImpl modeImpl: getModes()) {
-            if( null != modeImpl && modeImpl.getKind() != Constants.MODE_KIND_EDITOR ) {
-                java.util.List tcs = modeImpl.getOpenedTopComponents();
-                for( Iterator j=tcs.iterator(); j.hasNext(); ) {
-                    TopComponent tc = (TopComponent)j.next();
+            if( null == modeImpl )
+                continue;
+            java.util.List tcs = modeImpl.getOpenedTopComponents();
+            for( Iterator j=tcs.iterator(); j.hasNext(); ) {
+                TopComponent tc = (TopComponent)j.next();
+                if( tcTracker.isViewTopComponent( tc ) )
                     tc.close();
-                }
             }
         }
     }

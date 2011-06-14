@@ -95,6 +95,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     public void clear() {
         name2mode.clear();
         name2group.clear();
+        TopComponentTracker.getDefault().clear();
     }
     
     public static synchronized PersistenceHandler getDefault() {
@@ -114,6 +115,8 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("## PersistenceHandler.load"); // NOI18N
         }
+        
+        TopComponentTracker.getDefault().load();
         
         WindowManagerConfig wmc = null;
         try {
@@ -198,6 +201,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
         }
         
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         TopComponent activeTopComponentOverride = null;
         // Then fill them with TopComponents.
         for(Iterator it = mode2config.keySet().iterator(); it.hasNext(); ) {
@@ -212,6 +216,9 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
             if(mc.previousSelectedTopComponentID != null) {
                 mode.setUnloadedPreviousSelectedTopComponent(mc.previousSelectedTopComponentID);
+            }
+            for( String tcId : mode.getTopComponentsIDs() ) {
+                tcTracker.add( tcId, mode );
             }
             //some TopComponents want to be always active when the window system starts (e.g. welcome screen)
             for( TopComponent tc : mode.getOpenedTopComponents() ) {
@@ -303,6 +310,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("## PersistenceHandler.save"); // NOI18N
         }
+        TopComponentTracker.getDefault().save();
         
         ToolbarPool.getDefault().waitFinished();
         WindowManagerConfig wmc = getConfig();

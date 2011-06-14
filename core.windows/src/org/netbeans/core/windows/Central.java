@@ -2290,6 +2290,7 @@ final class Central implements ControllerHandler {
             target.addOpenedTopComponent( tc, tmpIndex );
             if( tmpIndex >= 0 )
                 tmpIndex++;
+            TopComponentTracker.getDefault().add( tc, target );
         }
         target.addOtherName( source.getName() );
         for( String otherName : source.getOtherNames() ) {
@@ -2489,6 +2490,7 @@ final class Central implements ControllerHandler {
         if(!mode.canContain(tc)) {
             return false;
         }
+        TopComponentTracker.getDefault().add( tc, mode );
         for(Iterator it = model.getModes().iterator(); it.hasNext(); ) {
             ModeImpl m = (ModeImpl)it.next();
             if(model.containsModeTopComponent(m, tc)) {
