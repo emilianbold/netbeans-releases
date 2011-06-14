@@ -44,8 +44,9 @@
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet;
 
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 
@@ -65,7 +66,7 @@ public class ServletNode extends JavaClassNode {
     /** Creates a new instance of ServletNode */
     public ServletNode(ClasspathInfo cpInfo, TypeElement classElement, String servletName, String servletMapping,
                        ContainerNode parent) {
-        super(cpInfo, Utils.SERVLET_ICON, classElement, parent);
+        super(cpInfo, Icons.getIcon(JavaEEIcons.SERVLET), classElement, parent);
         externalName = servletName;
         mapping = servletMapping;
     }
