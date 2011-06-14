@@ -40,11 +40,6 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-/*
- * AmazonJ2EEServerWizardComponent.java
- *
- * Created on 13/06/2011, 11:22:52 AM
- */
 package org.netbeans.modules.cloud.amazon.ui.serverplugin;
 
 import java.awt.Component;
@@ -66,17 +61,26 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author david
  */
 public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
     private AmazonJ2EEServerWizardPanel wizardPanel;
+    private String suggestedName;
     
     /** Creates new form AmazonJ2EEServerWizardComponent */
-    public AmazonJ2EEServerWizardComponent(AmazonJ2EEServerWizardPanel wizardPanel) {
+    public AmazonJ2EEServerWizardComponent(AmazonJ2EEServerWizardPanel wizardPanel, String suggestedName) {
         this.wizardPanel = wizardPanel;
+        this.suggestedName = suggestedName;
         initComponents();
         setName(NbBundle.getMessage(AmazonJ2EEServerWizardComponent.class, "AmazonJ2EEServerWizardComponent.name"));
+        if (suggestedName != null) {
+            envNameTextField.setText(suggestedName+"-dev-env");
+            envURLTextField.setText(suggestedName+"-dev-env");
+            envFullURLLabel.setText("<html>"+envURLTextField.getText()+".elasticbeanstalk.com"); // NOI18N
+        }
+    }
+    
+    void init() {
         initAccounts();
         initApplications();
         enableApplicationComponent(hasAccount());
@@ -87,7 +91,6 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
             accountComboBox.setSelectedIndex(0);
             reloadApplications();
         }
-        
     }
     
     private void enableApplicationComponent(boolean enable) {
@@ -276,7 +279,7 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
     private void initApplications() {
         JTextField tf = (JTextField)(appNameComboBox.getEditor().getEditorComponent());
         tf.getDocument().addDocumentListener(this);
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{""});
+        DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{suggestedName == null ? "" : suggestedName});
         appNameComboBox.setModel(model);
         appNameComboBox.setRenderer(new ListCellRenderer() {
             @Override
@@ -292,7 +295,7 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
     }
     
     private void reloadApplications() {
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{"", NbBundle.getMessage(AmazonJ2EEServerWizardComponent.class, "AmazonJ2EEServerWizardComponent.loadingApplications")});
+        DefaultComboBoxModel model = new DefaultComboBoxModel(new String[]{suggestedName == null ? "" : suggestedName, NbBundle.getMessage(AmazonJ2EEServerWizardComponent.class, "AmazonJ2EEServerWizardComponent.loadingApplications")});
         appNameComboBox.setModel(model);
         final AmazonInstance ai = (AmazonInstance)accountComboBox.getSelectedItem();
         
@@ -300,7 +303,7 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
             @Override
             public Void call() {
                 final List<String> apps = ai.readApplicationNames();
-                apps.add(0, "");
+                apps.add(0, suggestedName == null ? "" : suggestedName);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

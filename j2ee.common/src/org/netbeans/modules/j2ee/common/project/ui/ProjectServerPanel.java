@@ -49,8 +49,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -407,7 +408,9 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             selectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
         }
         ProfileItem lastSelectedJ2eeProfile = (ProfileItem) j2eeSpecComboBox.getSelectedItem();
-        String newServerInstanceID = ServerManager.showAddServerInstanceWizard();
+        Map<String, String> props = new HashMap<String, String>();
+        props.put("suggested-name", (String)wizard.wizardDescriptor.getProperty(ProjectLocationWizardPanel.NAME));
+        String newServerInstanceID = ServerManager.showAddServerInstanceWizard(props);
         if (newServerInstanceID != null) {
             selectedServerInstanceID = newServerInstanceID;
             // clear the spec level selection
