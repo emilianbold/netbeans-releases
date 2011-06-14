@@ -900,7 +900,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             element.appendChild(n1);
         }
         data.appendChild(element);
-        helper.putPrimaryConfigurationData(data, true);
 
         // Remove old source root node
         nodeList = data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ROOT_LIST_ELEMENT);
@@ -920,8 +919,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             element.appendChild(n1);
         }
         data.appendChild(element);
-        helper.putPrimaryConfigurationData(data, true);
-
 
         // Remove old configuration node
         nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CONFIGURATION_LIST_ELEMENT);
@@ -945,9 +942,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             element.appendChild(element2);
         }
         data.appendChild(element);
-
-        helper.putPrimaryConfigurationData(data, true);
-
 
         // Create source encoding node
         nodeList = data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ENCODING_TAG);

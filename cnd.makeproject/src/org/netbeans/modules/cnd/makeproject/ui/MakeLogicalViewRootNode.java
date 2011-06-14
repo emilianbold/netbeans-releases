@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
@@ -150,9 +151,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
         ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
         pi.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, pi));
-        ToolsCacheManager.addChangeListener(this);
+        ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
         MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
-        confProvider.addPropertyChangeListener(this);
+        confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
 
     }
 
@@ -312,6 +313,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             fireNameChange(null, null);
         } else if (ProjectInformation.PROP_ICON.equals(prop)) {
             fireIconChange();
+        } else if (ProjectConfigurationProvider.PROP_CONFIGURATIONS.equals(prop)) {
+            stateChanged(null) ;
         }
     }
 
