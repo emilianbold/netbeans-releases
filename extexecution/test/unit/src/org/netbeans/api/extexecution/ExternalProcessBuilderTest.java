@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 
@@ -70,28 +69,6 @@ public class ExternalProcessBuilderTest extends NbTestCase {
         assertEquals("value1", env.remove("test1"));
         assertEquals("value2", env.remove("test2"));
         assertTrue(env.isEmpty());
-    }
-
-    public void testArguments() {
-        ExternalProcessBuilder creator = new ExternalProcessBuilder("command");
-        creator = creator.addArgument("myarg1");
-        creator = creator.addArgument("my arg 2");
-        creator = creator.addArgument("my\t arg 3");
-        creator = creator.addArgument("my \"arg 4\"");
-        creator = creator.addArgument("my\\arg5");
-        creator = creator.addArgument("\"my arg6\"");
-        creator = creator.addArgument("C:\\Program Files\\App");
-
-        List<String> arg = creator.buildArguments();
-        assertEquals(7, arg.size());
-
-        assertEquals("myarg1", arg.get(0));
-        assertEquals("\"my arg 2\"", arg.get(1));
-        assertEquals("\"my\t arg 3\"", arg.get(2));
-        assertEquals("\"my \\\"arg 4\\\"\"", arg.get(3));
-        assertEquals("my\\\\arg5", arg.get(4));
-        assertEquals("\"my arg6\"", arg.get(5));
-        assertEquals("\"C:\\\\Program Files\\\\App\"", arg.get(6));
     }
 
     public void testPath() {

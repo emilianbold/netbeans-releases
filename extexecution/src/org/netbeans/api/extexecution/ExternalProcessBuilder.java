@@ -337,7 +337,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
             for (String key : ret.keySet()) {
                 if ("PATH".equals(key.toUpperCase(Locale.ENGLISH))) { // NOI18N
                     pathName = key;
-
                     break;
                 }
             }
@@ -363,6 +362,9 @@ public final class ExternalProcessBuilder implements Callable<Process> {
 
     // package level for unit testing
     List<String> buildArguments() {
+        if (!Utilities.isWindows()) {
+            return new ArrayList<String>(arguments);
+        }
         List<String> result = new ArrayList<String>(arguments.size());
         for (String arg : arguments) {
             if (arg != null && !ESCAPED_PATTERN.matcher(arg).matches()) {
@@ -374,7 +376,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         return result;
     }
 
-    // this is copied from org.openide.util.Utilities it is private there :/
     private static String escapeString(String s) {
         if (s.length() == 0) {
             return "\"\""; // NOI18N
@@ -395,19 +396,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
 
                 continue;
             }
-
-            if (c == '\\') { // NOI18N
-                sb.append('\\').append('\\'); // NOI18N
-
-                continue;
-            }
-
-            if (c == '"') { // NOI18N
-                sb.append('\\').append('"'); // NOI18N
-
-                continue;
-            }
-
             sb.append(c);
         }
 
