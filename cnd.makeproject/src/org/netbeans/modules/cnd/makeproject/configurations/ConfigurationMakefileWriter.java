@@ -141,30 +141,30 @@ public class ConfigurationMakefileWriter {
         return false;
     }
 
-    public void writeMissingMakefiles() {
-        FileObject nbProjFO = projectDescriptor.getNbprojectFileObject();
-        CndUtils.assertNotNullInConsole(nbProjFO, "null nbproject file object"); //NOI18N
-        if (nbProjFO == null) {
-            return;
-        }
-        FileObject configuraionFO = nbProjFO.getFileObject(MakeConfiguration.CONFIGURATIONS_XML);
-        long xmlFileTimeStamp = (configuraionFO == null) ? -1 : configuraionFO.lastModified().getTime();
-        Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
-        for (MakeConfiguration conf : okConfs) {            
-            if (!conf.isMakefileConfiguration()) {
-                String relPath = getMakefileName(conf); // NOI18N
-                FileObject fo = nbProjFO.getFileObject(relPath);
-                if (fo == null || ! fo.isValid() || fo.lastModified().getTime() < xmlFileTimeStamp) {
-                    writeMakefileConf(conf);
-                }
-            }
-            String relPath = getPackageScriptName(conf); // NOI18N
-            FileObject fo = nbProjFO.getFileObject(relPath);
-            if (fo == null || ! fo.isValid() || fo.lastModified().getTime() < xmlFileTimeStamp) {
-                writePackagingScript(conf);
-            }
-        }
-    }
+//    public void writeMissingMakefiles() {
+//        FileObject nbProjFO = projectDescriptor.getNbprojectFileObject();
+//        CndUtils.assertNotNullInConsole(nbProjFO, "null nbproject file object"); //NOI18N
+//        if (nbProjFO == null) {
+//            return;
+//        }
+//        FileObject configuraionFO = nbProjFO.getFileObject(MakeConfiguration.CONFIGURATIONS_XML);
+//        long xmlFileTimeStamp = (configuraionFO == null) ? -1 : configuraionFO.lastModified().getTime();
+//        Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
+//        for (MakeConfiguration conf : okConfs) {            
+//            if (!conf.isMakefileConfiguration()) {
+//                String relPath = getMakefileName(conf); // NOI18N
+//                FileObject fo = nbProjFO.getFileObject(relPath);
+//                if (fo == null || ! fo.isValid() || fo.lastModified().getTime() < xmlFileTimeStamp) {
+//                    writeMakefileConf(conf);
+//                }
+//            }
+//            String relPath = getPackageScriptName(conf); // NOI18N
+//            FileObject fo = nbProjFO.getFileObject(relPath);
+//            if (fo == null || ! fo.isValid() || fo.lastModified().getTime() < xmlFileTimeStamp) {
+//                writePackagingScript(conf);
+//            }
+//        }
+//    }
 
     private String getMakefileName(Configuration conf) {
         return "Makefile-" + conf.getName() + ".mk"; // NOI18N
