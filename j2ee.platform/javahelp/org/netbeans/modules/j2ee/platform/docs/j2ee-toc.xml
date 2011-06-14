@@ -215,7 +215,6 @@ Other names may be trademarks of their respective owners.
             <tocitem text="About Deploying and Testing Web Services" target="about_deploy_and_test_ws" />
             <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 	
             <tocitem text="Deploying a Web Service" target="expose_ws" />
-            <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
             <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
             <tocitem text="Testing a RESTful Web Service" target="test_rest" />
         </tocitem>

@@ -359,10 +359,12 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
             return doc;
         } catch (IOException e) {
             if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
+                LOG.log(Level.INFO, "Load XML: {0}", xml.getPath()); //NOI18N
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         } catch (SAXException e) {
             if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
+                LOG.log(Level.INFO, "Load XML: {0}", xml.getPath()); //NOI18N
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }

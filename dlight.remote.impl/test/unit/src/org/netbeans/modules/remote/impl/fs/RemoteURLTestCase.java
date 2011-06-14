@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -132,25 +133,31 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
             WritingQueue.getInstance(execEnv).waitFinished(null);
             String readContent = ProcessUtils.execute(execEnv, "cat", tempFile).output;
             assertEquals("File content differ", referenceText.toString(), readContent.toString());
-
-            URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-            assertNotNull("null URL", url);
-            URLConnection conn = url.openConnection();
-            assertNotNull("null URLConnection", conn);
-            conn.connect();
-            BufferedReader rdr = null;
-            try {
-                rdr = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String line = rdr.readLine();
-                assertEquals(readContent, line);
-            } finally {
-                if (rdr != null) {
-                    rdr.close();
-                }
-            }
+            doTestUrlConnectionRead(fo, readContent, true);
+            doTestUrlConnectionRead(fo, readContent, false);
         } finally {
             if (tempFile != null) {
                 removeRemoteDirIfNotNull(tempFile);
+            }
+        }
+    }
+
+    private void doTestUrlConnectionRead(FileObject fo, String referenceContent, boolean connect) throws IOException {
+        URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        assertNotNull("null URL", url);
+        URLConnection conn = url.openConnection();
+        assertNotNull("null URLConnection", conn);
+        if (connect) {
+            conn.connect();
+        }
+        BufferedReader rdr = null;
+        try {
+            rdr = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line = rdr.readLine();
+            assertEquals(referenceContent, line);
+        } finally {
+            if (rdr != null) {
+                rdr.close();
             }
         }
     }
