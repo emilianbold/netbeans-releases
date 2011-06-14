@@ -72,6 +72,7 @@ import org.netbeans.modules.profiler.categorization.api.CustomMarker;
 import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.openide.util.Lookup;
 
 
 /**
@@ -80,17 +81,19 @@ import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
  */
 public abstract class BaseEJBMarkingProvider extends CustomMarker {
     private MethodMarker delegate = new MethodMarker();
-    private static Logger LOGGER = Logger.getLogger(BaseEJBMarkingProvider.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BaseEJBMarkingProvider.class.getName());
 
-    public BaseEJBMarkingProvider(Project project, Mark assignedMark) {
+    public BaseEJBMarkingProvider(Lookup.Provider project, Mark assignedMark) {
         super(project, assignedMark);
         addEjbMethods();
     }
 
+    @Override
     public MarkMapping[] getMappings() {
         return delegate.getMappings();
     }
 
+    @Override
     public Mark[] getMarks() {
         return delegate.getMarks();
     }
@@ -104,6 +107,7 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
             for (MetadataModel<EjbJarMetadata> mdModel : listAllMetadata()) {
                 try {
                     mdModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                    @Override
                             public Void run(EjbJarMetadata metadata)
                                                    throws Exception {
                                 System.out.println(metadata.getRoot().getVersion().toString() + " = " + metadata.getRoot().VERSION_3_0);
@@ -111,9 +115,11 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
 
                                 for (final Ejb ejb : ejbs) {
                                     js.runUserActionTask(new CancellableTask<CompilationController>() {
+                                @Override
                                             public void cancel() {
                                             }
 
+                                @Override
                                             public void run(CompilationController controller)
                                                      throws Exception {
 
