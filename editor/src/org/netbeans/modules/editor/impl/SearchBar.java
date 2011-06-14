@@ -474,7 +474,7 @@ public final class SearchBar extends JPanel {
 
         // configure match case check box
         matchCaseCheckBox = new JCheckBox();
-        matchCaseCheckBox.setBackground(bgColor);
+        matchCaseCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(matchCaseCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_MatchCase")); // NOI18N
         matchCaseCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -487,7 +487,7 @@ public final class SearchBar extends JPanel {
         processButton(matchCaseCheckBox);
 
         wholeWordsCheckBox = new JCheckBox();
-        wholeWordsCheckBox.setBackground(bgColor);
+        wholeWordsCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(wholeWordsCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_WholeWords")); // NOI18N
         wholeWordsCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -501,7 +501,7 @@ public final class SearchBar extends JPanel {
         processButton(wholeWordsCheckBox);
         
         regexpCheckBox = new JCheckBox();
-        regexpCheckBox.setBackground(bgColor);
+        regexpCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(regexpCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Regexp")); // NOI18N
         regexpCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -516,7 +516,7 @@ public final class SearchBar extends JPanel {
         processButton(regexpCheckBox);
         
         highlightCheckBox = new JCheckBox();
-        highlightCheckBox.setBackground(bgColor);
+        highlightCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight")); // NOI18N
         highlightCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -529,7 +529,7 @@ public final class SearchBar extends JPanel {
         processButton(highlightCheckBox);
         
         wrapAroundCheckBox = new JCheckBox();
-        wrapAroundCheckBox.setBackground(bgColor);
+        wrapAroundCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(wrapAroundCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_WrapAround")); // NOI18N
         wrapAroundCheckBox.addActionListener(new ActionListener() {
             @Override
