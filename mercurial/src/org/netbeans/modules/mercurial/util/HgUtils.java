@@ -1560,7 +1560,7 @@ itor tabs #66700).
      * @param runnable 
      */
     public static void runIfHgAvailable (final Runnable runnable) {
-        Utils.post(new Runnable() {
+        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 if (Mercurial.getInstance().isAvailable(true, true)) {
