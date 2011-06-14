@@ -633,12 +633,17 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     private CsmNamespace _getParentNamespace() {
-        CsmNamespace ns = this.parentRef;
-        if (ns == null) {
-            ns = UIDCsmConverter.UIDtoNamespace(this.parentUID);
-            assert (ns != null || this.parentUID == null) : "null object for UID " + this.parentUID;   
+        projectLock.readLock().lock();
+        try {
+            CsmNamespace ns = this.parentRef;
+            if (ns == null) {
+                ns = UIDCsmConverter.UIDtoNamespace(this.parentUID);
+                assert (ns != null || this.parentUID == null) : "null object for UID " + this.parentUID;   
+            }
+            return ns;
+        } finally {
+            projectLock.readLock().unlock();
         }
-        return ns;
     }
     
     @Override

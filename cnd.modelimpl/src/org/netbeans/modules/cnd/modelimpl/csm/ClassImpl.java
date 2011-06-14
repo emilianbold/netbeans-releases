@@ -1047,14 +1047,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return visibility;
         }
 
-        private void onDispose() {
+        private synchronized void onDispose() {
             if (containerRef == null) {
                 containerRef = UIDCsmConverter.UIDtoClass(containerUID);
             }
         }
 
         @Override
-        public CsmClass getContainingClass() {
+        public synchronized CsmClass getContainingClass() {
             CsmClass out = containerRef;
             if (out == null) {
                 out = containerRef = UIDCsmConverter.UIDtoClass(containerUID);
