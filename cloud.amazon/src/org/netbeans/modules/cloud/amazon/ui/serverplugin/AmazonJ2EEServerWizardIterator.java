@@ -42,6 +42,7 @@
 package org.netbeans.modules.cloud.amazon.ui.serverplugin;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import javax.swing.event.ChangeListener;
@@ -76,7 +77,7 @@ public class AmazonJ2EEServerWizardIterator implements WizardDescriptor.Asynchro
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return null;
+        return Collections.emptySet();
     }
 
     @Override

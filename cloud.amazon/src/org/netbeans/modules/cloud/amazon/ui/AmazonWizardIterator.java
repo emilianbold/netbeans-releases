@@ -42,6 +42,7 @@
 package org.netbeans.modules.cloud.amazon.ui;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
@@ -76,7 +77,7 @@ public class AmazonWizardIterator implements WizardDescriptor.InstantiatingItera
         
         AmazonInstanceManager.getDefault().add(new AmazonInstance(name, keyId, key));
         
-        return null;
+        return Collections.emptySet();
     }
 
     @Override
