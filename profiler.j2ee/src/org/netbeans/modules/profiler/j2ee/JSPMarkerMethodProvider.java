@@ -48,6 +48,7 @@ import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.MethodMarker;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.modules.profiler.categorization.api.CustomMarker;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -56,7 +57,7 @@ import org.netbeans.modules.profiler.categorization.api.CustomMarker;
 public class JSPMarkerMethodProvider extends CustomMarker  {
     private MethodMarker delegate;
 
-    public JSPMarkerMethodProvider(Project project, Mark mark) {
+    public JSPMarkerMethodProvider(Lookup.Provider project, Mark mark) {
         super(project, mark);
         delegate = new MethodMarker();
         addJspMethods();
@@ -73,10 +74,12 @@ public class JSPMarkerMethodProvider extends CustomMarker  {
         }
     }
 
+    @Override
     public Mark[] getMarks() {
         return delegate.getMarks();
     }
 
+    @Override
     public MarkMapping[] getMappings() {
         return delegate.getMappings();
     }
