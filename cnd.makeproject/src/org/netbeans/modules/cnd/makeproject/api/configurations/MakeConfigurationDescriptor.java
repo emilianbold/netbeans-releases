@@ -804,10 +804,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         updateExtensionList();
         if (!isModified()) {
-            if (!MakeProjectUtils.isFullRemote(project)) {
-                // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
-                new ConfigurationMakefileWriter(this).writeMissingMakefiles();
-            }
+            //if (!MakeProjectUtils.isFullRemote(project)) {
+            //    // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
+            //    new ConfigurationMakefileWriter(this).writeMissingMakefiles();
+            //}
+            new ConfigurationMakefileWriter(this).write();
             ConfigurationPrivateXMLWriter();
             saveProject();
 

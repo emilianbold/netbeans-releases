@@ -48,6 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -77,13 +78,14 @@ public final class TransferFile {
     private final long size; // in bytes
     private final boolean directory;
     private final boolean file;
+    private final boolean link;
     private long timestamp; // in seconds, default -1
 
-    private TransferFile(TransferFile parent, String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file) {
-        this(parent, name, relativePath, parentRelativePath, size, directory, file, -1);
+    private TransferFile(TransferFile parent, String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file, boolean link) {
+        this(parent, name, relativePath, parentRelativePath, size, directory, file, link, -1);
     }
 
-    private TransferFile(TransferFile parent, String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file, long timestamp) {
+    private TransferFile(TransferFile parent, String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file, boolean link, long timestamp) {
         assert size >= 0L : "Size cannot be smaller than 0";
         if (directory && size != 0L) {
             throw new IllegalArgumentException("Size of a directory has to be 0 bytes");
@@ -95,6 +97,7 @@ public final class TransferFile {
         this.parentRelativePath = parentRelativePath;
         this.directory = directory;
         this.file = file;
+        this.link = link;
         this.size = size;
         this.timestamp = timestamp;
 
@@ -118,7 +121,8 @@ public final class TransferFile {
         boolean f = !isDirectory;
         long size = directory ? 0L : file.length();
 
-        return new TransferFile(parent, name, relativePath, parentRelativePath, size, directory, f, TimeUnit.SECONDS.convert(file.lastModified(), TimeUnit.MILLISECONDS));
+        return new TransferFile(parent, name, relativePath, parentRelativePath, size, directory, f, PhpProjectUtils.isLink(file),
+                TimeUnit.SECONDS.convert(file.lastModified(), TimeUnit.MILLISECONDS));
     }
     /**
      * Implementation for {@link File}.
@@ -153,7 +157,7 @@ public final class TransferFile {
         boolean file = remoteFile.isFile();
         long size = directory ? 0L : remoteFile.getSize();
 
-        return new TransferFile(parent, name, relativePath, parentRelativePath, size, directory, file, remoteFile.getTimestamp());
+        return new TransferFile(parent, name, relativePath, parentRelativePath, size, directory, file, remoteFile.isLink(), remoteFile.getTimestamp());
     }
 
     /**
@@ -162,7 +166,7 @@ public final class TransferFile {
     public static TransferFile fromPath(TransferFile parent, String path) {
         assert path != null;
 
-        return new TransferFile(parent, path, path, path, 0L, false, false);
+        return new TransferFile(parent, path, path, path, 0L, false, false, false);
     }
 
     private void addChild(TransferFile child) {
@@ -301,6 +305,10 @@ public final class TransferFile {
 
     public boolean isFile() {
         return file;
+    }
+
+    public boolean isLink() {
+        return link;
     }
 
     /**
