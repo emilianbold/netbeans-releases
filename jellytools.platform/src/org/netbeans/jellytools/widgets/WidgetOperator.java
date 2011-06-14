@@ -452,13 +452,18 @@ public class WidgetOperator extends Operator {
     public static WidgetOperator createOperator(Widget widget) {
         Class widgetClass = widget.getClass();
         while (Widget.class.isAssignableFrom(widgetClass)) {
+            String fullClassName = widgetClass.getName();
+            String className = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
             try {
-                String fullClassName = widgetClass.getName();
-                String className = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
                 return (WidgetOperator) new ClassReference("org.netbeans.jellytools.widgets." + className + "Operator").newInstance(new Object[]{widget}, new Class[]{widgetClass});
             } catch (ClassNotFoundException cnfe) {
-                // operator for given widget not found => try superclass
-                widgetClass = widgetClass.getSuperclass();
+                try {
+                    Class clazz = Class.forName("org.netbeans.jellytools.widgets." + className + "Operator", true, Thread.currentThread().getContextClassLoader());
+                    return (WidgetOperator) clazz.getConstructor(widgetClass).newInstance(widget);
+                } catch (Exception e) {
+                    // operator for given widget not found => try superclass
+                    widgetClass = widgetClass.getSuperclass();
+                }
             } catch (Exception e) {
                 throw new JemmyException("Exception while creating operator.", e);
             }

@@ -46,13 +46,13 @@ import java.awt.Rectangle;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import junit.framework.Test;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test WidgetOperator, LabelWidgetOperator and ConnectionWidgetOperator.
  *
@@ -67,60 +67,30 @@ public class WidgetOperatorTest extends JellyTestCase {
         super(testName);
     }
 
-    /** Used for internal run in IDE.
-     * @param args not used here
-     */
-    public static void main(java.lang.String[] args) throws Exception {
-        junit.textui.TestRunner.run(suite());
-    }
-
     /** Define test suite.
      * @return suite.
      */
-    public static NbTestSuite suite() {
-        /*
-        NbTestSuite suite = new NbTestSuite();
-        // test cases have to be in particular order
-        suite.addTest(new WidgetOperatorTest("testShowScene"));
-        suite.addTest(new WidgetOperatorTest("testConstructors"));
-        suite.addTest(new WidgetOperatorTest("testGetSceneOperator"));
-        suite.addTest(new WidgetOperatorTest("testGetParent"));
-        suite.addTest(new WidgetOperatorTest("testGetChildren"));
-        suite.addTest(new WidgetOperatorTest("testGetCenter"));
-        suite.addTest(new WidgetOperatorTest("testGetLocation"));
-        suite.addTest(new WidgetOperatorTest("testGetBounds"));
-        suite.addTest(new WidgetOperatorTest("testPrintDump"));
-        suite.addTest(new WidgetOperatorTest("testCreateOperator"));
-        suite.addTest(new WidgetOperatorTest("testPerformPopupAction"));
-        suite.addTest(new WidgetOperatorTest("testPerformPopupActionNoBlock"));
-        suite.addTest(new WidgetOperatorTest("testClickMouse"));
-        suite.addTest(new WidgetOperatorTest("testDragNDrop"));
-        // must be before testDragNDrop
-        suite.addTest(new WidgetOperatorTest("testConnectionWidgetOperator"));
-        suite.addTest(new WidgetOperatorTest("testLabelWidgetOperator"));
-        suite.addTest(new WidgetOperatorTest("testCloseScene"));
-        return suite;
-         */
-        return (NbTestSuite) createModuleTest(WidgetOperatorTest.class, 
-        "testShowScene",
-        "testConstructors",
-        "testGetSceneOperator",
-        "testGetParent",
-        "testGetChildren",
-        "testGetCenter",
-        "testGetLocation",
-        "testGetBounds",
-        //comment out for now - until clear where the dump is generated.
-        //"testPrintDump",
-        //"testCreateOperator",
-        "testPerformPopupAction",
-        "testPerformPopupActionNoBlock",
-        "testClickMouse",
-        "testDragNDrop",
-        // must be before testDragNDrop
-        "testConnectionWidgetOperator",
-        "testLabelWidgetOperator",
-        "testCloseScene");
+    public static Test suite() {
+        return createModuleTest(WidgetOperatorTest.class,
+                // test cases have to be in particular order
+                "testShowScene",
+                "testConstructors",
+                "testGetSceneOperator",
+                "testGetParent",
+                "testGetChildren",
+                "testGetCenter",
+                "testGetLocation",
+                "testGetBounds",
+                "testPrintDump",
+                "testCreateOperator",
+                "testPerformPopupAction",
+                "testPerformPopupActionNoBlock",
+                "testClickMouse",
+                "testDragNDrop",
+                // must be after testDragNDrop
+                "testConnectionWidgetOperator",
+                "testLabelWidgetOperator",
+                "testCloseScene");
     }
 
     /** Print out test name. */
@@ -184,8 +154,8 @@ public class WidgetOperatorTest extends JellyTestCase {
         // bounds can slightly differ on some platforms => we check it with some tolerance
         Rectangle bounds = new LabelWidgetOperator(tco, "Label 0").getBounds();
         assertTrue("Wrong bounds of widget calculated.",
-                bounds.getLocation().distance(new Point(-4, -17)) < 5.0 &&
-                new Point((int) bounds.getWidth(), (int) bounds.getHeight()).distance(new Point(49, 25)) < 5.0);
+                bounds.getLocation().distance(new Point(-4, -17)) < 5.0
+                && new Point((int) bounds.getWidth(), (int) bounds.getHeight()).distance(new Point(49, 25)) < 5.0);
 
     }
 
@@ -195,8 +165,7 @@ public class WidgetOperatorTest extends JellyTestCase {
         WidgetOperator sceneOper = new WidgetOperator(scene);
         sceneOper.setOutput(new TestOut(null, new PrintWriter(stringWriter), new PrintWriter(stringWriter)));
         sceneOper.printDump();
-        assertTrue("Dump of widgets should contain Label 0 and Label 1",
-                stringWriter.toString().indexOf("Label 0") > -1 && stringWriter.toString().indexOf("Label 1") > -1);
+        assertTrue("Dump of widgets should contain LabelWidget", stringWriter.toString().contains("LabelWidget"));
     }
 
     /** Tests createOperator method. */
