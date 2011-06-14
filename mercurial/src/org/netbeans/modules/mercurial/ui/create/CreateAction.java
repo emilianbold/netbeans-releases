@@ -155,13 +155,7 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
         if(!isEnabled()) {
             return;
         }
-        
-        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                performCreate(ctx);
-            }
-        });
+        performCreate(ctx);
     }
     
     private void performCreate (final VCSContext context) {
