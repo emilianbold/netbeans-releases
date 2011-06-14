@@ -506,6 +506,11 @@ public class SftpClient implements RemoteClient {
         }
 
         @Override
+        public boolean isLink() {
+            return entry.getAttrs().isLink();
+        }
+
+        @Override
         public long getSize() {
             return entry.getAttrs().getSize();
         }
