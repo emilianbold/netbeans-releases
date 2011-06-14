@@ -336,7 +336,7 @@ final class LocalOperationFactory extends FileOperationFactory {
             LOGGER.log(Level.FINE, "File {0} does not exists, nothing to delete", target);
             return true;
         }
-        FileObject targetFo = FileUtil.toFileObject(target);
+        FileObject targetFo = FileUtil.toFileObject(FileUtil.normalizeFile(target));
         assert targetFo != null : "FileObject must be found for " + target;
         if (!targetFo.isValid()) {
             LOGGER.log(Level.FINE, "FileObject {0} is not valid, nothing to delete", getPath(targetFo));
