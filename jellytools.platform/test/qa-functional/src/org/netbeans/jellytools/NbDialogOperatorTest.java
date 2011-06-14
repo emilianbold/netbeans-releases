@@ -41,17 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JLabel;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.WindowOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -63,63 +60,53 @@ public class NbDialogOperatorTest extends JellyTestCase {
 
     private static final String TEST_DIALOG_TITLE = "Test Dialog";
     protected static final String TEST_DIALOG_LABEL = "  This is a test dialog.";
-
-    public static final String[] tests = new String[] {
+    public static String[] tests = new String[]{
         "testBtCancel",
         "testBtClose",
         //TODO: find out why this test and testHelp sometimes kill JVM
-        //"testBtHelp",
+        "testBtHelp",
         "testBtNo",
         "testBtOK",
         "testBtYes",
         "testCancel",
         "testClose",
-        //"testHelp",
+        "testHelp",
         "testNo",
         "testOK",
         "testYes"
     };
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public NbDialogOperatorTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        //NbTestSuite suite = new NbTestSuite(NbDialogOperatorTest.class);
-        //return suite;
         return createModuleTest(NbDialogOperatorTest.class, tests);
     }
-    
+
     /** Shows dialog to test. */
+    @Override
     protected void setUp() {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         showTestDialog(TEST_DIALOG_TITLE);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test Close button getter. */
     public void testBtClose() {
         new NbDialogOperator(TEST_DIALOG_TITLE).btClose().push();
         assertTrue("Close not detected correctly.", getResult().equals(DialogDescriptor.CLOSED_OPTION));
     }
-    
+
     /** Test close button pushing. */
     public void testClose() {
         new NbDialogOperator(TEST_DIALOG_TITLE).closeByButton();
         assertTrue("Close not pushed.", getResult().equals(DialogDescriptor.CLOSED_OPTION));
     }
-
 
     /** Test Help button getter. */
     public void testBtHelp() {
@@ -130,6 +117,7 @@ public class NbDialogOperatorTest extends JellyTestCase {
         new WindowOperator().close();
         dialog.close();
     }
+
     /** Test Help button. */
     public void testHelp() {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
@@ -139,61 +127,61 @@ public class NbDialogOperatorTest extends JellyTestCase {
         new WindowOperator().close();
         dialog.close();
     }
+
     /** Test OK button getter. */
     public void testBtOK() {
         new NbDialogOperator(TEST_DIALOG_TITLE).btOK().push();
         assertTrue("OK not detected correctly.", getResult().equals(DialogDescriptor.OK_OPTION));
     }
-    
+
     /** Test OK button pushing. */
     public void testOK() {
         new NbDialogOperator(TEST_DIALOG_TITLE).ok();
         assertTrue("OK not pushed.", getResult().equals(DialogDescriptor.OK_OPTION));
     }
-    
+
     /** Test Cancel button getter. */
     public void testBtCancel() {
         new NbDialogOperator(TEST_DIALOG_TITLE).btCancel().push();
         assertTrue("Cancel not detected correctly.", getResult().equals(DialogDescriptor.CANCEL_OPTION));
     }
-    
+
     /** Test Cancel button pushing. */
     public void testCancel() {
         new NbDialogOperator(TEST_DIALOG_TITLE).cancel();
         assertTrue("Cancel not pushed.", getResult().equals(DialogDescriptor.CANCEL_OPTION));
     }
-    
+
     /** Test Yes button getter. */
     public void testBtYes() {
         new NbDialogOperator(TEST_DIALOG_TITLE).btYes().push();
         assertTrue("Yes not detected correctly.", getResult().equals(DialogDescriptor.YES_OPTION));
     }
-    
+
     /** Test Yes button pushing. */
     public void testYes() {
         new NbDialogOperator(TEST_DIALOG_TITLE).yes();
         assertTrue("Yes not pushed.", getResult().equals(DialogDescriptor.YES_OPTION));
     }
-    
+
     /** Test No button getter. */
     public void testBtNo() {
         new NbDialogOperator(TEST_DIALOG_TITLE).btNo().push();
         assertTrue("No not detected correctly.", getResult().equals(DialogDescriptor.NO_OPTION));
     }
-    
+
     /** Test No button pushing. */
     public void testNo() {
         new NbDialogOperator(TEST_DIALOG_TITLE).no();
         assertTrue("No not pushed.", getResult().equals(DialogDescriptor.NO_OPTION));
     }
-    
     private TestLabel label;
-    
+
     /** Opens modal dialog with OK, Cancel, Yes, No, Close and Help buttons. 
      * @param testDialogTitle title of test dialog
      */
     protected void showTestDialog(String testDialogTitle) {
-        Object[] options = new Object[] {
+        Object[] options = new Object[]{
             DialogDescriptor.OK_OPTION,
             DialogDescriptor.CANCEL_OPTION,
             DialogDescriptor.YES_OPTION,
@@ -202,38 +190,37 @@ public class NbDialogOperatorTest extends JellyTestCase {
         };
         label = new TestLabel(TEST_DIALOG_LABEL);
         DialogDescriptor dd = new DialogDescriptor(label, testDialogTitle, false,
-        options, null, DialogDescriptor.BOTTOM_ALIGN, null, label);
+                options, null, DialogDescriptor.BOTTOM_ALIGN, null, label);
         dd.setHelpCtx(new HelpCtx(""));
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
     }
-    
+
     /** Gets pushed button from Test Dialog. */
     private Object getResult() {
         return label.getEvent().getSource();
     }
-    
+
     /** Label intended to use in tested dialog. It enables to find out which
      * button was pushed by getEvent() method.
      */
     private class TestLabel extends JLabel implements ActionListener {
-        
+
         /** Create a new label. */
         public TestLabel(String text) {
             super(text);
         }
-        
         private ActionEvent lastEvent = null;
-        
+
         /** Called when a button is pushed. Stores event to be able to get it
          * later. */
+        @Override
         public void actionPerformed(ActionEvent actionEvent) {
             lastEvent = actionEvent;
         }
-        
+
         /** Gets last performed event. Need to detect what button was pushed. */
         public ActionEvent getEvent() {
             return lastEvent;
         }
     }
-    
 }

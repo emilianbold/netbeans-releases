@@ -1555,7 +1555,20 @@ itor tabs #66700).
         return FileUtil.normalizeFile(new File(repositoryRoot, HG_FOLDER_NAME));
     }
 
-
+    /**
+     * Asynchronously tests if hg is available and if positive runs the given runnable in AWT.
+     * @param runnable 
+     */
+    public static void runIfHgAvailable (final Runnable runnable) {
+        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                if (Mercurial.getInstance().isAvailable(true, true)) {
+                    EventQueue.invokeLater(runnable);
+                }
+            }
+        });
+    }
 
     /**
      * Adds the given file into filesUnderRoot:

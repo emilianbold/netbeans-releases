@@ -448,25 +448,16 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
     private void saveAdditionalExtensions() {
         Element data = helper.getPrimaryConfigurationData(true);
-        saveAdditionalHeaderExtensions(data, MakeProject.C_EXTENSIONS, cExtensions);
-        saveAdditionalHeaderExtensions(data, MakeProject.CPP_EXTENSIONS, cppExtensions);
-        saveAdditionalHeaderExtensions(data, MakeProject.HEADER_EXTENSIONS, headerExtensions);
-        helper.putPrimaryConfigurationData(data, true);
+        boolean changed = false;
+        changed |= saveAdditionalHeaderExtensions(data, MakeProject.C_EXTENSIONS, cExtensions);
+        changed |= saveAdditionalHeaderExtensions(data, MakeProject.CPP_EXTENSIONS, cppExtensions);
+        changed |= saveAdditionalHeaderExtensions(data, MakeProject.HEADER_EXTENSIONS, headerExtensions);
+        if (changed) {
+            helper.putPrimaryConfigurationData(data, true);
+        }
     }
 
-    private void saveAdditionalHeaderExtensions(Element data, String key, Set<String> set) {
-        Element element;
-        NodeList nodeList = data.getElementsByTagName(key);
-        if (nodeList.getLength() == 1) {
-            element = (Element) nodeList.item(0);
-            NodeList deadKids = element.getChildNodes();
-            while (deadKids.getLength() > 0) {
-                element.removeChild(deadKids.item(0));
-            }
-        } else {
-            element = data.getOwnerDocument().createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, key);
-            data.appendChild(element);
-        }
+    private boolean saveAdditionalHeaderExtensions(Element data, String key, Set<String> set) {
         StringBuilder buf = new StringBuilder();
         for (String e : set) {
             if (buf.length() > 0) {
@@ -474,7 +465,31 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             }
             buf.append(e);
         }
+        String newText = buf.toString();
+        Element element;
+        NodeList nodeList = data.getElementsByTagName(key);
+        if (nodeList.getLength() == 1) {
+            element = (Element) nodeList.item(0);
+            NodeList deadKids = element.getChildNodes();
+            if (deadKids.getLength() == 1) {
+                String text = deadKids.item(0).getTextContent();
+                if (text.equals(newText)) {
+                    return false;
+                }
+            } else if (deadKids.getLength() == 0) {
+                if(newText.isEmpty()) {
+                    return false;
+                }
+            }
+            while (deadKids.getLength() > 0) {
+                element.removeChild(deadKids.item(0));
+            }
+        } else {
+            element = data.getOwnerDocument().createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, key);
+            data.appendChild(element);
+        }
         element.appendChild(data.getOwnerDocument().createTextNode(buf.toString()));
+        return true;
     }
 
     private boolean addNewExtensionDialog(Set<String> usedExtension, String type) {

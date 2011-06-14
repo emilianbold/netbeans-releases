@@ -44,43 +44,37 @@
 package org.netbeans.jellytools;
 
 import java.util.ResourceBundle;
-import junit.framework.*;
-import org.netbeans.jellytools.JellyTestCase;
+import junit.framework.Test;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test of org.netbeans.jellytools.Bundle
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class BundleTest extends JellyTestCase {
-
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
 
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        //TestSuite suite = new NbTestSuite(BundleTest.class);
-        //return suite;
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(BundleTest.class).
-                addTest("testGetBundle").addTest("testGetString").
-                addTest("testGetStringParams").addTest("testGetStringTrimmed").
-                addTest("testGetStringTrimmedParams").enableModules(".*").clusters(".*"));
+                addTest("testGetBundle",
+                "testGetString",
+                "testGetStringParams",
+                "testGetStringTrimmed",
+                "testGetStringTrimmedParams").gui(false).enableModules(".*").clusters(".*"));
     }
 
     /** Redirect output to log files, wait before each test case and
      * show dialog to test. */
+    @Override
     protected void setUp() {
         System.out.println("### " + getName() + " ###");
     }
 
     /** Clean up after each test case. */
+    @Override
     protected void tearDown() {
     }
 
