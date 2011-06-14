@@ -66,6 +66,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 
@@ -160,7 +161,11 @@ public class ResetWindowsAction implements ActionListener {
                 ModeImpl editorMode = (ModeImpl) wm.findMode("editor"); //NOI18N
                 //re-open editor windows that were opened before the reset
                 for( int i=0; i<editors.length && null != editorMode; i++ ) {
-                    editorMode.addOpenedTopComponentNoNotify(editors[i]);
+                    ModeImpl mode = ( ModeImpl ) wm.findMode( editors[i] );
+                    if( null == mode )
+                        mode = editorMode;
+                    if( null != mode )
+                        mode.addOpenedTopComponentNoNotify(editors[i]);
                 }
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override

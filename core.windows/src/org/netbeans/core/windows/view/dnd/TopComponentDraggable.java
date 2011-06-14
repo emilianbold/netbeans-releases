@@ -96,7 +96,7 @@ public final class TopComponentDraggable {
      * editor/view mode kind.
      */
     public boolean isAllowedToMoveAnywhere() {
-        boolean res = Constants.SWITCH_MODE_ADD_NO_RESTRICT;
+        boolean res = Constants.SWITCH_MODE_ADD_NO_RESTRICT || Switches.isMixingOfEditorsAndViewsEnabled();
         if( isTopComponentTransfer() )
             res |= WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(tc);
         return res;
