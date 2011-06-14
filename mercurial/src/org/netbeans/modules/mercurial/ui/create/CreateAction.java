@@ -164,79 +164,80 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
         });
     }
     
-    private void performCreate (VCSContext context) {
-        final Mercurial hg = Mercurial.getInstance();
-        if (!hg.isAvailable(true)) {
-            return;
-        }
-
-        final File rootToManage = selectRootToManage(context);
-        if (rootToManage == null) {
-            return;
-        }
-
-        RequestProcessor rp = hg.getRequestProcessor(rootToManage);
-        HgProgressSupport supportCreate = new HgProgressSupport() {
+    private void performCreate (final VCSContext context) {
+        HgUtils.runIfHgAvailable(new Runnable() {
             @Override
-            public void perform() {
-
-                try {
-                    OutputLogger logger = getLogger();
-                    logger.outputInRed(
-                            NbBundle.getMessage(CreateAction.class, "MSG_CREATE_TITLE")); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(CreateAction.class, "MSG_CREATE_TITLE_SEP")); // NOI18N
-                    logger.output(
-                            NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_INIT", rootToManage)); // NOI18N
-                    HgCommand.doCreate(rootToManage, logger);
-                    hg.versionedFilesChanged();
-                    hg.refreshAllAnnotations();
-                } catch (HgException.HgCommandCanceledException ex) {
-                    // canceled by user, do nothing
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                } finally {
-                    Mercurial.getInstance().clearAncestorCaches();
-                    VersioningSupport.versionedRootsChanged();
+            public void run () {
+                final Mercurial hg = Mercurial.getInstance();
+                final File rootToManage = selectRootToManage(context);
+                if (rootToManage == null) {
+                    return;
                 }
-            }
-        };
-        supportCreate.start(rp, rootToManage,
-                org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Progress")); // NOI18N
 
-        HgProgressSupport supportAdd = new HgProgressSupport() {
-            @Override
-            public void perform() {
-                OutputLogger logger = getLogger();
-                try {
-                    File[] repositoryFiles;
-                    FileStatusCache cache = hg.getFileStatusCache();
-                    Calendar start = Calendar.getInstance();
-                    cache.refreshAllRoots(Collections.singletonMap(rootToManage, Collections.singleton(rootToManage)));
-                    Calendar end = Calendar.getInstance();
-                    Mercurial.LOG.log(Level.FINE, "cache refresh took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                    repositoryFiles = cache.listFiles(new File[] {rootToManage}, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
-                    logger.output(
-                            NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_ADD", repositoryFiles.length)); // NOI18N
-                    if (repositoryFiles.length < OutputLogger.MAX_LINES_TO_PRINT) {
-                        for (File f : repositoryFiles) {
-                            logger.output("\t" + f.getAbsolutePath());  //NOI18N
+                RequestProcessor rp = hg.getRequestProcessor(rootToManage);
+                HgProgressSupport supportCreate = new HgProgressSupport() {
+                    @Override
+                    public void perform() {
+
+                        try {
+                            OutputLogger logger = getLogger();
+                            logger.outputInRed(
+                                    NbBundle.getMessage(CreateAction.class, "MSG_CREATE_TITLE")); // NOI18N
+                            logger.outputInRed(
+                                    NbBundle.getMessage(CreateAction.class, "MSG_CREATE_TITLE_SEP")); // NOI18N
+                            logger.output(
+                                    NbBundle.getMessage(CreateAction.class,
+                                    "MSG_CREATE_INIT", rootToManage)); // NOI18N
+                            HgCommand.doCreate(rootToManage, logger);
+                            hg.versionedFilesChanged();
+                            hg.refreshAllAnnotations();
+                        } catch (HgException.HgCommandCanceledException ex) {
+                            // canceled by user, do nothing
+                        } catch (HgException ex) {
+                            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                            DialogDisplayer.getDefault().notifyLater(e);
+                        } finally {
+                            Mercurial.getInstance().clearAncestorCaches();
+                            VersioningSupport.versionedRootsChanged();
                         }
                     }
-                    HgUtils.createIgnored(rootToManage);
-                    logger.output(""); // NOI18N
-                    logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
-                } finally {
-                    logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
-                    logger.output(""); // NOI18N
-                }
+                };
+                supportCreate.start(rp, rootToManage,
+                        org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Progress")); // NOI18N
+
+                HgProgressSupport supportAdd = new HgProgressSupport() {
+                    @Override
+                    public void perform() {
+                        OutputLogger logger = getLogger();
+                        try {
+                            File[] repositoryFiles;
+                            FileStatusCache cache = hg.getFileStatusCache();
+                            Calendar start = Calendar.getInstance();
+                            cache.refreshAllRoots(Collections.singletonMap(rootToManage, Collections.singleton(rootToManage)));
+                            Calendar end = Calendar.getInstance();
+                            Mercurial.LOG.log(Level.FINE, "cache refresh took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+                            repositoryFiles = cache.listFiles(new File[] {rootToManage}, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+                            logger.output(
+                                    NbBundle.getMessage(CreateAction.class,
+                                    "MSG_CREATE_ADD", repositoryFiles.length)); // NOI18N
+                            if (repositoryFiles.length < OutputLogger.MAX_LINES_TO_PRINT) {
+                                for (File f : repositoryFiles) {
+                                    logger.output("\t" + f.getAbsolutePath());  //NOI18N
+                                }
+                            }
+                            HgUtils.createIgnored(rootToManage);
+                            logger.output(""); // NOI18N
+                            logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
+                        } finally {
+                            logger.outputInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
+                            logger.output(""); // NOI18N
+                        }
+                    }
+                };
+                supportAdd.start(rp, rootToManage,
+                        org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Add_Progress")); // NOI18N
             }
-        };
-        supportAdd.start(rp, rootToManage,
-                org.openide.util.NbBundle.getMessage(CreateAction.class, "MSG_Create_Add_Progress")); // NOI18N
+        });
     }
 
     private File selectRootToManage (VCSContext context) {
