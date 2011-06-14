@@ -505,6 +505,11 @@ public class FtpClient implements RemoteClient {
         }
 
         @Override
+        public boolean isLink() {
+            return ftpFile.isSymbolicLink();
+        }
+
+        @Override
         public long getSize() {
             return ftpFile.getSize();
         }

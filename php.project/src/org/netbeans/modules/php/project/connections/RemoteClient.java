@@ -330,7 +330,9 @@ public final class RemoteClient implements Cancellable {
     }
 
     private void uploadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
-        if (file.isDirectory()) {
+        if (file.isLink()) {
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRelativePath()));
+        } else if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Uploading directory: {0}", file);
@@ -338,7 +340,7 @@ public final class RemoteClient implements Cancellable {
             // in fact, useless but probably expected
             cdBaseRemoteDirectory(file.getRelativePath(), true);
             transferSucceeded(transferInfo, file);
-        } else {
+        } else if (file.isFile()) {
             // file => simply upload it
 
             assert file.getParentRelativePath() != null : "Must be underneath base remote directory! [" + file + "]";
@@ -422,6 +424,8 @@ public final class RemoteClient implements Cancellable {
                     }
                 }
             }
+        } else {
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRelativePath()));
         }
     }
 
@@ -606,7 +610,9 @@ public final class RemoteClient implements Cancellable {
 
     private void downloadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
         File localFile = getLocalFile(baseLocalDir, file);
-        if (file.isDirectory()) {
+        if (file.isLink()) {
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRelativePath()));
+        } else if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Downloading directory: {0}", file);
