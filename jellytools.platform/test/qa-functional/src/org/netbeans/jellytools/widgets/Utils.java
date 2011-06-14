@@ -54,7 +54,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.ConnectorState;
@@ -100,22 +99,6 @@ public class Utils {
         frame.setBounds((screenSize.width - width) / 2, (screenSize.height - height) / 2, width, height);
         frame.setVisible(true);
         return tc;
-    }
-
-    /** Creates test scene and shows it
-     * @param args arguments
-     */
-    public static void main(String[] args) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            showScene(new TestScene());
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    showScene(new TestScene());
-                }
-            });
-        }
     }
 
     /** Creates test scene with 2 LabelWidgets and one movable widget. */
