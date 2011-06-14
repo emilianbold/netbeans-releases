@@ -74,11 +74,11 @@ public class SmartOutputStream extends OutputStream {
     }
     
     public static OutputStream getSmartOutputStream(FileObject fileObject, FileLock lock) throws IOException {
-        if (FileSystemProvider.getExecutionEnvironment(fileObject).isLocal()) {
-            return fileObject.getOutputStream(lock);
-        } else {
+        //if (FileSystemProvider.getExecutionEnvironment(fileObject).isLocal()) {
+        //    return fileObject.getOutputStream(lock);
+        //} else {
             return new SmartOutputStream(fileObject, lock);
-        }
+        //}
     }
     
     private final FileObject fileObject;
