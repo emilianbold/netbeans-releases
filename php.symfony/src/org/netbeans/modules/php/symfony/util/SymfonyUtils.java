@@ -64,7 +64,8 @@ public final class SymfonyUtils {
 
     private static final String DIR_TEMPLATES = "templates"; // NOI18N
     private static final String DIR_TEMPLATES_RELATIVE = "../" + DIR_TEMPLATES; // NOI18N
-    private static final String TEMPLATE_REGEX = "%sSuccess(\\.\\w+)?\\.php"; // NOI18N
+    private static final String VIEW_FILE_SUFFIX = "Success"; // NOI18N
+    private static final String TEMPLATE_REGEX = "%s" + VIEW_FILE_SUFFIX + "(\\.\\w+)?\\.php"; // NOI18N
 
     private SymfonyUtils() {
     }
@@ -92,8 +93,12 @@ public final class SymfonyUtils {
     }
 
     public static String getActionName(FileObject view) {
-        String[] parts = view.getName().split("\\."); // NOI18N
-        return ACTION_METHOD_PREFIX + parts[0].toLowerCase();
+        return getActionName(view.getName());
+    }
+
+    static String getActionName(String viewName) {
+        String[] parts = viewName.split("\\."); // NOI18N
+        return ACTION_METHOD_PREFIX + parts[0].replaceAll(VIEW_FILE_SUFFIX + "$", "").toLowerCase(); // NOI18N
     }
 
     public static List<FileObject> getViews(FileObject fo, PhpBaseElement phpElement) {
@@ -107,7 +112,7 @@ public final class SymfonyUtils {
         }
         return views;
     }
-    
+
     private static List<FileObject> getViews(FileObject fo, final String viewName) {
         List<FileObject> views = new LinkedList<FileObject>();
         File parent = FileUtil.toFile(fo).getParentFile();
