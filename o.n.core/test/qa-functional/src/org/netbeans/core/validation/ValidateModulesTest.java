@@ -235,7 +235,10 @@ public class ValidateModulesTest extends NbTestCase {
     private static String findCNB(Manifest m) {
         String name = m.getMainAttributes().getValue("OpenIDE-Module");
         if (name == null) {
-            throw new IllegalArgumentException();
+            name = m.getMainAttributes().getValue("Bundle-SymbolicName");
+            if (name == null) {
+                throw new IllegalArgumentException();
+            }
         }
         return name.replaceFirst("/\\d+$", "");
     }
