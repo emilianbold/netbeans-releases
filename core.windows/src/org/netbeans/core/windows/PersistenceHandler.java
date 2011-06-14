@@ -183,7 +183,6 @@ final public class PersistenceHandler implements PersistenceObserver {
         
         // First create empty modes.
         Map<ModeImpl, ModeConfig> mode2config = new HashMap<ModeImpl, ModeConfig>();
-        Set slidingModes = new HashSet();
         
         for (int i = 0; i < wmc.modes.length; i++) {
             ModeConfig mc = (ModeConfig) wmc.modes[i];
