@@ -174,21 +174,12 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
 
     private JMenuItem createmenuItem(Action action) {
         JMenuItem item;
-        if (action instanceof SystemAction) {
-            final SystemAction sa = (SystemAction) action;
-            item = new JMenuItem(new AbstractAction(sa.getName()) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    sa.actionPerformed(e);
-                }
-            });
-        } else if (action instanceof Presenter.Menu) {
+        if (action instanceof Presenter.Menu) {
             item = ((Presenter.Menu) action).getMenuPresenter();
         } else {
             item = new JMenuItem();
             Actions.connect(item, action, true);
         }
-        Mnemonics.setLocalizedText(item, (String) action.getValue(Action.NAME));
         return item;
     }
 
