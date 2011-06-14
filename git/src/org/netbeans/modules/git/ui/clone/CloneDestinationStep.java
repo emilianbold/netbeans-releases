@@ -56,6 +56,7 @@ import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
@@ -209,6 +210,28 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
 
     boolean scanForProjects() {
         return panel.scanForProjectsCheckBox.isSelected();
+    }
+
+    void initCloneName (GitURI uri) {
+        String path = uri.getPath();
+        // get the last path element
+        String[] pathElements = path.split("/"); //NOI18N
+        String lastElem = ""; //NOI18N
+        for (int i = pathElements.length - 1; i >= 0; --i) {
+            lastElem = pathElements[i];
+            if (!lastElem.isEmpty()) {
+                break;
+            }
+        }
+        if (!lastElem.isEmpty()) {
+            // is it of the usual form abcdrepository.git ?
+            if (lastElem.endsWith(".git")) { //NOI18N
+                lastElem = lastElem.substring(0, lastElem.length() - 4);
+            }
+            if (!lastElem.isEmpty()) {
+                panel.nameField.setText(lastElem);
+            }
+        }
     }
     
     private class BranchRenderer extends DefaultListCellRenderer {
