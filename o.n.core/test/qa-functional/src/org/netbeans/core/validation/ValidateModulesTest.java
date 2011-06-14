@@ -133,6 +133,11 @@ public class ValidateModulesTest extends NbTestCase {
             if ("false".equals(mod.getAttribute("AutoUpdate-Show-In-Client"))) {
                 continue;
             }
+            if (mod.getAttribute("Bundle-SymbolicName") != null &&
+                mod.getAttribute("AutoUpdate-Show-In-Client") == null
+            ) {
+                continue;
+            }
             if (mod.getLocalizedAttribute("OpenIDE-Module-Display-Category") == null) {
                 problems.append('\n').append(mod.getCodeNameBase());
             }
