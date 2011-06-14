@@ -53,7 +53,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -348,25 +347,29 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         
         public void run(WorkingCopy compiler) throws IOException {
             try {
-                visitor.setWorkingCopy(compiler);
-            } catch (ToPhaseException e) {
-                return;
+                try {
+                    visitor.setWorkingCopy(compiler);
+                } catch (ToPhaseException e) {
+                    return;
+                }
+                CompilationUnitTree cu = compiler.getCompilationUnit();
+                if (cu == null) {
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
+                    return;
+                }
+                Element el = null;
+                if (treePathHandle != null) {
+                    el = treePathHandle.resolveElement(compiler);
+                    if (el == null) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve " + treePathHandle + "in " + compiler.getFileObject().getPath());
+                        return;
+                    }
+                }
+
+                visitor.scan(compiler.getCompilationUnit(), el);
+            } finally {
+                fireProgressListenerStep();
             }
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
-                return;
-            }
-            Element el = null;
-            if (treePathHandle!=null) {
-                el = treePathHandle.resolveElement(compiler);
-                if (el==null)
-                    Logger.getLogger("org.netbeans.modules.refactoring.java").info("Cannot resolve " + treePathHandle + "in " + compiler.getFileObject().getPath());
-            }
-            
-            visitor.scan(compiler.getCompilationUnit(), el);
-            
-            fireProgressListenerStep();
         }
     }
 }
