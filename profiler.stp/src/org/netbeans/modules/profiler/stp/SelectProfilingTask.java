@@ -79,6 +79,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.client.ClientUtils;
+import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -1144,7 +1145,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 }
             }
         };
-        ProfilerUtils.runInEventDispatchThread(projectUpdater);
+        CommonUtils.runInEventDispatchThread(projectUpdater);
     }
 
     private void updateProjectsCombo(Object projectToSelect) { // Actually may be also EXTERNAL_APPLICATION_STRING

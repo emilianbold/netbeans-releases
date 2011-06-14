@@ -51,13 +51,13 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.netbeans.lib.profiler.ProfilerClient;
+import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
 import org.netbeans.lib.profiler.ui.LiveResultsWindowContributor;
-import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -170,7 +170,7 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
     }
 
     private void showDrillDown() {
-        ProfilerUtils.runInEventDispatchThread(new Runnable() {
+        CommonUtils.runInEventDispatchThread(new Runnable() {
 
             public void run() {
                 TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("LiveResultsGroup"); //NOI18N
@@ -189,7 +189,7 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
     }
 
     private void hideDrillDown() {
-        ProfilerUtils.runInEventDispatchThread(new Runnable() {
+        CommonUtils.runInEventDispatchThread(new Runnable() {
 
             public void run() {
                 TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("LiveResultsGroup"); //NOI18N

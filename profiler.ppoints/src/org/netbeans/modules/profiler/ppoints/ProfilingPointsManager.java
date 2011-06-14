@@ -97,6 +97,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
@@ -559,7 +560,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
 
                 if ((wasProfilingInProgress != profilingInProgress) || (wasProfilingSessionInProgres != profilingSessionInProgress)) {
                     GlobalProfilingPointsProcessor.getDefault().notifyProfilingStateChanged();
-                    ProfilerUtils.runInEventDispatchThread(new Runnable() {
+                    CommonUtils.runInEventDispatchThread(new Runnable() {
                             public void run() {
                                 ProfilingPointsWindow.getDefault().notifyProfilingStateChanged(); // this needs to be called on EDT
                             }

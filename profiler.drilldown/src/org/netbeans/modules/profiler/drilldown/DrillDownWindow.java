@@ -56,9 +56,9 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
+import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 
 
 /**
@@ -107,7 +107,7 @@ public final class DrillDownWindow extends TopComponent {
     // --- Public interface ------------------------------------------------------
     public static synchronized DrillDownWindow getDefault() {
         if (defaultInstance == null) {
-            ProfilerUtils.runInEventDispatchThreadAndWait(new Runnable() {
+            CommonUtils.runInEventDispatchThreadAndWait(new Runnable() {
                     public void run() {
                         final TopComponent tc = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
 
@@ -133,7 +133,7 @@ public final class DrillDownWindow extends TopComponent {
 
     public static void closeIfOpened() {
         if (defaultInstance != null) {
-            ProfilerUtils.runInEventDispatchThread(new Runnable() {
+            CommonUtils.runInEventDispatchThread(new Runnable() {
                     public void run() {
                         if (defaultInstance.isOpened()) {
                             defaultInstance.close();
