@@ -480,7 +480,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         Project prj = null;
         boolean foundButBroken = false;
         try {
-            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectFolder));
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(projectFolder)));
         } catch (IOException ex) {
             foundButBroken = true;
         } catch (IllegalArgumentException ex) {
