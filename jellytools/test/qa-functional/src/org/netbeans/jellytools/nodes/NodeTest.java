@@ -250,12 +250,20 @@ public class NodeTest extends JellyTestCase {
         String children[] = sample1Node.getChildren();
         assertNotNull(children);
         Arrays.sort(children);
-        PrintStream ref = getRef();
+        String[] expectedChildren = {
+            "JFrameSample.java",
+            "SampleClass1.java",
+            "TestOutline.java",
+            "html.html",
+            "image.gif",
+            "properties.properties",
+            "unrecognized",
+            "url.url"
+        };
+        assertEquals("Wrong number of children.", expectedChildren.length, children.length);
         for (int i = 0; i < children.length; i++) {
-            ref.println(children[i]);
+            assertTrue("Wrong child.", expectedChildren[i].equals(children[i]));
         }
-        ref.close();
-        compareReferenceFiles();
     }
 
     /** Test isLeaf */

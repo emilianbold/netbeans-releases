@@ -83,6 +83,7 @@ public class ResolveReferencePanel extends javax.swing.JPanel implements ActionL
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = iy++;
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+            gridBagConstraints.insets = new Insets(6, 4, 0, 0);
             add(problem, gridBagConstraints);
             
             JTextArea problemText = new JTextArea();
@@ -92,6 +93,7 @@ public class ResolveReferencePanel extends javax.swing.JPanel implements ActionL
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
             gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.insets = new Insets(0, 4, 0, 0);
             add(problemText, gridBagConstraints);
             problemText.setText(error.getProblem());
             problemText.setBackground(this.getBackground());
@@ -112,6 +114,7 @@ public class ResolveReferencePanel extends javax.swing.JPanel implements ActionL
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = iy++;
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+            gridBagConstraints.insets = new Insets(0, 4, 0, 0);
             add(solutions, gridBagConstraints);
 
             int i = 1;
@@ -128,6 +131,7 @@ public class ResolveReferencePanel extends javax.swing.JPanel implements ActionL
                 gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
                 gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
                 gridBagConstraints.weightx = 1.0;
+                gridBagConstraints.insets = new Insets(4, 4, 0, 0);
                 add(solutionText, gridBagConstraints);
                 solutionText.setText(buf.toString());
                 solutionText.setBackground(this.getBackground());
@@ -140,7 +144,7 @@ public class ResolveReferencePanel extends javax.swing.JPanel implements ActionL
                 gridBagConstraints.gridy = iy++;
                 gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
                 gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-                gridBagConstraints.insets = new Insets(0, 4, 0, 0);
+                gridBagConstraints.insets = new Insets(4, 4, 0, 4);
                 add(button, gridBagConstraints);
                 if (solution.resolve() == null) {
                     button.setEnabled(false);

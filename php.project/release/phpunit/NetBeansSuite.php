@@ -101,7 +101,7 @@ class NetBeansSuite extends PHPUnit_Framework_TestSuite {
         $argv = isset($_SERVER['argv']) ? $_SERVER['argv'] : array();
         $run = null;
         foreach ($argv as $arg) {
-            if (preg_match("/^".self::RUN."(.+)/", $arg, $sub)) {
+            if (preg_match("/^\"?".self::RUN."(.+?)\"?$/", $arg, $sub)) {
                 $run = $sub[1];
                 break;
             }
