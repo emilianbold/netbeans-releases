@@ -46,7 +46,7 @@ package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.lib.profiler.common.AttachSettings;
 import java.io.IOException;
-import org.netbeans.modules.profiler.api.ProjectStorage;
+import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.attach.AttachWizard;
 import org.openide.util.Lookup;

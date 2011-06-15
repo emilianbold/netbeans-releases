@@ -57,7 +57,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import org.netbeans.modules.profiler.api.ProfilingSettingsManager.ProfilingSettingsDescriptor;
-import org.netbeans.modules.profiler.api.ProjectStorage;
+import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.SettingsCustomizer;
 import org.netbeans.modules.profiler.spi.ProfilingSettingsManagerProvider;
