@@ -338,13 +338,13 @@ public class PHPFormatterQATest extends PHPTestBase {
     }
 
     public void testIfElseStatement_5_5_stableFixed() throws Exception {
-
+        
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php", new IndentPrefs(5, 5));
     }
 
     public void test174595_175229_5_5_stableFixed() throws Exception {
-
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(5, 5));
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", options);
     }
 
     public void test174873_173906_5_5_stablePartial() throws Exception {
@@ -435,8 +435,8 @@ public class PHPFormatterQATest extends PHPTestBase {
     }
 
     public void test124273_175247_10_10_regression() throws Exception {
-
-        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php", new IndentPrefs(10, 10));
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php", options);
     }
 
     public void test174563_10_10_stableFixed() throws Exception {
@@ -449,8 +449,8 @@ public class PHPFormatterQATest extends PHPTestBase {
     }
 
     public void test174595_175229_10_10_stableFixed() throws Exception {
-
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(10, 10));
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", options);
     }
 
     public void test174873_173906_10_10_stablePartial() throws Exception {
