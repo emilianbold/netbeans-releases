@@ -39,46 +39,43 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.specs.support.api;
+package org.netbeans.modules.javaee.specs.support.api;
 
-import org.netbeans.modules.j2ee.specs.support.spi.JpaProviderFactory;
-import org.netbeans.modules.j2ee.specs.support.spi.JpaProviderImplementation;
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.javaee.specs.support.bridge.BridgingJpaSupportImpl;
+import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class JpaProvider {
+public final class JpaSupport {
     
-    static {
-        JpaProviderFactory.Accessor.setDefault(new JpaProviderFactory.Accessor() {
+    private final JpaSupportImplementation impl;
 
-            @Override
-            public JpaProvider createJpaProvider(JpaProviderImplementation impl) {
-                return new JpaProvider(impl);
-            }
-        });
-    }
-
-    private final JpaProviderImplementation impl;
-
-    private JpaProvider(JpaProviderImplementation impl) {
+    private JpaSupport(JpaSupportImplementation impl) {
         this.impl = impl;
     }
-
-    public boolean isJpa1Supported() {
-        return impl.isJpa1Supported();
+    
+    @NonNull
+    public static JpaSupport getInstance(@NonNull J2eePlatform platform) {
+        Parameters.notNull("platform", platform);
+        JpaSupportImplementation impl = platform.getLookup().lookup(JpaSupportImplementation.class);
+        if (impl != null) {
+            return new JpaSupport(impl);
+        }
+        return new JpaSupport(new BridgingJpaSupportImpl(platform));
+    }
+    
+    public Set<JpaProvider> getProviders() {
+        return impl.getProviders();
     }
 
-    public boolean isJpa2Supported() {
-        return impl.isJpa2Supported();
+    public JpaProvider getDefaultProvider() {
+        return impl.getDefaultProvider();
     }
 
-    public boolean isDefault() {
-        return impl.isDefault();
-    }
-
-    public String getClassName() {
-        return impl.getClassName();
-    }
 }

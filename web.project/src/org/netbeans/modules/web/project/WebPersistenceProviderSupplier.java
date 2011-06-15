@@ -59,8 +59,8 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
-import org.netbeans.modules.j2ee.specs.support.api.JpaProvider;
-import org.netbeans.modules.j2ee.specs.support.api.JpaSupport;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 
 /**
  * An implementation of PersistenceProviderSupplier for web project.

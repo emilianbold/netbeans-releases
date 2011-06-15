@@ -39,9 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.specs.support.spi;
+package org.netbeans.modules.javaee.specs.support.spi;
 
-import org.netbeans.modules.j2ee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
 import org.openide.util.Exceptions;
 
 /**

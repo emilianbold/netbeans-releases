@@ -39,20 +39,46 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.specs.support.spi;
+package org.netbeans.modules.javaee.specs.support.api;
+
+import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
+import org.netbeans.modules.javaee.specs.support.spi.JpaProviderImplementation;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface JpaProviderImplementation {
+public final class JpaProvider {
     
-    boolean isJpa1Supported();
-    
-    boolean isJpa2Supported();
-    
-    boolean isDefault();
-    
-    String getClassName();
+    static {
+        JpaProviderFactory.Accessor.setDefault(new JpaProviderFactory.Accessor() {
 
+            @Override
+            public JpaProvider createJpaProvider(JpaProviderImplementation impl) {
+                return new JpaProvider(impl);
+            }
+        });
+    }
+
+    private final JpaProviderImplementation impl;
+
+    private JpaProvider(JpaProviderImplementation impl) {
+        this.impl = impl;
+    }
+
+    public boolean isJpa1Supported() {
+        return impl.isJpa1Supported();
+    }
+
+    public boolean isJpa2Supported() {
+        return impl.isJpa2Supported();
+    }
+
+    public boolean isDefault() {
+        return impl.isDefault();
+    }
+
+    public String getClassName() {
+        return impl.getClassName();
+    }
 }

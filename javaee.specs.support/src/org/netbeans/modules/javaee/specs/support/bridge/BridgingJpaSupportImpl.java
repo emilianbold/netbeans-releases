@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.specs.support.bridge;
+package org.netbeans.modules.javaee.specs.support.bridge;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,9 +50,9 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
-import org.netbeans.modules.j2ee.specs.support.api.JpaProvider;
-import org.netbeans.modules.j2ee.specs.support.spi.JpaProviderFactory;
-import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportImplementation;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
+import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
 
 /**
  *

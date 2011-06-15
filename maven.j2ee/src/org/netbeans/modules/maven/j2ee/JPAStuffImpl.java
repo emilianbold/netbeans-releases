@@ -64,8 +64,8 @@ import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulat
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
-import org.netbeans.modules.j2ee.specs.support.api.JpaProvider;
-import org.netbeans.modules.j2ee.specs.support.api.JpaSupport;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.openide.util.ChangeSupport;
 

@@ -39,43 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.specs.support.api;
-
-import java.util.Set;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.specs.support.bridge.BridgingJpaSupportImpl;
-import org.netbeans.modules.j2ee.specs.support.spi.JpaSupportImplementation;
-import org.openide.util.Parameters;
+package org.netbeans.modules.javaee.specs.support.spi;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class JpaSupport {
+public interface JpaProviderImplementation {
     
-    private final JpaSupportImplementation impl;
-
-    private JpaSupport(JpaSupportImplementation impl) {
-        this.impl = impl;
-    }
+    boolean isJpa1Supported();
     
-    @NonNull
-    public static JpaSupport getInstance(@NonNull J2eePlatform platform) {
-        Parameters.notNull("platform", platform);
-        JpaSupportImplementation impl = platform.getLookup().lookup(JpaSupportImplementation.class);
-        if (impl != null) {
-            return new JpaSupport(impl);
-        }
-        return new JpaSupport(new BridgingJpaSupportImpl(platform));
-    }
+    boolean isJpa2Supported();
     
-    public Set<JpaProvider> getProviders() {
-        return impl.getProviders();
-    }
-
-    public JpaProvider getDefaultProvider() {
-        return impl.getDefaultProvider();
-    }
+    boolean isDefault();
+    
+    String getClassName();
 
 }

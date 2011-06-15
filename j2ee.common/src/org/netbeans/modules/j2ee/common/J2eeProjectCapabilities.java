@@ -54,7 +54,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.specs.support.api.JpaSupport;
+import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**

@@ -50,8 +50,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo.ModuleType;
-import org.netbeans.modules.j2ee.specs.support.api.JpaProvider;
-import org.netbeans.modules.j2ee.specs.support.api.JpaSupport;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 
 /**
  * An implementation of the <code>JPAModuleInfo</code>
