@@ -60,6 +60,19 @@ import org.netbeans.jellytools.testutils.NodeUtils;
  */
 public class PropertiesNodeTest extends JellyTestCase {
 
+    static final String[] tests = {
+        "testVerifyPopup",
+        "testOpen",
+        "testEdit",
+        "testCut",
+        "testCopy",
+        "testDelete",
+        "testRename",
+        "testAddLocale",
+        "testSaveAsTemplate",
+        "testProperties"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -70,17 +83,7 @@ public class PropertiesNodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        return createModuleTest(PropertiesNodeTest.class,
-                "testVerifyPopup",
-                "testOpen",
-                "testEdit",
-                "testCut",
-                "testCopy",
-                "testDelete",
-                "testRename",
-                "testAddLocale",
-                "testSaveAsTemplate",
-                "testProperties");
+        return createModuleTest(PropertiesNodeTest.class, tests);
     }
     protected static PropertiesNode propertiesNode = null;
 

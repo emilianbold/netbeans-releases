@@ -39,70 +39,49 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.jellytools;
+package org.netbeans.jellytools.actions;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.actions.ActionNoBlockTest;
-import org.netbeans.jellytools.actions.ActionTest;
-import org.netbeans.jellytools.actions.AddLocaleActionTest;
-import org.netbeans.jellytools.actions.AttachWindowActionTest;
-import org.netbeans.jellytools.actions.CopyActionTest;
-import org.netbeans.jellytools.actions.CustomizeActionTest;
-import org.netbeans.jellytools.actions.CutActionTest;
-import org.netbeans.jellytools.actions.DeleteActionTest;
-import org.netbeans.jellytools.actions.EditActionTest;
-import org.netbeans.jellytools.actions.FindActionTest;
-import org.netbeans.jellytools.actions.HelpActionTest;
-import org.netbeans.jellytools.actions.MaximizeWindowActionTest;
-import org.netbeans.jellytools.actions.OpenActionTest;
-import org.netbeans.jellytools.actions.OutputWindowViewActionTest;
-import org.netbeans.jellytools.actions.PasteActionTest;
-import org.netbeans.jellytools.actions.PropertiesActionTest;
-import org.netbeans.jellytools.actions.RenameActionTest;
-import org.netbeans.jellytools.actions.ReplaceActionTest;
-import org.netbeans.jellytools.actions.SaveActionTest;
-import org.netbeans.jellytools.actions.SaveAllActionTest;
-import org.netbeans.jellytools.actions.ShowDescriptionAreaActionTest;
-import org.netbeans.jellytools.actions.SortByCategoryActionTest;
 import org.netbeans.junit.NbModuleSuite;
 
-/**
+/** Run all tests in the same instance of the IDE.
  *
  * @author shura
+ * @author Jiri Skrivanek
  */
-public class JellyPlatformTests {
+public class ActionsSuite {
+
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.
-                createConfiguration(OutputOperatorTest.class).addTest(OutputOperatorTest.tests).
-                addTest(OutputTabOperatorTest.class, OutputTabOperatorTest.tests).
-                addTest(TopComponentOperatorTest.class, TopComponentOperatorTest.tests).
-                addTest(ActionTest.class, ActionTest.tests).
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().
                 addTest(ActionNoBlockTest.class, ActionNoBlockTest.tests).
+                addTest(ActionTest.class, ActionTest.tests).
                 addTest(AddLocaleActionTest.class, AddLocaleActionTest.tests).
                 addTest(AttachWindowActionTest.class, AttachWindowActionTest.tests).
-                addTest(CopyActionTest.class).
+                addTest(CopyActionTest.class, CopyActionTest.tests).
                 addTest(CustomizeActionTest.class).
-                addTest(CutActionTest.class).
+                addTest(CutActionTest.class, CutActionTest.tests).
+                addTest(DebugProjectActionTest.class, DebugProjectActionTest.tests).
                 addTest(DeleteActionTest.class).
                 addTest(EditActionTest.class).
-                addTest(FindActionTest.class).
+                addTest(FindActionTest.class, FindActionTest.tests).
                 addTest(HelpActionTest.class).
                 addTest(MaximizeWindowActionTest.class).
+                addTest(NewFileActionTest.class, NewFileActionTest.tests).
                 addTest(OpenActionTest.class).
                 addTest(OutputWindowViewActionTest.class).
+                addTest(PaletteViewActionTest.class).
                 addTest(PasteActionTest.class).
+                addTest(ProjectViewActionTest.class).
                 addTest(PropertiesActionTest.class).
                 addTest(RenameActionTest.class).
-                addTest(ReplaceActionTest.class).
+                addTest(ReplaceActionTest.class, ReplaceActionTest.tests).
+                addTest(RuntimeViewActionTest.class).
                 addTest(SaveActionTest.class, SaveActionTest.tests).
-                addTest(SaveAllActionTest.class).
+                addTest(SaveAllActionTest.class, SaveAllActionTest.tests).
+                addTest(SaveAsTemplateActionTest.class, SaveAsTemplateActionTest.tests).
                 addTest(ShowDescriptionAreaActionTest.class).
-                addTest(SortByCategoryActionTest.class);
+                addTest(SortByCategoryActionTest.class).
+                addTest(SortByNameActionTest.class);
         return NbModuleSuite.create(conf.clusters(".*").enableModules(".*"));
-    }
-
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
     }
 }
