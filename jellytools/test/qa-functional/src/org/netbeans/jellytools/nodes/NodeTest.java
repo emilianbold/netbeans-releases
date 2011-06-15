@@ -70,6 +70,28 @@ import org.netbeans.jellytools.testutils.JavaNodeUtils;
  */
 public class NodeTest extends JellyTestCase {
 
+    static final String[] tests = {
+        "testConstructor",
+        "testSelect",
+        "testSelectDoubleClick",
+        "testPerformAPIAction",
+        "testPerformAPIActionNoBlock",
+        "testPerformMenuAction",
+        "testPerformMenuActionNoBlock",
+        "testPerformPopupAction",
+        "testPerformPopupActionNoBlock",
+        "testGetPath",
+        "testGetParentPath",
+        "testGetChildren",
+        "testIsLeaf",
+        "testIsPresent",
+        "testVerifyPopup",
+        "testWaitNotPresent",
+        "testWaitChildNotPresent",
+        "testIsChildPresent",
+        "testNodeRecreated"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -80,26 +102,7 @@ public class NodeTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        return createModuleTest(NodeTest.class,
-                "testConstructor",
-                "testSelect",
-                "testSelectDoubleClick",
-                "testPerformAPIAction",
-                "testPerformAPIActionNoBlock",
-                "testPerformMenuAction",
-                "testPerformMenuActionNoBlock",
-                "testPerformPopupAction",
-                "testPerformPopupActionNoBlock",
-                "testGetPath",
-                "testGetParentPath",
-                "testGetChildren",
-                "testIsLeaf",
-                "testIsPresent",
-                "testVerifyPopup",
-                "testWaitNotPresent",
-                "testWaitChildNotPresent",
-                "testIsChildPresent",
-                "testNodeRecreated");
+        return createModuleTest(NodeTest.class, tests);
     }
     private static Node projectRootNode;
     private static Node sourcePackagesNode;
