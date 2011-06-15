@@ -290,6 +290,7 @@ public class Utils {
         // Open the socket with a short timeout for connects and reads.
         Socket socket = new Socket();
         try {
+            Logger.getLogger("glassfish-socket-connect-diagnostic").log(Level.FINE, "Using socket.connect", new Exception());
             socket.connect(new InetSocketAddress(hostname, port), PORT_CHECK_TIMEOUT);
             socket.setSoTimeout(PORT_CHECK_TIMEOUT);
         } catch(SocketException ex) { // this could be bug 70020 due to SOCKs proxy not having localhost

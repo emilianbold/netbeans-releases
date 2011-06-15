@@ -613,6 +613,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
             if ("localhost".equals(host) || "127.0.0.1".equals(host)) {
                 timeout = 2000;
             }
+            Logger.getLogger("glassfish-socket-connect-diagnostic").log(Level.FINE, "Using socket.connect", new Exception());
             socket.connect(isa, timeout);
             socket.setSoTimeout(timeout);
             try { socket.close(); } catch (IOException ioe) {
