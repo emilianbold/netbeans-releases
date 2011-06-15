@@ -108,7 +108,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             return CodeCompletionResult.NONE;
         }
         AstPath path = new AstPath(element.getNode());
-        List<Node> rootToNode = path.rootToNode(target);
+        final List<Node> rootToNode = path.rootToNode(target);
         if (rootToNode.isEmpty()) {
             return result;
         }
@@ -141,7 +141,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     
                     Element resolved =
                             ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve);
-
+                    
                     if (ELTypeUtilities.isRawObject(ccontext, nodeToResolve)) {
                         proposeRawObjectProperties(ccontext, context, prefixMatcher, nodeToResolve, proposals);            
                     } else if(ELTypeUtilities.isScopeObject(ccontext, nodeToResolve)) {
@@ -158,7 +158,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                         proposeImpicitObjects(ccontext, context, prefixMatcher, proposals);
                         proposeKeywords(context, prefixMatcher, proposals);
                     } else {
-                        proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals);
+                        proposeMethods(ccontext, context, resolved, prefixMatcher, element, proposals, rootToNode);
                     }
                     
                     
@@ -231,9 +231,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeMethods(CompilationContext info, CodeCompletionContext context, Element resolved,
-            PrefixMatcher prefix, ELElement elElement,List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, ELElement elElement,List<CompletionProposal> proposals, List<Node> rootToNode) {
         
-        List<Element> allTypes = ELTypeUtilities.getSuperTypesFor(info, resolved);
+        List<Element> allTypes = ELTypeUtilities.getSuperTypesFor(info, resolved, elElement, rootToNode);
         for(Element element : allTypes) {
             for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
                 //do not propose Object's members
