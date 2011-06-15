@@ -271,7 +271,8 @@ public class FormatVisitor extends DefaultVisitor {
         isCurly = node.isCurly();
         // move ts in every case to the next token
         while (ts.moveNext() && node.isCurly() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN
-                && (ts.offset() < node.getStartOffset())) {
+                && (ts.offset() < node.getStartOffset())
+                && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
 
