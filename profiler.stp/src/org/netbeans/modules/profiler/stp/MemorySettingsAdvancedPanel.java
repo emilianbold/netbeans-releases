@@ -73,6 +73,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 
 
@@ -732,7 +733,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         constraints.fill = GridBagConstraints.BOTH;
         constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.insets = new Insets(0, 0, 0, 0);
-        add(Utils.createFillerPanel(), constraints);
+        add(UIUtils.createFillerPanel(), constraints);
     }
 
     private void updateEnabling() {

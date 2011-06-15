@@ -45,11 +45,7 @@
 package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.lib.profiler.common.AttachSettings;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.io.IOException;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.attach.AttachWizard;
@@ -62,8 +58,6 @@ import org.openide.util.Lookup;
  */
 public class Utils {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    public static Dimension DIMENSION_SMALLEST = new Dimension(0, 0);
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -101,28 +95,6 @@ public class Utils {
 //
 //        return configurator;
         return DefaultSettingsConfigurator.SHARED_INSTANCE;
-    }
-
-    public static JPanel createFillerPanel() {
-        JPanel fillerPanel = new JPanel(new FlowLayout(0, 0, FlowLayout.LEADING)) {
-            public Dimension getPreferredSize() {
-                return DIMENSION_SMALLEST;
-            }
-        };
-
-        fillerPanel.setOpaque(false);
-
-        return fillerPanel;
-    }
-
-    public static JSeparator createHorizontalSeparator() {
-        JSeparator horizontalSeparator = new JSeparator() {
-            public Dimension getMinimumSize() {
-                return getPreferredSize();
-            }
-        };
-
-        return horizontalSeparator;
     }
 
     public static AttachSettings selectAttachSettings(Lookup.Provider project) {

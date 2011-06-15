@@ -55,6 +55,7 @@ import org.netbeans.lib.profiler.ui.components.XPStyleBorder;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup.Provider;
 import org.openide.util.NbBundle;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -81,6 +82,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProfilingSettingsManager;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
@@ -89,11 +91,14 @@ import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.Settin
 import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.api.TaskConfigurator.Configuration;
+import org.netbeans.modules.profiler.spi.TaskConfiguratorProvider;
 import org.netbeans.modules.profiler.stp.icons.STPIcons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -103,7 +108,7 @@ import org.openide.util.Lookup;
  */
 public class SelectProfilingTask extends JPanel implements TaskChooser.Listener, HelpCtx.Provider {
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
-
+    
     // --- SettingsConfigurator Interface ----------------------------------------
     static interface SettingsConfigurator {
         //~ Methods --------------------------------------------------------------------------------------------------------------
@@ -136,37 +141,29 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    // --- Innerclass for passing results ----------------------------------------
-    public static class Configuration {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private AttachSettings attachSettings;
-        private ProfilingSettings profilingSettings;
-        private Lookup.Provider project;
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        Configuration(Lookup.Provider project, ProfilingSettings profilingSettings, AttachSettings attachSettings) {
-            this.project = project;
-            this.profilingSettings = profilingSettings;
-            this.attachSettings = attachSettings;
+    @ServiceProvider(service=TaskConfiguratorProvider.class)
+    public static class ConfiguratorProvider implements TaskConfiguratorProvider {
+        public ConfiguratorProvider() {
         }
 
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public AttachSettings getAttachSettings() {
-            return attachSettings;
+        @Override
+        public Configuration configureAttachProfilerTask(Provider project) {
+            return SelectProfilingTask.selectAttachProfilerTask(project);
         }
 
-        public ProfilingSettings getProfilingSettings() {
-            return profilingSettings;
+        @Override
+        public Configuration configureModifyProfilingTask(Provider project, FileObject profiledFile, boolean isAttach) {
+            return SelectProfilingTask.selectModifyProfilingTask(project, profiledFile, isAttach);
         }
 
-        public Lookup.Provider getProject() {
-            return project;
+        @Override
+        public Configuration configureProfileProjectTask(Provider project, FileObject profiledFile, boolean enableOverride) {
+            return SelectProfilingTask.selectProfileProjectTask(project, profiledFile, enableOverride);
         }
+        
+        
     }
-
+    
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // -----
@@ -682,7 +679,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         projectsChooserComboContainer.add(projectsChooserCombo, BorderLayout.CENTER);
 
         // projectsChooserSeparator
-        if (!UIUtils.isNimbus()) projectsChooserSeparator = Utils.createHorizontalSeparator();
+        if (!UIUtils.isNimbus()) projectsChooserSeparator = UIUtils.createHorizontalSeparator();
 
         // projectsChooserPanel
         projectsChooserPanel = new JPanel(new BorderLayout());
@@ -706,7 +703,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         contentsPanel = new JPanel(new BorderLayout());
 
         // customSettingsPanelSeparator
-        customSettingsPanelSeparator = Utils.createHorizontalSeparator();
+        customSettingsPanelSeparator = UIUtils.createHorizontalSeparator();
 
         // extraSettingsPanel
         customSettingsPanelContainer = new JPanel(new BorderLayout());
@@ -716,7 +713,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         attachSettingsPanel = new AttachSettingsPanel();
 
         // attachSettingsPanelSeparator
-        attachSettingsPanelSeparator = Utils.createHorizontalSeparator();
+        attachSettingsPanelSeparator = UIUtils.createHorizontalSeparator();
 
         // attachSetingsPanelContainer
         attachSettingsPanelContainer = new JPanel(new BorderLayout());
@@ -724,7 +721,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         attachSettingsPanelContainer.add(attachSettingsPanelSeparator, BorderLayout.SOUTH);
 
         // extraSettingsPanelSeparator
-        extraSettingsPanelSeparator = Utils.createHorizontalSeparator();
+        extraSettingsPanelSeparator = UIUtils.createHorizontalSeparator();
 
         // extraSettingsPanel
         extraSettingsPanel = new JPanel(new BorderLayout());

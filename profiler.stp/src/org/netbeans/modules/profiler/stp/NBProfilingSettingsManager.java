@@ -56,43 +56,23 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import org.netbeans.modules.profiler.api.ProfilingSettingsManager.ProfilingSettingsDescriptor;
 import org.netbeans.modules.profiler.api.ProjectStorage;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.SettingsCustomizer;
+import org.netbeans.modules.profiler.spi.ProfilingSettingsManagerProvider;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
  *
  * @author Jiri Sedlacek
  */
-public class ProfilingSettingsManager {
+@ServiceProvider(service=ProfilingSettingsManagerProvider.class)
+public class NBProfilingSettingsManager extends ProfilingSettingsManagerProvider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
-    public static class ProfilingSettingsDescriptor {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private ProfilingSettings lastSelectedProfilingSettings;
-        private ProfilingSettings[] profilingSettings;
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public ProfilingSettingsDescriptor(ProfilingSettings[] profilingSettings, ProfilingSettings lastSelectedProfilingSettings) {
-            this.profilingSettings = profilingSettings;
-            this.lastSelectedProfilingSettings = lastSelectedProfilingSettings;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public ProfilingSettings getLastSelectedProfilingSettings() {
-            return lastSelectedProfilingSettings;
-        }
-
-        public ProfilingSettings[] getProfilingSettings() {
-            return profilingSettings;
-        }
-    }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
@@ -103,25 +83,17 @@ public class ProfilingSettingsManager {
     private static final int DEFAULT_SETTINGS_COUNT = 3; // Nimber of required default settings, currently 3: Monitor, CPU, Memory
 
     // --- Instance variables declaration ----------------------------------------
-    private static ProfilingSettingsManager defaultInstance;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     // --- Private implementation ------------------------------------------------
-    private ProfilingSettingsManager() {
+    public NBProfilingSettingsManager() {
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     // --- Public interface ------------------------------------------------------
-    public static ProfilingSettingsManager getDefault() {
-        if (defaultInstance == null) {
-            defaultInstance = new ProfilingSettingsManager();
-        }
-
-        return defaultInstance;
-    }
-
+    @Override
     public ProfilingSettingsDescriptor getProfilingSettings(Lookup.Provider project) {
         final List<ProfilingSettings> profilingSettings = new LinkedList();
         final int[] lastSelectedProfilingSettingsIndex = new int[] { -1 };

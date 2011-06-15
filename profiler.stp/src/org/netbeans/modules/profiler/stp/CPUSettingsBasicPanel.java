@@ -77,6 +77,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilingRoots;
 import org.netbeans.modules.profiler.stp.ui.FilterSetsPanel;
 import org.netbeans.modules.profiler.stp.ui.GlobalFiltersPanel;
@@ -587,7 +588,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         constraints.fill = GridBagConstraints.BOTH;
         constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.insets = new Insets(0, 0, 0, 0);
-        add(Utils.createFillerPanel(), constraints);
+        add(UIUtils.createFillerPanel(), constraints);
 
         // profilingPointsContainer - definition
         JPanel profilingPointsContainer = new JPanel(new GridBagLayout());

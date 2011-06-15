@@ -81,6 +81,8 @@ import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProfilingSettingsManager;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkTextArea;
 
 
@@ -237,7 +239,7 @@ public class TaskPresenter implements TaskChooser.Item {
             gridBagConstraints.insets = new Insets(5, 12, 5, 12);
             add(label, gridBagConstraints);
 
-            JSeparator separator = Utils.createHorizontalSeparator();
+            JSeparator separator = UIUtils.createHorizontalSeparator();
             separator.setBackground(getBackground());
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -291,7 +293,7 @@ public class TaskPresenter implements TaskChooser.Item {
             gridBagConstraints.fill = GridBagConstraints.BOTH;
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             gridBagConstraints.insets = new Insets(0, 0, 10, 0);
-            add(Utils.createFillerPanel(), gridBagConstraints);
+            add(UIUtils.createFillerPanel(), gridBagConstraints);
 
             createCustom = new TPHyperlinkTextArea(CREATE_CUSTOM_STRING);
             createCustom.setToolTipText(CREATE_CUSTOM_TOOLTIP);

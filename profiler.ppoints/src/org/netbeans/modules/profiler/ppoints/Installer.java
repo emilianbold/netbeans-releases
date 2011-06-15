@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,23 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.ppoints;
 
-package org.netbeans.lib.profiler.client;
-
+import org.openide.modules.ModuleInstall;
 
 /**
- *
- * @author Tomas Hurka
+ * Manages a module's lifecycle. Remember that an installer is optional and
+ * often not needed at all.
  */
-public abstract class ProfilingPointsProcessor {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+public class Installer extends ModuleInstall {
 
-    public abstract void profilingPointHit(RuntimeProfilingPoint.HitEvent event);
+    @Override
+    public void restored() {
+        // By default, do nothing.
+        // Put your startup code here.
+    }
 
-    public abstract void timeAdjust(final int threadId, final long timeDiff0, final long timeDiff1);
+    @Override
+    public boolean closing() {
+        ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
+        return true;
+    }
     
-    public abstract void init(Object project);
     
-    public abstract RuntimeProfilingPoint[] getSupportedProfilingPoints();
 }
