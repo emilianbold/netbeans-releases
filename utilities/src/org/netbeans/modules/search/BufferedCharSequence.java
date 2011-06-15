@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -183,6 +183,7 @@ public class BufferedCharSequence implements CharSequence {
      * @see        BufferedCharSequence#close()
      */
     @Override
+    @SuppressWarnings("FinalizeDeclaration")
     protected void finalize() throws Throwable {
         try {
             close();
@@ -252,6 +253,7 @@ public class BufferedCharSequence implements CharSequence {
 
     // CharSequence interface
 
+    @Override
     public int length() {
         checkState();
         reset();
@@ -261,6 +263,7 @@ public class BufferedCharSequence implements CharSequence {
         return length;
     }
 
+    @Override
     public char charAt(int index) throws IndexOutOfBoundsException {
         checkState();
         String errMsg = check(index);
@@ -271,6 +274,7 @@ public class BufferedCharSequence implements CharSequence {
         return getCharAt(index);
     }
 
+    @Override
     public CharSequence subSequence(int start, int end)
             throws IndexOutOfBoundsException {
         checkState();
