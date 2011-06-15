@@ -59,12 +59,16 @@ import org.openide.util.NbPreferences;
 
 public final class PasswordManager {
 
-    private static final boolean keepPasswordsInMemory = true;
+    private static final boolean keepPasswordsInMemory;
     private static final String KEY_PREFIX = "remote.user.info.password."; // NOI18N
     private static final String STORE_PREFIX = "remote.user.info.store."; // NOI18N
     private final Map<String, String> cache = Collections.synchronizedMap(new HashMap<String, String>());
     private boolean keyringIsActivated = false;
     private static PasswordManager instance = new PasswordManager();
+    
+    static {
+        keepPasswordsInMemory = !Boolean.getBoolean("remote.user.password.do_not_keep_in_memory"); // NOI18N
+    }
 
     private PasswordManager() {
     }
