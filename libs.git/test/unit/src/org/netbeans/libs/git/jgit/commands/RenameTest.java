@@ -175,6 +175,11 @@ public class RenameTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
         assertTrue(statuses.get(target).isRenamed());
+        
+        statuses = client.getStatus(new File[0], ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, false);
+        assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
+        assertTrue(statuses.get(target).isRenamed());
     }
 
     public void testRenameFileAfter () throws Exception {

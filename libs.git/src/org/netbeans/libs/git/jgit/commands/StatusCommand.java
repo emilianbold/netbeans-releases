@@ -123,7 +123,7 @@ public class StatusCommand extends GitCommand {
             try {
                 String workTreePath = repository.getWorkTree().getAbsolutePath();
                 Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
-                Map<String, DiffEntry> renames = pathFilters.isEmpty() ? Collections.<String, DiffEntry>emptyMap() : detectRenames(repository, cache, pathFilters);
+                Map<String, DiffEntry> renames = detectRenames(repository, cache);
                 TreeWalk treeWalk = new TreeWalk(repository);
                 if (!pathFilters.isEmpty()) {
                     treeWalk.setFilter(PathFilterGroup.create(pathFilters));
@@ -253,9 +253,8 @@ public class StatusCommand extends GitCommand {
         return statuses;
     }
 
-    private Map<String, DiffEntry> detectRenames (Repository repository, DirCache cache, Collection<PathFilter> filters) {
+    private Map<String, DiffEntry> detectRenames (Repository repository, DirCache cache) {
         List<DiffEntry> entries;
-        assert !filters.isEmpty();
         TreeWalk treeWalk = new TreeWalk(repository);
         try {
             treeWalk.setRecursive(true);
@@ -266,9 +265,9 @@ public class StatusCommand extends GitCommand {
             } else {
                 treeWalk.addTree(new EmptyTreeIterator());
             }
-            treeWalk.setFilter(PathFilterGroup.create(filters));
             // Index
             treeWalk.addTree(new DirCacheIterator(cache));
+            treeWalk.setFilter(TreeFilter.ANY_DIFF);
             entries = DiffEntry.scan(treeWalk);
             RenameDetector d = new RenameDetector(repository);
             d.addAll(entries);
