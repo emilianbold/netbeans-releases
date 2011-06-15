@@ -60,7 +60,6 @@ import java.util.logging.Logger;
 import org.netbeans.core.windows.persistence.*;
 import org.openide.awt.ToolbarPool;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.windows.*;
@@ -80,6 +79,8 @@ final public class PersistenceHandler implements PersistenceObserver {
     private final Map<String, TopComponentGroupImpl> name2group = new WeakHashMap<String, TopComponentGroupImpl>(10);
 
     private static PersistenceHandler defaultInstance;
+    
+    private boolean loaded = false;
 
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(PersistenceHandler.class);
@@ -95,6 +96,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     public void clear() {
         name2mode.clear();
         name2group.clear();
+        TopComponentTracker.getDefault().clear();
     }
     
     public static synchronized PersistenceHandler getDefault() {
@@ -110,10 +112,16 @@ final public class PersistenceHandler implements PersistenceObserver {
         return PersistenceManager.isTopComponentPersistentWhenClosed(tc);
     }
     
+    boolean isLoaded() {
+        return loaded;
+    }
+    
     public void load() {
         if(DEBUG) {
             debugLog("## PersistenceHandler.load"); // NOI18N
         }
+        
+        TopComponentTracker.getDefault().load();
         
         WindowManagerConfig wmc = null;
         try {
@@ -123,18 +131,18 @@ final public class PersistenceHandler implements PersistenceObserver {
             Exceptions.attachLocalizedMessage(exc, "Cannot load window system persistent data, user directory content is broken. Resetting to default layout..."); //NOI18N
             Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null, exc); // NOI18N
             // try to delete local winsys data and try once more
-            FileObject rootFolder = FileUtil.getConfigFile(PersistenceManager.ROOT_LOCAL_FOLDER);
-            if (null != rootFolder) {
-                try {
+            try {
+                FileObject rootFolder = PersistenceManager.getDefault().getRootLocalFolder();
+                if (null != rootFolder) {
                     rootFolder.delete();
                     wmc = PersistenceManager.getDefault().loadWindowSystem();
-                } catch (IOException ioE) {
-                    Exceptions.attachLocalizedMessage(ioE, "Cannot load even default layout, using internally predefined configuration."); //NOI18N
-                    Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null, ioE);
+                } else {
+                    Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, "Cannot even get access to local winsys configuration, using internally predefined configuration."); // NOI18N
                     wmc = ConfigFactory.createDefaultConfig();
                 }
-            } else {
-                Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, "Cannot even get access to local winsys configuration, using internally predefined configuration."); // NOI18N
+            } catch (IOException ioE) {
+                Exceptions.attachLocalizedMessage(ioE, "Cannot load even default layout, using internally predefined configuration."); //NOI18N
+                Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null, ioE);
                 wmc = ConfigFactory.createDefaultConfig();
             }
         }
@@ -180,7 +188,6 @@ final public class PersistenceHandler implements PersistenceObserver {
         
         // First create empty modes.
         Map<ModeImpl, ModeConfig> mode2config = new HashMap<ModeImpl, ModeConfig>();
-        Set slidingModes = new HashSet();
         
         for (int i = 0; i < wmc.modes.length; i++) {
             ModeConfig mc = (ModeConfig) wmc.modes[i];
@@ -198,6 +205,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
         }
         
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         TopComponent activeTopComponentOverride = null;
         // Then fill them with TopComponents.
         for(Iterator it = mode2config.keySet().iterator(); it.hasNext(); ) {
@@ -212,6 +220,9 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
             if(mc.previousSelectedTopComponentID != null) {
                 mode.setUnloadedPreviousSelectedTopComponent(mc.previousSelectedTopComponentID);
+            }
+            for( String tcId : mode.getTopComponentsIDs() ) {
+                tcTracker.add( tcId, mode );
             }
             //some TopComponents want to be always active when the window system starts (e.g. welcome screen)
             for( TopComponent tc : mode.getOpenedTopComponents() ) {
@@ -295,6 +306,8 @@ final public class PersistenceHandler implements PersistenceObserver {
         wm.setToolbarConfigName(wmc.toolbarConfiguration);
         if( null != activeTopComponentOverride )
             activeTopComponentOverride.requestActive();
+        
+        loaded = true;
     }
     
     
@@ -303,6 +316,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("## PersistenceHandler.save"); // NOI18N
         }
+        TopComponentTracker.getDefault().save();
         
         ToolbarPool.getDefault().waitFinished();
         WindowManagerConfig wmc = getConfig();
