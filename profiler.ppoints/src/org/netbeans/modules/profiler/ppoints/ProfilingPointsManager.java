@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
+import java.util.Arrays;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.lib.profiler.client.ProfilingPointsProcessor;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
@@ -91,18 +92,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.profiler.common.CommonUtils;
+import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -110,7 +112,10 @@ import org.openide.filesystems.FileChangeListener;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
-public class ProfilingPointsManager extends ProfilingPointsProcessor implements PropertyChangeListener, ProfilingStateListener {
+@ServiceProvider(service=ProfilingPointsProcessor.class)
+public class ProfilingPointsManager extends ProfilingPointsProcessor 
+                                    implements PropertyChangeListener, 
+                                               ProfilingStateListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private static class ProfilingPointsComparator implements Comparator {
@@ -302,7 +307,6 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     public static final int SORT_BY_SCOPE = 2;
     public static final int SORT_BY_NAME = 3;
     public static final int SORT_BY_RESULTS = 4;
-    private static ProfilingPointsManager defaultInstance;
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
@@ -320,9 +324,9 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
 
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private Set<ProfilingPoint> dirtyProfilingPoints = Collections.synchronizedSet(new HashSet());
-    private Vector<ValidityAwarePanel> customizers = new Vector();
-    private final Vector<Lookup.Provider> openedProjects = new Vector();
-    private Vector<ProfilingPoint> profilingPoints = new Vector();
+    private List<ValidityAwarePanel> customizers = new ArrayList();
+    private final Collection<Lookup.Provider> openedProjects = new ArrayList();
+    private List<ProfilingPoint> profilingPoints = new ArrayList();
     private ProfilingPointFactory[] profilingPointFactories = new ProfilingPointFactory[0];
     private boolean profilingInProgress = false; // collecting data
     private boolean profilingSessionInProgress = false; // session started and not yet finished
@@ -330,10 +334,15 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     
     private Map<File, FileWatch> profilingPointsFiles = new HashMap<File, FileWatch>();
     private boolean ignoreStoreProfilingPoints = false;
+    
+    private boolean processesProfilingPoints;
+    final private Object pointsLock = new Object();
+    // @GuardedBy pointsLock
+    private RuntimeProfilingPoint[] points = null;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
-    private ProfilingPointsManager() {
+    public ProfilingPointsManager() {
         refreshProfilingPointFactories();
         ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
@@ -346,12 +355,8 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public static synchronized ProfilingPointsManager getDefault() {
-        if (defaultInstance == null) {
-            defaultInstance = new ProfilingPointsManager();
-        }
-
-        return defaultInstance;
+    public static ProfilingPointsManager getDefault() {
+        return Lookup.getDefault().lookup(ProfilingPointsManager.class);
     }
 
     public List<ProfilingPoint> getCompatibleProfilingPoints(Lookup.Provider project, ProfilingSettings profilingSettings, boolean sorted) {
@@ -532,6 +537,44 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         }
     }
 
+    @Override
+    public void init(Object project) {
+        ProfilingSettings ps = Profiler.getDefault().getLastProfilingSettings();
+        TargetAppRunner tar = Profiler.getDefault().getTargetAppRunner();
+        
+        if (ps.useProfilingPoints() && (project != null)) {
+            synchronized(pointsLock) {
+                points = createCodeProfilingConfiguration((Lookup.Provider)project, ps);
+                processesProfilingPoints = points.length > 0;
+                tar.getProfilerEngineSettings().setRuntimeProfilingPoints(points);
+            }
+            //      targetAppRunner.getProfilingSessionStatus().startProfilingPointsActive = profilingSettings.useProfilingPoints();
+        } else {
+            synchronized(pointsLock) {
+                points = new RuntimeProfilingPoint[0];
+            }
+            processesProfilingPoints = false;
+            tar.getProfilerEngineSettings().setRuntimeProfilingPoints(points);
+        }
+
+        // TODO: should be moved to openWindowsOnProfilingStart()
+        if (processesProfilingPoints) {
+            SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (!ProfilingPointsWindow.getDefault().isOpened()) {
+                            ProfilingPointsWindow.getDefault().open();
+                            ProfilingPointsWindow.getDefault().requestVisible();
+                        }
+                    }
+                });
+        }
+    }
+
+    @Override
+    public RuntimeProfilingPoint[] getSupportedProfilingPoints() {
+        return points != null ? points : new RuntimeProfilingPoint[0];
+    }
+
     public void profilingStateChanged(final ProfilingStateEvent profilingStateEvent) {
         ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
             public void run() {
@@ -548,6 +591,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
                             break;
                         case Profiler.PROFILING_STARTED:
                         case Profiler.PROFILING_IN_TRANSITION:
+                            reset();
                             profilingInProgress = false;
                             profilingSessionInProgress = true;
 
@@ -1030,7 +1074,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
     }
 
     private synchronized void processOpenedProjectsChanged() {
-        Vector<Lookup.Provider> lastOpenedProjects = new Vector();
+        Collection<Lookup.Provider> lastOpenedProjects = new ArrayList();
         synchronized (openedProjects) { lastOpenedProjects.addAll(openedProjects); }
         refreshOpenedProjects();
 
@@ -1061,10 +1105,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor implements 
         openedProjects.clear();
 
         Lookup.Provider[] openProjects = ProjectUtilities.getOpenedProjects();
-
-        for (Lookup.Provider openProject : openProjects) {
-            openedProjects.add(openProject);
-        }
+        openedProjects.addAll(Arrays.asList(openProjects));
     }
 
     private void refreshProfilingPointFactories() {
