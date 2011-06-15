@@ -790,7 +790,8 @@ public class FormatVisitor extends DefaultVisitor {
         }
 
         while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
-                && ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR) {
+                && ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR
+                && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN || ts.token().id() == PHPTokenId.PHP_OPERATOR) {
