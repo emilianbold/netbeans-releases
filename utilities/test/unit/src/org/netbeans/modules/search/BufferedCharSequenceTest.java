@@ -306,6 +306,18 @@ public class BufferedCharSequenceTest {
             assertEquals(11, instance.position());
         }
     }
+    
+    /** Tests fix of issue 95203. */
+    @Test
+    public void testUnicodeAt4KB() {
+        File f = getFile("more_than_4KB.txt");
+        FileInputStream is = getFileInputStream(f);
+        BufferedCharSequence chars = new BufferedCharSequence(is, cs_UTF_8, 4098);
+        assertEquals('0', chars.charAt(0));
+        assertEquals('1', chars.charAt(1));
+        assertEquals('X', chars.charAt(4097));
+        assertEquals('Y', chars.charAt(4098));
+    }
 
     /**
      * Returns {@code FileChennel} for the specified data file located in the

@@ -461,6 +461,7 @@ public class BufferedCharSequence implements CharSequence {
             this.bstream.mark(Integer.MAX_VALUE);
             this.bufferSize = getBufferSize(bufferSize);
             buffer = newBuffer();
+            buffer.position(buffer.limit());
         }
 
         @Override
@@ -479,6 +480,7 @@ public class BufferedCharSequence implements CharSequence {
                 throw new SourceIOException(ex);
             }            
             buffer.clear();
+            buffer.position(buffer.limit());
         }
 
         /**
@@ -494,9 +496,9 @@ public class BufferedCharSequence implements CharSequence {
         private int read() {
             try {
                 if(buffer.hasArray()) {
-                    int res = bstream.read(buffer.array());
+                    int res = bstream.read(buffer.array(), buffer.position(), buffer.remaining());
                     if(res > 0) {
-                        buffer.position(res);
+                        buffer.position(res + buffer.position());
                     }
                     return res;
                 }
@@ -529,8 +531,8 @@ public class BufferedCharSequence implements CharSequence {
          *
          * @return {@code true} if EOF, otherwise {@code false}.
          */
-        public boolean readNext() {           
-            buffer.clear();            
+        public boolean readNext() {
+            buffer.compact();
             int status = read();            
             buffer.flip();            
             return status == -1;
@@ -583,12 +585,12 @@ public class BufferedCharSequence implements CharSequence {
             }
             while((coderResult =
                     decoder.decode(source.buffer, out, endOfInput))
-                    != CoderResult.UNDERFLOW) {
+                    == CoderResult.OVERFLOW) {
                 out = buffer.growBuffer();                
             }
             if(endOfInput) {
                 while((coderResult = decoder.flush(out))
-                        != CoderResult.UNDERFLOW) {
+                        == CoderResult.OVERFLOW) {
                     out = buffer.growBuffer();
                 }
             }
