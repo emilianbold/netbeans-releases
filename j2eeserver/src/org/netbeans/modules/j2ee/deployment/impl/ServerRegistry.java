@@ -77,6 +77,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
@@ -121,7 +122,7 @@ public final class ServerRegistry implements java.io.Serializable {
     private transient InstanceListener[] instanceListenersArray;
     private transient PluginInstallListener pluginL;
     private transient InstanceInstallListener instanceL;
-    
+
     private ServerRegistry() {
         super();
     }
@@ -335,6 +336,20 @@ public final class ServerRegistry implements java.io.Serializable {
         return instancesMap().values().toArray(ret);
     }
 
+    public static FileObject getInstanceFileObject(String url) {
+        FileObject installedServersDir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
+        if (installedServersDir == null) {
+            return null;
+        }
+        FileObject[] installedServers = installedServersDir.getChildren();
+        for (int i=0; i<installedServers.length; i++) {
+            String val = (String) installedServers[i].getAttribute(URL_ATTR);
+            if (val != null && val.equals(url))
+                return installedServers[i];
+        }
+        return null;
+    }
+
     /**
      * Add a new server instance in the server registry.
      *
@@ -353,12 +368,9 @@ public final class ServerRegistry implements java.io.Serializable {
      *         registered.
      */
     public void addInstance(String url, String username, String password,
-            String displayName, boolean withoutUI, Map<String, String> initialproperties) throws InstanceCreationException {
-        addInstance(url, username, password, displayName, withoutUI, false, initialproperties);
-    }
-    
-    public void addInstance(String url, String username, String password,
-            String displayName, boolean withoutUI, boolean memoryProperties, Map<String, String> initialproperties) throws InstanceCreationException {
+            String displayName, boolean withoutUI, boolean nonPersistent,
+            Map<String, String> initialproperties) throws InstanceCreationException {
+
         // should never have empty url; UI should have prevented this
         // may happen when autoregistered instance is removed
         if (url == null || url.equals("")) { //NOI18N
@@ -368,7 +380,8 @@ public final class ServerRegistry implements java.io.Serializable {
 
         checkInstanceAlreadyExists(url);
         try {
-            addInstanceImpl(url, username, password, displayName, withoutUI, initialproperties, true, memoryProperties);
+            addInstanceImpl(url, username, password, displayName, withoutUI,
+                    initialproperties, true, nonPersistent);
         } catch (InstanceCreationException ice) {
             InstanceCreationException e = new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
             e.initCause(ice);
@@ -403,7 +416,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     private synchronized void removeInstanceFromFile(final String url) {
-        FileObject instanceFO = InstancePropertiesImpl.getInstanceFileObject(url);
+        FileObject instanceFO = getInstanceFileObject(url);
         if (instanceFO == null)
             return;
         try {
@@ -438,7 +451,7 @@ public final class ServerRegistry implements java.io.Serializable {
      */
     private void addInstanceImpl(String url, String username,
             String password, String displayName, boolean withoutUI,
-            Map<String, String> initialProperties, boolean loadPlugins, boolean memoryProperties) throws InstanceCreationException {
+            Map<String, String> initialProperties, boolean loadPlugins, boolean nonPersistent) throws InstanceCreationException {
 
         if (url == null) {
             // may happen when autoregistered instance is removed
@@ -459,12 +472,12 @@ public final class ServerRegistry implements java.io.Serializable {
                 Server server = (Server) i.next();
                 try {
                     if (server.handlesUri(url)) {
-                        ServerInstance tmp = new ServerInstance(server, url, memoryProperties ? new InstancePropertiesMemoryImpl(url) : new InstancePropertiesImpl(url));
+                        ServerInstance tmp = new ServerInstance(server, url, nonPersistent);
                         // PENDING persist url/password in ServerString as well
                         instancesMap().put(url, tmp);
                         // try to create a disconnected deployment manager to see
                         // whether the instance is not corrupted - see #46929
-                        if (!memoryProperties) {
+                        if (!nonPersistent) {
                             writeInstanceToFile(url, username, password, server.getDisplayName());
                         }
                         tmp.getInstanceProperties().setProperty(
@@ -484,17 +497,13 @@ public final class ServerRegistry implements java.io.Serializable {
                             fireInstanceListeners(url, true);
                             return; //  true;
                         } else {
-                            if (!memoryProperties) {
-                                removeInstanceFromFile(url);
-                            }
+                            removeInstanceFromFile(url);
                             instancesMap().remove(url);
                         }
                     }
                 } catch (Exception e) {
                     if (instancesMap().containsKey(url)) {
-                        if (!memoryProperties) {
-                            removeInstanceFromFile(url);
-                        }
+                        removeInstanceFromFile(url);
                         instancesMap().remove(url);
                     }
                     LOGGER.log(Level.INFO, null, e);
@@ -512,7 +521,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 }
             }
 
-            addInstanceImpl(url, username, password, displayName, withoutUI, initialProperties, false, memoryProperties);
+            addInstanceImpl(url, username, password, displayName, withoutUI, initialProperties, false, nonPersistent);
             return;
         }
 

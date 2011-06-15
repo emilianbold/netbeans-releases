@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.AsynchronousInstantiatingIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
 
@@ -82,7 +81,7 @@ public class BridgingServerWizardProvider implements org.netbeans.spi.server.Ser
         return server.getDisplayName();
     }
 
-    private static class InstantiatingIteratorBridge implements AsynchronousInstantiatingIterator {
+    private static class InstantiatingIteratorBridge implements InstantiatingIterator {
 
         private final InstantiatingIterator iterator;
 

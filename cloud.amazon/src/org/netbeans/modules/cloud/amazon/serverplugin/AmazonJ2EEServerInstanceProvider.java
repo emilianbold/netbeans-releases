@@ -106,7 +106,7 @@ public class AmazonJ2EEServerInstanceProvider implements ServerInstanceProvider,
                 // TODO: there must be a better way to check whether server already is registered or not:
                 if (Deployment.getDefault().getJ2eePlatform(inst.getId()) == null) {
                     try {
-                        InstanceProperties ip = InstanceProperties.createMemoryInstancePropertiesWithoutUI(inst.getId(), 
+                        InstanceProperties ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
                                 ai.getKeyId(), ai.getKey(), inst.getDisplayName(), new HashMap<String, String>());
                         ip.setProperty(AmazonDeploymentFactory.IP_ENVIRONMENT_ID, inst.getEnvironmentId());
                         ip.setProperty(AmazonDeploymentFactory.IP_APPLICATION_NAME, inst.getApplicationName());

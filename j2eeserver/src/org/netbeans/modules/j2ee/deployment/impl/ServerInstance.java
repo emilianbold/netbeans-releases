@@ -182,10 +182,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
     
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
-    public ServerInstance(Server server, String url, InstanceProperties instanceProperties) {
+    public ServerInstance(Server server, String url, boolean nonPersistent) {
         this.server = server;
         this.url = url;
-        this.instanceProperties = instanceProperties;
+        instanceProperties = nonPersistent ? new MemoryInstancePropertiesImpl(url)
+                : new DefaultInstancePropertiesImpl(url);
         // listen to debugger changes so that we can update server status accordingly
         debuggerStateListener = new DebuggerStateListener();
         DebuggerManager.getDebuggerManager().addDebuggerListener(debuggerStateListener);
@@ -264,8 +265,13 @@ public class ServerInstance implements Node.Cookie, Comparable {
             return managerTmp;
         }
         try {
-            String username = instanceProperties.getProperty(InstanceProperties.USERNAME_ATTR);
-            String password = instanceProperties.getProperty(InstanceProperties.PASSWORD_ATTR);
+            FileObject fo = ServerRegistry.getInstanceFileObject(url);
+            if (fo == null) {
+                String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
+                throw new IllegalStateException(msg);
+            }
+            String username = (String) fo.getAttribute(InstanceProperties.USERNAME_ATTR);
+            String password = ServerRegistry.readPassword(fo);
             managerTmp = server.getDeploymentManager(url, username, password);
             boolean fire = false;
             synchronized (this) {
@@ -292,6 +298,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
         }
         if (disconnectedManagerTmp != null) {
             return disconnectedManagerTmp;
+        }
+        FileObject fo = ServerRegistry.getInstanceFileObject(url);
+        if (fo == null) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
+            throw new DeploymentManagerCreationException(msg);
         }
         disconnectedManagerTmp = server.getDisconnectedDeploymentManager(url);
         boolean fire = false;
@@ -323,13 +334,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 }  catch (DeploymentManagerCreationException dmce) {
                     // this condition is ugly workaround for disconnected
                     // deployment manager throwing exception - bug 113907
-                    
-// XXX: double check with PetrH that this can be safely removed
-//
-//                    FileObject fo = ServerRegistry.getInstanceFileObject(url);
-//                    if (fo != null) {
-//                        Exceptions.printStackTrace(dmce);
-//                    }
+                    FileObject fo = ServerRegistry.getInstanceFileObject(url);
+                    if (fo != null) {
+                        Exceptions.printStackTrace(dmce);
+                    }
                 }
             }
         }
