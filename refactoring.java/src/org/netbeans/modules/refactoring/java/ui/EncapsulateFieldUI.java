@@ -45,6 +45,8 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.NestingKind;
@@ -72,18 +74,26 @@ public final class EncapsulateFieldUI implements RefactoringUI {
     private EncapsulateFieldPanel panel;
     private transient EncapsulateFieldsRefactoring refactoring;
     
-    public static EncapsulateFieldUI create(TreePathHandle selectedObject, CompilationInfo info) {
-        TreePathHandle sourceType = resolveSourceType(selectedObject, info);
+    public static EncapsulateFieldUI create(CompilationInfo info, TreePathHandle... selectedObject) {
+        if (selectedObject.length == 1) {
+            TreePathHandle sourceType = resolveSourceType(selectedObject[0], info);
 
-        if (sourceType == null) {
-            return null;
+            if (sourceType == null) {
+                return null;
+            }
+
+            return new EncapsulateFieldUI(sourceType);
+        } else {
+            return new EncapsulateFieldUI(selectedObject);
         }
-
-        return new EncapsulateFieldUI(sourceType);
     }
 
     private EncapsulateFieldUI(TreePathHandle sourceType) {
         refactoring = new EncapsulateFieldsRefactoring(sourceType);
+    }
+    
+    private EncapsulateFieldUI(TreePathHandle[] handles) {
+        refactoring = new EncapsulateFieldsRefactoring(Arrays.asList(handles));
     }
     
     public boolean isQuery() {
@@ -92,7 +102,8 @@ public final class EncapsulateFieldUI implements RefactoringUI {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new EncapsulateFieldPanel(refactoring.getSelectedObject(), parent);
+            Collection selectedObjects = refactoring.getRefactoringSource().lookup(Collection.class);
+            panel = new EncapsulateFieldPanel(refactoring.getSelectedObject(), (Collection<TreePathHandle>) selectedObjects, parent);
         }
         return panel;
     }

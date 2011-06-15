@@ -672,6 +672,16 @@ public abstract class WindowManager extends Object implements Serializable {
      * <li>Show the main window.</li>
      * </ol>
      * The whole operation may take a few seconds to complete.</p>
+     * <p>Windows that were opened in previous role but are not opened or present 
+     * in the new role will receive <code>TopComponent.componentClosed()</code> notification.</p>
+     * <p>Note: To keep the main window showing while switching the role, use the following branding:
+     * <code>org.netbeans.core.windows.WinSys.Show.Hide.MainWindow.While.Switching.Role=false</code>
+     * </p>
+     * <p>Note: Action <code>org.netbeans.core.windows.actions.SwitchRoleKeepDocumentsAction</code>
+     * in <code>Actions/Window</code> layer folder can change the role too but it
+     * also attempts to keep documents from previous role opened in the new role as well.
+     * The new role name is <code>ActionEvent.getActionCommand()</code> argument.
+     * </p>
      * <p>If the window system has been already loaded then the method must be
      * called from EDT thread, otherwise it's safe to set the initial startup
      * role in e.g. <code>ModuleInstall.restored()</code> method.</p>

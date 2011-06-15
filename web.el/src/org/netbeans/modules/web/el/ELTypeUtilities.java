@@ -71,6 +71,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
@@ -120,14 +121,18 @@ public final class ELTypeUtilities {
         return info.info().getTypes().asElement(tm);
     }
 
+    public static List<Element> getSuperTypesFor(CompilationContext info, Element element) {
+        return getSuperTypesFor(info, element, null, null);
+    }
+    
     /**
      * 
      * @param element
      * @return a list of Element-s representing all the superclasses of the element. 
      * The list starts with the given element itself and ends with java.lang.Object
      */
-    public static List<Element> getSuperTypesFor(CompilationContext info, Element element) {
-        final TypeMirror tm = getTypeMirrorFor(info, element);
+    public static List<Element> getSuperTypesFor(CompilationContext info, Element element, ELElement elElement, List<Node> rootToNode) {
+        final TypeMirror tm = getTypeMirrorFor(info, element, elElement, rootToNode);
         List<Element> types = new ArrayList<Element>();
         TypeMirror mirror = tm;
         while (mirror.getKind() == TypeKind.DECLARED) {
@@ -157,20 +162,64 @@ public final class ELTypeUtilities {
         return typeResolver.getResult();
     }
 
+    public static TypeMirror getReturnType(CompilationContext info, final ExecutableElement method) {
+        return getReturnType(info, method, null, null);
+    }    
+    
     /**
      * Gets the return type of the given {@code method}.
      * @param method
      * @return
      */
-    public static TypeMirror getReturnType(CompilationContext info, final ExecutableElement method) {
+    public static TypeMirror getReturnType(CompilationContext info, final ExecutableElement method, ELElement elElement, List<Node> rootToNode) {
         TypeKind returnTypeKind = method.getReturnType().getKind();
         if (returnTypeKind.isPrimitive()) {
             return info.info().getTypes().getPrimitiveType(returnTypeKind);
         } else if (returnTypeKind == TypeKind.VOID) {
             return info.info().getTypes().getNoType(returnTypeKind);
+        } else if (returnTypeKind == TypeKind.TYPEVAR && rootToNode != null && elElement != null) {
+            return getReturnTypeForGenericClass(info, method, elElement, rootToNode);
         } else {
             return method.getReturnType();
         }
+    }
+    
+    public static TypeMirror getReturnTypeForGenericClass(CompilationContext info, final ExecutableElement method, ELElement elElement, List<Node> rootToNode) {
+        Node node = null;
+        for (int i = rootToNode.size() - 1; i > 0; i--) {
+            node = rootToNode.get(i);
+            if (node instanceof AstIdentifier) {
+                break;
+            }
+        }
+        if (node != null) {
+            TypeMirror type = ELTypeUtilities.resolveElement(info, elElement, node).asType();
+            // interfaces are at the end of the List - first parameter has to be superclass
+            TypeMirror directSupertype = info.info().getTypes().directSupertypes(type).get(0);
+            if (directSupertype instanceof DeclaredType) {
+                DeclaredType declaredType = (DeclaredType)directSupertype;
+                // index of involved type argument
+                int indexOfTypeArgument = -1;
+                // list of all type arguments
+                List <? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
+
+                // search for the same method in the generic class
+                for (Element enclosedElement : declaredType.asElement().getEnclosedElements()) {
+                    if (method.equals(enclosedElement)) {
+                        TypeMirror returnType = ((ExecutableElement)enclosedElement).getReturnType();
+                        // get index of type argument which is returned by involved method
+                        indexOfTypeArgument = info.info().getElementUtilities().enclosingTypeElement(method).
+                                getTypeParameters().indexOf(((TypeVariable) returnType).asElement());
+                        break;
+                    }
+                }
+                if (indexOfTypeArgument != -1 && indexOfTypeArgument < typeArguments.size()) {
+                    return typeArguments.get(indexOfTypeArgument);
+                }
+            }
+        } 
+        
+        return method.getReturnType();
     }
 
     /**
@@ -283,8 +332,12 @@ public final class ELTypeUtilities {
     }
 
     private static TypeMirror getTypeMirrorFor(CompilationContext info, Element element) {
+        return getTypeMirrorFor(info, element, null, null);
+    }
+
+    private static TypeMirror getTypeMirrorFor(CompilationContext info, Element element, ELElement elElement, List<Node> rootToNode) {
         if (element.getKind() == ElementKind.METHOD) {
-            return getReturnType(info, (ExecutableElement) element);
+            return getReturnType(info, (ExecutableElement) element, elElement, rootToNode);
         }
         return element.asType();
     }

@@ -74,6 +74,10 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
         super(Lookups.fixed(selectedObject));
     }
     
+    public EncapsulateFieldsRefactoring(Collection<TreePathHandle> selectedObjects) {
+        super(Lookups.fixed(selectedObjects.iterator().next(), selectedObjects));
+    }
+    
     /**
      * Getter for property refactorFields
      * @return Value of refactorFields

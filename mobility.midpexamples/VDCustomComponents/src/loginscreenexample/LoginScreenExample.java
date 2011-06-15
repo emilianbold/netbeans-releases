@@ -126,7 +126,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: task ">//GEN-BEGIN:|18-getter|0|18-preInit
     /**
-     * Returns an initiliazed instance of task component.
+     * Returns an initialized instance of task component.
      * @return the initialized component instance
      */
     public SimpleCancellableTask getTask() {
@@ -185,7 +185,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: waitScreen ">//GEN-BEGIN:|13-getter|0|13-preInit
     /**
-     * Returns an initiliazed instance of waitScreen component.
+     * Returns an initialized instance of waitScreen component.
      * @return the initialized component instance
      */
     public WaitScreen getWaitScreen() {
@@ -204,7 +204,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: splashScreen ">//GEN-BEGIN:|25-getter|0|25-preInit
     /**
-     * Returns an initiliazed instance of splashScreen component.
+     * Returns an initialized instance of splashScreen component.
      * @return the initialized component instance
      */
     public SplashScreen getSplashScreen() {
@@ -222,7 +222,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|33-getter|0|33-preInit
     /**
-     * Returns an initiliazed instance of exitCommand component.
+     * Returns an initialized instance of exitCommand component.
      * @return the initialized component instance
      */
     public Command getExitCommand() {
@@ -237,7 +237,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: loginScreen ">//GEN-BEGIN:|29-getter|0|29-preInit
     /**
-     * Returns an initiliazed instance of loginScreen component.
+     * Returns an initialized instance of loginScreen component.
      * @return the initialized component instance
      */
     public LoginScreen getLoginScreen() {
@@ -261,7 +261,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alertFailure ">//GEN-BEGIN:|37-getter|0|37-preInit
     /**
-     * Returns an initiliazed instance of alertFailure component.
+     * Returns an initialized instance of alertFailure component.
      * @return the initialized component instance
      */
     public Alert getAlertFailure() {
@@ -277,7 +277,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alertSuccess ">//GEN-BEGIN:|39-getter|0|39-preInit
     /**
-     * Returns an initiliazed instance of alertSuccess component.
+     * Returns an initialized instance of alertSuccess component.
      * @return the initialized component instance
      */
     public Alert getAlertSuccess() {
@@ -293,7 +293,7 @@ public class LoginScreenExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: ticker ">//GEN-BEGIN:|41-getter|0|41-preInit
     /**
-     * Returns an initiliazed instance of ticker component.
+     * Returns an initialized instance of ticker component.
      * @return the initialized component instance
      */
     public Ticker getTicker() {

@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
+import org.openide.windows.WindowManager;
 
 /**
  * A class that listens to changes to the set of opened TopComponents and to the
@@ -99,15 +100,19 @@ final class PaletteVisibility {
     }
 
     private static FileObject findPaletteTopComponentSettings() {
-        FileObject res = FileUtil.getConfigFile("Windows2Local/Modes/commonpalette");
+        String role = WindowManager.getDefault().getRole();
+        String root = "Windows2";
+        if( null != role )
+            root += "/Roles/" + role;
+        FileObject res = FileUtil.getConfigFile(root+"/Modes/commonpalette");
         if( null == res ) {
             try {
                 //for unit-testing
-                res = FileUtil.getConfigFile("Windows2Local/Modes");
+                res = FileUtil.getConfigFile(root+"/Modes");
                 if( null == res ) {
-                    res = FileUtil.getConfigFile("Windows2Local");
+                    res = FileUtil.getConfigFile(root);
                     if( null == res )
-                        res = FileUtil.getConfigRoot().createFolder("Windows2Local");
+                        res = FileUtil.getConfigRoot().createFolder(root);
                     res = res.createFolder("Modes");
                 }
                 

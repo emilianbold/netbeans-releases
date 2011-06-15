@@ -757,8 +757,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         private int start;
         private int end;
         private RefactoringUI ui;
+        private boolean selection;
         
         public TextComponentTask(EditorCookie ec) {
+            this(ec,false);
+        }
+        
+        public TextComponentTask(EditorCookie ec, boolean selection) {
+            this.selection = selection;
             this.textC = ec.getOpenedPanes()[0];
             this.caret = textC.getCaretPosition();
             this.start = textC.getSelectionStart();
@@ -776,16 +782,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         public void run(final CompilationController cc) throws Exception {
             TreePath selectedElement = null;
             cc.toPhase(Phase.RESOLVED);
+            
+            final int c = selection?start:this.caret;
 
-            final int[] adjustedCaret = new int[] {caret};
+            final int[] adjustedCaret = new int[] {c};
 //            final boolean[] insideJavadoc = {false};
             final Document doc = cc.getDocument();
             doc.render(new Runnable() {
                 @Override
                 public void run() {
-                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cc.getTokenHierarchy(), caret);
+                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cc.getTokenHierarchy(), c);
 
-                    ts.move(caret);
+                    ts.move(c);
 
                     if (ts.moveNext() && ts.token()!=null) {
                         if (ts.token().id() == JavaTokenId.IDENTIFIER) {
