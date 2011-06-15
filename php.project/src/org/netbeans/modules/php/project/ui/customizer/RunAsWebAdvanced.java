@@ -754,6 +754,9 @@ public class RunAsWebAdvanced extends JPanel {
                 return null;
             }
             FileObject fo = FileUtil.toFileObject(lastFolder);
+            if (fo == null) {
+                return null;
+            }
             if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
                 return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
             }
