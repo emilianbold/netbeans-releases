@@ -59,21 +59,24 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class PropertySheetOperatorTest extends JellyTestCase {
 
-    public static Test suite() {
-        return (NbTestSuite) createModuleTest(PropertySheetOperatorTest.class,
-                "testInvoke",
-                "testTblSheet",
-                "testGetDescriptionHeader",
-                "testGetDescription",
-                "testSortByName",
-                "testSortByCategory",
-                "testShowDescriptionArea",
-                "testVerify",
-                // have to be the last
-                "testClose");
-    }
     private static String SAMPLE_NODE_NAME = "SampleClass1.java";
     private static PropertySheetOperator pso;
+    static final String[] tests = {
+        "testInvoke",
+        "testTblSheet",
+        "testGetDescriptionHeader",
+        "testGetDescription",
+        "testSortByName",
+        "testSortByCategory",
+        "testShowDescriptionArea",
+        "testVerify",
+        // has to be the last
+        "testClose"
+    };
+
+    public static Test suite() {
+        return createModuleTest(PropertySheetOperatorTest.class, tests);
+    }
 
     /** Open sample property sheet and create PropertySheetOperator */
     @Override

@@ -63,7 +63,7 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
 
     private static DocumentsDialogOperator documentsOper;
     private static Node editableSourceNode;
-    private static String[] tests = new String[]{
+    public static String[] tests = new String[]{
         "testInvoke",
         "testVerify",
         "testSelectDocument",

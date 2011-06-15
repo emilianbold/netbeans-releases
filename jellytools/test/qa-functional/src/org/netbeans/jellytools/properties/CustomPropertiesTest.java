@@ -60,6 +60,19 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
 
     /** Node with all customizable properties */
     private static TestNode testNode;
+    static final String[] tests = {
+        "testStringProperty",
+        "testStringArrayProperty",
+        "testPointProperty",
+        "testDimensionProperty",
+        "testRectangleProperty",
+        "testColorProperty",
+        "testFontProperty",
+        "testFileProperty",
+        "testClasspathProperty",
+        "testProcessDescriptorProperty",
+        "testClose"
+    };
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -71,18 +84,7 @@ public class CustomPropertiesTest extends org.netbeans.jellytools.JellyTestCase 
     /** method used for explicit testsuite definition
      */
     public static junit.framework.Test suite() {
-        return createModuleTest(CustomPropertiesTest.class,
-                "testStringProperty",
-                "testStringArrayProperty",
-                "testPointProperty",
-                "testDimensionProperty",
-                "testRectangleProperty",
-                "testColorProperty",
-                "testFontProperty",
-                "testFileProperty",
-                "testClasspathProperty",
-                "testProcessDescriptorProperty",
-                "testClose");
+        return createModuleTest(CustomPropertiesTest.class, tests);
     }
 
     /** Method called before each testcase. */
