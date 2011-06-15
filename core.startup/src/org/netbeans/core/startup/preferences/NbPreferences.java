@@ -48,8 +48,6 @@ import java.io.IOException;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.util.EditableProperties;
 import org.openide.util.RequestProcessor;
@@ -58,7 +56,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Radek Matous
  */
-public abstract class NbPreferences extends AbstractPreferences implements  ChangeListener {
+public abstract class NbPreferences extends AbstractPreferences {
     private static Preferences USER_ROOT;
     private static Preferences SYSTEM_ROOT;
     
@@ -103,16 +101,14 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
 
     private NbPreferences(boolean user) {
         super(null, "");
-        fileStorage = getFileStorage(absolutePath());
-        fileStorage.attachChangeListener(this);
+        fileStorage = getFileStorage(absolutePath());       
     }
     
     /** Creates a new instance of PreferencesImpl */
     private  NbPreferences(NbPreferences parent, String name)  {
         super(parent, name);
         fileStorage = getFileStorage(absolutePath());
-        newNode = !fileStorage.existsNode();
-        fileStorage.attachChangeListener(this);
+        newNode = !fileStorage.existsNode();       
     }
         
     @Override
@@ -277,12 +273,6 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
         }
     }
 
-    public @Override void stateChanged(ChangeEvent e) {
-        synchronized(lock){
-                properties = null;
-        }
-    }
-
     protected abstract FileStorage getFileStorage(String absolutePath);
 
     public static class UserPreferences extends NbPreferences {
@@ -334,8 +324,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
         void markModified();
         EditableProperties load() throws IOException;
         void save(final EditableProperties properties) throws IOException;
-        void runAtomic(Runnable run);
-        void attachChangeListener(ChangeListener changeListener);
+        void runAtomic(Runnable run);       
 
     }
 }

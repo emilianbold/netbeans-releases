@@ -45,7 +45,6 @@
 package org.netbeans.core.startup.preferences;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeSet;
@@ -132,47 +131,6 @@ public class TestPropertiesStorage extends TestFileStorage {
         assertNotNull(storage.toFolder());
         assertNull(storage.toPropertiesFile());                
     }
-
-      public void testNodeIsReloadedAfterChange() throws Exception {
-         String key= "key";
-         String value = "oldValue";
-         String newValue = "newValue";
-         storeEntry(key, value);
-         overrideStorageEntryWithNewValue(value, newValue);
-
-         String reloadedValue = pref.get(key, null);
-
-         assertNotNull("Reloaded value must not be null", reloadedValue);
-         assertEquals("Reloaded value must equals to manually stored value", newValue, reloadedValue);
-         /*
-          Still need to cope with a memory leak
-
-         WeakReference weakPref = new WeakReference(pref);
-         storage = null;
-         pref = null;
-         assertGC("NbPreferences is not GC", weakPref);
-         */
-
-     }
-
-     private void storeEntry(String keyName, String oldValue) throws BackingStoreException {
-         pref.put(keyName, oldValue);
-         pref.flush();
-     }
-
-     private void overrideStorageEntryWithNewValue(String oldValue, String newValue) throws IOException {
-         String newText = constructNewEntryText(oldValue, newValue);         
-         OutputStream storageOutputStream = storage.toPropertiesFile().getOutputStream();
-         storageOutputStream.write(newText.getBytes("ISO-8859-1"));
-         storageOutputStream.close();                     
-     }
-
-     private String constructNewEntryText(String oldValue, String newValue) throws IOException {
-         String currentText = storage.toPropertiesFile().asText();
-         String newText = currentText.replace(oldValue, newValue);
-         return newText;
-     }
-
 
     public void testRemove() throws BackingStoreException {
         assertNull(storage.toFolder());
