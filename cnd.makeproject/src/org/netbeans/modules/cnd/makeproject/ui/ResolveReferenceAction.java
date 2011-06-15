@@ -46,10 +46,8 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
-import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.Solution;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
