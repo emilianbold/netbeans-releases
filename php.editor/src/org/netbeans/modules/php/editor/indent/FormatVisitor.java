@@ -128,8 +128,9 @@ public class FormatVisitor extends DefaultVisitor {
         List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
         int indexBeforeLastComment = -1;  // remember last comment
         while (moveNext() && ts.offset() < node.getStartOffset()
-                && (ts.offset() + ts.token().length()) <= node.getStartOffset()
-                || ts.token().id() == PHPTokenId.PHP_CLOSETAG) {
+                && lastIndex < ts.index()
+                && ((ts.offset() + ts.token().length()) <= node.getStartOffset()
+                || ts.token().id() == PHPTokenId.PHP_CLOSETAG)) {
             if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE
                     && path.size() > 1 && path.get(1) instanceof NamespaceDeclaration) {
                 // this a a fix for probalem that namespace declaration through {}, doesn't end with the end of  }
@@ -210,8 +211,9 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ArrayCreation node) {
         int delta = options.indentArrayItems - options.continualIndentSize;
-        if (ts.token().id() != PHPTokenId.PHP_ARRAY) { // it's possible that the expression starts with array
-            while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ARRAY) {
+        if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index()) { // it's possible that the expression starts with array
+            while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ARRAY
+                    && lastIndex < ts.index()) {
                 addFormatToken(formatTokens);
             }
             if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
@@ -225,7 +227,8 @@ public class FormatVisitor extends DefaultVisitor {
             if (path.get(1) instanceof FunctionInvocation && ((FunctionInvocation)path.get(1)).getParameters().size() == 1) {
                 int hindex = formatTokens.size() - 1;
                 while (hindex > 0 && formatTokens.get(hindex).getId() != FormatToken.Kind.TEXT
-                        && formatTokens.get(hindex).getId() != FormatToken.Kind.WHITESPACE_INDENT) {
+                        && formatTokens.get(hindex).getId() != FormatToken.Kind.WHITESPACE_INDENT
+                        && lastIndex < ts.index()) {
                     hindex --;
                 }
                 if (hindex > 0 && formatTokens.get(hindex).getId() == FormatToken.Kind.WHITESPACE_INDENT) {
@@ -268,7 +271,8 @@ public class FormatVisitor extends DefaultVisitor {
         isCurly = node.isCurly();
         // move ts in every case to the next token
         while (ts.moveNext() && node.isCurly() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN
-                && (ts.offset() < node.getStartOffset())) {
+                && (ts.offset() < node.getStartOffset())
+                && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
 
@@ -786,7 +790,8 @@ public class FormatVisitor extends DefaultVisitor {
         }
 
         while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
-                && ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR) {
+                && ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR
+                && lastIndex < ts.index()) {
             addFormatToken(formatTokens);
         }
         if (ts.token().id() == PHPTokenId.PHP_TOKEN || ts.token().id() == PHPTokenId.PHP_OPERATOR) {
