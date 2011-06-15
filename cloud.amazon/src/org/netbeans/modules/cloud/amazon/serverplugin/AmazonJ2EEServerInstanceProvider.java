@@ -112,6 +112,8 @@ public class AmazonJ2EEServerInstanceProvider implements ServerInstanceProvider,
                         ip.setProperty(AmazonDeploymentFactory.IP_APPLICATION_NAME, inst.getApplicationName());
                         ip.setProperty(AmazonDeploymentFactory.IP_KEY_ID, ai.getKeyId());
                         ip.setProperty(AmazonDeploymentFactory.IP_KEY, ai.getKey());
+                        ip.setProperty(AmazonDeploymentFactory.IP_CONTAINER_TYPE, inst.getContainerType());
+                        ip.setProperty(InstanceProperties.URL_ATTR, inst.getId());
                     } catch (InstanceCreationException ex) {
                         Exceptions.printStackTrace(ex);
                     }

@@ -67,6 +67,8 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
     private AmazonJ2EEServerWizardPanel wizardPanel;
     private String suggestedName;
     
+    private static final String SUFFIX = "-dev-env";
+    
     /** Creates new form AmazonJ2EEServerWizardComponent */
     public AmazonJ2EEServerWizardComponent(AmazonJ2EEServerWizardPanel wizardPanel, String suggestedName) {
         this.wizardPanel = wizardPanel;
@@ -74,8 +76,12 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
         initComponents();
         setName(NbBundle.getMessage(AmazonJ2EEServerWizardComponent.class, "AmazonJ2EEServerWizardComponent.name"));
         if (suggestedName != null) {
-            envNameTextField.setText(suggestedName+"-dev-env");
-            envURLTextField.setText(suggestedName+"-dev-env");
+            if (suggestedName.length() > (23-SUFFIX.length())) {
+                envNameTextField.setText(suggestedName.substring(0, 23-SUFFIX.length()) +SUFFIX);
+            } else {
+                envNameTextField.setText(suggestedName+SUFFIX);
+            }
+            envURLTextField.setText(suggestedName+SUFFIX);
             envFullURLLabel.setText("<html>"+envURLTextField.getText()+".elasticbeanstalk.com"); // NOI18N
         }
     }

@@ -58,6 +58,7 @@ public class AmazonDeploymentFactory implements DeploymentFactory {
     public static final String IP_ENVIRONMENT_ID = "environment--id";  // NOI18N
     public static final String IP_KEY_ID = "access-key-id";  // NOI18N
     public static final String IP_KEY = "access-key";  // NOI18N
+    public static final String IP_CONTAINER_TYPE = "container-type";  // NOI18N
     
     @Override
     public boolean handlesURI(String string) {
@@ -69,13 +70,15 @@ public class AmazonDeploymentFactory implements DeploymentFactory {
             String password) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
         return new AmazonDeploymentManager(props.getProperty(IP_APPLICATION_NAME), props.getProperty(IP_ENVIRONMENT_ID), 
-                props.getProperty(IP_KEY_ID), props.getProperty(IP_KEY));
+                props.getProperty(IP_KEY_ID), props.getProperty(IP_KEY), props.getProperty(IP_CONTAINER_TYPE));
     }
 
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         // XXX
-        return new AmazonDeploymentManager("", "", "", "");
+        
+        // XXX: uri is hack here: I need container type here and so I appended it to URI.
+        return new AmazonDeploymentManager("", "", "", "", uri);
     }
 
     @Override

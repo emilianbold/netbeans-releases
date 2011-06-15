@@ -54,6 +54,7 @@ public class AmazonJ2EEInstance {
     private String environmentName;
     private String environmentId;
     private InstanceState state;
+    private String containerType;
 
     public static enum InstanceState {
         LAUNCHING,
@@ -63,12 +64,14 @@ public class AmazonJ2EEInstance {
         TERMINATED
     }
     
-    public AmazonJ2EEInstance(AmazonInstance amazonInstance, String applicationName, String environmentName, String environmentId) {
+    public AmazonJ2EEInstance(AmazonInstance amazonInstance, String applicationName, 
+            String environmentName, String environmentId, String containerType) {
         this.amazonInstance = amazonInstance;
         this.applicationName = applicationName;
         this.environmentName = environmentName;
         this.environmentId = environmentId;
         this.state = InstanceState.READY;
+        this.containerType = containerType;
     }
 
     public AmazonInstance getAmazonInstance() {
@@ -108,7 +111,11 @@ public class AmazonJ2EEInstance {
     }
     
     public String getId() {
-        return AmazonDeploymentFactory.AMAZON_URI+getApplicationName() + "-" +getEnvironmentId();
+        return createURL(getApplicationName(), getEnvironmentId(), getContainerType());
+    }
+    
+    public static String createURL(String appName, String envID, String container) {
+        return AmazonDeploymentFactory.AMAZON_URI+appName + "-" +envID+"-"+container;
     }
     
     public String getApplicationName() {
@@ -129,6 +136,10 @@ public class AmazonJ2EEInstance {
     
     public void setEnvironmentName(String environmentName) {
         this.environmentName = environmentName;
+    }
+
+    public String getContainerType() {
+        return containerType;
     }
 
     @Override

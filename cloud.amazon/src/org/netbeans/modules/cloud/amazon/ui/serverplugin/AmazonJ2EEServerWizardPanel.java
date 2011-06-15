@@ -43,13 +43,17 @@ package org.netbeans.modules.cloud.amazon.ui.serverplugin;
 
 import java.awt.Component;
 import java.util.List;
-import javax.swing.SwingUtilities;
+import java.util.concurrent.ExecutionException;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
 import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEInstance;
+import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEServerInstanceProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -126,6 +130,10 @@ public class AmazonJ2EEServerWizardPanel implements WizardDescriptor.Asynchronou
             setErrorMessage(NbBundle.getMessage(AmazonJ2EEServerWizardPanel.class, "AmazonJ2EEServerWizardPanel.missingUrl"));
             return false;
         }
+        if (getComponentImpl().getEnvironmentName().length() < 4 || getComponentImpl().getEnvironmentName().length() > 23) {
+            setErrorMessage(NbBundle.getMessage(AmazonJ2EEServerWizardPanel.class, "AmazonJ2EEServerWizardPanel.envNameLength"));
+            return false;
+        }
         setErrorMessage(null);
         return true;
     }
@@ -172,7 +180,19 @@ public class AmazonJ2EEServerWizardPanel implements WizardDescriptor.Asynchronou
         return !ai.readApplicationNames().contains(appName);
     }
 
-    void createAppEnv() {
+    public InstanceProperties createServer() {
+        String envID = createAppEnv();
+        try {
+            AmazonJ2EEServerInstanceProvider.getProvider().refreshServers().get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return findServer(envID);
+    }
+    
+    private String createAppEnv() {
         String appName = getComponentImpl().getApplicationName();
         String envName = getComponentImpl().getEnvironmentName();
         String url = getComponentImpl().getURL();
@@ -184,7 +204,16 @@ public class AmazonJ2EEServerWizardPanel implements WizardDescriptor.Asynchronou
             ai.createApplication(appName);
             ai.createInitialEmptyApplication(appName);
         }
-        ai.createEnvironment(appName, envName, url, containerType);
+        return ai.createEnvironment(appName, envName, url, containerType);
     }
     
+    private InstanceProperties findServer(String envID) {
+        String appName = getComponentImpl().getApplicationName();
+        String containerType = getComponentImpl().getContainerType();
+        String uri = AmazonJ2EEInstance.createURL(appName, envID, containerType);
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+        assert ip != null : "cannot find instance for " + uri;
+        return ip;
+    }
+
 }

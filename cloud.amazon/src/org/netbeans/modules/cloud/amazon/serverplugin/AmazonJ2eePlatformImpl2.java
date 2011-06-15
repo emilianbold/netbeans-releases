@@ -69,10 +69,11 @@ import org.openide.util.ImageUtilities;
  */
 public class AmazonJ2eePlatformImpl2 extends J2eePlatformImpl2 {
 
-    private DeploymentManager dm;
+    private AmazonDeploymentManager dm;
 
     public AmazonJ2eePlatformImpl2(DeploymentManager dm) {
-        this.dm = dm;
+        assert dm instanceof AmazonDeploymentManager;
+        this.dm = (AmazonDeploymentManager)dm;
     }
     
     @Override
@@ -112,7 +113,13 @@ public class AmazonJ2eePlatformImpl2 extends J2eePlatformImpl2 {
 
     @Override
     public Set<Profile> getSupportedProfiles() {
-        return new HashSet(Arrays.asList(new Profile[]{Profile.JAVA_EE_6_FULL, Profile.JAVA_EE_5, Profile.J2EE_14}));
+        if (dm.getContainerType().contains("Tomcat 6")) {
+            return new HashSet(Arrays.asList(new Profile[]{Profile.JAVA_EE_5, Profile.J2EE_14}));
+        } else if (dm.getContainerType().contains("Tomcat 7")) {
+            return new HashSet(Arrays.asList(new Profile[]{Profile.JAVA_EE_6_FULL, Profile.JAVA_EE_6_WEB, Profile.JAVA_EE_5, Profile.J2EE_14}));
+        } else {
+            return new HashSet(Arrays.asList(new Profile[]{Profile.JAVA_EE_6_FULL, Profile.JAVA_EE_6_WEB, Profile.JAVA_EE_5, Profile.J2EE_14}));
+        }
     }
 
     @Override

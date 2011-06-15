@@ -39,90 +39,61 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.ui.serverplugin;
+package org.netbeans.modules.cloud.amazon.ui;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import java.awt.Component;
+import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEServerInstanceProvider;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 
 /**
  *
  */
-public class AmazonJ2EEServerWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
+public class AmazonWizardPanel2 implements WizardDescriptor.Panel<WizardDescriptor> {
 
-    private ChangeSupport listeners;
-    private WizardDescriptor wizard;
-    private AmazonJ2EEServerWizardPanel panel;
-
-    public AmazonJ2EEServerWizardIterator() {
-        listeners = new ChangeSupport(this);
+    private AmazonWizardComponent2 component;
+    private List<Node> servers;
+    
+    public AmazonWizardPanel2() {
     }
     
-    public static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
-
     @Override
-    public Set instantiate() throws IOException {
-        return Collections.singleton(panel.createServer());
-    }
-
-    @Override
-    public void initialize(WizardDescriptor wizard) {
-        this.wizard = wizard;
-    }
-
-    @Override
-    public void uninitialize(WizardDescriptor wizard) {
-        panel = null;
-    }
-
-    @Override
-    public Panel current() {
-        if (panel == null) {
-            panel = new AmazonJ2EEServerWizardPanel();
+    public Component getComponent() {
+        if (component == null) {
+            component = new AmazonWizardComponent2(servers);
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, AmazonWizardPanel.getPanelContentData());            
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1));
         }
-        return panel;
+        return component;
     }
 
     @Override
-    public String name() {
-        return "Amazon";
+    public HelpCtx getHelp() {
+        return null;
     }
 
     @Override
-    public boolean hasNext() {
-        return false;
+    public void readSettings(WizardDescriptor settings) {
+        servers = (List<Node>)settings.getProperty(AmazonWizardPanel.SERVERS);
     }
 
     @Override
-    public boolean hasPrevious() {
-        return false;
+    public void storeSettings(WizardDescriptor settings) {
     }
 
     @Override
-    public void nextPanel() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void previousPanel() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean isValid() {
+        return true;
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
-        listeners.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
-        listeners.removeChangeListener(l);
     }
-    
+
 }

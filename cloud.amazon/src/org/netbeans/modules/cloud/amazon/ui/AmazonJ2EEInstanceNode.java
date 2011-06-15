@@ -67,6 +67,10 @@ public class AmazonJ2EEInstanceNode extends AbstractNode {
         setIconBaseWithExtension(TOMCAT_ICON);
         
     }
+    
+    void showServerType() {
+        setDisplayName(aij.getDisplayName()+" ["+aij.getContainerType()+"]");
+    }
 
     @Override
     public Image getIcon(int type) {

@@ -68,12 +68,14 @@ public class AmazonDeploymentManager implements DeploymentManager2 {
     private String envID;
     private String keyId;
     private String key;
+    private String containerType;
 
-    public AmazonDeploymentManager(String appName, String envID, String keyId, String key) {
+    public AmazonDeploymentManager(String appName, String envID, String keyId, String key, String containerType) {
         this.appName = appName;
         this.envID = envID;
         this.keyId = keyId;
         this.key = key;
+        this.containerType = containerType;
     }
     
     @Override
@@ -201,6 +203,10 @@ public class AmazonDeploymentManager implements DeploymentManager2 {
     @Override
     public void setDConfigBeanVersion(DConfigBeanVersionType dcbvt) throws DConfigBeanVersionUnsupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getContainerType() {
+        return containerType;
     }
     
 }

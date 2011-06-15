@@ -147,6 +147,12 @@ public class AmazonInstance {
         return new BasicAWSCredentials(keyId, key);
     }
     
+    public void testConnection() {
+        assert !SwingUtilities.isEventDispatchThread();
+        AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+        client.createStorageLocation();
+    }
+    
     public List<AmazonJ2EEInstance> readJ2EEServerInstances() {
         assert !SwingUtilities.isEventDispatchThread();
         List<AmazonJ2EEInstance> res = new ArrayList<AmazonJ2EEInstance>();
@@ -155,7 +161,9 @@ public class AmazonInstance {
             LOG.log(Level.INFO, "read AWS environments"); // NOI18N
             AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
             for (EnvironmentDescription ed : client.describeEnvironments().getEnvironments()) {
-                AmazonJ2EEInstance inst = new AmazonJ2EEInstance(this, ed.getApplicationName(), ed.getEnvironmentName(), ed.getEnvironmentId());
+                AmazonJ2EEInstance inst = new AmazonJ2EEInstance(this, ed.getApplicationName(), 
+                        ed.getEnvironmentName(), ed.getEnvironmentId(),
+                        ed.getSolutionStackName());
                 inst.updateState(ed.getStatus());
                 res.add(inst);
             }
@@ -248,18 +256,18 @@ public class AmazonInstance {
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
         S3Location slocation = createDefaultEmptyApplication();
         
-        CreateApplicationVersionRequest req = new CreateApplicationVersionRequest(appName, "version 0").
+        CreateApplicationVersionRequest req = new CreateApplicationVersionRequest(appName, "blank application from NetBeans").
                 withSourceBundle(slocation);
         client.createApplicationVersion(req);
     }
 
-    public void createEnvironment(String appName, String envName, String url, String containerType) {
+    public String createEnvironment(String appName, String envName, String url, String containerType) {
         assert !SwingUtilities.isEventDispatchThread();
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
         CreateEnvironmentRequest req = new CreateEnvironmentRequest(appName, envName).
                 withCNAMEPrefix(url).
                 withSolutionStackName(containerType);
-        client.createEnvironment(req);
+        return client.createEnvironment(req).getEnvironmentId();
     }
 
     public enum DeploymentStatus {

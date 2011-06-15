@@ -41,21 +41,31 @@
  */
 package org.netbeans.modules.cloud.amazon.ui;
 
+import com.amazonaws.AmazonClientException;
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cloud.amazon.AmazonInstance;
+import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEInstance;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  */
-public class AmazonWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class AmazonWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor> {
 
-    public static final String KEY_ID = "access-key-id";
-    public static final String KEY = "secret-access-key";
+    public static final String KEY_ID = "access-key-id"; // String
+    public static final String KEY = "secret-access-key"; // String
+    public static final String SERVERS = "secrets"; // List<Node>
     
     private AmazonWizardComponent component;
+    private List<Node> servers;
     
     public AmazonWizardPanel() {
     }
@@ -65,13 +75,15 @@ public class AmazonWizardPanel implements WizardDescriptor.Panel<WizardDescripto
         if (component == null) {
             component = new AmazonWizardComponent();
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getPanelContentData());            
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(0));
         }
         return component;
     }
 
-    private static String[] getPanelContentData() {
+    static String[] getPanelContentData() {
         return new String[] {
-                NbBundle.getMessage(AmazonWizardPanel.class, "LBL_ACIW_Amazon")
+                NbBundle.getMessage(AmazonWizardPanel.class, "LBL_ACIW_Amazon"),
+                NbBundle.getMessage(AmazonWizardPanel.class, "LBL_ACIW_Amazon_Envs")
             };
     }
     
@@ -88,6 +100,7 @@ public class AmazonWizardPanel implements WizardDescriptor.Panel<WizardDescripto
     public void storeSettings(WizardDescriptor settings) {
         settings.putProperty(KEY_ID, component.getKeyId());
         settings.putProperty(KEY, component.getKey());
+        settings.putProperty(SERVERS, servers);
     }
 
     @Override
@@ -101,6 +114,28 @@ public class AmazonWizardPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void prepareValidation() {
+    }
+
+    @Override
+    public void validate() throws WizardValidationException {
+        servers = new ArrayList<Node>();
+        AmazonInstance ai = new AmazonInstance("temporary", component.getKeyId(), component.getKey());
+        try {
+            ai.testConnection();
+        } catch (AmazonClientException ex) {
+            throw new WizardValidationException((JComponent)getComponent(), 
+                    "connection failed", NbBundle.getMessage(AmazonWizardPanel.class, "AmazonWizardPanel.wrong.credentials"));
+        }
+        List<AmazonJ2EEInstance> list = ai.readJ2EEServerInstances();
+        for (AmazonJ2EEInstance inst : list) {
+            AmazonJ2EEInstanceNode n = new AmazonJ2EEInstanceNode(inst);
+            n.showServerType();
+            servers.add(n);
+        }
     }
     
 }

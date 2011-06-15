@@ -59,6 +59,8 @@ public class AmazonWizardIterator implements WizardDescriptor.InstantiatingItera
     private ChangeSupport listeners;
     private WizardDescriptor wizard;
     private AmazonWizardPanel panel;
+    private AmazonWizardPanel2 panel2;
+    boolean first = true;
 
     public AmazonWizardIterator() {
         listeners = new ChangeSupport(this);
@@ -92,10 +94,17 @@ public class AmazonWizardIterator implements WizardDescriptor.InstantiatingItera
 
     @Override
     public Panel current() {
-        if (panel == null) {
-            panel = new AmazonWizardPanel();
+        if (first) {
+            if (panel == null) {
+                panel = new AmazonWizardPanel();
+            }
+            return panel;
+        } else {
+            if (panel2 == null) {
+                panel2 = new AmazonWizardPanel2();
+            }
+            return panel2;
         }
-        return panel;
     }
 
     @Override
@@ -105,22 +114,22 @@ public class AmazonWizardIterator implements WizardDescriptor.InstantiatingItera
 
     @Override
     public boolean hasNext() {
-        return false;
+        return first;
     }
 
     @Override
     public boolean hasPrevious() {
-        return false;
+        return !first;
     }
 
     @Override
     public void nextPanel() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        first = false;
     }
 
     @Override
     public void previousPanel() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        first = true;
     }
 
     @Override
