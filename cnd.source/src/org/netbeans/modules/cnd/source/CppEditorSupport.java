@@ -162,7 +162,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         DataObject dao = getDataObject();
         FileObject fo = dao.getPrimaryFile();
         if (!CndFileUtils.isLocalFileSystem(fo.getFileSystem())) {
-            doc.putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
+            doc.putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n"); //NOI18N
             
         }
         super.loadFromStreamToKit(doc, stream, kit);
