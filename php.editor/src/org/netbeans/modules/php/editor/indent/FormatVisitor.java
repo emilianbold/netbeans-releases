@@ -211,7 +211,7 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ArrayCreation node) {
         int delta = options.indentArrayItems - options.continualIndentSize;
-        if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex < ts.index()) { // it's possible that the expression starts with array
+        if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index()) { // it's possible that the expression starts with array
             while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ARRAY
                     && lastIndex < ts.index()) {
                 addFormatToken(formatTokens);
