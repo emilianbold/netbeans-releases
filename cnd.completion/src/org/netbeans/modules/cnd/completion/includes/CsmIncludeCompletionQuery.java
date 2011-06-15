@@ -137,18 +137,21 @@ public class CsmIncludeCompletionQuery {
 
     private void addFolderItems(FSPath parentFolder, String parentFolderPresentation,
             String childSubDir, boolean highPriority, boolean system, boolean filtered, int substitutionOffset) {
-        FileObject dir = parentFolder.getFileObject().getFileObject(childSubDir);
-        if (dir != null && dir.isValid()) {
-            FileObject[] list = filtered ? listFiles(dir, new HeadersFileFilter()) : listFiles(dir, new DefFileFilter());
-            if (list != null) {
-                String relFileName;
-                for (FileObject curFile : list) {
-                    relFileName = curFile.getNameExt();
-                    CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
-                            substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
-                            system, highPriority, curFile.isFolder(), true);
-                    if (!results.containsKey(relFileName)) {
-                        results.put(relFileName, item);
+        FileObject parentFO = parentFolder.getFileObject();
+        if (parentFO != null) {
+            FileObject dir = parentFO.getFileObject(childSubDir);
+            if (dir != null && dir.isValid()) {
+                FileObject[] list = filtered ? listFiles(dir, new HeadersFileFilter()) : listFiles(dir, new DefFileFilter());
+                if (list != null) {
+                    String relFileName;
+                    for (FileObject curFile : list) {
+                        relFileName = curFile.getNameExt();
+                        CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
+                                substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
+                                system, highPriority, curFile.isFolder(), true);
+                        if (!results.containsKey(relFileName)) {
+                            results.put(relFileName, item);
+                        }
                     }
                 }
             }
