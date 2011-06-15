@@ -44,8 +44,10 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -102,7 +104,17 @@ public class BrokenLinks {
 
         @Override
         public Runnable resolve() {
-            return null;
+            return new Runnable() {
+
+                @Override
+                public void run() {
+                    MakeCustomizerProvider cp = project.getLookup().lookup(MakeCustomizerProvider.class);
+                    if (cp == null) {
+                        return;
+                    }
+                    cp.showCustomizer("Build"); // NOI18N
+                }
+            };
         }
     }
     
@@ -122,7 +134,13 @@ public class BrokenLinks {
 
         @Override
         public Runnable resolve() {
-            return null;
+            return new Runnable() {
+
+                @Override
+                public void run() {
+                    OptionsDisplayer.getDefault().open("CPlusPlus/ToolsTab"); // NOI18N
+                }
+            };
         }
     }
 

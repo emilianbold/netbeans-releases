@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -183,6 +183,7 @@ public class BufferedCharSequence implements CharSequence {
      * @see        BufferedCharSequence#close()
      */
     @Override
+    @SuppressWarnings("FinalizeDeclaration")
     protected void finalize() throws Throwable {
         try {
             close();
@@ -252,6 +253,7 @@ public class BufferedCharSequence implements CharSequence {
 
     // CharSequence interface
 
+    @Override
     public int length() {
         checkState();
         reset();
@@ -261,6 +263,7 @@ public class BufferedCharSequence implements CharSequence {
         return length;
     }
 
+    @Override
     public char charAt(int index) throws IndexOutOfBoundsException {
         checkState();
         String errMsg = check(index);
@@ -271,6 +274,7 @@ public class BufferedCharSequence implements CharSequence {
         return getCharAt(index);
     }
 
+    @Override
     public CharSequence subSequence(int start, int end)
             throws IndexOutOfBoundsException {
         checkState();
@@ -461,6 +465,7 @@ public class BufferedCharSequence implements CharSequence {
             this.bstream.mark(Integer.MAX_VALUE);
             this.bufferSize = getBufferSize(bufferSize);
             buffer = newBuffer();
+            buffer.position(buffer.limit());
         }
 
         @Override
@@ -479,6 +484,7 @@ public class BufferedCharSequence implements CharSequence {
                 throw new SourceIOException(ex);
             }            
             buffer.clear();
+            buffer.position(buffer.limit());
         }
 
         /**
@@ -494,9 +500,9 @@ public class BufferedCharSequence implements CharSequence {
         private int read() {
             try {
                 if(buffer.hasArray()) {
-                    int res = bstream.read(buffer.array());
+                    int res = bstream.read(buffer.array(), buffer.position(), buffer.remaining());
                     if(res > 0) {
-                        buffer.position(res);
+                        buffer.position(res + buffer.position());
                     }
                     return res;
                 }
@@ -529,8 +535,8 @@ public class BufferedCharSequence implements CharSequence {
          *
          * @return {@code true} if EOF, otherwise {@code false}.
          */
-        public boolean readNext() {           
-            buffer.clear();            
+        public boolean readNext() {
+            buffer.compact();
             int status = read();            
             buffer.flip();            
             return status == -1;
@@ -583,12 +589,12 @@ public class BufferedCharSequence implements CharSequence {
             }
             while((coderResult =
                     decoder.decode(source.buffer, out, endOfInput))
-                    != CoderResult.UNDERFLOW) {
+                    == CoderResult.OVERFLOW) {
                 out = buffer.growBuffer();                
             }
             if(endOfInput) {
                 while((coderResult = decoder.flush(out))
-                        != CoderResult.UNDERFLOW) {
+                        == CoderResult.OVERFLOW) {
                     out = buffer.growBuffer();
                 }
             }
