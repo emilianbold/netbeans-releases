@@ -128,8 +128,8 @@ public class FormatVisitor extends DefaultVisitor {
         List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
         int indexBeforeLastComment = -1;  // remember last comment
         while (moveNext() && ts.offset() < node.getStartOffset()
-                && (ts.offset() + ts.token().length()) <= node.getStartOffset()
-                || ts.token().id() == PHPTokenId.PHP_CLOSETAG) {
+                && ((ts.offset() + ts.token().length()) <= node.getStartOffset()
+                || ts.token().id() == PHPTokenId.PHP_CLOSETAG)) {
             if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE
                     && path.size() > 1 && path.get(1) instanceof NamespaceDeclaration) {
                 // this a a fix for probalem that namespace declaration through {}, doesn't end with the end of  }
