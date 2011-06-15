@@ -42,23 +42,22 @@
 package org.netbeans.modules.cloud.amazon;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.api.server.properties.InstancePropertiesManager;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 
 /**
  * Manager of all Amazon accounts registered in the IDE (usually just one).
  */
 public class AmazonInstanceManager {
 
+    private static final String AMAZON_IP_NAMESPACE = "cloud.amazon"; // NOI18N
+    
     private static final String PREFIX = "org.netbeans.modules.cloud.amazon."; // NOI18N
     private static final String KEY_ID = "access-key-id"; // NOI18N
     private static final String KEY = "secret-access-key"; // NOI18N
@@ -88,12 +87,7 @@ public class AmazonInstanceManager {
     }
     
     private void init() {
-       for (String name : getAmazonInstanceNames()) {
-           AmazonInstance ai = createFromPreferences(name);
-           if (ai != null) {
-            instances.add(ai);
-           }
-       }
+       instances.addAll(load());
        notifyChange();
     }
     
@@ -113,50 +107,38 @@ public class AmazonInstanceManager {
     
     private void store(AmazonInstance ai) {
         // TODO: check uniqueness etc.
-        Preferences p = getAmazonInstanceRoot(ai.getName());
+        InstanceProperties props = InstancePropertiesManager.getInstance().createProperties(AMAZON_IP_NAMESPACE);
+        
         Keyring.save(PREFIX+KEY_ID+"."+ai.getName(), ai.getKeyId().toCharArray(), "Amazon Access Key ID"); // NOI18N
         Keyring.save(PREFIX+KEY+"."+ai.getName(), ai.getKey().toCharArray(), "Amazon Secret Access Key"); // NOI18N
-        p.put("name", ai.getName());
-        try {
-            p.flush();
-            p.sync();
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        
+        props.putString("name", ai.getName()); // NOI18N
     }
     
     
-    private static AmazonInstance createFromPreferences(String name) {
-        Preferences p = getAmazonInstanceRoot(name);
-        assert p != null : "no preferences for "+name; // NOI18N
-        char ch[] = Keyring.read(PREFIX+KEY_ID+"."+name);
-        if (ch == null) {
-            LOG.log(Level.WARNING, "no access key id found for "+name);
-            return null;
+    private static List<AmazonInstance> load() {
+        List<AmazonInstance> result = new ArrayList<AmazonInstance>();
+        for(InstanceProperties props : InstancePropertiesManager.getInstance().getProperties(AMAZON_IP_NAMESPACE)) {
+            String name = props.getString("name", null); // NOI18N
+            assert name != null : "Instance without name";
+            
+            char ch[] = Keyring.read(PREFIX+KEY_ID+"."+name);
+            if (ch == null) {
+                LOG.log(Level.WARNING, "no access key id found for "+name);
+                continue;
+            }
+            String keyId = new String(ch);
+            assert keyId != null : "key ID is missing for "+name; // NOI18N
+            ch = Keyring.read(PREFIX+KEY+"."+name);
+            if (ch == null) {
+                LOG.log(Level.WARNING, "no secret access key found for "+name);
+                continue;
+            }
+            String key = new String(ch);
+            assert key != null : "secret access key is missing for "+name; // NOI18N
+            result.add(new AmazonInstance(name, keyId, key));
         }
-        String keyId = new String(ch);
-        assert keyId != null : "key ID is missing for "+name; // NOI18N
-        ch = Keyring.read(PREFIX+KEY+"."+name);
-        if (ch == null) {
-            LOG.log(Level.WARNING, "no secret access key found for "+name);
-            return null;
-        }
-        String key = new String(ch);
-        assert key != null : "secret access key is missing for "+name; // NOI18N
-        return new AmazonInstance(name, keyId, key);
-    }
-
-    private static Preferences getAmazonInstanceRoot(String name) {
-        return Utils.getPreferencesRoot().node(name);
-    }
-    
-    private static List<String> getAmazonInstanceNames() {
-        try {
-            return Arrays.asList(Utils.getPreferencesRoot().childrenNames());
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.<String>emptyList();
-        }
+        return result;
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -168,10 +150,11 @@ public class AmazonInstanceManager {
     }
 
     void remove(AmazonInstance ai) {
-        try {
-            getAmazonInstanceRoot(ai.getName()).removeNode();
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
+        for (InstanceProperties props : InstancePropertiesManager.getInstance().getProperties(AMAZON_IP_NAMESPACE)) {
+            if (ai.getName().equals(props.getString("name", null))) { // NOI18N
+                props.remove();
+                break;
+            }
         }
         instances.remove(ai);
         notifyChange();

@@ -79,6 +79,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.cloud.amazon.serverplugin.ProgressObjectImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -95,9 +96,9 @@ public class AmazonInstance {
     
     public static final String DEFAULT_EMPTY_APPLICATION = "empty-nb-app-1.0.war";
     
-    private String keyId;
-    private String key;
-    private String name;
+    private final String keyId;
+    private final String key;
+    private final String name;
     
     private ServerInstance serverInstance;
 
@@ -119,24 +120,12 @@ public class AmazonInstance {
         return keyId;
     }
 
-    public void setKeyId(String keyId) {
-        this.keyId = keyId;
-    }
-
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getKey() {
         return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
     }
 
     private AWSCredentials getCredentials() {

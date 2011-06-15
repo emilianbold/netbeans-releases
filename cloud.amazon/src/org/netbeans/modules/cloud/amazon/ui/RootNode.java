@@ -45,7 +45,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
 import org.netbeans.modules.cloud.amazon.AmazonInstanceManager;
-import org.netbeans.modules.cloud.amazon.Utils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
