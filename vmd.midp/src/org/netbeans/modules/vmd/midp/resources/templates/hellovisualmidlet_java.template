@@ -105,7 +105,7 @@ public class ${name} extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|18-getter|0|18-preInit
     /**
-     * Returns an initiliazed instance of exitCommand component.
+     * Returns an initialized instance of exitCommand component.
      * @return the initialized component instance
      */
     public Command getExitCommand() {
