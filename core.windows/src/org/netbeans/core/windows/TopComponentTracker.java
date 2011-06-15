@@ -187,6 +187,10 @@ class TopComponentTracker {
     }
 
     private Preferences getPreferences() {
-        return NbPreferences.forModule( TopComponentTracker.class ).node( "tctracker" ); //NOI18N
+        Preferences prefs = NbPreferences.forModule( TopComponentTracker.class ).node( "tctracker" ); //NOI18N
+        String role = WindowManagerImpl.getInstance().getRole();
+        if( null != role )
+            prefs = prefs.node( role );
+        return prefs;
     }
 }

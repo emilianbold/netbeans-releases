@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.persistence.PersistenceManager;
+import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.windows.*;
@@ -1763,6 +1764,129 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             listeners.remove( listener );
         }
     }
+
+    private String currentRole = null;
+    
+    @Override
+    public String getRole() {
+        return currentRole;
+    }
+
+    @Override
+    public void setRole( String roleName ) {
+        setRole( roleName, false );
+    }
+    
+    public void setRole( String roleName, boolean keepDocumentWindows ) {
+        if( null != roleName && roleName.isEmpty() )
+            throw new IllegalArgumentException( "Role name cannot be empty."); //NOI18N
+        
+        if( !PersistenceHandler.getDefault().isLoaded() ) {
+            currentRole = roleName;
+            PersistenceManager.getDefault().setRole( currentRole );
+        } else {
+            if( currentRole == null ? roleName == null : currentRole.equals( roleName ) ) {
+                //nothing to do
+                return;
+            }
+            switchRole( roleName, keepDocumentWindows );
+        }
+    }
+    
+    /*private*/ boolean switchRole( String newRole, boolean keepDocumentWindows ) {
+        final WindowSystemImpl ws = Lookup.getDefault().lookup( WindowSystemImpl.class );
+        assert null != ws;
+        final PersistenceManager pm = PersistenceManager.getDefault();
+        
+        //cancel full-screen mode
+        MainWindow.getInstance().setFullScreenMode(false);
+        
+        //get a list of editor windows that should stay open even after the reset
+        final TopComponent[] editors = getEditorTopComponents();
+        if( !keepDocumentWindows ) {
+            for( TopComponent tc : editors ) {
+                if( !tc.canClose() )
+                    return false;
+            }
+        }
+        
+        final TopComponent prevActiveEditor = getArbitrarySelectedEditorTopComponent();
+
+        Set<TopComponent> openedBefore = new HashSet<TopComponent>( getRegistry().getOpened() );
+
+        boolean hideAndShowWhileSwitching = Switches.isShowAndHideMainWindowWhileSwitchingRole();
+        if( hideAndShowWhileSwitching ) {
+            ws.hide();
+        } else {
+            getMainWindow().setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
+        }
+        
+        //save current layout under current role
+        ws.save();
+        
+        deselectEditorTopComponents();
+
+        //reset
+        resetModel();
+        pm.reset(); //keep mappings to TopComponents created so far
+        PersistenceHandler.getDefault().clear();
+
+        this.currentRole = newRole;
+        pm.setRole( newRole );
+
+        //load from new role
+        ws.load();
+
+        if( keepDocumentWindows ) {
+            ModeImpl editorMode = (ModeImpl) findMode("editor"); //NOI18N
+            //re-open editor windows that were opened before the reset
+            for( int i=0; i<editors.length && null != editorMode; i++ ) {
+                TopComponent editor = editors[i];
+                if( editor.getPersistenceType() == TopComponent.PERSISTENCE_NEVER )
+                    continue;
+                ModeImpl mode = ( ModeImpl ) findMode( editor );
+                if( null == mode )
+                    mode = editorMode;
+                if( null != mode ) {
+                    String tcId = findTopComponentID( editor );
+                    if( !(mode.getOpenedTopComponents().contains( editor ) || (null != tcId && mode.getOpenedTopComponentsIDs().contains( tcId ))) )
+                        mode.addOpenedTopComponentNoNotify(editor);
+                    openedBefore.remove( editor );
+                }
+            }
+        }
+        
+        Set<TopComponent> openedAfter = getRegistry().getOpened();
+        openedBefore.removeAll( openedAfter );
+        for( TopComponent tc : openedBefore ) {
+            componentCloseNotify( tc );
+        }
+
+        if( hideAndShowWhileSwitching ) {
+            ws.show();
+        } else {
+            getMainWindow().setCursor( null );
+        }
+
+        TopComponent editorToActivate = prevActiveEditor;
+        if( null != editorToActivate && !editorToActivate.isOpened() )
+            editorToActivate = getArbitrarySelectedEditorTopComponent();
+        if( null != editorToActivate )
+            editorToActivate.requestActive();
+        
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                Frame mainWindow = getMainWindow();
+                mainWindow.invalidate();
+                mainWindow.repaint();
+            }
+        });
+        
+        return true;
+    }
+    
+    //roles
     
     void fireEvent( WindowSystemEventType type ) {
         assertEventDispatchThread();
@@ -1818,6 +1942,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * An empty TopComponent needed for deselectEditorTopComponents()
      */
     private static class DummyTopComponent extends TopComponent {
+        @Override
         protected String preferredID() {
             return "temp";
         }
