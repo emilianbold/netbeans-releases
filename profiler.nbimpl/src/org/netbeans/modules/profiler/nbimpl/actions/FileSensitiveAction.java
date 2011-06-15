@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.actions;
+package org.netbeans.modules.profiler.nbimpl.actions;
 
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;

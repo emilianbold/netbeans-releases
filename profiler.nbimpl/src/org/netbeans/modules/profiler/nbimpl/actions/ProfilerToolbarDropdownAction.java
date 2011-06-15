@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.actions;
+package org.netbeans.modules.profiler.nbimpl.actions;
 
 import org.openide.awt.Actions;
 import org.openide.awt.DropDownButtonFactory;
@@ -57,6 +57,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.modules.profiler.actions.AttachAction;
 import org.openide.filesystems.FileUtil;
 
 
