@@ -47,7 +47,6 @@ import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.lib.profiler.ui.components.JExtendedRadioButton;
 import org.openide.DialogDescriptor;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -76,6 +75,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
 import org.openide.DialogDisplayer;
@@ -551,7 +551,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         add(existingSettingsScrollPane, constraints);
 
         // bottomRenameSpacer
-        bottomRenameSpacer = Utils.createFillerPanel();
+        bottomRenameSpacer = UIUtils.createFillerPanel();
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 6;

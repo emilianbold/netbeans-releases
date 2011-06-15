@@ -53,6 +53,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import org.netbeans.lib.profiler.ui.UIUtils;
 
 
 /**
@@ -183,6 +184,6 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
         constraints.fill = GridBagConstraints.BOTH;
         constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.insets = new Insets(0, 0, 0, 0);
-        add(Utils.createFillerPanel(), constraints);
+        add(UIUtils.createFillerPanel(), constraints);
     }
 }

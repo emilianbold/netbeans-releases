@@ -68,6 +68,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkTextArea;
 
@@ -227,7 +228,7 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         constraints.insets = new Insets(27, 30, 12, 20);
         add(captionLabel, constraints);
 
-        JSeparator separator1 = Utils.createHorizontalSeparator();
+        JSeparator separator1 = UIUtils.createHorizontalSeparator();
         separator1.setBackground(getBackground());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -251,7 +252,7 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         constraints.insets = new Insets(10, 20, 10, 20);
         add(contentsScroll, constraints);
 
-        JSeparator separator2 = Utils.createHorizontalSeparator();
+        JSeparator separator2 = UIUtils.createHorizontalSeparator();
         separator2.setBackground(getBackground());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -293,7 +294,7 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(3, 0, 4, 0);
-        add(Utils.createFillerPanel(), constraints);
+        add(UIUtils.createFillerPanel(), constraints);
 
         // basicAdvancedSettingsSwitchArea
         basicAdvancedSettingsSwitchArea = new HyperlinkTextArea(ADVANCED_SETTINGS_STRING) {
