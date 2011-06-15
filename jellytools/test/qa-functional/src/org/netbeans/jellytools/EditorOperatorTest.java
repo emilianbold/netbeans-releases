@@ -66,7 +66,7 @@ public class EditorOperatorTest extends JellyTestCase {
 
     private static EditorOperator eo;
     private static final String SAMPLE_CLASS_1 = "SampleClass1";
-    private static final String[] tests = new String[]{
+    public static final String[] tests = new String[]{
         "testTxtEditorPane",
         "testUndockWindow",
         "testLblRowColumn",

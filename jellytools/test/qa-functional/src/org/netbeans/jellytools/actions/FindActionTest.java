@@ -45,7 +45,6 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -59,7 +58,7 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
  */
 public class FindActionTest extends JellyTestCase {
 
-    private static final String[] tests = new String[]{
+    public static final String[] tests = new String[]{
         "testPerformPopup",
         "testPerformMenu",
         "testPerformAPI",

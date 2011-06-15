@@ -57,6 +57,11 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
  */
 public class SaveAsTemplateActionTest extends JellyTestCase {
 
+    public static final String[] tests = {
+        "testPerformPopup",
+        "testPerformAPI"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -67,8 +72,7 @@ public class SaveAsTemplateActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        return createModuleTest(SaveAsTemplateActionTest.class,
-                "testPerformPopup", "testPerformAPI");
+        return createModuleTest(SaveAsTemplateActionTest.class, tests);
     }
     private static Node node;
 
