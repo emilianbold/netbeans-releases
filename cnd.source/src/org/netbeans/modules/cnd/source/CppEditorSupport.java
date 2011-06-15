@@ -161,11 +161,24 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         DataObject dao = getDataObject();
         FileObject fo = dao.getPrimaryFile();
+        boolean resetLS = true;
         if (!CndFileUtils.isLocalFileSystem(fo.getFileSystem())) {
-            doc.putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n"); //NOI18N
-            
+            InputStream in = fo.getInputStream();
+            int ch;
+            loop: while ((ch = in.read()) != (-1)) {
+                switch (ch) {
+                    case '\n':
+                    case '\r':
+                        resetLS = false;
+                        break loop;
+                }
+            }
+            in.close();
         }
         super.loadFromStreamToKit(doc, stream, kit);
+        if (resetLS) {
+            doc.putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n"); //NOI18N
+        }
     }
 
     @Override
