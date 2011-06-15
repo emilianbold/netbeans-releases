@@ -46,8 +46,14 @@ package org.netbeans.modules.cnd.source;
 // This file was initially based on org.netbeans.modules.java.JavaEditor
 // (Rev 61)
 import java.io.IOException;
+import java.io.InputStream;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 
@@ -149,6 +155,17 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 
     UndoRedo.Manager getUndoRedoImpl() {
         return super.getUndoRedo();
+    }
+
+    @Override
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+        DataObject dao = getDataObject();
+        FileObject fo = dao.getPrimaryFile();
+        if (!CndFileUtils.isLocalFileSystem(fo.getFileSystem())) {
+            doc.putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n"); //NOI18N
+            
+        }
+        super.loadFromStreamToKit(doc, stream, kit);
     }
 
     @Override
