@@ -47,6 +47,7 @@ package org.netbeans.core.windows;
 import java.util.MissingResourceException;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Window system switches
@@ -214,6 +215,27 @@ public final class Switches {
      */
     public static boolean isSplitterRespectMinimumSizeEnabled() {
         return getSwitchValue( "Splitter.Respect.MinimumSize.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * 
+     * @return True if it is possible to dock document windows together with
+     * non-document windows and vice-versa. The switch has the same meaning
+     * as system property <code>netbeans.winsys.allow.dock.anywhere</code>.
+     * @since 2.33
+     */
+    public static boolean isMixingOfEditorsAndViewsEnabled() {
+        return getSwitchValue( "Mix.Editors.And.Views.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True to hide and show the main window while switching window layout
+     * role.
+     * @see WindowManager#setRole(java.lang.String) 
+     * @since 2.34
+     */
+    public static boolean isShowAndHideMainWindowWhileSwitchingRole() {
+        return getSwitchValue( "WinSys.Show.Hide.MainWindow.While.Switching.Role", true ); //NOI18N
     }
     
     private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
