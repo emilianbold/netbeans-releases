@@ -420,7 +420,7 @@ public class UpdateAction extends ContextAction {
     };
 
     private static class UpdateNotifyListener implements ISVNNotifyListener {
-        private static Pattern conflictFilePattern = Pattern.compile("(C[ C][ C][ C]|[ C]C[ C][ C]|[ C][ C]C[ C]|[ C][ C][ C]C) ?(.+)"); //NOI18N
+        private static Pattern conflictFilePattern = Pattern.compile("(C...|.C..|..C.|...C) ?(.+)"); //NOI18N
         private static Pattern existedFilePattern = Pattern.compile("E    ?(.+)"); //NOI18N
         HashSet<File> conflictedFiles = new HashSet<File>();
         HashSet<File> existedFiles = new HashSet<File>();
