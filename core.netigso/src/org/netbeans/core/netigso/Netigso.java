@@ -65,15 +65,18 @@ import org.netbeans.Module;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
+import org.netbeans.core.startup.Main;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.Version;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.service.packageadmin.PackageAdmin;
@@ -131,7 +134,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             } catch (BundleException ex) {
                 LOG.log(Level.SEVERE, "Cannot start OSGi framework", ex); // NOI18N
             }
-            NetigsoServices ns = new NetigsoServices(framework);
+            NetigsoServices ns = new NetigsoServices(this, framework);
             LOG.finer("OSGi Container initialized"); // NOI18N
         }
         activator.register(preregister);
@@ -307,6 +310,28 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     // take care about the registered bundles
     //
     private final Map<String,String[]> registered = new HashMap<String,String[]>();
+    
+    final void notifyBundleChange(final String symbolicName, final Version version, final int action) {
+        Main.getModuleSystem().getManager().mutex().postReadRequest(new Runnable() {
+            @Override
+            public void run() {
+                if (activator.isUnderOurControl(symbolicName)) {
+                    return;
+                }
+                String type = "" + action;
+                switch (action) {
+                    case BundleEvent.INSTALLED: return; // no message for installed
+                    case BundleEvent.RESOLVED: type = "resolved"; break;
+                    case BundleEvent.STARTED: type = "started"; break;
+                    case BundleEvent.STOPPED: type = "stopped"; break;
+                    case BundleEvent.UNINSTALLED: return; // nothing for uninstalled
+                }
+                Netigso.LOG.log(Level.INFO, "bundle {0}@{2} {1}", new Object[]{
+                    symbolicName, type, version
+                });
+            }
+        });
+    }
 
     private File getNetigsoCache() throws IllegalStateException {
         // Explicitly specify the directory to use for caching bundles.
