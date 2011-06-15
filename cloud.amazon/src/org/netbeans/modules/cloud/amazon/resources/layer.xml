@@ -78,7 +78,10 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     plugin
                 -->
                 <file name="Factory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.amazon.serverplugin.AmazonDeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^amazon:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.cloud.amazon.serverplugin.AmazonDeploymentFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 

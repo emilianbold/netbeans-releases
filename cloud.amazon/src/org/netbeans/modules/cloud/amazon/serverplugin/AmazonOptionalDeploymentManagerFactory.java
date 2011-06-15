@@ -76,7 +76,12 @@ public class AmazonOptionalDeploymentManagerFactory extends OptionalDeploymentMa
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
+    @Override
+    public boolean isCommonUIRequired() {
+        return false;
+    }
+
     public static final class AmazonStartServer extends StartServer {
 
         @Override
