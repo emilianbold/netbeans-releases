@@ -161,7 +161,7 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: splashScreen ">//GEN-BEGIN:|13-getter|0|13-preInit
     /**
-     * Returns an initiliazed instance of splashScreen component.
+     * Returns an initialized instance of splashScreen component.
      * @return the initialized component instance
      */
     public SplashScreen getSplashScreen() {
@@ -179,7 +179,7 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: smsComposer ">//GEN-BEGIN:|17-getter|0|17-preInit
     /**
-     * Returns an initiliazed instance of smsComposer component.
+     * Returns an initialized instance of smsComposer component.
      * @return the initialized component instance
      */
     public SMSComposer getSmsComposer() {
@@ -203,7 +203,7 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: waitScreen ">//GEN-BEGIN:|21-getter|0|21-preInit
     /**
-     * Returns an initiliazed instance of waitScreen component.
+     * Returns an initialized instance of waitScreen component.
      * @return the initialized component instance
      */
     public WaitScreen getWaitScreen() {
@@ -221,7 +221,7 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alertError ">//GEN-BEGIN:|28-getter|0|28-preInit
     /**
-     * Returns an initiliazed instance of alertError component.
+     * Returns an initialized instance of alertError component.
      * @return the initialized component instance
      */
     public Alert getAlertError() {
@@ -237,7 +237,7 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alertSent ">//GEN-BEGIN:|29-getter|0|29-preInit
     /**
-     * Returns an initiliazed instance of alertSent component.
+     * Returns an initialized instance of alertSent component.
      * @return the initialized component instance
      */
     public Alert getAlertSent() {
@@ -253,7 +253,7 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|32-getter|0|32-preInit
     /**
-     * Returns an initiliazed instance of exitCommand component.
+     * Returns an initialized instance of exitCommand component.
      * @return the initialized component instance
      */
     public Command getExitCommand() {
@@ -268,7 +268,7 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: task ">//GEN-BEGIN:|39-getter|0|39-preInit
     /**
-     * Returns an initiliazed instance of task component.
+     * Returns an initialized instance of task component.
      * @return the initialized component instance
      */
     public SimpleCancellableTask getTask() {

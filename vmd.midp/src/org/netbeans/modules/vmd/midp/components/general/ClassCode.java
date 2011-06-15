@@ -131,7 +131,7 @@ public class ClassCode {
             String directAccess = CodeReferencePresenter.generateDirectAccessCode (getComponent ());
 
             section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Getter: " + directAccess + " \">\n"); // NOI18N
-            section.getWriter ().write ("/**\n * Returns an initiliazed instance of " + directAccess + " component.\n * @return the initialized component instance\n */\n"); // NOI18N
+            section.getWriter ().write ("/**\n * Returns an initialized instance of " + directAccess + " component.\n * @return the initialized component instance\n */\n"); // NOI18N
             section.getWriter ().write ("public " + CodeReferencePresenter.generateTypeCode(getComponent()) + " " + CodeReferencePresenter.generateAccessCode(getComponent()) + " {\n"); // NOI18N
             section.getWriter ().write ("if (" + directAccess + " == null) {\n").commit(); // NOI18N
             
