@@ -180,7 +180,7 @@ public final class TerminalSupportImpl {
 //                            npb.setWorkingDirectory("${HOME}");
                         npb.setExecutable(shell);
                         NativeExecutionDescriptor descr;
-                        descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(ioRef.get());
+                        descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(true).inputOutput(ioRef.get());
                         descr.postExecution(new Runnable() {
 
                             @Override
