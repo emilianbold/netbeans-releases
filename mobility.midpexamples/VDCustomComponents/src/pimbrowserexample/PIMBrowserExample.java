@@ -146,7 +146,7 @@ public class PIMBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: splashScreen ">//GEN-BEGIN:|13-getter|0|13-preInit
     /**
-     * Returns an initiliazed instance of splashScreen component.
+     * Returns an initialized instance of splashScreen component.
      * @return the initialized component instance
      */
     public SplashScreen getSplashScreen() {
@@ -164,7 +164,7 @@ public class PIMBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: pimBrowser ">//GEN-BEGIN:|17-getter|0|17-preInit
     /**
-     * Returns an initiliazed instance of pimBrowser component.
+     * Returns an initialized instance of pimBrowser component.
      * @return the initialized component instance
      */
     public PIMBrowser getPimBrowser() {
@@ -187,7 +187,7 @@ public class PIMBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|26-getter|0|26-preInit
     /**
-     * Returns an initiliazed instance of exitCommand component.
+     * Returns an initialized instance of exitCommand component.
      * @return the initialized component instance
      */
     public Command getExitCommand() {
@@ -204,7 +204,7 @@ public class PIMBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert ">//GEN-BEGIN:|32-getter|0|32-preInit
     /**
-     * Returns an initiliazed instance of alert component.
+     * Returns an initialized instance of alert component.
      * @return the initialized component instance
      */
     public Alert getAlert() {

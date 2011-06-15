@@ -59,6 +59,12 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
  */
 public class ReplaceActionTest extends JellyTestCase {
 
+    public static final String[] tests = {
+        "testPerformMenu",
+        "testPerformAPI",
+        "testPerformShortcut"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -68,10 +74,7 @@ public class ReplaceActionTest extends JellyTestCase {
 
     /** method used for explicit testsuite definition */
     public static Test suite() {
-        return createModuleTest(ReplaceActionTest.class,
-                "testPerformMenu",
-                "testPerformAPI",
-                "testPerformShortcut");
+        return createModuleTest(ReplaceActionTest.class, tests);
     }
     private static final String SAMPLE_CLASS_1 = "SampleClass1";
     private static final String replaceTitle = Bundle.getString("org.netbeans.editor.Bundle", "replace-title");

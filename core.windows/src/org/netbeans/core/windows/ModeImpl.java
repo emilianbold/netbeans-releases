@@ -488,7 +488,8 @@ public final class ModeImpl implements Mode {
     /** Indicates whether this mode can contain specified TopComponent. */
     public boolean canContain(TopComponent tc) {
         if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-        || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(tc)) {
+        || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(tc)
+        || Switches.isMixingOfEditorsAndViewsEnabled()) {
             return true;
         }
         

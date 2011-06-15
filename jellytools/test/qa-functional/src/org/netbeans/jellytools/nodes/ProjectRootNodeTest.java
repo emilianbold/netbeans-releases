@@ -55,6 +55,12 @@ import org.netbeans.jellytools.ProjectsTabOperator;
  */
 public class ProjectRootNodeTest extends JellyTestCase {
 
+    static final String[] tests = {
+        "testVerifyPopup",
+        "testFind",
+        "testProperties"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -64,9 +70,7 @@ public class ProjectRootNodeTest extends JellyTestCase {
 
     /** method used for explicit testsuite definition */
     public static Test suite() {
-        return createModuleTest(ProjectRootNodeTest.class,
-                "testVerifyPopup", "testFind",
-                "testProperties");
+        return createModuleTest(ProjectRootNodeTest.class, tests);
     }
     private static ProjectRootNode projectRootNode;
 

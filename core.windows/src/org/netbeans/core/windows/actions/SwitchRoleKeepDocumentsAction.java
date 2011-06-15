@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.jellytools;
-
-import java.io.IOException;
-import junit.framework.Test;
-
-/** Test FavoritesOperator.
  *
- * @author Jiri Skrivanek
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public class FavoritesOperatorTest extends JellyTestCase {
+package org.netbeans.core.windows.actions;
 
-    private static FavoritesOperator favoritesOper;
-    public static String[] tests = {
-        "testInvoke",
-        "testTree",
-        "testVerify"
-    };
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.awt.ActionRegistration;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionID;
+import org.openide.util.NbBundle.Messages;
 
-    public FavoritesOperatorTest(java.lang.String testName) {
-        super(testName);
-    }
+/**
+ * Action to switch the window system to a new role. The name of the new role
+ * is <code>ActionEvent</code>'s <code>actionCommand</code> parameter.
+ * This role switch differs from the default implementation because it attempts
+ * to keep all opened document windows in the new role.
+ * 
+ * @see ActionEvent#getActionCommand() 
+ * @see WindowManagerImpl#setRole(java.lang.String) 
+ * 
+ * @since 2.34
+ * 
+ * @author S. Aubrecht
+ */
+@ActionID( category = "Window",
+id = "org.netbeans.core.windows.actions.SwitchRoleKeepDocumentsAction" )
+@ActionRegistration( displayName = "#CTL_SwitchRoleKeepDocumentsAction" )
+@ActionReferences( {} )
+@Messages( "CTL_SwitchRoleKeepDocumentsAction=Switch Role" )
+public final class SwitchRoleKeepDocumentsAction implements ActionListener {
 
-    public static Test suite() {
-        return createModuleTest(FavoritesOperatorTest.class, tests);
-    }
-
-    /** Print out test name. */
     @Override
-    public void setUp() throws IOException {
-        System.out.println("### " + getName() + " ###");
-    }
-
-    /**
-     * Test of invoke method.
-     */
-    public void testInvoke() {
-        FavoritesOperator.invoke().close();
-        favoritesOper = FavoritesOperator.invoke();
-    }
-
-    /**
-     * Test of tree method.
-     */
-    public void testTree() {
-        // open another tab
-        RuntimeTabOperator.invoke();
-        // has to make favorites tab visible
-        favoritesOper.tree();
-    }
-
-    /**
-     * Test of verify method.
-     */
-    public void testVerify() {
-        favoritesOper.verify();
-        favoritesOper.close();
+    public void actionPerformed( ActionEvent e ) {
+        String role = e.getActionCommand();
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        wm.setRole( role, true );
     }
 }

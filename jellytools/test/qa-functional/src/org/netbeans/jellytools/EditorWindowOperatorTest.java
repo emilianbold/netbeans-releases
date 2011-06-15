@@ -61,7 +61,7 @@ public class EditorWindowOperatorTest extends JellyTestCase {
 
     private static final String SAMPLE_CLASS_1 = "SampleClass1.java";
     private static final String SAMPLE_CLASS_2 = "SampleClass2.java";
-    private static final String[] tests = new String[]{
+    public static final String[] tests = new String[]{
         "testSelectPage",
         "testGetEditor",
         "testSelectDocument",

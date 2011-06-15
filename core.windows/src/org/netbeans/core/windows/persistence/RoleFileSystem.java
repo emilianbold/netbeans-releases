@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.jellytools;
-
-import java.io.IOException;
-import junit.framework.Test;
-
-/** Test FavoritesOperator.
  *
- * @author Jiri Skrivanek
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public class FavoritesOperatorTest extends JellyTestCase {
+package org.netbeans.core.windows.persistence;
 
-    private static FavoritesOperator favoritesOper;
-    public static String[] tests = {
-        "testInvoke",
-        "testTree",
-        "testVerify"
-    };
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
 
-    public FavoritesOperatorTest(java.lang.String testName) {
-        super(testName);
+/**
+ *
+ * @author stan
+ */
+public class RoleFileSystem extends MultiFileSystem {
+    
+    private final String roleName;
+    
+    public static FileSystem create( String roleName ) throws FileStateInvalidException {
+        if( null == roleName )
+            return FileUtil.getConfigRoot().getFileSystem();
+        
+        RoleFileSystem rfs = new RoleFileSystem( roleName );
+        return new MultiFileSystem( new FileSystem[] {rfs, FileUtil.getConfigRoot().getFileSystem()} );
+    }
+    
+    private RoleFileSystem( String roleName ) throws FileStateInvalidException {
+        super( new FileSystem[] { FileUtil.getConfigRoot().getFileSystem() } );
+        this.roleName = roleName;
     }
 
-    public static Test suite() {
-        return createModuleTest(FavoritesOperatorTest.class, tests);
-    }
-
-    /** Print out test name. */
     @Override
-    public void setUp() throws IOException {
-        System.out.println("### " + getName() + " ###");
+    protected FileObject findResourceOn( FileSystem fs, String res ) {
+        return super.findResourceOn( fs, convert(res) );
     }
-
-    /**
-     * Test of invoke method.
-     */
-    public void testInvoke() {
-        FavoritesOperator.invoke().close();
-        favoritesOper = FavoritesOperator.invoke();
-    }
-
-    /**
-     * Test of tree method.
-     */
-    public void testTree() {
-        // open another tab
-        RuntimeTabOperator.invoke();
-        // has to make favorites tab visible
-        favoritesOper.tree();
-    }
-
-    /**
-     * Test of verify method.
-     */
-    public void testVerify() {
-        favoritesOper.verify();
-        favoritesOper.close();
+    
+    String convert( String path ) {
+        if( path.startsWith( "Windows2/" ) ) {
+            return "Windows2/Roles/" + roleName + path.substring( "Windows2".length() );
+        } else {
+            return path;
+        }
     }
 }

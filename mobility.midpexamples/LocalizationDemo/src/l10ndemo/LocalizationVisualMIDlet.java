@@ -138,7 +138,7 @@ public class LocalizationVisualMIDlet extends MIDlet implements CommandListener 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: list ">//GEN-BEGIN:|13-getter|0|13-preInit
     /**
-     * Returns an initiliazed instance of list component.
+     * Returns an initialized instance of list component.
      * @return the initialized component instance
      */
     public List getList() {
@@ -191,7 +191,7 @@ public class LocalizationVisualMIDlet extends MIDlet implements CommandListener 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert ">//GEN-BEGIN:|22-getter|0|22-preInit
     /**
-     * Returns an initiliazed instance of alert component.
+     * Returns an initialized instance of alert component.
      * @return the initialized component instance
      */
     public Alert getAlert() {
@@ -207,7 +207,7 @@ public class LocalizationVisualMIDlet extends MIDlet implements CommandListener 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert1 ">//GEN-BEGIN:|23-getter|0|23-preInit
     /**
-     * Returns an initiliazed instance of alert1 component.
+     * Returns an initialized instance of alert1 component.
      * @return the initialized component instance
      */
     public Alert getAlert1() {
@@ -223,7 +223,7 @@ public class LocalizationVisualMIDlet extends MIDlet implements CommandListener 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert2 ">//GEN-BEGIN:|24-getter|0|24-preInit
     /**
-     * Returns an initiliazed instance of alert2 component.
+     * Returns an initialized instance of alert2 component.
      * @return the initialized component instance
      */
     public Alert getAlert2() {
@@ -239,7 +239,7 @@ public class LocalizationVisualMIDlet extends MIDlet implements CommandListener 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert3 ">//GEN-BEGIN:|25-getter|0|25-preInit
     /**
-     * Returns an initiliazed instance of alert3 component.
+     * Returns an initialized instance of alert3 component.
      * @return the initialized component instance
      */
     public Alert getAlert3() {
@@ -255,7 +255,7 @@ public class LocalizationVisualMIDlet extends MIDlet implements CommandListener 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|30-getter|0|30-preInit
     /**
-     * Returns an initiliazed instance of exitCommand component.
+     * Returns an initialized instance of exitCommand component.
      * @return the initialized component instance
      */
     public Command getExitCommand() {
