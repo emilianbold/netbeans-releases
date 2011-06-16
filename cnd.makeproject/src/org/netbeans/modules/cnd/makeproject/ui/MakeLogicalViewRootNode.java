@@ -152,8 +152,10 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
         pi.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, pi));
         ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
-        MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
-        confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+        if (gotMakeConfigurationDescriptor()) {
+            MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+            confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+        }
 
     }
 
@@ -197,6 +199,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         folder = logicalFolders;
         ic.add(logicalFolders);
         setChildren(new LogicalViewChildren(folder, provider));
+        MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+        confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
         stateChanged(null);
     }
 
