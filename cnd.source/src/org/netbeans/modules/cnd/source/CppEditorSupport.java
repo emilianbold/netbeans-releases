@@ -162,7 +162,9 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         DataObject dao = getDataObject();
         FileObject fo = dao.getPrimaryFile();
         boolean resetLS = true;
-        if (!CndFileUtils.isLocalFileSystem(fo.getFileSystem())) {
+        if (CndFileUtils.isLocalFileSystem(fo.getFileSystem())) {
+            resetLS = false;
+        } else {
             InputStream in = fo.getInputStream();
             int ch;
             loop: while ((ch = in.read()) != (-1)) {
