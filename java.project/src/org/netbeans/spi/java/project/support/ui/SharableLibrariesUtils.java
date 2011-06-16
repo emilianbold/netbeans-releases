@@ -512,7 +512,18 @@ public final class SharableLibrariesUtils {
                     NbBundle.getMessage(SharableLibrariesUtils.class, "ERR_LibraryExists", library.getDisplayName()),
                     NotifyDescriptor.WARNING_MESSAGE));
                 } else {
-                    man.createURILibrary(library.getType(), library.getName(), volumes);
+                    final String name = library.getName();
+                    String displayName = library.getDisplayName();
+                    if (name.equals(displayName)) {
+                        //No need to set displayName when it's same as name
+                        displayName = null;
+                    }
+                    man.createURILibrary(
+                            library.getType(),
+                            name,
+                            displayName,
+                            library.getDescription(),
+                            volumes);
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
