@@ -51,26 +51,12 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.Locale;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.shared.DConfigBeanVersionType;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
-import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
-import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
-import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.openide.util.Exceptions;
 
@@ -79,47 +65,35 @@ import org.openide.util.Exceptions;
  * @author  nn136682
  */
 public class DefaultInstancePropertiesImpl extends InstanceProperties implements InstanceListener {
-    
+
     private final String url;
-    
-    private transient FileObject fo;
-//    
-//    /** Creates a new instance of InstancePropertiesImpl */
-//    public DefaultInstancePropertiesImpl(ServerInstance instance) {
-//        this(instance.getUrl());
-//    }
+
+    private FileObject fo;
 
     /** Creates a new instance of InstancePropertiesImpl */
     public DefaultInstancePropertiesImpl(String url) {
         this.url = url;
     }
-    
-    private FileObject getFO() {
-        if (fo == null) {
-            ServerInstance instance = ServerRegistry.getInstance().getServerInstance(url);
-            if (instance == null) 
-                throw new IllegalStateException(
-                (NbBundle.getMessage(DefaultInstancePropertiesImpl.class, "MSG_InstanceNotExists", url))); //NOI18N
-            fo = ServerRegistry.getInstance().getInstanceFileObject(url);
-            if (fo == null)
-                throw new IllegalStateException(
-                (NbBundle.getMessage(DefaultInstancePropertiesImpl.class, "MSG_InstanceNotExists", url))); //NOI18N
-            
-        }
-        return fo;
-    }
-    
-    // InstanceListener methods
+
+    @Override
     public void instanceRemoved(String instance) {
-        if (instance != null && url.equals(instance))
+        if (instance != null && url.equals(instance)) {
             fo = null;
+        }
     }
-    public void instanceAdded(String instance) {}
+
+    @Override
+    public void instanceAdded(String instance) {
+        // noop
+    }
+
     public void changeDefaultInstance(String oldInstance, String newInstance){
+        // noop
     }
-    
+
+    @Override
     public String getProperty(String propname) throws IllegalStateException {
-        Object propValue = getFO().getAttribute(propname);
+        Object propValue = getFileObject().getAttribute(propname);
         String propString = propValue == null ? null : propValue.toString();
         if (InstanceProperties.PASSWORD_ATTR.equals(propname) && propValue == null) {
             propString = ServerRegistry.readPassword(url);
@@ -127,19 +101,21 @@ public class DefaultInstancePropertiesImpl extends InstanceProperties implements
         return propString;
     }
 
+    @Override
     public java.util.Enumeration propertyNames() throws IllegalStateException {
-        return getFO().getAttributes();
+        return getFileObject().getAttributes();
     }
-    
+
+    @Override
     public void setProperty(String propname, String value) throws IllegalStateException {
         try {
             String oldValue = getProperty(propname);
             if (InstanceProperties.PASSWORD_ATTR.equals(propname)) {
                 ServerRegistry.savePassword(url, value,
                         NbBundle.getMessage(DefaultInstancePropertiesImpl.class, "MSG_KeyringDefaultDisplayName"));
-                getFO().setAttribute(propname, null);
+                getFileObject().setAttribute(propname, null);
             } else {
-                getFO().setAttribute(propname, value);
+                getFileObject().setAttribute(propname, value);
             }
             firePropertyChange(new PropertyChangeEvent(this, propname, oldValue, value));
         } catch (IOException ioe) {
@@ -147,7 +123,8 @@ public class DefaultInstancePropertiesImpl extends InstanceProperties implements
             throw new IllegalStateException(Exceptions.attachLocalizedMessage(ioe, message));
         }
     }
-    
+
+    @Override
     public void setProperties(java.util.Properties props) throws IllegalStateException {
         java.util.Enumeration propNames = props.propertyNames();
         while (propNames.hasMoreElements()) {
@@ -157,6 +134,7 @@ public class DefaultInstancePropertiesImpl extends InstanceProperties implements
         }
     }
 
+    @Override
     public javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager() {
         boolean assertsEnabled = false;
         assert assertsEnabled = true;
@@ -172,11 +150,28 @@ public class DefaultInstancePropertiesImpl extends InstanceProperties implements
         return LazyDeploymentManager.getDeploymentManager(url);
     }
 
+    @Override
     public void refreshServerInstance() {
         ServerRegistry registry = ServerRegistry.getInstance();
         ServerInstance inst = registry.getServerInstance(url);
         if (inst != null) {
             inst.refresh();
         }
+    }
+
+    private FileObject getFileObject() {
+        if (fo == null) {
+            ServerInstance instance = ServerRegistry.getInstance().getServerInstance(url);
+            if (instance == null) {
+                throw new IllegalStateException(
+                    (NbBundle.getMessage(DefaultInstancePropertiesImpl.class, "MSG_InstanceNotExists", url)));
+            }
+            fo = ServerRegistry.getInstanceFileObject(url);
+            if (fo == null) {
+                throw new IllegalStateException(
+                (NbBundle.getMessage(DefaultInstancePropertiesImpl.class, "MSG_InstanceNotExists", url)));
+            }
+        }
+        return fo;
     }
 }

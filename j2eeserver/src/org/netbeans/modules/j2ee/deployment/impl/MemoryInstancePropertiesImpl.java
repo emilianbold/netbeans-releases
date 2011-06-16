@@ -51,6 +51,7 @@ import java.util.Properties;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,7 +59,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
  */
 public class MemoryInstancePropertiesImpl extends InstanceProperties implements InstanceListener {
 
-    private final Map<String, String> properties = new HashMap<String, String>();
+    private Map<String, String> properties = new HashMap<String, String>();
 
     private final String url;
 
@@ -88,15 +89,15 @@ public class MemoryInstancePropertiesImpl extends InstanceProperties implements 
 
     @Override
     public String getProperty(String propname) throws IllegalStateException {
-        synchronized (properties) {
-            return properties.get(propname);
+        synchronized (this) {
+            return getProperties().get(propname);
         }
     }
 
     @Override
     public Enumeration propertyNames() throws IllegalStateException {
-        synchronized (properties) {
-            return Collections.enumeration(new HashSet<String>(properties.keySet()));
+        synchronized (this) {
+            return Collections.enumeration(new HashSet<String>(getProperties().keySet()));
         }
     }
 
@@ -123,7 +124,7 @@ public class MemoryInstancePropertiesImpl extends InstanceProperties implements 
     public void setProperty(String propname, String value) throws IllegalStateException {
         String oldValue = null;
         synchronized (this) {
-            oldValue = properties.put(propname, value);
+            oldValue = getProperties().put(propname, value);
         }
         firePropertyChange(new PropertyChangeEvent(this, propname, oldValue, value));
     }
@@ -137,10 +138,17 @@ public class MemoryInstancePropertiesImpl extends InstanceProperties implements 
     public void instanceRemoved(String serverInstanceID) {
         if (serverInstanceID != null && url.equals(serverInstanceID)) {
             // we are just defensive
-            synchronized (properties) {
-                properties.clear();
+            synchronized (this) {
+                properties = null;
             }
         }
     }
 
+    private synchronized Map<String, String> getProperties() {
+        if (properties == null) {
+            throw new IllegalStateException(
+                (NbBundle.getMessage(MemoryInstancePropertiesImpl.class, "MSG_InstanceNotExists", url)));
+        }
+        return properties;
+    }
 }

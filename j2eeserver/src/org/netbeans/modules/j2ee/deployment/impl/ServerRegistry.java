@@ -301,7 +301,7 @@ public final class ServerRegistry implements java.io.Serializable {
     public void checkInstanceExists(String url) {
         if (getServerInstance(url) == null) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_InstanceNotExists", url);
-            throw new IllegalArgumentException(msg);
+            throw new IllegalStateException(msg);
         }
     }
 
