@@ -57,6 +57,7 @@ import org.netbeans.core.windows.view.ui.slides.SlideController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.SaveAction;
+import org.openide.awt.Actions;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
@@ -259,7 +260,8 @@ public abstract class ActionUtils {
         
         private JCheckBoxMenuItem getMenuItem() {
             if (menuItem == null) {
-                menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME), state);
+                menuItem = new JCheckBoxMenuItem("", state);
+                Actions.setMenuText(menuItem, (String)getValue(Action.NAME), false);
                 //#45940 - hardwiring the shortcut UI since the actual shortcut processignb is also
                 // hardwired in AbstractTabViewDisplayerUI class.
                 // later this should be probably made customizable?

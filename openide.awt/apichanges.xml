@@ -50,6 +50,22 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="mnemonics.in.popup">
+        <api name="awt"/>
+        <summary>Turn on Mnemonics in Popup Menus</summary>
+        <version major="7" minor="37"/>
+        <date day="14" month="6" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible"/>
+        <description>
+            <p>
+                New branding key for applications built on top of NetBeans
+                Platform to <a href="@TOP@architecture-summary.html#property-USE_MNEMONICS">
+                turn mnemonics in popup menus on</a>. 
+            </p>
+        </description>
+        <issue number="184891"/>
+    </change>
     <change id="ActionRegistration.menuOrPopupText">
         <api name="awt"/>
         <summary>New attributes (popupText, menuText) in @ActionRegistration annotation</summary>

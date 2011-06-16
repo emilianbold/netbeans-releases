@@ -89,8 +89,8 @@ implements PropertyChangeListener, Runnable {
         this.isContext = isContext;
         //Include the name in the label for the popup menu - it may be clicked over
         //a component that is not selected
-        putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class,
-        "LBL_CloseAllButThisAction")); //NOI18N
+        putValue(Action.NAME, NbBundle.getMessage(CloseAllButThisAction.class,
+            "CTL_CloseAllButThisAction")); //NOI18N
         
     }
 

@@ -274,6 +274,14 @@ public class Actions {
     */
     @Deprecated
     public static void setMenuText(AbstractButton item, String text, boolean useMnemonic) {
+        String msg = NbBundle.getMessage(Actions.class, "USE_MNEMONICS"); // NOI18N
+        if ("always".equals(msg)) { // NOI18N
+            useMnemonic = true;
+        } else if ("never".equals(msg)) { // NOI18N
+            useMnemonic = false;
+        } else {
+            assert "default".equals(msg); // NOI18N 
+        }
         if (useMnemonic) {
             Mnemonics.setLocalizedText(item, text);
         } else {
