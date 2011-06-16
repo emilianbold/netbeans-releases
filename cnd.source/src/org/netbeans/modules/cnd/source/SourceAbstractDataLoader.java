@@ -56,6 +56,7 @@ import java.text.DateFormat;
 import java.util.HashMap;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -227,6 +228,14 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
             EditorKit kit = createEditorKit(getFile().getMIMEType());
             Document doc = kit.createDefaultDocument();
 
+            String lsType = (String)doc.getProperty(DefaultEditorKit.EndOfLineStringProperty);
+            if (lsType == null) {
+                lsType = "\n";
+            }
+            if (!CndFileUtils.isLocalFileSystem(fo.getFileSystem())) {
+                lsType = "\n";
+            }
+
             BufferedReader r = new BufferedReader(new InputStreamReader(
                     getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
             try {
@@ -261,7 +270,10 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
                         } finally {
                             reformat.unlock();
                         }
-                        w.write(doc.getText(0, doc.getLength()));
+                        for(String s : doc.getText(0, doc.getLength()).split("\n")) { //NOI18N
+                            w.write(s);
+                            w.write(lsType);
+                        }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     } finally {
