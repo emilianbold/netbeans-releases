@@ -76,6 +76,7 @@ import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
@@ -91,6 +92,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -130,6 +132,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     private static final String NAMESPACE = "http://www.netbeans.org/ns/ant-project-libraries/1"; // NOI18N
     private static final String EL_LIBRARIES = "libraries"; // NOI18N
     private static final String EL_DEFINITIONS = "definitions"; // NOI18N
+    private static final String SFX_DISPLAY_NAME = "displayName";   //NOI18N
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private AntProjectListener apl;
@@ -496,6 +499,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             String name = entry.getKey();
             String type = "j2se"; // NOI18N
             String description = null;
+            String displayName = null;
             Map<String,List<URI>> contents = new HashMap<String,List<URI>>();
             for (Map.Entry<String,String> subentry : entry.getValue().entrySet()) {
                 String k = subentry.getKey();
@@ -505,6 +509,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     // XXX currently overriding display name is not supported
                 } else if (k.equals("description")) { // NOI18N
                     description = subentry.getValue();
+                } else if (k.equals(SFX_DISPLAY_NAME)) {  //NOI18N
+                    displayName = subentry.getValue();
                 } else {
                     final String[] path = sanitizeHttp(subentry.getKey(), PropertyUtils.tokenizePath(subentry.getValue()));
                     List<URI> volume = new ArrayList<URI>(path.length);
@@ -535,7 +541,16 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     contents.put(k, volume);
                 }
             }
-            libs.put(name, new ProjectLibraryImplementation(def.mainPropertiesFile, def.privatePropertiesFile, type, name, description, contents));
+            libs.put(
+                name,
+                new ProjectLibraryImplementation(
+                    def.mainPropertiesFile,
+                    def.privatePropertiesFile,
+                    type,
+                    name,
+                    description,
+                    displayName,
+                    contents));
         }
         return libs;
     }
@@ -642,12 +657,13 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return result.toArray(new String[result.size()]);
     }
     
-    static final class ProjectLibraryImplementation implements LibraryImplementation2 {
+    static final class ProjectLibraryImplementation implements LibraryImplementation2, NamedLibraryImplementation {
 
         final File mainPropertiesFile, privatePropertiesFile;
         final String type;
         String name;
         String description;
+        String displayName;
         Map<String,List<URI>> contents;
         final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
@@ -675,12 +691,20 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             return null;
         }
 
-        ProjectLibraryImplementation(File mainPropertiesFile, File privatePropertiesFile, String type, String name, String description, Map<String,List<URI>> contents) {
+        ProjectLibraryImplementation(
+                File mainPropertiesFile,
+                File privatePropertiesFile,
+                String type,
+                String name,
+                final @NullAllowed String description,
+                final @NullAllowed String displayName,
+                Map<String,List<URI>> contents) {
             this.mainPropertiesFile = mainPropertiesFile;
             this.privatePropertiesFile = privatePropertiesFile;
             this.type = type;
             this.name = name;
             this.description = description;
+            this.displayName = displayName;
             this.contents = contents;
         }
 
@@ -702,6 +726,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 return getGlobalLibBundle(lib);
             }
             return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName;
         }
 
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
@@ -805,6 +834,26 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
         public void setLocalizingBundle(String resourceName) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setDisplayName(final @NullAllowed String displayName) {
+            if (Utilities.compareObjects(this.displayName, displayName)) {
+                return;
+            }
+            final String oldDisplayName = this.displayName;
+            this.displayName = displayName;
+            try {
+                final String key = String.format("libs.%s.%s",name, SFX_DISPLAY_NAME);  //NOI18N
+                replaceProperty(
+                    mainPropertiesFile,
+                    false,
+                    key,
+                    displayName == null ? new String[0] : new String[]{displayName});
+            } catch (IOException x) {
+                throw new IllegalArgumentException(x);
+            }
+            pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, oldDisplayName, displayName);
         }
 
         public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -1169,7 +1218,12 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                             index++;
                         }
                     }
-                    return man.createURILibrary(lib.getType(), name, content);
+                    String displayName = lib.getDisplayName();
+                    if (name.equals(displayName)) {
+                        //No need to set displayName when it's same as name
+                        displayName = null;
+                    }
+                    return man.createURILibrary(lib.getType(), name, displayName, lib.getDescription(), content);
                 }
             });
         } catch (MutexException ex) {

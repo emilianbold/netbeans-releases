@@ -52,24 +52,29 @@ import java.util.HashMap;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.project.libraries.Util;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
+import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.util.WeakListeners;
 
 /**
  *
  * @author  tom
  */
-public class ProxyLibraryImplementation implements LibraryImplementation, PropertyChangeListener  {
+public class ProxyLibraryImplementation implements NamedLibraryImplementation, PropertyChangeListener  {
 
     private final LibraryImplementation original;
     private final LibrariesModel model;
     Map<String,List<URL>> newContents;
     private String newName;
+    private String newDisplayName;
     private String newDescription;
     private PropertyChangeSupport support;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private ProxyLibraryImplementation (LibraryImplementation original, LibrariesModel model) {
         assert original != null && model != null;
         this.original = original;
@@ -98,19 +103,23 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         return this.original;
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         this.support.addPropertyChangeListener(l);
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         this.support.removePropertyChangeListener(l);
     }
     
+    @Override
     public String getType() {
         return this.original.getType ();
     }
     
     
+    @Override
     public synchronized List<URL> getContent(String volumeType) throws IllegalArgumentException {
         List<URL> result = null;
         if (newContents == null || (result = newContents.get(volumeType)) == null) {
@@ -121,6 +130,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         }
     }
     
+    @Override
     public synchronized String getDescription() {
         if (this.newDescription != null) {
             return this.newDescription;
@@ -130,6 +140,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         }
     }
     
+    @Override
     public synchronized String getName() {
         if (this.newName != null) {
             return this.newName;
@@ -138,7 +149,18 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
             return this.original.getName ();
         }
     }
+
+    @Override
+    public String getDisplayName() {
+        if (!Util.supportsDisplayName(original)) {
+            throw new IllegalStateException("Original does not support displayName");   //NOI18N
+        }
+        synchronized (this) {
+            return newDisplayName != null ? newDisplayName : Util.getDisplayName(original);
+        }
+    }
     
+    @Override
     public synchronized void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
         if (this.newContents == null) {
             this.newContents = new HashMap<String,List<URL>>();
@@ -148,6 +170,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         this.support.firePropertyChange(PROP_CONTENT,null,null);        //NOI18N
     }
     
+    @Override
     public synchronized void setDescription(String text) {
         String oldDescription = this.newDescription == null ? this.original.getDescription() : this.newDescription;
         this.newDescription = text;
@@ -155,6 +178,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         this.support.firePropertyChange(PROP_DESCRIPTION,oldDescription,this.newDescription);   //NOI18N
     }
     
+    @Override
     public synchronized void setName(String name) {
         String oldName = this.newName == null ? this.original.getName() : this.newName;
         this.newName = name;
@@ -162,24 +186,40 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
         this.support.firePropertyChange(PROP_NAME,oldName,this.newName);       //NOI18N
     }
 
+    @Override
+    public void setDisplayName(final @NullAllowed String displayName) {
+        final String oldName;
+        synchronized (this) {
+            oldName = this.newDisplayName != null ? this.newDisplayName : Util.getDisplayName(original);
+            this.newDisplayName = displayName;
+            this.model.modifyLibrary(this);
+        }
+        this.support.firePropertyChange(PROP_DISPLAY_NAME, oldName, displayName);
+    }
 
+
+    @Override
     public String getLocalizingBundle() {
         return this.original.getLocalizingBundle();
     }
 
+    @Override
     public void setLocalizingBundle(String resourceName) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         this.support.firePropertyChange(evt.getPropertyName(),evt.getOldValue(),evt.getNewValue());
     }
 
 
+    @Override
     public int hashCode() {
         return this.original.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof ProxyLibraryImplementation) {
             return this.original.equals(((ProxyLibraryImplementation)obj).getOriginal());
@@ -188,11 +228,12 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
             return false;
     }
 
-    public @Override String toString() {
+    @Override
+    public String toString() {
         return "Proxy[" + original + "]"; // NOI18N
     }
 
-    static class ProxyLibraryImplementation2 extends ProxyLibraryImplementation implements LibraryImplementation2 {
+    static class ProxyLibraryImplementation2 extends ProxyLibraryImplementation implements LibraryImplementation2, NamedLibraryImplementation {
 
         Map<String,List<URI>> newURIContents;
         
@@ -204,6 +245,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
             return (LibraryImplementation2)getOriginal();
         }
         
+        @Override
         public List<URI> getURIContent(String volumeType) throws IllegalArgumentException {
             List<URI> result = null;
             if (newURIContents == null || (result = newURIContents.get(volumeType)) == null) {
@@ -213,6 +255,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
             }
         }
 
+        @Override
         public void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException {
             if (newURIContents == null) {
                 newURIContents = new HashMap<String,List<URI>>();
@@ -222,10 +265,12 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
             getSupport().firePropertyChange(PROP_CONTENT,null,null);
         }
         
+        @Override
         public final int hashCode() {
             return getOriginal().hashCode();
         }
 
+        @Override
         public final boolean equals(Object obj) {
             if (obj instanceof ProxyLibraryImplementation2) {
                 return getOriginal().equals(((ProxyLibraryImplementation2)obj).getOriginal());
@@ -234,7 +279,8 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
                 return false;
         }
 
-        public @Override String toString() {
+        @Override
+        public String toString() {
             return "Proxy2[" + getOriginal() + "]"; // NOI18N
         }
     }

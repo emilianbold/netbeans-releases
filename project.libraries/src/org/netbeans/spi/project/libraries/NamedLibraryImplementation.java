@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,23 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.project.libraries.ui;
+package org.netbeans.spi.project.libraries;
 
-import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
-import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-import org.netbeans.modules.project.libraries.Util;
+/**
+ * LibraryImplementation extension allowing setting/getting display name.
+ * @author Tomas Zezula
+ * @since org.netbeans.modules.project.libraries/1 1.31
+ */
+public interface NamedLibraryImplementation extends LibraryImplementation {
 
-class LibraryRenderer extends DefaultListCellRenderer {
+    /**
+     * Name of displayName property.
+     */
+    String PROP_DISPLAY_NAME = "displayName";   //NOI18N
 
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        LibraryImplementation impl = (LibraryImplementation) value;
-        return super.getListCellRendererComponent(list,
-                Util.getLocalizedName(impl),
-                index, isSelected, cellHasFocus);
-    }
+    /**
+     * Sets the display name.
+     * @param displayName the new value of the displayName.
+     * If null resets the display name to the value provided
+     * by the localizing bundle or the identifying name.
+     */
+    void setDisplayName(@NullAllowed String displayName);
 
+    /**
+     * Returns the display name if available or null.
+     * @return the display name
+     */
+    @CheckForNull String getDisplayName();
 }

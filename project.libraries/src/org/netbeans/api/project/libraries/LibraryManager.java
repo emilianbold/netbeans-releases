@@ -58,7 +58,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
+import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.modules.project.libraries.WritableLibraryProvider;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
@@ -286,6 +289,29 @@ public final class LibraryManager {
      * @since org.netbeans.modules.project.libraries/1 1.15
      */
     public Library createLibrary(String type, String name, Map<String,List<URL>> contents) throws IOException {
+        return createLibrary(type, name, null, null, contents);
+    }
+
+    /**
+     * Creates a new library definition and adds it to the list.
+     * @param type the type of library, as in {@link LibraryTypeProvider#getLibraryType} or {@link LibraryImplementation#getType}
+     * @param name the identifying name of the new library (must not duplicate a name already in use by a library in this manager)
+     * @param displayName the display name of the library. If null the identifying name is used
+     * @param description the library description
+     * @param contents the initial contents of the library's volumes, as a map from volume type to volume content
+     * @return a newly created library
+     * @throws IOException if the new definition could not be stored
+     * @throws IllegalArgumentException if the library type or one of the content volume types is not supported,
+     *                                  or if a library of the same name already exists in this manager
+     * @see ArealLibraryProvider#createLibrary
+     * @since org.netbeans.modules.project.libraries/1 1.31
+     */
+    public Library createLibrary(
+            @NonNull final  String type,
+            @NonNull final String name,
+            @NullAllowed final String displayName,
+            @NullAllowed final String description,
+            @NonNull final Map<String,List<URL>> contents) throws IOException {
         if (getLibrary(name) != null) {
             throw new IllegalArgumentException("Name already in use: " + name); // NOI18N
         }
@@ -297,6 +323,7 @@ public final class LibraryManager {
             }
             impl = ltp.createLibrary();
             impl.setName(name);
+            Util.setDisplayName(impl, displayName);
             for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
                 impl.setContent(entry.getKey(), entry.getValue());
             }
@@ -307,6 +334,7 @@ public final class LibraryManager {
                 cont.put(entry.getKey(), LibrariesModel.convertURLsToURIs(entry.getValue()));
             }
             impl = LibraryAccessor.createLibrary(alp, type, name, area, cont);
+            Util.setDisplayName(impl, displayName);
         }
         return new Library(impl, this);
     }
@@ -321,9 +349,32 @@ public final class LibraryManager {
      * @throws IllegalArgumentException if the library type or one of the content volume types is not supported,
      *                                  or if a library of the same name already exists in this manager
      * @see ArealLibraryProvider#createLibrary
-     * @since org.netbeans.modules.project.libraries/1 1.18
+     * @since org.netbeans.modules.project.libraries/1 1.31
      */
     public Library createURILibrary(String type, String name, Map<String,List<URI>> contents) throws IOException {
+        return createURILibrary(type, name, null, null, contents);
+    }
+
+    /**
+     * Creates a new library definition and adds it to the list.
+     * @param type the type of library, as in {@link LibraryTypeProvider#getLibraryType} or {@link LibraryImplementation#getType}
+     * @param name the identifying name of the new library (must not duplicate a name already in use by a library in this manager)
+     * @param displayName the display name of the library. If null the identifying name is used
+     * @param description the library description
+     * @param contents the initial contents of the library's volumes, as a map from volume type to volume content
+     * @return a newly created library
+     * @throws IOException if the new definition could not be stored
+     * @throws IllegalArgumentException if the library type or one of the content volume types is not supported,
+     *                                  or if a library of the same name already exists in this manager
+     * @see ArealLibraryProvider#createLibrary
+     * @since org.netbeans.modules.project.libraries/1 1.18
+     */
+    public Library createURILibrary(
+            @NonNull final String type,
+            @NonNull final String name,
+            @NullAllowed final String displayName,
+            @NullAllowed final String description,
+            @NonNull final Map<String,List<URI>> contents) throws IOException {
         if (getLibrary(name) != null) {
             throw new IllegalArgumentException("Name already in use: " + name); // NOI18N
         }
@@ -335,13 +386,15 @@ public final class LibraryManager {
             }
             impl = ltp.createLibrary();
             impl.setName(name);
+            Util.setDisplayName(impl, displayName);
             for (Map.Entry<String,List<URI>> entry : contents.entrySet()) {
                 impl.setContent(entry.getKey(), LibrariesModel.convertURIsToURLs(entry.getValue()));
             }
             Lookup.getDefault().lookup(WritableLibraryProvider.class).addLibrary(impl);
         } else {
             impl = LibraryAccessor.createLibrary(alp, type, name, area, contents);
-        }
+            Util.setDisplayName(impl, displayName);
+        }        
         return new Library(impl, this);
     }
 
