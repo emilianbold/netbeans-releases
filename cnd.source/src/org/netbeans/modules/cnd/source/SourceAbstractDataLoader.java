@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.source;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -56,6 +55,7 @@ import java.text.DateFormat;
 import java.util.HashMap;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -66,7 +66,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.UniFileLoader;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
@@ -227,6 +226,14 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
             EditorKit kit = createEditorKit(getFile().getMIMEType());
             Document doc = kit.createDefaultDocument();
 
+            String lsType = (String)doc.getProperty(DefaultEditorKit.EndOfLineStringProperty);
+            if (lsType == null) {
+                lsType = "\n"; // NOI18N
+            }
+            if (!CndFileUtils.isLocalFileSystem(fo.getFileSystem())) {
+                lsType = "\n"; // NOI18N
+            }
+
             BufferedReader r = new BufferedReader(new InputStreamReader(
                     getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
             try {
@@ -261,7 +268,10 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
                         } finally {
                             reformat.unlock();
                         }
-                        w.write(doc.getText(0, doc.getLength()));
+                        for(String s : doc.getText(0, doc.getLength()).split("\n")) { //NOI18N
+                            w.write(s);
+                            w.write(lsType);
+                        }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     } finally {

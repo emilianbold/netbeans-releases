@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.*;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
@@ -87,6 +86,12 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     private final Logger err;
     /** last refresh task */
     private volatile Task refTask = Task.EMPTY;
+    private static final boolean DELAYED_CREATION_ENABLED;
+    static {
+        DELAYED_CREATION_ENABLED = !"false".equals( // NOI18N
+            System.getProperty("org.openide.loaders.FolderChildren.delayedCreation") // NOI18N
+        );
+    }
 
     /**
     * @param f folder to display content of
@@ -205,8 +210,12 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     */
     @Override
     protected Node[] createNodes(FolderChildrenPair pair) {
+        boolean delayCreation = 
+            DELAYED_CREATION_ENABLED && 
+            EventQueue.isDispatchThread() && 
+            !pair.primaryFile.isFolder();
         Node ret;
-        if (EventQueue.isDispatchThread() && !pair.primaryFile.isFolder()) {
+        if (delayCreation) {
             ret = new DelayedNode(pair);
         } else {
             ret = createNode(pair);
@@ -433,6 +442,14 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
 
         @Override
         public DataObject convert(DelayedNode obj) {
+            if (EventQueue.isDispatchThread()) {
+                err.log(Level.WARNING, "Attempt to obtain DataObject for {0} from EDT", pair.primaryFile);
+                boolean assertsOn = false;
+                assert assertsOn = true;
+                if (assertsOn) {
+                    err.log(Level.INFO, "Ineffective since #199391 was implemented", new Exception("Find for " + pair.primaryFile));
+                }
+            }
             try {
                 return DataObject.find(pair.primaryFile);
             } catch (DataObjectNotFoundException ex) {
