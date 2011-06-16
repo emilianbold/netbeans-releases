@@ -827,7 +827,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                             if (val == null) {
                                 dobj.getPrimaryFile ().setAttribute (TEMPLATE_CATEGORY_ATTRIBUTE, null);
                             } else {
-                                dobj.getPrimaryFile ().setAttribute (TEMPLATE_CATEGORY_ATTRIBUTE, Arrays.asList (val).toString ());
+                                String list = Arrays.asList (val).toString();
+                                list = list.substring(1, list.length() - 1);
+                                dobj.getPrimaryFile ().setAttribute (TEMPLATE_CATEGORY_ATTRIBUTE, list);
                             }
                         } catch (IOException ex) {
                             Logger.getLogger(TemplatesPanel.class.getName()).log (Level.INFO, ex.getLocalizedMessage (), ex);
@@ -908,7 +910,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
     static private DataObject getDOFromNode (Node n) {
         DataObject dobj = n.getLookup ().lookup (DataObject.class);
-        assert dobj != null : "DataObject for node " + n;
+        if (dobj == null) {
+            throw new NullPointerException("DataObject can not be found for node " + n);
+        }
         return dobj;
     }
     
