@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,6 +44,12 @@
 
 package org.netbeans.modules.search;
 
+import org.openide.filesystems.FileObject;
+import javax.swing.JEditorPane;
+import org.openide.text.NbDocument;
+import org.openide.cookies.EditorCookie;
+import org.openide.windows.TopComponent;
+import org.openide.nodes.Node;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.GroupLayout;
@@ -145,6 +151,26 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (searchAndReplace){
             updateReplacePatternColor();
         }
+        
+        Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
+        if (arr.length > 0) {
+            EditorCookie ec = arr[0].getCookie (EditorCookie.class);
+            if (ec != null) {
+                JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
+                if (recentPane != null) {
+                    String initSearchText = null;
+                    if (org.netbeans.editor.Utilities.isSelectionShowing(recentPane.getCaret())) {
+                        initSearchText = recentPane.getSelectedText();
+                    }
+                    if (initSearchText != null) {
+                        cboxTextToFind.setSelectedIndex(-1);
+                        textToFindEditor.setText(initSearchText);
+                        searchCriteria.setTextPattern(initSearchText);
+                    }
+                }
+            }
+        }
+
     }
 
     /** This method is called from within the constructor to
