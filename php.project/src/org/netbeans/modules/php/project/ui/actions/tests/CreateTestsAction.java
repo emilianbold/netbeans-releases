@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -314,6 +315,10 @@ public final class CreateTestsAction extends NodeAction {
                         || !generatedFile.isFile()) {
                     // test not generated or not found
                     failed.add(sourceFo);
+                    if (!generatedFile.isFile()) {
+                        LOGGER.log(Level.WARNING, "Generated PHPUnit test file '{0}' was not found [PHPUnit version {1}].",
+                                new Object[] {generatedFile.getName(), Arrays.toString(PhpUnit.getVersions(phpUnit))});
+                    }
                     continue;
                 }
                 File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
