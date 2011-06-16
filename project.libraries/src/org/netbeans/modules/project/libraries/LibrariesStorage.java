@@ -53,7 +53,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -64,7 +63,6 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.modules.project.libraries.ui.LibrariesCustomizer;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileChangeAdapter;
@@ -75,9 +73,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -177,7 +172,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                             }
                             librariesByFileNames.put(descriptorFile.getPath(),impl);
                             libraries.put (impl.getName(),impl);
-                            LibrariesCustomizer.registerSource(impl, descriptorFile);
+                            Util.registerSource(impl, descriptorFile);
                         }
                     }
                 } catch (SAXException e) {
@@ -235,7 +230,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         final LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
         handler.setLibrary (impl);
         readLibrary (descriptorFile, parser);
-        LibrariesCustomizer.registerSource(impl, descriptorFile);
+        Util.registerSource(impl, descriptorFile);
         return handler.getLibrary();
     }
 
@@ -261,58 +256,24 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                             return;
                         }
                         FileObject fo = storage.createData (library.getName(),"xml");   //NOI18N
-                        writeLibraryDefinition (fo, library, libraryTypeProvider);
+                        LibraryDeclarationParser.writeLibraryDefinition (fo, library, libraryTypeProvider);
                     }
                 }
         );
     }
-
-    private static void writeLibraryDefinition (final FileObject definitionFile, final LibraryImplementation library, final LibraryTypeProvider libraryTypeProvider) throws IOException {
-        Document doc = XMLUtil.createDocument("library", null,
-                "-//NetBeans//DTD Library Declaration 1.0//EN",
-                "http://www.netbeans.org/dtds/library-declaration-1_0.dtd"); // NOI18N
-        Element libraryE = doc.getDocumentElement();
-        libraryE.setAttribute("version", "1.0"); // NOI18N
-        libraryE.appendChild(doc.createElement("name")).appendChild(doc.createTextNode(library.getName())); // NOI18N
-        libraryE.appendChild(doc.createElement("type")).appendChild(doc.createTextNode(library.getType())); // NOI18N
-        String description = library.getDescription();
-        if (description != null && description.length() > 0) {
-            libraryE.appendChild(doc.createElement("description")).appendChild(doc.createTextNode(description)); // NOI18N
-        }
-        String localizingBundle = library.getLocalizingBundle();
-        if (localizingBundle != null && localizingBundle.length() > 0) {
-            libraryE.appendChild(doc.createElement("localizing-bundle")).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
-        }
-        for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
-            Element volumeE = (Element) libraryE.appendChild(doc.createElement("volume")); // NOI18N
-            volumeE.appendChild(doc.createElement("type")).appendChild(doc.createTextNode(vtype)); // NOI18N
-            List<URL> volume = library.getContent(vtype);
-            if (volume != null) {
-                //If null -> broken library, repair it.
-                for (URL url : volume) {
-                    volumeE.appendChild(doc.createElement("resource")).appendChild(doc.createTextNode(url.toString())); // NOI18N
-                }
-            }
-        }
-        OutputStream os = definitionFile.getOutputStream();
-        try {
-            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-        } finally {
-            os.close();
-        }
-    }
-
-
+    
     private void fireLibrariesChanged () {
         this.support.firePropertyChange(PROP_LIBRARIES,null,null);
     }
 
 
+    @Override
     public final void addPropertyChangeListener (PropertyChangeListener listener) {
         this.support.addPropertyChangeListener(listener);
     }
 
 
+    @Override
     public final void removePropertyChangeListener (PropertyChangeListener listener) {
         this.support.removePropertyChangeListener(listener);
     }
@@ -320,6 +281,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     /**
      * Return all libraries in memory.
      */
+    @Override
     public final LibraryImplementation[] getLibraries() {
         final Libs res = initStorage();
         assert res != null;
@@ -327,12 +289,14 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     } // end getLibraries
 
 
+    @Override
     public void addLibrary (LibraryImplementation library) throws IOException {
         this.initStorage();
         assert this.storage != null : "Storage is not initialized";
         writeLibrary(this.storage,library);
     }
 
+    @Override
     public void removeLibrary (LibraryImplementation library) throws IOException {
         final Libs data = this.initStorage();
         assert this.storage != null : "Storage is not initialized";
@@ -345,6 +309,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         }
     }
 
+    @Override
     public void updateLibrary(final LibraryImplementation oldLibrary, final LibraryImplementation newLibrary) throws IOException {
         final Libs data = this.initStorage();
         assert this.storage != null : "Storage is not initialized";
@@ -361,7 +326,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 this.storage.getFileSystem().runAtomicAction(
                         new FileSystem.AtomicAction() {
                             public void run() throws IOException {
-                                writeLibraryDefinition (fo, newLibrary, libraryTypeProvider);
+                                LibraryDeclarationParser.writeLibraryDefinition (fo, newLibrary, libraryTypeProvider);
                             }
                         }
                 );
