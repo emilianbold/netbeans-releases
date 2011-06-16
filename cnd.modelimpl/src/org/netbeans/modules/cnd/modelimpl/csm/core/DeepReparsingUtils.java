@@ -99,6 +99,8 @@ public final class DeepReparsingUtils {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
+        // content of file was changed => invalidate cache
+        APTDriver.invalidateAPT(fileImpl.getBuffer());        
         boolean scheduleParsing = true;
         ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
         Set<CsmFile> cuStartFiles = top.getCompilationUnits();
