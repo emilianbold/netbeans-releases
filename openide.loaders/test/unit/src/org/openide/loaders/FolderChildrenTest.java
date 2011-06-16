@@ -735,6 +735,9 @@ public class FolderChildrenTest extends NbTestCase {
         FormKitDataLoader.assertMode = false;
         DataObject a = ch.getNodeAt(0).getLookup().lookup(DataObject.class);
         DataObject b = ch.getNodeAt(1).getLookup().lookup(DataObject.class);
+
+        assertSame("Node is there #0", ch.getNodeAt(0), ch.getNodeAt(0).getLookup().lookup(Node.class));
+        assertSame("Node is there #1", ch.getNodeAt(1), ch.getNodeAt(1).getLookup().lookup(Node.class));
         
         latch.countDown();
         
