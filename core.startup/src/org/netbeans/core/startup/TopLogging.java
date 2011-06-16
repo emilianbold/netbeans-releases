@@ -822,9 +822,7 @@ public final class TopLogging {
             synchronized (sb) {
                 sb.append(s);
             }
-            if (!Thread.holdsLock(this)) {
-                checkFlush();
-            }
+            checkFlush();
         }
         
         @Override
