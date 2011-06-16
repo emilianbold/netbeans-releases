@@ -305,13 +305,14 @@ public final class CreateTestsAction extends NodeAction {
                 toOpen.add(testFile);
                 continue;
             }
-            final File generatedFile = getGeneratedFile(className, parent);
 
             // test does not exist yet
             Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
             try {
-                if (result.get() != 0) {
-                    // test not generated
+                final File generatedFile = getGeneratedFile(className, parent);
+                if (result.get() != 0
+                        || !generatedFile.isFile()) {
+                    // test not generated or not found
                     failed.add(sourceFo);
                     continue;
                 }
