@@ -50,6 +50,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -57,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -70,6 +73,8 @@ import org.openide.filesystems.FileObject;
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
+    private static final boolean TRACE = false;
+    private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
 
     private DeepReparsingUtils() {
     }
@@ -78,6 +83,9 @@ public final class DeepReparsingUtils {
      * Reparse one file when fileImpl content changed.
      */
     static void reparseOnEditingFile(ProjectImpl project, FileImpl fileImpl) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
+        }
         project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(false);
         ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
@@ -88,6 +96,9 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at fileImpl content changed.
      */
     public static void reparseOnChangedFile(FileImpl fileImpl, ProjectBase project) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+        }
         boolean scheduleParsing = true;
         ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
         Set<CsmFile> cuStartFiles = top.getCompilationUnits();
@@ -118,6 +129,9 @@ public final class DeepReparsingUtils {
     }
 
     static void reparseOnEdit(Collection<FileImpl> toReparse, ProjectBase project, boolean scheduleParsing) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnEdit {0}", toString(toReparse));
+        }        
         Set<CsmUID<CsmFile>> topParents = new HashSet<CsmUID<CsmFile>>();
         Set<CsmUID<CsmFile>> parents = new HashSet<CsmUID<CsmFile>>();
         Set<CsmUID<CsmFile>> coherence = new HashSet<CsmUID<CsmFile>>();
@@ -182,6 +196,9 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at file properties changed.
      */
     public static void reparseOnPropertyChanged(Collection<NativeFileItem> items, ProjectBase project) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnPropertyChanged {0}", toString(items));
+        }        
         try {
             ParserQueue.instance().onStartAddingProjectFiles(project);
             Map<FileImpl, NativeFileItem> pairs = new HashMap<FileImpl, NativeFileItem>();
@@ -251,6 +268,9 @@ public final class DeepReparsingUtils {
     }
     
     private static void reparseOnAdded(Set<String> names, ProjectBase project) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnAdded {0}", toString(names));
+        }
         Set<CsmFile> resolved = new HashSet<CsmFile>();
         for (CsmFile file : project.getAllFiles()) {
             findResolved(names, resolved, file);
@@ -283,6 +303,9 @@ public final class DeepReparsingUtils {
     }
 
     static void reparseOnRemoved(Collection<FileImpl> toReparse, ProjectBase project) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnRemoved {0}", toString(toReparse));
+        }
         CndFileUtils.clearFileExistenceCache();
         Set<CsmFile> topParents = new HashSet<CsmFile>();
         Set<CsmFile> coherence = new HashSet<CsmFile>();
@@ -387,4 +410,17 @@ public final class DeepReparsingUtils {
         }
     }
     
+    private static String toString(Collection<?> files) {
+        StringBuilder out = new StringBuilder();
+        for (Object elem : files) {
+            if (elem instanceof FileImpl) {
+                out.append(((FileImpl) elem).getAbsolutePath());
+            } else if (elem instanceof NativeFileItem) {
+                out.append(((NativeFileItem) elem).getAbsolutePath());
+            } else {
+                out.append(elem.toString());
+            }
+        }
+        return out.toString();
+    }    
 }
