@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class MemoryInstancePropertiesImpl extends InstanceProperties implements InstanceListener {
+public class MemoryInstancePropertiesImpl extends DeletableInstanceProperties implements InstanceListener {
 
     private Map<String, String> properties = new HashMap<String, String>();
 
@@ -141,6 +141,13 @@ public class MemoryInstancePropertiesImpl extends InstanceProperties implements 
             synchronized (this) {
                 properties = null;
             }
+        }
+    }
+
+    @Override
+    boolean isDeleted() {
+        synchronized (this) {
+            return properties == null;
         }
     }
 

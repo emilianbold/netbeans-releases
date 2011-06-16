@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
  *
  * @author  nn136682
  */
-public class DefaultInstancePropertiesImpl extends InstanceProperties implements InstanceListener {
+public class DefaultInstancePropertiesImpl extends DeletableInstanceProperties implements InstanceListener {
 
     private final String url;
 
@@ -157,6 +157,17 @@ public class DefaultInstancePropertiesImpl extends InstanceProperties implements
         if (inst != null) {
             inst.refresh();
         }
+    }
+
+    @Override
+    boolean isDeleted() {
+        if (fo != null) {
+            return false;
+        }
+        if (ServerRegistry.getInstance().getServerInstance(url) == null) {
+            return true;
+        }
+        return ServerRegistry.getInstanceFileObject(url) == null;
     }
 
     private FileObject getFileObject() {

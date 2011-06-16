@@ -161,7 +161,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
     private ServerTarget coTarget = null;
-    private final InstanceProperties instanceProperties;
+    private final DeletableInstanceProperties instanceProperties;
     private final HashMap/*<Target, ServerDebugInfo>*/ debugInfo = new HashMap();
     
     // last known server state, the initial value is stopped
@@ -265,13 +265,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
             return managerTmp;
         }
         try {
-            FileObject fo = ServerRegistry.getInstanceFileObject(url);
-            if (fo == null) {
-                String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
+            if (instanceProperties.isDeleted()) {
+                String msg = NbBundle.getMessage(ServerInstance.class, "MSG_InstanceNotExists", url);
                 throw new IllegalStateException(msg);
             }
-            String username = (String) fo.getAttribute(InstanceProperties.USERNAME_ATTR);
-            String password = ServerRegistry.readPassword(fo);
+            String username = instanceProperties.getProperty(InstanceProperties.USERNAME_ATTR);
+            String password = ServerRegistry.readPassword(url);
             managerTmp = server.getDeploymentManager(url, username, password);
             boolean fire = false;
             synchronized (this) {
@@ -299,9 +298,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (disconnectedManagerTmp != null) {
             return disconnectedManagerTmp;
         }
-        FileObject fo = ServerRegistry.getInstanceFileObject(url);
-        if (fo == null) {
-            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
+        if (instanceProperties.isDeleted()) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_InstanceNotExists", url);
             throw new DeploymentManagerCreationException(msg);
         }
         disconnectedManagerTmp = server.getDisconnectedDeploymentManager(url);
@@ -334,8 +332,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 }  catch (DeploymentManagerCreationException dmce) {
                     // this condition is ugly workaround for disconnected
                     // deployment manager throwing exception - bug 113907
-                    FileObject fo = ServerRegistry.getInstanceFileObject(url);
-                    if (fo != null) {
+                    if (!instanceProperties.isDeleted()) {
                         Exceptions.printStackTrace(dmce);
                     }
                 }

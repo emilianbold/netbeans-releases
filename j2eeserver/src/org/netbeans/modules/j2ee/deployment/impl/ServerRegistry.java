@@ -327,7 +327,7 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         if (tmp != null) {
             fireInstanceListeners(url, false);
-            removeInstanceFromFile(url);
+            clearInstanceStorage(url);
         }
     }
 
@@ -415,21 +415,21 @@ public final class ServerRegistry implements java.io.Serializable {
                 NbBundle.getMessage(ServerRegistry.class, "MSG_KeyringDisplayName", serverName));
     }
 
-    private synchronized void removeInstanceFromFile(final String url) {
+    private synchronized void clearInstanceStorage(final String url) {
         FileObject instanceFO = getInstanceFileObject(url);
-        if (instanceFO == null)
-            return;
-        try {
-            instanceFO.delete();
-            KEYRING_ACCESS.post(new Runnable() {
-                @Override
-                public void run() {
-                    Keyring.delete(getPasswordKey(url));
-                }
-            });
-        } catch (IOException ioe) {
-            LOGGER.log(Level.INFO, null, ioe);
+        if (instanceFO != null) {
+            try {
+                instanceFO.delete();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, null, ioe);
+            }
         }
+        KEYRING_ACCESS.post(new Runnable() {
+            @Override
+            public void run() {
+                Keyring.delete(getPasswordKey(url));
+            }
+        });
     }
 
     /**
@@ -497,13 +497,13 @@ public final class ServerRegistry implements java.io.Serializable {
                             fireInstanceListeners(url, true);
                             return; //  true;
                         } else {
-                            removeInstanceFromFile(url);
+                            clearInstanceStorage(url);
                             instancesMap().remove(url);
                         }
                     }
                 } catch (Exception e) {
                     if (instancesMap().containsKey(url)) {
-                        removeInstanceFromFile(url);
+                        clearInstanceStorage(url);
                         instancesMap().remove(url);
                     }
                     LOGGER.log(Level.INFO, null, e);
@@ -670,31 +670,6 @@ public final class ServerRegistry implements java.io.Serializable {
                 char[] passwordChars = Keyring.read(getPasswordKey(url));
                 if (passwordChars != null) {
                     String password = String.valueOf(passwordChars);
-                    Arrays.fill(passwordChars, ' ');
-                    return password;
-                }
-                return null;
-            }
-        };
-        return readPassword(call);
-    }
-    
-    @CheckForNull
-    static String readPassword(@NonNull final FileObject fo) {
-        Callable<String> call = new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                String password = (String) fo.getAttribute(InstanceProperties.PASSWORD_ATTR);
-                if (password != null) {
-                    return password;
-                }
-                String url = (String) fo.getAttribute(InstanceProperties.URL_ATTR);
-                if (url == null) {
-                    return null;
-                }
-                char[] passwordChars = Keyring.read(getPasswordKey(url));
-                if (passwordChars != null) {
-                    password = String.valueOf(passwordChars);
                     Arrays.fill(passwordChars, ' ');
                     return password;
                 }
