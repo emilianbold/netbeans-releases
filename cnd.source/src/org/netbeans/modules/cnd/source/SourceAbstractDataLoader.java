@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.source;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -67,7 +66,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.UniFileLoader;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
@@ -230,10 +228,10 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
 
             String lsType = (String)doc.getProperty(DefaultEditorKit.EndOfLineStringProperty);
             if (lsType == null) {
-                lsType = "\n";
+                lsType = "\n"; // NOI18N
             }
             if (!CndFileUtils.isLocalFileSystem(fo.getFileSystem())) {
-                lsType = "\n";
+                lsType = "\n"; // NOI18N
             }
 
             BufferedReader r = new BufferedReader(new InputStreamReader(
