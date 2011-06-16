@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
@@ -80,6 +81,11 @@ public class AmazonOptionalDeploymentManagerFactory extends OptionalDeploymentMa
     @Override
     public boolean isCommonUIRequired() {
         return false;
+    }
+
+    @Override
+    public void finishServerInitialization() throws ServerInitializationException {
+        AmazonJ2EEServerInstanceProvider.getProvider().refreshServers();
     }
 
     public static final class AmazonStartServer extends StartServer {

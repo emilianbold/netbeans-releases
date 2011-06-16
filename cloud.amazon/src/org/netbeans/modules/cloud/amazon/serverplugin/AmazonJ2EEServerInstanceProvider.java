@@ -63,22 +63,22 @@ import org.openide.util.Exceptions;
 /**
  *
  */
-public class AmazonJ2EEServerInstanceProvider implements ServerInstanceProvider, ChangeListener {
+public final class AmazonJ2EEServerInstanceProvider implements ServerInstanceProvider, ChangeListener {
 
     private ChangeSupport listeners;
     private List<ServerInstance> instances;
     private static AmazonJ2EEServerInstanceProvider instance;
     
-    public AmazonJ2EEServerInstanceProvider() {
+    private AmazonJ2EEServerInstanceProvider() {
         listeners = new ChangeSupport(this);
         instances = Collections.<ServerInstance>emptyList();
-        AmazonInstanceManager.getDefault().addChangeListener(this);
-        refreshServers();
+        //refreshServers();
     }
     
     public static synchronized AmazonJ2EEServerInstanceProvider getProvider() {
         if (instance == null) {
             instance = new AmazonJ2EEServerInstanceProvider();
+            AmazonInstanceManager.getDefault().addChangeListener(instance);
         }
         return instance;
     }
@@ -125,7 +125,7 @@ public class AmazonJ2EEServerInstanceProvider implements ServerInstanceProvider,
         listeners.fireChange();
     }
     
-    public Future<Void> refreshServers() {
+    public final Future<Void> refreshServers() {
         return AmazonInstance.runAsynchronously(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
