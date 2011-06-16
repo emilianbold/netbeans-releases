@@ -79,9 +79,6 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
@@ -357,9 +354,13 @@ public final class FavoritesNode extends FilterNode implements Index {
         
         @Override
         protected Node[] createNodes(Node node) {
-            DataObject obj = node.getLookup().lookup(DataObject.class);
+            FileObject fo = node.getLookup().lookup(FileObject.class);
+            if (fo == null) {
+                DataObject obj = node.getLookup().lookup(DataObject.class);
+                fo = obj.getPrimaryFile();
+            }
             if (hideHidden) {
-                if (obj != null && !VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile())) {
+                if (fo != null && !VisibilityQuery.getDefault().isVisible(fo)) {
                     return null;
                 }
             }

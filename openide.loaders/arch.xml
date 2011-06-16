@@ -514,7 +514,44 @@ for more information about this.
         of file names separated by '/' (type <code>String</code>).
     </api>
     
-     
+<!-- FolderChildren -->
+
+    <api type="export" group="systemproperty" name="org.openide.loaders.FolderChildren.delayedCreation" category="devel">
+        <p>
+        Since 7.25 the <code>DataFolder.getNodeDelegate()</code> tries to prevent
+        creation of <a href="@TOP@/org/openide/loaders/DataObject.html">DataObject</a>
+        in AWT dispatch thread. Rather it creates dummy node with name
+        derived from the name of the file and simplified content of lookup:
+        </p>
+        <ul>
+            <li><a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html">FileObject</a>
+               - the file that the node represents</li>
+            <li><a href="@org-openide-nodes@/org/openide/nodes/Node.html">Node</a>
+               - the node itself, but without any important properties</li>
+            <li><a href="@TOP@/org/openide/loaders/DataObject.html">DataObject</a>
+               - created on the fly, very <b>inefficient</b>, if requested from
+               AWT dispatch thread, it prints a warning. Consider using
+               just <a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html">FileObject</a>.</li>
+        </ul>
+        <p>
+        The creation of real node is scheduled to background and as soon as
+        the 
+        <a href="@TOP@/org/openide/loaders/DataObject.html">DataObject</a>
+        and its
+        <a href="@org-openide-nodes@/org/openide/nodes/Node.html">Node</a> are 
+        ready, the initial dummy node is replaced by the real one.
+        </p>
+        <p>
+        This whole system is slightly incompatible and may complicate creation
+        of filtered views over the node hierarchy (one needs to be ready to
+        really dynamics changes). That is why it is possible to disable 
+        the new <q>delayed</q> system by starting the system with
+        <code>-Dorg.openide.loaders.FolderChildren.delayedCreation=false</code>.
+        Use this property as a temporary fix for your problems, but consider
+        fixing your code to support the <q>delayed mode</q> in the future.
+        </p>
+    </api>
+
 <!-- ConnectionSupport: -->
     <api type="export" group="property" name="EA-OpenIDE-Connection" category="private" >
         Extended attribute to store (ArrayList of Type and Node.Handle).
