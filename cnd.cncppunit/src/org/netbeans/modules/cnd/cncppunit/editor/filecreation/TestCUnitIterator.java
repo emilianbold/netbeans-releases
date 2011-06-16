@@ -65,9 +65,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -115,10 +115,10 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
         }
 
         FileObject rootFolder = getRootFolder();
-        File rootFolderFile = CndFileUtils.toFile(rootFolder);
+        FSPath rootFolderFilePath = FSPath.toFSPath(rootFolder);
         params.putAll(CUnitCodeGenerator.generateTemplateParamsForFunctions(
                 getTestFileName().replaceFirst("[.].*", ""), // NOI18N
-                rootFolderFile.getAbsolutePath(),
+                rootFolderFilePath,
                 fs));
         
         DataObject formDataObject = NewTestCUnitPanel.getTemplateDataObject("cunittestfile.c"); // NOI18N
