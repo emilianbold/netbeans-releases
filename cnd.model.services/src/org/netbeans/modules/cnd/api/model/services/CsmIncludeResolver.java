@@ -56,6 +56,7 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.util.Lookup;
 
 /**
@@ -113,7 +114,7 @@ public abstract class CsmIncludeResolver {
      * @param item - CSM object
      * @return - include directive string
      */
-    public abstract String getLocalIncludeDerectiveByFilePath(String path, CsmObject item);
+    public abstract String getLocalIncludeDerectiveByFilePath(FSPath path, CsmObject item);
 
     //
     // Implementation of the default resolver
@@ -134,7 +135,7 @@ public abstract class CsmIncludeResolver {
         }
 
         @Override
-        public String getLocalIncludeDerectiveByFilePath(String path, CsmObject item) {
+        public String getLocalIncludeDerectiveByFilePath(FSPath path, CsmObject item) {
             return "";
         }
     }
