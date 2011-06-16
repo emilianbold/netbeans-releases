@@ -53,8 +53,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -68,11 +70,11 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
 
 
     private LibraryImplementation library;
-
     private String libraryType;
     private String libraryDescription;
     private String libraryName;
     private String localizingBundle;
+    private String displayName;
     private Map<String,List<URL>> contentTypes = new HashMap<String,List<URL>>();
 
     // last volume
@@ -122,8 +124,13 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     }
 
     @Override
-    public void start_library(final Attributes meta) throws SAXException {
-        if ("1.0".equals(meta.getValue("version")) == false) {  // NOI18N
+    public String start_library(final String nameSpace, final Attributes meta) throws SAXException {
+        final String version = meta.getValue("version");
+        if (LibraryDeclarationParser.VER_1.equals(version)) {
+            return "";  //NOI18N
+        } else if (LibraryDeclarationParser.VER_2.equals(version)) {
+            return LibraryDeclarationParser.LIBRARY_NS;
+        } else {
             throw new SAXException("Invalid librray descriptor version"); // NOI18N
         }
     }
@@ -137,8 +144,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
                         library.getType()+" to: " + libraryType, null); //NOI18N
             }
             update = true;
-        }
-        else {
+        } else {
             if (this.libraryType == null) {
                 throw new SAXParseException("Unspecified library type for: "+this.libraryName, null); //NOI18N
             }
@@ -150,14 +156,17 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             update = false;
             LibrariesStorage.LOG.log(Level.FINE, "LibraryDeclarationHandlerImpl library {0} type {1} found", new Object[] { this.libraryName, this.libraryType });
         }
-        if (!update || !safeEquals(this.library.getLocalizingBundle(), localizingBundle)) {
+        if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), localizingBundle)) {
             this.library.setLocalizingBundle (this.localizingBundle);
         }
-        if (!update || !safeEquals(this.library.getName(), libraryName)) {
+        if (!update || !Utilities.compareObjects(this.library.getName(), libraryName)) {
             this.library.setName (this.libraryName);
         }
-        if (!update || !safeEquals(this.library.getDescription(), libraryDescription)) {
+        if (!update || !Utilities.compareObjects(this.library.getDescription(), libraryDescription)) {
             this.library.setDescription (this.libraryDescription);
+        }
+        if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), displayName)) {
+            Util.setDisplayName(this.library,displayName);
         }
         for (Map.Entry<String,List<URL>> entry : contentTypes.entrySet()) {
             String contentType = entry.getKey();
@@ -194,6 +203,11 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         this.localizingBundle = data;
     }
 
+    @Override
+    public void handle_displayName (String data, Attributes meta) throws SAXException {
+        this.displayName = data;
+    }
+
     public void setLibrary (LibraryImplementation library) {
         this.library = library;
     }
@@ -202,10 +216,6 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         return this.library;
     }
 
-
-    private static boolean safeEquals (Object o1, Object o2) {
-        return o1 == null ? o2 == null : o1.equals (o2);
-    }
 
     private static boolean urlsEqual (final Collection<? extends URL> first, final Collection<? extends URL> second) {
         assert first != null;

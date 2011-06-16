@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -44,8 +44,8 @@
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="libraryLocation" pref="371" max="32767" attributes="0"/>
-                                  <Component id="libraryName" alignment="0" pref="371" max="32767" attributes="0"/>
+                                  <Component id="libraryLocation" pref="388" max="32767" attributes="0"/>
+                                  <Component id="libraryName" alignment="0" pref="388" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="properties" pref="503" max="32767" attributes="0"/>
@@ -99,9 +99,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="libraryName">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/project/libraries/ui/Bundle.properties" key="AD_LibraryName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -160,7 +157,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="365" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="382" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>

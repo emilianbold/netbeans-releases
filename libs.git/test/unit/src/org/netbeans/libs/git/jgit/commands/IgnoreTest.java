@@ -45,7 +45,11 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
@@ -538,5 +542,47 @@ public class IgnoreTest extends AbstractGitTestCase {
         File[] ignores = getClient(workDir).ignore(new File[] { f.getParentFile() }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(excludeFile.exists());
         assertEquals(0, ignores.length);
+    }
+    
+    public void test199443_GlobalIgnoreFile () throws Exception {
+        File f = new File(new File(workDir, "nbproject"), "file");
+        f.getParentFile().mkdirs();
+        f.createNewFile();
+        File ignoreFile = new File(workDir.getParentFile(), "globalignore");
+        write(ignoreFile, ".DS_Store\n.svn\nnbproject\nnbproject/private\n");
+        Repository repo = getRepository(getLocalGitRepository());
+        StoredConfig cfg = repo.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_EXCLUDESFILE, ignoreFile.getAbsolutePath());
+        cfg.save();
+        GitClient client = getClient(workDir);
+        assertEquals(Status.STATUS_IGNORED, client.getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(f).getStatusIndexWC());
+        
+        // now since the file is already ignored, no ignore file should be modified
+        assertEquals(0, client.ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).length);
+                
+        // on the other hand, if .git/info/exclude reverts the effect of global excludes file, ignored file should be modified
+        File dotGitIgnoreFile = new File(new File(repo.getDirectory(), "info"), "exclude");
+        dotGitIgnoreFile.getParentFile().mkdirs();
+        write(dotGitIgnoreFile, "!/nbproject/");
+        assertEquals(Status.STATUS_ADDED, client.getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(f).getStatusIndexWC());
+        assertEquals(dotGitIgnoreFile, client.ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR)[0]);
+        assertEquals(Status.STATUS_IGNORED, client.getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(f).getStatusIndexWC());
+    }
+    
+    public void test199443_GlobalIgnoreFileOverwrite () throws Exception {
+        File f = new File(new File(workDir, "nbproject"), "file");
+        f.getParentFile().mkdirs();
+        f.createNewFile();
+        File ignoreFile = new File(workDir.getParentFile(), "globalignore");
+        Repository repo = getRepository(getLocalGitRepository());
+        StoredConfig cfg = repo.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_EXCLUDESFILE, ignoreFile.getAbsolutePath());
+        cfg.save();
+        
+        write(ignoreFile, "!nbproject");
+        GitClient client = getClient(workDir);
+        
+        assertEquals(new File(workDir, Constants.GITIGNORE_FILENAME), client.ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR)[0]);
+        assertEquals("/nbproject/file", read(new File(workDir, Constants.GITIGNORE_FILENAME)));
     }
 }

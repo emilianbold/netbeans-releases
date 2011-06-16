@@ -270,7 +270,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     }
 
     @Override
-    public String getLocalIncludeDerectiveByFilePath(String path, CsmObject item) {
+    public String getLocalIncludeDerectiveByFilePath(FSPath path, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
             if (incFile != null) {
@@ -293,14 +293,14 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         return ""; // NOI18N
     }
 
-    public String getLocalIncludeDerectiveByHeaderFilePath(String path, CsmObject item) {
+    private String getLocalIncludeDerectiveByHeaderFilePath(FSPath path, CsmObject item) {
         CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
         if(incFile.isHeaderFile()) {
             String incFilePath = incFile.getAbsolutePath().toString();
 
             StringBuilder includeDirective = new StringBuilder("#include "); // NOI18N
             includeDirective.append("\""); // NOI18N
-            String projectPath = path;
+            String projectPath = path.getPath();
             if (!incFilePath.startsWith(projectPath)) {
                 projectPath = ""; // NOI18N
             }
