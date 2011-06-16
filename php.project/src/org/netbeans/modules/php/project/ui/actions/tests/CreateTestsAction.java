@@ -316,7 +316,7 @@ public final class CreateTestsAction extends NodeAction {
                     // test not generated or not found
                     failed.add(sourceFo);
                     if (!generatedFile.isFile()) {
-                        LOGGER.log(Level.WARNING, "Generated PHPUnit test file '{0}' was not found [PHPUnit version {1}].",
+                        LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found [PHPUnit version {1}].",
                                 new Object[] {generatedFile.getName(), Arrays.toString(PhpUnit.getVersions(phpUnit))});
                     }
                     continue;
