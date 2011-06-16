@@ -111,7 +111,7 @@ is the proper place.
         <api name="general"/>
         <summary>Allow user created library to provide display name</summary>
         <version major="1" minor="31"/>
-        <date day="14" month="6" year="2011"/>
+        <date day="16" month="6" year="2011"/>
         <author login="tzezula"/>
         <compatibility addition="yes"/>
         <description>
@@ -121,7 +121,7 @@ is the proper place.
         </description>
         <class package="org.netbeans.api.project.libraries" name="LibraryManager"/>
         <class package="org.netbeans.spi.project.libraries" name="NamedLibraryImplementation"/>
-        <issue number="?????"/>
+        <issue number="199253"/>
     </change>
     <change id="use-uri-for-relative-paths">
         <api name="general"/>

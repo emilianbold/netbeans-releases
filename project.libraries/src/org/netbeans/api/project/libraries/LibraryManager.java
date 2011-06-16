@@ -349,7 +349,7 @@ public final class LibraryManager {
      * @throws IllegalArgumentException if the library type or one of the content volume types is not supported,
      *                                  or if a library of the same name already exists in this manager
      * @see ArealLibraryProvider#createLibrary
-     * @since org.netbeans.modules.project.libraries/1 1.31
+     * @since org.netbeans.modules.project.libraries/1 1.18
      */
     public Library createURILibrary(String type, String name, Map<String,List<URI>> contents) throws IOException {
         return createURILibrary(type, name, null, null, contents);
@@ -367,7 +367,7 @@ public final class LibraryManager {
      * @throws IllegalArgumentException if the library type or one of the content volume types is not supported,
      *                                  or if a library of the same name already exists in this manager
      * @see ArealLibraryProvider#createLibrary
-     * @since org.netbeans.modules.project.libraries/1 1.18
+     * @since org.netbeans.modules.project.libraries/1 1.31
      */
     public Library createURILibrary(
             @NonNull final String type,
