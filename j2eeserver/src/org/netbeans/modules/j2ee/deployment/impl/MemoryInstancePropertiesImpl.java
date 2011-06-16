@@ -112,6 +112,8 @@ public class MemoryInstancePropertiesImpl extends DeletableInstanceProperties im
 
     @Override
     public void setProperties(Properties props) throws IllegalStateException {
+        getProperties(); // eager check we can manipulati it
+
         java.util.Enumeration propNames = props.propertyNames();
         while (propNames.hasMoreElements()) {
             String propName = (String) propNames.nextElement();

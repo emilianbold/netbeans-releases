@@ -126,6 +126,8 @@ public class DefaultInstancePropertiesImpl extends DeletableInstanceProperties i
 
     @Override
     public void setProperties(java.util.Properties props) throws IllegalStateException {
+        getFileObject(); // eager check we can manipulati it
+
         java.util.Enumeration propNames = props.propertyNames();
         while (propNames.hasMoreElements()) {
             String propName = (String) propNames.nextElement();
