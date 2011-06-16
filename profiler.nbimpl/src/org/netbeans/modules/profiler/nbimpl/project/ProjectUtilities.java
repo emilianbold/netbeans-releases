@@ -41,16 +41,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.utils;
+package org.netbeans.modules.profiler.nbimpl.project;
 
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.lib.profiler.common.filters.SimpleFilter;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -59,7 +56,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -78,12 +74,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,12 +88,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.profiler.HeapDumpWatch;
 import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.project.AntProjectSupport;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.projectsupport.utilities.AppletSupport;
+import org.netbeans.modules.profiler.utils.MainClassWarning;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.loaders.DataObject;
@@ -757,30 +751,6 @@ public final class ProjectUtilities {
         }
 
         ap.invokeAction(s, lkp);
-    }
-
-    /**
-     * Runs an target in Ant script with properties context.
-     *
-     * @param buildScript The build script to run the target from
-     * @param target The name of target to run
-     * @param props The properties context to run the task in
-     * @return ExecutorTask to track the running Ant process
-     */
-    public static ExecutorTask runTarget(final FileObject buildScript, final String target, final Properties props) {
-        try {
-            String oomeenabled = props.getProperty(HeapDumpWatch.OOME_PROTECTION_ENABLED_KEY);
-
-            if ((oomeenabled != null) && oomeenabled.equals("yes")) { // NOI18N
-                HeapDumpWatch.getDefault().monitor(props.getProperty(HeapDumpWatch.OOME_PROTECTION_DUMPPATH_KEY));
-            }
-
-            return ActionUtils.runTarget(buildScript, new String[] { target }, props);
-        } catch (IOException e) {
-            Profiler.getDefault().notifyException(Profiler.EXCEPTION, e);
-        }
-
-        return null;
     }
 
     /**

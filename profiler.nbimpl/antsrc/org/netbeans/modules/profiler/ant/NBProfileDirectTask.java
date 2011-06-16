@@ -72,7 +72,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 
 
 /**

@@ -48,6 +48,7 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.profiler.spi.ProjectUtilitiesProvider;
@@ -105,6 +106,11 @@ public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
         return ProjectUtilities.getSortedProjects((Project[])openedProjects);
     }
     
+    @Override
+    public Provider getProject(FileObject fobj) {
+        return FileOwnerQuery.getOwner(fobj);
+    }
+    
     /**
      * Adds a listener to be notified when set of open projects changes.
      * @param listener listener to be added
@@ -136,6 +142,7 @@ public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
     
     public ProjectUtilitiesProviderImpl() {
         OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 synchronized(ProjectUtilitiesProviderImpl.this) {
                     if (!hasListeners()) return;

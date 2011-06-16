@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.impl;
+package org.netbeans.modules.profiler.nbimpl.providers;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -55,9 +55,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.modules.profiler.api.GlobalStorage;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.spi.project.ProjectStorageProvider;
 import org.netbeans.modules.profiler.utils.IDEUtils;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -66,12 +66,13 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Provider;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jiri Sedlacek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectStorageProvider.class)
+@ServiceProvider(service=ProjectStorageProvider.class)
 public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
     
     private static final String ERROR_SAVING_ATTACH_SETTINGS_MESSAGE = NbBundle.getMessage(ProjectStorageProviderImpl.class,
@@ -141,9 +142,7 @@ public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
             }
         } catch (Exception e) {
             ProfilerLogger.log(e);
-            ProfilerDialogs.notify(new NotifyDescriptor.Message(MessageFormat.format(ERROR_SAVING_ATTACH_SETTINGS_MESSAGE,
-                                                                                     new Object[] { e.getMessage() }),
-                                                                NotifyDescriptor.ERROR_MESSAGE));
+            ProfilerDialogs.displayError(MessageFormat.format(ERROR_SAVING_ATTACH_SETTINGS_MESSAGE, new Object[] { e.getMessage() }));
         } finally {
             if (lock != null) {
                 lock.releaseLock();

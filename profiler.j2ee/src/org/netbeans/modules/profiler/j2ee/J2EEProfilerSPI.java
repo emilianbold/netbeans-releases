@@ -58,7 +58,7 @@ import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.api.*;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;

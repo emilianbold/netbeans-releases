@@ -142,11 +142,11 @@ public final class AntActions {
                     }
 
                     // Check if project type is supported, eventually return null
-                    return org.netbeans.modules.profiler.utils.ProjectUtilities.isProjectTypeSupported(project);
+                    return org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities.isProjectTypeSupported(project);
                 }
 
                 public void perform(final Project project) {
-                    if (org.netbeans.modules.profiler.utils.ProjectUtilities.isProjectTypeSupported(project)) {
+                    if (org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities.isProjectTypeSupported(project)) {
                         doProfileProject(project, null);
                     } else {
                         ProfilerDialogs.displayError(UNSUPPORTED_PROJECT_TYPE_MSG);
@@ -176,7 +176,7 @@ public final class AntActions {
                         return false;
                     }
 
-                    return org.netbeans.modules.profiler.utils.ProjectUtilities.isProjectTypeSupported(project);
+                    return org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities.isProjectTypeSupported(project);
                 }
 
                 public void perform(final Project project, final Lookup context) {
@@ -205,7 +205,7 @@ public final class AntActions {
                         return false;
                     }
 
-                    return org.netbeans.modules.profiler.utils.ProjectUtilities.isProjectTypeSupported(project);
+                    return org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities.isProjectTypeSupported(project);
                 }
 
                 public void perform(final Project project, final Lookup context) {
@@ -734,7 +734,7 @@ public final class AntActions {
                                 support.configurePropertiesForProfiling(props, fo);
 
                                 // 10. Run the target
-                                NetBeansProfiler.getDefaultNB().runTarget(buildScriptFO, profileTarget, props);
+                                ((org.netbeans.modules.profiler.nbimpl.NetBeansProfiler)Profiler.getDefault()).runTarget(buildScriptFO, profileTarget, props);
                                 
                             }
 

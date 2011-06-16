@@ -41,7 +41,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler;
+package org.netbeans.modules.profiler.nbimpl;
 
 import java.util.Properties;
 import org.netbeans.modules.profiler.actions.ModifyProfilingAction;

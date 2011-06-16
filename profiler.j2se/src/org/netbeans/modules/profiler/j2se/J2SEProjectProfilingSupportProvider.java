@@ -47,7 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.profiler.projectsupport.utilities.AppletSupport;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.spi.project.support.ant.*;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
