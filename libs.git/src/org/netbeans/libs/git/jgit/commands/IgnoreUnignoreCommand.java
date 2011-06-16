@@ -60,7 +60,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.ignore.IgnoreNode.MatchResult;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.util.FS;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.IgnoreRule;
 import org.netbeans.libs.git.jgit.Utils;
@@ -133,18 +135,19 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
             parent = parent.getParentFile();
             String path = sb.toString();
             if (parent.equals(getRepository().getWorkTree())) {
-                cont = addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, false)
-                        && checkExcludeFile(path, isDirectory) 
-                        && addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, true);
+                if (addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, false) && handleAdditionalIgnores(path, isDirectory)) {
+                    addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, true);
+                }
+                cont = false;
             } else {
                 cont = addStatement(new File(parent, Constants.DOT_GIT_IGNORE), path, isDirectory, false);
             }
         }
     }
     
-    private boolean addStatement (File gitIgnore, String path, boolean isDirectory, boolean rootIgnore) throws IOException {
+    private boolean addStatement (File gitIgnore, String path, boolean isDirectory, boolean forceWrite) throws IOException {
         List<IgnoreRule> ignoreRules = parse(gitIgnore);
-        return addStatement(ignoreRules, gitIgnore, path, isDirectory, rootIgnore) == MatchResult.CHECK_PARENT && !rootIgnore;
+        return addStatement(ignoreRules, gitIgnore, path, isDirectory, forceWrite, true) == MatchResult.CHECK_PARENT;
     }
 
     protected final void save (File gitIgnore, List<IgnoreRule> ignoreRules) throws IOException {
@@ -213,16 +216,25 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
         return ignoreFiles.toArray(new File[ignoreFiles.size()]);
     }
 
-    protected abstract MatchResult addStatement (List<IgnoreRule> ignoreRules, File gitIgnore, String path, boolean isDirectory, boolean rootIgnore) throws IOException;
+    protected abstract MatchResult addStatement (List<IgnoreRule> ignoreRules, File gitIgnore, String path, boolean isDirectory, boolean forceWrite, boolean writable) throws IOException;
 
     protected static String escapeChars (String path) {
         return path.replace("[", "[[]").replace("*", "[*]").replace("?", "[?]"); //NOI18N
     }
 
-    private boolean checkExcludeFile (String path, boolean isDirectory) throws IOException {
+    protected final MatchResult checkExcludeFile (String path, boolean isDirectory) throws IOException {
         File excludeFile = new File(getRepository().getDirectory(), "info/exclude");
         List<IgnoreRule> ignoreRules = parse(excludeFile);
-        return addStatement(ignoreRules, excludeFile, path, isDirectory, false) == MatchResult.CHECK_PARENT;
+        return addStatement(ignoreRules, excludeFile, path, isDirectory, false, true);
+    }
+
+    protected final MatchResult checkGlobalExcludeFile (String path, boolean directory) throws IOException {
+        File excludeFile = getGlobalExcludeFile();
+        if (excludeFile != null && excludeFile.canRead()) {
+            List<IgnoreRule> ignoreRules = parse(excludeFile);
+            return addStatement(ignoreRules, excludeFile, path, directory, false, false);
+        }
+        return MatchResult.NOT_IGNORED;
     }
 
     private File generateTempFile (String basename, File parent) {
@@ -232,4 +244,22 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
         }
         return tempFile;
     }
+
+    private File getGlobalExcludeFile () {
+        Repository repository = getRepository();
+        String path = repository.getConfig().get(CoreConfig.KEY).getExcludesFile();
+        File excludesfile = null;
+        FS fs = repository.getFS();
+        if (path != null) {
+            if (path.startsWith("~/")) {
+                excludesfile = fs.resolve(fs.userHome(), path.substring(2));
+            } else {
+                excludesfile = fs.resolve(null, path);
+            }
+        }
+        return excludesfile;
+    }
+
+    protected abstract boolean handleAdditionalIgnores (String path, boolean directory) throws IOException;
+
 }
