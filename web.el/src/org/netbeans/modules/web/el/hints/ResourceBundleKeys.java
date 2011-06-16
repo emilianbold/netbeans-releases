@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
 import org.netbeans.modules.web.el.Pair;
@@ -86,7 +87,7 @@ public final class ResourceBundleKeys extends ELRule {
     }
 
     @Override
-    protected void run(RuleContext context, List<Hint> result) {
+    protected void run(CompilationContext info, RuleContext context, List<Hint> result) {
         ELParserResult elResult = (ELParserResult)context.parserResult;
         for (ELElement each : elResult.getElements()) {
             if (!each.isValid()) {

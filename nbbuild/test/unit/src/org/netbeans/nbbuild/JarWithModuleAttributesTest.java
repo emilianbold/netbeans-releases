@@ -69,7 +69,7 @@ public class JarWithModuleAttributesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <property name='javac.target' value='2.87'/>" +
@@ -116,7 +116,7 @@ public class JarWithModuleAttributesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <property name='javac.target' value='2.87'/>" +
@@ -173,7 +173,7 @@ public class JarWithModuleAttributesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <property name='javac.target' value='2.87'/>" +
@@ -247,7 +247,7 @@ public class JarWithModuleAttributesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <property name='javac.target' value='jsr99'/>" +
@@ -286,7 +286,7 @@ public class JarWithModuleAttributesTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <property name='public.packages' value='org.netbeans.api.sendopts.*'/>" +

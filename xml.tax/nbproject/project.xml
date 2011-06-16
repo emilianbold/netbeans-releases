@@ -164,6 +164,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.tax.io</package>
                 <package>org.netbeans.tax.decl</package>
                 <package>org.netbeans.tax.event</package>
+                <package>org.netbeans.tax.spec</package>
                 <package>org.netbeans.modules.xml.tax.cookies</package>
                 <package>org.netbeans.modules.xml.tax.parser</package>
             </friend-packages>
@@ -173,7 +174,7 @@ made subject to such option by the copyright holder.
             <extra-compilation-unit>
                 <package-root>lib/src</package-root>
                 <classpath>${xni-impl.jar}</classpath>
-                <built-to>build/libclasses</built-to>
+                <built-to>${build.dir}/libclasses</built-to>
                 <built-to>${cluster}/modules/ext/org-netbeans-tax.jar</built-to>
             </extra-compilation-unit>
         </data>

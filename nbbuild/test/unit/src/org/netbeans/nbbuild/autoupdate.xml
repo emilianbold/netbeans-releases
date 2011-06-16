@@ -4,7 +4,7 @@
     <target name="all">
         <echo message="${root}"/>
 
-        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nbantext.jar}"/>
 
         <autoupdate
             updatecenter="${url}"
@@ -19,7 +19,7 @@
     <target name="cluster">
         <echo message="${root}"/>
 
-        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nbantext.jar}"/>
         <autoupdate
             updatecenter="${url}"
             todir="${target}"
@@ -32,7 +32,7 @@
     <target name="cluster-select">
         <echo message="${root}"/>
 
-        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nbantext.jar}"/>
         <autoupdate
             updatecenter="${url}"
             todir="${target}"
@@ -46,7 +46,7 @@
     <target name="all-nbms">
         <echo message="${root}"/>
 
-        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nbantext.jar}"/>
 
         <autoupdate
             todir="${target}"
@@ -63,7 +63,7 @@
     <target name="mirror">
         <echo message="${root}"/>
 
-        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nbantext.jar}"/>
 
         <autoupdate downloaddir="${target}">
             <nbms dir="${dir}">

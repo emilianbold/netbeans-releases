@@ -87,10 +87,10 @@ is divided into following sections:
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
             
-            <fail message="Please build using Ant 1.7.1 or higher.">
+            <fail message="Please build using Ant 1.8.0 or higher.">
                 <condition>
                     <not>
-                        <antversion atleast="1.7.1"/>
+                        <antversion atleast="1.8.0"/>
                     </not>
                 </condition>
             </fail>
@@ -350,6 +350,7 @@ is divided into following sections:
                 </xsl:if>
                 <property name="jar.index" value="false"/>
                 <property name="jar.index.metainf" value="${{jar.index}}"/>
+                <property name="copylibs.rebase" value="true"/>
                 <available file="${{meta.inf.dir}}/persistence.xml" property="has.persistence.xml"/>
             </target>
 
@@ -962,7 +963,7 @@ is divided into following sections:
                             </chainedmapper>
                         </pathconvert>
                         <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
-                        <copylibs compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}" indexMetaInf="${{jar.index.metainf}}">
+                        <copylibs rebase="${{copylibs.rebase}}" compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}" indexMetaInf="${{jar.index.metainf}}">
                             <fileset dir="${{build.classes.dir}}"/>
                             <manifest>
                                 <attribute name="Class-Path" value="${{jar.classpath}}"/>

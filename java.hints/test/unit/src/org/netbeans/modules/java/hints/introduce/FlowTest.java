@@ -414,6 +414,22 @@ public class FlowTest extends NbTestCase {
                     "1");
     }
 
+    public void test199335() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        List<Object> ll = null;\n" +
+                    "        for (Object str : ll) {\n" +
+                    "            if (str instanceof String) {\n" +
+                    "                System.err.println(st`r);\n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "<null>");
+    }
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 
@@ -476,7 +492,11 @@ public class FlowTest extends NbTestCase {
         Set<String> actual = new HashSet<String>();
 
         for (TreePath tp : flow.getAssignmentsForUse().get(sel.getLeaf())) {
-            actual.add(tp.getLeaf().toString());
+            if (tp == null) {
+                actual.add("<null>");
+            } else {
+                actual.add(tp.getLeaf().toString());
+            }
         }
 
         assertEquals(new HashSet<String>(Arrays.asList(assignments)), actual);

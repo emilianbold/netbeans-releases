@@ -67,6 +67,11 @@ public class SpeedTest extends NbTestCase {
     public static Test suite() {
         return NbTestSuite.speedSuite(SpeedTest.class, 2, 3);
     }
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
     
     @Override
     protected void setUp() throws Exception {

@@ -205,11 +205,11 @@ final class ViewTabLayoutModel2 implements TabLayoutModel, ChangeListener {
                 // add icon sizes if any
                 buttonIcon = displayer.getUI().getButtonIcon(TabControlButton.ID_CLOSE_BUTTON, tabIndex);
                 if (buttonIcon != null) {
-                    curX += buttonIcon.getIconWidth();
+                    curX += buttonIcon.getIconWidth()+padding.iconsXPad;
                 }
                 buttonIcon = displayer.getUI().getButtonIcon(TabControlButton.ID_PIN_BUTTON, tabIndex);
                 if (buttonIcon != null) {
-                    curX += buttonIcon.getIconWidth();
+                    curX += buttonIcon.getIconWidth()+padding.iconsXPad;
                 }
             }
 

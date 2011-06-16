@@ -48,6 +48,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.JemmyException;
 
 /**
  * Test of org.netbeans.jellytools.NewFileWizardOperator.
@@ -123,9 +124,11 @@ public class NewFileWizardOperatorTest extends JellyTestCase {
         Node classNode = new Node(new SourcePackagesNode("SampleProject"), "sample1|TempClass");  // NOI18N
         DeleteAction deleteAction = new DeleteAction();
         deleteAction.perform(classNode);
-        // "Safe Delete"
-        //TODO: is this the correct bundle/key to use here?
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DeleteProjectAction_Name"); // I18N
-        new NbDialogOperator(safeDeleteTitle).ok();
+        try {
+            new NbDialogOperator("Delete").ok();
+        } catch (JemmyException e) {
+            // sometimes happens that different dialog is opened
+            new NbDialogOperator("Confirm Object Deletion").yes();
+        }
     }
 }

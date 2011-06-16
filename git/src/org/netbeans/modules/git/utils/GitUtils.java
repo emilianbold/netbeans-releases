@@ -44,6 +44,7 @@ package org.netbeans.modules.git.utils;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -65,6 +68,8 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.VersionsCache;
+import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.status.GitStatusNode;
@@ -80,6 +85,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -629,6 +635,45 @@ public final class GitUtils {
 
     public static boolean isRepositoryLocked (File repository) {
         return new File(getGitFolderForRoot(repository), "index.lock").exists(); //NOI18N
+    }
+
+    public static void openInRevision (final File originalFile, final String revision, boolean showAnnotations, ProgressMonitor pm) throws IOException {
+        File file = VersionsCache.getInstance().getFileRevision(originalFile, revision, pm);
+        if (pm.isCanceled()) {
+            return;
+        }
+        if (file == null) { // can be null if the file does not exist or is empty in the given revision
+            file = File.createTempFile("tmp", "-" + originalFile.getName(), Utils.getTempFolder()); //NOI18N
+            file.deleteOnExit();
+        }
+
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        EditorCookie ec = null;
+        org.openide.cookies.OpenCookie oc = null;
+        try {
+            DataObject dobj = DataObject.find(fo);
+            ec = dobj.getCookie(EditorCookie.class);
+            oc = dobj.getCookie(org.openide.cookies.OpenCookie.class);
+        } catch (DataObjectNotFoundException ex) {
+            Logger.getLogger(GitUtils.class.getName()).log(Level.FINE, null, ex);
+        }
+        if (ec == null && oc != null) {
+            oc.open();
+        } else {
+            CloneableEditorSupport ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, revision.substring(0, 7));
+            if (showAnnotations && ces != null && !pm.isCanceled()) {
+                final org.openide.text.CloneableEditorSupport support = ces;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        javax.swing.JEditorPane[] panes = support.getOpenedPanes();
+                        if (panes != null) {
+                            SystemAction.get(AnnotateAction.class).showAnnotations(panes[0], originalFile, revision);
+                        }
+                    }
+                });
+            }
+        }
     }
     
     private GitUtils() {

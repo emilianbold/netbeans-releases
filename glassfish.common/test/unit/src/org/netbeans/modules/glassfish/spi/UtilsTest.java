@@ -42,7 +42,8 @@
 
 package org.netbeans.modules.glassfish.spi;
 
-import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import java.net.ServerSocket;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import java.util.concurrent.Future;
@@ -217,7 +218,7 @@ public class UtilsTest extends NbTestCase {
                 Map<String,String> ip = new HashMap<String,String>();
                 ip.put(GlassfishModule.HOSTNAME_ATTR, hostname);
                 ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
-                CommandRunner cr = new CommandRunner(CommonServerSupport.isRunning(hostname, port, hostname), null,
+                CommandRunner cr = new CommandRunner(Utils.isLocalPortOccupied(port), null,
                         Collections.unmodifiableMap(ip), null);
                 Future<OperationState> x = null;
                 Commands.LocationCommand lc = new Commands.LocationCommand();
@@ -227,7 +228,7 @@ public class UtilsTest extends NbTestCase {
                 System.out.println(lc.getServerMessage());
                 System.out.println(lc.getSrc());
 
-                cr = new CommandRunner(CommonServerSupport.isRunning(hostname, port, hostname), null, Collections.unmodifiableMap(ip), null);
+                cr = new CommandRunner(Utils.isLocalPortOccupied(port), null, Collections.unmodifiableMap(ip), null);
                 ServerCommand.GetPropertyCommand gpc = new ServerCommand.GetPropertyCommand("*.server-config.*.http-listener-1.port");
                 x = cr.execute(gpc);
                 System.out.println(x.get() == OperationState.COMPLETED);
@@ -237,5 +238,15 @@ public class UtilsTest extends NbTestCase {
             }
         }
         System.exit(0);
+    }
+
+    @Test
+    public void testIsLocalPortOccupied() throws IOException {
+        System.out.println("isLocalPortOccupied");
+        ServerSocket ss = new ServerSocket(0);
+        int port = ss.getLocalPort();
+        assert Utils.isLocalPortOccupied(port) : "the port is not occupied?";
+        ss.close();
+        assert !Utils.isLocalPortOccupied(port) : "the port is occupied?";
     }
 }

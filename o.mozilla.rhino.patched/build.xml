@@ -94,12 +94,6 @@
 
     </target>    
 
-    <target name="clean" depends="projectized-common.clean">
-        <delete dir="${patched_source}"/>
-        <!-- HACK: For some reason the clean target doesn't get expansions for the logical dirs... -->
-        <delete dir="patched_source"/>
-    </target>
-
     <target name="check-run-mlbuild" depends="build-init">
         <property name="translated.src.dir" location="${nb_all}/translatedfiles/src/${module.name}/src"/>
         <available file="${translated.src.dir}" type="dir" property="translated.src.dir.exist"/>

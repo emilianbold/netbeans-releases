@@ -65,25 +65,18 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
@@ -332,30 +325,29 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                                 try {
                                     File originalFile = evt.getFile();
                                     String revision = evt.getLogInfoHeader().getLog().getRevision();
-                                    File file = VersionsCache.getInstance().getFileRevision(originalFile, revision, this);
-                                    if (isCanceled()) {
-                                        return;
-                                    }
-                                    if (file == null) { // can be null if the file does not exist or is empty in the given revision
-                                        file = File.createTempFile("tmp", "-" + originalFile.getName(), Utils.getTempFolder()); //NOI18N
-                                        file.deleteOnExit();
-                                    }
-
-                                    final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                                    EditorCookie ec = null;
-                                    org.openide.cookies.OpenCookie oc = null;
-                                    try {
-                                        DataObject dobj = DataObject.find(fo);
-                                        ec = dobj.getCookie(EditorCookie.class);
-                                        oc = dobj.getCookie(org.openide.cookies.OpenCookie.class);
-                                    } catch (DataObjectNotFoundException ex) {
-                                        LOG.log(Level.FINE, null, ex);
-                                    }
-                                    if (ec == null && oc != null) {
-                                        oc.open();
-                                    } else {
-                                        org.netbeans.modules.versioning.util.Utils.openFile(fo, revision.substring(0, 7));
-                                    }
+                                    GitUtils.openInRevision(originalFile, revision, false, this);
+                                } catch (IOException ex) {
+                                    LOG.log(Level.FINE, null, ex);
+                                }
+                            }
+                        }
+                    }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
+                }
+            }));
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                {
+                    setEnabled(viewEnabled);
+                }
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    new GitProgressSupport() {
+                        @Override
+                        protected void perform () {
+                            for (RepositoryRevision.Event evt : drev) {
+                                try {
+                                    File originalFile = evt.getFile();
+                                    String revision = evt.getLogInfoHeader().getLog().getRevision();
+                                    GitUtils.openInRevision(originalFile, revision, true, this);
                                 } catch (IOException ex) {
                                     LOG.log(Level.FINE, null, ex);
                                 }

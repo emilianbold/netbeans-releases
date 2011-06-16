@@ -45,8 +45,6 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -54,49 +52,40 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.ReplaceAction
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class ReplaceActionTest extends JellyTestCase {
-    
+
+    public static final String[] tests = {
+        "testPerformMenu",
+        "testPerformAPI",
+        "testPerformShortcut"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public ReplaceActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new ReplaceActionTest("testPerformMenu"));
-        suite.addTest(new ReplaceActionTest("testPerformAPI"));
-        suite.addTest(new ReplaceActionTest("testPerformShortcut"));
-        return suite;
-         */
-        return createModuleTest(ReplaceActionTest.class);
+        return createModuleTest(ReplaceActionTest.class, tests);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     private static final String SAMPLE_CLASS_1 = "SampleClass1";
     private static final String replaceTitle = Bundle.getString("org.netbeans.editor.Bundle", "replace-title");
     private static EditorOperator eo;
-    
+
     /** Opens sample class and finds EditorOperator instance */
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
-        if(eo == null) {
+        if (eo == null) {
             Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1");  // NOI18N
             JavaNode sampleClass1 = new JavaNode(sample1, SAMPLE_CLASS_1);
             sampleClass1.open();
@@ -106,27 +95,27 @@ public class ReplaceActionTest extends JellyTestCase {
     }
 
     /** Close open Replace dialog. */
+    @Override
     public void tearDown() {
         new NbDialogOperator(replaceTitle).close();
         // close editor after last test case
-        if(getName().equals("testPerformShortcut")) {
+        if (getName().equals("testPerformShortcut")) {
             eo.close();
         }
     }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         new ReplaceAction().performMenu(eo);
     }
-    
+
     /** Test performAPI */
     public void testPerformAPI() {
         new ReplaceAction().performAPI(eo);
     }
-    
+
     /** Test performShortcut */
     public void testPerformShortcut() {
         new ReplaceAction().performShortcut(eo);
     }
-    
 }

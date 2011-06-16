@@ -41,17 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
 
-
-public class PlatformBundleKeysTest extends TestBundleKeys
-{
+public class PlatformBundleKeysTest extends TestBundleKeys {
 
     public static String propertiesName = "org/netbeans/jellytools/PlatformBundleKeysTest.properties";
-
 
     public PlatformBundleKeysTest(String isBundleName) {
         super(isBundleName);
@@ -59,17 +55,17 @@ public class PlatformBundleKeysTest extends TestBundleKeys
 
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
-     */    
-    protected ClassLoader getDescendantClassLoader()
-    {
+     */
+    @Override
+    protected ClassLoader getDescendantClassLoader() {
         return PlatformBundleKeysTest.class.getClassLoader();
     }
 
     /*
      * Overriden for the use in the non-static part of this class.
      */
-    public String getPropertiesName()
-    {
+    @Override
+    public String getPropertiesName() {
         return propertiesName;
     }
 
@@ -77,14 +73,6 @@ public class PlatformBundleKeysTest extends TestBundleKeys
      * @return  created suite
      */
     public static Test suite() {
-       return prepareSuite(PlatformBundleKeysTest.class, propertiesName);
+        return prepareSuite(PlatformBundleKeysTest.class, propertiesName);
     }
-
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
 }

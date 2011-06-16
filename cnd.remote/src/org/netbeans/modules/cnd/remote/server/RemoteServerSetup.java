@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -65,11 +66,23 @@ import org.openide.util.NbBundle;
  */
 public class RemoteServerSetup {
 
-    private final Map<String, File> binarySetupMap;
+    private static class BinarySetupMapEntry {
+        public final File localFile;
+        public final String remotePath;
+        public final SetupProvider setupProvider;
+        public BinarySetupMapEntry(File file, String remotePath, SetupProvider provider) {
+            this.localFile = file;
+            this.remotePath = remotePath;
+            this.setupProvider = provider;
+        }        
+    }
+    
+    private final Map<String, BinarySetupMapEntry> binarySetupMap;
     private final Map<ExecutionEnvironment, List<String>> updateMap;
     private final ExecutionEnvironment executionEnvironment;
     private boolean cancelled;
     private boolean failed;
+    private boolean problems;
     private String reason;
     private String libDir;
 
@@ -83,12 +96,13 @@ public class RemoteServerSetup {
             libDir += "/"; // NOI18N
         }
         // Binary setup map
-        binarySetupMap = new HashMap<String, File>();
+        binarySetupMap = new HashMap<String, BinarySetupMapEntry>();
         for (SetupProvider provider : providers) {
             Map<String, File> map = provider.getBinaryFiles(executionEnvironment);
             if (map != null) {
                 for (Map.Entry<String, File> entry : map.entrySet()) {
-                    binarySetupMap.put(libDir + entry.getKey(), entry.getValue());
+                    String remotePath = libDir + entry.getKey();
+                    binarySetupMap.put(remotePath, new BinarySetupMapEntry(entry.getValue(), remotePath, provider));
                 }
             }
         }
@@ -116,22 +130,53 @@ public class RemoteServerSetup {
 
     protected  void setup() {
         List<String> list = updateMap.remove(executionEnvironment);
+        // problematic entries to construct error message
+        Map<SetupProvider, List<BinarySetupMapEntry>> problematic = new HashMap<SetupProvider, List<BinarySetupMapEntry>>();
         for (String path : list) {
             RemoteUtil.LOGGER.log(Level.FINE, "RSS.setup: Updating \"{0}\" on {1}", new Object[]{path, executionEnvironment}); //NO18N
             if (binarySetupMap.containsKey(path)) {
-                File file = binarySetupMap.get(path);
-                CndUtils.assertAbsoluteFileInConsole(file);
-                //String remotePath = REMOTE_LIB_DIR + file.getName();
-                String remotePath = path;
-                try {
-                    if (file == null
-                            || !file.exists()
-                            || !copyTo(file, remotePath)) {
-                        throw new Exception();
+                BinarySetupMapEntry entry = binarySetupMap.get(path);
+                CndUtils.assertNotNullInConsole(entry, "Null entry"); //NOI18N
+                if (entry != null) {
+                    File file = entry.localFile;
+                    CndUtils.assertAbsoluteFileInConsole(file);
+                    //String remotePath = REMOTE_LIB_DIR + file.getName();
+                    String remotePath = path;
+                    boolean success = false;
+                    try {
+                        success = file != null && file.exists() && copyTo(file, remotePath);
+                    } catch (Exception ex) {
+                        ex.printStackTrace(System.err);
                     }
-                } catch (Exception ex) {
-                    setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment, path)); //NOI18N
+                    if (!success) {
+                        List<BinarySetupMapEntry> l = problematic.get(entry.setupProvider);
+                        if (l == null) {
+                            l = new ArrayList<BinarySetupMapEntry>();
+                            problematic.put(entry.setupProvider, l);
+                        }
+                        l.add(entry);
+                    }
                 }
+            }
+        }
+        if (! problematic.isEmpty()) {
+            // construct error message
+            if (!failed) {
+                StringBuilder message = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Start", executionEnvironment));
+                StringBuilder consequences = new StringBuilder(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Consequences"));
+                for (Map.Entry<SetupProvider, List<BinarySetupMapEntry>> tmp : problematic.entrySet()) {
+                    List<File> files = new ArrayList<File>();
+                    for (BinarySetupMapEntry entry : tmp.getValue()) {
+                        files.add(entry.localFile);
+                        message.append('\n').append(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure_Line", 
+                                entry.localFile.getName(), CndPathUtilitities.getDirName(entry.remotePath)));
+                    }
+                    consequences.append('\n');
+                    tmp.getKey().failed(files, consequences);
+                }
+                message.append('\n');
+                message.append(consequences);
+                setProblems(message.toString());
             }
         }
     }
@@ -161,6 +206,15 @@ public class RemoteServerSetup {
     private void setFailed(String reason) {
         this.failed = true;
         this.reason = reason;
+    }
+    
+    private void setProblems(String reason) {
+        this.problems = true;
+        this.reason = reason;
+    }
+    
+    protected boolean hasProblems() {
+        return problems;
     }
 
     protected boolean isFailed() {

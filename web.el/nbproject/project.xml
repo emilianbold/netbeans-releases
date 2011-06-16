@@ -436,15 +436,14 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.web.el.spi</package>
-            </public-packages>
-            <!--            <friend-packages>
+            <friend-packages>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsfapi</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.spring.webmvc</friend>
                 <package>org.netbeans.modules.web.el.spi</package>
-            </friend-packages>-->
+            </friend-packages>
         </data>
     </configuration>
 </project>

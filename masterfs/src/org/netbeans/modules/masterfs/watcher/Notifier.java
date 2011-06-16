@@ -40,6 +40,12 @@
 package org.netbeans.modules.masterfs.watcher;
 
 import java.io.IOException;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * This internal SPI represents the interface between masterfs and
@@ -95,4 +101,53 @@ public abstract class Notifier<KEY> {
      */
     protected void stop() throws IOException {
     }
+    
+    class KeyRef extends WeakReference<FileObject> {
+        private final KEY key;
+        private final int hash;
+
+        public KeyRef(FileObject fo, KEY key, ReferenceQueue<FileObject> queue) {
+            super(fo, queue);
+            this.key = key;
+            this.hash = fo.hashCode();
+            if (key != null) {
+                Watcher.LOG.log(Level.FINE, "Adding watch for {0}", key);
+            }
+        }
+
+        @Override
+        public FileObject get() {
+            return super.get();
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            try {
+                KeyRef kr = (KeyRef)obj;
+                FileObject mine = get();
+                FileObject theirs = kr.get();
+                if (mine == null) {
+                    return theirs == null;
+                } else {
+                    return mine.equals(theirs);
+                }
+            } catch (ClassCastException ex) {
+                return false;
+            }
+        }
+
+        final void removeWatch() throws IOException {
+            Watcher.LOG.log(Level.FINE, "Removing watch for {0}", key);
+            Notifier.this.removeWatch(key);
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+    } // KeyRef
+    
 }

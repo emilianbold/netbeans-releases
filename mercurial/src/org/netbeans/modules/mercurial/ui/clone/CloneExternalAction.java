@@ -45,8 +45,8 @@ package org.netbeans.modules.mercurial.ui.clone;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -68,11 +68,13 @@ import org.openide.util.HelpCtx;
 public class CloneExternalAction implements ActionListener, HelpCtx.Provider {
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (!Mercurial.getInstance().isAvailable(true)) {
-            return;
-        }
-        CloneWizardAction wiz = CloneWizardAction.getInstance();
-        wiz.performAction();
+        HgUtils.runIfHgAvailable(new Runnable() {
+            @Override
+            public void run () {
+                CloneWizardAction wiz = CloneWizardAction.getInstance();
+                wiz.performAction();
+            }
+        });
     }
 
     @Override

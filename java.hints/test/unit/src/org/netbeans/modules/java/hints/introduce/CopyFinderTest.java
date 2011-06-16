@@ -816,6 +816,131 @@ public class CopyFinderTest extends NbTestCase {
                              false);
     }
 
+    public void testMethodMatchingMoreParams() throws Exception {
+        performVariablesTest("package test; public class Test {public void test(String s1, String s2) { } }",
+                             "public void test($params$) { }",
+                             new Pair[0],
+                             new Pair[] {new Pair<String, int[]>("$params$", new int[] {50, 59, 61, 70})},
+                             new Pair[0],
+                             false,
+                             true);
+    }
+
+    public void testLambdaInput1() throws Exception {
+        performVariablesTest("package test; public class Test {public void test() { new java.io.FilenameFilter() { public boolean accept(File dir, String name) { } }; } }",
+                             "new $type() {public $retType $name($params$) { $body$; } }",
+                             new Pair[0],
+                             new Pair[] {new Pair<String, int[]>("$params$", new int[] { 107, 115, 117, 128 })},
+                             new Pair[] {new Pair<String, String>("$name", "accept")},
+                             false,
+                             false);
+    }
+
+    public void testLambdaInput2() throws Exception {
+        performVariablesTest("package test; public class Test {public void test() { new java.io.FilenameFilter() { public boolean accept(File dir, String name) { } }; } }",
+                             "new $type() { $mods$ $retType $name($params$) { $body$; } }",
+                             new Pair[0],
+                             new Pair[] {new Pair<String, int[]>("$params$", new int[] { 107, 115, 117, 128 })},
+                             new Pair[] {new Pair<String, String>("$name", "accept")},
+                             false,
+                             true);
+    }
+
+    public void testSwitch1() throws Exception {
+        performVariablesTest("package test;\n" +
+                             "public class Test {\n" +
+                             "     {\n" +
+                             "         E e = null;\n" +
+                             "         switch (e) {\n" +
+                             "             case A: System.err.println(1); break;\n" +
+                             "             case D: System.err.println(2); break;\n" +
+                             "             case E: System.err.println(3); break;\n" +
+                             "         }\n" +
+                             "     }\n" +
+                             "     public enum E {A, B, C, D, E, F;}\n" +
+                             "}\n",
+                             "switch ($v{test.Test.E}) { case $c1$ case D: $stmts$; case $c2$ }",
+                             new Pair[] {new Pair<String, int[]>("$v", new int[] {79, 80})},
+                             new Pair[] {
+                                new Pair<String, int[]>("$stmts$", new int[] { 156, 178, 179, 185 }),
+                                new Pair<String, int[]>("$c1$", new int[] { 97, 134 }),
+                                new Pair<String, int[]>("$c2$", new int[] { 199, 236 }),
+                             },
+                             new Pair[0],
+                             false,
+                             false);
+    }
+
+    public void testWildcard1() throws Exception {
+        performTest("package test; import java.util.*; public class Test { public void test() { |List<?>| l1; |List<?>| l2;} }");
+    }
+
+    public void testWildcard2() throws Exception {
+        performTest("package test; import java.util.*; public class Test { public void test() { |List<? extends String>| l1; |List<? extends String>| l2;} }");
+    }
+
+    public void testWildcard3() throws Exception {
+        performTest("package test; import java.util.*; public class Test { public void test() { |List<? super String>| l1; |List<? super String>| l2;} }");
+    }
+
+    public void testSingleVariableStrict() throws Exception {
+        performVariablesTest("package test; public class Test { public void test() { if (true) System.err.println(1); } }",
+                             "if ($c) $then; else $else;",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true,
+                             true);
+    }
+
+    public void testMultiVariableZeroOrOne1() throws Exception {
+        performVariablesTest("package test; public class Test { public void test() { if (true) System.err.println(1); } }",
+                             "if ($c) $then; else $else$;",
+                             new Pair[] {new Pair<String, int[]>("$c", new int[] {59, 63}),
+                                         new Pair<String, int[]>("$then", new int[] {65, 87})},
+                             new Pair[0],
+                             new Pair[0],
+                             false,
+                             true);
+    }
+
+    public void testMultiVariableZeroOrOne2() throws Exception {
+        performVariablesTest("package test; public class Test { public void test() { if (true) System.err.println(1); else System.err.println(2); } }",
+                             "if ($c) $then; else $else$;",
+                             new Pair[] {new Pair<String, int[]>("$c", new int[] {59, 63}),
+                                         new Pair<String, int[]>("$then", new int[] {65, 87}),
+                                         new Pair<String, int[]>("$else$", new int[] {93, 115})},
+                             new Pair[0],
+                             new Pair[0],
+                             false,
+                             true);
+    }
+
+    public void testNonResolvableType() throws Exception {
+        performVariablesTest("package test; public class Test { { java.io.File f = null; boolean b = f.isDirectory(); } }",
+                             "$1{can.not.Resolve}.$m($args$)",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true,
+                             true);
+    }
+
+    public void testTryWithResources() throws Exception {
+        performVariablesTest("package test; public class Test { { try (java.io.InputStream in = null) { System.err.println(1); } } }",
+                             "try ($resources$) {$body$;}",
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                                new Pair<String, int[]>("$resources$", new int[] {41, 70}),
+                                new Pair<String, int[]>("$body$", new int[] {74, 96}),
+                             },
+                             new Pair[] {
+                             },
+                             false,
+                             true);
+    }
+
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

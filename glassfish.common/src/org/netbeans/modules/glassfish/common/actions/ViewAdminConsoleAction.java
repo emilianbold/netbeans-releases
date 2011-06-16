@@ -75,7 +75,12 @@ public class ViewAdminConsoleAction extends NodeAction {
                     String port = !("false".equals(System.getProperty("glassfish.useadminport"))) ?
                         ip.get(GlassfishModule.ADMINPORT_ATTR) : ip.get(GlassfishModule.HTTPPORT_ATTR);
                     String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-                    urlBuilder.append(Utils.getHttpListenerProtocol(host, port));
+                    String uri = ip.get(GlassfishModule.URL_ATTR);
+                    if (uri == null || !uri.contains("ee6wc")) {
+                        urlBuilder.append(Utils.getHttpListenerProtocol(host, port));
+                    } else {
+                        urlBuilder.append("http");
+                    }
                     urlBuilder.append("://"); // NOI18N
                     urlBuilder.append(ip.get(GlassfishModule.HOSTNAME_ATTR));
                     urlBuilder.append(":");

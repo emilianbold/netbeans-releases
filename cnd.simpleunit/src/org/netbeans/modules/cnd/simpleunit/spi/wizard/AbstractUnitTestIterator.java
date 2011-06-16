@@ -223,14 +223,13 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
     protected final boolean addItemToLogicalFolder(Project project, Folder folder, DataObject dataObject) {
         FileObject file = dataObject.getPrimaryFile();
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
-        File ioFile = CndFileUtils.toFile(file);
-        if (ioFile.isDirectory()) {
+        if (file.isFolder()) {
             return false;
         } // don't add directories.
         if (!makeConfigurationDescriptor.okToChange()) {
             return false;
         }
-        String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
+        String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), file.getPath(), project);
         itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
         Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
         folder.addItemAction(item);

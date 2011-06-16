@@ -44,8 +44,12 @@
 
 package org.netbeans.core.windows.services;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.Window;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -54,6 +58,7 @@ import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -67,14 +72,22 @@ public class DialogDisplayerImplTest extends NbTestCase {
     private DialogDescriptor childDD;
     private JButton openChild;
     private JButton closeChild;
-    private Dialog child;
+    private Component child;
+    @SuppressWarnings("NonConstantLogger")
+    private Logger LOG;
     
     public DialogDisplayerImplTest (String testName) {
         super (testName);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
     
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
         dd = new DialogDisplayerImpl (RESULT);
         closeOwner = new JButton ("Close this dialog");
         childDD = new DialogDescriptor ("Child", "Child", false, null);
@@ -101,6 +114,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
 
     public void testWorksFromAWTImmediatelly () throws Exception {
         class FromAWT implements Runnable {
+            @Override
             public void run () {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ("HowAreYou?");
                 Object r  = dd.notify (nd);
@@ -116,6 +130,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         class BlockAWT implements Runnable {
             public volatile int state;
+            @Override
             public synchronized void run () {
                 state = 1;
                 try {
@@ -166,23 +181,26 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // make leaf visible
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 owner.setVisible (true);
             }
         });
-        while (!owner.isVisible ()) {}
+        assertShowing("Owner should be visible", true, owner);
         
         child = DialogDisplayer.getDefault ().createDialog (childDD);
 
         // make the child visible
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 child.setVisible (true);
             }
         });
-        while (!child.isVisible ()) {}
+        assertShowing("Child will be visible", true, child);
         
-        assertFalse ("No dialog is owned by leaf dialog.", owner.equals (child.getOwner ()));
+        Window w = SwingUtilities.windowForComponent(child);
+        assertFalse ("No dialog is owned by leaf dialog.", owner.equals (w.getOwner ()));
         assertEquals ("The leaf dialog has no child.", 0, owner.getOwnedWindows ().length);
         
         assertTrue ("Leaf is visible", owner.isVisible ());
@@ -190,24 +208,78 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // close the leaf window
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 owner.setVisible (false);
             }
         });
-        while (owner.isVisible ()) {}
+        assertShowing("Disappear", false, owner);
         
         assertFalse ("Leaf is dead", owner.isVisible ());
         assertTrue ("Child is visible still", child.isVisible ());
         
         // close the child dialog
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 child.setVisible (false);
             }
         });        
-        while (child.isVisible ()) {}
+        assertShowing("Child is invisible", false, child);
         
         assertFalse ("Child is dead too", child.isVisible ());
+    }
+    
+    @RandomlyFails
+    public void testLeafNotify() throws Exception {
+        boolean leaf = true;
+        DialogDescriptor ownerDD = new DialogDescriptor (pane, "Owner", true, new Object[] {closeOwner}, null, 0, null, null, leaf);
+        final Dialog owner = DialogDisplayer.getDefault ().createDialog (ownerDD);
+        
+        // make leaf visible
+        postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
+            public void run () {
+                owner.setVisible (true);
+            }
+        });
+        assertShowing("Owner should be visible", true, owner);
+        
+        child = new JButton();
+        final NotifyDescriptor nd = new NotifyDescriptor.Message(child);
+
+        // make the child visible
+        RequestProcessor.getDefault().post(new Runnable () {
+            @Override
+            public void run () {
+                DialogDisplayer.getDefault().notify(nd);
+            }
+        });
+        assertShowing("Child will be visible", true, child);
+        
+        Window w = SwingUtilities.windowForComponent(child);
+        assertFalse ("No dialog is owned by leaf dialog.", owner.equals (w.getOwner ()));
+        assertEquals ("The leaf dialog has no child.", 0, owner.getOwnedWindows ().length);
+        
+        assertTrue ("Leaf is visible", owner.isVisible ());
+        assertTrue ("Child is visible", child.isVisible ());
+        
+        // close the leaf window
+        postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
+            public void run () {
+                owner.setVisible (false);
+            }
+        });
+        assertShowing("Disappear", false, owner);
+        
+        assertFalse ("Leaf is dead", owner.isVisible ());
+        assertTrue ("Child is visible still", child.isVisible ());
+
+        w.setVisible(false);
+        assertShowing("Child is invisible", false, child);
+        
+        assertFalse ("Child is dead too", child.isShowing());
     }
     
     @RandomlyFails
@@ -218,23 +290,26 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // make leaf visible
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 owner.setVisible (true);
             }
         });
-        while (!owner.isVisible ()) {}
+        assertShowing("Owner is visible", true, owner);
         
         child = DialogDisplayer.getDefault ().createDialog (childDD);
 
         // make the child visible
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 child.setVisible (true);
             }
         });
-        while (!child.isVisible ()) {}
+        assertShowing("child is visible too", true, child);
         
-        assertTrue ("The child is owned by leaf dialog.", owner.equals (child.getOwner ()));
+        Window w = (Window)child;
+        assertTrue ("The child is owned by leaf dialog.", owner.equals (w.getOwner ()));
         assertEquals ("The leaf dialog has one child.", 1, owner.getOwnedWindows ().length);
         
         assertTrue ("Leaf is visible", owner.isVisible ());
@@ -242,11 +317,12 @@ public class DialogDisplayerImplTest extends NbTestCase {
         
         // close the leaf window
         postInAwtAndWaitOutsideAwt (new Runnable () {
+            @Override
             public void run () {
                 owner.setVisible (false);
             }
         });
-        while (owner.isVisible ()) {}
+        assertShowing("Onwer is invisible", false, owner);
         
         assertFalse ("Leaf is dead", owner.isVisible ());
         assertFalse ("Child is dead too", child.isVisible ());
@@ -262,6 +338,17 @@ public class DialogDisplayerImplTest extends NbTestCase {
     }
     
     private void waitAWT() throws Exception {
-        SwingUtilities.invokeAndWait(new Runnable() { public void run() { } });
+        SwingUtilities.invokeAndWait(new Runnable() { @Override public void run() { } });
+    }
+
+    private void assertShowing(String msg, boolean showing, Component c) throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            if (c.isShowing() == showing) {
+                break;
+            }
+            LOG.log(Level.INFO, "Another round ({0}): {1}", new Object[]{i, c});
+            Thread.sleep(100);
+        }
+        assertEquals(msg, showing, c.isShowing());
     }
 }

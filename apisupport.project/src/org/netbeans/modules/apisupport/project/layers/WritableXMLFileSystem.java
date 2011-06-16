@@ -844,6 +844,9 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
             throw new IOException("illegal attribute name for leaf layer: " + attrName);
         }
         //System.err.println("wA: " + name + " " + attrName + " " + v);
+        if (v != null && v.getClass().getName().equals("org.openide.filesystems.MultiFileObject$VoidValue")) {
+            v = null; // XXX #16761 workaround
+        }
         TreeElement el = findElement(name);
         if (el == null) {
             throw new FileNotFoundException(name);

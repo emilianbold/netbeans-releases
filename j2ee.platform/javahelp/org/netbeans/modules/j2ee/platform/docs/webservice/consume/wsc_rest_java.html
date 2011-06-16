@@ -1,0 +1,131 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2011 Sun Microsystems, Inc.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Generating RESTful Web Service Java Clients</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Generating RESTful Web Service Java Clients</h2>
+        <p>NetBeans IDE can generate a Java client for a RESTful service
+            based on the Jersey Client API. The client code can be generated in an existing Java  class, or the IDE
+            can generate a client class in a Java application, Web application, or NetBeans module. Java Client generation
+            uses the <a href="wsc_rest.html">Web Services Manager</a>.</p>
+        <h3>How To Generate a RESTful client In an Existing Java Class</h3>
+        <p>Use the Insert Code feature to insert RESTful service client code into
+            a Java class.</p>
+        <p><b>To insert RESTful client code:</b></p>
+        <ol>
+            <li>In the Java editor, Press Alt-Insert, or right-click and select 
+                Insert Code from the context menu. A menu of code to insert opens.</li>
+            <li>Choose Generate REST Client. The Available REST Resources dialog opens.
+                <br><img src="../../images/available-rest-dialog.png" alt="Available REST Resources dialog"></li>
+            <li>Browse for either a NetBeans project or a service registered in the IDE's
+                <a href="wsc_rest.html">Web Services Manager</a>. Note that you can register
+                a service in the Manager if you have the URL of the service's WSDL or WADL.</li>
+            <li>You might need to set the authentication and class name. In most cases, the 
+                authentication and class name are read from the WADL and set automatically. 
+                You can also select whether to authenticate over SSL.</li>
+            <li>Click OK. A dialog opens asking if you want to generate Java objects 
+                from the XML schema references in the WADL file. Click Yes.</li>
+            <li>The IDE generates the RESTful client code. You still need to put in
+                any authentication keys and write additional implementation code.</li>
+        </ol>
+        <p>For a tutorial on generating RESTful client code in a Swing application,
+            see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://netbeans.org/kb/docs/websvc/twitter-swing.html">
+                <param name="text" value="<html><u>Creating a Graphical Client for Twitter</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+        
+            <h3>How to Create a Client Class In an Application or Module</h3>
+            <p>NetBeans IDE can generate a client class in a Java application, 
+                Web application, or NetBeans module.</p>
+            <p class="note">If you are generating a class in a NetBeans module,
+            that module needs the RESTful Web Service Libraries and their dependencies
+            on the module's classpath.</p>
+            <p><b>To create a client class:</b></p>
+            <ol>
+                <li>In the Projects window, select the node of the Web application,
+                Java application, or NetBeans module in which you want to create a 
+                RESTful client class.</li>
+                <li>Launch the New File wizard (Ctrl-N, or New File icon, or context menu of the node).</li>
+                <li>In the New File wizard, select the Web Services category and the 
+                    RESTful Java Client file type. Click Next. The New RESTful 
+                    Java Client panel opens.</li>
+                <li>Name the class and name the class package.</li>
+                <li>Browse for either a NetBeans project or a service registered in the IDE's
+                <a href="wsc_rest.html">Web Services Manager</a>. Note that you can register
+                a service in the Manager if you have the URL of the service's WSDL or WADL.</li>
+            <li>You might need to set the authentication and class name. In most cases, the 
+                authentication and class name are read from the WADL and set automatically. 
+                You can also select whether to authenticate over SSL.</li>
+            <li>Click OK. A dialog opens asking if you want to generate Java objects 
+                from the XML schema references in the WADL file. Click Yes.</li>
+            <li><b>(NetBeans module only)</b> Another warning might
+                    appear asking you to add modules to the classpath. Click OK.</li>
+            <li><b>(NetBeans module only)</b> If you need to add modules to the classpath, right-click the module's
+                    node and open its Project Properties. Go to the Libraries section, and 
+                    add the modules with the Add Dependency button. This button opens a list 
+                    of module dependencies to browse.</li>
+            <li>The IDE generates the RESTful client code. You still need to put in
+                any authentication keys and write additional implementation code.</li>
+            </ol>
+            <p>For a tutorial on generating RESTful client classes in an application,
+            see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://netbeans.org/kb/docs/websvc/jersey-rcp-client.html">
+                <param name="text" value="<html><u>Creating RESTful Service Clients in NetBeans Modules</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+</html>

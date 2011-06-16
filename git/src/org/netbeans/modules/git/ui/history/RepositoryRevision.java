@@ -65,15 +65,15 @@ public class RepositoryRevision {
      * List of events associated with the revision.
      */ 
     private final List<Event> events = new ArrayList<Event>(1);
-    private String commonAncestor;
+    private final Map<File, String> commonAncestors = new HashMap<File, String>();
     private final Set<GitTag> tags;
     private final Set<GitBranch> branches;
 
-    public RepositoryRevision (GitRevisionInfo message, Set<GitTag> tags, Set<GitBranch> branches) {
+    public RepositoryRevision (GitRevisionInfo message, Set<GitTag> tags, Set<GitBranch> branches, Map<File, Set<File>> renames) {
         this.message = message;
         this.tags = tags;
         this.branches = branches;
-        initEvents();
+        initEvents(renames);
         
     }
 
@@ -86,12 +86,27 @@ public class RepositoryRevision {
         }
     }
 
-    private void initEvents () {
+    private void initEvents (Map<File, Set<File>> allRenames) {
         try {
             Map<File, GitFileInfo> paths = message.getModifiedFiles();
             if (paths == null || paths.isEmpty()) return;
             for (Map.Entry<File, GitFileInfo> path : paths.entrySet()) {
-                events.add(new Event(path.getValue()));
+                GitFileInfo info = path.getValue();
+                Set<File> renames = allRenames.get(info.getFile());
+                if (renames == null) {
+                    renames = Collections.<File>emptySet();
+                }
+                if (info.getStatus().equals(Status.COPIED) || info.getStatus().equals(Status.RENAMED)) {
+                    Set<File> combinedRenames = allRenames.get(info.getOriginalFile());
+                    if (combinedRenames == null) {
+                        combinedRenames = new HashSet<File>();
+                        allRenames.put(info.getOriginalFile(), combinedRenames);
+                    }
+                    combinedRenames.add(info.getFile());
+                    combinedRenames.addAll(renames);
+                    renames = combinedRenames;
+                }
+                events.add(new Event(info, renames));
             }
         } catch (GitException ex) {
             GitClientExceptionHandler.notifyException(ex, false);
@@ -119,19 +134,19 @@ public class RepositoryRevision {
         return text.toString();
     }
 
-    String getAncestorCommit (GitClient client, ProgressMonitor pm) throws GitException {
-        if (commonAncestor == null) {
+    String getAncestorCommit (File file, GitClient client, ProgressMonitor pm) throws GitException {
+        String ancestorCommit = commonAncestors.get(file);
+        if (ancestorCommit == null && !commonAncestors.containsKey(file)) {
+            GitRevisionInfo info = null;
             if (getLog().getParents().length == 1) {
-                commonAncestor = getLog().getParents()[0];
+                info = client.getPreviousRevision(file, getLog().getRevision(), pm);
             } else if (getLog().getParents().length > 1) {
-                GitRevisionInfo info;
                 info = client.getCommonAncestor(getLog().getParents(), pm);
-                if (info != null) {
-                    commonAncestor = info.getRevision();
-                }
             }
+            ancestorCommit = info == null ? null : info.getRevision();
+            commonAncestors.put(file, ancestorCommit);
         }
-        return commonAncestor;
+        return ancestorCommit;
     }
 
     public GitBranch[] getBranches () {
@@ -150,17 +165,20 @@ public class RepositoryRevision {
     
         private final String path;
         private final Status status;
+        private final Set<File> renames;
 
-        public Event (GitFileInfo changedPath) {
+        public Event (GitFileInfo changedPath, Set<File> renames) {
             path = changedPath.getRelativePath();
             file = changedPath.getFile();
             status = changedPath.getStatus();
+            this.renames = Collections.unmodifiableSet(new HashSet<File>(renames));
         }
         
         private Event (File dummyFile, String dummyPath) {
             this.path = dummyPath;
             this.file = dummyFile;
             this.status = Status.UNKNOWN;
+            renames = Collections.<File>emptySet();
         }
 
         public RepositoryRevision getLogInfoHeader () {
@@ -199,6 +217,10 @@ public class RepositoryRevision {
         @Override
         public String toString() {
             return path;
+        }
+
+        public Collection<File> getRenames () {
+            return renames;
         }
     }
 }

@@ -460,9 +460,12 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                                 Logger.getLogger("glassfish-javaee").log(Level.FINE,"t.1 == {0}", t);  // NOI18N
                             }
 
+                            int port = Integer.parseInt(ip.getProperty(GlassfishModule.ADMINPORT_ATTR));
                             // Wait for the admin port to be 'running'
-                            while (!Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
-                                    ip.getProperty(GlassfishModule.ADMINPORT_ATTR)) && t < 60000) {
+                            while (//!Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
+                                   // ip.getProperty(GlassfishModule.ADMINPORT_ATTR)) &&
+                                    !org.netbeans.modules.glassfish.spi.Utils.isLocalPortOccupied(port) &&
+                                    t < 60000) {
                                 Thread.sleep(1000);
                                 t += 1000;
                                 Logger.getLogger("glassfish-javaee").log(Level.FINE,"t.2 == {0}", t);  // NOI18N

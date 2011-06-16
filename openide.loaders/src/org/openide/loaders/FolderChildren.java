@@ -45,6 +45,7 @@
 package org.openide.loaders;
 
 
+import java.awt.EventQueue;
 import java.beans.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -57,8 +58,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.*;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /** Watches over a folder and represents its
 * child data objects by nodes.
@@ -200,6 +205,16 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     */
     @Override
     protected Node[] createNodes(FolderChildrenPair pair) {
+        Node ret;
+        if (EventQueue.isDispatchThread() && !pair.primaryFile.isFolder()) {
+            ret = new DelayedNode(pair);
+        } else {
+            ret = createNode(pair);
+        }
+        return ret == null ? null : new Node[] { ret };
+    }
+    
+    final Node createNode(FolderChildrenPair pair) {
         DataObject obj;
         long time = System.currentTimeMillis();
         Node ret = null;
@@ -226,15 +241,31 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 err.log(Level.FINE, "  returning: {0}", ret);
             }
         }
-        return ret == null ? null : new Node[] { ret };
+        return ret;
     }
 
     @Override
     public Node[] getNodes(boolean optimalResult) {
-        if (optimalResult) {
-            waitOptimalResult();
+        Node[] arr;
+        for (;;) {
+            if (optimalResult) {
+                waitOptimalResult();
+            }
+            arr = getNodes();
+            boolean stop = true;
+            for (Node n : arr) {
+                if (n instanceof DelayedNode) {
+                    DelayedNode dn = (DelayedNode)n;
+                    if (checkChildrenMutex() && dn.waitFinished()) {
+                        stop = false;
+                    }
+                }
+            }
+            if (stop) {
+                break;
+            }
         }
-        return getNodes();
+        return arr;
     }
 
     @Override
@@ -353,5 +384,76 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public void fileRenamed(FileRenameEvent fe) {
         refreshChildren(RefreshMode.SHALLOW);
+    }
+    
+    private final class DelayedNode extends FilterNode 
+    implements Runnable, InstanceContent.Convertor<DelayedNode,DataObject>{
+        private final FolderChildrenPair pair;
+        private volatile RequestProcessor.Task task;
+
+        public DelayedNode(FolderChildrenPair pair) {
+            this(pair, new InstanceContent());
+        }
+        
+        private DelayedNode(FolderChildrenPair pair, InstanceContent ic) {
+            this(pair, new AbstractNode(Children.LEAF, new AbstractLookup(ic)));
+            ic.add(pair.primaryFile);
+            ic.add(this, this);
+        }
+        
+        private DelayedNode(FolderChildrenPair pair, AbstractNode an) {
+            super(an);
+            this.pair = pair;
+            an.setName(pair.primaryFile.getNameExt());
+            an.setIconBaseWithExtension("org/openide/loaders/unknown.gif"); // NOI18N
+            
+            task = DataNode.RP.post(this);
+        }
+        
+        @Override
+        public void run() {
+            Node n = createNode(pair);
+            if (n != null) {
+                changeOriginal(n, !n.isLeaf());
+            } else {
+                refreshKey(pair);
+            }
+            task = null;
+        }
+        
+        /* @return true if there was some change in the node while waiting */
+        public final boolean waitFinished() {
+            RequestProcessor.Task t = task;
+            if (t == null) {
+                return false;
+            }
+            task.waitFinished();
+            return true;
+        }
+
+        @Override
+        public DataObject convert(DelayedNode obj) {
+            try {
+                return DataObject.find(pair.primaryFile);
+            } catch (DataObjectNotFoundException ex) {
+                err.log(Level.INFO, "Cannot convert " + pair.primaryFile, ex);
+                return null;
+            }
+        }
+
+        @Override
+        public Class<? extends DataObject> type(DelayedNode obj) {
+            return DataObject.class;
+        }
+
+        @Override
+        public String id(DelayedNode obj) {
+            return type(obj).getName();
+        }
+
+        @Override
+        public String displayName(DelayedNode obj) {
+            return id(obj);
+        }
     }
 }

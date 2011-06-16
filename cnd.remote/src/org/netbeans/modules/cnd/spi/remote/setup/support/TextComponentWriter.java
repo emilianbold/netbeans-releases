@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.spi.remote.setup.support;
 
 import java.io.IOException;
@@ -60,6 +59,7 @@ public final class TextComponentWriter extends PrintWriter {
 
     public TextComponentWriter(final JTextComponent textPane) {
         super(new Writer() {
+
             @Override
             public void write(char[] cbuf, int off, int len) throws IOException {
                 final String value = new String(cbuf, off, len);
@@ -67,19 +67,22 @@ public final class TextComponentWriter extends PrintWriter {
             }
 
             @Override
-            public void flush() throws IOException {}
+            public void flush() throws IOException {
+            }
 
             @Override
-            public void close() throws IOException {}
+            public void close() throws IOException {
+            }
         });
 
     }
 
     private static void addOuputTextInUiThread(final String value, final JTextComponent textPane) {
         Runnable r = new Runnable() {
-                public void run() {
-                    textPane.setText(textPane.getText() + value);
-                }
+            @Override
+            public void run() {
+                textPane.setText(textPane.getText() + value);
+            }
         };
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();

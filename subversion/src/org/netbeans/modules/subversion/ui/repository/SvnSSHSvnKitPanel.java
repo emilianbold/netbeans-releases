@@ -63,7 +63,6 @@ public class SvnSSHSvnKitPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setMinimumSize(new java.awt.Dimension(480, 160));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/repository/Bundle"); // NOI18N
         setName(bundle.getString("BK2018")); // NOI18N
         setVerifyInputWhenFocusTarget(false);
@@ -74,7 +73,6 @@ public class SvnSSHSvnKitPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvnSSHSvnKitPanel.class, "SvnkitSSHPanel.certFileLabel.text")); // NOI18N
         jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(SvnSSHSvnKitPanel.class, "SvnkitSSHPanel.certFileLabel.toolTipText")); // NOI18N
 
-        certPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));
         certPasswordField.setPreferredSize(new java.awt.Dimension(11, 22));
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SvnSSHSvnKitPanel.class, "SvnkitSSHPanel.browseButton.text")); // NOI18N

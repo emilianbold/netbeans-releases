@@ -119,7 +119,7 @@
             <extra-compilation-unit>
                 <package-root>libsrc</package-root>
                 <classpath/>
-                <built-to>build/updaterclasses</built-to>
+                <built-to>${build.dir}/updaterclasses</built-to>
                 <built-to>${cluster}/modules/ext/updater.jar</built-to>
             </extra-compilation-unit>
         </data>

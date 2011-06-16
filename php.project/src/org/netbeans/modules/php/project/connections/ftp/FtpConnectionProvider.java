@@ -68,6 +68,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
     static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
     static final String PASSIVE_MODE = "passiveMode"; // NOI18N
+    static final String IGNORE_DISCONNECT_ERRORS = "ignoreDisconnectErrors"; // NOI18N
 
     private static final Set<String> PROPERTIES = new HashSet<String>(Arrays.asList(
         TYPE,
@@ -78,7 +79,8 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         ANONYMOUS_LOGIN,
         INITIAL_DIRECTORY,
         TIMEOUT,
-        PASSIVE_MODE
+        PASSIVE_MODE,
+        IGNORE_DISCONNECT_ERRORS
     ));
     private static final int DEFAULT_PORT = 21;
     private static final int DEFAULT_TIMEOUT = 30;
@@ -112,6 +114,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         configuration.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
         configuration.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
         configuration.putValue(PASSIVE_MODE, String.valueOf(false));
+        configuration.putValue(IGNORE_DISCONNECT_ERRORS, String.valueOf(true));
 
         assert accept(configuration) : "Not my configuration?!";
 

@@ -104,6 +104,10 @@ TMP-x86_64 :=  x86
 TMP-sparc  :=  sparc
 TMP-sun4u  :=  sparc
 
+ifeq ($(UNAME_P), unknown)  # for my Ubuntu 10.4 on Intel I5 it says "unknown" :(
+	UNAME_P := i386
+endif
+
 PLATFORM = ${TMP-${UNAME_P}}${PLATFORM_64}
 ifeq (${PLATFORM}, )
     PLATFORM = ${TMP-${UNAME_M}}${PLATFORM_64}

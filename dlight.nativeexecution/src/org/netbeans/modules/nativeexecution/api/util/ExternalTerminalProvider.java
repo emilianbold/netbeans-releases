@@ -57,6 +57,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.nativeexecution.ExternalTerminalAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -154,6 +155,8 @@ public final class ExternalTerminalProvider {
                         return null;
                     } catch (IOException ex) {
                         // may continue...
+                    } catch (CancellationException ex) {
+                        return null;
                     }
                 }
             }

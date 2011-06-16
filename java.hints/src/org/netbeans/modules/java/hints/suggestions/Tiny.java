@@ -174,7 +174,7 @@ public class Tiny {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             LiteralTree leaf = (LiteralTree) tp.getLeaf();
             String suffix;
             

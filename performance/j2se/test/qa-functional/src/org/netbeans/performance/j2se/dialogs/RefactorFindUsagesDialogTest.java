@@ -52,6 +52,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -102,7 +103,7 @@ public class RefactorFindUsagesDialogTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open() {
-        testNode.performPopupAction(ACTION);
+        testNode.callPopup().pushMenu(ACTION);
         return new NbDialogOperator(TITLE);
     }
     

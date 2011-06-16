@@ -44,6 +44,7 @@
 
 package org.netbeans.performance.j2ee.actions;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
@@ -104,7 +105,7 @@ public class CreateNewFileTest extends PerformanceTestCase {
     public void testCreateNewSessionBean() {
         WAIT_AFTER_OPEN = 10000;
         project = "TestApplication-ejb";
-        category = "Java EE";
+        category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
         fileType = "Session Bean";
         fileName = "NewTestSession";
         packageName = "test.newfiles";

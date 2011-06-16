@@ -44,42 +44,26 @@
 
 package org.netbeans.modules.hudson.ui.nodes;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
-import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
-import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
-import org.netbeans.modules.hudson.ui.actions.PersistInstanceAction;
-import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
 import org.netbeans.modules.hudson.util.Utilities;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -146,25 +130,8 @@ public class HudsonInstanceNode extends AbstractNode {
                     NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.from_open_project") + "</font>" : "");
     }
     
-    @Override
-    public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        if (instance.getViews().size() > 1) {
-            actions.add(new ViewSwitcher());
-            actions.add(null);
-        }
-        actions.add(UI.createJobAction(instance));
-        actions.add(null);
-        actions.add(SystemAction.get(SynchronizeAction.class));
-        actions.add(SystemAction.get(OpenUrlAction.class));
-        if (!instance.isPersisted()) {
-            actions.add(SystemAction.get(PersistInstanceAction.class));
-        } else {
-            actions.add(SystemAction.get(DeleteAction.class));
-        }
-        actions.add(null);
-        actions.add(SystemAction.get(PropertiesAction.class));
-        return actions.toArray(new Action[0]);
+    public @Override Action[] getActions(boolean context) {
+        return org.openide.util.Utilities.actionsForPath(HudsonInstance.ACTION_PATH).toArray(new Action[0]);
     }
 
     public @Override boolean canDestroy() {
@@ -223,7 +190,7 @@ public class HudsonInstanceNode extends AbstractNode {
     /**
      * Preferences key for currently display view.
      */
-    private static final String SELECTED_VIEW = "view"; // NOI18N
+    public static final String SELECTED_VIEW = "view"; // NOI18N
     
     private static class InstanceNodeChildren extends Children.Keys<HudsonJob> implements HudsonChangeListener {
         
@@ -281,55 +248,6 @@ public class HudsonInstanceNode extends AbstractNode {
         public void contentChanged() {
             refreshKeys();
         }
-    }
-
-    private class ViewSwitcher extends AbstractAction implements Presenter.Popup {
-
-        public void actionPerformed(ActionEvent e) {
-            assert false;
-        }
-
-        public JMenuItem getPopupPresenter() {
-            class Menu extends JMenu implements DynamicMenuContent {
-                {
-                    setText(NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.view"));
-                }
-                public JComponent[] getMenuPresenters() {
-                    removeAll();
-                    String selectedView = instance.prefs().get(SELECTED_VIEW, null);
-                    String primaryViewName = instance.getPrimaryView().getName();
-                    JRadioButtonMenuItem item = new JRadioButtonMenuItem(primaryViewName);
-                    item.setSelected(selectedView == null || selectedView.equals(primaryViewName));
-                    item.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            instance.prefs().remove(SELECTED_VIEW);
-                        }
-                    });
-                    add(item);
-                    addSeparator();
-                    for (final HudsonView view : instance.getViews()) {
-                        final String name = view.getName();
-                        if (name.equals(primaryViewName)) {
-                            continue;
-                        }
-                        item = new JRadioButtonMenuItem(name);
-                        item.setSelected(name.equals(selectedView));
-                        item.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                instance.prefs().put(SELECTED_VIEW, name);
-                            }
-                        });
-                        add(item);
-                    }
-                    return new JComponent[] {this};
-                }
-                public JComponent[] synchMenuPresenters(JComponent[] items) {
-                    return getMenuPresenters();
-                }
-            }
-            return new Menu();
-        }
-
     }
 
 }

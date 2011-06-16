@@ -146,11 +146,11 @@ public class FormatVisitor extends DefaultVisitor {
                 ts.moveNext();
 	    }
 	}
+	includeWSBeforePHPDoc = true;
 	if (indexBeforeLastComment > 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
 	    for (int i = 0; i < indexBeforeLastComment; i++) {
 		formatTokens.add(beforeTokens.get(i));
 	    }
-	    includeWSBeforePHPDoc = true;
 	    if (node instanceof ClassDeclaration || node instanceof InterfaceDeclaration) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
 		includeWSBeforePHPDoc = false;
@@ -163,7 +163,7 @@ public class FormatVisitor extends DefaultVisitor {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
 //                    }
 		} else {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
+		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELDS, ts.offset()));
 		}
 		includeWSBeforePHPDoc = false;
 	    } else if (node instanceof UseStatement) {
@@ -563,12 +563,12 @@ public class FormatVisitor extends DefaultVisitor {
 	    index++;
 	}
 	addAllUntilOffset(node.getStartOffset());
-	if (index < statements.size()
+	if (includeWSBeforePHPDoc && index < statements.size()
 		&& index > 0 && statements.get(index - 1) instanceof FieldsDeclaration) {
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
 	} else {
 	    if (includeWSBeforePHPDoc) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELDS, ts.offset()));
 	    } else {
 		includeWSBeforePHPDoc = true;
 	    }
@@ -578,7 +578,7 @@ public class FormatVisitor extends DefaultVisitor {
 		|| ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof FieldsDeclaration))) {
 	    //addAllUntilOffset(statements.get(index).getEndOffset() + 1);
 	    addRestOfLine();
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELD, ts.offset() + ts.token().length()));
+	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELDS, ts.offset() + ts.token().length()));
 	}
     }
 
@@ -708,7 +708,7 @@ public class FormatVisitor extends DefaultVisitor {
 	scan(node.getFunctionName());
         List<Expression> parameters = node.getParameters();
 	if (parameters != null && parameters.size() > 0) {
-            boolean addIndentation = !(path.get(1) instanceof Assignment);
+            boolean addIndentation = !(path.get(1) instanceof Assignment || (path.size() > 2 && path.get(1) instanceof MethodInvocation && path.get(2) instanceof Assignment));
             if (addIndentation) {
                 formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
             }
@@ -837,6 +837,7 @@ public class FormatVisitor extends DefaultVisitor {
 		    addFormatToken(formatTokens);
 		}
 	    }
+            ts.movePrevious();
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT, ts.offset()));

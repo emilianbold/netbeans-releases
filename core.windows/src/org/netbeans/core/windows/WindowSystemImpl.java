@@ -48,7 +48,6 @@ package org.netbeans.core.windows;
 
 import java.awt.EventQueue;
 import org.netbeans.core.WindowSystem;
-import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.services.DialogDisplayerImpl;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.util.lookup.ServiceProvider;
@@ -62,23 +61,38 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=WindowSystem.class)
 public class WindowSystemImpl implements WindowSystem {
 
+    @Override
     public void init() {
         assert !EventQueue.isDispatchThread();
         MainWindow.init();
     }
 
+    @Override
     public void load() {
         WindowManagerImpl.assertEventDispatchThread();
         
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        wm.fireEvent( WindowSystemEventType.beforeLoad );
+        
         PersistenceHandler.getDefault().load();
+        
+        wm.fireEvent( WindowSystemEventType.afterLoad );
     }
+    
+    @Override
     public void save() {
         WindowManagerImpl.assertEventDispatchThread();
         
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        wm.fireEvent( WindowSystemEventType.beforeSave );
+
         PersistenceHandler.getDefault().save();
+
+        wm.fireEvent( WindowSystemEventType.afterSave );
     }
     
     // GUI
+    @Override
     public void show() {
         WindowManagerImpl.assertEventDispatchThread();
         
@@ -86,6 +100,8 @@ public class WindowSystemImpl implements WindowSystem {
         ShortcutAndMenuKeyEventProcessor.install();
         WindowManagerImpl.getInstance().setVisible(true);
     }
+    
+    @Override
     public void hide() {
         WindowManagerImpl.assertEventDispatchThread();
         

@@ -172,8 +172,12 @@ public class FtpClient implements RemoteClient {
             try {
                 ftpClient.logout();
             } catch (IOException ex) {
-                LOGGER.log(Level.FINE, "Error while disconnecting", ex);
-                throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotLogout", configuration.getHost()), ex, getReplyString());
+                LOGGER.log(Level.FINE, "Error while logout", ex);
+                if (configuration.getIgnoreDisconnectErrors()) {
+                    LOGGER.log(Level.FINE, "Error while logout ignored by configuration");
+                } else {
+                    throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotLogout", configuration.getHost()), ex, getReplyString());
+                }
             } finally {
                 try {
                     ftpClient.disconnect();
@@ -498,6 +502,11 @@ public class FtpClient implements RemoteClient {
         @Override
         public boolean isFile() {
             return ftpFile.isFile();
+        }
+
+        @Override
+        public boolean isLink() {
+            return ftpFile.isSymbolicLink();
         }
 
         @Override

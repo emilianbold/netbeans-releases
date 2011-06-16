@@ -45,10 +45,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,6 +65,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * An implementation of SetupProvider that nandles RFS related binaries
@@ -133,6 +135,11 @@ public class RfsSetupProvider implements SetupProvider {
         }
         return result;
     }
+    
+    @Override
+    public void failed(Collection<File> files, StringBuilder describeProblem) {
+        describeProblem.append(NbBundle.getMessage(RfsSetupProvider.class, "ErrorUploadingBinaries"));
+    }        
 
     public static String getPreloadName(ExecutionEnvironment execEnv) {
         return PRELOAD;

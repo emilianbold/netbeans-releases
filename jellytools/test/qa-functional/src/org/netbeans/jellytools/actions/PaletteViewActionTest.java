@@ -44,15 +44,9 @@
 package org.netbeans.jellytools.actions;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import junit.textui.TestRunner;
-
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.PaletteOperator;
-import org.netbeans.jellytools.actions.PaletteViewAction;
-        
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.PaletteViewAction
  *
@@ -66,30 +60,17 @@ public class PaletteViewActionTest extends JellyTestCase {
     public PaletteViewActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new PaletteViewActionTest("testPerformMenu"));
-        return suite;
-         */
-        return createModuleTest(PaletteViewActionTest.class, "testPerformMenu");
+        return createModuleTest(PaletteViewActionTest.class);
     }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         PaletteOperator.invoke().close();
         new PaletteViewAction().performMenu();
         new PaletteOperator().close();
     }
-
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
 }

@@ -90,7 +90,9 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
 
     private final WLDeploymentManager manager;
 
-    private static final FileFilter CLASSPATH_FILTER = new FileFilter() {
+    private final FileFilter serverClasspathFilter;
+    
+    private static final FileFilter DEFAULT_CLASSPATH_FILTER = new FileFilter() {
 
         @Override
         public boolean accept(File pathname) {
@@ -100,6 +102,19 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
 
     public WLDriverDeployer(WLDeploymentManager manager) {
         this.manager = manager;
+        if (manager.isWebProfile()) {
+            final File webLogicJar = WLPluginProperties.getWeblogicJar(manager);
+            serverClasspathFilter = new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return (webLogicJar != null && webLogicJar.getName().equals(pathname.getName()))
+                            || pathname.getName().equals("derby.jar") // NOI18N
+                            || pathname.getName().equals("pcl2.jar"); // NOI18N
+                }
+            };
+        } else {
+            serverClasspathFilter = DEFAULT_CLASSPATH_FILTER;
+        }
     }
 
     @Override
@@ -209,14 +224,14 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
         List<File> cp = new ArrayList<File>();
         File domainLib = WLPluginProperties.getDomainLibDirectory(manager);
         if (domainLib != null) {
-            File[] files = domainLib.listFiles(CLASSPATH_FILTER);
+            File[] files = domainLib.listFiles(DEFAULT_CLASSPATH_FILTER);
             if (files != null) {
                 cp.addAll(Arrays.asList(files));
             }
         }
         File serverLib = WLPluginProperties.getServerLibDirectory(manager, false);
         if (serverLib != null) {
-            File[] files = serverLib.listFiles(CLASSPATH_FILTER);
+            File[] files = serverLib.listFiles(serverClasspathFilter);
             if (files != null) {
                 cp.addAll(Arrays.asList(files));
             }

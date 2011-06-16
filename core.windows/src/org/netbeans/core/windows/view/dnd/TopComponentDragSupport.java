@@ -57,6 +57,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
@@ -109,10 +110,10 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         + "; class=org.openide.windows.TopComponent$Cloneable"; // NOI18N
     
 
-    /** Mime type for <code>TopComponent</code>'s array <code>DataFlavor</code>. */
-    public static final String MIME_TOP_COMPONENT_ARRAY =
+    /** Mime type for <code>Mode</code> <code>DataFlavor</code>. */
+    public static final String MIME_TOP_COMPONENT_MODE =
         DataFlavor.javaJVMLocalObjectMimeType
-        + "; class=org.netbeans.core.windows.view.dnd.TopComponentDragSupport$TopComponentArray"; // NOI18N
+        + "; class=org.netbeans.core.windows.ModeImpl"; // NOI18N
 
     
     /** 'Copy window' cursor type. */
@@ -123,7 +124,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     private static final int CURSOR_MOVE    = 2;
     /** 'Move_No window' cursor type. */
     private static final int CURSOR_MOVE_NO = 3;
-    /** Cursor type indicating there cannont be copy operation 
+    /** Cursor type indicating there cannot be copy operation 
      * done, but could be done move operation. In fact is
      * the same like {@link #CURSOR_COPY_NO} with the diff name
      * to be recognized correctly when switching action over drop target */
@@ -196,6 +197,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
 
     /** Simulates drag gesture recongition valid for winsys.
      * Implements <code>AWTEventListener</code>. */
+    @Override
     public void eventDispatched(AWTEvent evt) {
         MouseEvent me = (MouseEvent) evt;
         //#118828
@@ -212,7 +214,8 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             startingPoint = null;
             startingComponent = null;
         }
-        
+        if(me.isConsumed())
+            return;
         if(evt.getID() != MouseEvent.MOUSE_DRAGGED) {
             return;
         }
@@ -289,18 +292,40 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         if(tabbed == null) {
             return;
         }
+
+        // #22132. If in modal dialog no drag allowed.
+        Dialog dlg = (Dialog)SwingUtilities.getAncestorOfClass(Dialog.class, tabbed.getComponent());
+        if(dlg != null && dlg.isModal()) {
+            return; 
+        }
         
         Point ppp = new Point(point);
         Point p = SwingUtilities.convertPoint(srcComp, ppp, tabbed.getComponent());
         
+        TopComponentDraggable draggable = null;
         // #106761: tabForCoordinate may return -1, so check is needed
         int tabIndex = tabbed.tabForCoordinate(p);
         tc = tabIndex != -1 ? tabbed.getTopComponentAt(tabIndex) : null;
         if (tc == null) {
-            return;
+            Rectangle tabsArea = tabbed.getTabsArea();
+            if( tabsArea.contains( p ) ) {
+                TopComponent[] tcs = tabbed.getTopComponents();
+                if( null != tcs && tcs.length > 0 ) {
+                    ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tcs[0] );
+                    if( null != mode && ((mode.getKind() == Constants.MODE_KIND_EDITOR && Switches.isEditorModeDragAndDropEnabled())
+                                            ||
+                                        (mode.getKind() == Constants.MODE_KIND_VIEW && Switches.isViewModeDragAndDropEnabled())) ) {
+                        draggable = new TopComponentDraggable( mode );
+                    }
+                }
+            }
+        } else {
+            if( Switches.isTopComponentDragAndDropEnabled() && Switches.isDraggingEnabled(tc) ) {
+                draggable = new TopComponentDraggable( tc );
+            }
         }
 
-        if( !Switches.isDraggingEnabled(tc) )
+        if( null == draggable )
             return;
 
         // #21918. See above.
@@ -317,9 +342,9 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
 
         // Get start droppable (if there) and its starting point.
         TopComponentDroppable startDroppable = (TopComponentDroppable)SwingUtilities
-                            .getAncestorOfClass(TopComponentDroppable.class, tc);
+                            .getAncestorOfClass(TopComponentDroppable.class, null == tc ? tabbed.getComponent() : tc);
         Point startPoint;
-        if (startDroppable == null) {
+        if (startDroppable == null && tc != null) {
             startDroppable = (TopComponentDroppable)SwingUtilities
                                 .getAncestorOfClass(TopComponentDroppable.class, tabbed.getComponent());
         }
@@ -334,7 +359,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
 
         doStartDrag(
             srcComp,
-            tc, 
+            draggable, 
             new DragGestureEvent(
                 new FakeDragGestureRecognizer(windowDnDManager, me),
                 hackUserDropAction,
@@ -347,32 +372,18 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     }
     
     /** Actually starts the drag operation. */
-    private void doStartDrag(Component startingComp, Object transfer, DragGestureEvent evt,
+    private void doStartDrag(Component startingComp, TopComponentDraggable transfer, DragGestureEvent evt,
     TopComponentDroppable startingDroppable, final Point startingPoint) {
         if(DEBUG) {
             debugLog(""); // NOI18N
             debugLog("doStartDrag"); // NOI18N
         }
-        final TopComponent firstTC = transfer instanceof TopComponent
-                ? (TopComponent)transfer
-                : (((TopComponent[])transfer)[0]);
         
-        // #22132. If in modal dialog no drag allowed.
-        Dialog dlg = (Dialog)SwingUtilities.getAncestorOfClass(
-                Dialog.class, firstTC);
-        if(dlg != null && dlg.isModal()) {
-            return; 
-        }
-        
-        if(firstTC instanceof TopComponent.Cloneable) {
-            canCopy = true;
-        } else {
-            canCopy = false;
-        }
+        canCopy = transfer.getTopComponent() instanceof TopComponent.Cloneable;
         
         // Inform window sys there is DnD about to start.
         // XXX Using the firstTC in DnD manager is a hack.
-        windowDnDManager.dragStarting(startingDroppable, startingPoint, firstTC);
+        windowDnDManager.dragStarting(startingDroppable, startingPoint, transfer);
 
         Cursor cursor = hackUserDropAction == DnDConstants.ACTION_MOVE
             ? getDragCursor(startingComp, CURSOR_MOVE)
@@ -394,24 +405,29 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         
         int tabIndex = -1;
         Image img = createDragImage();
-        if (tabbed != null &&
-                WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.DND_DRAGIMAGE, 
-                Utilities.getOperatingSystem() != Utilities.OS_SOLARIS)) {
-            tabIndex = tabbed.indexOf(firstTC);
+        if (tabbed != null) {
+            if( transfer.isTopComponentTransfer()
+                && WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.DND_DRAGIMAGE, 
+                    Utilities.getOperatingSystem() != Utilities.OS_SOLARIS)) {
+                tabIndex = tabbed.indexOf(transfer.getTopComponent());
 
-            visualizer = new DragAndDropFeedbackVisualizer( tabbed, tabIndex );
+                visualizer = new DragAndDropFeedbackVisualizer( tabbed, tabIndex );
+            }
         }
         try {
             
+            Transferable transferable;
+            if( transfer.isTopComponentTransfer() ) {
+                transferable = new TopComponentTransferable( transfer.getTopComponent() );
+            } else {
+                assert transfer.isModeTransfer();
+                transferable = new TopComponentModeTransferable( transfer.getMode() );
+            }
             evt.startDrag(
                 cursor,
                 img,
                 new Point (0,0), 
-                (transfer instanceof TopComponent
-                        ? (Transferable)new TopComponentTransferable(
-                                (TopComponent)transfer)
-                        : (Transferable)new TopComponentArrayTransferable(
-                                (TopComponent[])transfer)),
+                transferable,
                 this
             );
             evt.getDragSource().addDragSourceMotionListener( this );
@@ -433,6 +449,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     }
 
     private AWTEventListener keyListener = new AWTEventListener() {
+        @Override
             public void eventDispatched(AWTEvent event) {
                 KeyEvent keyevent = (KeyEvent)event;
                 
@@ -461,6 +478,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
      * The excpected code, changing of cursor, is done in setSuccessCursor method
      * due to an undeterministic calls of this method especially in MDI mode.
      * @see #setSuccessCursor */
+    @Override
     public void dragEnter(DragSourceDragEvent evt) {
         if(DEBUG) {
             debugLog(""); // NOI18N
@@ -475,6 +493,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     }
 
     /** Dummy implementation of <code>DragSourceListener</code> method. */
+    @Override
     public void dragOver(DragSourceDragEvent evt) {
         if(DEBUG) {
             debugLog(""); // NOI18N
@@ -488,6 +507,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
      * The excpected code, changing of cursor, is done in setUnsuccessCursor method
      * due to an undeterministic calls of this method especially in MDI mode.
      * @see #setUnsuccessCursor */
+    @Override
     public void dragExit(DragSourceEvent evt) {
         if(DEBUG) {
             debugLog(""); // NOI18N
@@ -504,6 +524,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     /** Implements <code>DragSourceListener</code> method.
      * It changes the cursor type from copy to move and bakc accordting the
      * user action. */
+    @Override
     public void dropActionChanged(DragSourceDragEvent evt) {
         if(DEBUG) {
             debugLog(""); // NOI18N
@@ -562,6 +583,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     /** Implements <code>DragSourceListener</code> method.
      * Informs window dnd manager the drag operation finished.
      * @see WindowDnDManager#dragFinished */
+    @Override
     public void dragDropEnd(final DragSourceDropEvent evt) {
         if(DEBUG) {
             debugLog(""); // NOI18N
@@ -581,6 +603,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             // Finally schedule the "drop" task later to be able to
             // detect if ESC was pressed.
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     SwingUtilities.invokeLater(createDropIntoFreeAreaTask(
                             evt, evt.getLocation(), floatingFrames));
@@ -623,6 +646,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     final Point location, final Set<Component> floatingFrames) {
         final int dropAction = hackUserDropAction;
         return new Runnable() {
+            @Override
             public void run() {
                 // XXX #21918. Don't move the check sooner
                 // (before the enclosing blocks), it would be invalid.
@@ -632,13 +656,13 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
                     return;
                 }
 
-                TopComponent[] tcArray = WindowDnDManager.extractTopComponent(
+                TopComponentDraggable transfer = WindowDnDManager.extractTopComponentDraggable(
                     dropAction == DnDConstants.ACTION_COPY,
                     evt.getDragSourceContext().getTransferable()
                 );
                 
                 // Provide actual drop into "free" desktop area.
-                if(tcArray != null) {
+                if(transfer != null) {
                     // XXX there is a problem if jdk dnd framework sets as drop action
                     // ACTION_NONE, there is not called drop event on DropTargetListener,
                     // even it is there.
@@ -832,6 +856,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
          * with mimetype equal to {@link #MIME_TOP_COMPONENT} or if mimetype
          * equals to {@link #MIME_CLONEABLE_TOP_COMPONENT} and the top component
          * is instance of <code>TopComponent.Cloneable</code> returns the instance */
+        @Override
         public Object getTransferData(DataFlavor df) {
             TopComponent tc = weakTC.get();
             if(MIME_TOP_COMPONENT.equals(df.getMimeType())) {
@@ -851,6 +876,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
          * {@link #MIME_CLONEABLE_TOP_COMPONENT}
          * if the <code>tc</code> is instance
          * of <code>TopComponent.Cloneable</code> */
+        @Override
         public DataFlavor[] getTransferDataFlavors() {
             try {
                 TopComponent tc = weakTC.get();
@@ -877,6 +903,7 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
          * of <code>TopComponent.Cloneable</code> also for the one
          * with mimetype {@link #MIME_TOP_COMPONENT_CLONEABLE},
          * <code>false</code> otherwise */
+        @Override
         public boolean isDataFlavorSupported(DataFlavor df) {
             TopComponent tc = weakTC.get();
             if(MIME_TOP_COMPONENT.equals(df.getMimeType())) {
@@ -892,57 +919,33 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         // << Transferable implementation <<
     } // End of class TopComponentTransferable.
 
-    /** <code>Transferable</code> used for <code>TopComponent</code> instances
+    /** <code>Transferable</code> used for <code>ModeImpl</code> instances
      * to be used in window system DnD. */
-    private static class TopComponentArrayTransferable extends Object
-    implements Transferable {
+    private static class TopComponentModeTransferable extends Object implements Transferable {
 
-        // #86564: Hold TopComponents weakly to workaround AWT bug #6555816
-        /** <code>TopComponent</code> to be transferred. */
-        private List<WeakReference<TopComponent>> weakTCList;
+        /** <code>ModeImpl</code> to be transferred. */
+        private WeakReference<ModeImpl> weakRef;
 
         
         /** Crates <code>Transferable</code> for specified <code>TopComponent</code> */
-        public TopComponentArrayTransferable(TopComponent[] tcArray) {
-            this.weakTCList = new ArrayList<WeakReference<TopComponent>>();
-            for (TopComponent topComponent : tcArray) {
-                weakTCList.add(new WeakReference<TopComponent>(topComponent));
-            }
+        public TopComponentModeTransferable(ModeImpl mode) {
+            this.weakRef = new WeakReference<ModeImpl> ( mode );
         }
         
-        // >> Transferable implementation >>
-        /** Implements <code>Transferable</code> method.
-         * @return <code>TopComponent</code> instance for <code>DataFlavor</code>
-         * with mimetype equal to {@link #MIME_TOP_COMPONENT}
-         * or if mimetype equals to
-         * {@link #MIME_CLONEABLE_TOP_COMPONENT} and
-         * the top component is instance
-         * of <code>TopComponent.Cloneable</code> returns the instance. */
+        @Override
         public Object getTransferData(DataFlavor df) {
-            if(MIME_TOP_COMPONENT_ARRAY.equals(df.getMimeType())) {
-                List<TopComponent> tcList = new ArrayList<TopComponent>(weakTCList.size());
-                TopComponent curTC = null;
-                for (WeakReference<TopComponent> weakTC : weakTCList) {
-                    curTC = weakTC.get();
-                    if (curTC != null) {
-                        tcList.add(curTC);
-                    }
-                }
+            if(isDataFlavorSupported( df )) {
+                return weakRef.get();
             }
             return null;
         }
 
-        /** Implements <code>Transferable</code> method.
-         * @return Array of <code>DataFlavor</code> with mimetype
-         * {@link #MIME_TOP_COMPONENT} and also with mimetype
-         * {@link #MIME_CLONEABLE_TOP_COMPONENT}
-         * if the <code>tc</code> is 
-         * instance of <code>TopComponent.Cloneable</code> */
+        @Override
         public DataFlavor[] getTransferDataFlavors() {
             try {
-                return new DataFlavor[]{new DataFlavor(MIME_TOP_COMPONENT_ARRAY,
+                return new DataFlavor[]{new DataFlavor(MIME_TOP_COMPONENT_MODE,
                                                        null,
-                                                       TopComponent.class.getClassLoader())};
+                                                       ModeImpl.class.getClassLoader())};
             }
             catch (ClassNotFoundException ex) {
                 Logger.getLogger(TopComponentDragSupport.class.getName()).log(
@@ -951,23 +954,16 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             return new DataFlavor[0];
         }
 
-        /** Implements <code>Transferable</code> method.
-         * @return <code>true</code> for <code>DataFlavor</code> with mimetype
-         * equal to {@link #MIME_TOP_COMPONENT}
-         * and if <code>tc</code> is instance
-         * of <code>TopComponent.Cloneable</code> also for the one
-         * with mimetype {@link #MIME_TOP_COMPONENT_CLONEABLE},
-         * <code>false</code> otherwise. */
+        @Override
         public boolean isDataFlavorSupported(DataFlavor df) {
-            if(MIME_TOP_COMPONENT_ARRAY.equals(
-            df.getMimeType())) {
+            if(MIME_TOP_COMPONENT_MODE.equals(df.getMimeType())) {
                 return true;
             }
 
             return false;
         }
         // << Transferable implementation <<
-    } // End of class TopComponentArrayTransferable.
+    } // End of class TopComponentModeTransferable.
 
     
     /** Fake <code>DragGestureRecognizer</code> used when starting
@@ -984,20 +980,16 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         }
 
         /** Dummy implementation of superclass abstract method. */
+        @Override
         public void registerListeners() {}
         /** Dummy implementation of superclass abstract method. */
+        @Override
         public void unregisterListeners() {}
         
     } // End of class FakeDragGestureRecognizer
 
     
-    /**
-     * Ugly fake class to pass by the issue #4752224. There is not possible
-     * to create DataFlavor of mime type application/x-java-jvm-local-objectref 
-     * for array class type. */
-    static class TopComponentArray {
-    } // End of TopComponentArray.
-
+    @Override
     public void dragMouseMoved(DragSourceDragEvent dsde) {
         if( null != visualizer )
             visualizer.update( dsde );

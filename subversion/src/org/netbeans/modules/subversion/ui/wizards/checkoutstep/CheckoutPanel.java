@@ -51,7 +51,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import org.jdesktop.layout.GroupLayout;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -83,8 +82,6 @@ public class CheckoutPanel extends JPanel {
         lblWorkingCopy = new JLabel();
         lblRepoRevision = new JLabel();
         lblLocalFolder = new JLabel();
-
-        lblEmptyMeansHead = new JLabel();
         lblSpecifyLocalFolders = new JLabel();
 
         setName(getString("BK2024")); // NOI18N
@@ -101,7 +98,7 @@ public class CheckoutPanel extends JPanel {
         Mnemonics.setLocalizedText(lblRepoRevision, getString("CTL_Checkout_Revision")); // NOI18N
         Mnemonics.setLocalizedText(searchRevisionButton, getString("CTL_Checkout_Search")); // NOI18N
         Mnemonics.setLocalizedText(browseRevisionButton, getString("CTL_Checkout_Browse")); // NOI18N
-        Mnemonics.setLocalizedText(lblEmptyMeansHead, getString("CTL_Checkout_EmptyHint")); // NOI18N
+        revisionTextField.setToolTipText(getString("CTL_Checkout_EmptyHint")); //NOI18N
 
         atWorkingDirLevelCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         exportCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -143,8 +140,7 @@ public class CheckoutPanel extends JPanel {
                                                 .add(revisionTextField, DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                                                 .addPreferredGap(RELATED)
                                                 .add(searchRevisionButton)
-                                                .add(browseRevisionButton))
-                                        .add(lblEmptyMeansHead)))
+                                                .add(browseRevisionButton))))
                         .add(atWorkingDirLevelCheckBox)
                         .add(exportCheckBox)
                         .add(lblSpecifyLocalFolders)
@@ -175,8 +171,6 @@ public class CheckoutPanel extends JPanel {
                                 .add(revisionTextField)
                                 .add(searchRevisionButton)
                                 .add(browseRevisionButton))
-                        .addPreferredGap(RELATED)
-                        .add(lblEmptyMeansHead)
                         .addPreferredGap(UNRELATED)
                         .add(atWorkingDirLevelCheckBox)
                         .addPreferredGap(RELATED)
@@ -216,7 +210,6 @@ public class CheckoutPanel extends JPanel {
     final JCheckBox exportCheckBox = new JCheckBox();
     final JButton browseRepositoryButton = new JButton();
     final JButton browseWorkdirButton = new JButton();
-    private JLabel lblEmptyMeansHead;
     private JLabel lblLocalFolder;
     private JLabel lblRepoFolders;
     private JLabel lblRepoRevision;

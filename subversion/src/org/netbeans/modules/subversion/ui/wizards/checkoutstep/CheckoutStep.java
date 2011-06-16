@@ -53,6 +53,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
+import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -129,8 +130,17 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         if(!repositoryFile.getRevision().equals(SVNRevision.HEAD)) {
             workdirPanel.revisionTextField.setText(repositoryFile.getRevision().toString());
         } else {
-            workdirPanel.revisionTextField.setText("");
+            workdirPanel.revisionTextField.setText(SVNRevision.HEAD.toString());
         }
+        workdirPanel.revisionTextField.setInputVerifier(new InputVerifier() {
+            @Override
+            public boolean verify (JComponent input) {
+                if (workdirPanel.revisionTextField.getText().trim().isEmpty()) {
+                    workdirPanel.revisionTextField.setText(SVNRevision.HEAD.toString());
+                }
+                return true;
+            }
+        });
         workdirPanel.scanForProjectsCheckBox.setSelected(SvnModuleConfig.getDefault().getShowCheckoutCompleted());
     }    
      

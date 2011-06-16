@@ -44,59 +44,51 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
+import javax.swing.Action;
+import java.util.Collections;
+import org.netbeans.modules.hudson.api.HudsonInstance;
+import org.openide.util.Exceptions;
+import java.util.List;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
-import org.openide.ErrorManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 
 /**
  * Action which displays selected job in browser.
- *
- * @author Michal Mocnak
  */
-public class OpenUrlAction extends NodeAction {
+@ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.OpenUrlAction")
+@ActionRegistration(displayName="#LBL_OpenInBrowserAction", iconInMenu=false)
+@ActionReference(path=HudsonInstance.ACTION_PATH, position=600)
+@Messages("LBL_OpenInBrowserAction=&Open in Browser")
+public class OpenUrlAction extends AbstractAction {
+
+    public static Action forOpenable(OpenableInBrowser openable) {
+        return new OpenUrlAction(Collections.singletonList(openable));
+    }
+
+    private final List<OpenableInBrowser> openables;
+
+    public OpenUrlAction(List<OpenableInBrowser> openables) {
+        super(LBL_OpenInBrowserAction());
+        this.openables = openables;
+    }
     
-    protected void performAction(Node[] nodes) {
-        for (Node node : nodes) {
-            OpenableInBrowser o = node.getLookup().lookup(OpenableInBrowser.class);
-            
-            if (null == o)
-                continue;
-            
+    public @Override void actionPerformed(ActionEvent e) {
+        for (OpenableInBrowser openable : openables) {
             try {
-                URLDisplayer.getDefault().showURL(new URL(o.getUrl()));
-            } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                URLDisplayer.getDefault().showURL(new URL(openable.getUrl()));
+            } catch (MalformedURLException x) {
+                Exceptions.printStackTrace(x);
             }
-            
         }
     }
-    
-    protected boolean enable(Node[] nodes) {
-        for (Node node : nodes) {
-            OpenableInBrowser o = node.getLookup().lookup(OpenableInBrowser.class);
-            
-            if (null != o)
-                return true;
-        }
-        
-        return false;
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(OpenUrlAction.class, "LBL_OpenInBrowserAction"); // NOI18N
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+
 }

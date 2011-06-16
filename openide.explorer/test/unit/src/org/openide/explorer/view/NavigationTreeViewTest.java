@@ -65,6 +65,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /** Check the behaviour of the view when navigating in it.
  *
@@ -132,6 +133,14 @@ public class NavigationTreeViewTest extends NbTestCase {
 
 
     public void testStructureFullOfFormFiles() throws Exception {
+        if ((
+            Utilities.getOperatingSystem() & 
+            (Utilities.OS_SOLARIS | Utilities.OS_SUNOS)
+        ) != 0) {
+            LOG.log(Level.CONFIG, "Giving up, this test fails too randomly on Solaris");
+            return;
+        }
+        
         Children ch = new Children.Array();
         Node root = new AbstractNode(ch);
         root.setName(getName());

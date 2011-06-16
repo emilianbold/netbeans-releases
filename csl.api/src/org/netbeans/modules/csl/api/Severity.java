@@ -54,5 +54,8 @@ public enum Severity {
     /** The error is only a warning; may be correct, may not be, but user should be alerted */
     WARNING,
     /** The error is a problem that must be dealt with */
-    ERROR;
+    ERROR,
+    /** The fatal error is a problem that usually affects the further file analysis and
+     must be inevitably fixed */    
+    FATAL;
 }

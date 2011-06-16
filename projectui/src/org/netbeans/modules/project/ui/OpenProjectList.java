@@ -116,6 +116,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -455,20 +456,20 @@ public final class OpenProjectList {
         }
 
         public @Override void resultChanged(LookupEvent ev) {
-            final Set<FileObject> lazyPDirs = new HashSet<FileObject>();
-            for (FileObject fileObject : currentFiles.allInstances()) {
-                Project p = FileOwnerQuery.getOwner(fileObject);
-                if (p != null) {
-                    lazyPDirs.add(p.getProjectDirectory());
-                }
-            }
-            if (!lazyPDirs.isEmpty()) {
-                Hacks.RP.post(new Runnable() {
-                    public @Override void run() {
+            Hacks.RP.post(new Runnable() {
+                public @Override void run() {
+                    Set<FileObject> lazyPDirs = new HashSet<FileObject>();
+                    for (FileObject fileObject : currentFiles.allInstances()) {
+                        Project p = FileOwnerQuery.getOwner(fileObject);
+                        if (p != null) {
+                            lazyPDirs.add(p.getProjectDirectory());
+                        }
+                    }
+                    if (!lazyPDirs.isEmpty()) {
                         getDefault().LOAD.preferredProject(lazyPDirs);
                     }
-                });
-            }
+                }
+            });
         }
 
         final void enter() {
@@ -572,6 +573,7 @@ public final class OpenProjectList {
         final OpeningProjectPanel panel = new OpeningProjectPanel(handle);
         panel.setProjectName(projects[0].getProjectDirectory().getNameExt());
         final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(OpenProjectList.class, "LBL_Opening_Projects_Progress"), true, null);
+        dd.setLeaf(true);
         dd.setOptions(new Object[0]);
 	    final JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(
             dd);

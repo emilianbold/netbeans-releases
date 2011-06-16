@@ -50,6 +50,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -293,27 +294,20 @@ public class MainWindowOperator extends JFrameOperator {
      * @param y relative move along y direction
      */
     public void dragNDropToolbar(ContainerOperator toolbarOper, int x, int y) {
-        // find toolbar drag and drop area. It is a component named "grip"
-        Component comp = toolbarOper.waitSubComponent(new ComponentChooser() {
+        // find toolbar drag and drop area
+        Component comp = toolbarOper.findSubComponent(new ComponentChooser() {
 
-            public boolean checkComponent(Component arg0) {
-                return arg0.getClass().getName().endsWith("ToolbarBump");
+            @Override
+            public boolean checkComponent(Component comp) {
+                return comp instanceof JPanel;
             }
 
+            @Override
             public String getDescription() {
-                return "Toolbar bump";
+                return "Toolbar dragger";
             }
         });
-//        Component comp = findComponent((Container)toolbarOper.getSource(),
-//                                       new NameComponentChooser("__fake_drag_container__"));
-//                                       new NameComponentChooser("grip"));
-        ComponentOperator bumpOper = new ComponentOperator(comp);
-        new MouseRobotDriver(new Timeout("", 100)).dragNDrop(bumpOper,
-                comp.getWidth()/2, comp.getHeight()/2, comp.getWidth()/2 + x, comp.getHeight()/2 + y,
-                getDefaultMouseButton(), 0,
-                toolbarOper.getTimeouts().create("ComponentOperator.BeforeDragTimeout"),
-		toolbarOper.getTimeouts().create("ComponentOperator.AfterDragTimeout"));
-        //bumpOper.dragNDrop(comp.getWidth()/2, comp.getHeight()/2, comp.getWidth()/2 + x, comp.getHeight()/2 + y);
+        new ComponentOperator(comp).dragNDrop(comp.getWidth() / 2, comp.getHeight() / 2, comp.getWidth() / 2 + x, comp.getHeight() / 2 + y);
     }
     
     
