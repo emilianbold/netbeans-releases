@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,56 +34,78 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javaee.specs.support.spi;
 
-package org.netbeans.modules.j2ee.ejbjarproject;
-
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
-import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
-import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
+import org.openide.util.Exceptions;
 
 /**
- * An implementation of the <code>JPAModuleInfo</code> for EJB projects.
- * 
- * @author Erno Mononen
+ *
+ * @author Petr Hejl
  */
-class EjbJarJPAModuleInfo implements JPAModuleInfo {
+public final class JpaProviderFactory {
     
-    private final EjbJarProject project;
-    /** Creates a new instance of EjbJarModuleInfoProvider */
-    EjbJarJPAModuleInfo(EjbJarProject project) {
-        this.project = project;
+    public static JpaProvider createJpaProvider(JpaProviderImplementation impl) {
+        return Accessor.getDefault().createJpaProvider(impl);
     }
     
-    @Override
-    public ModuleType getType() {
-        return JPAModuleInfo.ModuleType.EJB;
-    }
+    public static JpaProvider createJpaProvider(final String className, final boolean isDefault,
+            final boolean isJpa1Supported, final boolean isJpa2Supported) {
+        return Accessor.getDefault().createJpaProvider(new JpaProviderImplementation() {
 
-    @Override
-    public String getVersion() {
-        return project.getEjbModule().getModuleVersion();
-    }
+            @Override
+            public boolean isJpa1Supported() {
+                return isJpa1Supported;
+            }
 
-    @Override
-    public Boolean isJPAVersionSupported(String version) {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+            @Override
+            public boolean isJpa2Supported() {
+                return isJpa2Supported;
+            }
+
+            @Override
+            public boolean isDefault() {
+                return isDefault;
+            }
+
+            @Override
+            public String getClassName() {
+                return className;
+            }
+        });
+    } 
+    
+    public static abstract class Accessor {
+
+        private static volatile Accessor accessor;
+
+        public static void setDefault(Accessor accessor) {
+            if (Accessor.accessor != null) {
+                throw new IllegalStateException("Already initialized accessor"); // NOI18N
+            }
+            Accessor.accessor = accessor;
+        }
+
+        public static Accessor getDefault() {
+            if (accessor != null) {
+                return accessor;
+            }
+
+            Class c = JpaProvider.class;
+            try {
+                Class.forName(c.getName(), true, Accessor.class.getClassLoader());
+            } catch (ClassNotFoundException cnf) {
+                Exceptions.printStackTrace(cnf);
+            }
+
+            return accessor;
+        }
         
-        if (platform == null){
-            return null;
-        }
-        JpaSupport support = JpaSupport.getInstance(platform);
-        JpaProvider provider = support.getDefaultProvider();
-        if (provider != null) {
-            return (Persistence.VERSION_2_0.equals(version) && provider.isJpa2Supported())
-                    || (Persistence.VERSION_1_0.equals(version) && provider.isJpa1Supported());
-        }
-        return null;
+        public abstract JpaProvider createJpaProvider(JpaProviderImplementation impl);
     }
-
 }

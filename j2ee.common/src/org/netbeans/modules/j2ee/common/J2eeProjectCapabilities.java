@@ -54,6 +54,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
@@ -163,8 +164,11 @@ public final class J2eeProjectCapabilities {
         }
 
         Set<Profile> profiles = platform.getSupportedProfiles(provider.getJ2eeModule().getType());
-        return (profiles.contains(Profile.JAVA_EE_5) || profiles.contains(Profile.JAVA_EE_6_FULL))
-                && platform.isToolSupported("defaultPersistenceProviderJavaEE5"); // NOI18N
+        if (!profiles.contains(Profile.JAVA_EE_5) && !profiles.contains(Profile.JAVA_EE_6_FULL)) {
+            return false;
+        }
+        JpaSupport support = JpaSupport.getInstance(platform);
+        return support != null && support.getDefaultProvider() != null;
     }
 
     private J2eePlatform getPlatform() {
