@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.simpleunit.utils.CodeGenerationUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
@@ -59,7 +60,7 @@ public class CppUnitCodeGenerator {
     private CppUnitCodeGenerator() {
     }
 
-    public static Map<String, Object> generateTemplateParamsForFunctions(String testClassName, String testFilePath, List<CsmFunction> functions) {
+    public static Map<String, Object> generateTemplateParamsForFunctions(String testClassName, FSPath testFilePath, List<CsmFunction> functions) {
         Map<String, Object> templateParams = new HashMap<String, Object>();
 
         if (functions != null) {
