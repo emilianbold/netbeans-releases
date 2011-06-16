@@ -959,8 +959,20 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                                 doc.remove(start, 1);
                                 doc.insertString(start, Character.toString(ch), null);
                                 target.getCaret().setDot(end);
+                            } else if (selection.length() == 1 && (firstChar == '"' || firstChar == '\'')){
+                                if (ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) {
+                                    String original = ts.token().text().toString();
+                                    if (original.length() > 1) {
+                                        start = ts.offset();
+                                        end = ts.offset() + ts.token().length();
+                                        doc.remove(start,end-start);
+                                        doc.insertString(start, ch + original.substring(1, original.length() - 1) + ch, null);
+                                        target.getCaret().setDot(caretOffset);
+                                    } else {
+                                        return false;
+                                    }
+                                }
                             } else {
-                                // No, insert around
                                 doc.remove(start,end-start);
                                 doc.insertString(start, ch + selection + matching(ch), null);
                                 target.getCaret().setDot(start+selection.length()+2);
