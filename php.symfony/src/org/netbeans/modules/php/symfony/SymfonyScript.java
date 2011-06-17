@@ -47,6 +47,7 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -207,6 +208,8 @@ public class SymfonyScript extends PhpProgram {
     private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {
         try {
             executeAndWait(processBuilder, executionDescriptor, title);
+        } catch (CancellationException ex) {
+            // canceled
         } catch (ExecutionException ex) {
             if (warnUser) {
                 UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());

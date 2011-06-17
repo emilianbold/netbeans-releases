@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -142,6 +143,8 @@ public class PhpDocScript extends PhpProgram {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
                 }
             }
+        } catch (CancellationException ex) {
+            // canceled
         } catch (ExecutionException ex) {
             UiUtils.processExecutionException(ex, getOptionsPath());
         } catch (InterruptedException ex) {
@@ -150,31 +153,31 @@ public class PhpDocScript extends PhpProgram {
             LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
     }
-    
+
     private class ErrorFileLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
-        
+
         private String docTarget;
-        
+
         public ErrorFileLineConvertorFactory(String docTarget) {
             this.docTarget = docTarget;
         }
-        
+
         @Override
         public LineConvertor newLineConvertor() {
             Pattern pattern = Pattern.compile("(.*)(" + docTarget + "/errors\\.html)(.*)"); // NOI18N
             return new ErrorFileLineConvertor(pattern);
         }
-        
+
     }
-    
+
     private class ErrorFileLineConvertor implements LineConvertor {
 
         private final Pattern pattern;
-        
+
         public ErrorFileLineConvertor(Pattern pattern) {
             this.pattern = pattern;
         }
-        
+
         @Override
         public List<ConvertedLine> convert(String line) {
             Matcher matcher = pattern.matcher(line);
@@ -197,17 +200,17 @@ public class PhpDocScript extends PhpProgram {
 
             return null;
         }
-    
+
     }
-    
+
     private class ErrorFileOutputListener implements OutputListener {
-        
+
         private URL url;
-        
+
         public ErrorFileOutputListener(URL url) {
             this.url = url;
         }
-        
+
         @Override
         public void outputLineSelected(OutputEvent ev) {
         }
@@ -220,7 +223,7 @@ public class PhpDocScript extends PhpProgram {
         @Override
         public void outputLineCleared(OutputEvent ev) {
         }
-        
+
     }
 
     public static String validate(String command) {
