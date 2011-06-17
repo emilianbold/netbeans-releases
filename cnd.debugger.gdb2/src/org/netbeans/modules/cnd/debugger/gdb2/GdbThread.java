@@ -56,20 +56,46 @@ public final class GdbThread extends Thread {
     private final String line;
     private final String file;
     private final String tid;
-    private final Frame frame;
+    private final String name;
 
-    GdbThread(NativeDebugger debugger, ModelChangeDelegator updater, String tid, Frame frame) {
+    GdbThread(NativeDebugger debugger, 
+            ModelChangeDelegator updater, 
+            String tid, 
+            String name, 
+            Frame frame) {
 	super(debugger, updater);
 	this.tid = tid;
-	this.frame = frame; // for the use of selected thread later
 	line = frame.getLineNo();
 	file = frame.getSource();
 	current_function = frame.getFunc();
 	address = frame.getCurrentPC();
+        this.name = name;
+    }
+    
+    GdbThread(NativeDebugger debugger, ModelChangeDelegator updater, String consoleLine) {
+        super(debugger, updater);
+        // try our best to parse the line
+        
+        // skip current thread symbol
+        if (consoleLine.startsWith("* ")) { //NOI18N
+            consoleLine = consoleLine.substring(2);
+        }
+        // parse id
+        assert Character.isDigit(consoleLine.charAt(0)) : "invalid thread line: " + consoleLine;
+        int pos = 0;
+        while (Character.isDigit(consoleLine.charAt(pos))) {
+            pos++;
+        }
+        tid = consoleLine.substring(0, pos);
+        // put the rest into name
+        name = consoleLine.substring(pos);
+        line = "";
+        file = "";
+        current_function = "";
     }
 
     public String getName() {
-	return "Thread " + tid; // NOI18N
+	return name;
     }
 
     public String getId() {
@@ -82,10 +108,6 @@ public final class GdbThread extends Thread {
 
     public String getLine() {
 	return line;
-    }
-
-    public Frame getFrame() {
-	return frame;
     }
 
     public boolean hasEvent() {
