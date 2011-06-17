@@ -133,6 +133,7 @@ import org.openide.util.Exceptions;
     @Override
     public File getHomeDirectory() {
         try {
+            changeSupport.firePropertyChange(LOADING_STATUS, null, "${HOME}"); // NOI18N
             if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)) {
                 return getDefaultDirectory();
             }
@@ -142,6 +143,8 @@ import org.openide.util.Exceptions;
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            changeSupport.firePropertyChange(LOADING_STATUS, "${HOME}", null); // NOI18N
         }
         return getDefaultDirectory();
     }
@@ -162,15 +165,14 @@ import org.openide.util.Exceptions;
    
     @Override
     public File[] getFiles(File dir, boolean useFileHiding) {
-        if (!(dir instanceof FileObjectBasedFile)) {
-            dir = new FileObjectBasedFile(env, fs.findResource(dir.getAbsolutePath()));
-        }
-        FileObjectBasedFile rdir = (FileObjectBasedFile) dir;
-        File[] result = null;
-
-        changeSupport.firePropertyChange(LOADING_STATUS, null, rdir);
-
+        changeSupport.firePropertyChange(LOADING_STATUS, null, dir.getAbsolutePath());
         try {
+            if (!(dir instanceof FileObjectBasedFile)) {
+                dir = new FileObjectBasedFile(env, fs.findResource(dir.getAbsolutePath()));
+            }
+            FileObjectBasedFile rdir = (FileObjectBasedFile) dir;
+            File[] result = null;
+
             if (dir.canRead()) {
                 if (useFileHiding) {
                     result = rdir.listFiles(new FilenameFilter() {
@@ -182,11 +184,10 @@ import org.openide.util.Exceptions;
                     result = rdir.listFiles();
                 }
             }
+            return (result == null) ? new File[0] : result;
         } finally {
-            changeSupport.firePropertyChange(LOADING_STATUS, rdir, null);
+            changeSupport.firePropertyChange(LOADING_STATUS, dir.getAbsolutePath(), null);
         }
-
-        return (result == null) ? new File[0] : result;
     }
 
     /**
