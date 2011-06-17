@@ -45,6 +45,7 @@
 package org.netbeans.api.debugger.jpda;
 
 import java.util.List;
+import junit.framework.Test;
 
 import org.netbeans.api.debugger.DebuggerManager;
 
@@ -62,6 +63,10 @@ public class HeapWalkingTest extends NbTestCase {
     /** Creates a new instance of HeapWalkingTest */
     public HeapWalkingTest(String s) {
         super(s);
+    }
+    
+    public static Test suite() {
+        return JPDASupport.createTestSuite(HeapWalkingTest.class);
     }
     
     protected void setUp () throws Exception {

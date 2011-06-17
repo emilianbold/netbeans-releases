@@ -44,6 +44,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -67,7 +68,11 @@ public class ThreadBreakpointTest extends NbTestCase {
         super (s);
     }
 
-    public void testMethodBreakpoints () throws Exception {
+    public static Test suite() {
+        return JPDASupport.createTestSuite(ThreadBreakpointTest.class);
+    }
+    
+    public void testThreadBreakpoints () throws Exception {
         try {
             ThreadBreakpoint tb1 = ThreadBreakpoint.create ();
             tb1.setBreakpointType (ThreadBreakpoint.TYPE_THREAD_STARTED_OR_DEATH);
@@ -77,12 +82,19 @@ public class ThreadBreakpointTest extends NbTestCase {
 
             support = JPDASupport.attach (CLASS_NAME);
 
-            for (;;) {
+            for (int i = 0; ; i++) {
+                if (tbl.getFailure() != null) {
+                    throw tbl.getFailure();
+                }
+                if (i > 100) {
+                    throw new AssertionError("Too many cycles of resume, continue does not seem to resume the app to finish.");
+                }
                 support.waitState (JPDADebugger.STATE_STOPPED);
                 if (support.getDebugger ().getState () == 
                     JPDADebugger.STATE_DISCONNECTED
                 ) break;
                 support.doContinue ();
+                Thread.sleep(100);
             }
             tbl.assertFailure ();
 
@@ -103,6 +115,7 @@ public class ThreadBreakpointTest extends NbTestCase {
         }
 
         public void breakpointReached (JPDABreakpointEvent event) {
+            //System.err.println("Thread Breakpoint hit, hitCount was = "+hitCount+", failure was "+failure);
             try {
                 checkEvent (event);
             } catch (AssertionError e) {
@@ -111,14 +124,18 @@ public class ThreadBreakpointTest extends NbTestCase {
                 failure = new AssertionError (e);
             }
         }
+        
+        public AssertionError getFailure() {
+            return failure;
+        }
 
         private void checkEvent (JPDABreakpointEvent event) {
 //            ThreadBreakpoint tb = (ThreadBreakpoint) event.getSource();
-            assertEquals (
-                "Breakpoint event: Condition evaluation failed", 
-                JPDABreakpointEvent.CONDITION_NONE, 
-                event.getConditionResult ()
-            );
+//            assertEquals (
+//                "Breakpoint event: Condition evaluation failed", 
+//                JPDABreakpointEvent.CONDITION_NONE, 
+//                event.getConditionResult ()
+//            );
             assertNotNull (
                 "Breakpoint event: Context thread is null", 
                 event.getThread ()

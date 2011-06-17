@@ -44,6 +44,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -67,6 +68,10 @@ public class MethodBreakpointTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(MethodBreakpointTest.class);
+    }
+    
     public void testMethodEntryBreakpoints() throws Exception {
         Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 
                 "org/netbeans/api/debugger/jpda/testapps/MethodBreakpointApp.java");
