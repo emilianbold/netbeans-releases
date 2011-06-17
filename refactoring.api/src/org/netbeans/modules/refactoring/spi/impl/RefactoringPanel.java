@@ -665,7 +665,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                         errorsDesc.append("</font>"); // NOI18N
                     }
                     errorsDesc.append(']');
-                    final CheckNode root = new CheckNode(null, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
+                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
                     Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
                     final Cursor old = getCursor();
