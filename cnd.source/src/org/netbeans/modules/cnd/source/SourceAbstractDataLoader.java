@@ -272,6 +272,7 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
                             w.write(s);
                             w.write(lsType);
                         }
+                        w.write(lsType);
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     } finally {
