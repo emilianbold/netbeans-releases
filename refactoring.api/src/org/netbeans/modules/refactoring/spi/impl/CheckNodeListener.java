@@ -57,6 +57,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
@@ -105,6 +106,8 @@ class CheckNodeListener implements MouseListener, KeyListener {
                         if (o instanceof RefactoringElement || o instanceof FileObject) {
                             findInSource(node);
                         }
+                    } else if (o instanceof Openable) {
+                        ((Openable) o).open();
                     } else {
                         if (tree.isCollapsed(row)) {
                             tree.expandRow(row);
@@ -147,7 +150,9 @@ class CheckNodeListener implements MouseListener, KeyListener {
                         o = ((TreeElement) o).getUserObject();
                         if (o instanceof RefactoringElement || o instanceof FileObject) {
                             findInSource(node);
-                        }
+                        } 
+                    } else if (o instanceof Openable) {
+                        ((Openable) o).open();
                     } else {
                         if (tree.isCollapsed(row)) {
                             tree.expandRow(row);
