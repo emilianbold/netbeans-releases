@@ -64,6 +64,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -185,7 +186,13 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
                 
                 if (sequences == null) {
                     // initialize
-                    TokenSequence<?> seq = scanner.tokenSequence().subSequence(startOffset, endOffset);
+                    TokenSequence<?> tokenSequence = scanner.tokenSequence();
+                    if (tokenSequence==null) {
+                        //#199027
+                        Exceptions.printStackTrace(new NullPointerException(scanner.toString()));
+                        return false;
+                    }
+                    TokenSequence<?> seq = tokenSequence.subSequence(startOffset, endOffset);
                     sequences = new ArrayList<TokenSequence<? extends TokenId>>();
                     sequences.add(seq);
                 }
