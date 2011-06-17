@@ -60,6 +60,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -96,8 +97,9 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
 
     private final ExecutionEnvironment env;
     private boolean shown;
-    private Notification notification;
+    private Notification notification; // guards notification and shown fields
     private final Set<ConnectionNotifier.NamedRunnable> tasks = new HashSet<ConnectionNotifier.NamedRunnable>();
+    private final Object lock = new Object();
 
     public ConnectionNotifierDelegate(ExecutionEnvironment execEnv) {
         this.env = execEnv;
@@ -137,7 +139,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
 
     private void onConnect() {
         Notification n;
-        synchronized (this) {
+        synchronized (lock) {
             n = notification;
             shown = false;
         }
@@ -155,20 +157,20 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     }
 
     public void showIfNeed() {
-        synchronized (this) {
+        synchronized (lock) {
             if (shown) {
                 return;
             } else {
                 shown = true;
-                ConnectionManager cm = ConnectionManager.getInstance();
-                cm.addConnectionListener(this);
-                show(null);
             }
+            ConnectionManager cm = ConnectionManager.getInstance();
+            cm.addConnectionListener(this);
+            show(null);
         }
     }
 
-    private void show(Exception error) {
-        ActionListener onClickAction = new ActionListener() {
+    private void show(final Exception error) {
+        final ActionListener onClickAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 RequestProcessor.getDefault().post(new ConnectionNotifier.NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
@@ -179,34 +181,40 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
                 });
             }
         };
-        String envString = env.getDisplayName(); // RemoteUtil.getDisplayName(env);
+        Runnable edtRunner = new Runnable() {
+            public void run() {
+                String envString = env.getDisplayName(); // RemoteUtil.getDisplayName(env);
 
-        String title, details;
-        ImageIcon icon;
+                String title, details;
+                ImageIcon icon;
 
-        String text = null;
-        if (error == null) {
-            StringBuilder reasons = new StringBuilder();
-            for (ConnectionNotifier.NamedRunnable task : tasks) {
-                reasons.append(task.getName());
-                reasons.append(' ');
+                String text = null;
+                if (error == null) {
+                    StringBuilder reasons = new StringBuilder();
+                    for (ConnectionNotifier.NamedRunnable task : tasks) {
+                        reasons.append(task.getName());
+                        reasons.append(' ');
+                    }
+                    text = reasons.toString();
+                    title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString);
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/exclamation.gif", false); // NOI18N
+                    details = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.DETAILS", envString);
+                } else {
+                    title = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.TITLE", envString);
+                    icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/error.png", false); // NOI18N
+                    String errMsg = (error.getMessage() == null) ? "" : error.getMessage();
+                    details = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.DETAILS", errMsg, envString);
+                }
+                JComponent baloonComponent = createDetails(text, details, onClickAction);
+                JComponent popupComponent = createDetails(text, details, onClickAction);
+                Notification n = NotificationDisplayer.getDefault().notify(title, icon, baloonComponent,  popupComponent, NotificationDisplayer.Priority.HIGH);
+                synchronized (lock) {
+                    notification = n;
+                }
             }
-            text = reasons.toString();
-            title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString);
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/exclamation.gif", false); // NOI18N
-            details = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.DETAILS", envString);
-        } else {
-            title = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.TITLE", envString);
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/remote/impl/fs/ui/error.png", false); // NOI18N
-            String errMsg = (error.getMessage() == null) ? "" : error.getMessage();
-            details = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.DETAILS", errMsg, envString);
-        }
-        JComponent baloonComponent = createDetails(text, details, onClickAction);
-        JComponent popupComponent = createDetails(text, details, onClickAction);
-        Notification n = NotificationDisplayer.getDefault().notify(title, icon, baloonComponent,  popupComponent, NotificationDisplayer.Priority.HIGH);
-        synchronized (this) {
-            notification = n;
-        }
+        };
+        SwingUtilities.invokeLater(edtRunner);
+                
     }
     
     private JComponent createDetails(String explanationText, String buttonText, ActionListener action) {
@@ -252,7 +260,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     }
 
     private void reShow(Exception error) {
-        synchronized (this) {
+        synchronized (lock) {
             shown = false;
         }
         show(error);
