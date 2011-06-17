@@ -227,7 +227,7 @@ public final class FileChooserBuilder {
 
                     @Override
                     public void run() {
-                        FileObjectBasedFile file = (FileObjectBasedFile) evt.getNewValue();
+                        String file = (String) evt.getNewValue();
                         if (file == null) {
                             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         } else {
