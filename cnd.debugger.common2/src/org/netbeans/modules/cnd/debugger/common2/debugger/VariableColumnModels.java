@@ -44,10 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import org.netbeans.modules.cnd.debugger.common2.values.VariableValue;
-import org.netbeans.modules.cnd.debugger.common2.values.VariableValueEditor;
 import org.netbeans.modules.cnd.debugger.common2.values.StringEditor;
-import java.beans.PropertyEditor;
 
 /**
  * Convenience container for individual ColumnModels specified as inner classes.

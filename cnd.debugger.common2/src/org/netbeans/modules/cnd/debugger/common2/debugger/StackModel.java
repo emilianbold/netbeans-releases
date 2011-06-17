@@ -125,10 +125,10 @@ public final class StackModel extends ModelListenerSupport
 	}
 	Frame frame = (Frame) node;
 	if (frame.isCurrent()) {
-	    VariableValue bold = new VariableValue(frame.getLocationName(), true);
-	    return bold.toString();
-	} else
+	    return VariableValue.bold(frame.getLocationName());
+	} else {
 	    return frame.getLocationName();
+        }
     }
 
     // These are standard NB icons for stack frames.
