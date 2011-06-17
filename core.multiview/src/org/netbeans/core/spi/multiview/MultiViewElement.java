@@ -44,8 +44,14 @@
 
 package org.netbeans.core.spi.multiview;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 
@@ -165,4 +171,59 @@ public interface MultiViewElement {
     CloseOperationState canCloseElement();
     
    
+    /** Registers a {@link MultiViewElement}, so it is available in 
+     * {@link MimeLookup} and can be found and located by 
+     * {@link MultiViews#createCloneableMultiView}
+     * and
+     * {@link MultiViews#createMultiView}
+     * factory methods. 
+     * <p>
+     * The element class may have default constructor or a constructor that 
+     * takes {@link Lookup} as an argument.
+     */
+    @Target({ ElementType.TYPE, ElementType.METHOD })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Registration {
+        /** Mime type this registration is associated with.
+         * 
+         * @return array of mime types like "text/java", "text", etc.
+         */
+        public String[] mimeType();
+        
+        /** Gets persistence type of multi view element, the TopComponent will decide
+         * on it's own persistenceType based on the sum of all it's elements.
+         * {@link org.openide.windows.TopComponent#PERSISTENCE_ALWAYS} has higher priority than {@link org.openide.windows.TopComponent#PERSISTENCE_ONLY_OPENED}
+         * and {@link org.openide.windows.TopComponent#PERSISTENCE_NEVER} has lowest priority.
+         * The {@link org.openide.windows.TopComponent} will be stored only if at least one element requesting persistence
+         * was made visible.
+         */
+        public int persistenceType();
+
+        /** 
+         * Gets localized display name of multi view element. Will be placed on the Element's toggle button.
+         *@return localized display name
+         */
+        public String displayName();
+
+        /** 
+         * Icon for the MultiViewDescription's multiview component. Will be shown as TopComponent's icon
+         * when this element is selected.
+         * @return the icon of multi view element 
+         */
+        public String iconBase();
+
+        /**
+         * A Description's contribution 
+         * to unique {@link org.openide.windows.TopComponent}'s Id returned by <code>getID</code>. Returned value is used as starting
+         * value for creating unique {@link org.openide.windows.TopComponent} ID for whole enclosing multi view
+         * component.
+         * Value should be preferably unique, but need not be.
+         */
+        public String preferredID();
+
+        /** Position of this element amoung the list of other elements.
+         * @return integer value
+         */
+        public int position() default Integer.MAX_VALUE;
+    }
 }

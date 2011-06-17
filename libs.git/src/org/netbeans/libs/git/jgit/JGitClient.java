@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitClientCallback;
 import org.netbeans.libs.git.GitException.MissingObjectException;
 import org.netbeans.libs.git.GitRemoteConfig;
@@ -77,6 +78,7 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
+import org.netbeans.libs.git.jgit.commands.BlameCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CheckoutRevisionCommand;
 import org.netbeans.libs.git.jgit.commands.CleanCommand;
@@ -90,6 +92,7 @@ import org.netbeans.libs.git.jgit.commands.DeleteTagCommand;
 import org.netbeans.libs.git.jgit.commands.ExportCommitCommand;
 import org.netbeans.libs.git.jgit.commands.ExportDiffCommand;
 import org.netbeans.libs.git.jgit.commands.FetchCommand;
+import org.netbeans.libs.git.jgit.commands.GetPreviousCommitCommand;
 import org.netbeans.libs.git.jgit.commands.GetRemotesCommand;
 import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
 import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
@@ -144,6 +147,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
         synchronized (listeners) {
             listeners.add(listener);
         }
+    }
+
+    @Override
+    public GitBlameResult blame (File file, String revision, ProgressMonitor monitor) throws MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        BlameCommand cmd = new BlameCommand(repository, file, revision, monitor);
+        cmd.execute();
+        return cmd.getResult();
     }
 
     @Override
@@ -292,6 +303,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
     @Override
     public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException {
         GetCommonAncestorCommand cmd = new GetCommonAncestorCommand(gitRepository.getRepository(), revisions, monitor);
+        cmd.execute();
+        return cmd.getRevision();
+    }
+
+    @Override
+    public GitRevisionInfo getPreviousRevision (File file, String revision, ProgressMonitor monitor) throws GitException {
+        GetPreviousCommitCommand cmd = new GetPreviousCommitCommand(gitRepository.getRepository(), file, revision, monitor);
         cmd.execute();
         return cmd.getRevision();
     }

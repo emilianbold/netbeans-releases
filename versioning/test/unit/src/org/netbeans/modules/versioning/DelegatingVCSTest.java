@@ -106,6 +106,8 @@ public class DelegatingVCSTest extends NbTestCase {
      
     public void testDelegatingVCS() {
         DelegatingVCS delegate = getDelegatingVCS();
+        final VCSContext ctx = VCSContext.forNodes(new Node[0]);
+        
         assertNull(TestAnnotatedVCS.INSTANCE);
         
         assertEquals("TestVCSDisplay", delegate.getProperty(VersioningSystem.PROP_DISPLAY_NAME));
@@ -114,14 +116,14 @@ public class DelegatingVCSTest extends NbTestCase {
         assertEquals("TestVCSMenu", delegate.getProperty(VersioningSystem.PROP_MENU_LABEL));
         assertNull(TestAnnotatedVCS.INSTANCE);
         
-        Action[] actions = delegate.getGlobalActions(VCSAnnotator.ActionDestination.MainMenu);
+        Action[] actions = delegate.getGlobalActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
         assertNotNull(actions);
-        assertEquals(1, actions.length); // broken - see #198145
+        assertEquals(1, actions.length); 
         assertNull(TestAnnotatedVCS.INSTANCE);
         
-        actions = delegate.getInitActions(VCSContext.forNodes(new Node[0]), VCSAnnotator.ActionDestination.MainMenu);
+        actions = delegate.getInitActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
         assertNotNull(actions);
-        assertEquals(1, actions.length); // broken - see #198145
+        assertEquals(1, actions.length); 
         assertNull(TestAnnotatedVCS.INSTANCE);
         
         delegate.getDelegate(); // awake
@@ -151,7 +153,7 @@ public class DelegatingVCSTest extends NbTestCase {
         delegate.addPropertyChangeListener(l1);
         delegate.addPropertyChangeListener(l2);
         
-        delegate.awake();
+        delegate.getDelegate(); // forces delegate creation
         assertNotNull(TestAnnotatedVCS.INSTANCE);        
         
         events1.clear();

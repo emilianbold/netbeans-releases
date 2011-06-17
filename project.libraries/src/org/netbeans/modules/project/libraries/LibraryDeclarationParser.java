@@ -47,10 +47,20 @@ package org.netbeans.modules.project.libraries;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
@@ -75,10 +85,26 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class LibraryDeclarationParser implements ContentHandler, EntityResolver {
 
+    private static final String LIBRARY_DEF_1 = "-//NetBeans//DTD Library Declaration 1.0//EN"; //NOI18N
+    private static final String LIBRARY_DTD_1 = "http://www.netbeans.org/dtds/library-declaration-1_0.dtd"; //NOI18N
+    static final String LIBRARY_NS = "http://www.netbeans.org/ns/library-declaration/2";    //NOI18N
+    static final String VER_1 = "1.0";  //NOI18N
+    static final String VER_2 = "2.0";  //NOI18N
+    private static final String LIBRARY = "library";    //NOI18N
+    private static final String VERSION = "version";    //NOI18N
+    private static final String VOLUME = "volume";  //NOI18N
+    private static final String DESCRIPTION = "description";    //NOI18N
+    private static final String TYPE = "type";      //NOI18N
+    private static final String RESOURCE = "resource";   //NOI18N
+    private static final String NAME = "name";  //NOI18N
+    private static final String BUNDLE = "localizing-bundle";   //NOI18N
+    private static final String DISPLAY_NAME = "display-name";  //NOI18N
+
     private StringBuffer buffer;
     private final LibraryDeclarationConvertor parslet;
     private final LibraryDeclarationHandler handler;
     private Stack<Object[]> context;
+    private String expectedNS;
     private final AtomicBoolean used = new AtomicBoolean();
 
     /**
@@ -98,6 +124,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void setDocumentLocator(Locator locator) {
     }
     
@@ -105,6 +132,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void startDocument() throws SAXException {
         handler.startDocument();
     }
@@ -113,6 +141,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void endDocument() throws SAXException {
         handler.endDocument();
     }
@@ -121,13 +150,14 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void startElement(String ns, String name, String qname, Attributes attrs) throws SAXException {
         dispatch(true);
-        context.push(new Object[] {qname, new AttributesImpl(attrs)});
-        if ("volume".equals(qname)) {
+        context.push(new Object[] {qname, ns, new AttributesImpl(attrs)});
+        if (VOLUME.equals(qname)) {
             handler.start_volume(attrs);
-        } else if ("library".equals(qname)) {
-            handler.start_library(attrs);
+        } else if (LIBRARY.equals(qname)) {
+            expectedNS = handler.start_library(ns, attrs);
         }
     }
     
@@ -135,12 +165,13 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void endElement(String ns, String name, String qname) throws SAXException {
         dispatch(false);
         context.pop();
-        if ("volume".equals(qname)) {
+        if (VOLUME.equals(qname)) {
             handler.end_volume();
-        } else if ("library".equals(qname)) {
+        } else if (LIBRARY.equals(qname)) {
             handler.end_library();
         }
     }
@@ -149,6 +180,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void characters(char[] chars, int start, int len) throws SAXException {
         buffer.append(chars, start, len);
     }
@@ -157,6 +189,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void ignorableWhitespace(char[] chars, int start, int len) throws SAXException {
     }
     
@@ -164,6 +197,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void processingInstruction(String target, String data) throws SAXException {
     }
     
@@ -171,6 +205,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void startPrefixMapping(final String prefix, final String uri) throws SAXException {
     }
     
@@ -178,6 +213,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void endPrefixMapping(final String prefix) throws SAXException {
     }
     
@@ -185,30 +221,38 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      * This SAX interface method is implemented by the parser.
      *
      */
+    @Override
     public final void skippedEntity(String name) throws SAXException {
     }
     
     private void dispatch(final boolean fireOnlyIfMixed) throws SAXException {
         if (fireOnlyIfMixed && buffer.length() == 0) return; //skip it
         
-        Object[] ctx = context.peek();
-        String here = (String) ctx[0];
-        Attributes attrs = (Attributes) ctx[1];
-        if ("description".equals(here)) {
+        final Object[] ctx = context.peek();
+        final String here = (String) ctx[0];
+        final String ns = (String) ctx[1];
+        Attributes attrs = (Attributes) ctx[2];
+        if (!expectedNS.equals(ns)) {
+            throw new SAXException("Invalid librray descriptor namespace"); // NOI18N
+        }
+        if (DESCRIPTION.equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_description (buffer.length() == 0 ? null : buffer.toString(), attrs);
-        } else if ("type".equals(here)) {
+        } else if (TYPE.equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_type(buffer.length() == 0 ? null : buffer.toString(), attrs);
-        } else if ("resource".equals(here)) {
+        } else if (RESOURCE.equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_resource(parslet.parseResource(buffer.length() == 0 ? null : buffer.toString()), attrs);
-        } else if ("name".equals(here)) {
+        } else if (NAME.equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_name(buffer.length() == 0 ? null : buffer.toString(), attrs);
-        } else if ("localizing-bundle".equals(here)) {
+        } else if (BUNDLE.equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_localizingBundle(buffer.length() == 0 ? null : buffer.toString(), attrs);
+        } else if (DISPLAY_NAME.equals(here) && LIBRARY_NS.equals(ns)) {
+            if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
+            handler.handle_displayName(buffer.length() == 0 ? null : buffer.toString(), attrs);
         } else {
             //do not care
         }
@@ -225,27 +269,24 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      *
      */
     public void parse(final InputSource input) throws SAXException, ParserConfigurationException, IOException {
-        parse(input, this);
-    }
-
-    private void parse(final InputSource input, final LibraryDeclarationParser recognizer) throws SAXException, ParserConfigurationException, IOException {
         if (used.getAndSet(true)) {
             throw new IllegalStateException("The LibraryDeclarationParser was already used, create a new instance");  //NOI18N
         }
         try {
-            XMLReader parser = XMLUtil.createXMLReader(false, false);
-            parser.setContentHandler(recognizer);
-            parser.setErrorHandler(recognizer.getDefaultErrorHandler());
-            parser.setEntityResolver(recognizer);
+            final XMLReader parser = XMLUtil.createXMLReader(false, true);
+            parser.setContentHandler(this);
+            parser.setErrorHandler(getDefaultErrorHandler());
+            parser.setEntityResolver(this);
             parser.parse(input);
         } finally {
             //Recover recognizer internal state from exceptions to be reusable
-            if (!recognizer.context.empty()) {
-                recognizer.context.clear();
+            if (!context.empty()) {
+                context.clear();
             }
-            if (recognizer.buffer.length() > 0) {
-                recognizer.buffer.delete(0, recognizer.buffer.length());
+            if (buffer.length() > 0) {
+                buffer.delete(0, buffer.length());
             }
+            expectedNS = null;
         }
     }
     
@@ -256,14 +297,17 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
      */
     protected ErrorHandler getDefaultErrorHandler() {
         return new ErrorHandler() {
+            @Override
             public void error(SAXParseException ex) throws SAXException  {
                 throw ex;
             }
             
+            @Override
             public void fatalError(SAXParseException ex) throws SAXException {
                 throw ex;
             }
             
+            @Override
             public void warning(SAXParseException ex) throws SAXException {
                 // ignore
             }
@@ -273,13 +317,98 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
     
     /** Implementation of entity resolver. Points to the local DTD
      * for our public ID */
+    @Override
     public InputSource resolveEntity (String publicId, String systemId)
     throws SAXException {
-        if ("-//NetBeans//DTD Library Declaration 1.0//EN".equals(publicId)) {
+        if (LIBRARY_DEF_1.equals(publicId)) {
             InputStream is = new ByteArrayInputStream(new byte[0]);
             return new InputSource(is);
         }
         return null; // i.e. follow advice of systemID
+    }
+
+    static void writeLibraryDefinition (
+            final @NonNull FileObject definitionFile,
+            final @NonNull LibraryImplementation library,
+            final @NonNull LibraryTypeProvider libraryTypeProvider) throws IOException {
+        final Document doc = Util.supportsDisplayName(library) ?
+                createLibraryDefinition2(library, libraryTypeProvider) :
+                createLibraryDefinition1(library, libraryTypeProvider);
+        final OutputStream os = definitionFile.getOutputStream();
+        try {
+            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+        } finally {
+            os.close();
+        }
+    }
+
+    private static Document createLibraryDefinition1(
+            final @NonNull LibraryImplementation library,
+            final @NonNull LibraryTypeProvider libraryTypeProvider) {
+        final Document doc = XMLUtil.createDocument(LIBRARY, null,
+                LIBRARY_DEF_1,
+                LIBRARY_DTD_1);
+        final Element libraryE = doc.getDocumentElement();
+        libraryE.setAttribute(VERSION, VER_1); // NOI18N
+        libraryE.appendChild(doc.createElement(NAME)).appendChild(doc.createTextNode(library.getName())); // NOI18N
+        libraryE.appendChild(doc.createElement(TYPE)).appendChild(doc.createTextNode(library.getType())); // NOI18N
+        String description = library.getDescription();
+        if (description != null && description.length() > 0) {
+            libraryE.appendChild(doc.createElement(DESCRIPTION)).appendChild(doc.createTextNode(description)); // NOI18N
+        }
+        String localizingBundle = library.getLocalizingBundle();
+        if (localizingBundle != null && localizingBundle.length() > 0) {
+            libraryE.appendChild(doc.createElement(BUNDLE)).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
+        }
+        String displayname = Util.getDisplayName(library);
+        if (displayname != null) {
+            libraryE.appendChild(doc.createElement(DISPLAY_NAME)).appendChild(doc.createTextNode(displayname)); // NOI18N
+        }
+        for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
+            Element volumeE = (Element) libraryE.appendChild(doc.createElement(VOLUME)); // NOI18N
+            volumeE.appendChild(doc.createElement(TYPE)).appendChild(doc.createTextNode(vtype)); // NOI18N
+            List<URL> volume = library.getContent(vtype);
+            if (volume != null) {
+                //If null -> broken library, repair it.
+                for (URL url : volume) {
+                    volumeE.appendChild(doc.createElement(RESOURCE)).appendChild(doc.createTextNode(url.toString())); // NOI18N
+                }
+            }
+        }
+        return doc;
+    }
+
+    private static Document createLibraryDefinition2(
+            final @NonNull LibraryImplementation library,
+            final @NonNull LibraryTypeProvider libraryTypeProvider) {
+        final Document doc = XMLUtil.createDocument(LIBRARY, LIBRARY_NS, null, null);
+        final Element libraryE = doc.getDocumentElement();
+        libraryE.setAttribute(VERSION, VER_2); // NOI18N
+        libraryE.appendChild(doc.createElementNS(LIBRARY_NS, NAME)).appendChild(doc.createTextNode(library.getName())); // NOI18N
+        libraryE.appendChild(doc.createElementNS(LIBRARY_NS, TYPE)).appendChild(doc.createTextNode(library.getType())); // NOI18N
+        String description = library.getDescription();
+        if (description != null && description.length() > 0) {
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS, DESCRIPTION)).appendChild(doc.createTextNode(description)); // NOI18N
+        }
+        String localizingBundle = library.getLocalizingBundle();
+        if (localizingBundle != null && localizingBundle.length() > 0) {
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS, BUNDLE)).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
+        }
+        String displayname = Util.getDisplayName(library);
+        if (displayname != null) {
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS, DISPLAY_NAME)).appendChild(doc.createTextNode(displayname)); // NOI18N
+        }
+        for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
+            Element volumeE = (Element) libraryE.appendChild(doc.createElementNS(LIBRARY_NS,VOLUME)); // NOI18N
+            volumeE.appendChild(doc.createElementNS(LIBRARY_NS, TYPE)).appendChild(doc.createTextNode(vtype)); // NOI18N
+            List<URL> volume = library.getContent(vtype);
+            if (volume != null) {
+                for (URL url : volume) {
+                    volumeE.appendChild(doc.createElementNS(LIBRARY_NS, RESOURCE)).appendChild(doc.createTextNode(url.toString())); // NOI18N
+                }
+            }
+        }
+        return doc;
     }
 }
 

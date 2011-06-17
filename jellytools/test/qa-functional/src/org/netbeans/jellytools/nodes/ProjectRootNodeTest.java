@@ -45,7 +45,6 @@ package org.netbeans.jellytools.nodes;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -56,53 +55,49 @@ import org.netbeans.jellytools.ProjectsTabOperator;
  */
 public class ProjectRootNodeTest extends JellyTestCase {
 
+    static final String[] tests = {
+        "testVerifyPopup",
+        "testFind",
+        "testProperties"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public ProjectRootNodeTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition */
-    public static Test suite() {        
-        return createModuleTest(ProjectRootNodeTest.class, 
-                "testVerifyPopup", "testFind",                
-                "testProperties");
+    public static Test suite() {
+        return createModuleTest(ProjectRootNodeTest.class, tests);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     private static ProjectRootNode projectRootNode;
-    
+
     /** Find node. */
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
-        if(projectRootNode == null) {
+        if (projectRootNode == null) {
             projectRootNode = ProjectsTabOperator.invoke().getProjectRootNode("SampleProject"); // NOI18N
         }
     }
-    
+
     /** Test verifyPopup */
     public void testVerifyPopup() {
         projectRootNode.verifyPopup();
     }
-    
+
     /** Test find */
     public void testFind() {
         projectRootNode.find();
         new FindInFilesOperator().close();
     }
-    
+
     /** Test properties */
     public void testProperties() {
         projectRootNode.properties();
         new NbDialogOperator("SampleProject").close(); //NOI18N
     }
-    
 }

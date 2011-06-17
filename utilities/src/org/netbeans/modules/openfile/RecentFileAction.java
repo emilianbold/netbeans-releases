@@ -52,8 +52,6 @@ import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.io.File;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -78,7 +76,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
@@ -135,7 +132,7 @@ public class RecentFileAction extends AbstractAction
     }
     
     /******* PopupMenuListener impl *******/
-    
+
     /* Fills submenu when popup is about to be displayed.
      * Note that argument may be null on Mac due to #115277 fix
      */
@@ -178,7 +175,7 @@ public class RecentFileAction extends AbstractAction
             } catch (Exception ex) {
                 continue;
             }
-        }        
+        }
         ensureSelected();
     }
 
@@ -191,8 +188,16 @@ public class RecentFileAction extends AbstractAction
     private JMenuItem newSubMenuItem(final HistoryItem hItem) 
                                      throws DataObjectNotFoundException {
         Icon icon = getIcon(hItem); // may throws exception
-        final JMenuItem jmi = new JMenuItem(hItem.getFileName());
-        jmi.putClientProperty(PATH_PROP, hItem.getPath());
+        final String path = hItem.getPath();
+        final JMenuItem jmi = new JMenuItem(hItem.getFileName()) {
+            public @Override void menuSelectionChanged(boolean isIncluded) {
+                super.menuSelectionChanged(isIncluded);
+                if (isIncluded) {
+                    StatusDisplayer.getDefault().setStatusText(path);
+                }
+            }
+        };
+        jmi.putClientProperty(PATH_PROP, path);
         jmi.addActionListener(this);
         jmi.setIcon(icon);
         return jmi;

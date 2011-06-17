@@ -44,71 +44,38 @@
 package org.netbeans.jellytools.actions;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.HelpOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.HelpAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class HelpActionTest extends JellyTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public HelpActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new HelpActionTest("testPerformMenu"));
-        suite.addTest(new HelpActionTest("testPerformShortcut"));
-        suite.addTest(new HelpActionTest("testPerformPopupOnPropertySheet"));
-        return suite;
-         */
         return createModuleTest(HelpActionTest.class);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         new HelpAction().performMenu();
         new HelpOperator().close();
     }
-    
-    
+
     /** Test performShortcut */
     public void testPerformShortcut() {
         new HelpAction().performShortcut();
         new HelpOperator().close();
-    }
-    
-    /** Test Help popup menu item on a property sheet. */
-    public void testPerformPopupOnPropertySheet() {
-        OptionsOperator oo = OptionsOperator.invoke();        
-        // select root
-        PropertySheetOperator pso = oo.getPropertySheet("");
-        try {
-            new HelpAction().performPopup(pso);
-            new HelpOperator().close();
-        } finally {
-            oo.close();
-        }
     }
 }

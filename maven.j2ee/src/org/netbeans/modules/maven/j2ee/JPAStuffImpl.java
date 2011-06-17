@@ -58,11 +58,14 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.openide.util.ChangeSupport;
 
@@ -112,11 +115,17 @@ class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
     public Boolean isJPAVersionSupported(String version) {
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
         J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-
+        
         if (platform == null){
             return null;
         }
-        return platform.isToolSupported(JPAModuleInfo.JPACHECKSUPPORTED) ? platform.isToolSupported(JPAModuleInfo.JPAVERSIONPREFIX+version) : null;//NOI18N
+        JpaSupport support = JpaSupport.getInstance(platform);
+        JpaProvider provider = support.getDefaultProvider();
+        if (provider != null) {
+            return (Persistence.VERSION_2_0.equals(version) && provider.isJpa2Supported())
+                    || (Persistence.VERSION_1_0.equals(version) && provider.isJpa1Supported());
+        }
+        return null;
     }
 
     @Override

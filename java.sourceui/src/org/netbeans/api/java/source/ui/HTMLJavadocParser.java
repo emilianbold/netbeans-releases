@@ -52,6 +52,8 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
@@ -66,7 +68,8 @@ import org.netbeans.modules.java.source.JavadocHelper;
  */
 class HTMLJavadocParser {
     
-
+    public static final Logger LOG = Logger.getLogger(HTMLJavadocParser.class.getName());
+    
     /** Gets the javadoc text from the given URL
      *  @param url location of Javadoc
      *  @param pkg true if URL should be retrieved for a package
@@ -197,8 +200,12 @@ class HTMLJavadocParser {
                 int endOffset = offsets[i + 1];
                 if (startOffset < 0 || endOffset < 0)
                     continue;
-                if (startOffset > endOffset)
-                    throw new IOException();
+                if (startOffset > endOffset) {
+                    LOG.log(Level.WARNING,
+                            "Was not able to correctly parse javadoc: {0}, startOffset={1}, endOffset={2}.",
+                            new Object[] {page.getLocation(), startOffset, endOffset});
+                    return null;
+                }
 
                 int len = endOffset - startOffset;
                 char buffer[] = new char[len];
@@ -326,6 +333,7 @@ class HTMLJavadocParser {
 
             int div_counter = 0;
             int hrPos = -1;
+            boolean startWithNextText;
 
             @Override
             public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
@@ -356,8 +364,12 @@ class HTMLJavadocParser {
                 } else if (t == HTML.Tag.DIV && (state[0] == A_CLOSE || state[0] == INSIDE_DIV)){
                     state[0] = INSIDE_DIV;
                     div_counter++;
-                    if (div_counter == 2 && offset[0] < 0) {
-                      offset[0] = pos;
+                    if (offset[0] < 0) {
+                        if (div_counter == 2) {
+                          offset[0] = pos;
+                        } else if (a.containsAttribute(HTML.Attribute.CLASS, "block") && div_counter == 1) {
+                            startWithNextText = true;
+                        }
                     }
                 }
 
@@ -375,6 +387,16 @@ class HTMLJavadocParser {
                       hrPos = pos;
                     }
                     div_counter--;
+                }
+            }
+
+            @Override
+            public void handleText(char[] data, int pos) {
+                if (startWithNextText) {
+                    startWithNextText = false;
+                    if (offset[0] < 0) {
+                        offset[0] = pos;
+                    }
                 }
             }
 

@@ -98,7 +98,7 @@ public class SvnUtils {
         try {
             return new Info(new URI(module), new URI(repository));
         } catch (URISyntaxException x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            throw new IOException(x);
         }
     }
 

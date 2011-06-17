@@ -31,10 +31,8 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,8 +52,8 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.Exceptions;
 
 /**
@@ -165,22 +163,22 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 finish.set(true);
             }
         };
-        File file = new File(dataPath + "/pkg-config-0.23");
+        File file = new File(dataPath, "pkg-config-0.23");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz");
+            execute("wget", dataPath, "-qN", "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz");
             execute("gzip", dataPath, "-d", "pkg-config-0.23.tar.gz");
             execute("tar", dataPath, "xf", "pkg-config-0.23.tar");
         }
 
-        file = new File(dataPath + "/litesql-0.3.3");
+        file = new File(dataPath, "litesql-0.3.3");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz");
+            execute("wget", dataPath, "-qN", "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz");
             execute("gzip", dataPath, "-d", "litesql-0.3.3.tar.gz");
             execute("tar", dataPath, "xf", "litesql-0.3.3.tar");
         }
@@ -204,52 +202,9 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             buf.append(arg);
         }
         System.err.println(folder+"#"+command+buf.toString());
-        NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
-        .setWorkingDirectory(folder)
-        .setExecutable(command)
-        .setArguments(arguments);
-        waitExecution(ne);
-    }
-
-    private void waitExecution(NativeProcessBuilder ne){
-        try {
-            NativeProcess process = ne.call();
-            int rc = process.waitFor();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            try {
-                while (true) {
-                    String line = reader.readLine();
-                    if (line == null) {
-                        break;
-                    } else {
-                        System.out.println(line);
-                    }
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                reader.close();
-            }
-            reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            try {
-                while (true) {
-                    String line = reader.readLine();
-                    if (line == null) {
-                        break;
-                    } else {
-                        System.out.println(line);
-                    }
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                reader.close();
-            }
-
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        ExitStatus status = ProcessUtils.executeInDir(folder, ExecutionEnvironmentFactory.getLocal(), command, arguments);
+        if (!status.isOK()) {
+            System.out.println(status);
         }
     }
 

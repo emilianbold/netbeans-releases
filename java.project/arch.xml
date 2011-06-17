@@ -620,14 +620,6 @@ Nothing.
      </p>
     </api>
    </li>
-   <li>
-    <api group="systemproperty" name="org.netbeans.spi.java.project.support.ui.packageView.USE_TREE_VIEW" type="export" category="private">
-     <p>
-      If set to <code>true</code>, displays Java packages in a tree rather than a
-      flat list, usually in the <b>Projects</b> tab.
-     </p>
-    </api>
-   </li>
   </ul>
  </answer>
 

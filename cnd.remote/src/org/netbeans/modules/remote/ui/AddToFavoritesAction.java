@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.ui;
 
 import java.awt.Frame;
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -53,6 +52,7 @@ import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
@@ -165,8 +165,10 @@ public class AddToFavoritesAction extends SingleHostAction {
                             ConnectionManager.getInstance().connectTo(env);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
+                            return;
                         } catch (CancellationException ex) {
-                            Exceptions.printStackTrace(ex);
+                            // don't report CancellationException
+                            return;
                         }
                         FileSystem fs = FileSystemProvider.getFileSystem(env);
                         final FileObject fo = getRoot(env, fs);

@@ -140,6 +140,7 @@ class SearchExecutor extends GitProgressSupport {
             dummyFile = master.getRoots()[0];
             dummyFileRelativePath = GitUtils.getRelativePath(getRepositoryRoot(), dummyFile);
         }
+        Map<File, Set<File>> renames = new HashMap<File, Set<File>>();
         for (int i = 0; i < logMessages.length && !isCanceled(); ++i) {
             GitRevisionInfo logMessage = logMessages[i];
             RepositoryRevision rev;
@@ -156,7 +157,7 @@ class SearchExecutor extends GitProgressSupport {
                 }
             }
             if (showAllPaths) {
-                rev = new RepositoryRevision(logMessage, tags, branches);
+                rev = new RepositoryRevision(logMessage, tags, branches, renames);
             } else {
                 rev = new RepositoryRevision(logMessage, tags, branches, dummyFile, dummyFileRelativePath);
             }

@@ -30,8 +30,6 @@
  */
 package org.netbeans.modules.cnd.completion.includes;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,13 +41,18 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ExtensionList;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,79 +75,101 @@ public class CsmIncludeCompletionQuery {
         if (docFile == null) {
             docFile = CsmUtilities.getCsmFile(doc, false, false);
         }
-        String usrFilePath;
-        Collection<String> usrPaths = Collections.<String>emptyList();
-        Collection<String> sysPaths = Collections.<String>emptyList();
-        File fileChildSubDir = new File(childSubDir);
-        if (fileChildSubDir.isAbsolute()) {
+        FileSystem docFileSystem;
+        try {
+            docFileSystem = docFile.getFileObject().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return results.values();
+        }
+        Collection<FSPath> usrPaths = Collections.<FSPath>emptyList();
+        Collection<FSPath> sysPaths = Collections.<FSPath>emptyList();
+        if (CndPathUtilitities.isPathAbsolute(childSubDir)) {
             // special handling for absolute paths...
-            addFolderItems("",
+            addFolderItems(FSPath.toFSPath(docFileSystem.getRoot()),
                     "",
                     childSubDir, true, (usrInclude != null ? usrInclude : false),
                     true, substitutionOffset);
             return results.values();
         }
         if (docFile != null) {
-            usrFilePath = docFile.getAbsolutePath().toString();
             usrPaths = getFileIncludes(docFile, false);
             sysPaths = getFileIncludes(docFile, true);
         } else {
-            File baseFile = CsmUtilities.getFile(doc);
-            if (baseFile == null) {
+            FileObject baseFile = CsmUtilities.getFileObject(doc);
+            if (baseFile == null || ! baseFile.isValid()) {
                 // IZ#123039: NPE
                 return Collections.<CsmIncludeCompletionItem>emptyList();
             }
-            usrFilePath = baseFile.getAbsolutePath();
         }
-        File usrDir = new File(usrFilePath).getParentFile();
-        if (usrInclude == null || usrInclude == Boolean.TRUE) {
-            addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
-            if (showAll) {
-                for (String usrPath : usrPaths) {
-                    addFolderItems(usrPath, usrPath, childSubDir, false, false, true, substitutionOffset);
+        FileObject usrDir = docFile.getFileObject().getParent();
+        if (usrDir != null && usrDir.isValid()) {
+            if (usrInclude == null || usrInclude == Boolean.TRUE) {
+                addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
+                if (showAll) {
+                    for (FSPath usrPath : usrPaths) {
+                        addFolderItems(usrPath, usrPath.getPath(), childSubDir, false, false, true, substitutionOffset);
+                    }
+                    for (FSPath sysPath : sysPaths) {
+                        addFolderItems(sysPath, sysPath.getPath(), childSubDir, false, true, false, substitutionOffset);
+                    }
                 }
-                for (String sysPath : sysPaths) {
-                    addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
+                if (usrDir.getParent() != null) {
+                    addParentFolder(substitutionOffset, childSubDir, false);
                 }
-            }
-            if (usrDir.getParentFile() != null) {
-                addParentFolder(substitutionOffset, childSubDir, false);
-            }
-        } else {
-            for (String sysPath : sysPaths) {
-                addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
-            }
-            if (showAll) {
-                for (String usrPath : usrPaths) {
-                    addFolderItems(usrPath, usrPath, childSubDir, false, false, true, substitutionOffset);
+            } else {
+                for (FSPath sysPath : sysPaths) {
+                    addFolderItems(sysPath, sysPath.getPath(), childSubDir, false, true, false, substitutionOffset);
                 }
-                addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
-                if (usrDir.getParentFile() != null) {
-                    addParentFolder(substitutionOffset, childSubDir, true);
+                if (showAll) {
+                    for (FSPath usrPath : usrPaths) {
+                        addFolderItems(usrPath, usrPath.getPath(), childSubDir, false, false, true, substitutionOffset);
+                    }
+                    addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
+                    if (usrDir.getParent() != null) {
+                        addParentFolder(substitutionOffset, childSubDir, true);
+                    }
                 }
             }
         }
         return results.values();
     }
 
-    private void addFolderItems(String parentFolder, String parentFolderPresentation,
+    private void addFolderItems(FSPath parentFolder, String parentFolderPresentation,
             String childSubDir, boolean highPriority, boolean system, boolean filtered, int substitutionOffset) {
-        File dir = new File(parentFolder, childSubDir);
-        if (dir != null && dir.exists()) {
-            File[] list = filtered ? dir.listFiles(new HeadersFileFilter()) : dir.listFiles(new DefFileFilter());
-            if (list != null) {
-                String relFileName;
-                for (File curFile : list) {
-                    relFileName = curFile.getName();
-                    CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
-                            substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
-                            system, highPriority, curFile.isDirectory(), true);
-                    if (!results.containsKey(relFileName)) {
-                        results.put(relFileName, item);
+        FileObject parentFO = parentFolder.getFileObject();
+        if (parentFO != null) {
+            FileObject dir = parentFO.getFileObject(childSubDir);
+            if (dir != null && dir.isValid()) {
+                FileObject[] list = filtered ? listFiles(dir, new HeadersFileFilter()) : listFiles(dir, new DefFileFilter());
+                if (list != null) {
+                    String relFileName;
+                    for (FileObject curFile : list) {
+                        relFileName = curFile.getNameExt();
+                        CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
+                                substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
+                                system, highPriority, curFile.isFolder(), true);
+                        if (!results.containsKey(relFileName)) {
+                            results.put(relFileName, item);
+                        }
                     }
                 }
             }
         }
+    }
+    
+    private FileObject[] listFiles(FileObject parent, FileObjectFilter filter) {
+        FileObject[] children = parent.getChildren();
+        if (children == null || children.length == 0) {
+            return null;
+        }
+        List<FileObject> result = new ArrayList<FileObject>(children.length);
+        for (FileObject child : children) {
+            if (filter.accept(child)) {
+                result.add(child);
+            }
+        }
+        return result.toArray(new FileObject[result.size()]);
     }
 
     private void addParentFolder(int substitutionOffset, String childSubDir, boolean system) {
@@ -157,19 +182,19 @@ public class CsmIncludeCompletionQuery {
         }
     }
 
-    private Collection<String> getFileIncludes(CsmFile file, boolean system) {        
+    private Collection<FSPath> getFileIncludes(CsmFile file, boolean system) {        
         CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
-        return CndFileUtils.toPathList(system ? query.getSystemIncludePaths(file) : query.getUserIncludePaths(file));
+        return system ? query.getSystemIncludePaths(file) : query.getUserIncludePaths(file);
     }
 
-    private static final class DefFileFilter implements FileFilter {
-
-        public boolean accept(File pathname) {
-            return !specialFile(pathname);
+    private static final class DefFileFilter implements FileObjectFilter {
+        @Override
+        public boolean accept(FileObject fileObject) {
+            return !specialFile(fileObject);
         }
     }
 
-    private static final class HeadersFileFilter implements FileFilter {
+    private static final class HeadersFileFilter implements FileObjectFilter {
 
         private final ExtensionList exts;
 
@@ -180,26 +205,27 @@ public class CsmIncludeCompletionQuery {
             }
         }
 
-        public boolean accept(File pathname) {
+        @Override
+        public boolean accept(FileObject pathname) {
             return !specialFile(pathname) &&
-                    (exts.isRegistered(pathname.getName()) || pathname.isDirectory() || isHeaderFileWoExt(pathname));
+                    (exts.isRegistered(pathname.getNameExt()) || pathname.isFolder() || isHeaderFileWoExt(pathname));
         }
     }
 
-    private static boolean isHeaderFileWoExt(File pathname) {
-        if (FileUtil.getExtension(pathname.getName()).length() == 0) {
+    private static boolean isHeaderFileWoExt(FileObject pathname) {
+        if (FileUtil.getExtension(pathname.getNameExt()).length() == 0) {
             return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getSourceFileMIMEType(pathname));
         }
         return false;
     }
 
-    private static boolean specialFile(File file) {
-        String name = file.getName();
+    private static boolean specialFile(FileObject file) {
+        String name = file.getNameExt();
         if (name.startsWith(".")) { // NOI18N
             return true;
         } else if (name.endsWith("~")) { // NOI18N
             return true;
-        } else if (file.isDirectory()) {
+        } else if (file.isFolder()) {
             if (EXCLUDED_DIR_NAMES.contains(name)) {
                 return true;
             }

@@ -41,15 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.jellytools;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
+import junit.framework.Test;
+
 /**
  * Test of org.netbeans.jellytools.QuestionDialogOperator.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class QuestionDialogOperatorTest extends NbDialogOperatorTest {
 
@@ -63,26 +62,21 @@ public class QuestionDialogOperatorTest extends NbDialogOperatorTest {
     public QuestionDialogOperatorTest(String testName) {
         super(testName);
     }
-    
-    public static final String[] tests = new String[] {
-        "testConstructorWithParameter", "testLblQuestion"};
 
-    public static junit.framework.Test suite() {
-         return NbModuleSuite.create(QuestionDialogOperatorTest.class, ".*", ".*", tests);
+    static {
+        tests = new String[]{"testConstructorWithParameter", "testLblQuestion"};
     }
-    
+
+    public static Test suite() {
+        return createModuleTest(QuestionDialogOperatorTest.class, tests);
+    }
+
     /** Shows dialog to test. */
+    @Override
     protected void setUp() {
         showTestDialog(TEST_DIALOG_TITLE);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
+
     /** Test constructor with text parameter. */
     public void testConstructorWithParameter() {
         new QuestionDialogOperator(TEST_DIALOG_LABEL).ok();
@@ -95,5 +89,4 @@ public class QuestionDialogOperatorTest extends NbDialogOperatorTest {
         qdo.ok();
         assertEquals("Wrong label found.", TEST_DIALOG_LABEL, label);
     }
-    
 }

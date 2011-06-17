@@ -61,6 +61,7 @@ public class RevertModifications implements PropertyChangeListener {
     private RevertModificationsPanel panel;
     private JButton okButton;
     private JButton cancelButton;
+    private final File repository;
     
     /** Creates a new instance of RevertModifications */
     public RevertModifications(File repository, File[] files) {
@@ -68,6 +69,7 @@ public class RevertModifications implements PropertyChangeListener {
     }
 
     public RevertModifications(File repository, File[] files, String defaultRevision) {
+        this.repository = repository;
         panel = new RevertModificationsPanel(repository, files);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Revert")); // NOI18N
@@ -81,6 +83,9 @@ public class RevertModifications implements PropertyChangeListener {
     
     public boolean showDialog() {
         File[] revertFiles = panel.getRootFiles();
+        if (revertFiles == null) {
+            revertFiles = new File[] { repository };
+        }
         DialogDescriptor dialogDescriptor;
 
         String title;
@@ -111,6 +116,7 @@ public class RevertModifications implements PropertyChangeListener {
         return ret;       
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(okButton != null) {
             boolean valid = ((Boolean)evt.getNewValue()).booleanValue();

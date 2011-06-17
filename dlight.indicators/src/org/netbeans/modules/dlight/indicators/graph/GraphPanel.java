@@ -44,6 +44,7 @@ package org.netbeans.modules.dlight.indicators.graph;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -133,6 +134,13 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
 
         for (Action action : actions) {
             JButton btn = new JButton(action);
+            Object icon = action.getValue(Action.LARGE_ICON_KEY);
+            if (icon != null) {
+                if (icon instanceof Image) {
+                    Image image = (java.awt.Image) icon;
+                    btn.setPreferredSize(new java.awt.Dimension(image.getWidth(null) + 10, image.getHeight(null) + 10));
+                }
+            }
             c = new java.awt.GridBagConstraints();
             c.insets = new java.awt.Insets(0, 3, 0, 3);
             topPanel.add(btn, c);

@@ -528,8 +528,15 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, "instance props are null for URI: "+getUri(), new Exception());
             return new Hk2Target[] {};
         }
-        String serverUri = constructServerUri(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
-                getCommonServerSupport().getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR), null);
+        String url = ip.getProperty(GlassfishModule.URL_ATTR);
+        String protocol = "http";
+        String host = ip.getProperty(GlassfishModule.HOSTNAME_ATTR);
+        String httpPort = getCommonServerSupport().getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR);
+        if (url == null || !url.contains("ee6wc")) {
+            protocol = Utils.getHttpListenerProtocol(host, httpPort);
+        }
+
+        String serverUri = constructServerUri(protocol, host, httpPort, null);
         String name = ip.getProperty(GlassfishModule.DISPLAY_NAME_ATTR);
         Hk2Target target = new Hk2Target(name, serverUri);
         Hk2Target targets[] = {target};
@@ -593,9 +600,9 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
         return si.getBasicNode().getLookup().lookup(GlassfishModule.class);
     }
     
-    private String constructServerUri(String host, String port, String path) {
+    private String constructServerUri(String protocol, String host, String port, String path) {
         StringBuilder builder = new StringBuilder(128);
-        builder.append(Utils.getHttpListenerProtocol(host, port));
+        builder.append(protocol);
         builder.append("://"); // NOI18N
         builder.append(host);
         builder.append(":"); // NOI18N

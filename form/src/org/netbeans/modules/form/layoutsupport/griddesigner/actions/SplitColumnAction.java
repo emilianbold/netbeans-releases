@@ -86,7 +86,9 @@ public class SplitColumnAction extends AbstractGridAction {
             int x = gridInfo.getGridX(component);
             int width = gridInfo.getGridWidth(component);
             if (x+width-1 == column) {
-                gridManager.setGridWidth(component, ++width);
+                int y = gridInfo.getGridY(component);
+                int height = gridInfo.getGridHeight(component);
+                gridManager.setGridPosition(component, x, y, ++width, height);
             }
         }
 

@@ -296,7 +296,7 @@ public abstract class VersioningSystem {
      * See also {@link org.netbeans.modules.versioning.spi.VersioningSystem}.
      * 
      * @author Tomas Stupka
-     * @since 1.19
+     * @since 1.24
      * @see org.netbeans.modules.versioning.spi.VersioningSystem
      * @see org.openide.util.lookup.ServiceProvider
      */

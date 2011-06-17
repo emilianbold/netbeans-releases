@@ -82,7 +82,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     }
     
     @Override
-    public CsmScope getScope() {
+    public synchronized CsmScope getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
@@ -124,7 +124,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         return "" + getKind() + ' ' + getOffsetString(); // NOI18N
     }
 
-    private void onDispose() {
+    private synchronized void onDispose() {
         // restore scope from it's UID
         if (this.scopeRef == null) {
             this.scopeRef = UIDCsmConverter.UIDtoScope(scopeUID);

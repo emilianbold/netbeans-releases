@@ -650,6 +650,7 @@ public class Flow {
         }
 
         public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+            scan(node.getVariable(), null);
             scan(node.getExpression(), null);
 
             Map<VariableElement, State> beforeLoop = variable2State;

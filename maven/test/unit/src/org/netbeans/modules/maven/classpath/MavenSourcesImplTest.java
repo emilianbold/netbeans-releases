@@ -108,4 +108,30 @@ public class MavenSourcesImplTest extends NbTestCase {
         assertEquals(0, grps.length);
     }
 
+    public void testGeneratedSources() throws Exception { // #187595
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        FileObject gsrc = FileUtil.createFolder(d, "target/generated-sources/xjc");
+        gsrc.createData("Whatever.class");
+        FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
+        FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
+        gtsrc.createData("Whatever.class");
+        SourceGroup[] grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(2, grps.length);
+        assertEquals(src, grps[0].getRootFolder());
+        assertEquals(tsrc, grps[1].getRootFolder());
+        grps = ProjectUtils.getSources(ProjectManager.getDefault().findProject(d)).getSourceGroups(MavenSourcesImpl.TYPE_GEN_SOURCES);
+        assertEquals(2, grps.length);
+        assertEquals(gsrc, grps[0].getRootFolder());
+        assertEquals(gtsrc, grps[1].getRootFolder());
+    }
+
 }

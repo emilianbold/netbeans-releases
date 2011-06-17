@@ -64,6 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  * Show basic conflict resolver UI (provided by the diff module) and resolves tree conflicts.
@@ -103,15 +104,17 @@ public class ResolveConflictsAction extends ContextAction {
             @Override
             public void run() {
                 final Map<File, ISVNStatus> treeConflicts = getTreeConflicts(files);
+                final Map<File, ISVNStatus> propertyConflicts = getPropertyConflicts(files);
                 final List<File> filteredFiles = removeFolders(files, treeConflicts.keySet());
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        if (filteredFiles.isEmpty() && treeConflicts.isEmpty()) {
+                        if (filteredFiles.isEmpty() && treeConflicts.isEmpty() && propertyConflicts.isEmpty()) {
                             NotifyDescriptor nd = new NotifyDescriptor.Message(org.openide.util.NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflictsFound")); // NOI18N
                             DialogDisplayer.getDefault().notify(nd);
                         } else {
                             resolveTreeConflicts(treeConflicts);
+                            resolvePropertyConflicts(propertyConflicts, filteredFiles);
                             for (File file : filteredFiles) {
                                 ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
                                 executor.exec();
@@ -139,6 +142,32 @@ public class ResolveConflictsAction extends ContextAction {
                 File file = status.getFile();
                 NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolveTreeConflict.message", file.getName()), //NOI18N
                         NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolveTreeConflict.title"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
+                        NotifyDescriptor.QUESTION_MESSAGE, new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION}, NotifyDescriptor.NO_OPTION);
+                return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
+            }
+
+            private void resolvePropertyConflicts (Map<File, ISVNStatus> propertyConflicts, List<File> filesToResolve) {
+                for (Map.Entry<File, ISVNStatus> e : propertyConflicts.entrySet()) {
+                    File file = e.getKey();
+                    ISVNStatus status = e.getValue();
+                    if (acceptPropertyLocalChanges(status)) {
+                        if (!filesToResolve.contains(file)) {
+                            try {
+                                ConflictResolvedAction.perform(file);
+                            } catch (SVNClientException ex) {
+                                Logger.getLogger(ResolveConflictsAction.class.getName()).log(Level.INFO, null, ex);
+                            }
+                        }
+                    } else {
+                        filesToResolve.remove(file);
+                    }
+                }
+            }
+
+            private boolean acceptPropertyLocalChanges (ISVNStatus status) {
+                File file = status.getFile();
+                NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolvePropertyConflict.message", file.getName()), //NOI18N
+                        NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolvePropertyConflict.title"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
                         NotifyDescriptor.QUESTION_MESSAGE, new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION}, NotifyDescriptor.NO_OPTION);
                 return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
             }
@@ -181,6 +210,27 @@ public class ResolveConflictsAction extends ContextAction {
             }
         }
         return treeConflicts;
+    }
+
+    private static Map<File, ISVNStatus> getPropertyConflicts (File[] files) {
+        Map<File, ISVNStatus> propertyConflicts = new HashMap<File, ISVNStatus>(files.length);
+        if (files.length > 0) {
+            try {
+                SvnClient client = Subversion.getInstance().getClient(false);
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                for (File file : files) {
+                    if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT) != 0) {
+                        ISVNStatus status = client.getSingleStatus(file);
+                        if (status.getPropStatus() == SVNStatusKind.CONFLICTED) {
+                            propertyConflicts.put(file, status);
+                        }
+                    }
+                }
+            } catch (SVNClientException ex) {
+                Subversion.LOG.log(Level.INFO, null, ex);
+            }
+        }
+        return propertyConflicts;
     }
 
     @Override

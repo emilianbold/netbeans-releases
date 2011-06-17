@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.refactoring.java.test;
 
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -78,7 +81,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
-        performInlineTemp(src.getFileObject("t/A.java"), 0);
+        InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -96,7 +101,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
-        performInlineTemp(src.getFileObject("t/A.java"), 1);
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -115,7 +122,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
-        performInlineTemp(src.getFileObject("t/A.java"), 2);
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 2, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -133,7 +142,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(1 + a * 3);\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0);
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -150,7 +161,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(2 * a + 3);\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0);
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -167,7 +180,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(3 - a);\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0);
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -184,7 +199,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(3 - a);\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0);
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -202,7 +219,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
-        performInlineTemp(src.getFileObject("t/A.java"), 0);
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -223,7 +242,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
-        performInlineTemp(src.getFileObject("t/A.java"), 0);
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -245,7 +266,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(x);\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0, new Problem(true, "ERR_InlineNotCompoundArrayInit"), new Problem(false, "WRN_InlineChange"));
+        InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineNotCompoundArrayInit"), new Problem(false, "WRN_InlineChange"));
 
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -255,7 +278,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(x.length);\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0, new Problem(true, "ERR_InlineNullVarInitializer"));
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineNullVarInitializer"));
 
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -267,7 +292,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(i);\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0, new Problem(true, "ERR_InlineNoVarInitializer"));
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineNoVarInitializer"));
         
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -278,7 +305,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(i);\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0, new Problem(true, "ERR_InlineAssignedOnce"));
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineAssignedOnce"));
         
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -287,7 +316,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        int i = 0;\n"
                 + "    }\n"
                 + "}"));
-        performInlineTemp(src.getFileObject("t/A.java"), 0, new Problem(false, "WRN_InlineNotUsed"));
+        r = new InlineRefactoring[1];
+        createInlineTempRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r, new Problem(false, "WRN_InlineNotUsed"));
     }
     
     public void testInlineConstant() throws Exception {
@@ -300,7 +331,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
-        performInlineConstant(src.getFileObject("t/A.java"), 1);
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineConstantRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -324,7 +357,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
-        performInlineConstant(src.getFileObject("t/A.java"), 1);
+        final InlineRefactoring[] r2 = new InlineRefactoring[1];
+        createInlineConstantRefactoring(src.getFileObject("t/A.java"), 1, r2);
+        performRefactoring(r2);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -353,7 +388,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        printGreeting();\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1);
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -378,7 +415,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "    }\n"
                 + "    private int numberOfLateDeliveries = 6;\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1);
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -402,7 +441,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "            printGreeting();\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1);
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -426,7 +467,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        return new A();\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1);
+        final InlineRefactoring[] r2 = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r2);
+        performRefactoring(r2);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -457,7 +500,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "            A.printGreeting();\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1);
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -496,7 +541,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "            A.printGreeting();\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 2, new Problem(true, "ERR_InlineMethodLocalAccessors"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 2, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodLocalAccessors"));
     }
     
     public void testInlineMethodParameters() throws Exception {
@@ -511,7 +558,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(getGreeting(\"World\"));\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1);
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -533,7 +582,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        printGreet();\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(false, "WRN_InlineNotUsed"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(false, "WRN_InlineNotUsed"));
     }
     
     public void testCannotInlineMethodVoidReturn() throws Exception {
@@ -548,7 +599,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        printGreeting();\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodVoidReturn"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodVoidReturn"));
     }
     public void testCannotInlineMethodRecursion() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -566,7 +619,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(\"Factorial of 3 is: \" + fact(3));\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodRecursion"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodRecursion"));
     }
     public void testCannotInlineMethodMultipleReturn() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -582,7 +637,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(getGreeting(\"World\"));\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodMultipleReturn"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodMultipleReturn"));
     }
     public void testCannotInlineMethodNoLastReturn() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -595,7 +652,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(getGreeting(\"World\"));\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodNoLastReturn"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodNoLastReturn"));
         
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -612,7 +671,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(getGreeting(\"World\"));\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodNoLastReturn"));
+        final InlineRefactoring[] r2 = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r2);
+        performRefactoring(r2, new Problem(true, "ERR_InlineMethodNoLastReturn"));
     }
     public void testCannotInlineMethodNoAccessors() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -637,7 +698,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "public class C {\n"
                 + "    static String message = \"Hello World!\";\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodNoAccessors"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodNoAccessors"));
     }
     public void testCannotInlineMethodPolymorphic() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -657,7 +720,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(\"Hello\");"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodPolymorphic"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodPolymorphic"));
         
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -676,7 +741,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        System.out.println(\"Hello\");"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodPolymorphic"));
+        final InlineRefactoring[] r2 = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r2);
+        performRefactoring(r2, new Problem(true, "ERR_InlineMethodPolymorphic"));
     }
     
     public void testCannotInlineMethodNameClash() throws Exception {
@@ -692,7 +759,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        printGreeting();\n"
                 + "    }\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodNameClash"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodNameClash"));
     }
     
     public void test198821() throws Exception {
@@ -711,43 +780,54 @@ public class InlineTest extends RefactoringTestBase {
                 + "public interface B {\n"
                 + "    public void printGreeting();\n"
                 + "}"));
-        performInlineMethod(src.getFileObject("t/A.java"), 1, new Problem(true, "ERR_InlineMethodPolymorphic"));
-    }
-
-    private void performInlineMethod(FileObject source, final int position, Problem... expectedProblems) throws Exception {
         final InlineRefactoring[] r = new InlineRefactoring[1];
-
-        JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodPolymorphic"));
+    }
+    
+    public void test199068() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        int a = 3;\n"
+                + "        switch(a) {\n"
+                + "            case 1:\n"
+                + "                int b = 5;\n"
+                + "                System.out.println(b);\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
 
             @Override
             public void run(CompilationController parameter) throws Exception {
                 parameter.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = parameter.getCompilationUnit();
 
-                MethodTree method = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(position);
+                MethodTree testMethod = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(1);
+                SwitchTree switchTree = (SwitchTree) testMethod.getBody().getStatements().get(1);
+                CaseTree case1 = switchTree.getCases().get(0);
+                VariableTree variable = (VariableTree) case1.getStatements().get(0);
 
-                TreePath tp = TreePath.getPath(cut, method);
-                r[0] = new InlineRefactoring(TreePathHandle.create(tp, parameter), InlineRefactoring.Type.METHOD);
+                TreePath tp = TreePath.getPath(cut, variable);
+                r[0] = new InlineRefactoring(TreePathHandle.create(tp, parameter), InlineRefactoring.Type.TEMP);
             }
         }, true);
-
-        RefactoringSession rs = RefactoringSession.create("Session");
-        List<Problem> problems = new LinkedList<Problem>();
-
-        addAllProblems(problems, r[0].preCheck());
-        if (!problemIsFatal(problems)) {
-            addAllProblems(problems, r[0].prepare(rs));
-        }
-        if (!problemIsFatal(problems)) {
-            addAllProblems(problems, rs.doRefactoring(true));
-        }
-
-        assertProblems(Arrays.asList(expectedProblems), problems);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        int a = 3;\n"
+                + "        switch(a) {\n"
+                + "            case 1:\n"
+                + "                System.out.println(5);\n"
+                + "    }\n"
+                + "}"));
     }
-    
-    private void performInlineConstant(FileObject source, final int position, Problem... expectedProblems) throws Exception {
-        final InlineRefactoring[] r = new InlineRefactoring[1];
 
+    private void createInlineConstantRefactoring(FileObject source, final int position, final InlineRefactoring[] r) throws IOException, IllegalArgumentException {
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
             @Override
@@ -761,24 +841,9 @@ public class InlineTest extends RefactoringTestBase {
                 r[0] = new InlineRefactoring(TreePathHandle.create(tp, parameter), InlineRefactoring.Type.CONSTANT);
             }
         }, true);
-
-        RefactoringSession rs = RefactoringSession.create("Session");
-        List<Problem> problems = new LinkedList<Problem>();
-
-        addAllProblems(problems, r[0].preCheck());
-        if (!problemIsFatal(problems)) {
-            addAllProblems(problems, r[0].prepare(rs));
-        }
-        if (!problemIsFatal(problems)) {
-            addAllProblems(problems, rs.doRefactoring(true));
-        }
-
-        assertProblems(Arrays.asList(expectedProblems), problems);
     }
 
-    private void performInlineTemp(FileObject source, final int position, Problem... expectedProblems) throws Exception {
-        final InlineRefactoring[] r = new InlineRefactoring[1];
-
+    private void createInlineTempRefactoring(FileObject source, final int position, final InlineRefactoring[] r) throws IllegalArgumentException, IOException {
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
             @Override
@@ -793,7 +858,25 @@ public class InlineTest extends RefactoringTestBase {
                 r[0] = new InlineRefactoring(TreePathHandle.create(tp, parameter), InlineRefactoring.Type.TEMP);
             }
         }, true);
+    }
 
+    private void createInlineMethodRefactoring(FileObject source, final int position, final InlineRefactoring[] r) throws IllegalArgumentException, IOException {
+        JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = parameter.getCompilationUnit();
+
+                MethodTree method = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(position);
+
+                TreePath tp = TreePath.getPath(cut, method);
+                r[0] = new InlineRefactoring(TreePathHandle.create(tp, parameter), InlineRefactoring.Type.METHOD);
+            }
+        }, true);
+    }
+
+    private void performRefactoring(final InlineRefactoring[] r, Problem... expectedProblems) {
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
 

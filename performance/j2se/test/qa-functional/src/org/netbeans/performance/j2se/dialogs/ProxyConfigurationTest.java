@@ -106,7 +106,7 @@ public class ProxyConfigurationTest extends PerformanceTestCase {
     }
     
     public void prepare(){
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        MainWindowOperator.getDefault().menuBar().pushMenu(MENU, "|");
         wizard =new WizardOperator(TITLE);
         new JTabbedPaneOperator(wizard, 0).selectPage(TAB);
         openProxyButton = new JButtonOperator(wizard, BUTTON);

@@ -62,6 +62,14 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
  */
 public class OverallTest extends JellyTestCase {
 
+    static final String[] tests = {
+        "testCreate",
+        "testEdit",
+        "testCompile",
+        "testRun",
+        "testDelete"
+    };
+
     /** Constructor required by JUnit. */
     public OverallTest(String testName) {
         super(testName);
@@ -69,12 +77,7 @@ public class OverallTest extends JellyTestCase {
 
     /** Creates suite from particular test cases. */
     public static Test suite() {
-        return createModuleTest(OverallTest.class,
-                "testCreate",
-                "testEdit",
-                "testCompile",
-                "testRun",
-                "testDelete");
+        return createModuleTest(OverallTest.class, tests);
     }
 
     @Override

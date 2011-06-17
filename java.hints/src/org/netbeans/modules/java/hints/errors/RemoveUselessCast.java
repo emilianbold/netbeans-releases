@@ -108,7 +108,7 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
         }
         
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath path, UpgradeUICallback callback) {
+        protected void performRewrite(WorkingCopy wc, TreePath path, boolean canShowUI) {
             TypeCastTree tct = (TypeCastTree) path.getLeaf();
             ExpressionTree expression = tct.getExpression();
 

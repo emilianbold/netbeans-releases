@@ -68,6 +68,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -115,6 +116,9 @@ import org.openide.util.RequestProcessor;
             success = startupImpl(env2add);
         } catch (RemoteException ex) {
             printErr(ex);
+        } catch (CancellationException ex) {
+            // reporting does not make sense, just return false
+            RemoteUtil.LOGGER.finest(ex.getMessage());
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
             RemoteUtil.LOGGER.finest(ex.getMessage());
@@ -146,7 +150,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private boolean startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
+    private boolean startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException, CancellationException {
         String remoteControllerPath;
         String ldLibraryPath;
         try {
@@ -179,12 +183,6 @@ import org.openide.util.RequestProcessor;
         localController = new RfsLocalController(
                 executionEnvironment, files, remoteControllerProcess, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
-
-        // A workaround for #196453 - Can not build remote project: protocol error
-        int sleep = Integer.getInteger("rfs.instable.sleep", 200); // NOI18N
-        if (sleep > 0) {
-            Thread.sleep(sleep);
-        }
 
         if (!localController.init()) {
             remoteControllerProcess.destroy();

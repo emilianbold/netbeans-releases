@@ -65,13 +65,16 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
+import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.modules.project.libraries.WritableLibraryProvider;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.ChangeSupport;
@@ -246,7 +249,8 @@ public class LibrariesModel implements PropertyChangeListener {
             if (area != null) {
                 ArealLibraryProvider alp = area2Storage.get(area);
                 assert alp != null : "Unknown area: " + area + " known areas: " + area2Storage.keySet();
-                LibraryAccessor.createLibrary(alp, impl.getType(), impl.getName(), area, ((DummyArealLibrary) impl).contents);
+                final LibraryImplementation2 createdLib = LibraryAccessor.createLibrary(alp, impl.getType(), impl.getName(), area, ((DummyArealLibrary) impl).contents);
+                Util.setDisplayName(createdLib, Util.getDisplayName(impl));
             } else if (writableProvider != null) {
                 writableProvider.addLibrary(impl);
             } else {
@@ -274,6 +278,11 @@ public class LibrariesModel implements PropertyChangeListener {
                         for (Map.Entry<String,List<URL>> entry : proxy.newContents.entrySet()) {
                             orig.setContent(entry.getKey(), entry.getValue());
                         }
+                    }
+                    final String origDisplayName = Util.getDisplayName(orig);
+                    final String newDisplayName = Util.getDisplayName(proxy);
+                    if (!(origDisplayName == null ? newDisplayName == null : origDisplayName.equals(newDisplayName))) {
+                        Util.setDisplayName(orig, newDisplayName);
                     }
                 } else {
                     throw new IOException("Cannot find storage for library: " + orig.getName()); // NOI18N
@@ -358,44 +367,56 @@ public class LibrariesModel implements PropertyChangeListener {
 
     private static class LibrariesComparator implements Comparator<LibraryImplementation> {
         public int compare(LibraryImplementation lib1, LibraryImplementation lib2) {
-            String name1 = LibrariesCustomizer.getLocalizedName(lib1);
-            String name2 = LibrariesCustomizer.getLocalizedName(lib2);
+            String name1 = Util.getLocalizedName(lib1);
+            String name2 = Util.getLocalizedName(lib2);
             int r = name1.compareToIgnoreCase(name2);
             return r != 0 ? r : System.identityHashCode(lib1) - System.identityHashCode(lib2);
         }
     }
 
-    private static final class DummyArealLibrary implements LibraryImplementation2 {
+    private static final class DummyArealLibrary implements LibraryImplementation2, NamedLibraryImplementation {
 
         private final String type, name;
         final Map<String,List<URI>> contents = new HashMap<String,List<URI>>();
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private String displayName;
 
         public DummyArealLibrary(String type, String name) {
             this.type = type;
             this.name = name;
         }
 
+        @Override
         public String getType() {
             return type;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
         public String getDescription() {
             return null;
         }
 
+        @Override
         public String getLocalizingBundle() {
             return null;
         }
 
+        @Override
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
             return convertURIsToURLs(getURIContent(volumeType));
         }
         
+        @Override
         public List<URI> getURIContent(String volumeType) throws IllegalArgumentException {
             List<URI> content = contents.get(volumeType);
             if (content != null) {
@@ -405,30 +426,42 @@ public class LibrariesModel implements PropertyChangeListener {
             }
         }
 
+        @Override
         public void setName(String name) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public void setDisplayName(final @NullAllowed String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
         public void setDescription(String text) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public void setLocalizingBundle(String resourceName) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
             pcs.addPropertyChangeListener(l);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
             pcs.removePropertyChangeListener(l);
         }
 
+        @Override
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
             setURIContent(volumeType, convertURLsToURIs(path));
         }
 
+        @Override
         public void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException {
             contents.put(volumeType, path);
             pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, null, null);

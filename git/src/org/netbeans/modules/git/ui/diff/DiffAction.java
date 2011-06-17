@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.diff;
 
+import java.io.File;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -74,4 +75,12 @@ public class DiffAction extends GitAction {
         tc.requestActive();
     }
 
+    public void diff (File file, String rev1, String rev2) {
+        MultiDiffPanelController controller = new MultiDiffPanelController(file, rev1, rev2);
+        DiffTopComponent tc = new DiffTopComponent(controller);
+        controller.setActions(tc);
+        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
+        tc.open();
+        tc.requestActive();
+    }
 }

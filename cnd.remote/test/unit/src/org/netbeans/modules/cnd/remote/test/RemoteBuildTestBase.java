@@ -302,9 +302,17 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         assertTrue(projectDirFile.exists());
         FileObject projectDirFO = CndFileUtils.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        ensureMakefilesWritten(makeProject);
         //changeProjectHost(makeProject, execEnv);
         assertNotNull("project is null", makeProject);
         return makeProject;
+    }
+    
+    protected void ensureMakefilesWritten(MakeProject makeProject) {
+        File nbproject = new File(FileUtil.toFile(makeProject.getProjectDirectory()), "nbproject");
+        File publicConfFile = new File(nbproject, "configurations.xml");
+        publicConfFile.setLastModified(publicConfFile.lastModified() + 1000*60*60); // this forces makefile regeneration for managed projects
+        makeProject.save();
     }
 
     private void changeProjectHost(File projectDir, ExecutionEnvironment env) throws Exception {
@@ -315,7 +323,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         File privateConfFile = new File(new File(nbproject, "private"), "configurations.xml");
         boolean changed = changeProjectHostImpl(publicConfFile, env);
         if (privateConfFile.exists()) {
-            changed |= changeProjectHostImpl(privateConfFile, env);
+            changed |= changeProjectHostImpl(privateConfFile, env);            
         }
         assertTrue("Can not change development host for " + projectDir.getAbsolutePath(), changed);
     }

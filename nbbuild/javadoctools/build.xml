@@ -140,7 +140,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${export.interfaces}" includes="footer.gen"/>
         </concat>
         
-        <taskdef name="javadoc-index" classname="org.netbeans.nbbuild.JavadocIndex" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="javadoc-index" classname="org.netbeans.nbbuild.JavadocIndex" classpath="${nbantext.jar}"/>
         <javadoc-index target="${netbeans.javadoc.dir}/allclasses.xml">
             <packageslist dir="${netbeans.javadoc.dir}">
                 <include name="**/allclasses-noframe.html"/>
@@ -246,7 +246,7 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="check-broken-links" depends="init" unless="javadoc.skip.brokenlinks.check">
-        <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks" classpath="${nbantext.jar}"/>
         <property name="javadoc.check.forbidden.links" value="true"/>
         <checklinks basedir="${netbeans.javadoc.dir}" checkexternal="${javadoc.check.external.links}" checkforbidden="${javadoc.check.forbidden.links}" checkspaces="false" report="${netbeans.javadoc.dir}/checklinks-errors.xml">
             <include name="*/overview-summary.html"/>

@@ -107,7 +107,7 @@ public class RevertModificationsAction extends ContextAction {
 
         String rev = null;
 
-        final RevertModifications revertModifications = new RevertModifications(repository, files);
+        final RevertModifications revertModifications = new RevertModifications(repository, Arrays.asList(files).contains(repository) ? null : files); // this is much faster when getting revisions
         if (!revertModifications.showDialog()) {
             return;
         }

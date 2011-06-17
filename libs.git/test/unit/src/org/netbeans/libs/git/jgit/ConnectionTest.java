@@ -182,6 +182,27 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.listRemoteBranches("ssh://tester:vsdsvsds@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
+    public void testSshConnectionCanceled () throws Exception {
+        GitClient client = getClient(workDir);
+        GitClientCallback callback = new DefaultCallback() {
+            @Override
+            public String getUsername (String uri, String prompt) {
+                return null;
+            }
+
+            @Override
+            public char[] getPassword (String uri, String prompt) {
+                return null;
+            }
+        };
+        client.setCallback(callback);
+        try {
+            client.listRemoteBranches("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        } catch (GitException.AuthorizationException ex) {
+            assertEquals("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", ex.getRepositoryUrl());
+        }
+    }
+
     public void testSshConnectionCredentialsFromCallback () throws Exception {
         GitClient client = getClient(workDir);
         GitClientCallback callback = new DefaultCallback() {
@@ -254,22 +275,21 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
     
-    // someone tell me what's wrong here. correct passphrase is returned yet the private key cannot be unlocked and cert auth fails
-//    public void testSshConnectionPassphrase () throws Exception {
-//        GitClient client = getClient(workDir);
-//        client.setCallback(new DefaultCallback() {
-//            @Override
-//            public String getUsername (String uri, String prompt) {
-//                return "gittester";
-//            }
-//
-//            @Override
-//            public char[] getPassphrase (String uri, String prompt) {
-//                return "qwerty".toCharArray();
-//            }
-//        });
-//        client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
-//    }
+    public void testSshConnectionPassphrase () throws Exception {
+        GitClient client = getClient(workDir);
+        client.setCallback(new DefaultCallback() {
+            @Override
+            public String getUsername (String uri, String prompt) {
+                return "gittester";
+            }
+
+            @Override
+            public char[] getPassphrase (String uri, String prompt) {
+                return "qwerty".toCharArray();
+            }
+        });
+        client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+    }
     
     private static class DefaultCallback implements GitClientCallback {
         @Override

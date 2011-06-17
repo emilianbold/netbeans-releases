@@ -56,8 +56,8 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 public class MarkOccurrencesHighlighterFactory extends TaskFactory {
 
     @Override
-    public Collection<SchedulerTask> create(Snapshot snapshot) {
-        return Collections.<SchedulerTask>singletonList(new MarkOccurrencesHighlighter(snapshot.getSource().getFileObject()));
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        return Collections.singletonList(new MarkOccurrencesHighlighter(snapshot.getSource().getFileObject()));
     }
 
 }

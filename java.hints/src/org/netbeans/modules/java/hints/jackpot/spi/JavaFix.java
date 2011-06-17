@@ -44,39 +44,49 @@ package org.netbeans.modules.java.hints.jackpot.spi;
 
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -85,25 +95,27 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-//import org.netbeans.modules.apisupport.project.NbModuleProject;
-//import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-//import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-//import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
-import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl;
+import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.Pattern;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -111,17 +123,34 @@ import org.openide.modules.SpecificationVersion;
  */
 public abstract class JavaFix {
 
+    public static final String ENSURE_DEPENDENCY = "ensure-dependency";
+
     private final TreePathHandle handle;
+    private final Map<String, String> options;
 
     protected JavaFix(CompilationInfo info, TreePath tp) {
+        this(info, tp, Collections.<String, String>emptyMap());
+    }
+
+    protected JavaFix(CompilationInfo info, TreePath tp, Map<String, String> options) {
         this.handle = TreePathHandle.create(tp, info);
+        this.options = Collections.unmodifiableMap(new HashMap<String, String>(options));
+    }
+
+    protected JavaFix(TreePathHandle handle) {
+        this(handle, Collections.<String, String>emptyMap());
+    }
+
+    protected JavaFix(TreePathHandle handle, Map<String, String> options) {
+        this.handle = handle;
+        this.options = Collections.unmodifiableMap(new HashMap<String, String>(options));
     }
 
     protected abstract String getText();
 
-    protected abstract void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback);
+    protected abstract void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI);
 
-    final ChangeInfo process(WorkingCopy wc, UpgradeUICallback callback) throws Exception {
+    final ChangeInfo process(WorkingCopy wc, boolean canShowUI) throws Exception {
         TreePath tp = handle.resolve(wc);
 
         if (tp == null) {
@@ -129,7 +158,7 @@ public abstract class JavaFix {
             return null;
         }
 
-        performRewrite(wc, tp, callback);
+        performRewrite(wc, tp, canShowUI);
 
         return null;
     }
@@ -147,6 +176,10 @@ public abstract class JavaFix {
     }
 
     public static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, String... imports) {
+        return rewriteFix(info, displayName, what, to, parameters, parametersMulti, parameterNames, constraints, Collections.<String, String>emptyMap(), imports);
+    }
+
+    public static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports) {
         final Map<String, TreePathHandle> params = new HashMap<String, TreePathHandle>();
 
         for (Entry<String, TreePath> e : parameters.entrySet()) {
@@ -175,47 +208,7 @@ public abstract class JavaFix {
             displayName = defaultFixDisplayName(info, parameters, to);
         }
 
-        return toEditorFix(new JavaFixRealImpl(info, what, displayName, to, params, paramsMulti, parameterNames, constraintsHandles, Arrays.asList(imports)));
-    }
-
-    private static boolean isFakeBlock(Tree t) {
-        if (!(t instanceof BlockTree)) {
-            return false;
-        }
-
-        BlockTree bt = (BlockTree) t;
-
-        if (bt.getStatements().isEmpty()) {
-            return false;
-        }
-
-        CharSequence wildcardTreeName = Utilities.getWildcardTreeName(bt.getStatements().get(0));
-
-        if (wildcardTreeName == null) {
-            return false;
-        }
-
-        return wildcardTreeName.toString().startsWith("$$");
-    }
-
-    private static boolean isFakeClass(Tree t) {
-        if (!(t instanceof ClassTree)) {
-            return false;
-        }
-
-        ClassTree ct = (ClassTree) t;
-
-        if (ct.getMembers().isEmpty()) {
-            return false;
-        }
-
-        CharSequence wildcardTreeName = Utilities.getWildcardTreeName(ct.getMembers().get(0));
-
-        if (wildcardTreeName == null) {
-            return false;
-        }
-
-        return wildcardTreeName.toString().startsWith("$$");
+        return toEditorFix(new JavaFixRealImpl(info, what, options, displayName, to, params, paramsMulti, parameterNames, constraintsHandles, Arrays.asList(imports)));
     }
 
     private static String defaultFixDisplayName(CompilationInfo info, Map<String, TreePath> variables, String replaceTarget) {
@@ -248,7 +241,7 @@ public abstract class JavaFix {
         return "Rewrite to " + replaceTarget;
     }
 
-    private static void checkDependency(WorkingCopy copy, Element e, UpgradeUICallback callback) {
+    private static void checkDependency(WorkingCopy copy, Element e, boolean canShowUI) {
         SpecificationVersion sv = computeSpecVersion(copy, e);
 
         while (sv == null && e.getKind() != ElementKind.PACKAGE) {
@@ -272,18 +265,30 @@ public abstract class JavaFix {
             return ;
         }
 
-        Project referedProject = FileOwnerQuery.getOwner(file);
+        FileObject root = findRootForFile(file, copy.getClasspathInfo());
 
-        if (referedProject == null || currentProject.getProjectDirectory().equals(referedProject.getProjectDirectory())) {
+        if (root == null) {
             return ;
         }
 
-        resolveNbModuleDependencies(currentProject, referedProject, sv, callback);
+        Project referedProject = FileOwnerQuery.getOwner(file);
+
+        if (referedProject != null && currentProject.getProjectDirectory().equals(referedProject.getProjectDirectory())) {
+            return ;
+        }
+
+        for (ProjectDependencyUpgrader pdu : Lookup.getDefault().lookupAll(ProjectDependencyUpgrader.class)) {
+            if (pdu.ensureDependency(currentProject, root, sv, canShowUI)) {
+                return ;
+            }
+        }
     }
 
     private static java.util.regex.Pattern SPEC_VERSION = java.util.regex.Pattern.compile("[0-9]+(\\.[0-9]+)+");
     
-    public static SpecificationVersion computeSpecVersion(CompilationInfo info, Element el) {
+    static SpecificationVersion computeSpecVersion(CompilationInfo info, Element el) {
+        if (!Utilities.isJavadocSupported(info)) return null;
+        
         Doc javaDoc = info.getElementUtilities().javaDocFor(el);
 
         if (javaDoc == null) return null;
@@ -307,78 +312,48 @@ public abstract class JavaFix {
         return new JavaFixImpl(jf);
     }
 
-    private static void resolveNbModuleDependencies(Project currentProject, Project referedProject, SpecificationVersion sv, UpgradeUICallback callback) throws IllegalArgumentException {
-//        NbModuleProvider currentNbModule = currentProject.getLookup().lookup(NbModuleProvider.class);
-//
-//        if (currentNbModule == null) {
-//            return ;
-//        }
-//
-//        NbModuleProvider referedNbModule = referedProject.getLookup().lookup(NbModuleProvider.class);
-//
-//        if (referedNbModule == null) {
-//            return ;
-//        }
-//
-//        try {
-//            NbModuleProject currentNbModuleProject = currentProject.getLookup().lookup(NbModuleProject.class);
-//
-//            if (currentNbModuleProject == null) {
-//                return ;
-//            }
-//
-//            ProjectXMLManager m = new ProjectXMLManager(currentNbModuleProject);
-//            ModuleDependency dep = null;
-//
-//            for (ModuleDependency md : m.getDirectDependencies()) {
-//                if (referedNbModule.getCodeNameBase().equals(md.getModuleEntry().getCodeNameBase())) {
-//                    dep = md;
-//                    break;
-//                }
-//            }
-//
-//            if (dep == null) {
-//                return ;
-//            }
-//
-//            if (dep.getSpecificationVersion() == null) {
-//                return ;
-//            }
-//
-//            SpecificationVersion currentDep = new SpecificationVersion(dep.getSpecificationVersion());
-//
-//            if (currentDep == null || currentDep.compareTo(sv) < 0) {
-//                String upgradeText = NbBundle.getMessage(JavaFix.class,
-//                                                         "LBL_UpdateDependencyQuestion",
-//                                                         new Object[] {
-//                                                            ProjectUtils.getInformation(referedProject).getDisplayName(),
-//                                                            currentDep.toString()
-//                                                         });
-//
-//                if (callback.shouldUpgrade(upgradeText)) {
-//                    ModuleDependency nue = new ModuleDependency(dep.getModuleEntry(),
-//                                                                dep.getReleaseVersion(),
-//                                                                sv.toString(),
-//                                                                dep.hasCompileDependency(),
-//                                                                dep.hasImplementationDepedendency());
-//
-//                    m.editDependency(dep, nue);
-//                    ProjectManager.getDefault().saveProject(currentProject);
-//                }
-//            }
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-    }
-
     @SuppressWarnings("deprecation")
     private static FileObject getFile(WorkingCopy copy, Element e) {
         return SourceUtils.getFile(e, copy.getClasspathInfo());
     }
 
+    private static FileObject findRootForFile(final FileObject file, final ClasspathInfo cpInfo) {
+        ClassPath cp = ClassPathSupport.createProxyClassPath(
+            new ClassPath[] {
+                cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),
+                cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
+                cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE),
+            });
+
+        FileObject root = cp.findOwnerRoot(file);
+
+        if (root != null) {
+            return root;
+        }
+
+        for (ClassPath.Entry e : cp.entries()) {
+            FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(e.getURL()).getRoots();
+
+            if (sourceRoots.length == 0) continue;
+
+            ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
+
+            root = sourcePath.findOwnerRoot(file);
+
+            if (root != null) {
+                return root;
+            }
+        }
+        return null;
+    }
+
     private static boolean isStaticElement(Element el) {
         if (el == null) return false;
 
+        if (el.asType() == null || el.asType().getKind() == TypeKind.ERROR) {
+            return false;
+        }
+        
         if (el.getModifiers().contains(Modifier.STATIC)) {
             //XXX:
             if (!el.getKind().isClass() && !el.getKind().isInterface()) {
@@ -395,10 +370,6 @@ public abstract class JavaFix {
         return false;
     }
 
-    public interface UpgradeUICallback {
-        public boolean shouldUpgrade(String comment);
-    }
-
     private static class JavaFixRealImpl extends JavaFix {
         private final String displayName;
         private final Map<String, TreePathHandle> params;
@@ -408,8 +379,8 @@ public abstract class JavaFix {
         private final Iterable<? extends String> imports;
         private final String to;
 
-        public JavaFixRealImpl(CompilationInfo info, TreePath what, String displayName, String to, Map<String, TreePathHandle> params, Map<String, Collection<TreePathHandle>> paramsMulti, final Map<String, String> parameterNames, Map<String, TypeMirrorHandle<?>> constraintsHandles, Iterable<? extends String> imports) {
-            super(info, what);
+        public JavaFixRealImpl(CompilationInfo info, TreePath what, Map<String, String> options, String displayName, String to, Map<String, TreePathHandle> params, Map<String, Collection<TreePathHandle>> paramsMulti, final Map<String, String> parameterNames, Map<String, TypeMirrorHandle<?>> constraintsHandles, Iterable<? extends String> imports) {
+            super(info, what, options);
             
             this.displayName = displayName;
             this.to = to;
@@ -426,7 +397,7 @@ public abstract class JavaFix {
         }
 
         @Override
-        protected void performRewrite(final WorkingCopy wc, TreePath tp, final UpgradeUICallback callback) {
+        protected void performRewrite(final WorkingCopy wc, TreePath tp, final boolean canShowUI) {
             final Map<String, TreePath> parameters = new HashMap<String, TreePath>();
 
             for (Entry<String, TreePathHandle> e : params.entrySet()) {
@@ -465,243 +436,507 @@ public abstract class JavaFix {
 
             Tree parsed = Pattern.parseAndAttribute(wc, to, constraints, new Scope[1], imports);
 
-            if (!isFakeBlock(parsed) && !isFakeClass(parsed) && (tp.getLeaf().getKind() != Kind.BLOCK || !parametersMulti.containsKey("$$1$") || parsed.getKind() == Kind.BLOCK)) {
-                wc.rewrite(tp.getLeaf(), parsed);
-            } else {
-                if (isFakeBlock(parsed)) {
-                    if (tp.getLeaf().getKind() == Kind.BLOCK && parametersMulti.containsKey("$$1$")) {
-                        wc.rewrite(tp.getLeaf(), parsed);
-                    } else {
-                        TreePath parent = tp.getParentPath();
-                        List<? extends StatementTree> statements = ((BlockTree) parsed).getStatements();
+            if (Utilities.isFakeBlock(parsed)) {
+                TreePath parent = tp.getParentPath();
+                List<? extends StatementTree> statements = ((BlockTree) parsed).getStatements();
 
-                        statements = statements.subList(1, statements.size() - 1);
+                statements = statements.subList(1, statements.size() - 1);
 
-                        if (parent.getLeaf().getKind() == Kind.BLOCK) {
-                            List<StatementTree> newStatements = new LinkedList<StatementTree>();
-
-                            for (StatementTree st : ((BlockTree) parent.getLeaf()).getStatements()) {
-                                if (st == tp.getLeaf()) {
-                                    newStatements.addAll(statements);
-                                } else {
-                                    newStatements.add(st);
-                                }
-                            }
-
-                            wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
-                        } else {
-                            wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
-                        }
-                    }
-                } else if (isFakeClass(parsed)) {
-                    TreePath parent = tp.getParentPath();
-                    List<? extends Tree> members = ((ClassTree) parsed).getMembers();
-
-                    members = members.subList(1, members.size());
-
-                    assert TreeUtilities.CLASS_TREE_KINDS.contains(parent.getLeaf().getKind());
-                    
-                    List<Tree> newMembers = new LinkedList<Tree>();
-
-                    ClassTree ct = (ClassTree) parent.getLeaf();
-                    
-                    for (Tree t : ct.getMembers()) {
-                        if (t == tp.getLeaf()) {
-                            newMembers.addAll(members);
-                        } else {
-                            newMembers.add(t);
-                        }
-                    }
-
-                    wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Class(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getExtendsClause(), ct.getImplementsClause(), newMembers));
-                } else {
+                if (parent.getLeaf().getKind() == Kind.BLOCK) {
                     List<StatementTree> newStatements = new LinkedList<StatementTree>();
 
-                    newStatements.add(wc.getTreeMaker().ExpressionStatement(wc.getTreeMaker().Identifier("$$1$")));
-                    newStatements.add((StatementTree) parsed);
-                    newStatements.add(wc.getTreeMaker().ExpressionStatement(wc.getTreeMaker().Identifier("$$2$")));
+                    for (StatementTree st : ((BlockTree) parent.getLeaf()).getStatements()) {
+                        if (st == tp.getLeaf()) {
+                            newStatements.addAll(statements);
+                        } else {
+                            newStatements.add(st);
+                        }
+                    }
 
-                    parsed = wc.getTreeMaker().Block(newStatements, ((BlockTree) tp.getLeaf()).isStatic());
+                    wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                } else {
+                    wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                }
+            } else if (Utilities.isFakeClass(parsed)) {
+                TreePath parent = tp.getParentPath();
+                List<? extends Tree> members = ((ClassTree) parsed).getMembers();
 
-                    wc.rewrite(tp.getLeaf(), parsed);
+                members = members.subList(1, members.size());
+
+                assert parent.getLeaf().getKind() == Kind.CLASS;
+
+                List<Tree> newMembers = new LinkedList<Tree>();
+
+                ClassTree ct = (ClassTree) parent.getLeaf();
+
+                for (Tree t : ct.getMembers()) {
+                    if (t == tp.getLeaf()) {
+                        newMembers.addAll(members);
+                    } else {
+                        newMembers.add(t);
+                    }
+                }
+
+                wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Class(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getExtendsClause(), ct.getImplementsClause(), newMembers));
+            } else if (tp.getLeaf().getKind() == Kind.BLOCK && parametersMulti.containsKey("$$1$") && parsed.getKind() != Kind.BLOCK && StatementTree.class.isAssignableFrom(parsed.getKind().asInterface())) {
+                List<StatementTree> newStatements = new LinkedList<StatementTree>();
+
+                newStatements.add(wc.getTreeMaker().ExpressionStatement(wc.getTreeMaker().Identifier("$$1$")));
+                newStatements.add((StatementTree) parsed);
+                newStatements.add(wc.getTreeMaker().ExpressionStatement(wc.getTreeMaker().Identifier("$$2$")));
+
+                parsed = wc.getTreeMaker().Block(newStatements, ((BlockTree) tp.getLeaf()).isStatic());
+
+                wc.rewrite(tp.getLeaf(), parsed);
+            } else {
+                while (   tp.getParentPath().getLeaf().getKind() == Kind.PARENTHESIZED
+                       && tp.getLeaf().getKind() != parsed.getKind()
+                       && tp.getParentPath() != null
+                       && tp.getParentPath().getParentPath() != null
+                       && !requiresParenthesis(parsed, tp.getParentPath().getLeaf(), tp.getParentPath().getParentPath().getLeaf())
+                       && requiresParenthesis(tp.getLeaf(), tp.getParentPath().getLeaf(), tp.getParentPath().getParentPath().getLeaf()))
+                    tp = tp.getParentPath();
+                wc.rewrite(tp.getLeaf(), parsed);
+            }
+
+            //prevent generating QualIdents inside import clauses - might be better to solve that inside ImportAnalysis2,
+            //but that seems not to be straightforward:
+            boolean inImport = parsed.getKind() == Kind.IMPORT;
+            TreePath w = tp.getParentPath();
+
+            while (!inImport && w != null) {
+                inImport |= w.getLeaf().getKind() == Kind.IMPORT;
+                w = w.getParentPath();
+            }
+
+            new ReplaceParameters(wc, canShowUI, inImport, parameters, parametersMulti, parameterNames).scan(new TreePath(tp.getParentPath(), parsed), null);
+        }
+    }
+
+    private static final Set<Kind> NUMBER_LITERAL_KINDS = EnumSet.of(Kind.FLOAT_LITERAL, Kind.DOUBLE_LITERAL, Kind.INT_LITERAL, Kind.LONG_LITERAL);
+    
+    private static class ReplaceParameters extends TreePathScanner<Number, Void> {
+
+        private final WorkingCopy wc;
+        private final boolean canShowUI;
+        private final boolean inImport;
+        private final Map<String, TreePath> parameters;
+        private final Map<String, Collection<TreePath>> parametersMulti;
+        private final Map<String, String> parameterNames;
+
+        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames) {
+            this.parameters = parameters;
+            this.wc = wc;
+            this.canShowUI = canShowUI;
+            this.inImport = inImport;
+            this.parametersMulti = parametersMulti;
+            this.parameterNames = parameterNames;
+        }
+
+        @Override
+        public Number visitIdentifier(IdentifierTree node, Void p) {
+            String name = node.getName().toString();
+            TreePath tp = parameters.get(name);
+
+            if (tp != null) {
+                if (tp.getLeaf() instanceof Hacks.RenameTree) {
+                    Hacks.RenameTree rt = (Hacks.RenameTree) tp.getLeaf();
+                    Tree nue = wc.getTreeMaker().setLabel(rt.originalTree, rt.newName);
+
+                    wc.rewrite(node, nue);
+
+                    return null;
+                }
+                if (!parameterNames.containsKey(name)) {
+                    wc.rewrite(node, tp.getLeaf());
+                    if (NUMBER_LITERAL_KINDS.contains(tp.getLeaf().getKind())) {
+                        return (Number) ((LiteralTree) tp.getLeaf()).getValue();
+                    }
+                    Tree target = tp.getLeaf();
+                    //TODO: might also remove parenthesis, but needs to ensure the diff will still be minimal
+//                    while (target.getKind() == Kind.PARENTHESIZED
+//                           && !requiresParenthesis(((ParenthesizedTree) target).getExpression(), getCurrentPath().getParentPath().getLeaf())) {
+//                        target = ((ParenthesizedTree) target).getExpression();
+//                    }
+                    if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
+                        target = wc.getTreeMaker().Parenthesized((ExpressionTree) target);
+                    }
+                    wc.rewrite(node, target);
+                    return null;
                 }
             }
 
-            new TreePathScanner<Void, Void>() {
-                @Override
-                public Void visitIdentifier(IdentifierTree node, Void p) {
-                    String name = node.getName().toString();
-                    TreePath tp = parameters.get(name);
+            String variableName = parameterNames.get(name);
 
-                    if (tp != null) {
-                        if (tp.getLeaf() instanceof Hacks.RenameTree) {
-                            Hacks.RenameTree rt = (Hacks.RenameTree) tp.getLeaf();
-                            Tree nue = wc.getTreeMaker().setLabel(rt.originalTree, rt.newName);
+            if (variableName != null) {
+                wc.rewrite(node, wc.getTreeMaker().Identifier(variableName));
+                return null;
+            }
 
-                            wc.rewrite(node, nue);
+            Element e = wc.getTrees().getElement(getCurrentPath());
 
-                            return null;
-                        }
-                        if (!parameterNames.containsKey(name)) {
-                            Tree target = tp.getLeaf();
-                            //TODO: might also remove parenthesis, but needs to ensure the diff will still be minimal
-//                            while (target.getKind() == Kind.PARENTHESIZED
-//                                   && !requiresParenthesis(((ParenthesizedTree) target).getExpression(), getCurrentPath().getParentPath().getLeaf())) {
-//                                target = ((ParenthesizedTree) target).getExpression();
-//                            }
-                            if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
-                                target = wc.getTreeMaker().Parenthesized((ExpressionTree) target);
-                            }
-                            wc.rewrite(node, target);
-                            return null;
-                        }
-                    }
+            if (e != null && isStaticElement(e) && !inImport) {
+                wc.rewrite(node, wc.getTreeMaker().QualIdent(e));
+            }
 
-                    String variableName = parameterNames.get(name);
+            return super.visitIdentifier(node, p);
+        }
 
-                    if (variableName != null) {
-                        wc.rewrite(node, wc.getTreeMaker().Identifier(variableName));
+        @Override
+        public Number visitMemberSelect(MemberSelectTree node, Void p) {
+            Element e = wc.getTrees().getElement(getCurrentPath());
+
+            if (e == null || (e.getKind() == ElementKind.CLASS && ((TypeElement) e).asType().getKind() == TypeKind.ERROR)) {
+                MemberSelectTree nue = node;
+                String selectedName = node.getIdentifier().toString();
+
+                if (selectedName.startsWith("$") && parameterNames.get(selectedName) != null) {
+                    nue = wc.getTreeMaker().MemberSelect(node.getExpression(), parameterNames.get(selectedName));
+                }
+
+                if (nue.getExpression().getKind() == Kind.IDENTIFIER) {
+                    String name = ((IdentifierTree) nue.getExpression()).getName().toString();
+
+                    if (name.startsWith("$") && parameters.get(name) == null) {
+                        //XXX: unbound variable, use identifier instead of member select - may cause problems?
+                        wc.rewrite(node, wc.getTreeMaker().Identifier(nue.getIdentifier()));
                         return null;
                     }
-
-                    Element e = wc.getTrees().getElement(getCurrentPath());
-
-                    if (e != null && isStaticElement(e)) {
-                        wc.rewrite(node, wc.getTreeMaker().QualIdent(e));
-                    }
-
-                    return super.visitIdentifier(node, p);
                 }
-                @Override
-                public Void visitMemberSelect(MemberSelectTree node, Void p) {
-                    Element e = wc.getTrees().getElement(getCurrentPath());
 
-                    if (e == null || (e.getKind() == ElementKind.CLASS && ((TypeElement) e).asType().getKind() == TypeKind.ERROR)) {
-                        if (node.getExpression().getKind() == Kind.IDENTIFIER) {
-                            String name = ((IdentifierTree) node.getExpression()).getName().toString();
+                wc.rewrite(node, nue);
+                
+                return super.visitMemberSelect(node, p);
+            }
 
-                            if (name.startsWith("$") && parameters.get(name) == null) {
-                                //XXX: unbound variable, use identifier instead of member select - may cause problems?
-                                wc.rewrite(node, wc.getTreeMaker().Identifier(node.getIdentifier()));
-                                return null;
+            //check correct dependency:
+            checkDependency(wc, e, canShowUI);
+
+            if (isStaticElement(e) && !inImport) {
+                wc.rewrite(node, wc.getTreeMaker().QualIdent(e));
+
+                return null;
+            } else {
+                return super.visitMemberSelect(node, p);
+            }
+        }
+
+        @Override
+        public Number visitVariable(VariableTree node, Void p) {
+            String name = node.getName().toString();
+
+            if (name.startsWith("$")) {
+                String nueName = parameterNames.get(name);
+
+                if (nueName != null) {
+                    VariableTree nue = wc.getTreeMaker().Variable(node.getModifiers(), nueName, node.getType(), node.getInitializer());
+
+                    wc.rewrite(node, nue);
+
+                    return super.visitVariable(nue, p);
+                }
+            }
+
+            return super.visitVariable(node, p);
+        }
+
+        @Override
+        public Number visitExpressionStatement(ExpressionStatementTree node, Void p) {
+            CharSequence name = Utilities.getWildcardTreeName(node);
+
+            if (name != null) {
+                TreePath tp = parameters.get(name.toString());
+
+                if (tp != null) {
+                    wc.rewrite(node, tp.getLeaf());
+                    return null;
+                }
+            }
+
+            return super.visitExpressionStatement(node, p);
+        }
+
+        @Override
+        public Number visitLiteral(LiteralTree node, Void p) {
+            if (node.getValue() instanceof Number) {
+                return (Number) node.getValue();
+            }
+            
+            return super.visitLiteral(node, p);
+        }
+
+        @Override
+        public Number visitBinary(BinaryTree node, Void p) {
+            Number left  = scan(node.getLeftOperand(), p);
+            Number right = scan(node.getRightOperand(), p);
+
+            if (left != null && right != null) {
+                Number result = null;
+                switch (node.getKind()) {
+                    case MULTIPLY:
+                            if (left instanceof Double || right instanceof Double) {
+                                result = left.doubleValue() * right.doubleValue();
+                            } else if (left instanceof Float || right instanceof Float) {
+                                result = left.floatValue() * right.floatValue();
+                            } else if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() * right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() * right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
                             }
-                        }
+                            break;
 
-                        return super.visitMemberSelect(node, p);
-                    }
-
-                    //check correct dependency:
-                    checkDependency(wc, e, callback);
-
-                    if (isStaticElement(e)) {
-                        wc.rewrite(node, wc.getTreeMaker().QualIdent(e));
-
-                        return null;
-                    } else {
-                        return super.visitMemberSelect(node, p);
-                    }
-                }
-
-                @Override
-                public Void visitVariable(VariableTree node, Void p) {
-                    String name = node.getName().toString();
-
-                    if (name.startsWith("$")) {
-                        String nueName = parameterNames.get(name);
-
-                        if (nueName != null) {
-                            VariableTree nue = wc.getTreeMaker().Variable(node.getModifiers(), nueName, node.getType(), node.getInitializer());
-
-                            wc.rewrite(node, nue);
-
-                            return super.visitVariable(nue, p);
-                        }
-                    }
-
-                    return super.visitVariable(node, p);
-                }
-
-                @Override
-                public Void visitExpressionStatement(ExpressionStatementTree node, Void p) {
-                    CharSequence name = Utilities.getWildcardTreeName(node);
-
-                    if (name != null) {
-                        TreePath tp = parameters.get(name.toString());
-
-                        if (tp != null) {
-                            wc.rewrite(node, tp.getLeaf());
-                            return null;
-                        }
-                    }
-
-                    return super.visitExpressionStatement(node, p);
-                }
-                @Override
-                public Void visitBlock(BlockTree node, Void p) {
-                    List<? extends StatementTree> nueStatement = resolveMultiParameters(node.getStatements());
-                    BlockTree nue = wc.getTreeMaker().Block(nueStatement, node.isStatic());
-
-                    wc.rewrite(node, nue);
-
-                    return super.visitBlock(nue, p);
-                }
-                @Override
-                public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-                    List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
-                    List<? extends ExpressionTree> args = resolveMultiParameters(node.getArguments());
-                    MethodInvocationTree nue = wc.getTreeMaker().MethodInvocation(typeArgs, node.getMethodSelect(), args);
-
-                    wc.rewrite(node, nue);
-
-                    return super.visitMethodInvocation(nue, p);
-                }
-                @Override
-                public Void visitNewClass(NewClassTree node, Void p) {
-                    List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
-                    List<? extends ExpressionTree> args = resolveMultiParameters(node.getArguments());
-                    NewClassTree nue = wc.getTreeMaker().NewClass(node.getEnclosingExpression(), typeArgs, node.getIdentifier(), args, node.getClassBody());
-
-                    wc.rewrite(node, nue);
-                    return super.visitNewClass(nue, p);
-                }
-                @Override
-                public Void visitParameterizedType(ParameterizedTypeTree node, Void p) {
-                    List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
-                    ParameterizedTypeTree nue = wc.getTreeMaker().ParameterizedType(node.getType(), typeArgs);
-
-                    wc.rewrite(node, nue);
-                    return super.visitParameterizedType(node, p);
-                }
-                @Override
-                public Void visitTry(TryTree node, Void p) {
-                    List<? extends CatchTree> catches = (List<? extends CatchTree>) resolveMultiParameters(node.getCatches());
-                    TryTree nue = wc.getTreeMaker().Try(node.getResources(), node.getBlock(), catches, node.getFinallyBlock());
-
-                    wc.rewrite(node, nue);
-                    return super.visitTry(node, p);
-                }
-                private <T extends Tree> List<T> resolveMultiParameters(List<T> list) {
-                    if (!Utilities.containsMultistatementTrees(list)) return list;
-
-                    List<T> result = new LinkedList<T>();
-
-                    for (T t : list) {
-                        if (Utilities.isMultistatementWildcardTree(t)) {
-                            Collection<TreePath> embedded = parametersMulti.get(Utilities.getWildcardTreeName(t).toString());
-
-                            if (embedded != null) {
-                                for (TreePath tp : embedded) {
-                                    result.add((T) tp.getLeaf());
-                                }
+                    case DIVIDE:
+                            if (left instanceof Double || right instanceof Double) {
+                                result = left.doubleValue() / right.doubleValue();
+                            } else if (left instanceof Float || right instanceof Float) {
+                                result = left.floatValue() / right.floatValue();
+                            } else if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() / right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() / right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
                             }
-                        } else {
-                            result.add(t);
-                        }
-                    }
+                            break;
+
+                    case REMAINDER:
+                            if (left instanceof Double || right instanceof Double) {
+                                result = left.doubleValue() % right.doubleValue();
+                            } else if (left instanceof Float || right instanceof Float) {
+                                result = left.floatValue() % right.floatValue();
+                            } else if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() % right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() % right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+
+                    case PLUS:
+                            if (left instanceof Double || right instanceof Double) {
+                                result = left.doubleValue() + right.doubleValue();
+                            } else if (left instanceof Float || right instanceof Float) {
+                                result = left.floatValue() + right.floatValue();
+                            } else if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() + right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() + right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+                            
+                    case MINUS:
+                            if (left instanceof Double || right instanceof Double) {
+                                result = left.doubleValue() - right.doubleValue();
+                            } else if (left instanceof Float || right instanceof Float) {
+                                result = left.floatValue() - right.floatValue();
+                            } else if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() - right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() - right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+
+                    case LEFT_SHIFT:
+                            if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() << right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() << right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+
+                    case RIGHT_SHIFT:
+                            if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() >> right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() >> right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+
+                    case UNSIGNED_RIGHT_SHIFT:
+                            if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() >>> right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() >>> right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+
+                    case AND:
+                            if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() & right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() & right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+
+                    case XOR:
+                            if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() ^ right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() ^ right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+
+                    case OR:
+                            if (left instanceof Long || right instanceof Long) {
+                                result = left.longValue() | right.longValue();
+                            } else if (left instanceof Integer || right instanceof Integer) {
+                                result = left.intValue() | right.intValue();
+                            } else {
+                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                            }
+                            break;
+                }
+
+                if (result != null) {
+                    wc.rewrite(node, wc.getTreeMaker().Literal(result));
 
                     return result;
                 }
-            }.scan(new TreePath(tp.getParentPath(), parsed), null);
+            }
+
+            return null;
+        }
+
+        @Override
+        public Number visitUnary(UnaryTree node, Void p) {
+            Number op  = scan(node.getExpression(), p);
+
+            if (op != null) {
+                Number result = null;
+                switch (node.getKind()) {
+                    case UNARY_MINUS:
+                            if (op instanceof Double) {
+                                result = -op.doubleValue();
+                            } else if (op instanceof Float) {
+                                result = -op.floatValue();
+                            } else if (op instanceof Long) {
+                                result = -op.longValue();
+                            } else if (op instanceof Integer) {
+                                result = -op.intValue();
+                            } else {
+                                throw new IllegalStateException("op=" + op.getClass());
+                            }
+                            break;
+                    case UNARY_PLUS:
+                        result = op;
+                        break;
+                }
+                
+                if (result != null) {
+                    wc.rewrite(node, wc.getTreeMaker().Literal(result));
+
+                    return result;
+                }
+            }
+
+            return super.visitUnary(node, p);
+        }
+
+        @Override
+        public Number visitBlock(BlockTree node, Void p) {
+            List<? extends StatementTree> nueStatement = resolveMultiParameters(node.getStatements());
+            BlockTree nue = wc.getTreeMaker().Block(nueStatement, node.isStatic());
+
+            wc.rewrite(node, nue);
+
+            return super.visitBlock(nue, p);
+        }
+
+        @Override
+        public Number visitCase(CaseTree node, Void p) {
+            List<? extends StatementTree> statements = (List<? extends StatementTree>) resolveMultiParameters(node.getStatements());
+            CaseTree nue = wc.getTreeMaker().Case(node.getExpression(), statements);
+
+            wc.rewrite(node, nue);
+            return super.visitCase(node, p);
+        }
+
+        @Override
+        public Number visitMethodInvocation(MethodInvocationTree node, Void p) {
+            List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
+            List<? extends ExpressionTree> args = resolveMultiParameters(node.getArguments());
+            MethodInvocationTree nue = wc.getTreeMaker().MethodInvocation(typeArgs, node.getMethodSelect(), args);
+
+            wc.rewrite(node, nue);
+
+            return super.visitMethodInvocation(nue, p);
+        }
+
+        @Override
+        public Number visitNewClass(NewClassTree node, Void p) {
+            List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
+            List<? extends ExpressionTree> args = resolveMultiParameters(node.getArguments());
+            NewClassTree nue = wc.getTreeMaker().NewClass(node.getEnclosingExpression(), typeArgs, node.getIdentifier(), args, node.getClassBody());
+
+            wc.rewrite(node, nue);
+            return super.visitNewClass(nue, p);
+        }
+
+        @Override
+        public Number visitParameterizedType(ParameterizedTypeTree node, Void p) {
+            List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
+            ParameterizedTypeTree nue = wc.getTreeMaker().ParameterizedType(node.getType(), typeArgs);
+
+            wc.rewrite(node, nue);
+            return super.visitParameterizedType(node, p);
+        }
+
+        @Override
+        public Number visitSwitch(SwitchTree node, Void p) {
+            List<? extends CaseTree> cases = (List<? extends CaseTree>) resolveMultiParameters(node.getCases());
+            SwitchTree nue = wc.getTreeMaker().Switch(node.getExpression(), cases);
+
+            wc.rewrite(node, nue);
+            return super.visitSwitch(node, p);
+        }
+
+        @Override
+        public Number visitTry(TryTree node, Void p) {
+            List<? extends Tree> resources = (List<? extends Tree>) resolveMultiParameters(node.getResources());
+            List<? extends CatchTree> catches = (List<? extends CatchTree>) resolveMultiParameters(node.getCatches());
+            TryTree nue = wc.getTreeMaker().Try(resources, node.getBlock(), catches, node.getFinallyBlock());
+
+            wc.rewrite(node, nue);
+            return super.visitTry(node, p);
+        }
+        
+        private <T extends Tree> List<T> resolveMultiParameters(List<T> list) {
+            if (!Utilities.containsMultistatementTrees(list)) return list;
+
+            List<T> result = new LinkedList<T>();
+
+            for (T t : list) {
+                if (Utilities.isMultistatementWildcardTree(t)) {
+                    Collection<TreePath> embedded = parametersMulti.get(Utilities.getWildcardTreeName(t).toString());
+
+                    if (embedded != null) {
+                        for (TreePath tp : embedded) {
+                            result.add((T) tp.getLeaf());
+                        }
+                    }
+                } else {
+                    result.add(t);
+                }
+            }
+
+            return result;
         }
     }
 
@@ -784,6 +1019,14 @@ public abstract class JavaFix {
 
         if (outter.getKind() == Kind.PARENTHESIZED || inner.getKind() == Kind.PARENTHESIZED) return false;
 
+        if (outter.getKind() == Kind.METHOD_INVOCATION) {
+            if (((MethodInvocationTree) outter).getArguments().contains(original)) return false;
+        }
+
+        if (outter.getKind() == Kind.NEW_CLASS) {
+            if (((NewClassTree) outter).getArguments().contains(original)) return false;
+        }
+        
         Integer innerPriority = OPERATOR_PRIORITIES.get(inner.getKind());
         Integer outterPriority = OPERATOR_PRIORITIES.get(outter.getKind());
 
@@ -830,14 +1073,180 @@ public abstract class JavaFix {
                 return jf.getText();
             }
             @Override
-            public ChangeInfo process(JavaFix jf, WorkingCopy wc, UpgradeUICallback callback) throws Exception {
-                return jf.process(wc, callback);
+            public ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI) throws Exception {
+                return jf.process(wc, canShowUI);
             }
             @Override
             public FileObject getFile(JavaFix jf) {
                 return jf.getFile();
             }
+            @Override
+            public Map<String, String> getOptions(JavaFix jf) {
+                return jf.options;
+            }
         };
     }
-    
+
+    @Messages("FIX_RemoveFromParent=Remove {0} from parent")
+    public static Fix removeFromParent(HintContext ctx, TreePath what) {
+        return removeFromParent(ctx, Bundle.FIX_RemoveFromParent(/*TODO: better short name:*/what.getLeaf().toString()), what);
+    }
+
+    public static Fix removeFromParent(HintContext ctx, String displayName, TreePath what) {
+        return toEditorFix(new RemoveFromParent(displayName, ctx.getInfo(), what));
+    }
+
+    private static final class RemoveFromParent extends JavaFix {
+
+        private final String displayName;
+
+        public RemoveFromParent(String displayName, CompilationInfo info, TreePath toRemove) {
+            super(info, toRemove);
+            this.displayName = displayName;
+        }
+
+        @Override
+        protected String getText() {
+            return displayName;
+        }
+
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            TreeMaker make = wc.getTreeMaker();
+            Tree leaf = tp.getLeaf();
+            Tree parentLeaf = tp.getParentPath().getLeaf();
+
+            switch (parentLeaf.getKind()) {
+                case ANNOTATION:
+                    AnnotationTree at = (AnnotationTree) parentLeaf;
+                    AnnotationTree newAnnot;
+
+                    newAnnot = make.removeAnnotationAttrValue(at, (ExpressionTree) leaf);
+
+                    wc.rewrite(at, newAnnot);
+                    break;
+                case BLOCK:
+                    BlockTree bt = (BlockTree) parentLeaf;
+
+                    wc.rewrite(bt, make.removeBlockStatement(bt, (StatementTree) leaf));
+                    break;
+                case CASE:
+                    CaseTree caseTree = (CaseTree) parentLeaf;
+                    
+                    wc.rewrite(caseTree, make.removeCaseStatement(caseTree, (StatementTree) leaf));
+                    break;
+                case CLASS:
+                    ClassTree classTree = (ClassTree) parentLeaf;
+                    ClassTree nueClassTree;
+
+                    if (classTree.getTypeParameters().contains(leaf)) {
+                        nueClassTree = make.removeClassTypeParameter(classTree, (TypeParameterTree) leaf);
+                    } else if (classTree.getExtendsClause() == leaf) {
+                        nueClassTree = make.Class(classTree.getModifiers(), classTree.getSimpleName(), classTree.getTypeParameters(), null, classTree.getImplementsClause(), classTree.getMembers());
+                    } else if (classTree.getImplementsClause().contains(leaf)) {
+                        nueClassTree = make.removeClassImplementsClause(classTree, leaf);
+                    } else if (classTree.getMembers().contains(leaf)) {
+                        nueClassTree = make.removeClassMember(classTree, leaf);
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    wc.rewrite(classTree, nueClassTree);
+                    break;
+                case UNION_TYPE:
+                    UnionTypeTree disjunct = (UnionTypeTree) parentLeaf;
+                    List<? extends Tree> alternatives = new LinkedList<Tree>(disjunct.getTypeAlternatives());
+
+                    alternatives.remove(leaf);
+
+                    wc.rewrite(disjunct, make.UnionType(alternatives));
+                    break;
+                case METHOD:
+                    MethodTree mTree = (MethodTree) parentLeaf;
+                    MethodTree newMethod;
+
+                    if (mTree.getTypeParameters().contains(leaf)) {
+                        newMethod = make.removeMethodTypeParameter(mTree, (TypeParameterTree) leaf);
+                    } else if (mTree.getParameters().contains(leaf)) {
+                        newMethod = make.removeMethodParameter(mTree, (VariableTree) leaf);
+                    } else if (mTree.getThrows().contains(leaf)) {
+                        newMethod = make.removeMethodThrows(mTree, (ExpressionTree) leaf);
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    wc.rewrite(mTree, newMethod);
+                    break;
+                case METHOD_INVOCATION:
+                    MethodInvocationTree iTree = (MethodInvocationTree) parentLeaf;
+                    MethodInvocationTree newInvocation;
+
+                    if (iTree.getTypeArguments().contains(leaf)) {
+                        newInvocation = make.removeMethodInvocationTypeArgument(iTree, (ExpressionTree) leaf);
+                    } else if (iTree.getArguments().contains(leaf)) {
+                        newInvocation = make.removeMethodInvocationArgument(iTree, (ExpressionTree) leaf);
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    wc.rewrite(iTree, newInvocation);
+                    break;
+                case MODIFIERS:
+                    ModifiersTree modsTree = (ModifiersTree) parentLeaf;
+
+                    wc.rewrite(modsTree, make.removeModifiersAnnotation(modsTree, (AnnotationTree) leaf));
+                    break;
+                case NEW_CLASS:
+                    NewClassTree newCTree = (NewClassTree) parentLeaf;
+                    NewClassTree newNCT;
+
+                    if (newCTree.getTypeArguments().contains(leaf)) {
+                        newNCT = make.removeNewClassTypeArgument(newCTree, (ExpressionTree) leaf);
+                    } else if (newCTree.getArguments().contains(leaf)) {
+                        newNCT = make.removeNewClassArgument(newCTree, (ExpressionTree) leaf);
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    wc.rewrite(newCTree, newNCT);
+                    break;
+                case PARAMETERIZED_TYPE:
+                    ParameterizedTypeTree parTree = (ParameterizedTypeTree) parentLeaf;
+
+                    wc.rewrite(parTree, make.removeParameterizedTypeTypeArgument(parTree, (ExpressionTree) leaf));
+                    break;
+                case SWITCH:
+                    SwitchTree switchTree = (SwitchTree) parentLeaf;
+                    SwitchTree newSwitch;
+
+                    if (switchTree.getCases().contains(leaf)) {
+                        newSwitch = make.removeSwitchCase(switchTree, (CaseTree) leaf);
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    wc.rewrite(switchTree, newSwitch);
+                    break;
+                case TRY:
+                    TryTree tryTree = (TryTree) parentLeaf;
+                    TryTree newTry;
+
+                    if (tryTree.getResources().contains(leaf)) {
+                        LinkedList<Tree> resources = new LinkedList<Tree>(tryTree.getResources());
+
+                        resources.remove(leaf);
+
+                        newTry = make.Try(resources, tryTree.getBlock(), tryTree.getCatches(), tryTree.getFinallyBlock());
+                    } else if (tryTree.getCatches().contains(leaf)) {
+                        newTry = make.removeTryCatch(tryTree, (CatchTree) leaf);
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+
+                    wc.rewrite(tryTree, newTry);
+                    break;
+            }
+        }
+
+    }
 }

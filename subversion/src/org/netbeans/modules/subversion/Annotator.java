@@ -116,8 +116,12 @@ public class Annotator {
     public static final String ANNOTATION_LOCK        = "lock";
     public static final String ANNOTATION_FOLDER      = "folder";
     public static final String ANNOTATION_MIME_TYPE   = "mime_type";
+    public static final String ANNOTATION_COMMIT_REVISION = "commit_revision"; //NOI18N
+    public static final String ANNOTATION_COMMIT_DATE = "date"; //NOI18N
+    public static final String ANNOTATION_COMMIT_AUTHOR = "author"; //NOI18N
 
-    public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
+    public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
+                                                        ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR};
 
     private final FileStatusCache cache;
     private MessageFormat format;
@@ -145,7 +149,7 @@ public class Annotator {
                 mimeTypeFlag = string.contains("{4}");
             }
             format = new MessageFormat(string);
-            emptyFormat = format.format(new String[] {"", "", "", "", ""} , new StringBuffer(), null).toString().trim();
+            emptyFormat = format.format(new String[] {"", "", "", "", "", "", "", "", ""} , new StringBuffer(), null).toString().trim();
         }
         cache.getLabelsCache().setMimeTypeFlag(mimeTypeFlag); // mime labels enabled
     }
@@ -254,13 +258,19 @@ public class Annotator {
         String revisionString = labelInfo.getRevisionString();
         String binaryString = labelInfo.getBinaryString();
         String stickyString = labelInfo.getStickyString();
+        String lastRev = labelInfo.getLastRevisionString();
+        String lastDate = labelInfo.getLastDateString();
+        String lastAuthor = labelInfo.getLastAuthorString();
 
         Object[] arguments = new Object[] {
             revisionString,
             statusString,
             stickyString,
             lockString,
-            binaryString
+            binaryString,
+            lastRev,
+            lastDate,
+            lastAuthor
         };
 
         String annotation = format.format(arguments, new StringBuffer(), null).toString().trim();

@@ -72,6 +72,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -104,8 +105,8 @@ public final class PersistenceManager implements PropertyChangeListener {
 
 
     /** Constants for default root folder name for winsys data representation */
-    static final String ROOT_MODULE_FOLDER = "Windows2"; // NOI18N
-    public static final String ROOT_LOCAL_FOLDER = "Windows2Local"; // NOI18N
+    private static final String ROOT_MODULE_FOLDER = "Windows2"; // NOI18N
+    private static final String ROOT_LOCAL_FOLDER = "Windows2Local"; // NOI18N
     static final String WINDOWMANAGER_FOLDER = "WindowManager"; // NOI18N
     static final String GROUPS_FOLDER = "Groups"; // NOI18N
     static final String MODES_FOLDER = "Modes"; // NOI18N
@@ -203,6 +204,8 @@ public final class PersistenceManager implements PropertyChangeListener {
     
     private static PersistenceManager defaultInstance;
     
+    private String currentRole;
+    
     /** Creates new PersistenceManager */
     private PersistenceManager() {
     }
@@ -244,12 +247,34 @@ public final class PersistenceManager implements PropertyChangeListener {
         usedTcIds.clear();
     }
     
+    public void setRole( String newRole ) {
+        if( newRole == null ? currentRole == null : newRole.equals( currentRole ) ) {
+            return;
+        }
+        currentRole = newRole;
+
+        rootModuleFolder = null;
+        rootLocalFolder = null;
+        compsModuleFolder = null;
+        groupsModuleFolder = null;
+        groupsLocalFolder = null;
+        modesModuleFolder = null;
+        modesLocalFolder = null;
+    }
+    
+    /**
+     * For unit testing
+     * @return 
+     */
+    public String getRole() {
+        return currentRole;
+    }
+    
     FileObject getRootModuleFolder () throws IOException {
         try {
             if (rootModuleFolder == null) {
-                rootModuleFolder = FileUtil.createFolder(
-                    FileUtil.getConfigRoot(), ROOT_MODULE_FOLDER
-                );
+                FileSystem fs = RoleFileSystem.create( currentRole );
+                rootModuleFolder = FileUtil.createFolder( fs.getRoot(), ROOT_MODULE_FOLDER );
             }
             return rootModuleFolder;
         } catch (IOException exc) {
@@ -260,12 +285,13 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
     }
     
-    FileObject getRootLocalFolder () throws IOException {
+    public FileObject getRootLocalFolder () throws IOException {
         try {
             if (rootLocalFolder == null) {
-                rootLocalFolder = FileUtil.createFolder(
-                    FileUtil.getConfigRoot(), ROOT_LOCAL_FOLDER
-                );
+                String folderName = ROOT_LOCAL_FOLDER;
+                if( null != currentRole )
+                    folderName += "-" + currentRole;
+                rootLocalFolder = FileUtil.createFolder( FileUtil.getConfigRoot(), folderName );
             }
             return rootLocalFolder;
         } catch (IOException exc) {

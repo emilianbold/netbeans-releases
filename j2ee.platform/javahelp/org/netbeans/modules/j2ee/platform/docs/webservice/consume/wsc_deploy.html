@@ -4,8 +4,8 @@
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Deploying a Web Service Client</title>
         <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
@@ -16,45 +16,52 @@
 
 
         <p>Right-click the project and choose one of the 
-        following: 
+            following: 
         <ul><li><b>Run.</b> Only takes the 
-            minimal steps needed to run the project. For example, if you only changed one file,
-            only that file is sent to the server.
-        </li>
+                minimal steps needed to run the project. For example, if you only changed one file,
+                only that file is sent to the server.
+            </li>
             <li><b>Deploy.</b> Undeploys and then deploys the complete module 
-            no matter what changes you made, even if none.</li>
+                no matter what changes you made, even if none.</li>
         </ul>
-  
+        <p class="note">Note that by default, after the first time a web application
+            is deployed, it is redeployed automatically whenever you save changes to that
+            application.</p>
+
 
         <p>For web applications, unless the project in which the web service 
-        client is implemented is designed to be deployed as a stand-alone application, you 
-        should always deploy it by deploying the enterprise application that contains 
-        it. If you run the Run or Deploy commands on an individual module 
-        that is part of an enterprise application, the IDE only deploys that module 
-        itself. Any changes you have made in the other modules in the project are not 
-        propagated to the server.</p>
+            client is implemented is designed to be deployed as a stand-alone application, you 
+            should always deploy it by deploying the enterprise application that contains 
+            it. If you run the Run or Deploy commands on an individual module 
+            that is part of an enterprise application, the IDE only deploys that module 
+            itself. Any changes you have made in the other modules in the project are not 
+            propagated to the server.</p>
 
         <p><b>To deploy a client from within an enterprise application project:</b></p>
         <ol>
             <li>In the Projects window, add the web application module
-            to the enterprise application.</li>
+                to the enterprise application.</li>
             <li>Right-click the enterprise application project and choose one of the 
                 following: 
                 <ul>
                     <li><b>Run.</b> Only takes the 
-                    minimal steps needed to run the project. For example, if you only changed one file,
-                    only that file is sent to the server.</li>
+                        minimal steps needed to run the project. For example, if you only changed one file,
+                        only that file is sent to the server.</li>
                     <li><b>Deploy.</b> Undeploys and then deploys the complete module 
-                    no matter what changes you made, even if none.</li>
+                        no matter what changes you made, even if none.</li>
                 </ul>
             </li>
         </ol>
 
-  
-       
+
+
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+            <dd><a href="../../enterprise/general/ent_app_deploy.html">Deploying
+                    an Enterprise Application</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_webapp.html">
+                    Deploying a Web Application</a>.</dd>
         </dl>
 
 

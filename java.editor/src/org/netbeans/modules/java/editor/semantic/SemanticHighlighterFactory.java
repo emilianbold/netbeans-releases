@@ -56,8 +56,8 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 public class SemanticHighlighterFactory extends TaskFactory {
     
     @Override
-    public Collection<SchedulerTask> create(Snapshot snapshot) {
-        return Collections.<SchedulerTask>singleton(new SemanticHighlighter(snapshot.getSource().getFileObject()));
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        return Collections.singleton(new SemanticHighlighter(snapshot.getSource().getFileObject()));
     }
     
 }

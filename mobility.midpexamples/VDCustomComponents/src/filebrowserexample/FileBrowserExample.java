@@ -119,7 +119,7 @@ public class FileBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: backCommand ">//GEN-BEGIN:|23-getter|0|23-preInit
     /**
-     * Returns an initiliazed instance of backCommand component.
+     * Returns an initialized instance of backCommand component.
      * @return the initialized component instance
      */
     public Command getBackCommand() {
@@ -134,7 +134,7 @@ public class FileBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|26-getter|0|26-preInit
     /**
-     * Returns an initiliazed instance of exitCommand component.
+     * Returns an initialized instance of exitCommand component.
      * @return the initialized component instance
      */
     public Command getExitCommand() {
@@ -184,7 +184,7 @@ public class FileBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: splashScreen ">//GEN-BEGIN:|13-getter|0|13-preInit
     /**
-     * Returns an initiliazed instance of splashScreen component.
+     * Returns an initialized instance of splashScreen component.
      * @return the initialized component instance
      */
     public SplashScreen getSplashScreen() {
@@ -202,7 +202,7 @@ public class FileBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: fileBrowser ">//GEN-BEGIN:|17-getter|0|17-preInit
     /**
-     * Returns an initiliazed instance of fileBrowser component.
+     * Returns an initialized instance of fileBrowser component.
      * @return the initialized component instance
      */
     public FileBrowser getFileBrowser() {
@@ -221,7 +221,7 @@ public class FileBrowserExample extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: textBox ">//GEN-BEGIN:|21-getter|0|21-preInit
     /**
-     * Returns an initiliazed instance of textBox component.
+     * Returns an initialized instance of textBox component.
      * @return the initialized component instance
      */
     public TextBox getTextBox() {

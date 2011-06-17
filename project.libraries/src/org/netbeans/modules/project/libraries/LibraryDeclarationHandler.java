@@ -91,7 +91,7 @@ public interface LibraryDeclarationHandler {
      * @param meta attributes
      *
      */
-    public void start_library(final Attributes meta) throws SAXException;
+    public String start_library(final String nameSpace, final Attributes meta) throws SAXException;
     
     /**
      * A container element end event handling method.
@@ -116,6 +116,8 @@ public interface LibraryDeclarationHandler {
     public void handle_name(final java.lang.String data, final Attributes meta) throws SAXException;
 
     public void handle_localizingBundle (final String data, final Attributes meta) throws SAXException;
+
+    public void handle_displayName (String data, Attributes meta) throws SAXException;
 
 }
 

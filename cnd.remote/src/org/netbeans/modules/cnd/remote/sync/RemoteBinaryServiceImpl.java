@@ -49,6 +49,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
@@ -179,7 +180,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             return result == null ? lastResult : result;
         }
 
-        private String getFullTimeLsCommand() throws IOException {
+        private String getFullTimeLsCommand() throws IOException, CancellationException {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             switch (hostInfo.getOSFamily()) {
                 case LINUX:
@@ -272,6 +273,8 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
                 } else {
                     throw new IOException("Cannot run #"+command); // NOI18N
                 }
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

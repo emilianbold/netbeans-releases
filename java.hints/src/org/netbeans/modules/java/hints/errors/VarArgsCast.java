@@ -142,7 +142,7 @@ public class VarArgsCast implements ErrorRule<Void> {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             TypeMirror targetType = this.type.resolve(wc);
             
             if (targetType == null) {

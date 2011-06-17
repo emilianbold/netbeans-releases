@@ -44,6 +44,7 @@
 
 package org.netbeans.performance.j2se.menus;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
@@ -62,7 +63,7 @@ public class RuntimeViewPopupMenuTest extends ValidatePopupMenuOnNodes{
 
     private static RuntimeTabOperator runtimeTab;
     private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
-
+    private final String TOMCAT = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle","LBL_TomcatFactory");
     
     /** Creates a new instance of RuntimeViewPopupMenu */
     public RuntimeViewPopupMenuTest(String testName) {

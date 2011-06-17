@@ -58,6 +58,7 @@ public interface RemoteFile {
      * Return <code>true</code> if the remote file is directory, <code>false</code> otherwise.
      * @return <code>true</code> if the remote file is directory, <code>false</code> otherwise.
      * @see #isFile()
+     * @see #isLink()
      */
     boolean isDirectory();
 
@@ -67,8 +68,19 @@ public interface RemoteFile {
      * In most cases it is just opposite to {@link #isDirectory()}.
      * @return <code>true</code> if the remote file is file, <code>false</code> otherwise
      * @see #isDirectory()
+     * @see #isLink()
      */
     boolean isFile();
+
+    /**
+     * Return <code>true</code> if the remote file is a symbolic link, <code>false</code> otherwise.
+     * <p>
+     * Symbolic links are not downloaded or uploaded, they are simply ignored.
+     * @return <code>true</code> if the remote file is a symbolic link, <code>false</code> otherwise
+     * @see #isDirectory()
+     * @see #isFile()
+     */
+    boolean isLink();
 
     /**
      * Return the file size (in bytes) of the remote file.

@@ -730,13 +730,13 @@ class WSTransformer extends DefaultTreePathVisitor {
         ASTNode previousNode = previousNode(node);
 
         insertLines =  (previousNode == null)
-                ? CodeStyle.get(context.document()).getBlankLinesBeforeField()
+                ? CodeStyle.get(context.document()).getBlankLinesBeforeFields()
                 : insertLineBeforeAfter(astNodeToType(previousNode), astNodeToType(node));
         checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
 
         ASTNode nextNode = nextNode(node);
         if (nextNode == null || !isBlankLinesInteresting(nextNode)) {
-            insertLines = CodeStyle.get(context.document()).getBlankLinesAfterField();
+            insertLines = CodeStyle.get(context.document()).getBlankLinesAfterFields();
             checkEmptyLinesBefore(node.getEndOffset(), insertLines, false);
         }
         super.visit(node);
@@ -1142,7 +1142,7 @@ class WSTransformer extends DefaultTreePathVisitor {
             case CLASS_HEADER : after =  CodeStyle.get(context.document()).getBlankLinesAfterClassHeader(); break;
             case NAMESPACE : after =  CodeStyle.get(context.document()).getBlankLinesAfterNamespace(); break;
             case USE : after =  CodeStyle.get(context.document()).getBlankLinesAfterUse(); break;
-            case FIELD : after =  CodeStyle.get(context.document()).getBlankLinesAfterField(); break;
+            case FIELD : after =  CodeStyle.get(context.document()).getBlankLinesAfterFields(); break;
             case FUNCTION : after =  CodeStyle.get(context.document()).getBlankLinesAfterFunction(); break;
 
         }
@@ -1153,7 +1153,7 @@ class WSTransformer extends DefaultTreePathVisitor {
             case CLASS_HEADER : before =  CodeStyle.get(context.document()).getBlankLinesAfterClassHeader(); break;
             case NAMESPACE : before =  CodeStyle.get(context.document()).getBlankLinesBeforeNamespace(); break;
             case USE : before =  CodeStyle.get(context.document()).getBlankLinesBeforeUse(); break;
-            case FIELD : before =  CodeStyle.get(context.document()).getBlankLinesBeforeField(); break;
+            case FIELD : before =  CodeStyle.get(context.document()).getBlankLinesBeforeFields(); break;
             case FUNCTION : before =  CodeStyle.get(context.document()).getBlankLinesBeforeFunction(); break;
             case FUNCTION_BEFORE_END: before =  CodeStyle.get(context.document()).getBlankLinesBeforeFunctionEnd(); break;
             case CLASS_BEFORE_END : before =  CodeStyle.get(context.document()).getBlankLinesBeforeClassEnd(); break;

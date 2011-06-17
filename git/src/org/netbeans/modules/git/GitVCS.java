@@ -78,6 +78,9 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
     public GitVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName()); 
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(GitVCS.class, "CTL_Git_MainMenu")); // NOI18N
+        
+        putProperty("Integer VCS.Priority", Utils.getPriority("git"));
+        
         this.disconnectedRepositories = initializeDisconnectedRepositories();
         Git.getInstance().registerGitVCS(this);
     }

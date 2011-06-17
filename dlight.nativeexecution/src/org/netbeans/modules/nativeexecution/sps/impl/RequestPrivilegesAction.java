@@ -44,6 +44,7 @@ package org.netbeans.modules.nativeexecution.sps.impl;
 import java.security.acl.NotOwnerException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.support.ObservableAction;
 import org.openide.util.NbBundle;
@@ -87,6 +88,8 @@ public final class RequestPrivilegesAction
 
         try {
             support.requestPrivileges(requestedPrivileges, true);
+        } catch (CancellationException ex) {
+            return Boolean.FALSE; // TODO:CancellationException error processing
         } catch (NotOwnerException ex) {
             return Boolean.FALSE;
         }

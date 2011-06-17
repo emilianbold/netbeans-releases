@@ -55,13 +55,13 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="compile-lib" depends="init,fake-jdbc-40">
-        <mkdir dir="build/lib-classes" />
-        <javac srcdir="libsrc" destdir="build/lib-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.6">
+        <mkdir dir="${build.dir}/lib-classes" />
+        <javac srcdir="libsrc" destdir="${build.dir}/lib-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.6">
             <classpath>
                 <pathelement path="${lib.cp}"/>
             </classpath>
         </javac>
-        <copy todir="build/lib-classes">
+        <copy todir="${build.dir}/lib-classes">
             <fileset dir="libsrc" excludes="${jar-excludes}" />
         </copy>
     </target>
@@ -80,7 +80,7 @@ made subject to such option by the copyright holder.
     <target name="jar-lib" depends="compile-lib">
         <mkdir dir="${cluster}/modules/ext" />
         <jar jarfile="${cluster}/modules/ext/ddl.jar" compress="false">
-            <fileset dir="build/lib-classes" />
+            <fileset dir="${build.dir}/lib-classes" />
         </jar>
     </target>
 

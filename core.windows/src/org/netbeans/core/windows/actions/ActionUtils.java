@@ -57,6 +57,7 @@ import org.netbeans.core.windows.view.ui.slides.SlideController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.SaveAction;
+import org.openide.awt.Actions;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
@@ -104,9 +105,14 @@ public abstract class ActionUtils {
             if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
+            if( Switches.isEditorModeUndockingEnabled() )
+                actions.add( new UndockModeAction( mode) );
         } else if (kind == Constants.MODE_KIND_VIEW) {
             if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
                 actions.add(new CloseWindowAction(tc));
+            }
+            if( Switches.isModeClosingEnabled() ) {
+                actions.add(new CloseModeAction(mode));
             }
             // #82053: don't include maximize action for floating (separate) views
             if (mode.getState() == Constants.MODE_STATE_JOINED
@@ -117,6 +123,10 @@ public abstract class ActionUtils {
             if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
+            if( Switches.isViewModeUndockingEnabled() )
+                actions.add( new UndockModeAction( mode) );
+            if( Switches.isModeSlidingEnabled() )
+                actions.add( new MinimizeModeAction( mode) );
         } else if (kind == Constants.MODE_KIND_SLIDING) {
             if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
                 actions.add(new CloseWindowAction(tc));
@@ -131,9 +141,77 @@ public abstract class ActionUtils {
             }
         }
         
-        return actions.toArray(new Action[actions.size()]);
+        Action[] res = actions.toArray(new Action[actions.size()]);
+        for( ActionsFactory factory : Lookup.getDefault().lookupAll( ActionsFactory.class ) ) {
+            res = factory.createPopupActions( tc, res );
+        }
+        return res;
     }
     
+    public static Action[] createDefaultPopupActions(ModeImpl mode) {
+        int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
+        
+        List<Action> actions = new ArrayList<Action>();
+        if(kind == Constants.MODE_KIND_EDITOR) {
+            if( Switches.isEditorTopComponentClosingEnabled() ) {
+                actions.add(new CloseAllDocumentsAction(true));
+                actions.add(createDisabledAction("CTL_CloseAllButThisAction")); //NOI18N
+                actions.add(null); // Separator
+            }
+            actions.add(createDisabledAction("LBL_SaveDocumentAction"));
+            actions.add(createDisabledAction("CTL_CloneDocumentAction"));
+            actions.add(null); // Separator
+            if( Switches.isEditorTopComponentClosingEnabled() ) {
+                actions.add(createDisabledAction("CTL_CloseWindowAction"));
+            }
+            if( Switches.isTopComponentMaximizationEnabled() ) {
+                actions.add(createDisabledAction("CTL_MaximizeWindowAction"));
+            }
+            if( Switches.isTopComponentUndockingEnabled()) {
+                actions.add(createDisabledAction("CTL_UndockWindowAction"));
+            }
+            if( Switches.isEditorModeUndockingEnabled() )
+                actions.add( new UndockModeAction( mode) );
+        } else if (kind == Constants.MODE_KIND_VIEW) {
+            if( Switches.isViewTopComponentClosingEnabled() ) {
+                actions.add(createDisabledAction("CTL_CloseWindowAction"));
+            }
+            if( Switches.isModeClosingEnabled() ) {
+                actions.add(new CloseModeAction(mode));
+            }
+            // #82053: don't include maximize action for floating (separate) views
+            if (mode.getState() == Constants.MODE_STATE_JOINED
+                    && Switches.isTopComponentMaximizationEnabled() ) {
+                actions.add(createDisabledAction("CTL_MaximizeWindowAction"));
+            }
+            if( Switches.isTopComponentUndockingEnabled() ) {
+                actions.add(createDisabledAction("CTL_UndockWindowAction"));
+            }
+            if( Switches.isViewModeUndockingEnabled() )
+                actions.add( new UndockModeAction( mode) );
+            if( Switches.isModeSlidingEnabled() )
+                actions.add( new MinimizeModeAction( mode) );
+        } else if (kind == Constants.MODE_KIND_SLIDING) {
+            if( Switches.isViewTopComponentClosingEnabled() ) {
+                actions.add(createDisabledAction("CTL_CloseWindowAction"));
+                actions.add(new CloseModeAction(mode));
+            }
+            if (mode.getState() == Constants.MODE_STATE_JOINED
+                    && Switches.isTopComponentMaximizationEnabled()) {
+                actions.add(createDisabledAction("CTL_MaximizeWindowAction"));
+            }
+            if( Switches.isTopComponentUndockingEnabled() ) {
+                actions.add(createDisabledAction("CTL_UndockWindowAction"));
+            }
+        }
+        
+        Action[] res = actions.toArray(new Action[actions.size()]);
+        for( ActionsFactory factory : Lookup.getDefault().lookupAll( ActionsFactory.class ) ) {
+            res = factory.createPopupActions( mode, res );
+        }
+        return res;
+    }
+
     /**** PENDING remove during merge, TabbedListener removed, instead drive directly */
     private static Container slidingContext;
     
@@ -182,7 +260,8 @@ public abstract class ActionUtils {
         
         private JCheckBoxMenuItem getMenuItem() {
             if (menuItem == null) {
-                menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME), state);
+                menuItem = new JCheckBoxMenuItem("", state);
+                Actions.setMenuText(menuItem, (String)getValue(Action.NAME), false);
                 //#45940 - hardwiring the shortcut UI since the actual shortcut processignb is also
                 // hardwired in AbstractTabViewDisplayerUI class.
                 // later this should be probably made customizable?
@@ -389,7 +468,25 @@ public abstract class ActionUtils {
     static Object getSharedAccelerator (Object key) {
         return sharedAccelerators.get(key);
     }
+    
+    private static Action createDisabledAction( String bundleKey ) {
+        return new DisabledAction( NbBundle.getMessage(ActionUtils.class, bundleKey) );
+    }
 
+    private static class DisabledAction extends AbstractAction {
+
+        private DisabledAction( String name ) {
+            super( name );
+        }
+        @Override
+        public void actionPerformed( ActionEvent e ) {
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
+        }
+    }
     // Utility methods <<
 }
 

@@ -44,50 +44,53 @@
 
 package org.netbeans.modules.hudson.ui.actions;
 
+import java.util.Collection;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.openide.util.ContextAwareAction;
+import java.awt.event.ActionEvent;
+import java.util.Collections;
+import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 
-/**
- * persist project based instance action.
- *
- * @author Milos Kleint
- */
-public class PersistInstanceAction extends NodeAction {
-    
-    protected void performAction(Node[] nodes) {
-        for (Node node : nodes) {
-            HudsonInstanceImpl instance = node.getLookup().lookup(HudsonInstanceImpl.class);
-            
-            if (null == instance)
-                continue;
+@ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.PersistInstanceAction")
+@ActionRegistration(displayName="#LBL_Persist_Instance", iconInMenu=false)
+@ActionReference(path=HudsonInstance.ACTION_PATH, position=700)
+@Messages("LBL_Persist_Instance=&Persist")
+// XXX cannot just use List<HudsonInstanceImpl> ctor: must be disabled when context menu created, so must be eager
+public class PersistInstanceAction extends AbstractAction implements ContextAwareAction {
+
+    public PersistInstanceAction() {
+        this(Collections.<HudsonInstanceImpl>emptyList());
+    }
+
+    public @Override Action createContextAwareInstance(Lookup actionContext) {
+        return new PersistInstanceAction(actionContext.lookupAll(HudsonInstanceImpl.class));
+    }
+
+    private final Collection<? extends HudsonInstanceImpl> instances;
+
+    private PersistInstanceAction(Collection<? extends HudsonInstanceImpl> instances) {
+        super(LBL_Persist_Instance());
+        this.instances = instances;
+        for (HudsonInstanceImpl instance : instances) {
+            if (instance.isPersisted()) {
+                setEnabled(false);
+                break;
+            }
+        }
+    }
+
+    public @Override void actionPerformed(ActionEvent e) {
+        for (HudsonInstanceImpl instance : instances) {
             instance.makePersistent();
         }
     }
-    
-    protected boolean enable(Node[] nodes) {
-        for (Node node : nodes) {
-            HudsonInstanceImpl instance = node.getLookup().lookup(HudsonInstanceImpl.class);
-            
-            if (null != instance && !instance.isPersisted())
-                return true;
-        }
-        
-        return false;
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(PersistInstanceAction.class, "LBL_Persist_Instance");
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    public boolean asynchronous() {
-        return false;
-    }
+
 }

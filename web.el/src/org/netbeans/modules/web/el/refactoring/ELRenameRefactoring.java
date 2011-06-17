@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.openide.filesystems.FileObject;
@@ -77,14 +78,14 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
     }
 
     @Override
-    protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
+    protected Problem handleClass(CompilationContext info, RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
         TypeElement type = (TypeElement) targetType;
         // handles only cases where the managed bean name matches the class name and is not 
         // explicitly specified in the annotation
-        String beanName = ELVariableResolvers.findBeanName(type.getQualifiedName().toString(), getFileObject());
+        String beanName = ELVariableResolvers.findBeanName(info, type.getQualifiedName().toString(), getFileObject());
         if (beanName != null && beanName.equalsIgnoreCase(type.getSimpleName().toString())) {
-            for (AnnotationMirror ann : refactoringContext.getInfo().getElements().getAllAnnotationMirrors(type)) {
-                CharSequence annFqn = refactoringContext.getInfo().getTypeUtilities().getTypeName(ann.getAnnotationType(), TypeNameOptions.PRINT_FQN);
+            for (AnnotationMirror ann : info.info().getElements().getAllAnnotationMirrors(type)) {
+                CharSequence annFqn = info.info().getTypeUtilities().getTypeName(ann.getAnnotationType(), TypeNameOptions.PRINT_FQN);
                 if ("javax.faces.bean.ManagedBean".contentEquals(annFqn)) { //NOI18N
                     for (ExecutableElement annElem : ann.getElementValues().keySet()) { 
                         if ("name".contentEquals(annElem.getSimpleName())) { //NOI18N
@@ -93,7 +94,7 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
                         }
                     }
                     // uses default name, can be refactored
-                    return super.handleClass(refactoringElementsBag, handle, targetType);
+                    return super.handleClass(info, refactoringElementsBag, handle, targetType);
                 }
             }
         }

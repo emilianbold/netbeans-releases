@@ -48,13 +48,14 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import org.netbeans.modules.project.libraries.Util;
 
 class LibraryRenderer extends DefaultListCellRenderer {
 
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         LibraryImplementation impl = (LibraryImplementation) value;
         return super.getListCellRendererComponent(list,
-                LibrariesCustomizer.getLocalizedName(impl),
+                Util.getLocalizedName(impl),
                 index, isSelected, cellHasFocus);
     }
 

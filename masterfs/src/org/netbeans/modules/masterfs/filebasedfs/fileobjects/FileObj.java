@@ -80,6 +80,11 @@ public class FileObj extends BaseFileObj {
         super(file, name);
         setLastModified(System.currentTimeMillis(), null, false);
     }
+    @Override
+    protected boolean noFolderListeners() {
+        FolderObj p = getExistingParent();
+        return p == null ? true : p.noFolderListeners();
+    }
 
     public OutputStream getOutputStream(final FileLock lock) throws IOException {
         ProvidedExtensions extensions = getProvidedExtensions();

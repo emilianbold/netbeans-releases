@@ -80,7 +80,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
         SwitchToPanel panel = getSwitchToPanel();
         panel.warningLabel.setVisible(localChanges);
 
-        setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());    
+        setupUrlComboBox(repositoryFile, panel.urlComboBox, SwitchTo.class.getName());
         
         repositoryPaths = 
             new RepositoryPaths(
@@ -134,6 +134,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
         return (SwitchToPanel) getPanel();
     }    
         
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {            
             boolean valid = ((Boolean)evt.getNewValue()).booleanValue();

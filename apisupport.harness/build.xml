@@ -53,20 +53,20 @@ made subject to such option by the copyright holder.
                 <attribute name="NetBeans-Own-Library" value="true"/>
             </manifest>
             <!-- XXX would be more maintainable to use depfind.sf.net / genjar.sf.net / sadun-util.sf.net/pack.html -->
-            <zipfileset src="${nb_all}/nbbuild/nbantext.jar" includes="${bundled.tasks}"/>
+            <zipfileset src="${nbantext.jar}" includes="${bundled.tasks}"/>
             <zipfileset file="taskdefs.properties" fullpath="org/netbeans/nbbuild/taskdefs.properties"/>
         </jar>
     </target>
 
     <target name="compile-jnlp-launcher" depends="init,compile">
-        <mkdir dir="build/jnlp-launcher-classes"/>
-        <nb-javac srcdir="jnlp-src" destdir="build/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.6" target="1.6" includeantruntime="false">
+        <mkdir dir="${build.dir}/jnlp-launcher-classes"/>
+        <nb-javac srcdir="jnlp-src" destdir="${build.dir}/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.6" target="1.6" includeantruntime="false">
             <classpath>
                 <path path="${jnlp.cp}"/>
             </classpath>
             <processorpath refid="processor.cp"/>
         </nb-javac>
-        <copy todir="build/jnlp-launcher-classes">
+        <copy todir="${build.dir}/jnlp-launcher-classes">
             <fileset dir="jnlp-src" excludes="${jar-excludes}"/>
         </copy>
     </target>
@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
     <target name="jar-jnlp-launcher" depends="compile-jnlp-launcher">
         <mkdir dir="${cluster}/jnlp/"/>
         <jar jarfile="${cluster}/jnlp/jnlp-launcher.jar" compress="false" manifest="jnlp-manifest.mf" >
-            <fileset dir="build/jnlp-launcher-classes"/>
+            <fileset dir="${build.dir}/jnlp-launcher-classes"/>
         </jar>
     </target>
 

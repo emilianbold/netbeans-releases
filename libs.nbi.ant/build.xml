@@ -10,17 +10,26 @@
          <ant dir="${basedir}/../nbi/engine" target="jar" inheritAll="false">
             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
             <property name="no.dependencies" value="true"/>
+            <property name="build.dir" location="${build.dir}/engine/build"/>
+            <property name="dist.dir" location="${build.dir}/engine/dist"/>
          </ant>
          <ant dir="${basedir}/../nbi/infra/lib/registries-management" target="jar" inheritAll="false">
             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
             <property name="no.dependencies" value="true"/>
             <property name="libs.Ant1.6.5.classpath" value="${ant.core.lib}"/>
+            <property name="reference.Core_NBI_Engine.jar" location="${build.dir}/engine/dist/nbi-engine.jar"/>
+            <property name="build.dir" location="${build.dir}/registries-management/build"/>
+            <property name="dist.dir" location="${build.dir}/registries-management/dist"/>
          </ant>
 
          <ant dir="${basedir}/../nbi/infra/build/.ant-lib" target="jar" inheritAll="false">
             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
             <property name="no.dependencies" value="true"/>
             <property name="libs.Ant1.6.5.classpath" value="${ant.core.lib}"/>
+            <property name="reference.Core_NBI_Engine.jar" location="${build.dir}/engine/dist/nbi-engine.jar"/>
+            <property name="reference.NBI_Library__Registries_Management.jar" location="${build.dir}/registries-management/dist/registries-management.jar"/>
+            <property name="build.dir" location="${build.dir}/ant-lib/build"/>
+            <property name="dist.dir" location="${build.dir}/ant-lib/dist"/>
          </ant>
     </target>
 
@@ -28,8 +37,8 @@
 
 
     <target name="netbeans-extra">
-         <copy file="${basedir}/../nbi/infra/build/.ant-lib/dist/nbi-ant-tasks.jar" todir="${cluster}/modules/ext"/> 
-         <copy file="${basedir}/../nbi/infra/lib/registries-management/dist/registries-management.jar" tofile="${cluster}/modules/ext/nbi-registries-management.jar"/> 
+         <copy file="${build.dir}/ant-lib/dist/nbi-ant-tasks.jar" todir="${cluster}/modules/ext"/> 
+         <copy file="${build.dir}/registries-management/dist/registries-management.jar" tofile="${cluster}/modules/ext/nbi-registries-management.jar"/> 
          <copy todir="${cluster}/nbi/.common">
              <fileset dir="${basedir}/../nbi/infra/build/.common">
                 <exclude name=".templates/**"/>
@@ -45,19 +54,6 @@
                 <exclude name="ext/components/products/helloworld/nbproject/private/"/>
              </fileset>
          </copy>
-    </target>
-
-    <target name="clean" depends="projectized-common.clean">
-	 
-         <ant dir="${basedir}/../nbi/infra/build/.ant-lib" target="clean" inheritAll="false">
-             <property name="no.dependencies" value="true"/>
-             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
-         </ant>
-         <ant dir="${basedir}/../nbi/infra/lib/registries-management" target="clean" inheritAll="false">
-                <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
-                <property name="no.dependencies" value="true"/>
-         </ant>
-	 
     </target>
 
 </project>

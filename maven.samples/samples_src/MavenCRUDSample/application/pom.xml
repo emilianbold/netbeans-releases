@@ -1,8 +1,7 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.netbeans</groupId>
+        <groupId>demo.crud.mvn</groupId>
         <artifactId>crud-sample-application</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -14,19 +13,18 @@
     <dependencies>
         <dependency>
             <groupId>org.netbeans.cluster</groupId>
-            <artifactId>platform11</artifactId>
+            <artifactId>platform</artifactId>
             <version>${netbeans.version}</version>
             <type>pom</type>
         </dependency>
-      
         <dependency>
-            <groupId>org.netbeans</groupId>
+            <groupId>demo.crud.mvn</groupId>
             <artifactId>crudsample</artifactId>
             <version>1.0-SNAPSHOT</version>
             <type>nbm</type>
         </dependency>
         <dependency>
-            <groupId>org.netbeans</groupId>
+            <groupId>demo.crud.mvn</groupId>
             <artifactId>branding</artifactId>
             <version>1.0-SNAPSHOT</version>
             <type>nbm</type>
@@ -40,7 +38,6 @@
             </plugin>
         </plugins>
     </build>
-
     <profiles>
         <profile>
             <id>deployment</id>
@@ -51,24 +48,11 @@
                         <artifactId>nbm-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>updatesite</id>
-                                <phase>package</phase>
+                                <id>extra</id>
                                 <goals>
                                     <goal>autoupdate</goal>
-                                </goals>
-                                <configuration>
-                            <!--distBase>central::default::http://repo1.maven.org/maven2</distBase-->
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>webstart</id>
-                                <phase>package</phase>
-                                <goals>
                                     <goal>webstart-app</goal>
                                 </goals>
-                                <configuration>
-                                    <codebase>${project.build.directory}/webstart/${brandingToken}</codebase>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

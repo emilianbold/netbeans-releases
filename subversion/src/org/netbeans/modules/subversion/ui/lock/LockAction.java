@@ -155,9 +155,22 @@ public class LockAction extends ContextAction {
                         String msg = lock.getLockMessage();
                         do {
                             cont = false;
-                            LockedFilesListener list = new LockedFilesListener(relativePaths);
-                            client.addNotifyListener(list);
-                            client.lock(files, msg, force);
+                            boolean resumeAuth = true;
+                            LockedFilesListener list;
+                            do {
+                                list = new LockedFilesListener(relativePaths);
+                                client.addNotifyListener(list);
+                                client.lock(files, msg, force);
+                                if (list.isAuthError() && (resumeAuth = SvnClientExceptionHandler.handleAuth(url))) {
+                                    client.removeNotifyListener(list);
+                                    client = Subversion.getInstance().getClient(url, this);
+                                } else {
+                                    break;
+                                }
+                            } while (resumeAuth);
+                            if (!resumeAuth) {
+                                break;
+                            }
                             client.removeNotifyListener(list);
                             if (!force && !list.lockedFiles.isEmpty() && !lockedByOther(client, list.lockedFiles).isEmpty()) {
                                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(LockAction.class, "MSG_LockAction.lockedFiles.description"), //NOI18N
@@ -193,6 +206,7 @@ public class LockAction extends ContextAction {
         private String msg;
         private final Map<File, String> relativePaths;
         private final Set<File> lockedFiles = new HashSet<File>();
+        private boolean authError;
 
         public LockedFilesListener (Map<File, String> relativePaths) {
             this.relativePaths = relativePaths;
@@ -214,6 +228,8 @@ public class LockAction extends ContextAction {
         public void logError (String error) {
             if (error.contains("is already locked")) { //NOI18N
                 msg = error;
+            } else if (SvnClientExceptionHandler.isAuthentication(error)) {
+                authError = true;
             }
         }
 
@@ -233,6 +249,10 @@ public class LockAction extends ContextAction {
                     lockedFiles.add(file);
                 }
             }
+        }
+
+        private boolean isAuthError () {
+            return authError;
         }
     }
 }

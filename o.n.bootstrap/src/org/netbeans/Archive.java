@@ -112,9 +112,14 @@ class Archive implements Stamps.Updater {
      */
     Archive(Stamps cache) {
         ByteBuffer master = cache.asByteBuffer("all-resources.dat");
-        try {
-            parse(master, cache.lastModified());
-        } catch (Exception e) {
+        if (master != null) {
+            try {
+                parse(master, cache.lastModified());
+            } catch (Exception e) {
+                sources.clear();
+                entries.clear();
+            }
+        } else {
             sources.clear();
             entries.clear();
         }

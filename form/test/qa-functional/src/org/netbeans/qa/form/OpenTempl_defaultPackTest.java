@@ -43,11 +43,9 @@
  */
 package org.netbeans.qa.form;
 
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.DocumentsDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
@@ -111,18 +109,20 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
                 //SWING
                 "testApplet",
                 "testDialog",
-                "testFrame", 
-                "testInter", 
-                "testMidi", 
+                "testFrame",
                 "testPanel",
-                //"testBean", 
-                "testAppl",
-                "testOkCancel",
+                "testInter",
+                "testMidi",
+                
+                 "testBean",
+                 "testAppl",
+                 "testOkCancel",
                 //AWT
                 "testAWTApplet",
                 "testAWTDialog",
                 "testAWTFrame",
-                "testAWTPanel").gui(true).enableModules(".*").clusters(".*"));
+                "testAWTPanel"
+                ).gui(true).enableModules(".*").clusters(".*"));
 
     }
 
@@ -134,6 +134,7 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         setTestPackageName("<default package>");
         setTestProjectName(DATA_PROJECT_NAME);
         System.out.println("########  " + getName() + "  #######");
+        System.out.println("OS " + System.getProperty("os.name"));
         try {
             Thread.sleep(2000);
         } catch (InterruptedException ex) {
@@ -202,8 +203,9 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
      */
 
     public void closeDocument(String documentName) throws InterruptedException {
-        
-        removeFile(documentName);
+        FormDesignerOperator fdo=new FormDesignerOperator(documentName);
+        fdo.source();
+        //removeFile(documentName);
         
     }
 
@@ -238,11 +240,16 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
         openTemplate(templateName, category);
 
         System.out.println(getWorkDir());
-        //testFormFile(name);
-        Thread.sleep(1000);
-        testJavaFile(name);
-        Thread.sleep(1000);
+        createFormAndJavaRefFile(name);
+        Thread.sleep(500);
         closeDocument(name);
+        
+        Thread.sleep(500);
+        testFormFile(name);
+        Thread.sleep(500);
+        testJavaFile(name);
+        //Thread.sleep(500);
+       
 
     }
 
@@ -358,39 +365,35 @@ public class OpenTempl_defaultPackTest extends ExtJellyTestCase {
     }
 
     public void testFormFile(String formfile) throws IOException {
-        try {
-            String refFile = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
-                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + formfile + ".form");
+       
 
-            getLog(formfile + "Form.ref").print(refFile);
+        assertFile(new File(getWorkDir() + File.separator + formfile + "Form.ref"), getGoldenFile(File.separatorChar+System.getProperty("os.name")+File.separatorChar+formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
+
+    }
+    
+    public void createFormAndJavaRefFile(String filename) throws IOException {
+        try {
+            String refFileForm = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
+                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + filename + ".form");
+
+            getLog(filename + "Form.ref").print(refFileForm);
+            
+            String refFileJava = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
+                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + filename + ".java");
+
+            getRef().print(createRefFile(refFileJava));
 
 
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
-
-        assertFile(new File(getWorkDir() + File.separator + formfile + "Form.ref"), getGoldenFile(formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
 
     }
 
     public void testJavaFile(String javafile) throws IOException {
 
-        try {
-            String refFile = VisualDevelopmentUtil.readFromFile(getDataDir().getAbsolutePath()
-                    + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + javafile + ".java");
-
-            getRef().print(createRefFile(refFile));
-
-            // golden files are in ${xtest.data}/goldenfiles/${classname}/...
-
-            log("Java reference file was created");
-
-        } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());
-        }
-
-
-        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile" + jdkVersion.replaceAll("jdk", "") + ".pass"), new File(getWorkDir(), javafile + "java.diff"));
+        
+        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(File.separatorChar+System.getProperty("os.name")+File.separatorChar+javafile + "JavaFile" + jdkVersion.replaceAll("jdk", "") + ".pass"), new File(getWorkDir(), javafile + "java.diff"));
 
 
     }

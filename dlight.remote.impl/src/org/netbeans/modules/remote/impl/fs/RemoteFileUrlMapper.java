@@ -90,7 +90,7 @@ public class RemoteFileUrlMapper extends URLMapper {
             RemoteFileObjectBase rfo = (RemoteFileObjectBase) fo;
             try {
                 ExecutionEnvironment env = rfo.getExecutionEnvironment();
-                return getURL(env, rfo.getPath());
+                return getURL(env, rfo.getPath(), rfo.isFolder());
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -98,10 +98,10 @@ public class RemoteFileUrlMapper extends URLMapper {
         return null;
     }
 
-    /*package*/ static URL getURL(ExecutionEnvironment env, String path) throws MalformedURLException {
+    private static URL getURL(ExecutionEnvironment env, String path, boolean folder) throws MalformedURLException {
         String host = env.getUser() + '@' + env.getHost();
         URL url = new URL(RemoteFileURLStreamHandler.PROTOCOL, host, env.getSSHPort(), path);
-        String ext = url.toExternalForm(); // is there a way to set authority?
+        String ext = url.toExternalForm() + (folder ? "/" : ""); // is there a way to set authority? // NOI18N
         return new URL(ext);
     }
 }

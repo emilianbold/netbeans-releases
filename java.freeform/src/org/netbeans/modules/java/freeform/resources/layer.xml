@@ -43,18 +43,18 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
             <folder name="Standard">
                 <file name="j2sefreeform.xml">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.java.freeform.resources.Bundle#Templates/Project/Standard/j2sefreeform.xml"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/ant/freeform/resources/freeform-project.png"/>
                     <attr name="position" intvalue="400"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.freeform.ui.NewJ2SEFreeformProjectWizardIterator"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.freeform.resources.Bundle"/>
                     <!-- XXX: icon used from ant/freeform -->
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/freeform-project.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/freeform/resources/freeform-project-java.html"/>
                 </file>
             </folder>

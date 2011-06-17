@@ -66,7 +66,7 @@ public interface ELPlugin {
     public Collection<ImplicitObject> getImplicitObjects(FileObject file);
 
     /** A list of resource bundles for given file */
-    public List<String> getResourceBundles(FileObject file);
+    public List<ResourceBundle> getResourceBundles(FileObject file);
 
     static class Query {
 
@@ -84,8 +84,8 @@ public interface ELPlugin {
             return result;
         }
 
-        public static List<String> getResourceBundles(FileObject file) {
-            List<String> result = new ArrayList<String>();
+        public static List<ResourceBundle> getResourceBundles(FileObject file) {
+            List<ResourceBundle> result = new ArrayList<ResourceBundle>();
              for (ELPlugin plugin : getELPlugins()) {
                 result.addAll(plugin.getResourceBundles(file));
             }

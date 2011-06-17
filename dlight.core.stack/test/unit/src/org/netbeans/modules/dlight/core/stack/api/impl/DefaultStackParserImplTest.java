@@ -83,6 +83,14 @@ public class DefaultStackParserImplTest {
      */
     @Test
     public void testParseEntry() {
+        
+        parse("/test/lib_I_dbg_gen.so.1+0x251b8`+0xffffffffffffffff", new CallStackEntryImpl(
+                "/test/lib_I_dbg_gen.so.1+0x251b8`+0xffffffffffffffff", 
+                "/test/lib_I_dbg_gen.so.1", 
+                151992, 
+                "", 
+                -1, null));
+        
         parse("libstdc++.so.6.0.3`_ZdaPv+0x1b", new CallStackEntryImpl(
                 "libstdc++.so.6.0.3`_ZdaPv+0x1b",
                 "libstdc++.so.6.0.3",

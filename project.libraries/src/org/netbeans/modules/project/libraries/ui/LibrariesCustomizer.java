@@ -51,6 +51,8 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -66,17 +68,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
+import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
@@ -86,7 +86,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -102,8 +101,7 @@ import org.openide.util.lookup.Lookups;
 
 public final class LibrariesCustomizer extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
 
-    private static final Logger LOG = Logger.getLogger(LibrariesCustomizer.class.getName());
-
+    private static final Pattern VALID_LIBRARY_NAME = Pattern.compile("[-._a-zA-Z0-9]+"); // NOI18N
     private ExplorerManager manager;
     private LibrariesModel model;
     private BeanTreeView libraries;
@@ -196,6 +194,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx( LibrariesCustomizer.class );
     }
@@ -210,16 +209,19 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         expandTree();
         this.libraries.requestFocus();
     }    
     
+    @Override
     public ExplorerManager getExplorerManager () {
         if (this.manager == null) {
             this.manager = new ExplorerManager ();
             this.manager.addPropertyChangeListener (new PropertyChangeListener() {
+                @Override
                 public void propertyChange (PropertyChangeEvent event) {
                     if (ExplorerManager.PROP_SELECTED_NODES.equals(event.getPropertyName())) {
                         Node[] nodes = (Node[]) event.getNewValue ();
@@ -229,6 +231,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                 }
             });
             this.manager.addVetoableChangeListener(new VetoableChangeListener() {
+                @Override
                 public void vetoableChange(PropertyChangeEvent event) throws PropertyVetoException {
                     if (ExplorerManager.PROP_SELECTED_NODES.equals(event.getPropertyName())) {
                         Node[] nodes = (Node[]) event.getNewValue();
@@ -247,18 +250,24 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     }
 
     private void postInitComponents () {
-        this.libraries = new LibrariesView ();        
+        this.libraries = new LibrariesView ();
         this.libsPanel.setLayout(new BorderLayout());
         this.libsPanel.add(this.libraries);
         this.libraries.setPreferredSize(new Dimension (200,334));
         this.libraryName.setColumns(25);
         this.libraryName.setEnabled(false);
-        this.libraryName.addActionListener(
-                new ActionListener () {
-                    public void actionPerformed(ActionEvent e) {
-                        nameChanged();
-                    }
-                });                        
+        this.libraryName.addActionListener(new ActionListener () {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                nameChanged();
+            }
+        });
+        this.libraryName.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(final FocusEvent e) {
+                nameChanged();
+            }
+        });
         jLabel3.setVisible(false);
         libraryLocation.setVisible(false);
         createButton.setEnabled(LibraryTypeRegistry.getDefault().getLibraryTypeProviders().length>0);
@@ -267,27 +276,26 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     private void nameChanged () {
         Node[] nodes = this.getExplorerManager().getSelectedNodes();
         if (nodes.length == 1) {
-            LibraryImplementation lib = nodes[0].getLookup().lookup(LibraryImplementation.class);
+            final LibraryImplementation lib = nodes[0].getLookup().lookup(LibraryImplementation.class);
             if (lib == null) {
                 return;
             }
-            String newName = this.libraryName.getText();
-            if (newName.equals(lib.getName())) {
+            final String newName = this.libraryName.getText();
+            if (newName.equals(Util.getLocalizedName(lib))) {
                 return;
             }
             if (newName.length () == 0) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
                         NbBundle.getMessage(LibrariesCustomizer.class, "ERR_InvalidName"),
                         NotifyDescriptor.ERROR_MESSAGE));
-            } else if (isValidName(model, newName, model.getArea(lib))) {
-                lib.setName(newName);
-            }
-            else {
+            } else if (isExistingDisplayName(model, newName, model.getArea(lib))) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
                         NbBundle.getMessage(LibrariesCustomizer.class, "ERR_ExistingName", newName),
                         NotifyDescriptor.ERROR_MESSAGE));
+            } else {
+                Util.setDisplayName(lib, newName);
             }
-        }                        
+        }
     }
 
     private void selectLibrary (Node[] nodes) {
@@ -300,7 +308,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         this.jLabel1.setVisible(false);
         this.libraryName.setVisible(false);
         this.properties.setVisible(false);
-        this.deleteButton.setEnabled(false);        
+        this.deleteButton.setEnabled(false);
         if (nodes.length != 1) {
             return;
         }
@@ -312,9 +320,9 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         this.libraryName.setVisible(true);
         this.properties.setVisible(true);
         boolean editable = model.isLibraryEditable (impl);
-        this.libraryName.setEnabled(editable);
+        this.libraryName.setEnabled(editable && Util.supportsDisplayName(impl));
         this.deleteButton.setEnabled(editable);
-        this.libraryName.setText (getLocalizedName(impl));
+        this.libraryName.setText (Util.getLocalizedName(impl));
         LibraryTypeProvider provider = nodes[0].getLookup().lookup(LibraryTypeProvider.class);
         if (provider == null)
             return;
@@ -369,8 +377,6 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_CustomizerLibraryName")); // NOI18N
 
-        libraryName.setEditable(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(createButton, bundle.getString("CTL_NewLibrary")); // NOI18N
         createButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -395,7 +401,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         );
         libsPanelLayout.setVerticalGroup(
             libsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 365, Short.MAX_VALUE)
+            .addGap(0, 382, Short.MAX_VALUE)
         );
 
         jLabel2.setLabelFor(libsPanel);
@@ -428,8 +434,8 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                                     .addComponent(jLabel1))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(libraryLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
-                                    .addComponent(libraryName, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)))
+                                    .addComponent(libraryLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                                    .addComponent(libraryName, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)))
                             .addComponent(properties, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)))
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -523,8 +529,9 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             dlg = DialogDisplayer.getDefault().createDialog (dd);
             dlg.setVisible(true);
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                String libraryType = p.getLibraryType();
-                String currentLibraryName = p.getLibraryName();
+                final String libraryType = p.getLibraryType();
+                final String currentLibraryName = p.getLibraryName();
+                final String antLibraryName = createFreeAntLibraryName(currentLibraryName, model, area);
                 LibraryImplementation impl;
                 if (area != LibrariesModel.GLOBAL_AREA) {
                     impl = model.createArealLibrary(libraryType, currentLibraryName, area);
@@ -534,8 +541,9 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                         return;
                     }
                     impl = provider.createLibrary();
-                    impl.setName(currentLibraryName);
+                    impl.setName(antLibraryName);
                 }
+                Util.setDisplayName(impl, currentLibraryName);
                 model.addLibrary (impl);                
                 forceTreeRecreation();
                 String[] path = {impl.getType(), impl.getName()};
@@ -564,7 +572,22 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         }
     }//GEN-LAST:event_createLibrary
 
-    static boolean isValidName(LibrariesModel model, String name, LibraryStorageArea area) {
+    static boolean isExistingDisplayName(
+            final @NonNull LibrariesModel model,
+            final @NonNull String name,
+            final @NullAllowed LibraryStorageArea area) {
+        for (LibraryImplementation lib : model.getLibraries()) {
+            if (Util.getLocalizedName(lib).equals(name) && Utilities.compareObjects(model.getArea(lib), area)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isValidName(
+            final @NonNull LibrariesModel model,
+            final @NonNull String name,
+            final @NullAllowed LibraryStorageArea area) {
         for (LibraryImplementation lib : model.getLibraries()) {
             if (lib.getName().equals(name) && Utilities.compareObjects(model.getArea(lib), area)) {
                 return false;
@@ -573,53 +596,31 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         return true;
     }
 
-    private static Map<LibraryImplementation,FileObject> sources = new WeakHashMap<LibraryImplementation,FileObject>();
-    public static void registerSource(LibraryImplementation impl, FileObject descriptorFile) {
-        sources.put(impl, descriptorFile);
-    }
 
-
-    public static String getLocalizedName(LibraryImplementation impl) {
-        FileObject src = sources.get(impl);
-        if (src != null) {
-            Object obj = src.getAttribute("displayName"); // NOI18N
-            if (obj instanceof String) {
-                return (String)obj;
+    public static String createFreeAntLibraryName(
+            @NonNull String name,
+            final @NonNull LibrariesModel model,
+            final @NullAllowed LibraryStorageArea area) {
+        // XXX: there is method in PropertyUtils
+        // which should be used here but that would create dependency
+        // on ant/project modules which is not desirable.
+        if (!VALID_LIBRARY_NAME.matcher(name).matches()) {
+            final StringBuilder sb = new StringBuilder(name);
+            for (int i=0; i<sb.length(); i++) {
+                if (!VALID_LIBRARY_NAME.matcher(sb.substring(i,i+1)).matches()) {
+                    sb.replace(i,i+1,"_");
+                }
             }
+            name = sb.toString();
+        }        
+        String uniqueName = name;
+        for (int i=2; !isValidName(model, uniqueName, area); i++) {
+            uniqueName = String.format("%s_%d", name,i);    //NOI18N
         }
-        if (impl instanceof ProxyLibraryImplementation) {
-            String proxiedName = getLocalizedName(((ProxyLibraryImplementation)impl).getOriginal());
-            if (proxiedName != null) {
-                return proxiedName;
-            }
-        }
-
-        return getLocalizedString(impl.getLocalizingBundle(), impl.getName());
+        return uniqueName;
     }
 
-    static String getLocalizedString (String bundleResourceName, String key) {
-        if (key == null) {
-            return null;
-        }
-        if (bundleResourceName == null) {
-            return key;
-        }
-        ResourceBundle bundle;
-        try {
-            bundle = NbBundle.getBundle(bundleResourceName);
-        } catch (MissingResourceException mre) {
-            // Bundle should have existed.
-            LOG.log(Level.INFO, "Wrong resource bundle", mre);      //NOI18N
-            return key;
-        }
-        try {
-            return bundle.getString (key);
-        } catch (MissingResourceException mre) {
-            // No problem, not specified.
-            return key;
-        }
-    }
-
+        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton createButton;
     private javax.swing.JButton deleteButton;
@@ -832,30 +833,38 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         
     }
     
-    private static class LibraryNode extends AbstractNode {
-        
+    private static class LibraryNode extends AbstractNode implements PropertyChangeListener {
+
         private static final String ICON = "org/netbeans/modules/project/libraries/resources/libraries.gif";  //NOI18N
-        
+
         private LibraryImplementation lib;
         private LibraryTypeProvider provider;
-        
+
+        @SuppressWarnings("LeakingThisInConstructor")
         public LibraryNode(LibraryImplementation lib, LibraryTypeProvider provider, LibraryStorageArea area) {
             super(Children.LEAF, Lookups.fixed(lib, provider, area));
             this.lib = lib;
             this.provider = provider;
             this.setIconBaseWithExtension(ICON);
+            this.lib.addPropertyChangeListener(this);
         }
-        
-        public String getName () {            
+
+        @Override
+        public String getName () {
             return this.lib.getName ();
         }
-        
+
+        @Override
         public String getDisplayName () {
-            return getLocalizedName(this.lib);
+            return Util.getLocalizedName(this.lib);
         }
-        
+
+        @Override
+        public void propertyChange(final PropertyChangeEvent event) {
+            this.fireDisplayNameChange(null,null);
+        }
     }
-    
+
     private Node buildTree() {
         return new AbstractNode(new TypeChildren(libraryStorageArea));
     }

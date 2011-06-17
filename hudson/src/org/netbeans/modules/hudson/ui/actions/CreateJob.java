@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -83,22 +82,24 @@ import org.w3c.dom.Document;
 /**
  * Submenu action to create a job on this server from one of the open projects.
  */
-@ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.CreateJob")
-@ActionRegistration(displayName="#CTL_CreateJob", iconInMenu=false)
-@ActionReference(path="Menu/Versioning", position=400)
-@Messages("CTL_CreateJob=Create Build Job...")
-public class CreateJob extends AbstractAction {
+@ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.CreateJob.context")
+@ActionRegistration(displayName="#CreateJob.new_build", iconInMenu=false)
+@ActionReference(path=HudsonInstance.ACTION_PATH, position=300)
+@Messages("CreateJob.new_build=New Build...")
+public class CreateJob implements ActionListener {
+
+    /** Global action which also allows you to pick a server. */
+    @ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.CreateJob.global")
+    @ActionRegistration(displayName="#CTL_CreateJob", iconInMenu=false)
+    @ActionReference(path="Menu/Versioning", position=400)
+    @Messages("CTL_CreateJob=Create Build Job...")
+    public static ActionListener global() {
+        return new CreateJob(null);
+    }
 
     private final HudsonInstance instance;
 
-    public CreateJob() {
-        super(CTL_CreateJob());
-        this.instance = null;
-    }
-
-    @Messages("CreateJob.new_build=New Build...")
     public CreateJob(HudsonInstance instance) {
-        super(CreateJob_new_build());
         this.instance = instance;
     }
 

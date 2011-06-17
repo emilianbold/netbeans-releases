@@ -45,7 +45,12 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -267,5 +272,25 @@ public class UnignoreTest extends AbstractGitTestCase {
         assertTrue(excludeFile.exists());
         assertEquals("", read(excludeFile));
         assertEquals(0, ignores.length);
+    }
+
+    public void test199443_GlobalIgnoreFile () throws Exception {
+        File f = new File(new File(workDir, "nbproject"), "file");
+        f.getParentFile().mkdirs();
+        f.createNewFile();
+        File ignoreFile = new File(workDir.getParentFile(), "globalignore");
+        write(ignoreFile, "nbproject");
+        Repository repo = getRepository(getLocalGitRepository());
+        StoredConfig cfg = repo.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_EXCLUDESFILE, ignoreFile.getAbsolutePath());
+        cfg.save();
+        GitClient client = getClient(workDir);
+        assertEquals(Status.STATUS_IGNORED, client.getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(f).getStatusIndexWC());
+        
+        assertEquals(new File(workDir, Constants.GITIGNORE_FILENAME), client.unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR)[0]);
+        
+        write(new File(workDir, Constants.GITIGNORE_FILENAME), "/nbproject/file");
+        assertEquals(new File(workDir, Constants.GITIGNORE_FILENAME), client.unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR)[0]);
+        assertEquals("!/nbproject/file", read(new File(workDir, Constants.GITIGNORE_FILENAME)));
     }
 }

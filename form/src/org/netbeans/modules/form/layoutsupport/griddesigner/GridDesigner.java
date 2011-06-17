@@ -272,17 +272,8 @@ public class GridDesigner extends JPanel {
      * @param metaComp meta-component to preview.
      */
     private void initPreviewButton(JToolBar toolBar, final RADVisualComponent metaComp) {
-        AbstractAction action = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TestAction testAction = SystemAction.get(TestAction.class);
-                testAction.createPreview(metaComp, null);
-            }
-        };
         TestAction testAction = SystemAction.get(TestAction.class);
-        action.putValue(Action.NAME, testAction.getName());
-        action.putValue(Action.SMALL_ICON, testAction.getValue(Action.SMALL_ICON));
-        JButton button = toolBar.add(action);
+        JButton button = toolBar.add(testAction);
         button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.previewLayout")); // NOI18N
         button.setFocusPainted(false);
     }

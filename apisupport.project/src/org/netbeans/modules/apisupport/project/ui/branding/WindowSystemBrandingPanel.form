@@ -26,6 +26,13 @@
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="cbEnableAutoSlideInMinimizedMode" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableModeClosing" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableEditorModeDnD" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableViewModeDnD" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableEditorModeUndocking" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableViewModeUndocking" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbEnableModeSliding" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableEditorClosing" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableMinimumSize" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableFloating" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -35,7 +42,7 @@
                   <Component id="cbEnableResizing" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbEnableDnd" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="137" max="32767" attributes="0"/>
+              <EmptySpace pref="127" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -48,9 +55,21 @@
                   <Component id="cbEnableDnd" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="cbEnableViewModeDnD" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="cbEnableEditorModeDnD" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="cbEnableFloating" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="cbEnableViewModeUndocking" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="cbEnableEditorModeUndocking" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="cbEnableSliding" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="cbEnableModeSliding" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="cbEnableAutoSlideInMinimizedMode" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbEnableMaximization" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -58,10 +77,12 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbEnableEditorClosing" min="-2" pref="23" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="cbEnableModeClosing" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="cbEnableResizing" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbEnableMinimumSize" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="32" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -188,6 +209,55 @@
           <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/branding/Bundle.properties" key="SuiteCustomizerWindowSystemBranding.jLabel1.AccessibleContext.accessibleDescription" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbEnableModeSliding">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/branding/Bundle.properties" key="WindowSystemBrandingPanel.cbEnableModeSliding.text" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbEnableViewModeUndocking">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/branding/Bundle.properties" key="WindowSystemBrandingPanel.cbEnableViewModeUndocking.text" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbEnableEditorModeUndocking">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/branding/Bundle.properties" key="WindowSystemBrandingPanel.cbEnableEditorModeUndocking.text" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbEnableViewModeDnD">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/branding/Bundle.properties" key="WindowSystemBrandingPanel.cbEnableViewModeDnD.text" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbEnableEditorModeDnD">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/branding/Bundle.properties" key="WindowSystemBrandingPanel.cbEnableEditorModeDnD.text" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbEnableModeClosing">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/branding/Bundle.properties" key="WindowSystemBrandingPanel.cbEnableModeClosing.text" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbEnableAutoSlideInMinimizedMode">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/branding/Bundle.properties" key="WindowSystemBrandingPanel.cbEnableAutoSlideInMinimizedMode.text" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

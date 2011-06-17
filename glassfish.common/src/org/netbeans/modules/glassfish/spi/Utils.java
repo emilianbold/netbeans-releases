@@ -48,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -206,6 +207,26 @@ public class Utils {
     }
 
     /**
+     * Determine if a local port is occupied.
+     *
+     * @param port
+     * @return true, if the local port is in use.
+     */
+    public static boolean isLocalPortOccupied(int port) {
+        ServerSocket ss = null;
+        boolean retVal = true;
+        try {
+            ss = new ServerSocket(port);
+            retVal = false;
+        } catch (IOException ioe) {
+            // do nothing
+        } finally {
+            if (null != ss) {try { ss.close(); } catch (IOException ioe) {} }
+        }
+        return retVal;
+    }
+
+    /**
      * identify the http/https protocol designator for a port
      *
      */
@@ -269,6 +290,7 @@ public class Utils {
         // Open the socket with a short timeout for connects and reads.
         Socket socket = new Socket();
         try {
+            Logger.getLogger("glassfish-socket-connect-diagnostic").log(Level.FINE, "Using socket.connect", new Exception());
             socket.connect(new InetSocketAddress(hostname, port), PORT_CHECK_TIMEOUT);
             socket.setSoTimeout(PORT_CHECK_TIMEOUT);
         } catch(SocketException ex) { // this could be bug 70020 due to SOCKs proxy not having localhost

@@ -79,4 +79,6 @@ public interface ServerListImplementation {
     public void removePropertyChangeListener(PropertyChangeListener listener);
 
     public void addPropertyChangeListener(PropertyChangeListener listener);
+
+    public void save();
 }

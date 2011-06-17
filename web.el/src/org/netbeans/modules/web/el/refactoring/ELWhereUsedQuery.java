@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.el.ELException;
@@ -61,12 +62,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -75,6 +74,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELIndex;
 import org.netbeans.modules.web.el.ELIndexer.Fields;
@@ -93,66 +93,54 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(ELWhereUsedQuery.class.getName());
 
-    protected RefactoringSessionContext refactoringContext;
-    
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
     }
 
     @Override
-    public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
-        TreePathHandle handle = getHandle();
+    public Problem prepare(final RefactoringElementsBag refactoringElementsBag) {
+        final TreePathHandle handle = getHandle();
         if (handle == null) {
             return null;
         }
-        CompilationInfo info = RefactoringUtil.getCompilationInfo(handle, refactoring);
-        ELTypeUtilities typeUtilities = ELTypeUtilities.create(info.getFileObject(), refactoring.getContext().lookup(ClasspathInfo.class));
         
-        this.refactoringContext = new RefactoringSessionContext(info, typeUtilities);
+        final FileObject file = handle.getFileObject();
+        final AtomicReference<Problem> problemRef = new AtomicReference<Problem>();
+        JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
         try {
-            Element element = resolveElement(handle);
-            if (element == null) {
-                LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
-                return null;
-            }
-            if ((Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind())
-                    && element instanceof ExecutableElement) {
-                return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
-            }
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
-                return handleClass(refactoringElementsBag, handle, element);
-            }
-        } finally {
-            //do not hold the instancies wrapped in the context object since
-            //they can be pretty big and the livecycle of this refactoring plugin
-            //can be pretty long.
-            refactoringContext.dispose(); 
-        }
-        return null;
-    }
+            jsource.runUserActionTask(new Task<CompilationController>() {
 
-    private Element resolveElement(final TreePathHandle handle) {
-        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
-        final Element[] result = new Element[1];
-        try {
-            source.runUserActionTask(new Task<CompilationController>() {
                 @Override
-                public void run(CompilationController cc) throws Exception {
-                    cc.toPhase(JavaSource.Phase.RESOLVED);
-                    result[0] = handle.resolveElement(cc);
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    
+                    CompilationContext ccontext = CompilationContext.create(file, info);
+                    Element element = handle.resolveElement(info);
+                    if (element == null) {
+                        LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle); //NOI18N
+                        return;
+                    }
+                    if ((Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind())
+                            && element instanceof ExecutableElement) {
+                        problemRef.set(handleProperty(ccontext, refactoringElementsBag, handle, (ExecutableElement) element));
+                    }
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
+                        problemRef.set(handleClass(ccontext, refactoringElementsBag, handle, element));
+                    }
                 }
+                
             }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return result[0];
+        
+        return problemRef.get();
     }
-    
-    protected Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
+
+    protected Problem handleClass(CompilationContext info, RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element targetType) {
         TypeElement type = (TypeElement) targetType;
         String clazz = type.getQualifiedName().toString();
-        String beanName = ELVariableResolvers.findBeanName(clazz, getFileObject());
+        String beanName = ELVariableResolvers.findBeanName(info, clazz, getFileObject());
         if (beanName != null) {
             ELIndex index = ELIndex.get(handle.getFileObject());
             Collection<? extends IndexResult> result = index.findIdentifierReferences(beanName);
@@ -163,7 +151,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return null;
     }
 
-    protected Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, ExecutableElement targetType) {
+    protected Problem handleProperty(CompilationContext info, RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, ExecutableElement targetType) {
         String propertyName = RefactoringUtil.getPropertyName(targetType.getSimpleName().toString());
         ELIndex index = ELIndex.get(handle.getFileObject());
         final Set<IndexResult> result = new HashSet<IndexResult>();
@@ -179,11 +167,11 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         for (ELElement each : getMatchingElements(result)) {
             //use the Node's original offset since at least the JsfELVariableResolver uses the html snapshot embedded
             //offsets. Since the html is the top level for facelets it will match.
-            List<VariableInfo> variables = ELVariableResolvers.getVariables(each.getSnapshot(), each.getOriginalOffset().getStart()); 
+            List<VariableInfo> variables = ELVariableResolvers.getVariables(info, each.getSnapshot(), each.getOriginalOffset().getStart()); 
 
             //finds all EL AST Node-s representing the refactored property
             //the code tries to resolves the base object either as a bean or as a property
-            List<Node> matchingNodes = findMatchingPropertyNodes(each.getNode(),
+            List<Node> matchingNodes = findMatchingPropertyNodes(info, each.getNode(),
                     targetType,
                     each.getSnapshot().getSource().getFileObject(),
                     variables);            
@@ -203,7 +191,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         }
     }
 
-    private List<Node> findMatchingPropertyNodes(Node root,
+    private List<Node> findMatchingPropertyNodes(final CompilationContext info, Node root,
             final ExecutableElement targetMethod,
             final FileObject context,
             final List<VariableInfo> variables) {
@@ -219,12 +207,12 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                     String astIdent = node.getImage();
                     
                     //try to resolve the identifier as a bean class
-                    String beanClass = ELVariableResolvers.findBeanClass(astIdent, context);
+                    String beanClass = ELVariableResolvers.findBeanClass(info, astIdent, context);
                     
                     TypeElement fmbType = null;
                     if (beanClass != null) {
                         //found corresponding bean class
-                        fmbType = refactoringContext.getInfo().getElements().getTypeElement(beanClass);                        
+                        fmbType = info.info().getElements().getTypeElement(beanClass);                        
                     } else {
                         //no bean found, try to resolve as a variable
                         VariableInfo var = findVariable(astIdent, variables);
@@ -237,7 +225,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                             } else {
                                 //unresolved, we need to resolve the corresponding expression
                                 //to get the type
-                                fmbType = (TypeElement)refactoringContext.getUtilities().getReferredType(var, context);
+                                fmbType = (TypeElement)ELTypeUtilities.getReferredType(info, var, context);
                             }
                         }
                     } 
@@ -256,14 +244,14 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                         if (enclosing == null) {
                             break;
                         }
-                        if (isSameTypeOrSupertype(targetType, enclosing) && refactoringContext.getUtilities().isSameMethod(child, targetMethod)) {
-                            TypeMirror matching = getTypeForProperty(child, enclosing);
+                        if (isSameTypeOrSupertype(info, targetType, enclosing) && ELTypeUtilities.isSameMethod(info, child, targetMethod)) {
+                            TypeMirror matching = getTypeForProperty(info, child, enclosing);
                             if (matching != null) {
                                 result.add(child);
                             }
 
                         } else {
-                            enclosing = getTypeForProperty(child, enclosing);
+                            enclosing = getTypeForProperty(info, child, enclosing);
                         }
                     }
                 }
@@ -272,35 +260,18 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         return result;
     }
     
-    private boolean isSameTypeOrSupertype(TypeMirror tm1, TypeMirror tm2) {
+    private boolean isSameTypeOrSupertype(CompilationContext info, TypeMirror tm1, TypeMirror tm2) {
         DeclaredType declaredTm2 = (DeclaredType)tm2;
-        List<Element> all = refactoringContext.getUtilities().getSuperTypesFor(declaredTm2.asElement());
+        List<Element> all = ELTypeUtilities.getSuperTypesFor(info, declaredTm2.asElement());
         for(Element e : all) {
             TypeMirror tm = e.asType();
-            if(isSameType(tm1, tm)) {
+            if(info.info().getTypes().isSameType(tm1, tm2)) {
                 return true;
             }
         }
         return false;
     }
     
-    //marekf: a bad fix for an issue I do not know the right solution for
-    private boolean isSameType(TypeMirror tm1, TypeMirror tm2) {
-        if(refactoringContext.getInfo().getTypes().isSameType(tm1, tm2)) {
-            return true;
-        } else {
-            //XXX this must be resolved properly ??? I cannot spot any difference 
-            //between two types which supposedly 
-            //represents the same type but Types.isSameType() claims they do not.
-            //It looks like the mirrors are obtained from different JavaSource contexts.
-            if(tm1.getKind() == TypeKind.DECLARED && tm2.getKind() == TypeKind.DECLARED) {
-                return ((DeclaredType)tm1).asElement().getSimpleName().
-                        contentEquals((((DeclaredType)tm2).asElement().getSimpleName()));
-            } else {
-                return false;
-            }
-        }
-    }
     
     private VariableInfo findVariable(String varName, List<VariableInfo> variables) {
         for(VariableInfo var : variables) {
@@ -333,10 +304,10 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
      * @param enclosing
      * @return
      */
-    private TypeMirror getTypeForProperty(Node property, TypeMirror enclosing) {
+    private TypeMirror getTypeForProperty(CompilationContext info, Node property, TypeMirror enclosing) {
         String name = property.getImage();
-        Element el = refactoringContext.getInfo().getTypes().asElement(enclosing);
-        for(Element element : refactoringContext.getUtilities().getSuperTypesFor(el)) {
+        Element el = info.info().getTypes().asElement(enclosing);
+        for(Element element : ELTypeUtilities.getSuperTypesFor(info, el)) {
             List<? extends Element> enclosedElements = element.getEnclosedElements();
             for (Element each : ElementFilter.methodsIn(enclosedElements)) {
                 // we're only interested in public methods
@@ -347,11 +318,11 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                 ExecutableElement methodElem = (ExecutableElement) each;
                 String methodName = methodElem.getSimpleName().toString();
 
-                if (refactoringContext.getUtilities().isSameMethod(property, methodElem)) {
-                    return refactoringContext.getUtilities().getReturnType(methodElem);
+                if (ELTypeUtilities.isSameMethod(info, property, methodElem)) {
+                    return ELTypeUtilities.getReturnType(info, methodElem);
 
                 } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
-                    return refactoringContext.getUtilities().getReturnType(methodElem);
+                    return ELTypeUtilities.getReturnType(info, methodElem);
                 }
             }
         }
@@ -385,29 +356,22 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     
     protected class RefactoringSessionContext {
         
-        private CompilationInfo info;
-        private ELTypeUtilities utilities;
+        private CompilationContext info;
         private boolean active;
 
-        public RefactoringSessionContext(CompilationInfo info, ELTypeUtilities utilities) {
+        public RefactoringSessionContext(CompilationContext info) {
             this.info = info;
-            this.utilities = utilities;
             this.active = true;
         }
 
-        public CompilationInfo getInfo() {
+        public CompilationContext getInfo() {
             checkActive();
             return info;
         }
 
-        public ELTypeUtilities getUtilities() {
-            checkActive();
-            return utilities;
-        }
         
         protected void dispose() {
             info = null;
-            utilities = null;
             active = false;
         }
         

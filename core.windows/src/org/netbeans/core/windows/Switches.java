@@ -47,6 +47,7 @@ package org.netbeans.core.windows;
 import java.util.MissingResourceException;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Window system switches
@@ -61,6 +62,22 @@ public final class Switches {
      */
     public static boolean isTopComponentDragAndDropEnabled() {
         return getSwitchValue( "TopComponent.DragAndDrop.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True if Drag'n'Drop of the whole view Mode (window group) is enabled.
+     * @since 2.30
+     */
+    public static boolean isViewModeDragAndDropEnabled() {
+        return getSwitchValue( "Mode.View.DragAndDrop.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True if Drag'n'Drop of the whole editor Mode (document group) is enabled.
+     * @since 2.30
+     */
+    public static boolean isEditorModeDragAndDropEnabled() {
+        return getSwitchValue( "Mode.Editor.DragAndDrop.Enabled", true ); //NOI18N
     }
 
     /**
@@ -78,6 +95,22 @@ public final class Switches {
     public static boolean isTopComponentUndockingEnabled() {
         return getSwitchValue( "TopComponent.Undocking.Enabled", true ); //NOI18N
     }
+    
+    /**
+     * @return True if undocking of the whole view Mode (window group) is enabled.
+     * @since 2.30
+     */
+    public static boolean isViewModeUndockingEnabled() {
+        return getSwitchValue( "Mode.View.Undocking.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True if undocking of the whole editor Mode (document group) is enabled.
+     * @since 2.30
+     */
+    public static boolean isEditorModeUndockingEnabled() {
+        return getSwitchValue( "Mode.Editor.Undocking.Enabled", true ); //NOI18N
+    }
 
     /**
      * @param tc
@@ -93,6 +126,14 @@ public final class Switches {
      */
     public static boolean isTopComponentSlidingEnabled() {
         return getSwitchValue( "TopComponent.Sliding.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True if the whole Mode (window group) can be minimized (slided out).
+     * @since 2.30
+     */
+    public static boolean isModeSlidingEnabled() {
+        return getSwitchValue( "Mode.Sliding.Enabled", true ); //NOI18N
     }
 
     /**
@@ -126,6 +167,23 @@ public final class Switches {
     public static boolean isEditorTopComponentClosingEnabled() {
         return getSwitchValue( "Editor.TopComponent.Closing.Enabled", true ); //NOI18N
     }
+    
+    /**
+     * @return True if TopComponents should automatically slide-out when opened
+     * in a minimized mode.
+     * @since 2.30
+     */
+    public static boolean isTopComponentAutoSlideInMinimizedModeEnabled() {
+        return getSwitchValue( "TopComponent.Auto.Slide.In.Minimized.Mode.Enabled", true ); //NOI18N
+    }
+
+    /**
+     * @return True if it is possible to close the whole Mode of view TopComponents.
+     * @since 2.30
+     */
+    public static boolean isModeClosingEnabled() {
+        return getSwitchValue( "Mode.Closing.Enabled", true ); //NOI18N
+    }
 
     /**
      * @param tc
@@ -157,6 +215,27 @@ public final class Switches {
      */
     public static boolean isSplitterRespectMinimumSizeEnabled() {
         return getSwitchValue( "Splitter.Respect.MinimumSize.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * 
+     * @return True if it is possible to dock document windows together with
+     * non-document windows and vice-versa. The switch has the same meaning
+     * as system property <code>netbeans.winsys.allow.dock.anywhere</code>.
+     * @since 2.33
+     */
+    public static boolean isMixingOfEditorsAndViewsEnabled() {
+        return getSwitchValue( "Mix.Editors.And.Views.Enabled", true ); //NOI18N
+    }
+    
+    /**
+     * @return True to hide and show the main window while switching window layout
+     * role.
+     * @see WindowManager#setRole(java.lang.String) 
+     * @since 2.34
+     */
+    public static boolean isShowAndHideMainWindowWhileSwitchingRole() {
+        return getSwitchValue( "WinSys.Show.Hide.MainWindow.While.Switching.Role", true ); //NOI18N
     }
     
     private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
