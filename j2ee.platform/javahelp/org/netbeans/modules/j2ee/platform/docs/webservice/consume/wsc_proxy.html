@@ -50,7 +50,7 @@ Use is subject to license terms.  *-->
         <li>In the Options window, set the proxy host and port number.</ol>
         <p>The changes take effect when you exit the Options window.
 
-        <p><b>To deploy to the GlassFish Server:</b>
+        <p><b>To set a proxy on the GlassFish Server:</b>
         <p>Typically, an error such as the following is returned when the proxy settings
         for a web service or web service client deployed to the GlassFish Server have
         not been set correctly:
@@ -59,12 +59,18 @@ Use is subject to license terms.  *-->
         <ol>
         <li>Open the Services window (Ctrl-5).
         <li>If the GlassFish Server is not started, start it.
-        <li>Expand the GlassFish
-        Server node, right-click the JVM node, and choose Properties.
-        <li>In the JVM Properties dialog box, click JVMOptions.
-        <li>Add the following properties:
-        <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</i></tt>
-        <br><tt>-Dhttp.proxyPort=<i>your.proxy.port.number</i></tt></ol>
+        <li>Right-click the GlassFish
+        Server node and select View Admin Console. The Administration Console opens in a browser.</li>
+        <li>In the left side tree menu, go to Configurations &gt; server-config &gt; JVM settings.
+        The JVM General Settings page opens.</li>
+        
+        <li>Click Add JVM Option. An empty field appears in the top of the list of JVM options.</li>
+        <li>Type in the following property:
+            <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</i></tt></p></li>
+        <li>Click Add JVM Option again and type in the following property:
+            <br><tt>-Dhttp.proxyPort=<i>your.proxy.port.number</i></tt></li>
+        <li>Click Save.</li>
+        </ol>
         <p>Stop and restart the server for the new proxy settings to take effect.
 
         <p><b>To deploy to the JBoss Server:</b>
