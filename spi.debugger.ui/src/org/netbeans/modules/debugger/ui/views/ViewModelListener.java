@@ -201,6 +201,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         preferences.addPreferenceChangeListener(prefListener);
         synchronized (this) {
             isUp = true;
+            notifyAll();
         }
         updateModelLazily ();
     }
@@ -215,6 +216,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             return ;
         }
         synchronized(this) {
+            if (!isUp) {
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                }
+            }
             DebuggerManager.getDebuggerManager ().removeDebuggerListener (
                 DebuggerManager.PROP_CURRENT_ENGINE,
                 this
@@ -302,7 +309,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     }
 
     private synchronized void updateModel() {
-        isUp = true;
         RP.post(new Runnable() {
             public void run() {
                 updateModelLazily();

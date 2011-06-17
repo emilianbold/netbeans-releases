@@ -44,6 +44,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
@@ -64,6 +65,10 @@ public class StepTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(StepTest.class);
+    }
+    
     public void testStepOver () throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();

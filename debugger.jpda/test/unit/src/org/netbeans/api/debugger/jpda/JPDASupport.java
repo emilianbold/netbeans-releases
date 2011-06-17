@@ -44,6 +44,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,9 +62,13 @@ import com.sun.jdi.connect.*;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.Bootstrap;
 //import org.netbeans.api.java.classpath.ClassPath;
+import junit.framework.Test;
+import junit.framework.TestCase;
 import org.netbeans.api.java.classpath.ClassPath;
 //import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbModuleSuite.Configuration;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
@@ -98,6 +103,13 @@ public class JPDASupport implements DebuggerManagerListener {
                 debuggerEngine = de [i];
                 break;
             }
+    }
+    
+    public static Test createTestSuite(Class<? extends TestCase> clazz) {
+        Configuration suiteConfiguration = NbModuleSuite.createConfiguration(clazz);
+        suiteConfiguration = suiteConfiguration.gui(false);
+        //suiteConfiguration = suiteConfiguration.reuseUserDir(false);
+        return NbModuleSuite.create(suiteConfiguration);
     }
 
     
@@ -267,6 +279,25 @@ public class JPDASupport implements DebuggerManagerListener {
         }
     }
 
+    /*public void waitState (int state) {
+        synchronized (STATE_LOCK) {
+            int ds = jpdaDebugger.getState ();
+            System.err.println("JPDASupport.waitState("+state+"): ds = "+ds+", jpdaDebugger = "+jpdaDebugger);
+            while ( ds != state &&
+                    ds != JPDADebugger.STATE_DISCONNECTED
+            ) {
+                try {
+                    STATE_LOCK.wait ();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace ();
+                }
+                ds = jpdaDebugger.getState ();
+                System.err.println("JPDASupport.waitState("+state+"): new ds = "+ds+", jpdaDebugger = "+jpdaDebugger);
+            }
+            System.err.println("JPDASupport.waitState("+state+"): state reached.");
+        }
+    }*/
+
     public JPDADebugger getDebugger() {
         return jpdaDebugger;
     }
@@ -323,16 +354,8 @@ public class JPDASupport implements DebuggerManagerListener {
         boolean server
     ) throws IOException {
 
-        URLClassLoader ucl = (URLClassLoader) JPDASupport.class.
-            getClassLoader ();
-        URL [] urls = ucl.getURLs ();
-
-        StringBuffer cp = new StringBuffer (200);
-        for (int i = 0; i < urls.length; i++) {
-            URL url = urls [i];
-            cp.append (url.getPath ());
-            cp.append (File.pathSeparatorChar);
-        }
+        String cp = getClassPath();
+        //System.err.println("CP = "+cp);
 
         String [] cmdArray = new String [] {
             System.getProperty ("java.home") + File.separatorChar + 
@@ -354,6 +377,41 @@ public class JPDASupport implements DebuggerManagerListener {
         }
 
         return Runtime.getRuntime ().exec (cmdArray);
+    }
+    
+    private static String getClassPath() {
+        StringBuilder cp = new StringBuilder (200);
+        ClassLoader cl = JPDASupport.class.getClassLoader ();
+        if (cl instanceof URLClassLoader) {
+            URLClassLoader ucl = (URLClassLoader) cl;
+            URL [] urls = ucl.getURLs ();
+            
+            for (int i = 0; i < urls.length; i++) {
+                URL url = urls [i];
+                cp.append (url.getPath ());
+                cp.append (File.pathSeparatorChar);
+            }
+        } else if (cl.getClass().getName().indexOf("org.netbeans.ModuleManager$SystemClassLoader") >= 0) {
+            Class jarClassLoaderClass = cl.getClass().getSuperclass();
+            try {
+                java.lang.reflect.Field sourcesField = jarClassLoaderClass.getDeclaredField("sources");
+                sourcesField.setAccessible(true);
+                Object[] sources = (Object[]) sourcesField.get(cl);
+                for (int i = 0; i < sources.length; i++) {
+                    Method getURL = sources[i].getClass().getMethod("getURL");
+                    getURL.setAccessible(true);
+                    URL url = (URL) getURL.invoke(sources[i]);
+                    cp.append (url.getPath ());
+                    cp.append (File.pathSeparatorChar);
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException("Problem retrieving class path from class loader: "+cl, ex);
+            }
+        } else {
+            throw new RuntimeException("Unsupported class loader: "+cl);
+        }
+        
+        return cp.toString();
     }
     
     public String toString () {

@@ -47,6 +47,7 @@ package org.netbeans.api.debugger.jpda;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import java.net.URL;
+import junit.framework.Test;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.junit.NbTestCase;
@@ -65,21 +66,26 @@ public class BreakpointResumeTest  extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(BreakpointResumeTest.class);
+    }
+
     public void testBreakpointResume () throws Exception {
         JPDASupport support = null;
         JPDASupport.removeAllBreakpoints ();
+        TestBreakpointListener tbl = new TestBreakpointListener ();
         try {
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(sourceRoot + "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java"), 
-                36
-            );
-            lb.addJPDABreakpointListener (new TestBreakpointListener ());
+            Utils.BreakPositions bp = Utils.getBreakPositions(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
+            lb.addJPDABreakpointListener (tbl);
             DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
 
             support = JPDASupport.attach (
                 "org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp"
             );
             support.waitState (JPDADebugger.STATE_DISCONNECTED);
+            assertTrue("The breakpoint "+lb+" was not reached.", tbl.isReached());
             DebuggerManager.getDebuggerManager ().removeBreakpoint (lb);
         } finally {
             if (support != null) {
@@ -89,12 +95,19 @@ public class BreakpointResumeTest  extends NbTestCase {
     }
 
     private class TestBreakpointListener implements JPDABreakpointListener {
+        
+        private volatile boolean reached = false;
 
         public TestBreakpointListener() {
         }
 
         public void breakpointReached(JPDABreakpointEvent event) {
+            reached = true;
             event.resume();
+        }
+        
+        public boolean isReached() {
+            return reached;
         }
     }
 }

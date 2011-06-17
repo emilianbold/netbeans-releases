@@ -45,6 +45,7 @@
 package org.netbeans.api.debugger.jpda;
 
 import java.util.*;
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
 
@@ -66,6 +67,10 @@ public class LocalVariablesTest extends NbTestCase {
         super(s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(LocalVariablesTest.class);
+    }
+    
     public void testWatches () throws Exception {
         try {
             Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 

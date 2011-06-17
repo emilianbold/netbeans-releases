@@ -45,6 +45,7 @@
 package org.netbeans.api.debugger.jpda;
 
 import java.util.List;
+import junit.framework.Test;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
@@ -68,6 +69,10 @@ public class ExpressionStepTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(ExpressionStepTest.class);
+    }
+    
     public void testExpressionStep() throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();

@@ -44,6 +44,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
 
@@ -61,6 +62,10 @@ public class EvaluationTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(EvaluationTest.class);
+    }
+    
     protected void setUp () throws Exception {
         super.setUp ();
         JPDASupport.removeAllBreakpoints ();

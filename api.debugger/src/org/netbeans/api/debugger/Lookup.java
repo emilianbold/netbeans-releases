@@ -240,6 +240,7 @@ abstract class Lookup implements ContextProvider {
         private final Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
         private RequestProcessor.Task refreshListEnabled;
         private RequestProcessor.Task refreshListDisabled;
+        private final Map<String, org.openide.util.Lookup> pathLookups = new HashMap<String, org.openide.util.Lookup>();
 
         
         MetaInf (String rootFolder) {
@@ -288,7 +289,15 @@ abstract class Lookup implements ContextProvider {
             String pathResourceName = "Debugger/" +
                 ((rootFolder == null) ? "" : rootFolder + "/") +
                 ((folder == null) ? "" : folder + "/");
-            return new PathLookup(pathResourceName);
+            org.openide.util.Lookup l;
+            synchronized (pathLookups) {
+                l = pathLookups.get(pathResourceName);
+                if (l == null) {
+                    l = new PathLookup(pathResourceName);
+                }
+                pathLookups.put(pathResourceName, l);
+            }
+            return l;
         }
 
         private <T> Result<T> listLookup(String folder, Class<T> service) {
@@ -353,14 +362,32 @@ abstract class Lookup implements ContextProvider {
             throw new InternalError ("Can not read from Meta-inf!");
         }
         
+        private void postponedListenOn(final ClassLoader cl) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    listenOn(cl);
+                }
+            });
+        }
+        
         private void listenOn(ClassLoader cl) {
+            boolean doesNotContainCl = false;
             synchronized(moduleChangeListeners) {
                 if (!moduleChangeListeners.containsKey(cl)) {
-                    for (ModuleInfo mi : moduleLookupResult.allInstances()) {
-                        if (mi.isEnabled() && mi.getClassLoader() == cl) {
-                            ModuleChangeListener l = new ModuleChangeListener(cl);
-                            mi.addPropertyChangeListener(WeakListeners.propertyChange(l, mi));
-                            moduleChangeListeners.put(cl, l);
+                    doesNotContainCl = true;
+                }
+            }
+            if (doesNotContainCl) {
+                Collection<? extends ModuleInfo> allInstances = moduleLookupResult.allInstances();
+                synchronized (moduleChangeListeners) {
+                    if (!moduleChangeListeners.containsKey(cl)) { // Still does not contain
+                        for (ModuleInfo mi : allInstances) {
+                            if (mi.isEnabled() && mi.getClassLoader() == cl) {
+                                ModuleChangeListener l = new ModuleChangeListener(cl);
+                                mi.addPropertyChangeListener(WeakListeners.propertyChange(l, mi));
+                                moduleChangeListeners.put(cl, l);
+                            }
                         }
                     }
                 }
@@ -368,8 +395,9 @@ abstract class Lookup implements ContextProvider {
         }
         
         private void listenOnDisabledModules() {
+            Collection<? extends ModuleInfo> allInstances = moduleLookupResult.allInstances();
             synchronized (moduleChangeListeners) {
-                for (ModuleInfo mi : moduleLookupResult.allInstances()) {
+                for (ModuleInfo mi : allInstances) {
                     if (!mi.isEnabled() && !disabledModuleChangeListeners.containsKey(mi)) {
                         ModuleChangeListener l = new ModuleChangeListener(null);
                         mi.addPropertyChangeListener(WeakListeners.propertyChange(l, mi));
@@ -810,7 +838,11 @@ abstract class Lookup implements ContextProvider {
                                     "Can not cast instance "+instance+" registered in '"+folder+"' folder to "+service+". className = "+className+", lookupItem = "+lookupItem));
                             return null;
                         } finally {
-                            listenOn(instance.getClass().getClassLoader());
+                            if (Thread.holdsLock(MetaInfLookupList.this)) {
+                                postponedListenOn(instance.getClass().getClassLoader());
+                            } else {
+                                listenOn(instance.getClass().getClassLoader());
+                            }
                         }
                     } else {
                         return null;

@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import junit.framework.AssertionFailedError;
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
@@ -74,6 +75,10 @@ public class EvaluatorTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(EvaluatorTest.class);
+    }
+    
     protected void setUp () throws Exception {
         super.setUp ();
         System.setProperty("debugger.evaluator2", "true");

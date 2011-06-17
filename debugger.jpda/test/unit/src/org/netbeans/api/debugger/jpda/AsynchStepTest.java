@@ -44,6 +44,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -63,6 +64,10 @@ public class AsynchStepTest extends NbTestCase {
 
     public AsynchStepTest (String s) {
         super (s);
+    }
+    
+    public static Test suite() {
+        return JPDASupport.createTestSuite(AsynchStepTest.class);
     }
 
     public void testStepOver () throws Exception {
