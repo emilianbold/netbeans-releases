@@ -1241,6 +1241,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    assert getCaptureState() == CaptureState.NONE;
 	}
         
+        // get supported features
+        initFeatures();
+        
         //init global parameters
         send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
@@ -1639,8 +1642,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         GdbFrame f = new GdbFrame(this, frame, null);
 
-	if (index != -1)
-	    threads[index] = new GdbThread(this, threadUpdater, tid_no, f);
+	//if (index != -1)
+	    //threads[index] = new GdbThread(this, threadUpdater, tid_no, f);
         if (isCurrent) {
             selectFrame(f.getNumber()); // notify gdb to change current frame
 //            if (get_frames || get_locals) { // get Frames for current thread
@@ -1674,28 +1677,97 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             new MiCommandImpl("-thread-select " + id_no) { // NOI18N
             @Override
                 protected void onDone(MIRecord record) {
+                    requestStack(record);
                     setCurrentThread(index, record, isCurrent);
                     finish();
                 }
 	    };
         gdb.sendCommand(cmd);
     }
+    
+    private void initFeatures() {
+        MiCommandImpl cmd = new MiCommandImpl("-list-features") { //NOI18N
+            @Override
+            protected void onDone(MIRecord record) {
+                peculiarity.setFeatures(record);
+                finish();
+            }
+        };
+        cmd.dontReportError();
+        gdb.sendCommand(cmd);
+    }
 
     private void showThreads() {
-	// -thread-list-all-threads and -thread-info
-	// are not implemented in gdb 6.4,
-	// can only use -thread-list-ids and -thread-select
-	// to work around the problem, but we don't know
-	// which thread is the current thread
-        MICommand cmd =
-            new MiCommandImpl("-thread-list-ids") { // NOI18N
-            @Override
-		protected void onDone(MIRecord record) {
-		    getAllThreads(record);
-		    finish();
-		}
-	    };
-        gdb.sendCommand(cmd);
+        if (peculiarity.supportsThreadInfo()) {
+            MICommand cmd = new MiCommandImpl("-thread-info") { // NOI18N
+                @Override
+                protected void onDone(MIRecord record) {
+                    List<GdbThread> res = new ArrayList<GdbThread>();
+                    MITList results = record.results();
+                    String currentThreadId = results.valueOf("current-thread-id").asConst().value();
+                    MIValue threadsValue = results.valueOf("threads");
+                    for (MITListItem thr : threadsValue.asList()) {
+                        MITList thrList = (MITList)thr;
+                        String id = thrList.valueOf("id").asConst().value();
+                        String name = thrList.valueOf("target-id").asConst().value();
+                        MIValue frame = thrList.valueOf("frame");// frame entry // NOI18N
+                        GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
+                        GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, f);
+                        if (id.equals(currentThreadId)) {
+                            gdbThread.setCurrent(true);
+                        }
+                        res.add(gdbThread);
+                    }
+                    threads = res.toArray(new GdbThread[res.size()]);
+                    threadUpdater.treeChanged();
+                    finish();
+                }
+            };
+            gdb.sendCommand(cmd);
+        } else {
+            // Workaround for older gdb versions that do not support -thread-info
+            // use console "info threads" instead and put everything into name
+
+            MICommand cmd = new MiCommandImpl("info threads") { // NOI18N
+                @Override
+                protected void onDone(MIRecord record) {
+                    String msg = record.command().getConsoleStream();
+                    if (msg.length() > 0) {
+                        List<GdbThread> list = new ArrayList<GdbThread>();
+                        StringBuilder sb = new StringBuilder();
+                        boolean current = false;
+                        for (String line : msg.split("\\\\n")) { // NOI18N
+                            if (line.startsWith("    ")) { // NOI18N
+                                sb.append(" " + line.replace("\\n", "").trim()); // NOI18N
+                            } else {
+                                if (sb.length() > 0) {
+                                    GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, sb.toString());
+                                    gdbThread.setCurrent(current);
+                                    list.add(gdbThread);
+                                    sb.delete(0, sb.length());
+                                    current = false;
+                                }
+                                line = line.trim();
+                                char ch = line.charAt(0);
+                                if (ch == '*' || Character.isDigit(ch)) {
+                                    current = (ch == '*');
+                                    sb.append(line);
+                                }
+                            }
+                        }
+                        if (sb.length() > 0) {
+                            GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, sb.toString());
+                            gdbThread.setCurrent(current);
+                            list.add(gdbThread);
+                        }
+                        threads = list.toArray(new GdbThread[list.size()]);
+                        threadUpdater.treeChanged();
+                        finish();
+                    }
+                }
+            };
+            gdb.sendCommand(cmd);
+        }
     }
 
     /*
