@@ -111,7 +111,7 @@ public class ProjectUtilities {
         return OpenProjects.getDefault().getOpenProjects();
     }
 
-    public static Project[] getSortedProjects(Project[] projects) {
+    public static Lookup.Provider[] getSortedProjects(Lookup.Provider[] projects) {
         ArrayList projectsArray = new ArrayList(projects.length);
 
         for (int i = 0; i < projects.length; i++) {

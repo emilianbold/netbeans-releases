@@ -103,7 +103,7 @@ public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
 
     @Override
     public Provider[] getSortedProjects(Provider[] openedProjects) {
-        return ProjectUtilities.getSortedProjects((Project[])openedProjects);
+        return ProjectUtilities.getSortedProjects(openedProjects);
     }
     
     @Override
