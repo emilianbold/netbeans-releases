@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.zend;
 
 import java.util.Arrays;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -182,6 +183,8 @@ public class ZendScript extends PhpProgram {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                 NbBundle.getMessage(ZendScript.class, "MSG_ProviderRegistrationInfo"),
                 NotifyDescriptor.INFORMATION_MESSAGE));
+        } catch (CancellationException ex) {
+            // canceled
         } catch (ExecutionException ex) {
             UiUtils.processExecutionException(ex, getOptionsSubPath());
         } catch (InterruptedException ex) {
@@ -205,6 +208,8 @@ public class ZendScript extends PhpProgram {
     private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {
         try {
             executeAndWait(processBuilder, executionDescriptor, title);
+        } catch (CancellationException ex) {
+            // canceled
         } catch (ExecutionException ex) {
             if (warnUser) {
                 UiUtils.processExecutionException(ex, getOptionsSubPath());
