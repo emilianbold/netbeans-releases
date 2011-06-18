@@ -47,6 +47,7 @@ package org.netbeans.api.debugger.jpda;
 import java.io.IOException;
 
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -71,6 +72,10 @@ public class LineBreakpointTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(LineBreakpointTest.class);
+    }
+    
     public void testConditionalBreakpoint() throws Exception {
         Utils.BreakPositions bp = Utils.getBreakPositions(TEST_APP_PATH);
         doTestBreakpointComplete (

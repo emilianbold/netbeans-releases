@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.debugger.jpda;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.Utils.BreakPositions;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
@@ -64,6 +65,10 @@ public class JDICallException extends NbTestCase {
         super(s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(JDICallException.class);
+    }
+    
     public void testInvokeException() throws Exception {
 
 

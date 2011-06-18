@@ -53,6 +53,7 @@ import org.netbeans.junit.NbTestCase;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import junit.framework.Test;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 
@@ -76,6 +77,10 @@ public class JPDAStepTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(JPDAStepTest.class);
+    }
+    
      public void testStepInto () throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();

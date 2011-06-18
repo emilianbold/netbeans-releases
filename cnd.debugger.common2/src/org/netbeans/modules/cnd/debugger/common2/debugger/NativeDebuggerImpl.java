@@ -44,6 +44,10 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
@@ -142,17 +146,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected ListMap<WatchVariable> watches = new ListMap<WatchVariable>();
 
     // local stuff
-    protected ModelChangeDelegator localUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator localUpdater = new ModelChangeDelegator();
     private boolean showAutos = false;
     protected final ArrayList<Variable> autos = new ArrayList<Variable>();
 
     // stack stuff
     protected Frame[] guiStackFrames = null;
     protected Frame currentFrame;
-    protected ModelChangeDelegator stackUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator stackUpdater = new ModelChangeDelegator();
 
     // thread stuff
-    protected ModelChangeDelegator threadUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator threadUpdater = new ModelChangeDelegator();
 
     // assembly level stuff
     private boolean srcRequested = true;
@@ -408,6 +412,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         //System.out.println("STATE CHANGED @@@@@@@@@ " + state);
         if (isCurrent()) {
             updateActions();
+	    invalidateSessionData(); // CR 6993279
         } else {
             // When user switches sessions by hand then we'll adjust
             // the actions.
@@ -1645,5 +1650,24 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     public Variable[] getAutos() {
 	Variable array[] = autos.toArray(new Variable[autos.size()]);
 	return array;
+    }
+
+    public void copyStack() {
+        if (guiStackFrames == null)
+	    return;
+        StringBuilder frameStr = new StringBuilder(guiStackFrames.length);
+        for (int fx = 0; fx < guiStackFrames.length; fx++) {
+	    frameStr.append(guiStackFrames[fx].getLocationName());
+	    frameStr.append('\n');
+	}
+	Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
+        if (clipboard == null) {
+            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        }
+        Transferable transferableText =
+                new StringSelection(frameStr.toString());
+        clipboard.setContents(
+                transferableText,
+                null);
     }
 }

@@ -46,6 +46,7 @@ import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import junit.framework.Test;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -74,6 +75,10 @@ public class ConcurrencyTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(ConcurrencyTest.class);
+    }
+    
     @Override
     protected void setUp () throws Exception {
         super.setUp ();

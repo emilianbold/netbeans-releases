@@ -92,8 +92,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final boolean trace = Boolean.getBoolean("cnd.remote.directory.trace"); //NOI18N
 
     private Reference<DirectoryStorage> storageRef = new SoftReference<DirectoryStorage>(null);
+    private MagicCache magicCache;
+
     private static final class RefLock {}
     private final Object refLock = new RefLock();    
+
+    private static final class MagicLock {}
+    private final Object magicLock = new MagicLock();    
 
     public static RemoteDirectory createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
@@ -1174,6 +1179,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     public final InputStream getInputStream() throws FileNotFoundException {
         throw new FileNotFoundException(getPath());
+    }
+
+    public byte[] getMagic(RemotePlainFile file) {
+        return getMagicCache().get(file.getNameExt());
+    }
+
+    private MagicCache getMagicCache() {
+        synchronized (magicLock) {
+            if (magicCache == null) {
+                magicCache = new MagicCache(this);
+            }
+        }
+        return magicCache;
     }
 
     @Override

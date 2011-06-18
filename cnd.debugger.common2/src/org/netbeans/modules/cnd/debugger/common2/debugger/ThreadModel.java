@@ -50,6 +50,7 @@ import java.awt.datatransfer.Transferable;
 
 import javax.swing.Action;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.debugger.common2.values.VariableValue;
 
 import org.openide.util.datatransfer.PasteType;
 
@@ -132,10 +133,16 @@ public final class ThreadModel extends ModelListenerSupport
 
     // interface NodeModel
     public String getDisplayName(Object node) throws UnknownTypeException {
-	if (node == ROOT)
+	if (node == ROOT) {
 	    return ROOT;
-	else
-	    return getThread(node).getName();
+        } else {
+            Thread thread = getThread(node);
+            if (thread.isCurrent()) {
+                return VariableValue.bold(thread.getName());
+            } else {
+                return thread.getName();
+            }
+        }
     }
 
     /* OLD

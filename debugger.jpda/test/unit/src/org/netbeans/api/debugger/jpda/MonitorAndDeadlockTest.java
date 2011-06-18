@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 
 import java.util.Set;
+import junit.framework.Test;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 
@@ -68,6 +69,10 @@ public class MonitorAndDeadlockTest extends NbTestCase {
     /** Creates a new instance of MonitorAndDeadlockTest */
     public MonitorAndDeadlockTest(String s) {
         super(s);
+    }
+    
+    public static Test suite() {
+        return JPDASupport.createTestSuite(MonitorAndDeadlockTest.class);
     }
     
     protected void setUp () throws Exception {

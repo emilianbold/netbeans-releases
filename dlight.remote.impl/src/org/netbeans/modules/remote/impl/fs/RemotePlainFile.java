@@ -59,6 +59,7 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -68,6 +69,13 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
     private final char fileTypeChar;
     private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
+    private ThreadLocal<byte[]> magic = new ThreadLocal<byte[]>() {
+
+        @Override
+        protected byte[] initialValue() {
+            return null;
+        }
+    };
 
     public static RemotePlainFile createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
@@ -109,9 +117,56 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     public RemoteDirectory getParent() {
         return (RemoteDirectory) super.getParent(); // cast guaranteed by constructor
     }
+
+    @Override
+    public String getMIMEType() {
+        try {
+            RemoteDirectory parent= RemoteFileSystemUtils.getCanonicalParent(this);
+            if (parent != null) {
+                byte[] arr = parent.getMagic(this);
+                if (arr != null) {
+                    magic.set(arr);
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        try {
+            return super.getMIMEType();
+        } finally {
+            magic.set(null);
+        }
+    }
+    
+    //org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern.match(MIMEResolverImpl.java:801)
+    private boolean isMimeResolving() {
+        for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            if ("org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern".equals(element.getClassName())) { //NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
     
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
+        byte[] b = magic.get();
+        if (b != null) {
+            return new ByteArrayInputStream(b);
+        }
+        if (isMimeResolving()) {
+            try {
+                RemoteDirectory parent= RemoteFileSystemUtils.getCanonicalParent(this);
+                if (parent != null) {
+                    byte[] arr = parent.getMagic(this);
+                    if (arr != null) {
+                        return new ByteArrayInputStream(arr);
+                    }
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
         // TODO: check error processing
         try {
             CachedRemoteInputStream stream = fileContentCache.get();

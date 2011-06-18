@@ -47,6 +47,8 @@ package org.netbeans.modules.cnd.debugger.common2.debugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.PopLastDebuggerCallAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.PopToCurrentFrameAction;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxFrameAction;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.values.VariableValue;
 
 import java.awt.event.ActionEvent;
@@ -123,10 +125,10 @@ public final class StackModel extends ModelListenerSupport
 	}
 	Frame frame = (Frame) node;
 	if (frame.isCurrent()) {
-	    VariableValue bold = new VariableValue(frame.getLocationName(), true);
-	    return bold.toString();
-	} else
+	    return VariableValue.bold(frame.getLocationName());
+	} else {
 	    return frame.getLocationName();
+        }
     }
 
     // These are standard NB icons for stack frames.
@@ -227,15 +229,19 @@ public final class StackModel extends ModelListenerSupport
 
     // interface NodeActionsProvider
     public Action[] getActions (Object node) throws UnknownTypeException {
+	EngineDescriptor desp = debugger.getNDI().getEngineDescriptor();
+	boolean canDoMaxFrame = desp.hasCapability(EngineCapability.STACK_MAXFRAME);
+	boolean canDoVerbose = desp.hasCapability(EngineCapability.STACK_VERBOSE);
 	if (node == TreeModel.ROOT) {
 	    return new Action[] {
 		// LATER for GdbDebugger
 		new PopTopmostCallAction(debugger),
 		SystemAction.get(PopToCurrentFrameAction.class),
 		SystemAction.get(PopLastDebuggerCallAction.class),
+		new CopyStackAction(debugger),
 		null,
-		SystemAction.get(MaxFrameAction.class),
-		Action_VERBOSE,
+		canDoMaxFrame ? SystemAction.get(MaxFrameAction.class) : null,
+		canDoVerbose ? Action_VERBOSE : null,
 	    };
 	} else if (node instanceof Frame) {
 	    Frame frame = (Frame) node;
@@ -246,9 +252,10 @@ public final class StackModel extends ModelListenerSupport
 		new PopTopmostCallAction(debugger),
 		new PopToHereAction(debugger, frame),
 		SystemAction.get(PopLastDebuggerCallAction.class),
+		new CopyStackAction(debugger), 
 		null,
-		SystemAction.get(MaxFrameAction.class),
-		Action_VERBOSE,
+		canDoMaxFrame ? SystemAction.get(MaxFrameAction.class) : null,
+		canDoVerbose ? Action_VERBOSE : null,
 	    };
 	} else {
 	    throw new UnknownTypeException(node);
@@ -337,6 +344,19 @@ public final class StackModel extends ModelListenerSupport
 	public void actionPerformed(ActionEvent e) {
 	    NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
 	    debugger.postVerboseStack( ! getBooleanState());
+	}
+    }
+
+    private static class CopyStackAction extends AbstractAction {
+	private NativeDebugger debugger;
+
+	CopyStackAction (NativeDebugger debugger) {
+	    super(Catalog.get("ACT_Copy_Stack"));	// NOI18N
+	    this.debugger = debugger;
+	} 
+
+	public void actionPerformed(ActionEvent e) {
+	    debugger.copyStack();
 	}
     }
 
