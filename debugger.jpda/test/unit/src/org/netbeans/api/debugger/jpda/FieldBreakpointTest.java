@@ -45,6 +45,7 @@
 package org.netbeans.api.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -67,6 +68,10 @@ public class FieldBreakpointTest extends NbTestCase {
         super (s);
     }
 
+    public static Test suite() {
+        return JPDASupport.createTestSuite(FieldBreakpointTest.class);
+    }
+    
     public void testFieldBreakpoints() throws Exception {
         try {
 

@@ -44,6 +44,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -63,7 +64,10 @@ public class ClassBreakpointTest extends NbTestCase {
 
     private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.ClassBreakpointApp";
 
-    
+    public static Test suite() {
+        return JPDASupport.createTestSuite(ClassBreakpointTest.class);
+    }
+
     public ClassBreakpointTest (String s) {
         super (s);
     }

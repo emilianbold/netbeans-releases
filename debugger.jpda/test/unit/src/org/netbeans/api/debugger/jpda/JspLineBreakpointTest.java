@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import junit.framework.AssertionFailedError;
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -86,6 +87,10 @@ public class JspLineBreakpointTest extends NbTestCase {
     
     public JspLineBreakpointTest (String s) {
         super (s);
+    }
+    
+    public static Test suite() {
+        return JPDASupport.createTestSuite(JspLineBreakpointTest.class);
     }
     
     protected void setUp () {

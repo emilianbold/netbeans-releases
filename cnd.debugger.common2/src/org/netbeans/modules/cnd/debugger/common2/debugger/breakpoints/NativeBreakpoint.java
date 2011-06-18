@@ -1978,8 +1978,10 @@ public abstract class NativeBreakpoint
     public void visitNextAnnotation() {
 	DebuggerAnnotation annotation = getNextAnnotation();
 	if (annotation != null) {
-	    Line l = annotation.getLine();
-	    EditorBridge.showInEditor(l);
+	    Line line = annotation.getLine();
+            if (line != null) {
+                line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            }
 	}
     }
 

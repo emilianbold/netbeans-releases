@@ -45,6 +45,7 @@
 package org.netbeans.api.debugger.jpda;
 
 import java.util.*;
+import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
@@ -62,6 +63,10 @@ public class CallStackTest extends NbTestCase {
 
     public CallStackTest (String s) {
         super (s);
+    }
+    
+    public static Test suite() {
+        return JPDASupport.createTestSuite(CallStackTest.class);
     }
 
     public void testInstanceCallStackInfo () throws Exception {

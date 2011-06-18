@@ -76,6 +76,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Tomas Mysik
@@ -83,6 +84,7 @@ import org.openide.util.NbBundle;
 public final class ZendOptionsPanel extends JPanel {
     private static final long serialVersionUID = -13564875423210L;
     private static final String ZEND_LAST_FOLDER_SUFFIX = ".zend";
+    private static final RequestProcessor RP = new RequestProcessor(ZendOptionsPanel.class);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -425,7 +427,12 @@ public final class ZendOptionsPanel extends JPanel {
             register = DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
         }
         if (register) {
-            ZendScript.registerNetBeansProvider(zendScript);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    ZendScript.registerNetBeansProvider(zendScript);
+                }
+            });
         }
     }//GEN-LAST:event_providerRegistrationButtonActionPerformed
 
