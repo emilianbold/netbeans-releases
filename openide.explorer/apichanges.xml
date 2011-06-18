@@ -50,6 +50,26 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="BaseTable.setQuickSearchAllowed">
+        <api name="explorer"/>
+        <summary>Allows one to disable quick search in property sheets, either globally or per-instance.</summary>
+        <version major="6" minor="37"/>
+        <date day="10" month="6" year="2011"/>
+        <author login="tomwheeler"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            Added methods <code>setQuickSearchAllowed(boolean)</code> and <code>isQuickSearchAllowed()</code>
+            to BaseTable to control and query whether the quick search feature is enabled.  Since the BaseTable
+            instance of a PropertySheet is private, <code>setQuickSearchAllowed(boolean)</code> and 
+            <code>isQuickSearchAllowed()</code> delegate methods were also added to PropertySheet. This allows
+            a developer control on a per-instance basis, though it is also possible to disable property sheet
+            quick search globally by setting the <code>ps.quickSearch.disabled.global</code> system property
+            to <code>true</code>.
+        </description>
+        <class package="org.openide.explorer.propertysheet" name="BaseTable"/>
+        <class package="org.openide.explorer.propertysheet" name="PropertySheet"/>
+        <issue number="199349"/>
+    </change>
     <change id="TreeView.quickSearchAllowed">
         <api name="explorer"/>
         <summary>It's possible to define whether the quick search is enabled or disabled in TreeView.</summary>

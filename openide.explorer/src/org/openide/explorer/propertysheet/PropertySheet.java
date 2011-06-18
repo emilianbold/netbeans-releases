@@ -322,6 +322,28 @@ public class PropertySheet extends JPanel {
         table.getReusablePropertyModel().setProperty(null);
     }
 
+    /**
+     * @return true if the quick search feature is currently allowed, false otherwise.
+     * To be allowed, quick search must not have been disabled either globally or on
+     * this instance
+     * @since 6.37
+     */
+    public boolean isQuickSearchAllowed() {
+        return table.isQuickSearchAllowed();
+    }
+
+    /**
+     * Allows one to set whether or not the quick search feature should be
+     * enabled on this instance.
+     *
+     * @param isQuickSearchAllowed true if the quick search feature should be
+     * allowed on this instance, false otherwise.
+     * @since 6.37
+     */
+    public void setQuickSearchAllowed(boolean isQuickSearchAllowed) {
+        table.setQuickSearchAllowed(isQuickSearchAllowed);
+    }
+
     /** Prepare the initial state of the property sheet */
     private void init() {
         Font f = UIManager.getFont("controlFont"); //NOI18N

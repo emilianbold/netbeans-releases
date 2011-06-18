@@ -521,6 +521,12 @@ No.
 sheet implementation to affect its behavior in various ways.  These are subject
 to change and should not be relied upon, but may prove useful in some situations:</p>
 <ul>
+<li><api category="private" type="devel" group="systemproperty" name="ps.quickSearch.disabled.global">
+    When set to true, globally disables quick search feature in property sheets.  If this value is
+    unset or set to a value which Boolean.parseBoolean does not evaluate to true, then quick search
+    is not globally disabled, though may still be disabled on a per-instance basis by the 
+    PropertySheet's setQuickSearchAllowed method.</api></li>
+
 <li><api category="private" type="export" group="property" name="netbeans.ps.noCustomButtons">
     Boolean system property for the property sheet which, when true, hide the custom editor
     button that appears in the property 
