@@ -56,7 +56,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
 import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.selector.spi.nodes.ConstructorNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.ConstructorsNode;
 
@@ -86,7 +86,7 @@ public class JavaConstructorNode extends ConstructorNode {
 
                 public void run(CompilationController controller)
                         throws Exception {
-                    signatureString[0] = SourceUtils.getVMMethodSignature(method, controller);
+                    signatureString[0] = ElementUtilitiesEx.getBinaryName(method, controller);
                 }
             }, true);
         } catch (IOException ex) {
