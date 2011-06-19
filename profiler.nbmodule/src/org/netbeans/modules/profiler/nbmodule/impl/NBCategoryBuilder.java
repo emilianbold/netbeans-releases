@@ -43,7 +43,7 @@
 package org.netbeans.modules.profiler.nbmodule.impl;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.categories.CategoryBuilder;
+import org.netbeans.modules.profiler.categorization.api.CategoryBuilder;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 

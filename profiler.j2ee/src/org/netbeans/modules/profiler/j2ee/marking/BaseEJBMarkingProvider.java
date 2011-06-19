@@ -43,12 +43,8 @@
 package org.netbeans.modules.profiler.j2ee.marking;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -61,8 +57,6 @@ import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.MethodMarker;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
-import org.netbeans.modules.profiler.categories.CustomMarker;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -74,7 +68,11 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.categorization.api.CustomMarker;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
+import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.openide.util.Lookup;
 
 
 /**
@@ -83,17 +81,19 @@ import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
  */
 public abstract class BaseEJBMarkingProvider extends CustomMarker {
     private MethodMarker delegate = new MethodMarker();
-    private static Logger LOGGER = Logger.getLogger(BaseEJBMarkingProvider.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BaseEJBMarkingProvider.class.getName());
 
-    public BaseEJBMarkingProvider(Project project, Mark assignedMark) {
+    public BaseEJBMarkingProvider(Lookup.Provider project, Mark assignedMark) {
         super(project, assignedMark);
         addEjbMethods();
     }
 
+    @Override
     public MarkMapping[] getMappings() {
         return delegate.getMappings();
     }
 
+    @Override
     public Mark[] getMarks() {
         return delegate.getMarks();
     }
@@ -101,12 +101,13 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
     protected abstract boolean isValid(ExecutableElement method);
 
     private void addEjbMethods() {
-        final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(getProject());
+        final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor((Project)getProject());
             final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
 
             for (MetadataModel<EjbJarMetadata> mdModel : listAllMetadata()) {
                 try {
                     mdModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                    @Override
                             public Void run(EjbJarMetadata metadata)
                                                    throws Exception {
                                 System.out.println(metadata.getRoot().getVersion().toString() + " = " + metadata.getRoot().VERSION_3_0);
@@ -114,9 +115,11 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
 
                                 for (final Ejb ejb : ejbs) {
                                     js.runUserActionTask(new CancellableTask<CompilationController>() {
+                                @Override
                                             public void cancel() {
                                             }
 
+                                @Override
                                             public void run(CompilationController controller)
                                                      throws Exception {
 
@@ -140,9 +143,10 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
     private Set<MetadataModel<EjbJarMetadata>> listAllMetadata() {
         final Set<MetadataModel<EjbJarMetadata>> metadata = new HashSet<MetadataModel<EjbJarMetadata>>();
         Set<Project> projects = new HashSet<Project>();
-
-        projects.add(getProject());
-        ProjectUtilities.fetchSubprojects(getProject(), projects);
+        Project p = (Project) getProject();
+        
+        projects.add(p);
+        ProjectUtilities.fetchSubprojects(p, projects);
 
         for (Project testProject : projects) {
             EjbJarImplementation jar = testProject.getLookup().lookup(EjbJarImplementation.class);
@@ -170,7 +174,7 @@ public abstract class BaseEJBMarkingProvider extends CustomMarker {
                     if (isValid(method)) {
                         try {
                             marker.addMethodMark(ElementUtilities.getBinaryName(type), method.getSimpleName().toString(),
-                                    SourceUtils.getVMMethodSignature(method, controller), getMark());
+                                    ElementUtilitiesEx.getBinaryName(method, controller), getMark());
                         } catch (NullPointerException e) {
                             e.printStackTrace();
                         }
