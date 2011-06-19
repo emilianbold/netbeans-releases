@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
             quick search globally by setting the <code>ps.quickSearch.disabled.global</code> system property
             to <code>true</code>.
         </description>
-        <class package="org.openide.explorer.propertysheet" name="BaseTable"/>
+        <class package="org.openide.explorer.propertysheet" name="BaseTable" link="no" />
         <class package="org.openide.explorer.propertysheet" name="PropertySheet"/>
         <issue number="199349"/>
     </change>
