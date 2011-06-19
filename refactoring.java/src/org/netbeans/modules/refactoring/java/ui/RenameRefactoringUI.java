@@ -50,11 +50,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -78,7 +81,7 @@ import org.openide.util.lookup.Lookups;
  * @author Martin Matula
  * @author Jan Becicka
  */
-public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
+public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, Openable {
     private final AbstractRefactoring refactoring;
     private String oldName = null;
     private String dispOldName;
@@ -86,6 +89,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private RenamePanel panel;
     private boolean fromListener = false;
     private TreePathHandle handle;
+    private ElementHandle elementHandle;
     private FileObject byPassFolder;
     private boolean byPassPakageRename;
     private boolean pkgRename = true;
@@ -94,6 +98,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         Element element = handle.resolveElement(info);
+        elementHandle = ElementHandle.create(element);
         oldName = element.getSimpleName().toString();
         if (element.getModifiers().contains(Modifier.PRIVATE)) {
             refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(false, handle.getFileObject()));
@@ -108,7 +113,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         if (handle!=null) {
             this.handle = handle;
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
-            oldName = handle.resolveElement(info).getSimpleName().toString();
+            Element element = handle.resolveElement(info);
+            elementHandle = ElementHandle.create(element);
+            oldName = element.getSimpleName().toString();
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(file));
             oldName = file.getName();
@@ -130,6 +137,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     RenameRefactoringUI(FileObject jmiObject, String newName, TreePathHandle handle, CompilationInfo info) {
         if (handle!=null) {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
+            Element element = handle.resolveElement(info);
+            elementHandle = ElementHandle.create(element);
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject));
         }
@@ -346,6 +355,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
             }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
+        }
+    }
+
+    @Override
+    public void open() {
+        if (elementHandle!=null) {
+            ElementOpen.open(handle.getFileObject(), elementHandle);
         }
     }
 }
