@@ -133,11 +133,17 @@ public final class DeploymentTarget {
         if (clientModule != null && clientModule.getType().equals(J2eeModule.Type.WAR)) {
             url = findWebUrl(clientModule);
             if (url != null) {
-                if (partUrl.startsWith("/") || partUrl.length() == 0) { // NOI18N
-                    return (url + partUrl);
-                } else {
-                    return (url + "/" + partUrl); //NOI18N
+                StringBuilder sb = new StringBuilder(url);
+                int length = sb.length();
+                if (length > 0 && (sb.charAt(length - 1) == '/')) { // NOI18N
+                    sb.setLength(length - 1);
                 }
+                if (partUrl.startsWith("/") || partUrl.length() == 0) { // NOI18N
+                    sb.append(partUrl);
+                } else {
+                    sb.append('/').append(partUrl); // NOI18N
+                }
+                return sb.toString();
             } else {
                 return null;
             }

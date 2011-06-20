@@ -70,6 +70,7 @@ import org.openide.util.*;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
 import org.openide.awt.Mnemonics;
 
@@ -86,7 +87,10 @@ import org.openide.awt.Mnemonics;
  * @author Martin Matula, Jan Becicka
  */
 public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener, InvalidationListener {
-    private static final String PREF_OPEN_NEW_TAB = "PREF_OPEN_NEW_TAB";
+    
+    public static final String JUMP_TO_FIRST_OCCURENCE = "JUMP_TO_FIRST_OCCURENCE"; //NOI18N
+
+    private static final String PREF_OPEN_NEW_TAB = "PREF_OPEN_NEW_TAB"; //NI18N
     private static final Logger LOGGER = Logger.getLogger(ParametersPanel.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ParametersPanel.class.getName(), 1, false, false);
     /** @see #result */
@@ -520,6 +524,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      */
     public synchronized RefactoringSession showDialog() {
         RefactoringPanel.checkEventThread();
+        putClientProperty(JUMP_TO_FIRST_OCCURENCE, false);
         if (rui != null) {
             rui.getRefactoring().addProgressListener(this);
         }
@@ -533,7 +538,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParametersPanel.class, "ACSD_FindUsagesDialog"));
         }
         
-        setCancelStuff();
+        setOkCancelStuff();
         
         dialog.pack();
         
@@ -598,11 +603,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         return temp;
     }
     
-    private void setCancelStuff() {
+    private void setOkCancelStuff() {
         canceledDialog = false;
-        KeyStroke k = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        Object actionKey = "cancel"; // NOI18N
-        getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(k, actionKey);
+        KeyStroke cancelKS = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        String cancelActionKey = "cancel"; // NOI18N
+        getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(cancelKS, cancelActionKey);
         Action cancelAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent ev) {
@@ -611,7 +616,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
         }; 
         
-        getRootPane().getActionMap().put(actionKey, cancelAction);
+        getRootPane().getActionMap().put(cancelActionKey, cancelAction);
         
         dialog.addWindowListener(new WindowAdapter() {
             @Override
@@ -620,6 +625,21 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     cancelActionPerformed(null);
             }
         });
+        
+        if (rui.isQuery()) {
+            ContextAwareAction whereUsedAction = RefactoringActionsFactory.whereUsedAction();
+            KeyStroke OKKS = (KeyStroke) whereUsedAction.getValue(Action.ACCELERATOR_KEY);
+            String OKActionKey = "OK"; //NOI18N
+            getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(OKKS, OKActionKey);
+            Action OKAction = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    ParametersPanel.this.putClientProperty(JUMP_TO_FIRST_OCCURENCE, true);
+                    refactor(null);
+                }
+            };
+            getRootPane().getActionMap().put(OKActionKey, OKAction);
+        }
     }
 
     boolean isCanceledDialog() {
