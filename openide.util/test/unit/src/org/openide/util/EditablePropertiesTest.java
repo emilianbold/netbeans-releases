@@ -306,6 +306,22 @@ public class EditablePropertiesTest extends NbTestCase {
         p.load(new ByteArrayInputStream(baos.toByteArray()));
         assertEquals(baos.toString(), Collections.singletonMap(key, value), p);
     }
+
+    public void testPreservationOfFormatting() throws Exception {
+        String text = "k1=\\\n"
+                + "A long line. \\\n"
+                + "    Broken into pieces.\n"
+                + "k3=whatever\n"
+                + "k5=Label\\:\n";
+        EditableProperties p = new EditableProperties(true);
+        p.load(new ByteArrayInputStream(text.getBytes("ISO-8859-1")));
+        assertEquals("A long line. Broken into pieces.", p.get("k1"));
+        assertEquals("whatever", p.get("k3"));
+        assertEquals("Label:", p.get("k5"));
+        p.put("k2", "more");
+        p.put("k4", "more");
+        assertEquals(text.replace("k3=whatever", "k2=more\nk3=whatever\nk4=more"), getAsString(p));
+    }
     
     // test that iterator implementation is OK
     public void testIterator() throws Exception {
