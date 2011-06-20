@@ -46,7 +46,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
 /**
@@ -64,24 +63,16 @@ public class JavaNodeUtils extends NodeUtils {
     }
 
     public static void performSafeDelete(Node node) {
-        
-        new DeleteAction().perform(node);
-        // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle",
-                "LBL_SafeDel_Delete"); // NOI18N
-        // wait for Safe Delete dialog
-        NbDialogOperator safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
-        try {
-            // wait only 5 seconds
-            safeDeleteOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 5000);
-            safeDeleteOper.ok();
-        } catch (TimeoutExpiredException e) {
-            // It is "classpath scanning in progress" dialog, wait until it dismiss,
-            // and then wait for regular Safe Delete dialog
-            safeDeleteOper.waitClosed();
-            safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
-            safeDeleteOper.ok();
+        new DeleteAction().performAPI(node);
+        // wait for one of Delete dialogs
+        NbDialogOperator deleteDialogOper = new NbDialogOperator("Delet");
+        if (deleteDialogOper.getTitle().equals("Delete")) {
+            // "Delete" - safe delete when scanning is not running
+            deleteDialogOper.ok();
+        } else {
+            // "Confirm Object Deletion" - if scanning is in progress
+            deleteDialogOper.yes();
         }
-        safeDeleteOper.waitClosed();
+        deleteDialogOper.waitClosed();
     }
 }
