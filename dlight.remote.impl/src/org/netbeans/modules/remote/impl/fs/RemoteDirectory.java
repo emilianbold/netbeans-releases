@@ -750,6 +750,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             // fire all event under lock
             if (changed) {
+                dropMagic();
                 for (FileObject deleted : filesToFireDeleted) {
                     fireFileDeletedEvent(getListeners(), new FileEvent(this, deleted));
                 }
@@ -1066,6 +1067,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             // fire all event under lock
             if (changed) {
+                dropMagic();
                 for (FileObject deleted : filesToFireDeleted) {
                     fireFileDeletedEvent(getListeners(), new FileEvent(this, deleted));
                 }
@@ -1194,6 +1196,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return magicCache;
     }
 
+    private void dropMagic() {
+        synchronized (magicLock) {
+            if (magicCache != null) {
+                magicCache.clean(null);
+            } else {
+                new MagicCache(this).clean(null);
+            }
+        }
+    }
+    
     @Override
     public final OutputStream getOutputStream(final FileLock lock) throws IOException {
         throw new IOException(getPath());
