@@ -64,6 +64,8 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -108,6 +110,9 @@ public class FormEditor {
      * (there can be more clones). May happen to be null if the active designer
      * was closed and no other designer of given form was activated since then. */
     private FormDesigner formDesigner;
+
+    /** Integration into the editor framework environment. */
+    private EditorSupport editorSupport;
 
     /** The code generator for the form */
     private CodeGenerator codeGenerator;
@@ -158,8 +163,13 @@ public class FormEditor {
 
     // -----
 
-    public FormEditor(FormDataObject formDataObject) {
+    FormEditor(FormDataObject formDataObject) {
         this.formDataObject = formDataObject;
+    }
+
+    public FormEditor(FormDataObject formDataObject, EditorSupport sourceEditor) {
+        this.formDataObject = formDataObject;
+        this.editorSupport = sourceEditor;
     }
 
     /** @return root node representing the form (in pair with the class node) */
@@ -181,7 +191,30 @@ public class FormEditor {
         return formDataObject;
     }
 
-    private final FormJavaSource getFormJavaSource() {
+    private EditorSupport getEditorSupport() {
+        if (editorSupport == null) {
+            editorSupport = formDataObject.getFormEditorSupport();
+        }
+        return editorSupport;
+    }
+
+    Document getSourcesDocument() {
+        return getEditorSupport().getDocument();
+    }
+
+    GuardedSectionManager getGuardedSectionManager() {
+        return getEditorSupport().getGuardedSectionManager();
+    }
+
+    SimpleSection getVariablesSection() {
+        return getGuardedSectionManager().findSimpleSection("variables"); // NOI18N
+    }
+    
+    SimpleSection getInitComponentSection() {
+        return getGuardedSectionManager().findSimpleSection("initComponents"); // NOI18N
+    }
+
+    private FormJavaSource getFormJavaSource() {
         return formJavaSource;
     }
     
@@ -191,6 +224,13 @@ public class FormEditor {
         if (codeGenerator == null)
             codeGenerator = new JavaCodeGenerator();
         return codeGenerator;
+    }
+
+    public void regenerateCodeIfNeeded() {
+        JavaCodeGenerator codeGen = (JavaCodeGenerator) getCodeGenerator();
+        if (codeGen != null) {
+            codeGen.regenerateCode();
+        }
     }
 
     ResourceSupport getResourceSupport() {
@@ -663,7 +703,7 @@ public class FormEditor {
 
     /** Closes the form. Used when closing the form editor or reloading
      * the form. */
-    void closeForm() {
+    public void closeForm() {
         if (formLoaded) {
             formModel.fireFormToBeClosed();
 
@@ -791,7 +831,7 @@ public class FormEditor {
                 }
 
                 if (modifying)  { // mark the form document modified explicitly
-                    getFormDataObject().getFormEditorSupport().markFormModified();
+                    getEditorSupport().markModified();
                     checkFormVersionUpgrade();
                 }
             }
