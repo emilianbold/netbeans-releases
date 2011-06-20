@@ -882,6 +882,7 @@ final class Central implements ControllerHandler {
 
     // XXX Could be called only during load phase of window system.
     public void addModeUnloadedTopComponent(ModeImpl mode, String tcID, int index) {
+        TopComponentTracker.getDefault().add( tcID, mode );
         model.addModeUnloadedTopComponent(mode, tcID, index);
     }
     
