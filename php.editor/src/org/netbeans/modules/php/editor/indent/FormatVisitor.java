@@ -430,17 +430,19 @@ public class FormatVisitor extends DefaultVisitor {
         while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
             switch (ts.token().id()) {
                 case PHP_IMPLEMENTS:
-                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
-                    Expression inter = node.getInterfaes().get(0);
-                    ts.movePrevious();
-                    addUnbreakalbeSequence(inter, true); // adding implements keyword and first interface
-                    for (int i = 1; i < node.getInterfaes().size(); i++) {
-                        if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
-                            addFormatToken(formatTokens);
+                    if (node.getInterfaes().size() > 0) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                        Expression inter = node.getInterfaes().get(0);
+                        ts.movePrevious();
+                        addUnbreakalbeSequence(inter, true); // adding implements keyword and first interface
+                        for (int i = 1; i < node.getInterfaes().size(); i++) {
+                            if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
+                                addFormatToken(formatTokens);
+                            }
+                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST, ts.offset()));
+                            inter = node.getInterfaes().get(i);
+                            addUnbreakalbeSequence(inter, false);
                         }
-                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST, ts.offset()));
-                        inter = node.getInterfaes().get(i);
-                        addUnbreakalbeSequence(inter, false);
                     }
                     break;
                 case PHP_EXTENDS:

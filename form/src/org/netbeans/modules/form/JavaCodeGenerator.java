@@ -192,6 +192,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private FormModel formModel;
     private FormEditorSupport formEditorSupport;
+    private FormEditor formEditor;
 
     private boolean initialized = false;
     private boolean canGenerate = true;
@@ -243,6 +244,7 @@ class JavaCodeGenerator extends CodeGenerator {
             this.formModel = formModel;
             FormDataObject formDO = FormEditor.getFormDataObject(formModel);
             formEditorSupport = formDO.getFormEditorSupport();
+            formEditor = FormEditor.getFormEditor(formModel);
 
             if (formDO.getPrimaryFile().canWrite()) {
                 canGenerate = true;
@@ -250,7 +252,7 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             else canGenerate = false;
 
-            if (formEditorSupport.getGuardedSectionManager() == null) {
+            if (formEditor.getGuardedSectionManager() == null) {
                 // Issue 143655 - opening of big file canceled
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -260,8 +262,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 });
                 return;
             }
-            SimpleSection initComponentsSection = formEditorSupport.getInitComponentSection();
-            SimpleSection variablesSection = formEditorSupport.getVariablesSection();
+            SimpleSection initComponentsSection = formEditor.getInitComponentSection();
+            SimpleSection variablesSection = formEditor.getVariablesSection();
 
             if (initComponentsSection == null || variablesSection == null) {
                 System.err.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
@@ -1038,9 +1040,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
         // find indent engine to use or imitate
         IndentEngine indentEngine = IndentEngine.find(
-                                        formEditorSupport.getDocument());
+                                        formEditor.getSourcesDocument());
 
-        final SimpleSection initComponentsSection = formEditorSupport.getInitComponentSection();
+        final SimpleSection initComponentsSection = formEditor.getInitComponentSection();
         int initComponentsOffset = initComponentsSection.getCaretPosition().getOffset();
 
         // create Writer for writing the generated code in
@@ -1048,7 +1050,7 @@ class JavaCodeGenerator extends CodeGenerator {
         CodeWriter initCodeWriter;
         if (formSettings.getUseIndentEngine()) { // use original indent engine
             initCodeWriter = new CodeWriter(
-                    indentEngine.createWriter(formEditorSupport.getDocument(),
+                    indentEngine.createWriter(formEditor.getSourcesDocument(),
                                               initComponentsOffset,
                                               initCodeBuffer),
                     true);
@@ -1176,15 +1178,15 @@ class JavaCodeGenerator extends CodeGenerator {
             return Collections.emptySet();
         
         IndentEngine indentEngine = IndentEngine.find(
-                                        formEditorSupport.getDocument());
+                                        formEditor.getSourcesDocument());
 
         StringWriter variablesBuffer = new StringWriter(1024);
         CodeWriter variablesWriter;
-        final SimpleSection variablesSection = formEditorSupport.getVariablesSection();
+        final SimpleSection variablesSection = formEditor.getVariablesSection();
 
         if (formSettings.getUseIndentEngine()) {
             variablesWriter = new CodeWriter(
-                    indentEngine.createWriter(formEditorSupport.getDocument(),
+                    indentEngine.createWriter(formEditor.getSourcesDocument(),
                                               variablesSection.getCaretPosition().getOffset(),
                                               variablesBuffer),
                     false);
@@ -1460,7 +1462,7 @@ class JavaCodeGenerator extends CodeGenerator {
             writer.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
 
             // write package name
-            FileObject fo = formEditorSupport.getFormDataObject().getPrimaryFile();
+            FileObject fo = formEditor.getFormDataObject().getPrimaryFile();
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             String packageName = cp.getResourceName(fo.getParent());
             if (!"".equals(packageName)) { // NOI18N
@@ -2755,7 +2757,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (component == formModel.getTopRADComponent())
             return inMainClass ?
                      "this" : // NOI18N
-                     formEditorSupport.getFormDataObject().getName() + ".this"; // NOI18N
+                     formEditor.getFormDataObject().getName() + ".this"; // NOI18N
         else
             return component.getName();
     }
@@ -2766,7 +2768,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (component == formModel.getTopRADComponent())
             return inMainClass ?
                      "" : // NOI18N
-                     formEditorSupport.getFormDataObject().getName() + ".this."; // NOI18N
+                     formEditor.getFormDataObject().getName() + ".this."; // NOI18N
         else
             return component.getName() + "."; // NOI18N
     }
@@ -2994,7 +2996,7 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
 
-        final FileObject fo = formEditorSupport.getFormDataObject().getPrimaryFile();
+        final FileObject fo = formEditor.getFormDataObject().getPrimaryFile();
         JavaSource js = JavaSource.forFileObject(fo);
         try {
             js.runModificationTask(new CancellableTask<WorkingCopy>() {
@@ -3132,7 +3134,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private String getListenerClassName() {
         if (listenerClassName == null) {
-            String initText = formEditorSupport.getInitComponentSection().getText();
+            String initText = formEditor.getInitComponentSection().getText();
             int index = initText.lastIndexOf("private class "); // NOI18N
             if (index >= 0) {
                 StringBuilder nameBuffer = new StringBuilder(16);
@@ -3151,7 +3153,7 @@ class JavaCodeGenerator extends CodeGenerator {
             }
 
             if (listenerClassName == null) {
-                javax.swing.text.Document document = formEditorSupport.getDocument();
+                javax.swing.text.Document document = formEditor.getSourcesDocument();
                 try {
                     String wholeText = document.getText(0, document.getLength());
                     listenerClassName = DEFAULT_LISTENER_CLASS_NAME;
@@ -3195,14 +3197,14 @@ class JavaCodeGenerator extends CodeGenerator {
         if (sec != null && bodyText == null)
             return; // already exists, no need to generate
 
-        IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
+        IndentEngine engine = IndentEngine.find(formEditor.getSourcesDocument());
         StringWriter buffer = new StringWriter();
 
         try {
             if (sec == null) {
                 sec = insertEvendHandlerSection(handlerName);
             }
-            Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
+            Writer codeWriter = engine.createWriter(formEditor.getSourcesDocument(),
                                                     sec.getStartPosition().getOffset(),
                                                     buffer);
             int i0, i1, i2;
@@ -3224,7 +3226,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.flush();
 
             if (i0 != 0) {
-                formEditorSupport.getDocument().insertString(sec.getStartPosition().getOffset(), annotationText, null);
+                formEditor.getSourcesDocument().insertString(sec.getStartPosition().getOffset(), annotationText, null);
             }
             sec.setHeader(buffer.getBuffer().substring(i0,i1));
             sec.setBody(buffer.getBuffer().substring(i1,i2));
@@ -3240,7 +3242,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         if (!formModel.getSettings().getGenerateFQN()) {
-            FQNImporter fqnImporter = new FQNImporter(formEditorSupport.getFormDataObject().getPrimaryFile());
+            FQNImporter fqnImporter = new FQNImporter(formEditor.getFormDataObject().getPrimaryFile());
             fqnImporter.setHandleEventHandlers(Collections.singleton(handlerName));
             fqnImporter.importFQNs();
         }
@@ -3261,14 +3263,14 @@ class JavaCodeGenerator extends CodeGenerator {
         // inserting an empty line (#94165)
         int startPos = section.getStartPosition().getOffset();
         int endPos = section.getEndPosition().getOffset();
-        for (GuardedSection sec : formEditorSupport.getGuardedSectionManager().getGuardedSections()) {
+        for (GuardedSection sec : formEditor.getGuardedSectionManager().getGuardedSections()) {
             if (sec.getEndPosition().getOffset()+1 == startPos) { // close section before
                 try {
-                    formEditorSupport.getDocument().insertString(startPos, "\n", null); // NOI18N
+                    formEditor.getSourcesDocument().insertString(startPos, "\n", null); // NOI18N
                 } catch (javax.swing.text.BadLocationException ex) {} // should not happen, ignore
             } else if (sec.getStartPosition().getOffset() == endPos+1) { // close section after
                 try {
-                    formEditorSupport.getDocument().insertString(endPos+1, "\n", null); // NOI18N
+                    formEditor.getSourcesDocument().insertString(endPos+1, "\n", null); // NOI18N
                 } catch (javax.swing.text.BadLocationException ex) {} // should not happen, ignore
             }
         }
@@ -3351,13 +3353,13 @@ class JavaCodeGenerator extends CodeGenerator {
     // sections acquirement
 
     private InteriorSection getEventHandlerSection(String handlerName) {
-        return formEditorSupport.getGuardedSectionManager().findInteriorSection(getEventSectionName(handlerName));
+        return formEditor.getGuardedSectionManager().findInteriorSection(getEventSectionName(handlerName));
     }
 
     private InteriorSection insertEvendHandlerSection(String handlerName) throws javax.swing.text.BadLocationException {
-        int endPos = formEditorSupport.getInitComponentSection().getEndPosition().getOffset();
+        int endPos = formEditor.getInitComponentSection().getEndPosition().getOffset();
         // find last event handler
-        for (GuardedSection sec : formEditorSupport.getGuardedSectionManager().getGuardedSections()) {
+        for (GuardedSection sec : formEditor.getGuardedSectionManager().getGuardedSections()) {
             if (sec instanceof InteriorSection) {
                 int pos = sec.getEndPosition().getOffset();
                 if (pos > endPos) {
@@ -3366,15 +3368,15 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
         // if there is another guarded section following with no gap, insert empty line (#109242)
-        for (GuardedSection sec : formEditorSupport.getGuardedSectionManager().getGuardedSections()) {
+        for (GuardedSection sec : formEditor.getGuardedSectionManager().getGuardedSections()) {
             if (sec.getStartPosition().getOffset() == endPos + 1) {
-                formEditorSupport.getDocument().insertString(endPos+1, "\n", null); // NOI18N
+                formEditor.getSourcesDocument().insertString(endPos+1, "\n", null); // NOI18N
                 break;
             }
         }
         // create the new guarded section
-        return formEditorSupport.getGuardedSectionManager().createInteriorSection(
-                formEditorSupport.getDocument().createPosition(endPos + 1),
+        return formEditor.getGuardedSectionManager().createInteriorSection(
+                formEditor.getSourcesDocument().createPosition(endPos + 1),
                 getEventSectionName(handlerName));
     }
 
@@ -3475,7 +3477,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 || event.getListenerMethod().getName().equals(handlers[i]))
             {
                 if (mainClassRef == null)
-                    mainClassRef = formEditorSupport.getFormDataObject().getName()
+                    mainClassRef = formEditor.getFormDataObject().getName()
                                    + ".this."; // NOI18N
                 codeWriter.write(mainClassRef);
             }
@@ -3498,7 +3500,7 @@ class JavaCodeGenerator extends CodeGenerator {
             Set<String> variableNames = regenerateVariables();
             regenerateInitComponents();
             if (!formModel.getSettings().getGenerateFQN()) {
-                FQNImporter fqnImporter = new FQNImporter(formEditorSupport.getFormDataObject().getPrimaryFile());
+                FQNImporter fqnImporter = new FQNImporter(formEditor.getFormDataObject().getPrimaryFile());
                 fqnImporter.setHandleInitComponents(true);
                 fqnImporter.setHandleVariables(variableNames);
                 if (formModel.getSettings().getListenerGenerationStyle() == CEDL_INNERCLASS && anyEvents()) {
@@ -4012,7 +4014,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 String serializeTo =(String)comp.getAuxValue(AUX_SERIALIZE_TO);
                 if (serializeTo != null) {
                     try {
-                        FileObject fo = formEditorSupport.getFormDataObject().getPrimaryFile();
+                        FileObject fo = formEditor.getFormDataObject().getPrimaryFile();
                         FileObject serFile = fo.getParent().getFileObject(serializeTo, "ser"); // NOI18N
                         if (serFile == null) {
                             serFile = fo.getParent().createData(serializeTo, "ser"); // NOI18N
@@ -4559,7 +4561,7 @@ class JavaCodeGenerator extends CodeGenerator {
             Boolean oldValue = getValue();
             formModel.getSettings().setGenerateFQN(value);
             if (!value) {
-                FQNImporter fqnImporter = new FQNImporter(formEditorSupport.getFormDataObject().getPrimaryFile());
+                FQNImporter fqnImporter = new FQNImporter(formEditor.getFormDataObject().getPrimaryFile());
                 String[] handlers = formModel.getFormEvents().getAllEventHandlers();
                 fqnImporter.setHandleEventHandlers(Arrays.asList(handlers));
                 fqnImporter.importFQNs();

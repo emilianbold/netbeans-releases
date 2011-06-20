@@ -146,7 +146,8 @@ import org.openide.xml.XMLUtil;
  * @author Ian Formanek, Tomas Pavek
  */
 
-public class FormEditorSupport extends DataEditorSupport implements EditorCookie.Observable, CloseCookie, PrintCookie {
+public class FormEditorSupport extends DataEditorSupport implements EditorSupport,
+        EditorCookie.Observable, CloseCookie, PrintCookie {
     
     /** ID of the form designer (in the multiview) */
     static final String MV_FORM_ID = "form"; //NOI18N
@@ -564,7 +565,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
 
     /** Marks the form as modified if it's not yet. Used if changes made
      * in form data don't affect the java source file (generated code). */
-    void markFormModified() {
+    @Override
+    public void markModified() {
         if (formEditor != null && formEditor.isFormLoaded() && !formDataObject.isModified()) {
             notifyModified();
         }
@@ -1120,7 +1122,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     public SimpleSection getInitComponentSection() {
         return getGuardedSectionManager().findSimpleSection(SECTION_INIT_COMPONENTS);
     }
-    
+
+    @Override
     public GuardedSectionManager getGuardedSectionManager() {
         try {
             StyledDocument doc = null;

@@ -31,6 +31,7 @@ core.ui,\
 core.windows,\
 editor.mimelookup,\
 editor.mimelookup.impl,\
+extexecution,\
 favorites,\
 java.api.common,\
 java.freeform,\

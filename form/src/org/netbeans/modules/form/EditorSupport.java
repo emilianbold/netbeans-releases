@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.form;
 
-package org.netbeans.jellytools.testutils;
-
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.DeleteAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 
 /**
- * An extension to NodeUtils which adds support for safe delete dialog.
  *
- * @author Vojtech.Sigler@sun.com
+ * @author Tomas Pavek
  */
-public class JavaNodeUtils extends NodeUtils {
-
-    public static void closeSafeDeleteDialog()
-    {
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle",
-                "LBL_SafeDel_Delete"); // NOI18N
-        new JDialogOperator(safeDeleteTitle).close();
-    }
-
-    public static void performSafeDelete(Node node) {
-        new DeleteAction().performAPI(node);
-        // wait for one of Delete dialogs
-        NbDialogOperator deleteDialogOper = new NbDialogOperator("Delet");
-        if (deleteDialogOper.getTitle().equals("Delete")) {
-            // "Delete" - safe delete when scanning is not running
-            deleteDialogOper.ok();
-        } else {
-            // "Confirm Object Deletion" - if scanning is in progress
-            deleteDialogOper.yes();
-        }
-        deleteDialogOper.waitClosed();
-    }
+public interface EditorSupport {
+    Document getDocument();
+    GuardedSectionManager getGuardedSectionManager();
+    void markModified();
 }
