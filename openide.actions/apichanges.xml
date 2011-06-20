@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
 </change>
 <change>
       <api name="actions"/>
-      <summary><code>ToolsAction via layers</code></summary>
+      <summary><code>ToolsAction</code> via layers</summary>
       <version major="6" minor="15"/>
       <date day="26" month="2" year="2010"/>
       <author login="jtulach"/>

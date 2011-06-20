@@ -66,6 +66,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -79,7 +80,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -332,6 +333,13 @@ public class ProjectUtilities {
      *                           is allowed in the newObjectName
      * @return localized error message or null if all right
      */    
+    @Messages({
+        "# {0} - name of the file", "# {1} - an integer representing the invalid characters:", "#       0: both '/' and '\\' are invalid", "#       1: '\\' is invalid", "MSG_not_valid_filename=The filename {0} is not permitted as it contains {1,choice,0#a slash (/) or a backslash (\\)|1#a backslash (\\)}.",
+        "# {0} - name of the file", "# {1} - an integer representing the invalid characters:", "#       0: both '/' and '\\' are invalid", "#       1: '\\' is invalid", "MSG_not_valid_folder=The folder name {0} is not permitted as it contains {1,choice,0#a slash (/) or a backslash (\\)|1#a backslash (\\)}.",
+        "MSG_fs_or_folder_does_not_exist=The target folder does not exist.",
+        "MSG_fs_is_readonly=The target folder is read-only.",
+        "# {0} - name of the existing file", "MSG_file_already_exist=The file {0} already exists."
+    })
     public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName,
             String extension, boolean allowFileSeparator, boolean freeFileExtension) {
         assert newObjectName != null; // SimpleTargetChooserPanel.isValid returns false if it is... XXX should it use an error label instead?
@@ -354,29 +362,29 @@ public class ProjectUtilities {
             //if errorVariant == 3, the test above should never be true:
             assert errorVariant == 0 || errorVariant == 1 : "Invalid error variant: " + errorVariant;
             
-            return NbBundle.getMessage(ProjectUtilities.class, "MSG_not_valid_filename", newObjectName, new Integer(errorVariant));
+            return MSG_not_valid_filename(newObjectName, errorVariant);
         }
         
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
-            return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
+            return MSG_fs_or_folder_does_not_exist();
         }
         
         // target directory should be writable
         File targetDir = folderName != null ? new File (FileUtil.toFile (targetFolder), folderName) : FileUtil.toFile (targetFolder);
         if (targetDir != null) {
             if (targetDir.exists () && ! targetDir.canWrite ()) {
-                return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
+                return MSG_fs_is_readonly();
             }
         } else if (! targetFolder.canWrite ()) {
-            return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
+            return MSG_fs_is_readonly();
         }
 
         // file should not already exist
-        StringBuffer relFileName = new StringBuffer();
+        StringBuilder relFileName = new StringBuilder();
         if (folderName != null) {
             if (!allowBackslash && folderName.indexOf('\\') != -1) {
-                return NbBundle.getMessage(ProjectUtilities.class, "MSG_not_valid_folder", folderName, new Integer(1));
+                return MSG_not_valid_folder(folderName, 1);
             }
             relFileName.append(folderName);
             relFileName.append('/');
@@ -388,7 +396,7 @@ public class ProjectUtilities {
             relFileName.append(ext);
         }
         if (targetFolder.getFileObject(relFileName.toString()) != null) {
-            return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName + ext); // NOI18N
+            return MSG_file_already_exist(newObjectName + ext); // NOI18N
         }
         
         // all ok
@@ -521,7 +529,7 @@ public class ProjectUtilities {
             
             //#109676
             if (FileOwnerQuery.getOwner(fo) != p) {
-                ERR.log(Level.FINE, "File " + url + " doesn't belong to project at " + p.getProjectDirectory().getPath());
+                ERR.log(Level.FINE, "File {0} doesn''t belong to project at {1}", new Object[] {url, p.getProjectDirectory().getPath()});
                 continue;
             }
             
