@@ -84,11 +84,15 @@ public class MagicCache {
         if (od.exists()) {
             od.delete();
             if (cache != null) {
-                cache.remove(fileName);
+                if (fileName == null) {
+                    cache.clear();
+                } else {
+                    cache.remove(fileName);
+                }
             }
         }
     }
-    
+     
     private void readCache() {
         File od = new File(dir.getCache(),cacheName);
         if (!od.exists()) {
