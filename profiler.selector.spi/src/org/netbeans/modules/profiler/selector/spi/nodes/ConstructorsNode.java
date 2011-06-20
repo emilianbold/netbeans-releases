@@ -45,6 +45,8 @@ package org.netbeans.modules.profiler.selector.spi.nodes;
 
 import org.openide.util.NbBundle;
 import java.util.List;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 
 
 /**
@@ -62,7 +64,7 @@ abstract public class ConstructorsNode extends ContainerNode {
 
     /** Creates a new instance of ConstructorsNode */
     public ConstructorsNode(ClassNode parent) {
-        super(NbBundle.getMessage(ConstructorsNode.class, "Constructors_DisplayName"), IconResource.CONSTRUCTORS_ICON, parent); // NOI18N
+        super(NbBundle.getMessage(ConstructorsNode.class, "Constructors_DisplayName"), Icons.getIcon(LanguageIcons.CONSTRUCTORS), parent); // NOI18N
     }
 
     final protected SelectorChildren getChildren() {
