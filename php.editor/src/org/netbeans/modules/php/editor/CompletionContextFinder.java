@@ -538,10 +538,11 @@ class CompletionContextFinder {
         boolean isNsSeparator = false;
         boolean isString = false;
         Token<PHPTokenId> stringToken = null;
+        boolean nokeywords = true;
         List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
-       for (Token<PHPTokenId> cToken : preceedingLineTokens) {
+        for (Token<PHPTokenId> cToken : preceedingLineTokens) {
             TokenId id = cToken.id();
-            boolean nokeywords = !isIface && !isClass && !isExtends && !isImplements && !isNsSeparator;
+            nokeywords = !isIface && !isClass && !isExtends && !isImplements && !isNsSeparator;
            if (id.equals(PHPTokenId.PHP_CLASS)) {
                 isClass = true;
                 break;
@@ -576,14 +577,28 @@ class CompletionContextFinder {
                     return CompletionContext.CLASS_NAME;
                 } else if (isIface) {
                     return CompletionContext.INTERFACE_NAME;
-                }
+                } 
                 return !isString ? isClass ? CompletionContext.CLASS_NAME : CompletionContext.INTERFACE_NAME : isClass ? CompletionContext.IMPLEMENTS : CompletionContext.INTERFACE_NAME;
             } else if (isIface) {
                 return !isString ? CompletionContext.NONE : CompletionContext.EXTENDS;
             } else if (isClass) {
                 return !isString ? CompletionContext.NONE : CompletionContext.INHERITANCE;
             }
-        }
+        } else if (isExtends || isImplements) {
+            for (Token<PHPTokenId> cToken : preceedingLineTokens) {
+                TokenId id = cToken.id();
+                if (id == PHPTokenId.PHP_EXTENDS) {
+                    return CompletionContext.CLASS_NAME;
+                }
+                if (id == PHPTokenId.PHP_IMPLEMENTS) {
+                    return CompletionContext.INTERFACE_NAME;
+                }
+                if (id != PHPTokenId.WHITESPACE) {
+                    break;
+                }
+                
+            }
+        } 
         return null;
     }
 
