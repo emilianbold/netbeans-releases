@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.ppoints;
 
 import java.util.Arrays;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.lib.profiler.client.ProfilingPointsProcessor;
 import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
 import org.netbeans.lib.profiler.common.Profiler;
@@ -97,6 +96,8 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
@@ -114,7 +115,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ProfilingPointsProcessor.class)
 public class ProfilingPointsManager extends ProfilingPointsProcessor 
-                                    implements PropertyChangeListener, 
+                                    implements ChangeListener,
+                                               PropertyChangeListener, 
                                                ProfilingStateListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -348,7 +350,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
                 public void run() {
                     processOpenedProjectsChanged(); // will subsequently invoke projectOpened on all open projects
                     Profiler.getDefault().addProfilingStateListener(ProfilingPointsManager.this);
-                    OpenProjects.getDefault().addPropertyChangeListener(ProfilingPointsManager.this);
+                    ProjectUtilities.addOpenProjectsListener(ProfilingPointsManager.this);
                 }
             });
     }
@@ -657,18 +659,26 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
             if (isAppearanceChange(evt)) {
                 firePropertyChanged(PROPERTY_PROFILING_POINTS_CHANGED);
             }
-        } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
-                    public void run() {
-                        processOpenedProjectsChanged();
-                    }
-                });
+//        } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+//            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+//                    public void run() {
+//                        processOpenedProjectsChanged();
+//                    }
+//                });
 
             // --- Code for saving dirty profiling points on document save instead of IDE closing ----------------
             //    } else if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
             //      System.err.println(">>> Changed " + evt.getPropertyName() + " from " + evt.getOldValue() + " to " + evt.getNewValue() + ", origin: "+ evt.getSource());
             // ---------------------------------------------------------------------------------------------------
         }
+    }
+    
+    public void stateChanged(ChangeEvent e) {
+        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+            public void run() {
+                processOpenedProjectsChanged();
+            }
+        });
     }
 
     public void removeProfilingPoint(ProfilingPoint profilingPoint) {
