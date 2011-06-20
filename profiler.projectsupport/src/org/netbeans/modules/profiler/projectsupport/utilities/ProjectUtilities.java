@@ -111,35 +111,6 @@ public class ProjectUtilities {
         return OpenProjects.getDefault().getOpenProjects();
     }
 
-    public static Lookup.Provider[] getSortedProjects(Lookup.Provider[] projects) {
-        ArrayList projectsArray = new ArrayList(projects.length);
-
-        for (int i = 0; i < projects.length; i++) {
-            projectsArray.add(projects[i]);
-        }
-
-        try {
-            Collections.sort(projectsArray,
-                    new Comparator() {
-
-                        public int compare(Object o1, Object o2) {
-                            Project p1 = (Project) o1;
-                            Project p2 = (Project) o2;
-
-                            return ProjectUtils.getInformation(p1).getDisplayName().toLowerCase().compareTo(ProjectUtils.getInformation(p2).getDisplayName().toLowerCase());
-                        }
-                    });
-        } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, e.getMessage()); // just in case ProjectUtils doesn't provide expected information
-        }
-
-        ;
-
-        projectsArray.toArray(projects);
-
-        return projects;
-    }
-
     public static boolean hasAction(Project project, String actionName) {
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
 

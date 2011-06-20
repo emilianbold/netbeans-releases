@@ -100,11 +100,6 @@ public class ProjectUtilitiesProviderImpl extends ProjectUtilitiesProvider {
     public void fetchSubprojects(Provider project, Set<Provider> subprojects) {
         ProjectUtilities.fetchSubprojects((Project)project, (Set)subprojects);
     }
-
-    @Override
-    public Provider[] getSortedProjects(Provider[] openedProjects) {
-        return ProjectUtilities.getSortedProjects(openedProjects);
-    }
     
     @Override
     public Provider getProject(FileObject fobj) {
