@@ -732,4 +732,15 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     public boolean hasWhitelistStorage() {
         return whitelistStorageDir != null;
     }
+    
+    public void resetInitiated() {
+        inited = false;
+        resetViolations();
+        whitelistViolators.clear();
+        whitelist.clear();
+        previousWhitelist.clear();
+        newWhitelist.clear();
+        whitelistEnabled = false;
+        generatingWhitelist = false;
+    }
 }
