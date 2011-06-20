@@ -69,13 +69,11 @@ public class PropertySheetQuickSearchEnablementTest extends NbTestCase {
         psTwo = new PropertySheet();
     }
 
-    @Test
     public void testQuickSearchIsEnabledByDefault() {
         assertTrue(psOne.isQuickSearchAllowed());
         assertTrue(psTwo.isQuickSearchAllowed());
     }
 
-    @Test
     public void testDisableQuickSearchOnSingleInstance() {
         psOne.setQuickSearchAllowed(false);
 
@@ -90,7 +88,6 @@ public class PropertySheetQuickSearchEnablementTest extends NbTestCase {
         assertTrue(psOne.isQuickSearchAllowed());
     }
 
-    @Test
     public void testDisableQuickSearchGlobally() {
         System.setProperty(BaseTable.SYSPROP_PS_QUICK_SEARCH_DISABLED_GLOBAL, "true");
         assertFalse(psOne.isQuickSearchAllowed());
@@ -101,7 +98,6 @@ public class PropertySheetQuickSearchEnablementTest extends NbTestCase {
         assertTrue(psTwo.isQuickSearchAllowed());
     }
 
-    @Test
     public void testDisableQuickSearchGloballyOverridesPerInstanceEnablement() {
         // you can explicitly enable it per-instance beforehand
         psOne.setQuickSearchAllowed(true);
