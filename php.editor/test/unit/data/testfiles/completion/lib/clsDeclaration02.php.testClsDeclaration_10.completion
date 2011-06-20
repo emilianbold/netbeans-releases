@@ -10,9 +10,6 @@ PACKAGE    User                            [PUBLIC]   null
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
 CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
-KEYWORD    ClsDeclarationTest $this->                 null
-KEYWORD    parent::                                   null
-KEYWORD    self::                                     null
 ------------------------------------
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Base                            [PUBLIC]   Brite
@@ -36,7 +33,6 @@ CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
 CLASS      C                               [PUBLIC]   test.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
-CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      Cls1                            [PUBLIC]   TestCase.php
 CLASS      Cls136188                       [PUBLIC]   issue136188.php
@@ -59,8 +55,6 @@ CLASS      I146187ChildClass               [PUBLIC]   issue146187.php
 CLASS      I146187ChildClass               [PUBLIC]   issue146187.php
 CLASS      I146187Parent1                  [PUBLIC]   issue146187.php
 CLASS      I146187Parent2                  [PUBLIC]   issue146187.php
-CLASS      If1                             [PUBLIC]   tests166339.php
-CLASS      If2                             [PUBLIC]   tests166339.php
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
@@ -71,7 +65,6 @@ CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php
 CLASS      NewClass                        [PUBLIC]   issue171232_01.php
 CLASS      NewClass                        [PUBLIC]   issue171232_02.php
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
-CLASS      ParentInterface                 [PUBLIC]   interfaces.php
 CLASS      Person148213                    [PUBLIC]   issue148213.php
 CLASS      PhpDoc01Magazine                [PUBLIC]   typeInPHPDoc01.php
 CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
@@ -105,16 +98,12 @@ CLASS      User                            [PUBLIC]   User
 CLASS      User                            [PUBLIC]   issue142051.php
 CLASS      User147427                      [PUBLIC]   issue147427.php
 CLASS      UserAbstract                    [PUBLIC,   User
-CLASS      UserInterface                   [PUBLIC]   User
 CLASS      VarAdvancedTest                 [PUBLIC]   varAssignment2.php
 CLASS      VarTypeCommentTest              [PUBLIC]   varTypeComment.php
 CLASS      ViewController                  [PUBLIC]   Brite\Controller
 CLASS      a                               [PUBLIC]   issue137033.php
-CLASS      a                               [PUBLIC]   issue137033.php
 CLASS      a147730                         [PUBLIC]   a147730.php
 CLASS      a147730                         [PUBLIC]   b147730.php
-CLASS      a186936                         [PUBLIC]   a.php
-CLASS      b186936                         [PUBLIC]   b.php
 CLASS      blog_Application147191          [PUBLIC]   issue147191.php
 CLASS      cls142091                       [PUBLIC]   issue142091.php
 CLASS      cls147575                       [PUBLIC]   issue147575.php
@@ -129,8 +118,6 @@ CLASS      cls_A                           [PUBLIC]   insideClass2.php
 CLASS      cls_B                           [PUBLIC]   insideClass2.php
 CLASS      foo                             [PUBLIC]   tests178955.php
 CLASS      foo2                            [PUBLIC]   tests178955.php
-CLASS      iface142091                     [PUBLIC]   issue142091.php
-CLASS      ifaceA                          [PUBLIC]   paramdecltypes.php
 CLASS      issue1480109                    [PUBLIC]   issue148109.php
 CLASS      pupil140784                     [PUBLIC]   issue140784.php
 CLASS      sfWidgetFormSchema              [PUBLIC]   issue197571.php
@@ -140,131 +127,3 @@ CLASS      teacher140784                   [PUBLIC]   issue140784.php
 CLASS      test                            [PUBLIC]   declaration.php
 CLASS      test                            [PUBLIC]   issue194300.php
 CLASS      test                            [PUBLIC]   test.php
-METHOD     Barriers()                      [PUBLIC]   html.php
-METHOD     Body()                          [PUBLIC]   html.php
-METHOD     CaseIssues()                    [PUBLIC]   html.php
-METHOD     DemoInfo()                      [PUBLIC]   html.php
-METHOD     EducationTraining()             [PUBLIC]   html.php
-METHOD     Employment()                    [PUBLIC]   html.php
-METHOD     General()                       [PUBLIC]   html.php
-METHOD     RTW()                           [PUBLIC]   html.php
-METHOD     Recommendations()               [PUBLIC]   html.php
-METHOD     Signatures()                    [PUBLIC]   html.php
-METHOD     WorkAdjustment()                [PUBLIC]   html.php
-METHOD     WorkHistory()                   [PUBLIC]   html.php
-METHOD     bar()                           [PUBLIC]   issue141999.php
-METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php
-METHOD     f1(&$request1)                  [PUBLIC]   issue136092.php
-METHOD     f2(&$request2)                  [PUBLIC]   issue136092.php
-METHOD     fc142091(cls142091 $p)          [PUBLIC]   issue142091.php
-METHOD     fi142091(iface142091 $p)        [PUBLIC]   issue142091.php
-METHOD     fn1(clsAVarAssignment $aParam)  [PUBLIC]   varAssignment.php
-METHOD     fn2(clsAVarAssignment $cParam)  [PUBLIC]   varAssignment.php
-METHOD     fn3(clsAVarAssignment &$aParam  [PUBLIC]   varAssignment.php
-METHOD     fn4(clsAVarAssignment &$cParam  [PUBLIC]   varAssignment.php
-METHOD     fnc163432()                     [PUBLIC]   test.php
-METHOD     fncA()                          [PUBLIC]   typeinference.php
-METHOD     fncB()                          [PUBLIC]   typeinference.php
-METHOD     fncC()                          [PUBLIC]   typeinference.php
-METHOD     fncCreateA()                    [PUBLIC]   varAssignment.php
-METHOD     fncCreateC()                    [PUBLIC]   varAssignment.php
-METHOD     fncD()                          [PUBLIC]   typeinference.php
-METHOD     fncE()                          [PUBLIC]   typeinference.php
-METHOD     fncF()                          [PUBLIC]   typeinference.php
-METHOD     fncG()                          [PUBLIC]   typeinference.php
-METHOD     fncH()                          [PUBLIC]   typeinference.php
-METHOD     fncI()                          [PUBLIC]   typeinference.php
-METHOD     fnc_b()                         [PUBLIC]   insideClass2.php
-METHOD     foo($func_arg)                  [PUBLIC]   var_scope.php
-METHOD     foo_TestCCOnMethods()           [PUBLIC]   test_cc_on_methods.php
-METHOD     getBook()                       [PUBLIC]   mixedtypes.php
-METHOD     getBook()                       [PUBLIC]   mixedtypes_1.php
-METHOD     getBookMagazine()               [PUBLIC]   mixedtypes.php
-METHOD     getBookMagazine()               [PUBLIC]   mixedtypes_1.php
-METHOD     issue157534(&$var)              [PUBLIC]   issue157534.php
-METHOD     mytest()                        [PUBLIC]   varAssignment.php
-METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
-METHOD     printMyName()                   [PUBLIC]   varTypeComment.php
-METHOD     test()                          [PUBLIC]   typeInPHPDoc01.php
-METHOD     test142919(FooType1 $param1, $  [PUBLIC]   issue142919.php
-METHOD     test144409Func()                [PUBLIC]   issue144409.php
-METHOD     test145138_inner($param2)       [PUBLIC]   issue145138.php
-METHOD     test145138_outer($param1)       [PUBLIC]   issue145138.php
-METHOD     test148856Func($a)              [PUBLIC]   issue148856.php
-METHOD     testClassReturningFunction()    [PUBLIC]   function_return_type.php
-METHOD     testFunc(ChildInterface $arg)   [PUBLIC]   interfaces.php
-METHOD     testOptionalArgsFunc($a)        [PUBLIC]   optional_args.php
-METHOD     testOptionalArgsFunc($a, $b =   [PUBLIC]   optional_args.php
-VARIABLE   $GLOBALS                                   PHP Platform
-VARIABLE   $HTTP_RAW_POST_DATA                        PHP Platform
-VARIABLE   $_COOKIE                                   PHP Platform
-VARIABLE   $_ENV                                      PHP Platform
-VARIABLE   $_FILES                                    PHP Platform
-VARIABLE   $_GET                                      PHP Platform
-VARIABLE   $_POST                                     PHP Platform
-VARIABLE   $_REQUEST                                  PHP Platform
-VARIABLE   $_SERVER                                   PHP Platform
-VARIABLE   $_SESSION                                  PHP Platform
-VARIABLE   $argc                                      PHP Platform
-VARIABLE   $argv                                      PHP Platform
-VARIABLE   $http_response_header                      PHP Platform
-VARIABLE   $php_errormsg                              PHP Platform
-CONSTANT   aaa 1                           [PUBLIC]   issue137033.php
-KEYWORD    __CLASS__                                  null
-KEYWORD    __FILE__                                   null
-KEYWORD    __FUNCTION__                               null
-KEYWORD    __LINE__                                   null
-KEYWORD    __METHOD__                                 null
-KEYWORD    abstract                                   null
-KEYWORD    array                                      null
-KEYWORD    break                                      null
-KEYWORD    case                                       null
-KEYWORD    catch                                      null
-KEYWORD    class                                      null
-KEYWORD    clone                                      null
-KEYWORD    const                                      null
-KEYWORD    continue                                   null
-KEYWORD    default                                    null
-KEYWORD    die                                        null
-KEYWORD    echo                                       null
-KEYWORD    empty                                      null
-KEYWORD    endfor                                     null
-KEYWORD    endforeach                                 null
-KEYWORD    endif                                      null
-KEYWORD    endswitch                                  null
-KEYWORD    endwhile                                   null
-KEYWORD    eval                                       null
-KEYWORD    exit                                       null
-KEYWORD    extends                                    null
-KEYWORD    final                                      null
-KEYWORD    for                                        null
-KEYWORD    foreach                                    null
-KEYWORD    function                                   null
-KEYWORD    global                                     null
-KEYWORD    goto                                       null
-KEYWORD    if                                         null
-KEYWORD    implements                                 null
-KEYWORD    include                                    null
-KEYWORD    include_once                               null
-KEYWORD    instanceof                                 null
-KEYWORD    interface                                  null
-KEYWORD    isset                                      null
-KEYWORD    list                                       null
-KEYWORD    namespace                                  null
-KEYWORD    new                                        null
-KEYWORD    php_user_filter                            null
-KEYWORD    print                                      null
-KEYWORD    private                                    null
-KEYWORD    protected                                  null
-KEYWORD    public                                     null
-KEYWORD    require                                    null
-KEYWORD    require_once                               null
-KEYWORD    return                                     null
-KEYWORD    static                                     null
-KEYWORD    switch                                     null
-KEYWORD    throw                                      null
-KEYWORD    try                                        null
-KEYWORD    unset                                      null
-KEYWORD    use                                        null
-KEYWORD    var                                        null
-KEYWORD    while                                      null

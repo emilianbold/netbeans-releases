@@ -585,6 +585,7 @@ class CompletionContextFinder {
                 return !isString ? CompletionContext.NONE : CompletionContext.INHERITANCE;
             }
         } else if (isExtends || isImplements) {
+            boolean firstString = false;
             for (Token<PHPTokenId> cToken : preceedingLineTokens) {
                 TokenId id = cToken.id();
                 if (id == PHPTokenId.PHP_EXTENDS) {
@@ -593,7 +594,13 @@ class CompletionContextFinder {
                 if (id == PHPTokenId.PHP_IMPLEMENTS) {
                     return CompletionContext.INTERFACE_NAME;
                 }
-                if (id != PHPTokenId.WHITESPACE) {
+                if (id == PHPTokenId.PHP_STRING) {
+                    if (!firstString) {
+                        firstString = true;
+                    } else {
+                        break;
+                    }
+                } else if (id != PHPTokenId.WHITESPACE) {
                     break;
                 }
                 
