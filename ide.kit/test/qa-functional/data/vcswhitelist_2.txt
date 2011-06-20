@@ -1,0 +1,3 @@
+#include vcswhitelist_1.txt
+
+#Versioning classes that should be loaded on Project open:

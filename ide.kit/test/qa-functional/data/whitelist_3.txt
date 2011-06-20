@@ -1800,3 +1800,21 @@ org.netbeans.modules.masterfs.ProvidedExtensionsAccessor
 org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport$1IOJob
 org.netbeans.spi.editor.mimelookup.MimeLocation
 org.netbeans.spi.project.support.LookupProviderSupport$DelegatingLookupImpl$UnmergedLookup
+
+# OK on June 17, 2011:
+org.netbeans.modules.project.ui.PhysicalView$GroupNodeInfo
+org.netbeans.modules.project.ui.PhysicalView$ProjectBadgingChildren
+org.netbeans.modules.project.ui.PhysicalView$ProjectIconNode
+org.netbeans.modules.project.ui.ProjectsRootNode$BadgingNode$AnnotationListener
+org.netbeans.modules.masterfs.watcher.LinuxNotifier$LKey
+org.netbeans.modules.masterfs.watcher.Notifier$KeyRef
+org.netbeans.spi.project.MoveOrRenameOperationImplementation
+org.netbeans.modules.ant.freeform.FreeformSources$WeakFileListener
+org.netbeans.modules.classfile.ArrayElementValue
+org.netbeans.modules.classfile.ClassElementValue
+org.netbeans.modules.classfile.EnumElementValue
+org.netbeans.modules.classfile.PrimitiveElementValue
+org.netbeans.modules.project.libraries.Util
+org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation
+org.netbeans.spi.java.project.support.ui.Bundle
+

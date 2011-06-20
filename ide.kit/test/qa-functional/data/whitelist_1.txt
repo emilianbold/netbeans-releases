@@ -5588,3 +5588,21 @@ org.openide.awt.ContextManager$GMReference
 org.openide.awt.ContextManager$LSet
 org.openide.awt.ContextSelection
 
+# OK on June 17, 2011:
+org.openide.windows.WindowSystemEvent
+org.netbeans.core.windows.WindowSystemEventType
+org.netbeans.core.windows.view.dnd.TopComponentDraggable
+org.netbeans.modules.versioning.DelegatingVCS
+org.netbeans.modules.versioning.spi.VCSAnnotator$ActionDestination
+org.netbeans.modules.versioning.spi.VCSVisibilityQuery
+org.netbeans.modules.versioning.util.RootsToFile
+org.netbeans.modules.versioning.util.RootsToFile$Callback
+org.netbeans.modules.versioning.util.VCSKenaiAccessor
+org.netbeans.modules.versioning.util.VCSKenaiAccessor$KenaiNotificationListener
+org.netbeans.modules.versioning.util.VCSNotificationDisplayer
+org.openide.filesystems.DefaultAttributes$InnerParser
+com.sun.jna.NativeString
+sun.reflect.SerializationConstructorAccessorImpl
+org.netbeans.core.windows.TopComponentTracker
+org.netbeans.core.windows.persistence.RoleFileSystem
+org.netbeans.modules.settings.convertors.XMLSettingsSupport$SpecialObjectInputStream

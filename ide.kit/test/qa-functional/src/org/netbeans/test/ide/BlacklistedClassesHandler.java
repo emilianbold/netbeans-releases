@@ -227,4 +227,9 @@ public interface BlacklistedClassesHandler {
      * @return list of violators
      */
     public String reportViolations(PrintWriter out);
+    
+    /**
+     * Allows for reinitialization of the handler
+     */
+    public void resetInitiated();
 }
