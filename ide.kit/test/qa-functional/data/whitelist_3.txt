@@ -1809,3 +1809,12 @@ org.netbeans.modules.project.ui.ProjectsRootNode$BadgingNode$AnnotationListener
 org.netbeans.modules.masterfs.watcher.LinuxNotifier$LKey
 org.netbeans.modules.masterfs.watcher.Notifier$KeyRef
 org.netbeans.spi.project.MoveOrRenameOperationImplementation
+org.netbeans.modules.ant.freeform.FreeformSources$WeakFileListener
+org.netbeans.modules.classfile.ArrayElementValue
+org.netbeans.modules.classfile.ClassElementValue
+org.netbeans.modules.classfile.EnumElementValue
+org.netbeans.modules.classfile.PrimitiveElementValue
+org.netbeans.modules.project.libraries.Util
+org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation
+org.netbeans.spi.java.project.support.ui.Bundle
+

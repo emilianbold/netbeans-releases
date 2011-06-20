@@ -5603,4 +5603,6 @@ org.netbeans.modules.versioning.util.VCSNotificationDisplayer
 org.openide.filesystems.DefaultAttributes$InnerParser
 com.sun.jna.NativeString
 sun.reflect.SerializationConstructorAccessorImpl
-
+org.netbeans.core.windows.TopComponentTracker
+org.netbeans.core.windows.persistence.RoleFileSystem
+org.netbeans.modules.settings.convertors.XMLSettingsSupport$SpecialObjectInputStream
