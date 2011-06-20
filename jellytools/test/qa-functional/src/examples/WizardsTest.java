@@ -82,7 +82,9 @@ public class WizardsTest extends JellyTestCase {
         NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().typeText("MyNewClass");
         // finish wizard
-        nfnlso.finish();
+        //nfnlso.finish();
+        // cancel wizard
+        nfnlso.cancel();
     }
 
     /** Test new project wizard using generic WizardOperator. */
