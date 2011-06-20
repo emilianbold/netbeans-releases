@@ -1,5 +1,5 @@
 Code completion result for source line:
-echo "class property: |$this->name\n";
+extends Cls2DeclarationTest |
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
@@ -7,9 +7,10 @@ PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    User                            [PUBLIC]   null
-CLASS      Book                            [PUBLIC]   issue153707.php
-VARIABLE   ? $name                         [PUBLIC]   issue153707.php
-KEYWORD    Book $this->                               null
+CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
+CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
+CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
+KEYWORD    ClsDeclarationTest $this->                 null
 KEYWORD    parent::                                   null
 KEYWORD    self::                                     null
 ------------------------------------
@@ -30,6 +31,7 @@ CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
+CLASS      Book                            [PUBLIC]   issue153707.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
 CLASS      C                               [PUBLIC]   test.php
@@ -41,11 +43,8 @@ CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
 CLASS      Cls2                            [PUBLIC]   TestCase.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration.php
-CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
-CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsBaseDeclarationTest          [PUBLIC]   clsDeclaration.php
 CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration.php
-CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
