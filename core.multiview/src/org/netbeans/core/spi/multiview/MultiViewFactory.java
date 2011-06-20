@@ -296,7 +296,7 @@ public final class MultiViewFactory {
                         // do proceed.
                         it = badOnes.values().iterator();
                         while (it.hasNext()) {
-                            Action act = ((CloseOperationState)it.next()).getProceedAction();
+                            Action act = it.next().getProceedAction();
                             if (act != null) {
                                 act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "proceed"));
                             }
@@ -305,7 +305,7 @@ public final class MultiViewFactory {
                         // do discard
                         it = badOnes.values().iterator();
                         while (it.hasNext()) {
-                            Action act = ((CloseOperationState)it.next()).getDiscardAction();
+                            Action act = it.next().getDiscardAction();
                             if (act != null) {
                                 act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "discard"));
                             }
@@ -436,7 +436,7 @@ public final class MultiViewFactory {
                     try {
                         Method m = clazz.getMethod(method, Lookup.class);
                         return (MultiViewElement) m.invoke(null, context);
-                    } catch (Exception ex) {
+                    } catch (NoSuchMethodException ex) {
                         Method m = clazz.getMethod(method);
                         return (MultiViewElement) m.invoke(null);
                     }
