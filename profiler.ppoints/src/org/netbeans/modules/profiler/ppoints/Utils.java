@@ -48,7 +48,6 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
 import org.netbeans.lib.profiler.ui.components.table.EnhancedTableCellRenderer;
 import org.netbeans.lib.profiler.ui.components.table.LabelTableCellRenderer;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -83,7 +82,8 @@ import javax.swing.SwingConstants;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.profiler.api.EditorContext;
+import org.netbeans.modules.profiler.api.EditorSupport;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.GoToSource;
@@ -401,7 +401,7 @@ public class Utils {
     }
 
     public static CodeProfilingPoint.Location getCurrentLocation(int lineOffset) {
-        JavaEditorContext mostActiveContext = getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return CodeProfilingPoint.Location.EMPTY;
@@ -443,7 +443,7 @@ public class Utils {
     }
 
     public static CodeProfilingPoint.Location getCurrentSelectionEndLocation(int lineOffset) {
-        JavaEditorContext mostActiveContext = getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return CodeProfilingPoint.Location.EMPTY;
@@ -474,7 +474,7 @@ public class Utils {
     }
 
     public static CodeProfilingPoint.Location[] getCurrentSelectionLocations() {
-        JavaEditorContext mostActiveContext = getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return new CodeProfilingPoint.Location[0];
@@ -523,7 +523,7 @@ public class Utils {
     }
 
     public static CodeProfilingPoint.Location getCurrentSelectionStartLocation(int lineOffset) {
-        JavaEditorContext mostActiveContext = getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return CodeProfilingPoint.Location.EMPTY;
@@ -727,7 +727,7 @@ public class Utils {
     }
 
     public static Lookup.Provider getMostActiveJavaProject() {
-        JavaEditorContext mostActiveContext = getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return null;
@@ -899,17 +899,5 @@ return null;// FIXXX        return FileOwnerQuery.getOwner(mostActiveFileObject)
 
         GoToSource.openFile(fileObject, documentOffset);
     }
-
-    private static JavaEditorContext getMostActiveJavaEditorContext() {
-        for (JTextComponent component : EditorRegistry.componentList()) {
-            Document document = component.getDocument();
-            FileObject fileObject = NbEditorUtilities.getFileObject(document);
-
-            if ((fileObject != null) && fileObject.getExt().equalsIgnoreCase("java")) {
-                return new JavaEditorContext(component, document, fileObject); // NOI18N
-            }
-        }
-
-        return null;
-    }
+    
 }

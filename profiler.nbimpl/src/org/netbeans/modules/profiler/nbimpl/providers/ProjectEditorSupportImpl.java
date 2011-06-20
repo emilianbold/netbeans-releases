@@ -47,13 +47,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.api.ProfilerProject;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.profiler.api.EditorContext;
 import org.netbeans.modules.profiler.spi.EditorSupportProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -62,6 +64,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -99,6 +102,60 @@ public class ProjectEditorSupportImpl implements EditorSupportProvider {
             }
             return rslt[0];
         }
+    }
+    
+    @Override
+    public boolean currentlyInJavaEditor() {
+        // Get focused TopComponent
+        TopComponent top1 = WindowManager.getDefault().getRegistry().getActivated();
+
+        if (top1 == null) {
+            return false;
+        }
+
+        // Get most active editor
+        JTextComponent editor = EditorRegistry.lastFocusedComponent();
+
+        if (editor == null) {
+            return false;
+        }
+
+        // Check if Java source
+        Document document = editor.getDocument();
+
+        if (document == null) {
+            return false;
+        }
+
+        FileObject fileObject = NbEditorUtilities.getFileObject(document);
+
+        if ((fileObject == null) || !fileObject.getExt().equalsIgnoreCase("java")) { // NOI18N
+            return false;
+        }
+
+        // Get editor TopComponent
+        TopComponent top2 = NbEditorUtilities.getOuterTopComponent(editor);
+
+        if (top2 == null) {
+            return false;
+        }
+
+        // Return whether focused TopComponent == editor TopComponent
+        return top1 == top2;
+    }
+    
+    @Override
+    public EditorContext getMostActiveJavaEditorContext() {
+        for (JTextComponent component : EditorRegistry.componentList()) {
+            Document document = component.getDocument();
+            FileObject fileObject = NbEditorUtilities.getFileObject(document);
+
+            if ((fileObject != null) && fileObject.getExt().equalsIgnoreCase("java")) { // NOI18N
+                return new EditorContext(component, document, fileObject);
+            }
+        }
+
+        return null;
     }
 
     @Override

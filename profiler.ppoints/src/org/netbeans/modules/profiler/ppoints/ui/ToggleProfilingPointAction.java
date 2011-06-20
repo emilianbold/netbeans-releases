@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.ppoints.ui;
 
 import org.netbeans.lib.profiler.ui.components.ThinBevelBorder;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.profiler.ppoints.CodeProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.GlobalProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
@@ -85,7 +84,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.profiler.api.EditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -326,7 +325,7 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
                 chooserFrame.setProfilingPointFactory((currentFactory == ppFactories.length) ? null : ppFactories[currentFactory],
                                                       currentFactory);
             } else {
-                if (currentlyInEditor()) {
+                if (EditorSupport.getDefault().currentlyInJavaEditor()) {
                     resetFactories();
                     chooserFrame.setProfilingPointFactory((currentFactory == ppFactories.length) ? null : ppFactories[currentFactory],
                                                           currentFactory);
@@ -347,45 +346,6 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
         if (acceleratorModifiers == 0) return;
         
         if (acceleratorModifiers != eventKeyStroke.getModifiers()) modifierKeyStateChanged();
-    }
-
-    private boolean currentlyInEditor() {
-        // Get focused TopComponent
-        TopComponent top1 = WindowManager.getDefault().getRegistry().getActivated();
-
-        if (top1 == null) {
-            return false;
-        }
-
-        // Get most active editor
-        JTextComponent editor = EditorRegistry.lastFocusedComponent();
-
-        if (editor == null) {
-            return false;
-        }
-
-        // Check if Java source
-        Document document = editor.getDocument();
-
-        if (document == null) {
-            return false;
-        }
-
-        FileObject fileObject = NbEditorUtilities.getFileObject(document);
-
-        if ((fileObject == null) || !fileObject.getExt().equalsIgnoreCase("java")) {
-            return false; // NOI18N
-        }
-
-        // Get editor TopComponent
-        TopComponent top2 = NbEditorUtilities.getOuterTopComponent(editor);
-
-        if (top2 == null) {
-            return false;
-        }
-
-        // Return whether focused TopComponent == editor TopComponent
-        return top1 == top2;
     }
     
     private synchronized ProfilingPointsSwitcher getChooserFrame() {
