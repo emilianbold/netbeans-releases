@@ -751,6 +751,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             tree.setSelectionRow(0);
                             requestFocus();
                             setRefactoringEnabled(true, true);
+                            if (parametersPanel!=null && (Boolean) parametersPanel.getClientProperty(ParametersPanel.JUMP_TO_FIRST_OCCURENCE)) {
+                                selectNextUsage();
+                            }
                         }
                     });
                 }
