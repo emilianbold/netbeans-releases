@@ -606,12 +606,13 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
         @Override
         public String[] getPrivilegedTemplates() {
-            MakeConfigurationDescriptor configurationDescriptor =
-                    configurationProvider.getConfigurationDescriptor(false);
-            if (configurationDescriptor != null) {
-                MakeConfiguration conf = configurationDescriptor.getActiveConfiguration();
-                if (conf != null && conf.isQmakeConfiguration()) {
-                    return PRIVILEGED_NAMES_QT;
+            if (configurationProvider.gotDescriptor()) {
+                MakeConfigurationDescriptor configurationDescriptor = configurationProvider.getConfigurationDescriptor(false);
+                if (configurationDescriptor != null) {
+                    MakeConfiguration conf = configurationDescriptor.getActiveConfiguration();
+                    if (conf != null && conf.isQmakeConfiguration()) {
+                        return PRIVILEGED_NAMES_QT;
+                    }
                 }
             }
             return PRIVILEGED_NAMES;
