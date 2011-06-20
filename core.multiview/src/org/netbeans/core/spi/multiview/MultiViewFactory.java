@@ -436,7 +436,7 @@ public final class MultiViewFactory {
                     try {
                         Method m = clazz.getMethod(method, Lookup.class);
                         return (MultiViewElement) m.invoke(null, context);
-                    } catch (Exception ex) {
+                    } catch (NoSuchMethodException ex) {
                         Method m = clazz.getMethod(method);
                         return (MultiViewElement) m.invoke(null);
                     }
