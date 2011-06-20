@@ -1704,12 +1704,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 protected void onDone(MIRecord record) {
                     List<GdbThread> res = new ArrayList<GdbThread>();
                     MITList results = record.results();
-                    String currentThreadId = results.valueOf("current-thread-id").asConst().value();
-                    MIValue threadsValue = results.valueOf("threads");
+                    String currentThreadId = results.valueOf("current-thread-id").asConst().value(); //NOI18N
+                    MIValue threadsValue = results.valueOf("threads"); //NOI18N
                     for (MITListItem thr : threadsValue.asList()) {
                         MITList thrList = (MITList)thr;
-                        String id = thrList.valueOf("id").asConst().value();
-                        String name = thrList.valueOf("target-id").asConst().value();
+                        String id = thrList.valueOf("id").asConst().value(); //NOI18N
+                        String name = thrList.valueOf("target-id").asConst().value(); //NOI18N
                         MIValue frame = thrList.valueOf("frame");// frame entry // NOI18N
                         GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
                         GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, f);
