@@ -348,8 +348,6 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             if (gotMakeConfigurationDescriptor() && provider.getMakeConfigurationDescriptor().getConfs().size() == 0 ) {
                 brokenProject = true;
             }
-        } else {
-            brokenProject =  false;
         }
         updateAnnotationFiles();
         EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
