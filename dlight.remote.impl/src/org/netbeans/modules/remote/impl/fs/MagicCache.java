@@ -120,7 +120,7 @@ public class MagicCache {
                         file = line.substring(2);
                         res = new byte[BUF_LENGTH];
                         pos = 0;
-                    } else if (line.startsWith("00000")){ // NOI18N
+                    } else if (line.startsWith("0000")){ // NOI18N
                         String[] split = line.split(" "); // NOI18N
                         if (split.length > 1) {
                             for(int i = 1; i< split.length; i++) {
