@@ -60,7 +60,7 @@ public class CloseViewAction extends Action {
                                                                     "Menu/Window");
     /** "Close Window" popup menu item. */
     private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                                                    "LBL_CloseWindowAction");
+                                                                    "CTL_CloseWindowAction");
     /** "Windows|Close Window" main menu item */
     private static final String menuPath = windowItem+"|"+
                             Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
