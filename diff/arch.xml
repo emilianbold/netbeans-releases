@@ -22,7 +22,7 @@
         </question>
 -->
 <answer id="arch-what">
-The diff module provides the ability to visualize differencies between source files.
+The diff module provides the ability to visualize differences between source files.
 It also has a graphical conflicts resolver tool and built-in patch algorithm.
 <p>List of the main features:</p>
 <ul>
