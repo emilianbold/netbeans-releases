@@ -44,7 +44,6 @@
 package org.netbeans.jellytools.nodes;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Arrays;
 import javax.swing.tree.TreePath;
 import junit.framework.Test;
@@ -335,8 +334,7 @@ public class NodeTest extends JellyTestCase {
             assertFalse("Original TreePath should be invalid.", !tp1.getLastPathComponent().toString().isEmpty() && duplNode.tree().getRowForPath(tp1) > 0);
             assertTrue("TreePath should be valid after re-creation.", duplNode.tree().getRowForPath(duplNode.getTreePath()) > 0);
         } finally {
-            new DeleteAction().perform(new Node(sample1Node, "SampleClass11"));
-            new NbDialogOperator(safeDeleteTitle).ok();
+            JavaNodeUtils.performSafeDelete(new Node(sample1Node, "SampleClass11"));
         }
     }
 
