@@ -146,17 +146,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected ListMap<WatchVariable> watches = new ListMap<WatchVariable>();
 
     // local stuff
-    protected ModelChangeDelegator localUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator localUpdater = new ModelChangeDelegator();
     private boolean showAutos = false;
     protected final ArrayList<Variable> autos = new ArrayList<Variable>();
 
     // stack stuff
     protected Frame[] guiStackFrames = null;
     protected Frame currentFrame;
-    protected ModelChangeDelegator stackUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator stackUpdater = new ModelChangeDelegator();
 
     // thread stuff
-    protected ModelChangeDelegator threadUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator threadUpdater = new ModelChangeDelegator();
 
     // assembly level stuff
     private boolean srcRequested = true;
