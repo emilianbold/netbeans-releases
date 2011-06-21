@@ -43,25 +43,56 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.awt.UndoRedo;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.localhistory.LocalHistory;
+import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Top component which displays something.
  * 
  * @author Tomas Stupka
  */
-final public class LocalHistoryTopComponent extends TopComponent {
+@MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase="", // no icon
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID="text.history", 
+        mimeType="",
+        position=Integer.MAX_VALUE
+)
+final public class LocalHistoryTopComponent extends TopComponent implements MultiViewElement {
 
     private static LocalHistoryTopComponent instance;
     private LocalHistoryFileView masterView;
-    private static final String PREFERRED_ID = "LocalHistoryTopComponent";
+    static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
+    private ToolBar toolBar;
 
     public LocalHistoryTopComponent() {
         initComponents();
@@ -72,6 +103,55 @@ final public class LocalHistoryTopComponent extends TopComponent {
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
+    public LocalHistoryTopComponent(Lookup context) {
+        this();
+        DataObject dataObject = context.lookup(DataObject.class);
+
+        List<File> files = new LinkedList<File>();
+        if (dataObject instanceof DataShadow) {
+            dataObject = ((DataShadow) dataObject).getOriginal();
+        }
+        if (dataObject != null) {
+            Collection<File> doFiles = toFileCollection(dataObject.files());
+            files.addAll(doFiles);
+        }
+        init(files.toArray(new File[files.size()]));        
+    }
+    
+    private Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
+        Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
+        for (FileObject fo : fileObjects) {
+            files.add(FileUtil.toFile(fo));
+        }
+        files.remove(null);
+        return files;
+    }        
+
+    public void init(final File... files) {                
+        final LocalHistoryFileView fileView = new LocalHistoryFileView();                
+        LocalHistoryDiffView diffView = new LocalHistoryDiffView(this); 
+        fileView.getExplorerManager().addPropertyChangeListener(diffView); 
+        fileView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
+                    LocalHistoryTopComponent.this.setActivatedNodes((Node[]) evt.getNewValue());  
+                }
+            } 
+        });
+        
+        // XXX should be solved in a more general way - not ony for LocalHistoryFileView 
+        this.masterView = fileView; 
+        splitPane.setTopComponent(masterView.getPanel());   
+        splitPane.setBottomComponent(diffView.getPanel());                   
+        
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                fileView.refresh(files);
+            }
+        });
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -95,13 +175,6 @@ final public class LocalHistoryTopComponent extends TopComponent {
     private javax.swing.JSplitPane splitPane;
     // End of variables declaration//GEN-END:variables
 
-    public void init(JPanel diffPanel, LocalHistoryFileView masterView) {                
-        // XXX should be solved in a more genarel way - not ony for LocalHistoryFileView 
-        this.masterView = masterView; 
-        splitPane.setTopComponent(masterView.getPanel());   
-        splitPane.setBottomComponent(diffPanel);                   
-    }
-    
     public UndoRedo getUndoRedo() {
         return delegatingUndoRedo;
     }
@@ -146,6 +219,29 @@ final public class LocalHistoryTopComponent extends TopComponent {
         return PREFERRED_ID;
     }
 
+    @Override
+    public JComponent getVisualRepresentation() {
+        return this;
+    }
+
+    @Override
+    public JComponent getToolbarRepresentation() {
+        if( toolBar == null ) { 
+            toolBar = new ToolBar();
+        }
+        return toolBar;
+    }
+
+    @Override
+    public void setMultiViewCallback(MultiViewElementCallback callback) {
+
+    }
+
+    @Override
+    public CloseOperationState canCloseElement() {
+        return CloseOperationState.STATE_OK;
+    }
+
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
@@ -153,4 +249,44 @@ final public class LocalHistoryTopComponent extends TopComponent {
         }
     }
 
+    @Override
+    public void componentDeactivated() {
+        super.componentDeactivated();
+}
+
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+    }
+
+    @Override
+    public void componentHidden() {
+        super.componentHidden();
+    }
+
+    @Override
+    public void componentShowing() {
+        super.componentShowing();
+    }  
+    
+    private static class ToolBar extends JToolBar {
+        ToolBar() {
+            // Proper initialization of aqua toolbar ui, see commit dbd66075827a
+            super("editorToolbar"); // NOI18N
+            // the toolbar should have roll-over buttons and no handle for dragging
+            setFloatable(false);
+            setRollover(true);
+            setBorder(new EmptyBorder(0, 0, 0, 0));
+        }
+
+        @Override
+        public String getUIClassID() {
+            // For GTK and Aqua look and feels, we provide a custom toolbar UI
+            if (UIManager.get("Nb.Toolbar.ui") != null) { // NOI18N
+                return "Nb.Toolbar.ui"; // NOI18N
+            } else {
+                return super.getUIClassID();
+            }
+        }
+    }    
 }
