@@ -140,6 +140,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private static final RequestProcessor REFRESH_PROCESSOR =
             new RequestProcessor("Java EE server registry refresh", 5);
 
+    private static final RequestProcessor DEBUGGER_STATE_PROCESSOR =
+            new RequestProcessor("Java EE server debugger state", 1);
+
     private final String url;
     private final Server server;
     private DeploymentManager manager;
@@ -1908,68 +1911,93 @@ public class ServerInstance implements Node.Cookie, Comparable {
         return false;
     }
 
-    /** DebugStatusListener listens to debugger state changes and calls refresh() 
-     *  if needed. If the debugger stops at a breakpoint, the server status will
-     *  thus change to suspended, etc. */
+    /** 
+     * DebugStatusListener listens to debugger state changes and calls refresh() 
+     * if needed. If the debugger stops at a breakpoint, the server status will
+     * thus change to suspended, etc.
+     * <p>
+     * Because retrieval of the target may take some time we reschedule the
+     * calls. Hopefully this does not make any harm.
+     */
     private class DebuggerStateListener extends DebuggerManagerAdapter {
-            
-            private RequestProcessor.Task refreshTask;
-            
-            public void sessionAdded(Session session) {
-                Target target = _retrieveTarget(null);
-                ServerDebugInfo sdi = getServerDebugInfo(target);
-                if (sdi == null) {
-                    LOGGER.log(Level.FINE, "DebuggerInfo cannot be found for: " + ServerInstance.this);
-                    return; // give it up
-                }
-                AttachingDICookie attCookie = (AttachingDICookie)session.lookupFirst(null, AttachingDICookie.class);
-                if (attCookie == null) {
-                    LOGGER.log(Level.FINE, "AttachingDICookie cannot be found for: " + ServerInstance.this);
-                    return; // give it up
-                }
-                if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {
-                    String shmem = attCookie.getSharedMemoryName();
-                    if (shmem != null && shmem.equalsIgnoreCase(sdi.getShmemName())) {
-                        registerListener(session);
+
+        /* <i>GuardedBy(this)</i> */
+        private RequestProcessor.Task refreshTask;
+
+        @Override
+        public void sessionAdded(final Session session) {
+            DEBUGGER_STATE_PROCESSOR.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    Target target = _retrieveTarget(null);
+                    ServerDebugInfo sdi = getServerDebugInfo(target);
+                    if (sdi == null) {
+                        LOGGER.log(Level.FINE, "DebuggerInfo cannot be found for: " + ServerInstance.this);
+                        return; // give it up
                     }
-                } else {
-                    String host = attCookie.getHostName();
-                    if (host != null && isSameHost(host, sdi.getHost())
-                            && attCookie.getPortNumber() == sdi.getPort()) {
-                        registerListener(session);
+                    AttachingDICookie attCookie = (AttachingDICookie)session.lookupFirst(null, AttachingDICookie.class);
+                    if (attCookie == null) {
+                        LOGGER.log(Level.FINE, "AttachingDICookie cannot be found for: " + ServerInstance.this);
+                        return; // give it up
                     }
-                }
-            }
-            
-            public synchronized void sessionRemoved(Session session) {
-                refreshTask = null;
-            }
-            
-            private void registerListener(Session session) {
-                final JPDADebugger jpda = (JPDADebugger)session.lookupFirst(null, JPDADebugger.class);
-                if (jpda != null) {
-                    jpda.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            RequestProcessor.Task task; 
-                            synchronized (DebuggerStateListener.this) {
-                                if (refreshTask == null) {
-                                    refreshTask = RequestProcessor.getDefault().create(new Runnable() {
-                                        public void run() {
-                                            if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
-                                                setServerState(ServerInstance.STATE_SUSPENDED);
-                                            } else {
-                                                setServerState(ServerInstance.STATE_DEBUGGING);
-                                            }
-                                        }
-                                    });
-                                }
-                                task = refreshTask;
-                            }
-                            // group fast arriving refresh calls
-                            task.schedule(500);
+                    if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {
+                        String shmem = attCookie.getSharedMemoryName();
+                        if (shmem != null && shmem.equalsIgnoreCase(sdi.getShmemName())) {
+                            registerListener(session);
                         }
-                    });
+                    } else {
+                        String host = attCookie.getHostName();
+                        if (host != null && isSameHost(host, sdi.getHost())
+                                && attCookie.getPortNumber() == sdi.getPort()) {
+                            registerListener(session);
+                        }
+                    }
                 }
+            });
+
+        }
+
+        @Override
+        public void sessionRemoved(final Session session) {
+            DEBUGGER_STATE_PROCESSOR.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    synchronized (DebuggerStateListener.this) {
+                        refreshTask = null;
+                    }
+                }
+            });
+        }
+
+        private void registerListener(Session session) {
+            final JPDADebugger jpda = (JPDADebugger)session.lookupFirst(null, JPDADebugger.class);
+            if (jpda != null) {
+                jpda.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
+
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        RequestProcessor.Task task;
+                        synchronized (DebuggerStateListener.this) {
+                            if (refreshTask == null) {
+                                refreshTask = DEBUGGER_STATE_PROCESSOR.create(new Runnable() {
+                                    public void run() {
+                                        if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                                            setServerState(ServerInstance.STATE_SUSPENDED);
+                                        } else {
+                                            setServerState(ServerInstance.STATE_DEBUGGING);
+                                        }
+                                    }
+                                });
+                            }
+                            task = refreshTask;
+                        }
+                        // group fast arriving refresh calls
+                        task.schedule(500);
+                    }
+                });
             }
         }
+    }
 }

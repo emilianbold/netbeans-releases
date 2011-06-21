@@ -964,7 +964,11 @@ public class CallStackFrameImpl implements CallStackFrame {
         @Override
         public int hashCode() {
             if (thread == null) return 0;
-            return (thread.hashCode() << 8 + depth + (location != null ? location.hashCode() << 4 : 0));
+            try {
+                return (thread.hashCode() << 8 + depth + (location != null ? location.hashCode() << 4 : 0));
+            } catch (VMDisconnectedException vmdex) {
+                return 0;
+            }
         }
         
     }
