@@ -95,7 +95,7 @@ public abstract class ExportDiff extends ExportDiffSupport {
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision()[0];
+        return panel.getSelectedRevision().getRevisionNumber();
     }
 
     @Override

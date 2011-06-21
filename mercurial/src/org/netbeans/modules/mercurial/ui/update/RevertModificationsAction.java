@@ -70,13 +70,11 @@ import org.openide.nodes.Node;
  */
 public class RevertModificationsAction extends ContextAction {
     
-    private static String HG_TIP = "tip"; // NOI18N
- 
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty()) {
             return false;
         }
         Set<File> roots = context.getRootFiles();
@@ -90,6 +88,7 @@ public class RevertModificationsAction extends ContextAction {
         return true;
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_GetClean";                                 //NOI18N
     }
@@ -105,19 +104,17 @@ public class RevertModificationsAction extends ContextAction {
         if (files == null || files.length == 0) return;
         final File repository = Mercurial.getInstance().getRepositoryRoot(files[0]);
 
-        String rev = null;
 
         final RevertModifications revertModifications = new RevertModifications(repository, Arrays.asList(files).contains(repository) ? null : files); // this is much faster when getting revisions
         if (!revertModifications.showDialog()) {
             return;
         }
-        rev = revertModifications.getSelectionRevision();
-        if(rev == null) rev = HG_TIP;
-        final String revStr = rev;
+        final String revStr = revertModifications.getSelectionRevision();
         final boolean doBackup = revertModifications.isBackupRequested();
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 performRevert(repository, revStr, files, doBackup, this.getLogger());
             }
@@ -136,9 +133,7 @@ public class RevertModificationsAction extends ContextAction {
     
     public static void performRevert(File repository, String revStr, File[] files, boolean doBackup, OutputLogger logger) {
         List<File> revertFiles = new ArrayList<File>();
-        for (File file : files) {
-            revertFiles.add(file);
-        }
+        revertFiles.addAll(Arrays.asList(files));
         performRevert(repository, revStr, revertFiles, doBackup, logger);
     }
     
@@ -177,9 +172,9 @@ public class RevertModificationsAction extends ContextAction {
                 return;
             }
 
-            logger.output(
-                    NbBundle.getMessage(RevertModificationsAction.class,
-                    "MSG_REVERT_REVISION_STR", revStr)); // NOI18N
+            logger.output(revStr == null ?
+                    NbBundle.getMessage(RevertModificationsAction.class, "MSG_REVERT_REVISION_PARENT") :
+                    NbBundle.getMessage(RevertModificationsAction.class, "MSG_REVERT_REVISION_STR", revStr)); // NOI18N
             for (File file : revertFiles) {
                 logger.output(file.getAbsolutePath());
             }

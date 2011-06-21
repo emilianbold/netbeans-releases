@@ -149,6 +149,8 @@ public class MergeAction extends ContextAction {
                             } catch (HgException ex) {
                                 NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                                 DialogDisplayer.getDefault().notifyLater(e);
+                            } finally {
+                                logger.closeLog();
                             }
                         }
                     });

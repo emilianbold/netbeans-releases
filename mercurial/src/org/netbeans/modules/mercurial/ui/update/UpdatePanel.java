@@ -81,7 +81,7 @@ public class UpdatePanel extends ChangesetPickerPanel {
         org.openide.awt.Mnemonics.setLocalizedText(forcedUpdateChxBox, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.forcedUpdateChxBox.text")); // NOI18N
         JPanel optionsPanel = new JPanel(new BorderLayout());
         optionsPanel.add(forcedUpdateChxBox, BorderLayout.NORTH);
-        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(10, 12, 10, 12));
+        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0));
         setOptionsPanel(optionsPanel, null);
     }
 }

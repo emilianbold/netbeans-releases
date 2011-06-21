@@ -301,6 +301,7 @@ public class HgCommand {
     private static final String HG_ADDING = "adding";                   //NOI18N
     private static final String HG_WARNING_PERFORMANCE_FILES_OVER = ": files over"; //NOI18N
     private static final String HG_WARNING_PERFORMANCE_CAUSE_PROBLEMS = "cause memory and performance problems"; //NOI18N
+    private static final String HG_ABORT_CANNOT_FOLLOW_NONEXISTENT_FILE = "cannot follow nonexistent file"; //NOI18N
 
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -1272,6 +1273,8 @@ public class HgCommand {
             if (!list.isEmpty()) {
                 if (isErrorNoRepository(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+                } else if (list.get(0).toLowerCase().contains(HG_ABORT_CANNOT_FOLLOW_NONEXISTENT_FILE)) {
+                    // nothing
                 } else if (isErrorAbort(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
                 }

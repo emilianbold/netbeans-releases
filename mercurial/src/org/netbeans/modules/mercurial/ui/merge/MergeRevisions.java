@@ -75,6 +75,8 @@ public class MergeRevisions implements PropertyChangeListener {
          cancelButton.getAccessibleContext().setAccessibleDescription(
                  NbBundle.getMessage(MergeRevisions.class, 
                  "ACSD_MergeForm_Action_Cancel")); // NOI18N
+        okButton.setEnabled(false);
+        panel.addPropertyChangeListener(this);
     } 
     
     public boolean showDialog() {
@@ -99,14 +101,14 @@ public class MergeRevisions implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(okButton != null) {
-            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
+        if (okButton != null && MergeRevisionsPanel.PROP_VALID.equals(evt.getPropertyName())) {
+            boolean valid = (Boolean) evt.getNewValue();
             okButton.setEnabled(valid);
         }       
     }
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision()[0];
+        return panel.getSelectedRevision().getRevisionNumber();
     }
 }
