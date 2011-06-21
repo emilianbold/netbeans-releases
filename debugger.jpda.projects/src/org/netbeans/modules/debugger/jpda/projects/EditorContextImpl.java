@@ -1406,6 +1406,11 @@ public class EditorContextImpl extends EditorContext {
         } else if (javaType.endsWith("[]")) {
             return "["+getSignature(javaType.substring(0, javaType.length() - 2));
         } else {
+            int gp1 = javaType.indexOf('<');
+            int gp2 = javaType.lastIndexOf('>');
+            if (gp1 > 0 && gp2 > gp1) {
+                javaType = javaType.substring(0, gp1) + javaType.substring(gp2 + 1);
+            }
             return "L"+javaType.replace('.', '/')+";";
         }
     }
