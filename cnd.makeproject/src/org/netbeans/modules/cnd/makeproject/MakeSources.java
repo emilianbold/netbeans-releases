@@ -229,23 +229,30 @@ public final class MakeSources implements Sources, MakeProjectListener {
         }
         ExecutionEnvironment fsEnv = project.getRemoteFileSystemHost();                
         FileObjectBasedSources sources = new FileObjectBasedSources();
-        String baseDir = project.getProjectDirectory().getPath();
-        Set<FileObject> added = new HashSet<FileObject>();
-        sourceRootList.add(baseDir); // add remote project itself to the tail
-        for (String name : sourceRootList) {
-            String path = CndPathUtilitities.toAbsolutePath(baseDir, name);
-            path = RemoteFileUtil.normalizeAbsolutePath(path, fsEnv);
-            String displayName = (fsEnv.isLocal() ? "" : fsEnv.getDisplayName() + ":") + path; //NOI18N
-            FileObject fo = RemoteFileUtil.getFileObject(path, fsEnv);
-            if (!added.contains(fo)) {
-                if (fo == null) {
-                    new NullPointerException("Null file object for " + fsEnv + ':' + path).printStackTrace(); //NOI18N
-                } else {
-                    sources.addGroup(project, GENERIC, fo, displayName);
-                    added.add(fo);
+        MakeConfigurationDescriptor pd = pdp.getConfigurationDescriptor(true);
+        if (pd != null) {
+            String baseDir = pd.getBaseDir();
+            Set<FileObject> added = new HashSet<FileObject>();
+            sourceRootList.add(baseDir); // add remote project itself to the tail
+            for (String name : sourceRootList) {
+                String path = CndPathUtilitities.toAbsolutePath(baseDir, name);
+                path = RemoteFileUtil.normalizeAbsolutePath(path, fsEnv);
+                String displayName = (fsEnv.isLocal() ? "" : fsEnv.getDisplayName() + ":") + path; //NOI18N
+                FileObject fo = RemoteFileUtil.getFileObject(path, fsEnv);
+                if (!added.contains(fo)) {
+                    if (fo == null) {
+                        new NullPointerException("Null file object for " + fsEnv + ':' + path).printStackTrace(); //NOI18N
+                    } else {
+                        sources.addGroup(project, GENERIC, fo, displayName);
+                        added.add(fo);
+                    }
                 }
             }
+        } else {
+            completeSouces.set(false);
         }
+//        String displayName = (fsEnv.isLocal() ? "" : fsEnv.getDisplayName() + ":") + project.getProjectDirectory().getPath(); //NOI18N
+//        sources.addGroup(project, GENERIC, project.getProjectDirectory(), displayName);
         return sources;
     }
 
