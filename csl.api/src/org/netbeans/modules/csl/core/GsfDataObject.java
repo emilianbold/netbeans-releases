@@ -48,6 +48,7 @@ import java.io.IOException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -220,6 +221,14 @@ public class GsfDataObject extends MultiDataObject {
             this.language = language;
         }
         
+        @Override
+        protected Pane createPane() {
+            if(language.useMultiview()) {
+                return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(language.getMimeType(), getDataObject());
+            } else {
+                return super.createPane();
+            }
+        }
         
         protected @Override boolean notifyModified() {
             if (!super.notifyModified())

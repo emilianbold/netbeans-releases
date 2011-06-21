@@ -79,6 +79,7 @@ public class BackoutAction extends ContextAction {
         return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Backout";                                  //NOI18N
     }
@@ -98,7 +99,6 @@ public class BackoutAction extends ContextAction {
 
     public static void backout(final VCSContext ctx, final RepositoryRevision repoRev){
         final File root;        
-        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
         if(repoRev != null){
             root = repoRev.getRepositoryRoot();
             if ((root == null) || (root.getPath().equals(""))) {        //NOI18N
@@ -111,25 +111,39 @@ public class BackoutAction extends ContextAction {
         }
         if (root == null) return;
          
-        String rev = null;
-        String commitMsg = null;
 
         final Backout backout = new Backout(root, repoRev);
         if (!backout.showDialog()) {
             return;
         }
-        rev = backout.getSelectionRevision();
-        if(rev == null) rev = HG_TIP;
-        commitMsg = backout.getCommitMessage();
+        final String rev = backout.getSelectionRevision();
+        final String commitMsg = backout.getCommitMessage();
         final boolean doMerge = false; // Now handling this using our own merge mechanism, not backout's
-        final String revStr = rev;
-        commitMsg = commitMsg.replaceAll(HG_BACKOUT_REVISION_REPLACE, revStr); //NOI18N
-        final String commitMsgStr = commitMsg;
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
-                
+                String revStr = rev;
+                if (revStr == null) {
+                    try {
+                        revStr = HgCommand.getParent(root, null, null).getChangesetId();
+                    } catch (HgException ex) {
+                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                        DialogDisplayer.getDefault().notifyLater(e);
+                        return;
+                    }
+                }
+                String commitMsgStr = commitMsg.replaceAll(HG_BACKOUT_REVISION_REPLACE, revStr); //NOI18N
+                if (revStr == null) {
+                    try {
+                        revStr = HgCommand.getParent(root, null, null).getChangesetId();
+                    } catch (HgException ex) {
+                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                        DialogDisplayer.getDefault().notifyLater(e);
+                        return;
+                    }
+                }
                 OutputLogger logger = getLogger();
                 try {
                     logger.outputInRed(

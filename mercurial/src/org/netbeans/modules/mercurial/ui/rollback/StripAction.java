@@ -72,13 +72,13 @@ import org.openide.nodes.Node;
 public class StripAction extends ContextAction {
     
     private static String HG_STIP_SAVE_BUNDLE = "saving bundle to ";
-    private static String HG_TIP = "tip"; // NOI18N
             
     @Override
     protected boolean enable(Node[] nodes) {
         return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Strip";                                    //NOI18N
     }
@@ -94,21 +94,27 @@ public class StripAction extends ContextAction {
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         
-        String rev = null;
-
         final Strip strip = new Strip(root);
         if (!strip.showDialog()) {
             return;
         }
-        rev = strip.getSelectionRevision();
-        if(rev == null) rev = HG_TIP;
         final boolean doBackup = strip.isBackupRequested();
-        final String revStr = rev;
+        final String rev = strip.getSelectionRevision();
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
-                
+                String revStr = rev;
+                if (revStr == null) {
+                    try {
+                        revStr = HgCommand.getParent(root, null, null).getChangesetId();
+                    } catch (HgException ex) {
+                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                        DialogDisplayer.getDefault().notifyLater(e);
+                        return;
+                    }
+                }
                 OutputLogger logger = getLogger();
                 try {
                     logger.outputInRed(
