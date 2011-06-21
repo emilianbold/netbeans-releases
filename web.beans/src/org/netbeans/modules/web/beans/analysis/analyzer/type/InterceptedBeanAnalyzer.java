@@ -110,7 +110,7 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
         if ( cancel.get() ){
             return;
         }
-        boolean hasIBindings = hasInterceptorBindings(element, model, descriptions);
+        boolean hasIBindings = hasInterceptorBindings(element, model);
         if (hasIBindings && isFinal) {
             ErrorDescription description = CdiEditorAnalysisFactory
                     .createError(element, model, info , 

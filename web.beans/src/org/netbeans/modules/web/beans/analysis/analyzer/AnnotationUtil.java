@@ -48,6 +48,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
@@ -186,6 +187,11 @@ public final class AnnotationUtil {
                 AnnotationUtil.DELEGATE_FQN, model.getCompilationController())
                 && AnnotationUtil.hasAnnotation( parent, 
                         AnnotationUtil.DECORATOR, model.getCompilationController());
+    }
+    
+    public static boolean isLifecycleCallback( ExecutableElement element ) {
+        // TODO 
+        return false;
     }
     
 }
