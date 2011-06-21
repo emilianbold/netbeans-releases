@@ -400,6 +400,6 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
     }
     
     private boolean isMaskApplied(Report report, int mask){
-        return (report.getStatusMask() | ~mask) == 0;
+        return (report.getStatusMask() & ~mask) == 0;
     }
 }
