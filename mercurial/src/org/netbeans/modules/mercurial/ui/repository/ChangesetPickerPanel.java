@@ -624,7 +624,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         synchronized (LOCK) {
             for (HgLogMessage message : messages) {
                 if (applies(filter, message)) {
-                    if (selectedRevision != null && message.getRevisionNumber().equals(selectedRevision.getRevisionNumber())) {
+                    if (selectedRevision != null && message.getCSetShortID().equals(selectedRevision.getCSetShortID())) {
                         toSelectRevision = message;
                     } else if (parentRevision != null && message.getCSetShortID().equals(parentRevision.getChangesetId())) {
                         toSelectRevision = message;
