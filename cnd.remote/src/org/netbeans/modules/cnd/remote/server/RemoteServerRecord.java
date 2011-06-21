@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -62,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.awt.StatusDisplayer;
@@ -87,6 +87,7 @@ public class RemoteServerRecord implements ServerRecord {
     private State state;
     private final Object stateLock;
     private String reason;
+    private String problems;
     private String displayName;
     private RemoteSyncFactory syncFactory;
     private boolean x11forwarding;
@@ -155,6 +156,18 @@ public class RemoteServerRecord implements ServerRecord {
         }
         StatusDisplayer.getDefault().setStatusText(msg);        
     }
+
+    @Override
+    public void checkSetupAfterConnection(Runnable task) {
+        if (!isOnline()) {
+            resetOfflineState();
+            init(null);
+            if (isOnline()) {
+                task.run();
+            }
+        }
+    }
+
     
     /**
      * Start the initialization process. This should <b>never</b> be done from the AWT Event
@@ -195,6 +208,9 @@ public class RemoteServerRecord implements ServerRecord {
             } else {
                 initPathMap = true;
                 state = State.ONLINE;
+                if (rss.hasProblems()) {
+                    problems = rss.getReason();
+                }
             }
         }
         if (initPathMap) {
@@ -215,6 +231,14 @@ public class RemoteServerRecord implements ServerRecord {
 //            ex.printStackTrace();
 //        }
 //    }
+    
+    public String getProblems() {
+        return problems;
+    }
+    
+    public boolean hasProblems() {
+        return problems != null;
+    }
     
     public boolean resetOfflineState() {
         synchronized (stateLock) {

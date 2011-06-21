@@ -696,7 +696,7 @@ public class DocumentFinder
             this.matchCase = matchCase;
             chars = (matchCase ? s : s.toLowerCase()).toCharArray();
             endInd = chars.length - 1;
-            DocUtils.isIdentifierPart(doc, chars[endInd]);
+            lastCharWordPart = DocUtils.isIdentifierPart(doc, chars[endInd]);
         }
 
         public int getFoundLength() {

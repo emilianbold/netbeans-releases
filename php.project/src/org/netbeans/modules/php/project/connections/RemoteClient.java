@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -329,7 +330,9 @@ public final class RemoteClient implements Cancellable {
     }
 
     private void uploadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
-        if (file.isDirectory()) {
+        if (file.isLink()) {
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRelativePath()));
+        } else if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Uploading directory: {0}", file);
@@ -337,7 +340,7 @@ public final class RemoteClient implements Cancellable {
             // in fact, useless but probably expected
             cdBaseRemoteDirectory(file.getRelativePath(), true);
             transferSucceeded(transferInfo, file);
-        } else {
+        } else if (file.isFile()) {
             // file => simply upload it
 
             assert file.getParentRelativePath() != null : "Must be underneath base remote directory! [" + file + "]";
@@ -421,6 +424,8 @@ public final class RemoteClient implements Cancellable {
                     }
                 }
             }
+        } else {
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRelativePath()));
         }
     }
 
@@ -605,7 +610,9 @@ public final class RemoteClient implements Cancellable {
 
     private void downloadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
         File localFile = getLocalFile(baseLocalDir, file);
-        if (file.isDirectory()) {
+        if (file.isLink()) {
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRelativePath()));
+        } else if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Downloading directory: {0}", file);
@@ -705,12 +712,12 @@ public final class RemoteClient implements Cancellable {
     }
 
     private boolean moveLocalFile(final File source, final File target) {
-        final boolean[] moved = new boolean[1];
+        final AtomicBoolean moved = new AtomicBoolean();
         FileUtil.runAtomicAction(new Runnable() {
             @Override
             public void run() {
                 FileObject foSource = FileUtil.toFileObject(FileUtil.normalizeFile(source));
-                FileObject foTarget = FileUtil.toFileObject(FileUtil.normalizeFile(target)); 
+                FileObject foTarget = FileUtil.toFileObject(FileUtil.normalizeFile(target));
                 String tmpLocalFileName = source.getName();
                 String localFileName = target.getName();
 
@@ -718,11 +725,12 @@ public final class RemoteClient implements Cancellable {
                     try {
                         foTarget = foSource.getParent().createData(foSource.getName());
                     } catch (IOException ex) {
-                        moved[0] = false;
+                        LOGGER.log(Level.WARNING, "Error while creating local file", ex);
+                        moved.getAndSet(false);
                         return;
                     }
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Data file %s created.", localFileName, moved[0]));
+                        LOGGER.fine(String.format("Data file %s created.", localFileName));
                     }
                 }
 
@@ -731,32 +739,39 @@ public final class RemoteClient implements Cancellable {
                 InputStream in = null;
                 OutputStream out = null;
                 try {
+                    // lock the target file
                     lock = foTarget.lock();
-                    in = foSource.getInputStream();
-                    // lock the target file. 
-                    // TODO the doewnload action shoudln't save all file before 
-                    // executing, then the ide will ask, whether user wants 
-                    // to replace currently editted file.
-                    out = foTarget.getOutputStream(lock);
-                    FileUtil.copy(in, out);
-                    moved[0] = true;
-                    in.close();
-                    out.close();
-                    foSource.delete();
-                } catch (IOException e) {
-                    moved[0] = false;
-                } finally {
-                    if (lock != null) {
+                    try {
+                        in = foSource.getInputStream();
+                        try {
+                            // TODO the doewnload action shoudln't save all file before
+                            // executing, then the ide will ask, whether user wants
+                            // to replace currently editted file.
+                            out = foTarget.getOutputStream(lock);
+                            try {
+                                FileUtil.copy(in, out);
+                                foSource.delete();
+                                moved.getAndSet(true);
+                            } finally {
+                                out.close();
+                            }
+                        } finally {
+                            in.close();
+                        }
+                    } finally {
                         lock.releaseLock();
                     }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Error while moving local file", ex);
+                    moved.getAndSet(false);
                 }
-             
+
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("(2) Content of %s copied into %s: %s", tmpLocalFileName, localFileName, moved[0]));
+                    LOGGER.fine(String.format("Content of %s copied into %s: %s", tmpLocalFileName, localFileName, moved.get()));
                 }
             }
         });
-        return moved[0];
+        return moved.get();
     }
 
     private File getLocalFile(File localFile, TransferFile transferFile) {
@@ -1061,8 +1076,8 @@ public final class RemoteClient implements Cancellable {
         }
         assert source.isValid() : "Source file must exist " + source;
         assert !target.exists() : "Target file cannot exist " + target;
-        
-        
+
+
         String name = getName(target.getName());
         String ext = FileUtil.getExtension(target.getName());
 

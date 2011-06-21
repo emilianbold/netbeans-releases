@@ -49,9 +49,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -156,10 +157,12 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
         final File privProjectStorage = RemoteProjectSupport.getPrivateStorage(pae.getProject());
         MakeConfiguration conf = pae.getConfiguration();
-        File[] sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf);
+        AtomicReference<String> runDir = new AtomicReference<String>();
+        File[] sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf, runDir);
 
         RemoteSyncFactory syncFactory = conf.getRemoteSyncFactory();
-        final RemoteSyncWorker worker = (syncFactory == null) ? null : syncFactory.createNew(execEnv, out, err, privProjectStorage, sourceDirs);
+        final RemoteSyncWorker worker = (syncFactory == null) ? null : 
+                syncFactory.createNew(execEnv, out, err, privProjectStorage, runDir.get(), sourceDirs);
         CndUtils.assertTrue(worker != null, "RemoteSyncWorker shouldn't be null"); //NOI18N
         if (worker == null) {
             delegate.execute(io);

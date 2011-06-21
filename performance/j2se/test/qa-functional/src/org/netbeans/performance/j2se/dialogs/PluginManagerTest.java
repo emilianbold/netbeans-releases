@@ -48,6 +48,7 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -102,6 +103,7 @@ public class PluginManagerTest extends PerformanceTestCase {
     
     public ComponentOperator open() {
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        JellyTestCase.closeAllModal();
         return new WizardOperator(TITLE);
     }
 

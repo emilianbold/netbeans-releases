@@ -42,16 +42,24 @@
 
 package org.netbeans.modules.java.hints.jackpot.spi;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.introduce.CopyFinder;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
+import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 
 /**
  *
@@ -60,16 +68,80 @@ import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
 public class MatcherUtilities {
 
     public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern) {
-        return matches(ctx, variable, pattern, false);
+        return matches(ctx, variable, pattern, null, null, null);
     }
 
-    //fillInVariables is a hack to allow declarative hint debugging
-    public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern, boolean fillInVariables) {
+    public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern, boolean fillInVariablesHack) {
+        return matches(ctx, variable, pattern, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames());
+    }
+
+    public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern, Map<String, TreePath> outVariables, Map<String, Collection<? extends TreePath>> outMultiVariables, Map<String, String> outVariables2Names) {
         Scope s = Utilities.constructScope(ctx.getInfo(), Collections.<String, TypeMirror>emptyMap());
         Tree  patternTree = Utilities.parseAndAttribute(ctx.getInfo(), pattern, s);
         TreePath patternTreePath = new TreePath(new TreePath(ctx.getInfo().getCompilationUnit()), patternTree);
+        Map<String, TreePath> variables = new HashMap<String, TreePath>(ctx.getVariables());
+        Map<String, Collection<? extends TreePath>> multiVariables = new HashMap<String, Collection<? extends TreePath>>(ctx.getMultiVariables());
+        Map<String, String> variables2Names = new HashMap<String, String>(ctx.getVariableNames());
+
+        if (CopyFinder.isDuplicate(ctx.getInfo(), patternTreePath, variable, true, variables, multiVariables, variables2Names, true, Collections.<VariableElement>emptySet(), new AtomicBoolean()/*XXX*/, Options.ALLOW_VARIABLES_IN_PATTERN)) {
+            outVariables(outVariables, variables, ctx.getVariables());
+            outVariables(outMultiVariables, multiVariables, ctx.getMultiVariables());
+            outVariables(outVariables2Names, variables2Names, ctx.getVariableNames());
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean matches(@NonNull HintContext ctx, @NonNull Collection<? extends TreePath> variable, @NonNull String pattern, Map<String, TreePath> outVariables, Map<String, Collection<? extends TreePath>> outMultiVariables, Map<String, String> outVariables2Names) {
+        Scope s = Utilities.constructScope(ctx.getInfo(), Collections.<String, TypeMirror>emptyMap());
+        Tree  patternTree = Utilities.parseAndAttribute(ctx.getInfo(), pattern, s);
+        List<? extends Tree> patternTrees;
+
+        if (Utilities.isFakeBlock(patternTree)) {
+            List<? extends StatementTree> statements = ((BlockTree) patternTree).getStatements();
+
+            patternTrees = statements.subList(1, statements.size() - 1);
+        } else {
+            patternTrees = Collections.singletonList(patternTree);
+        }
+
+        if (variable.size() != patternTrees.size()) return false;
         
-        return CopyFinder.isDuplicate(ctx.getInfo(), patternTreePath, variable, true, ctx, fillInVariables, null, new AtomicBoolean()/*XXX*/, Options.ALLOW_VARIABLES_IN_PATTERN);
+        Map<String, TreePath> variables = new HashMap<String, TreePath>(ctx.getVariables());
+        Map<String, Collection<? extends TreePath>> multiVariables = new HashMap<String, Collection<? extends TreePath>>(ctx.getMultiVariables());
+        Map<String, String> variables2Names = new HashMap<String, String>(ctx.getVariableNames());
+        Iterator<? extends TreePath> variableIt = variable.iterator();
+        Iterator<? extends Tree> patternTreesIt = patternTrees.iterator();
+
+        while (variableIt.hasNext() && patternTreesIt.hasNext()) {
+            TreePath patternTreePath = new TreePath(new TreePath(ctx.getInfo().getCompilationUnit()), patternTreesIt.next());
+
+            if (!CopyFinder.isDuplicate(ctx.getInfo(), patternTreePath, variableIt.next(), true, variables, multiVariables, variables2Names, true, Collections.<VariableElement>emptySet(), new AtomicBoolean()/*XXX*/, Options.ALLOW_VARIABLES_IN_PATTERN)) {
+                return false;
+            }
+        }
+
+        if (variableIt.hasNext() == patternTreesIt.hasNext()) {
+            outVariables(outVariables, variables, ctx.getVariables());
+            outVariables(outMultiVariables, multiVariables, ctx.getMultiVariables());
+            outVariables(outVariables2Names, variables2Names, ctx.getVariableNames());
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static <T> void outVariables(Map<String, T> outMap, Map<String, T> currentValues, Map<String, T> origValues) {
+        if (outMap == null) return;
+
+        for (String key : origValues.keySet()) {
+            currentValues.remove(key);
+        }
+
+        outMap.putAll(currentValues);
     }
 
 }

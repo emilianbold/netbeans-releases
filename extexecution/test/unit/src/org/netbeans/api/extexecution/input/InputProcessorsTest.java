@@ -42,6 +42,7 @@
 
 package org.netbeans.api.extexecution.input;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -137,7 +138,7 @@ public class InputProcessorsTest extends NbTestCase {
     }
 
     public void testPrinting() throws IOException {
-        TestInputWriter writer = new TestInputWriter(new PrintWriter(System.out));
+        TestInputWriter writer = new TestInputWriter(new PrintWriter(new ByteArrayOutputStream()));
         InputProcessor processor = InputProcessors.printing(writer, true);
 
         processor.processInput("pre".toCharArray());
@@ -160,7 +161,7 @@ public class InputProcessorsTest extends NbTestCase {
     }
 
     public void testPrintingCloseOrdering() throws IOException {
-        final TestInputWriter writer = new TestInputWriter(new PrintWriter(System.out));
+        final TestInputWriter writer = new TestInputWriter(new PrintWriter(new ByteArrayOutputStream()));
         final InputProcessor delegate = InputProcessors.printing(writer, false);
 
         InputProcessor processor = new InputProcessor() {

@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerSettings;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
@@ -64,6 +63,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 

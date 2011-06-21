@@ -225,7 +225,7 @@ made subject to such option by the copyright holder.
             <extra-compilation-unit>
                 <package-root>libsrc</package-root>
                 <classpath>${lib.cp}</classpath>
-                <built-to>build/lib-classes</built-to>
+                <built-to>${build.dir}/lib-classes</built-to>
                 <built-to>${cluster}/modules/ext/ddl.jar</built-to>
             </extra-compilation-unit>
         </data>

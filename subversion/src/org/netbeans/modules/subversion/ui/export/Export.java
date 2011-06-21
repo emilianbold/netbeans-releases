@@ -59,7 +59,6 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -189,9 +188,11 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
 
         }
         fileChooser.addChoosableFileFilter(new FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.isDirectory();
             }
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(Export.class, "BK0008");// NOI18N
             }

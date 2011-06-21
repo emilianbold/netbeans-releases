@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.simpleunit.codegeneration.CodeGenerator;
 import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -108,10 +109,10 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
             }
         }
         FileObject rootFolder = getRootFolder();
-        File rootFolderFile = CndFileUtils.toFile(rootFolder);
+        FSPath rootFolderFilePath = FSPath.toFSPath(rootFolder);
         params.putAll(CodeGenerator.generateTemplateParamsForFunctions(
                 getTestFileName().replaceFirst("[.].*", ""), // NOI18N
-                rootFolderFile.getAbsolutePath(),
+                rootFolderFilePath,
                 fs,
                 ("cpp".equals(wiz.getTemplate().getPrimaryFile().getExt())?CodeGenerator.Language.CPP:CodeGenerator.Language.C))); // NOI18N
 

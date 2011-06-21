@@ -41,8 +41,11 @@ CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
 CLASS      Cls2                            [PUBLIC]   TestCase.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration.php
+CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
+CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsBaseDeclarationTest          [PUBLIC]   clsDeclaration.php
 CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration.php
+CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php

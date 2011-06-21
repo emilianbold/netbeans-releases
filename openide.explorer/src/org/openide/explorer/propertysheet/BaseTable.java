@@ -120,6 +120,14 @@ import org.openide.util.ChangeSupport;
  * @author  Tim Boudreau
  */
 abstract class BaseTable extends JTable implements FocusListener {
+
+    /**
+    * if a property with this name is explicitly set to 'true', then quick
+    * search will be disabled on all BaseTable subclasses (overriding the
+    * value returned by the isQuickSearchAllowed() method).
+    */
+    protected static final String SYSPROP_PS_QUICK_SEARCH_DISABLED_GLOBAL = "ps.quickSearch.disabled.global"; //NOI18N
+
     /** Action key for the action that will move to the next row via TAB,
      * or to the next focusable component if on the last row */
     protected static final String ACTION_NEXT = "next"; //NOI18N
@@ -169,6 +177,9 @@ abstract class BaseTable extends JTable implements FocusListener {
     /** Flag used by addFocusListener to block the UI delegate from adding
      * a focus listener (which will repaint the table incorrectly) */
     private boolean inSetUI = false;
+
+    /** keeps track of whether 'quick search' feature is enabled for this property sheet */
+    private boolean allowQuickSearch = true;
 
     //Variables used by subclasses to track when edit requests start/end,
     //to determine when it's appropriate to repaint.  A sort of reference
@@ -806,6 +817,34 @@ abstract class BaseTable extends JTable implements FocusListener {
         }
     }
 
+    /**
+     * @return true if the quick search feature is currently allowed, false otherwise.
+     * To be allowed, quick search must not have been disabled either globally or on
+     * this instance
+     * @since 6.37
+     */
+    protected boolean isQuickSearchAllowed() {
+        // the system property can disable quick search on all instances
+        String sysPropGlobalDisable = System.getProperty(SYSPROP_PS_QUICK_SEARCH_DISABLED_GLOBAL, "false");
+        if (Boolean.parseBoolean(sysPropGlobalDisable)) {
+            return false;
+        }
+
+        return allowQuickSearch;
+    }
+
+    /**
+     * Allows one to set whether or not the quick search feature should be
+     * enabled on this instance.
+     *
+     * @param isQuickSearchAllowed true if the quick search feature should be
+     * allowed on this instance, false otherwise.
+     * @since 6.37
+     */
+    protected void setQuickSearchAllowed(boolean isQuickSearchAllowed) {
+        this.allowQuickSearch = isQuickSearchAllowed;
+    }
+
     /** Overridden to allow standard keybinding processing of VK_TAB and
      * abort any pending drag operation on the vertical grid. */
     public void processKeyEvent(KeyEvent e) {
@@ -857,6 +896,10 @@ abstract class BaseTable extends JTable implements FocusListener {
     }
 
     void passToSearchField(KeyEvent e) {
+        if (! isQuickSearchAllowed()) {
+            return;
+        }
+
         //Don't do anything for normal navigation keys
         if (
             (e.getKeyCode() == KeyEvent.VK_TAB) || (e.getKeyCode() == KeyEvent.VK_ENTER) ||

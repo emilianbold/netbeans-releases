@@ -968,7 +968,7 @@ class FilesystemHandler extends VCSInterceptor {
                             }
                         }
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, false);
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
                         readOnly = true;
                     }
                     if (readOnly) {

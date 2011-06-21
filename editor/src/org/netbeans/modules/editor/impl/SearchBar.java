@@ -149,6 +149,7 @@ public final class SearchBar extends JPanel {
     private JCheckBox wholeWordsCheckBox;
     private JCheckBox regexpCheckBox;
     private JCheckBox highlightCheckBox;
+    private JCheckBox wrapAroundCheckBox;
     private Map<Object, Object> findProps;
     private JPopupMenu expandPopup;
     private JPanel padding;
@@ -194,7 +195,7 @@ public final class SearchBar extends JPanel {
                              Math.max( 0, bgColor.getBlue() - 20 ) );        
         setBackground(bgColor);
         setForeground(UIManager.getColor("textText")); //NOI18N
-
+        
         PropertyChangeListener pcl = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -473,6 +474,7 @@ public final class SearchBar extends JPanel {
 
         // configure match case check box
         matchCaseCheckBox = new JCheckBox();
+        matchCaseCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(matchCaseCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_MatchCase")); // NOI18N
         matchCaseCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -485,6 +487,7 @@ public final class SearchBar extends JPanel {
         processButton(matchCaseCheckBox);
 
         wholeWordsCheckBox = new JCheckBox();
+        wholeWordsCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(wholeWordsCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_WholeWords")); // NOI18N
         wholeWordsCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -498,6 +501,7 @@ public final class SearchBar extends JPanel {
         processButton(wholeWordsCheckBox);
         
         regexpCheckBox = new JCheckBox();
+        regexpCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(regexpCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Regexp")); // NOI18N
         regexpCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -512,6 +516,7 @@ public final class SearchBar extends JPanel {
         processButton(regexpCheckBox);
         
         highlightCheckBox = new JCheckBox();
+        highlightCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight")); // NOI18N
         highlightCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -522,6 +527,19 @@ public final class SearchBar extends JPanel {
         });
         highlightCheckBox.setSelected(getHighlightResults());
         processButton(highlightCheckBox);
+        
+        wrapAroundCheckBox = new JCheckBox();
+        wrapAroundCheckBox.setOpaque(false);
+        Mnemonics.setLocalizedText(wrapAroundCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_WrapAround")); // NOI18N
+        wrapAroundCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switchWrapAround();
+                incrementalSearch();
+            }
+        });
+        wrapAroundCheckBox.setSelected(getWrapAround());
+        processButton(wrapAroundCheckBox);
         
         expandPopup = new JPopupMenu();
         expandPopup.addPopupMenuListener(new PopupMenuListener() {
@@ -570,7 +588,9 @@ public final class SearchBar extends JPanel {
         add(wholeWordsCheckBox);
         add(regexpCheckBox);
         add(highlightCheckBox);
+        add(wrapAroundCheckBox);
         add(expandButton);
+        
         // padding at the end of the toolbar
         padding = new JPanel();
         padding.setOpaque(false);
@@ -619,6 +639,7 @@ public final class SearchBar extends JPanel {
         inBar.add(wholeWordsCheckBox);
         inBar.add(regexpCheckBox);
         inBar.add(highlightCheckBox);
+        inBar.add(wrapAroundCheckBox);
         barOrder.addAll(Arrays.asList(this.getComponents()));
         remove(expandButton);
     }
@@ -737,6 +758,7 @@ public final class SearchBar extends JPanel {
         matchCaseCheckBox.setSelected(getMatchCase());
         regexpCheckBox.setSelected(getRegExp());
         highlightCheckBox.setSelected(getHighlightResults());
+        wrapAroundCheckBox.setSelected(getWrapAround());
         searched = false;
     }
 
@@ -851,6 +873,7 @@ public final class SearchBar extends JPanel {
         findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
         findProps.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
         findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
+        findProps.put(EditorFindSupport.FIND_WRAP_SEARCH, wrapAroundCheckBox.isSelected());
 
         findSupport.putFindProperties(findProps);
         
@@ -1050,5 +1073,14 @@ public final class SearchBar extends JPanel {
 
     private void switchHighlightResults() {
         findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getHighlightResults());
+    }
+    
+    private boolean getWrapAround() {
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_WRAP_SEARCH);
+        return b != null ? b.booleanValue() : false;
+    }
+    
+    private void switchWrapAround() {
+        findProps.put(EditorFindSupport.FIND_WRAP_SEARCH, !getWrapAround());
     }
 }

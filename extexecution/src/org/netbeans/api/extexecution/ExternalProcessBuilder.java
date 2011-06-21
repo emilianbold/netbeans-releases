@@ -55,6 +55,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.extexecution.WrapperProcess;
@@ -75,6 +76,8 @@ import org.openide.util.Utilities;
 public final class ExternalProcessBuilder implements Callable<Process> {
 
     private static final Logger LOGGER = Logger.getLogger(ExternalProcessBuilder.class.getName());
+
+    private static final Pattern ESCAPED_PATTERN = Pattern.compile("\".*\""); // NOI18N
 
     // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
@@ -262,25 +265,20 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * @throws IOException if the process could not be created
      */
     @NonNull
+    @Override
     public Process call() throws IOException {
-        List<String> commandL = new ArrayList<String>();
+        List<String> commandList = new ArrayList<String>();
 
-        commandL.add(executable);
+        if (Utilities.isWindows() && !ESCAPED_PATTERN.matcher(executable).matches()) {
+            commandList.add(escapeString(executable));
+        } else {
+            commandList.add(executable);
+        }
 
         List<String> args = buildArguments();
-        commandL.addAll(args);
-        String[] command = commandL.toArray(new String[commandL.size()]);
+        commandList.addAll(args);
 
-        if ((command != null) && Utilities.isWindows()) {
-            for (int i = 0; i < command.length; i++) {
-                if ((command[i] != null) && (command[i].indexOf(' ') != -1) // NOI18N
-                        && (command[i].indexOf('"') == -1)) { // NOI18N
-
-                    command[i] = '"' + command[i] + '"'; // NOI18N
-                }
-            }
-        }
-        ProcessBuilder pb = new ProcessBuilder(command);
+        ProcessBuilder pb = new ProcessBuilder(commandList.toArray(new String[commandList.size()]));
         if (workingDirectory != null) {
             pb.directory(workingDirectory);
         }
@@ -339,7 +337,6 @@ public final class ExternalProcessBuilder implements Callable<Process> {
             for (String key : ret.keySet()) {
                 if ("PATH".equals(key.toUpperCase(Locale.ENGLISH))) { // NOI18N
                     pathName = key;
-
                     break;
                 }
             }
@@ -363,8 +360,50 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         return ret;
     }
 
-    private List<String> buildArguments() {
-        return new ArrayList<String>(arguments);
+    // package level for unit testing
+    List<String> buildArguments() {
+        if (!Utilities.isWindows()) {
+            return new ArrayList<String>(arguments);
+        }
+        List<String> result = new ArrayList<String>(arguments.size());
+        for (String arg : arguments) {
+            if (arg != null && !ESCAPED_PATTERN.matcher(arg).matches()) {
+                result.add(escapeString(arg));
+            } else {
+                result.add(arg);
+            }
+        }
+        return result;
+    }
+
+    private static String escapeString(String s) {
+        if (s.length() == 0) {
+            return "\"\""; // NOI18N
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        boolean hasSpace = false;
+        final int slen = s.length();
+        char c;
+
+        for (int i = 0; i < slen; i++) {
+            c = s.charAt(i);
+
+            if (Character.isWhitespace(c)) {
+                hasSpace = true;
+                sb.append(c);
+
+                continue;
+            }
+            sb.append(c);
+        }
+
+        if (hasSpace) {
+            sb.insert(0, '"'); // NOI18N
+            sb.append('"'); // NOI18N
+        }
+        return sb.toString();
     }
 
     private void adjustProxy(ProcessBuilder pb) {

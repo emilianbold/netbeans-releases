@@ -57,6 +57,8 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.introduce.CopyFinder;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -70,6 +72,7 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
 
     @Override
     public Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath toSearch, BulkPattern pattern, Map<String, Long> timeLog) {
+        Parameters.notNull("info", info);
         Map<String, Collection<TreePath>> result = new HashMap<String, Collection<TreePath>>();
         TreePath topLevel = new TreePath(info.getCompilationUnit());
         
@@ -96,7 +99,7 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
     }
 
     @Override
-    public BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns) {
+    public BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns, Collection<? extends AdditionalQueryConstraints> additionalConstraints) {
         Map<Tree, String> pattern2Code = new HashMap<Tree, String>();
 
         Iterator<? extends String> itCode = code.iterator();
@@ -106,7 +109,7 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
             pattern2Code.put(itPatt.next(), itCode.next());
         }
 
-        return new BulkPatternImpl(pattern2Code);
+        return new BulkPatternImpl(additionalConstraints, pattern2Code);
     }
 
     @Override
@@ -119,12 +122,17 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public Map<String, Integer> matchesWithFrequencies(InputStream encoded, BulkPattern pattern) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private static final class BulkPatternImpl extends BulkPattern {
 
         private final Map<Tree, String> pattern2Code;
         
-        public BulkPatternImpl(Map<Tree, String> pattern2Code) {
-            super(null, null);
+        public BulkPatternImpl(Collection<? extends AdditionalQueryConstraints> additionalConstraints, Map<Tree, String> pattern2Code) {
+            super(new LinkedList<String>(pattern2Code.values()), null, null, new LinkedList<AdditionalQueryConstraints>(additionalConstraints));
             this.pattern2Code = pattern2Code;
         }
 

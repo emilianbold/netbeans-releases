@@ -96,6 +96,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -123,6 +124,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -272,11 +274,12 @@ public final class OpenProjectList {
         private final Condition enteredZeroed = enteredGuard.newCondition();
         private final ProgressHandle progress;
         
+        @Messages("CAP_Opening_Projects=Opening Projects")
         public LoadOpenProjects(int a) {
             action = a;
             currentFiles = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
             currentFiles.addLookupListener(WeakListeners.create(LookupListener.class, this, currentFiles));
-            progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
+            progress = ProgressHandleFactory.createHandle(CAP_Opening_Projects());
         }
 
         final void waitFinished() {
@@ -455,20 +458,20 @@ public final class OpenProjectList {
         }
 
         public @Override void resultChanged(LookupEvent ev) {
-            final Set<FileObject> lazyPDirs = new HashSet<FileObject>();
-            for (FileObject fileObject : currentFiles.allInstances()) {
-                Project p = FileOwnerQuery.getOwner(fileObject);
-                if (p != null) {
-                    lazyPDirs.add(p.getProjectDirectory());
-                }
-            }
-            if (!lazyPDirs.isEmpty()) {
-                Hacks.RP.post(new Runnable() {
-                    public @Override void run() {
+            Hacks.RP.post(new Runnable() {
+                public @Override void run() {
+                    Set<FileObject> lazyPDirs = new HashSet<FileObject>();
+                    for (FileObject fileObject : currentFiles.allInstances()) {
+                        Project p = FileOwnerQuery.getOwner(fileObject);
+                        if (p != null) {
+                            lazyPDirs.add(p.getProjectDirectory());
+                        }
+                    }
+                    if (!lazyPDirs.isEmpty()) {
                         getDefault().LOAD.preferredProject(lazyPDirs);
                     }
-                });
-            }
+                }
+            });
         }
 
         final void enter() {
@@ -551,6 +554,7 @@ public final class OpenProjectList {
         open(projects, openSubprojects, asynchronously, null);
     }
     
+    @Messages("LBL_Opening_Projects_Progress=Opening Projects")
     public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously, final Project/*|null*/ mainProject) {
         if (projects.length == 0) {
             //nothing to do:
@@ -568,10 +572,11 @@ public final class OpenProjectList {
                 });
                 return;
             }
-	    final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
-        final OpeningProjectPanel panel = new OpeningProjectPanel(handle);
+	    final ProgressHandle handle = ProgressHandleFactory.createHandle(CAP_Opening_Projects());
+        final OpeningProjectPanel panel = new OpeningProjectPanel();
         panel.setProjectName(projects[0].getProjectDirectory().getNameExt());
-        final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(OpenProjectList.class, "LBL_Opening_Projects_Progress"), true, null);
+        final DialogDescriptor dd = new DialogDescriptor(panel, LBL_Opening_Projects_Progress(), true, null);
+        dd.setLeaf(true);
         dd.setOptions(new Object[0]);
 	    final JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(
             dd);

@@ -47,7 +47,11 @@ package org.netbeans.core.windows.model;
 
 
 import java.awt.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.SplitConstraint;
@@ -63,6 +67,8 @@ final class DefaultModeModel implements ModeModel {
 
     /** Programatic name of mode. */
     private final String name;
+    
+    private final Set<String> otherNames = new HashSet<String>(3);
 
     private final Rectangle bounds = new Rectangle();
 
@@ -77,7 +83,9 @@ final class DefaultModeModel implements ModeModel {
     private int frameState;
 
     /** Permanent property. */
-    private final boolean permanent;
+    private boolean permanent;
+    
+    private boolean minimized;
 
     /** Sub model which manages TopComponents stuff. */
     private final TopComponentSubModel topComponentSubModel;
@@ -112,12 +120,14 @@ final class DefaultModeModel implements ModeModel {
     /////////////////////////////////////
     // Mutator methods >>
     /////////////////////////////////////
+    @Override
     public void setState(int state) {
         synchronized(LOCK_STATE) {
             this.state = state;
         }
     }
     
+    @Override
     public void removeTopComponent(TopComponent tc, TopComponent recentTc) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.removeTopComponent(tc, recentTc);
@@ -125,6 +135,7 @@ final class DefaultModeModel implements ModeModel {
     }
     
     // XXX
+    @Override
     public void removeClosedTopComponentID(String tcID) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.removeClosedTopComponentID(tcID);
@@ -132,36 +143,42 @@ final class DefaultModeModel implements ModeModel {
     }
     
     /** Adds opened TopComponent. */
+    @Override
     public void addOpenedTopComponent(TopComponent tc) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.addOpenedTopComponent(tc);
         }
     }
     
+    @Override
     public void insertOpenedTopComponent(TopComponent tc, int index) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.insertOpenedTopComponent(tc, index);
         }
     }
     
+    @Override
     public void addClosedTopComponent(TopComponent tc) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.addClosedTopComponent(tc);
         }
     }
     
-    public void addUnloadedTopComponent(String tcID) {
+    @Override
+    public void addUnloadedTopComponent(String tcID, int index) {
         synchronized(LOCK_TOPCOMPONENTS) {
-            topComponentSubModel.addUnloadedTopComponent(tcID);
+            topComponentSubModel.addUnloadedTopComponent(tcID, index);
         }
     }
     
+    @Override
     public void setUnloadedSelectedTopComponent(String tcID) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.setUnloadedSelectedTopComponent(tcID);
         }
     }
     
+    @Override
     public void setUnloadedPreviousSelectedTopComponent(String tcID) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.setUnloadedPreviousSelectedTopComponent(tcID);
@@ -169,12 +186,14 @@ final class DefaultModeModel implements ModeModel {
     }
     
     /** Sets seleted TopComponent. */
+    @Override
     public void setSelectedTopComponent(TopComponent selected) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.setSelectedTopComponent(selected);
         }
     }
     
+    @Override
     public void setPreviousSelectedTopComponentID(String prevSelectedId) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.setPreviousSelectedTopComponentID(prevSelectedId);
@@ -182,12 +201,14 @@ final class DefaultModeModel implements ModeModel {
     }
 
     /** Sets frame state */
+    @Override
     public void setFrameState(int frameState) {
         synchronized(LOCK_FRAMESTATE) {
             this.frameState = frameState;
         }
     }
 
+    @Override
     public void setBounds(Rectangle bounds) {
         if(bounds == null) {
             return;
@@ -198,6 +219,7 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
+    @Override
     public void setBoundsSeparatedHelp(Rectangle boundsSeparatedHelp) {
         if(bounds == null) {
             return;
@@ -215,49 +237,63 @@ final class DefaultModeModel implements ModeModel {
     /////////////////////////////////////
     // Accessor methods >>
     /////////////////////////////////////
+    @Override
     public String getName() {
         return name;
     }
     
+    @Override
     public Rectangle getBounds() {
         synchronized(LOCK_BOUNDS) {
             return (Rectangle)this.bounds.clone();
         }
     }
     
+    @Override
     public Rectangle getBoundsSeparatedHelp() {
         synchronized(LOCK_BOUNDS_SEPARATED_HELP) {
             return (Rectangle)this.boundsSeparetedHelp.clone();
         }
     }
     
+    @Override
     public int getState() {
         synchronized(LOCK_STATE) {
             return this.state;
         }
     }
     
+    @Override
     public int getKind() {
         return this.kind;
     }
     
     /** Gets frame state. */
+    @Override
     public int getFrameState() {
         synchronized(LOCK_FRAMESTATE) {
             return this.frameState;
         }
     }
     
+    @Override
     public boolean isPermanent() {
         return this.permanent;
     }
     
+    @Override
+    public void makePermanent() {
+        this.permanent = true;
+    }
+    
+    @Override
     public boolean isEmpty() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.isEmpty();
         }
     }
     
+    @Override
     public boolean containsTopComponent(TopComponent tc) {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.containsTopComponent(tc);
@@ -265,6 +301,7 @@ final class DefaultModeModel implements ModeModel {
     }
 
     /** Gets list of top components in this workspace. */
+    @Override
     public List<TopComponent> getTopComponents() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getTopComponents();
@@ -273,12 +310,14 @@ final class DefaultModeModel implements ModeModel {
 
 
     /** Gets selected TopComponent. */
+    @Override
     public TopComponent getSelectedTopComponent() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getSelectedTopComponent();
         }
     }
     /** Gets the ID of top component that was selected before switching to/from maximized mode */
+    @Override
     public String getPreviousSelectedTopComponentID() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getPreviousSelectedTopComponentID();
@@ -286,6 +325,7 @@ final class DefaultModeModel implements ModeModel {
     }
 
     /** Gets list of top components. */
+    @Override
     public List<TopComponent> getOpenedTopComponents() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getOpenedTopComponents();
@@ -293,54 +333,63 @@ final class DefaultModeModel implements ModeModel {
     }
     
     // XXX
+    @Override
     public List<String> getOpenedTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getOpenedTopComponentsIDs();
         }
     }
     
+    @Override
     public List<String> getClosedTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getClosedTopComponentsIDs();
         }
     }
     
+    @Override
     public List<String> getTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getTopComponentsIDs();
         }
     }
     
+    @Override
     public int getOpenedTopComponentTabPosition (TopComponent tc) {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getOpenedTopComponentTabPosition(tc);
         }
     }
     
+    @Override
     public SplitConstraint[] getTopComponentPreviousConstraints(String tcID) {
         synchronized(LOCK_TC_CONTEXTS) {
             return getContextSubModel().getTopComponentPreviousConstraints(tcID);
         }
     }
     
+    @Override
     public ModeImpl getTopComponentPreviousMode(String tcID) {
         synchronized(LOCK_TC_CONTEXTS) {
             return getContextSubModel().getTopComponentPreviousMode(tcID);
         }
     }
     /** Gets the tab index of the top component in its previous mode */
+    @Override
     public int getTopComponentPreviousIndex(String tcID) {
         synchronized(LOCK_TC_CONTEXTS) {
             return getContextSubModel().getTopComponentPreviousIndex(tcID);
         }
     }
     
+    @Override
     public void setTopComponentPreviousConstraints(String tcID, SplitConstraint[] constraints) {
         synchronized(LOCK_TC_CONTEXTS) {
             getContextSubModel().setTopComponentPreviousConstraints(tcID, constraints);
         }
     }
     
+    @Override
     public void setTopComponentPreviousMode(String tcID, ModeImpl mode, int prevIndex) {
         synchronized(LOCK_TC_CONTEXTS) {
             getContextSubModel().setTopComponentPreviousMode(tcID, mode, prevIndex);
@@ -357,6 +406,25 @@ final class DefaultModeModel implements ModeModel {
         }
         return topComponentContextSubModel;
     }
-    
+
+    @Override
+    public boolean isMinimized() {
+        return minimized;
+    }
+
+    @Override
+    public void setMinimized( boolean minimized ) {
+        this.minimized = minimized;
+    }
+
+    @Override
+    public Collection<String> getOtherNames() {
+        return Collections.unmodifiableSet( otherNames );
+    }
+
+    @Override
+    public void addOtherName( String otherModeName ) {
+        otherNames.add( otherModeName );
+    }
 }
 

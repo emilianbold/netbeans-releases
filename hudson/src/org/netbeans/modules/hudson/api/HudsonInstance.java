@@ -46,6 +46,7 @@ package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
 import java.util.prefs.Preferences;
+import org.openide.awt.ActionReference;
 
 /**
  * Instance of the the Hudson Server
@@ -53,6 +54,15 @@ import java.util.prefs.Preferences;
  * @author Michal Mocnak
  */
 public interface HudsonInstance extends Comparable<HudsonInstance> {
+
+    /**
+     * Path used to load actions for the server instance.
+     * A {@code HudsonInstance} object should be in the context lookup.
+     * May be used e.g. for the context menu of an instance node.
+     * @see ActionReference#path
+     * @since 1.12
+     */
+    String ACTION_PATH = "org-netbeans-modules-hudson/Actions/instance";
     
     /**
      * Name of the Hudson instance

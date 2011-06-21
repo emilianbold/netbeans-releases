@@ -42,16 +42,19 @@
 
 package org.netbeans.modules.java.hints.jackpot.impl;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchUtilities;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix.UpgradeUICallback;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 
 /**TODO: move to better package
@@ -71,7 +74,11 @@ public final class JavaFixImpl implements Fix {
     }
 
     public ChangeInfo implement() throws Exception {
-        JavaSource js = JavaSource.forFileObject(Accessor.INSTANCE.getFile(jf));
+        FileObject file = Accessor.INSTANCE.getFile(jf);
+        
+        BatchUtilities.fixDependencies(file, Collections.singletonList(jf), new IdentityHashMap<Project, Set<String>>());
+
+        JavaSource js = JavaSource.forFileObject(file);
 
         js.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy wc) throws Exception {
@@ -79,13 +86,7 @@ public final class JavaFixImpl implements Fix {
                     return;
                 }
 
-                Accessor.INSTANCE.process(jf, wc, new JavaFix.UpgradeUICallback() {
-                    public boolean shouldUpgrade(String comment) {
-                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(comment, "Update spec version.", NotifyDescriptor.YES_NO_OPTION);
-
-                        return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
-                    }
-                });
+                Accessor.INSTANCE.process(jf, wc, true);
             }
         }).commit();
 
@@ -97,8 +98,9 @@ public final class JavaFixImpl implements Fix {
         public static Accessor INSTANCE;
 
         public abstract String getText(JavaFix jf);
-        public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, UpgradeUICallback callback) throws Exception;
+        public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI) throws Exception;
         public abstract FileObject getFile(JavaFix jf);
+        public abstract Map<String, String> getOptions(JavaFix jf);
         
     }
 }

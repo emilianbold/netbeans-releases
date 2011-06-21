@@ -47,11 +47,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.indexer.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -59,60 +61,64 @@ import org.openide.util.NbBundle;
  */
 public class RemoteIndexTransferListener implements TransferListener, Cancellable {
 
-    private ProgressHandle handle;
-    private RepositoryInfo info;
+    private final @NonNull ProgressHandle handle;
+    private final RepositoryInfo info;
     private int lastunit;/*last work unit*/
     private int units;
 
     private final AtomicBoolean canceled = new AtomicBoolean();
+    private final AtomicBoolean unpacking = new AtomicBoolean();
 
     private static Map<Thread, Integer> transfers = new HashMap<Thread, Integer>();
     private static final Object TRANSFERS_LOCK = new Object();
 
     @SuppressWarnings("LeakingThisInConstructor")
+    @Messages({"# {0} - repo name", "LBL_Transfer=Transferring Maven repository index: {0}"})
     public RemoteIndexTransferListener(RepositoryInfo info) {
         this.info = info;
         Cancellation.register(this);
+        handle = ProgressHandleFactory.createHandle(LBL_Transfer(info.getName()), this);
+        handle.start();
     }
 
-    public void transferInitiated(TransferEvent arg0) {
-        // noop
+    public @Override void transferInitiated(TransferEvent arg0) {
+        checkCancel();
     }
 
-    public void transferStarted(TransferEvent arg0) {
+    public @Override void transferStarted(TransferEvent arg0) {
+        checkCancel();
         long contentLength = arg0.getResource().getContentLength();
         // #189806: could be resumed due to FNFE in DefaultIndexUpdater (*.gz -> *.zip)
-        close();
-        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer", info.getName()), this);
         this.units = (int) contentLength / 1024;
-        handle.start(units);
+        handle.switchToDeterminate(units);
     }
 
     public @Override boolean cancel() {
         return canceled.compareAndSet(false, true);
     }
 
-    public void transferProgress(TransferEvent arg0, byte[] arg1, int arg2) {
+    private void checkCancel() throws Cancellation {
         if (canceled.get()) {
             throw new Cancellation();
         }
+    }
+
+    public @Override void transferProgress(TransferEvent arg0, byte[] arg1, int arg2) {
+        checkCancel();
         int work = arg2 / 1024;
-        if (handle != null) {
-            handle.progress(arg0.getResource().getName(), Math.min(units, lastunit += work));
-        }
+        handle.progress(arg0.getResource().getName(), Math.min(units, lastunit += work));
     }
 
-    public void transferCompleted(TransferEvent arg0) {
-        close();
+    public @Override void transferCompleted(TransferEvent arg0) {
+        handle.switchToIndeterminate();
     }
 
-    public void transferError(TransferEvent arg0) {
+    public @Override void transferError(TransferEvent arg0) {
+        handle.switchToIndeterminate();
     }
 
-    public void debug(String arg0) {
-        if (canceled.get()) {
-            throw new Cancellation();
-        }
+    public @Override void debug(String arg0) {
+        checkCancel();
     }
 
     static void addToActive (Thread t) {
@@ -148,10 +154,17 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         }
     }
 
-    void close() {
-        if (handle != null) {
-            handle.finish();
+    @Messages({"# {0} - repo name", "LBL_unpacking=Unpacking index for {0}"})
+    void unpackingProgress(String label) {
+        checkCancel();
+        if (unpacking.compareAndSet(false, true)) {
+            handle.setDisplayName(LBL_unpacking(info.getName()));
         }
+        handle.progress(label);
+    }
+
+    void close() {
+        handle.finish();
     }
 
 }

@@ -107,7 +107,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
 
     protected Repository getRepositoryForWC(File wc) throws IOException {
-        return new FileRepositoryBuilder().setGitDir(Utils.getMetadataFolder(workDir)).readEnvironment().findGitDir().build();
+        return new FileRepositoryBuilder().setGitDir(Utils.getMetadataFolder(wc)).readEnvironment().findGitDir().build();
     }
 
     protected void write(File file, String str) throws IOException {

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import org.netbeans.junit.RandomlyFails;
+
 /**
  * @author Nikolay Krasilnikov
  */
@@ -55,6 +57,7 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
     protected void setUp() throws Exception {
         System.setProperty("cnd.modelimpl.expression.evaluator.deep.variable.provider", "true");
         System.setProperty("cnd.modelimpl.expression.evaluator.recursive.calc", "true");
+        System.setProperty("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", "true");
         super.setUp();
     }
 
@@ -74,8 +77,13 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
         performTest("bug172419.cpp", 59, 10, "bug172419.cpp", 42, 5);
     }    
 
+    @RandomlyFails
     public void testBug172419_2() throws Exception {
         // Bug 172419 - Boost metaprogramming usage problem
+        performTest("bug172419_2.cpp", 293, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 296, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 299, 12, "bug172419_2.cpp", 260, 5);
+        performTest("bug172419_2.cpp", 302, 12, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 312, 12, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 322, 12, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 325, 12, "bug172419_2.cpp", 260, 5);
@@ -89,6 +97,11 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
         performTest("bug172419_2.cpp", 364, 13, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 367, 13, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 370, 13, "bug172419_2.cpp", 260, 5);
+    }    
+
+    public void testBug172419_4() throws Exception {
+        // Bug 172419 - Boost metaprogramming usage problem
+        performTest("bug172419_4.cpp", 151, 11, "bug172419_4.cpp", 139, 5);
     }    
     
 }

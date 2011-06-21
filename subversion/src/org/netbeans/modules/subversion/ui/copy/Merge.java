@@ -81,6 +81,7 @@ public class Merge extends CopyDialog implements ItemListener {
     private String MERGE_END_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after"; // NOI18N
 
     private String lastSelectedUrl;
+    private final RepositoryFile repositoryFile;
 
     public Merge(RepositoryFile repositoryRoot, File root) {
         super(new MergePanel(), NbBundle.getMessage(Merge.class, "CTL_Merge_Prompt", root.getName()), NbBundle.getMessage(Merge.class, "CTL_Merge_Title")); // NOI18N
@@ -94,6 +95,7 @@ public class Merge extends CopyDialog implements ItemListener {
                        new MergeTwoFoldersType(repositoryRoot, root)                       
                 }
         ));
+        this.repositoryFile = repositoryRoot;
         panel.typeComboBox.setRenderer(createTypeRenderer());
         panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Merge.class, "CTL_Merge_Title"));
         panel.typeComboBox.addItemListener(this);
@@ -177,8 +179,8 @@ public class Merge extends CopyDialog implements ItemListener {
         panel.repaint();
         
         resetUrlComboBoxes();
-        setupUrlComboBox(type.getStartUrlComboBox(), MERGE_START_URL_HISTORY_KEY);
-        setupUrlComboBox(type.getEndUrlComboBox(), MERGE_END_URL_HISTORY_KEY);
+        setupUrlComboBox(repositoryFile, type.getStartUrlComboBox(), MERGE_START_URL_HISTORY_KEY);
+        setupUrlComboBox(repositoryFile, type.getEndUrlComboBox(), MERGE_END_URL_HISTORY_KEY);
     }    
 
     private abstract class MergeType implements DocumentListener, PropertyChangeListener {

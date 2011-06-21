@@ -931,6 +931,8 @@ itor tabs #66700).
             } else {
                 return null;
             }
+        } else if (map.isEmpty()) {
+            return new File[0];
         } else {
             List<File> l = map.get(map.keySet().iterator().next());
             return l.toArray(new File[l.size()]);
@@ -1423,10 +1425,15 @@ itor tabs #66700).
     public static void logHgLog(HgLogMessage log, OutputLogger logger) {
         String lbChangeset = NbBundle.getMessage(HgUtils.class, "LB_CHANGESET");   // NOI18N
         String lbUser =      NbBundle.getMessage(HgUtils.class, "LB_AUTHOR");      // NOI18N
+        String lbBranch =    NbBundle.getMessage(HgUtils.class, "LB_BRANCH");      // NOI18N
         String lbDate =      NbBundle.getMessage(HgUtils.class, "LB_DATE");        // NOI18N
         String lbSummary =   NbBundle.getMessage(HgUtils.class, "LB_SUMMARY");     // NOI18N
         int l = 0;
-        for (String s : new String[] {lbChangeset, lbUser, lbDate, lbSummary}) {
+        List<String> list = new LinkedList<String>(Arrays.asList(new String[] {lbChangeset, lbUser, lbDate, lbSummary}));
+        if (log.getBranches().length > 0) {
+            list.add(lbBranch);
+        }
+        for (String s : list) {
             if(l < s.length()) l = s.length();
         }
         StringBuilder sb = new StringBuilder();
@@ -1435,6 +1442,13 @@ itor tabs #66700).
         sb.append(":"); // NOI18N
         sb.append(log.getCSetShortID());
         sb.append('\n'); // NOI18N
+        if (log.getBranches().length > 0) {
+            sb.append(formatlabel(lbBranch, l));
+            for (String branch : log.getBranches()) {
+                sb.append(branch);
+            }
+            sb.append('\n'); // NOI18N
+        }
         sb.append(formatlabel(lbUser, l));
         sb.append(log.getAuthor());
         sb.append('\n'); // NOI18N
@@ -1541,7 +1555,20 @@ itor tabs #66700).
         return FileUtil.normalizeFile(new File(repositoryRoot, HG_FOLDER_NAME));
     }
 
-
+    /**
+     * Asynchronously tests if hg is available and if positive runs the given runnable in AWT.
+     * @param runnable 
+     */
+    public static void runIfHgAvailable (final Runnable runnable) {
+        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                if (Mercurial.getInstance().isAvailable(true, true)) {
+                    EventQueue.invokeLater(runnable);
+                }
+            }
+        });
+    }
 
     /**
      * Adds the given file into filesUnderRoot:

@@ -75,11 +75,18 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -333,12 +340,28 @@ public class PhysicalView {
 
     }
 
-    private static final class ProjectIconNode extends FilterNode { // #194068
+    static final class ProjectIconNode extends FilterNode implements NodeListener { // #194068
         private final boolean root;
         public ProjectIconNode(Node orig, boolean root) {
             super(orig, orig.isLeaf() ? Children.LEAF : new ProjectBadgingChildren(orig));
             this.root = root;
+            addNodeListener(this);
         }
+
+        @Override
+        protected NodeListener createNodeListener() {
+            return new NodeAdapter(this) {
+                @Override
+                protected void propertyChange(FilterNode fn, PropertyChangeEvent ev) {
+                    super.propertyChange(fn, ev);
+                    if (Node.PROP_LEAF.equals(ev.getPropertyName())) {
+                        Node orig = getOriginal();
+                        setChildren(orig.isLeaf() ? Children.LEAF : new ProjectBadgingChildren(orig));
+                    }
+                }
+            };
+        }
+        
         public @Override Image getIcon(int type) {
             return swap(super.getIcon(type));
         }
@@ -374,17 +397,33 @@ public class PhysicalView {
             }
             return super.getShortDescription();
         }
+
+        @Override
+        public void childrenAdded(NodeMemberEvent ev) {
+        }
+
+        @Override
+        public void childrenRemoved(NodeMemberEvent ev) {
+        }
+
+        @Override
+        public void childrenReordered(NodeReorderEvent ev) {
+        }
+
+        @Override
+        public void nodeDestroyed(NodeEvent ev) {
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+        }
     }
     private static final class ProjectBadgingChildren extends FilterNode.Children {
         public ProjectBadgingChildren(Node orig) {
             super(orig);
         }
         protected @Override Node copyNode(Node orig) {
-            if (original.getLookup().lookup(DataFolder.class) != null) {
-                return new ProjectIconNode(orig, false);
-            } else {
-                return super.copyNode(orig);
-            }
+            return new ProjectIconNode(orig, false);
         }
     }
     

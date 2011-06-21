@@ -53,7 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -66,6 +66,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -74,6 +75,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -199,6 +201,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectLocationField = new javax.swing.JTextField();
         projectFolderField = new javax.swing.JTextField();
         projectLocationButton = new javax.swing.JButton();
+        configurationLabel = new javax.swing.JLabel();
+        configurationCombobox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -438,6 +442,24 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
         add(projectLocationButton, gridBagConstraints);
+
+        configurationLabel.setLabelFor(configurationCombobox);
+        org.openide.awt.Mnemonics.setLocalizedText(configurationLabel, org.openide.util.NbBundle.getMessage(RunDialogPanel.class, "Configuration.Text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(configurationLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
+        add(configurationCombobox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void runDirectoryBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDirectoryBrowseButtonActionPerformed
@@ -480,6 +502,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             }
             argumentTextField.setText(""); // NOI18N
             environmentTextField.setText(""); // NOI18N
+            configurationCombobox.setEnabled(false);
             projectKind.setEnabled(true);
             projectNameField.setEnabled(true);
             projectLocationField.setEnabled(true);
@@ -491,8 +514,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             } else {
                 projectNameField.setText(ProjectGenerator.getValidProjectName(projectLocationField.getText(), "")); //NOI18N
             }
-        }
-        else {
+        } else {
+            configurationCombobox.setEnabled(true);
             projectKind.setEnabled(false);
             projectNameField.setEnabled(false);
             projectLocationField.setEnabled(false);
@@ -585,6 +608,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel argumentLabel;
     private javax.swing.JTextField argumentTextField;
+    private javax.swing.JComboBox configurationCombobox;
+    private javax.swing.JLabel configurationLabel;
     private javax.swing.JLabel environmentLabel;
     private javax.swing.JTextField environmentTextField;
     private javax.swing.JLabel errorLabel;
@@ -629,9 +654,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         projectComboBox.removeAllItems();
         projectComboBox.addItem(getString("NO_PROJECT")); // always first
         int index = 0;
-        projectComboBox.setVisible(isRun);
-        projectLabel.setVisible(isRun);
-        if (isRun) {
+        //if (isRun) {
             projectChoices = getOpenedProjects();
             for (int i = 0; i < projectChoices.length; i++) {
                 projectComboBox.addItem(ProjectUtils.getInformation(projectChoices[i]).getName());
@@ -646,7 +669,15 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     }
                 }
             }
+        //}
+        if (!isRun) {
+            index = 0;
         }
+        boolean allowSelectProject = projectComboBox.getModel().getSize() > 1;
+        projectComboBox.setVisible(allowSelectProject);
+        projectLabel.setVisible(allowSelectProject);
+        configurationLabel.setVisible(allowSelectProject);
+        configurationCombobox.setVisible(allowSelectProject);
         projectComboBox.setSelectedIndex(index);
         projectComboBox.addActionListener(projectComboBoxActionListener);
         projectComboBoxActionPerformed(null);
@@ -662,6 +693,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             projectKind.addItem(new ProjectKindItem(IteratorExtension.ProjectKind.IncludeDependencies));
             projectKind.setSelectedIndex(0);
         }
+        configurationCombobox.removeAllItems();
+        configurationCombobox.addItem(new ConfigurationType(ConfigurationType.USE_CURRENT_CONFIGURATION));
+        configurationCombobox.addItem(new ConfigurationType(ConfigurationType.UPDATE_CURRENT_CONFIGURATION));
+        configurationCombobox.addItem(new ConfigurationType(ConfigurationType.CREATE_NEW_CONFIGURATION));
+        configurationCombobox.setSelectedIndex(0);
     }
     
     private boolean validateExecutable() {
@@ -834,15 +870,58 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             Project project = lastSelectedProject;
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
-            MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
-            updateRunProfile(conf.getBaseDir(), conf.getProfile());
-            if (action != null) {
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        action.run(lastSelectedProject);
+            ConfigurationType confType = (ConfigurationType) configurationCombobox.getSelectedItem();
+            switch(confType.getType()) {
+                case ConfigurationType.CREATE_NEW_CONFIGURATION:
+                {
+                    MakeConfiguration active = projectDescriptor.getActiveConfiguration();
+                    ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+                    String baseDir = active.getBaseDir();
+                    MakeConfiguration conf = new MakeConfiguration(active.getBaseFSPath(), 
+                            getConfigurationName(projectDescriptor), MakeConfiguration.TYPE_MAKEFILE, // NOI18N
+                        executionEnvironment.getHost());
+                    // Working dir
+                    String wd = fileSystem.findResource(getExecutablePath()).getParent().getPath();
+                    wd = CndPathUtilitities.toRelativePath(baseDir, wd);
+                    wd = CndPathUtilitities.normalizeSlashes(wd);
+                    conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
+                    // Executable
+                    String exe =  getExecutablePath();
+                    exe = CndPathUtilitities.toRelativePath(baseDir, exe);
+                    exe = CndPathUtilitities.normalizeSlashes(exe);
+                    conf.getMakefileConfiguration().getOutput().setValue(exe);
+                    updateRunProfile(baseDir, conf.getProfile());
+                    List<Configuration> list = new ArrayList<Configuration>(projectDescriptor.getConfs().getConfigurations());
+                    list.add(conf);
+                    conf.setDefault(false);
+                    Configurations c = new Configurations();
+                    c.init(list.toArray(new Configuration[list.size()]), 0);
+                    projectDescriptor.setConfs(c);
+                    projectDescriptor.getConfs().setActive(conf);
+                    fillConfiguration();
+                    break;
+                }
+                case ConfigurationType.UPDATE_CURRENT_CONFIGURATION:
+                {
+                    MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
+                    updateRunProfile(conf.getBaseDir(), conf.getProfile());
+                    fillConfiguration();
+                    break;
+                }
+                case ConfigurationType.USE_CURRENT_CONFIGURATION:
+                {
+                    MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
+                    updateRunProfile(conf.getBaseDir(), conf.getProfile());
+                    if (action != null) {
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                action.run(lastSelectedProject);
+                            }
+                        });
                     }
-                });
+                    break;
+                }
             }
         } else {
             RP.post(new Runnable() {
@@ -851,6 +930,27 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     createNewProject(action);
                 }
             });
+        }
+    }
+
+    private String getConfigurationName(MakeConfigurationDescriptor projectDescriptor) {
+        String exe =  getExecutablePath();
+        String[] split = exe.split("\\/"); // NOI18N
+        String name = split[split.length - 1];
+        Configuration[] clonedConfs = projectDescriptor.getConfs().toArray();
+        String aName = name;
+        for(int i = 1; ;i++) {
+            boolean found = false;
+            for(Configuration c : projectDescriptor.getConfs().getConfigurations()) {
+                if (aName.equals(c.getName())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return aName;
+            }
+            aName = name+"_"+i; // NOI18N
         }
     }
     
@@ -979,32 +1079,36 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 if (lastSelectedProject == null) {
                     return;
                 }
-                if (projectAction != null) {
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            projectAction.run(lastSelectedProject);
-                            projectAction = null;
-                        }
-                    });
+                fillConfiguration();
+            }
+        }
+    }
+    
+    private void fillConfiguration() {
+        if (projectAction != null) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    projectAction.run(lastSelectedProject);
+                    projectAction = null;
                 }
-                ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
-                if (executionEnvironment.isLocal()) {
-                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                    if (extension != null) {
-                        Map<String, Object> map = new HashMap<String, Object>();
-                        map.put("DW:buildResult", getExecutablePath()); // NOI18N
-                        map.put("DW:consolidationLevel", "file"); // NOI18N
-                        map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
-                        IteratorExtension.ProjectKind kind = ((ProjectKindItem)projectKind.getSelectedItem()).kind;
-                        extension.discoverProject(map, lastSelectedProject, kind); // NOI18N
-                    }
-                } else {
-                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                    if (extension != null) {
-                        extension.discoverHeadersByModel(lastSelectedProject);
-                    }
-                }
+            });
+        }
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        if (executionEnvironment.isLocal()) {
+            IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("DW:buildResult", getExecutablePath()); // NOI18N
+                map.put("DW:consolidationLevel", "file"); // NOI18N
+                map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+                IteratorExtension.ProjectKind kind = ((ProjectKindItem)projectKind.getSelectedItem()).kind;
+                extension.discoverProject(map, lastSelectedProject, kind); // NOI18N
+            }
+        } else {
+            IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                extension.discoverHeadersByModel(lastSelectedProject);
             }
         }
     }
@@ -1064,5 +1168,33 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     public static interface RunProjectAction {
         void run(Project project);
+    }
+    
+    private final class ConfigurationType {
+        public static final int USE_CURRENT_CONFIGURATION = 0;
+        public static final int UPDATE_CURRENT_CONFIGURATION = 1;
+        public static final int CREATE_NEW_CONFIGURATION = 2;
+        
+        private final int type;
+        ConfigurationType(int type){
+            this.type = type;
+        }
+
+        public int getType() {
+            return type;
+        }
+        
+        @Override
+        public String toString() {
+            switch(type) {
+                case USE_CURRENT_CONFIGURATION:
+                    return RunDialogPanel.this.getString("USE_CURRENT_CONFIGURATION");
+                case UPDATE_CURRENT_CONFIGURATION:
+                    return RunDialogPanel.this.getString("UPDATE_CURRENT_CONFIGURATION");
+                case CREATE_NEW_CONFIGURATION:
+                    return RunDialogPanel.this.getString("CREATE_NEW_CONFIGURATION");
+            }
+            throw new IllegalStateException();
+        }
     }
 }

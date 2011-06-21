@@ -190,7 +190,7 @@ public class NbmAdvancedTestCase extends NbTestCase {
     
     public static String generateInfo (String body) {
         String res = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Info 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd\">";
+                "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd\">";
         if (body.indexOf ("</module>") != -1) {
             res += body.substring (0, body.length () - "</module>".length ());
         } else {

@@ -820,6 +820,10 @@ public abstract class FileSystem implements Serializable {
         getFCLSupport().removeFileChangeListener(fcl);
     }
 
+    /** A hook for JAR FS */
+    void waitRefreshed() {
+    }
+
     /** An action that it is to be called atomically with respect to filesystem event notification.
     * During its execution (via {@link FileSystem#runAtomicAction runAtomicAction})
     * no events about changes in filesystems are fired.

@@ -1366,4 +1366,9 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         insertChar(testString, ')', result, null, false, options);
     }
+    
+    public void testIssue198699_01() throws Exception {
+        insertChar("a selected^ word", '"', "a \"selected\"^ word", "selected");
+    }
+    
 }

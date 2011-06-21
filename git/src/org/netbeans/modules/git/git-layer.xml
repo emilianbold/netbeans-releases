@@ -53,4 +53,19 @@ made subject to such option by the copyright holder.
         </file>
     </folder>    
 
+    <folder name="Editors">
+        <folder name="SideBar">
+            <file name="org-netbeans-modules-git-ui-blame-AnnotationBarManager.instance">
+                <attr name="position" intvalue="2300"/>
+            </file>
+        </folder>
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-git-Annotation.xml" url="ui/blame/git_annotation.xml"/>
+        </folder>
+        <folder name="UpToDateStatusProvider">
+            <file name="org-netbeans-modules-git-ui-blame-AnnotationMarkInstaller.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.git.ui.blame.AnnotationMarkInstaller"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

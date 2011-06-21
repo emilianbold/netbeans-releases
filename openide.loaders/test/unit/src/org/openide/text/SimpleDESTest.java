@@ -44,26 +44,32 @@
 
 package org.openide.text;
 
+import java.awt.EventQueue;
 import java.io.PrintStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
 
 /** DefaultDataObject is supposed to have open operation that shows the text
  * editor or invokes a dialog with questions.
  *
  * @author  Jaroslav Tulach
  */
-public final class SimpleDESTest extends NbTestCase {
+public class SimpleDESTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
+    private static SimpleDESTest RUNNING;
     
     private FileSystem lfs;
     private DataObject obj;
+    private Logger LOG;
     
     /** Creates a new instance of DefaultSettingsContextTest */
     public SimpleDESTest(String name) {
@@ -75,9 +81,16 @@ public final class SimpleDESTest extends NbTestCase {
         return Level.FINE;
     }
     
+    protected Node.Cookie createEditorCookie(SO so) {
+        return (Node.Cookie)DataEditorSupport.create(so, so.getPrimaryEntry(), so.getCSet ());
+    }
+    
     @Override
     protected void setUp() throws java.lang.Exception {
         clearWorkDir ();
+        LOG = Logger.getLogger("test." + getName());
+        
+        RUNNING = this;
         
         System.setProperty("org.openide.util.Lookup", "org.openide.text.SimpleDESTest$Lkp");
         super.setUp();
@@ -138,9 +151,17 @@ public final class SimpleDESTest extends NbTestCase {
         
         OpenCookie open = obj.getCookie(OpenCookie.class);
         open.open ();
-        
-        javax.swing.text.Document d = c.getDocument();
-        assertNotNull (d);
+        javax.swing.text.Document d = null;
+        for (int i = 0; i < 10; i++) {
+            d = c.getDocument();
+            LOG.log(Level.INFO, "Round {0} document {1}", new Object[]{i, d});
+            if (d != null) {
+                break;
+            }
+            Thread.sleep(100);
+            waitAWT();
+        }
+        assertNotNull ("Document is now openned", d);
         
         d.insertString(0, "Kuk", null);
         
@@ -148,6 +169,14 @@ public final class SimpleDESTest extends NbTestCase {
             "Now there is a save cookie", 
             obj.getCookie (org.openide.cookies.SaveCookie.class)
         );
+    }
+    
+    private void waitAWT() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
     }
     
     public void testItIsPossibleToMaskEditCookie () throws Exception {
@@ -189,12 +218,14 @@ public final class SimpleDESTest extends NbTestCase {
         }
     } // end of SL
     
-    private static final class SO extends org.openide.loaders.MultiDataObject implements org.openide.nodes.CookieSet.Factory {
-        private org.openide.nodes.Node.Cookie cookie = (org.openide.nodes.Node.Cookie)DataEditorSupport.create(this, getPrimaryEntry(), getCookieSet ());
+    static final class SO extends org.openide.loaders.MultiDataObject implements org.openide.nodes.CookieSet.Factory {
+        private org.openide.nodes.Node.Cookie cookie;
         
         
         public SO (FileObject fo) throws org.openide.loaders.DataObjectExistsException {
             super (fo, SL.getLoader(SL.class));
+            
+            cookie = RUNNING.createEditorCookie(this);
             
             if (fo.getNameExt().indexOf ("MaskEdit") == -1) {
                 getCookieSet ().add (cookie);
@@ -210,6 +241,10 @@ public final class SimpleDESTest extends NbTestCase {
         
         public org.openide.nodes.Node.Cookie createCookie (Class c) {
             return cookie;
+        }
+
+        final CookieSet getCSet() {
+            return getCookieSet();
         }
     } // end of SO
 

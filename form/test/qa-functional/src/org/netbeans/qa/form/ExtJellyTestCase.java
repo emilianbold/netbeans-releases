@@ -565,7 +565,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
 
     public static String getJDKVersionCode() {
         String specVersion = System.getProperty("java.version");
-
+        
         if (specVersion.startsWith("1.4")) {
             return "jdk14";
         }

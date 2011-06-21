@@ -689,9 +689,8 @@ public final class NbMavenProjectImpl implements Project {
         return uris;
     }
 
-    public URI[] getGeneratedSourceRoots() {
-        //TODO more or less a hack.. should be better supported by embedder itself.
-        URI uri = FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources"); //NOI18N
+    public URI[] getGeneratedSourceRoots(boolean test) {
+        URI uri = FileUtilities.getDirURI(getProjectDirectory(), test ? "target/generated-test-sources" : "target/generated-sources"); //NOI18N
         Set<URI> uris = new HashSet<URI>();
         File[] roots = new File(uri).listFiles();
         if (roots != null) {
@@ -705,7 +704,7 @@ public final class NbMavenProjectImpl implements Project {
 
         String[] buildHelpers = PluginPropertyUtils.getPluginPropertyList(this,
                 "org.codehaus.mojo", //NOI18N
-                "build-helper-maven-plugin", "sources", "source", "add-source"); //NOI18N //TODO split for sources and test sources..
+                "build-helper-maven-plugin", "sources", "source", test ? "add-test-source" : "add-source"); //NOI18N
         if (buildHelpers != null && buildHelpers.length > 0) {
             File root = FileUtil.toFile(getProjectDirectory());
             for (String helper : buildHelpers) {

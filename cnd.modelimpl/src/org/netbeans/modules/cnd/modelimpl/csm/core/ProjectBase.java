@@ -841,6 +841,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             getProjectRoots().addSources(sources);
             getProjectRoots().addSources(headers);
             getProjectRoots().addSources(excluded);
+            for(NativeFileItem nativeFileItem : excluded) {
+                FileImpl file = getFile(nativeFileItem.getAbsolutePath(), true);
+                if (file != null) {
+                    removeFile(nativeFileItem.getAbsolutePath());
+                }
+            }
             CreateFilesWorker worker = new CreateFilesWorker(this);
             worker.createProjectFilesIfNeed(sources, true, removedFiles, validator);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){

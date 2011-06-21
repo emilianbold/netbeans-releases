@@ -290,7 +290,7 @@ class ExportBundle extends ExportDiffSupport implements ActionListener {
         private boolean initialized;
 
         public ChangesetPickerSimplePanel(File repository) {
-            super(repository, new File[]{repository});
+            super(repository, null);
             initComponents();
         }
 

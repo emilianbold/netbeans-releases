@@ -50,12 +50,15 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -77,11 +80,12 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Martin Matula, Jan Becicka
  */
-public class WhereUsedQueryUI implements RefactoringUI {
+public class WhereUsedQueryUI implements RefactoringUI, Openable {
     private WhereUsedQuery query = null;
     private final String name;
     private WhereUsedPanel panel;
     private final TreePathHandle element;
+    private ElementHandle elementHandle;
     private ElementKind kind;
     private AbstractRefactoring delegate;
 
@@ -90,6 +94,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         this.query.getContext().add(info.getClasspathInfo());
         this.element = handle;
         Element el = handle.resolveElement(info);
+        elementHandle = ElementHandle.create(el);
         if (el!=null) {
             name = ElementHeaders.getHeader(el, info, ElementHeaders.NAME);
             kind = el.getKind();
@@ -246,6 +251,11 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(WhereUsedQueryUI.class);
+    }
+
+    @Override
+    public void open() {
+        ElementOpen.open(element.getFileObject(), elementHandle);
     }
     
 }

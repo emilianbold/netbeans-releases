@@ -72,16 +72,22 @@ public class NbClipboardTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         System.getProperties().remove("netbeans.slow.system.clipboard.hack");
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
 
-    public void testDefaultOnJDK15AndLater() {
-        NbClipboard ec = new NbClipboard();
-        assertTrue("By default we still do use slow hacks", ec.slowSystemClipboard);
+    public void testDefaultOnJDK15AndLater() throws Exception {
+        if (Utilities.isMac()) {
+            macCheck();
+        } else {
+            NbClipboard ec = new NbClipboard();
+            assertTrue("By default we still do use slow hacks", ec.slowSystemClipboard);
+        }
     }
     public void testPropOnJDK15AndLater() {
         System.setProperty("netbeans.slow.system.clipboard.hack", "false");
@@ -94,16 +100,20 @@ public class NbClipboardTest extends NbTestCase {
         String prev = System.getProperty("os.name");
         try {
             System.setProperty("os.name", "Darwin");
-            Field f = Class.forName(Utilities.class.getName()).getDeclaredField("operatingSystem");
-            f.setAccessible(true);
-            f.set(null, -1);
-            assertTrue("Is mac", Utilities.isMac());
-
-            NbClipboard ec = new NbClipboard();
-            assertFalse("MAC seems to have fast clipboard", ec.slowSystemClipboard);
+            macCheck();
         } finally {
             System.setProperty("os.name", prev);
         }
+    }
+
+    private void macCheck() throws NoSuchFieldException, SecurityException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException {
+        Field f = Class.forName(Utilities.class.getName()).getDeclaredField("operatingSystem");
+        f.setAccessible(true);
+        f.set(null, -1);
+        assertTrue("Is mac", Utilities.isMac());
+
+        NbClipboard ec = new NbClipboard();
+        assertFalse("MAC seems to have fast clipboard", ec.slowSystemClipboard);
     }
     
     public void testMemoryLeak89844() throws Exception {

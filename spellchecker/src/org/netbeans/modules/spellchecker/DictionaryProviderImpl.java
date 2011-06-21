@@ -59,7 +59,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.DictionaryProvider;
 import org.openide.ErrorManager;
@@ -180,7 +179,12 @@ public class DictionaryProviderImpl implements DictionaryProvider {
                 return currentSuffix;
             }
 
-            file = InstalledFileLocator.getDefault().locate("modules/dict/dictionary" + currentSuffix + ".description", null, false);
+            String cnb = null;
+            if (currentSuffix.matches("_en(|_GB|_US)")) { // NOI18N
+                // Just hardcode this one for now.
+                cnb = "org.netbeans.modules.spellchecker.dictionary_en"; // NOI18N
+            }
+            file = InstalledFileLocator.getDefault().locate("modules/dict/dictionary" + currentSuffix + ".description", cnb, false);
 
             if (file != null && InstalledFileLocator.getDefault().locate("modules/dict/dictionary" + currentSuffix + ".description_hidden", null, false) == null) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));

@@ -241,7 +241,7 @@ public class RetoucheUtils {
     }
 
     public static boolean isJavaFile(FileObject f) {
-        return JAVA_MIME_TYPE.equals(f.getMIMEType()); //NOI18N
+        return JAVA_MIME_TYPE.equals(FileUtil.getMIMEType(f, JAVA_MIME_TYPE));
     }
     
     public static String getHtml(String text) {

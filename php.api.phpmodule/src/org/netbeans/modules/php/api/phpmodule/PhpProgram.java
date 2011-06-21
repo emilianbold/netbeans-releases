@@ -214,6 +214,7 @@ public abstract class PhpProgram {
      * @param executionDescriptor {@link ExecutionDescriptor descriptor} describing the configuration of service
      * @param title display name of this service
      * @return exit code of the process
+     * @throws CancellationException if the process was cancelled
      * @throws ExecutionException if the process throws any exception
      * @throws InterruptedException if the current thread was interrupted while waiting
      * @see #executeLater(ExternalProcessBuilder, ExecutionDescriptor, String)

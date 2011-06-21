@@ -82,21 +82,21 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isFirstUseStatementPart;
 
     public FormatVisitor(BaseDocument document) {
-	this.document = document;
-	ts = LexUtilities.getPHPTokenSequence(document, 0);
-	path = new LinkedList<ASTNode>();
-	indentLevel = 0;
-	options = new DocumentOptions(document);
-	includeWSBeforePHPDoc = true;
+        this.document = document;
+        ts = LexUtilities.getPHPTokenSequence(document, 0);
+        path = new LinkedList<ASTNode>();
+        indentLevel = 0;
+        options = new DocumentOptions(document);
+        includeWSBeforePHPDoc = true;
         tsTokenCount = ts == null ? 1 : ts.tokenCount();
-	formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
+        formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
         maxFormattingRules = tsTokenCount * 3;
-	formatTokens.add(new FormatToken.InitToken());
+        formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
     }
 
     public List<FormatToken> getFormatTokens() {
-	return formatTokens;
+        return formatTokens;
     }
 
     private void showAssertionFor185063() {
@@ -115,166 +115,175 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void scan(ASTNode node) {
-	if (node == null) {
-	    return;
-	}
-	int indent = path.size();
+        if (node == null) {
+            return;
+        }
+        int indent = path.size();
 
         if (formatTokens.size() > maxFormattingRules) {
             showAssertionFor185063();
         }
-        
-	// find comment before the node.
-	List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
-	int indexBeforeLastComment = -1;  // remember last comment
-	while (moveNext() && ts.offset() < node.getStartOffset()) {
+
+        // find comment before the node.
+        List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
+        int indexBeforeLastComment = -1;  // remember last comment
+        while (moveNext() && ts.offset() < node.getStartOffset()
+                && lastIndex < ts.index()
+                && ((ts.offset() + ts.token().length()) <= node.getStartOffset()
+                || ts.token().id() == PHPTokenId.PHP_CLOSETAG)) {
             if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE
                     && path.size() > 1 && path.get(1) instanceof NamespaceDeclaration) {
                 // this a a fix for probalem that namespace declaration through {}, doesn't end with the end of  }
                 formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_RIGHT_BRACE, ts.offset()));
             }
-	    addFormatToken(beforeTokens);
-	    if (ts.token().id() == PHPTokenId.PHPDOC_COMMENT_START
-		    || (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-		    && "//".equals(ts.token().text().toString()))
-		    && indexBeforeLastComment == -1) {
+            addFormatToken(beforeTokens);
+            if (ts.token().id() == PHPTokenId.PHPDOC_COMMENT_START
+                    || (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
+                    && "//".equals(ts.token().text().toString()))
+                    && indexBeforeLastComment == -1) {
                 if (ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0) {
                     // don't change if the line comment or a comment starts on the same line
                     indexBeforeLastComment = beforeTokens.size() - 1;
                 }
                 ts.moveNext();
-	    }
-	}
-	if (indexBeforeLastComment > 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
-	    for (int i = 0; i < indexBeforeLastComment; i++) {
-		formatTokens.add(beforeTokens.get(i));
-	    }
-	    includeWSBeforePHPDoc = true;
-	    if (node instanceof ClassDeclaration || node instanceof InterfaceDeclaration) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
-		includeWSBeforePHPDoc = false;
-	    } else if (node instanceof FunctionDeclaration || node instanceof MethodDeclaration) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION, ts.offset()));
-		includeWSBeforePHPDoc = false;
-	    } else if (node instanceof FieldsDeclaration) {
-		if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
+            }
+        }
+        includeWSBeforePHPDoc = true;
+        if (indexBeforeLastComment > 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
+            for (int i = 0; i < indexBeforeLastComment; i++) {
+                formatTokens.add(beforeTokens.get(i));
+            }
+            if (node instanceof ClassDeclaration || node instanceof InterfaceDeclaration) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
+                includeWSBeforePHPDoc = false;
+            } else if (node instanceof FunctionDeclaration || node instanceof MethodDeclaration) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION, ts.offset()));
+                includeWSBeforePHPDoc = false;
+            } else if (node instanceof FieldsDeclaration) {
+                if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
 //                    if (beforeTokens.get(indexBeforeLastComment).getId() != FormatToken.Kind.LINE_COMMENT) {
-                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
 //                    }
-		} else {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
-		}
-		includeWSBeforePHPDoc = false;
-	    } else if (node instanceof UseStatement) {
-		if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_USE, ts.offset()));
-		} else {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE, ts.offset()));
-		}
-		includeWSBeforePHPDoc = false;
-	    }
-	    for (int i = indexBeforeLastComment; i < beforeTokens.size(); i++) {
-		formatTokens.add(beforeTokens.get(i));
-	    }
-	} else {
-	    formatTokens.addAll(beforeTokens);
-	}
+                } else {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELDS, ts.offset()));
+                }
+                includeWSBeforePHPDoc = false;
+            } else if (node instanceof UseStatement) {
+                if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_USE, ts.offset()));
+                } else {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE, ts.offset()));
+                }
+                includeWSBeforePHPDoc = false;
+            }
+            for (int i = indexBeforeLastComment; i < beforeTokens.size(); i++) {
+                formatTokens.add(beforeTokens.get(i));
+            }
+        } else {
+            formatTokens.addAll(beforeTokens);
+        }
 
 //	    addFormatToken(formatTokens);
 
-	ts.movePrevious();
+        ts.movePrevious();
 
-	path.addFirst(node);
-	super.scan(node);
-	path.removeFirst();
+        path.addFirst(node);
+        super.scan(node);
+        path.removeFirst();
 
 //	if (ts.offset() <= node.getEndOffset()) {
-	while (moveNext() && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
-	    //xxSystem.out.println(indentS + ts.token().id() + "<" + ts.offset() + ", " + (ts.offset() + ts.token().length()) + ">, " + "After " + node.getClass().getSimpleName() + " [" + node.getStartOffset() + ", " + node.getEndOffset() + "]");
-	    addFormatToken(formatTokens);
-	}
-	ts.movePrevious();
+        while (moveNext() 
+                && lastIndex < ts.index()
+                && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
+            //xxSystem.out.println(indentS + ts.token().id() + "<" + ts.offset() + ", " + (ts.offset() + ts.token().length()) + ">, " + "After " + node.getClass().getSimpleName() + " [" + node.getStartOffset() + ", " + node.getEndOffset() + "]");
+            addFormatToken(formatTokens);
+        }
+        ts.movePrevious();
 //	}
     }
 
     @Override
     public void scan(Iterable<? extends ASTNode> nodes) {
-	super.scan(nodes);
+        super.scan(nodes);
     }
 
     @Override
     public void visit(ArrayCreation node) {
-	int delta = options.indentArrayItems - options.continualIndentSize;
-	if (ts.token().id() != PHPTokenId.PHP_ARRAY) { // it's possible that the expression starts with array
-	    while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ARRAY) {
-		addFormatToken(formatTokens);
-	    }
-	    if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
-		    || path.get(1) instanceof ArrayElement
-		    || path.get(1) instanceof FormalParameter
-//		    || path.get(1) instanceof ReturnStatement
+        int delta = options.indentArrayItems - options.continualIndentSize;
+        if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index()) { // it's possible that the expression starts with array
+            while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ARRAY
+                    && lastIndex < ts.index()) {
+                addFormatToken(formatTokens);
+            }
+            if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
+                    || path.get(1) instanceof ArrayElement
+                    || path.get(1) instanceof FormalParameter
+                    //		    || path.get(1) instanceof ReturnStatement
                     || path.get(1) instanceof CastExpression) {
-		// when the array is on the beginning of the line, indent items in normal way
-		delta = options.indentArrayItems;
-	    }
+                // when the array is on the beginning of the line, indent items in normal way
+                delta = options.indentArrayItems;
+            }
             if (path.get(1) instanceof FunctionInvocation && ((FunctionInvocation)path.get(1)).getParameters().size() == 1) {
                 int hindex = formatTokens.size() - 1;
                 while (hindex > 0 && formatTokens.get(hindex).getId() != FormatToken.Kind.TEXT
-                        && formatTokens.get(hindex).getId() != FormatToken.Kind.WHITESPACE_INDENT) {
+                        && formatTokens.get(hindex).getId() != FormatToken.Kind.WHITESPACE_INDENT
+                        && lastIndex < ts.index()) {
                     hindex --;
                 }
                 if (hindex > 0 && formatTokens.get(hindex).getId() == FormatToken.Kind.WHITESPACE_INDENT) {
                     delta = options.indentArrayItems;
                 }
             }
-	    addFormatToken(formatTokens); // add array keyword
-	}
-	formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
-	super.visit(node);
-	formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
-	addAllUntilOffset(node.getEndOffset());
+            addFormatToken(formatTokens); // add array keyword
+        }
+        formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
+        super.visit(node);
+        formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
+        addAllUntilOffset(node.getEndOffset());
     }
 
     public void visit(Assignment node) {
-	scan(node.getLeftHandSide());
-	while (ts.moveNext() && ts.offset() < node.getRightHandSide().getStartOffset()
-		&& ts.token().id() != PHPTokenId.PHP_TOKEN) {
-	    addFormatToken(formatTokens);
-	}
-	if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
-	    addFormatToken(formatTokens);
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
-	} else {
-	    ts.movePrevious();
-	}
-	scan(node.getRightHandSide());
+        scan(node.getLeftHandSide());
+        while (ts.moveNext() && ((ts.offset() + ts.token().length()) < node.getRightHandSide().getStartOffset())
+                && ts.token().id() != PHPTokenId.PHP_TOKEN) {
+            addFormatToken(formatTokens);
+        }
+        if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
+            addFormatToken(formatTokens);
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
+        } else {
+            ts.movePrevious();
+        }
+        scan(node.getRightHandSide());
     }
 
     @Override
     public void visit(Block node) {
-	if (path.size() > 1 && (path.get(1) instanceof NamespaceDeclaration 
+        if (path.size() > 1 && (path.get(1) instanceof NamespaceDeclaration
                 && !((NamespaceDeclaration)path.get(1)).isBracketed())) {
-	    // dont process blok for namespace
-	    super.visit(node);
-	    return;
-	}
-	
-	isCurly = node.isCurly();
+            // dont process blok for namespace
+            super.visit(node);
+            return;
+        }
+
+        isCurly = node.isCurly();
         // move ts in every case to the next token
-	while (ts.moveNext() && node.isCurly() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
-	    addFormatToken(formatTokens);
-	}
+        while (ts.moveNext() && node.isCurly() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN
+                && (ts.offset() < node.getStartOffset())
+                && lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
+        }
 
-	ASTNode parent = path.get(1);
+        ASTNode parent = path.get(1);
 
-	if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
-	    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_LEFT_BRACE, ts.offset()));
-	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE, ts.offset()));
-	    } else if (parent instanceof IfStatement) {
+        if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
+            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof IfStatement) {
                 IfStatement ifStatement = (IfStatement) parent;
                 if (ifStatement.getFalseStatement() != null
                         && ifStatement.getFalseStatement().getStartOffset() <= node.getStartOffset()) {
@@ -282,316 +291,321 @@ public class FormatVisitor extends DefaultVisitor {
                 } else {
                     formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_LEFT_BRACE, ts.offset()));
                 }
-	    } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_LEFT_BRACE, ts.offset()));
-	    } else if (parent instanceof WhileStatement) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof WhileStatement) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_LEFT_BRACE, ts.offset()));
             } else if (parent instanceof DoStatement) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_DO_LEFT_BRACE, ts.offset()));
-	    } else if (parent instanceof SwitchStatement) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_LEFT_BACE, ts.offset()));
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_DO_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof SwitchStatement) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_LEFT_BACE, ts.offset()));
             } else if (parent instanceof TryStatement) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_TRY_LEFT_BRACE, ts.offset()));
-	    } else if (parent instanceof CatchClause) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_LEFT_BRACE, ts.offset()));
-	    } else {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_LEFT_BRACE, ts.offset()));
-	    }
-	    addFormatToken(formatTokens);
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_TRY_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof CatchClause) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_LEFT_BRACE, ts.offset()));
+            } else {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_LEFT_BRACE, ts.offset()));
+            }
+            addFormatToken(formatTokens);
 
-	    boolean indentationIncluded = false;
-	    while (ts.moveNext() && (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)
-		    || isComment(ts.token())) {
-		if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !indentationIncluded) {
-		    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
-		    indentationIncluded = true;
-		}
-		addFormatToken(formatTokens);
-	    }
+            boolean indentationIncluded = false;
+            while (ts.moveNext() && (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)
+                    || isComment(ts.token())) {
+                if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !indentationIncluded) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
+                    indentationIncluded = true;
+                }
+                addFormatToken(formatTokens);
+            }
 
             if (!indentationIncluded) {
-		formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
-	    }
-            
+                formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
+            }
+
             if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS_LEFT_BRACE, ts.offset()));
-	    } else {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS_LEFT_BRACE, ts.offset()));
+            } else {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OTHER_LEFT_BRACE, ts.offset()));
             }
 
-	}
+        }
 
-	ts.movePrevious();
+        ts.movePrevious();
 
 
-	super.visit(node);
+        super.visit(node);
 
-	if (node.isCurly() && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
-	    while (ts.moveNext() && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
-		if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE) {
-		    FormatToken lastToken = formatTokens.get(formatTokens.size() - 1);
+        if (node.isCurly() && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
+            while (ts.moveNext() && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
+                if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                    FormatToken lastToken = formatTokens.get(formatTokens.size() - 1);
 
-		    if (lastToken.getId() == FormatToken.Kind.WHITESPACE
-			    || lastToken.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
-			formatTokens.remove(formatTokens.size() - 1);
-			formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
-			formatTokens.add(lastToken);
-		    } else {
-			formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
-		    }
+                    if (lastToken.getId() == FormatToken.Kind.WHITESPACE
+                            || lastToken.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+                        formatTokens.remove(formatTokens.size() - 1);
+                        formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
+                        formatTokens.add(lastToken);
+                    } else {
+                        formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
+                    }
 
-		    boolean includeWBC = false;  // is open after close ? {}
-		    if (ts.movePrevious()
-			    && (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN
-			    || ts.token().id() == PHPTokenId.WHITESPACE)) {
-			if (ts.token().id() == PHPTokenId.WHITESPACE) {
-				if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
-				    includeWBC = true;
-				}
-				ts.moveNext();
-			}
-			if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
-			    includeWBC = true;
-			}
-		    }
-		    ts.moveNext();
-		    if (includeWBC) {
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_OPEN_CLOSE_BRACES, ts.offset()));
-		    }
+                    boolean includeWBC = false;  // is open after close ? {}
+                    if (ts.movePrevious()
+                            && (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN
+                            || ts.token().id() == PHPTokenId.WHITESPACE)) {
+                        if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                            if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
+                                includeWBC = true;
+                            }
+                            ts.moveNext();
+                        }
+                        if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
+                            includeWBC = true;
+                        }
+                    }
+                    ts.moveNext();
+                    if (includeWBC) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_OPEN_CLOSE_BRACES, ts.offset()));
+                    }
 
 //		    boolean inludeSpaceBefore = (ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) ? true : false;
 //		    ts.moveNext();
-		    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
-			if (includeWSBeforePHPDoc) {
-			    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_RIGHT_BRACE, ts.offset()));
-			}
-			addFormatToken(formatTokens);
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
-			//if (!includeWBC) {
-			    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_RIGHT_BRACE, ts.offset()));
-			//}
-			addFormatToken(formatTokens);
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FUNCTION, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof IfStatement) {
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_RIGHT_BRACE, ts.offset()));
-			addFormatToken(formatTokens);
-		    } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_RIGHT_BRACE, ts.offset()));
-			addFormatToken(formatTokens);
-		    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_RIGHT_BRACE, ts.offset()));
-			addFormatToken(formatTokens);
-		    } else if (parent instanceof SwitchStatement) {
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_RIGHT_BACE, ts.offset()));
-			addFormatToken(formatTokens);
-		    } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_RIGHT_BRACE, ts.offset()));
-			addFormatToken(formatTokens);
-		    } else {
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_RIGHT_BRACE, ts.offset()));
-			addFormatToken(formatTokens);
-		    }
-		} else {
-                    FormatToken lastToken = formatTokens.get(formatTokens.size() - 1);
-                    if (!(lastToken.getId() == FormatToken.Kind.TEXT && lastToken.getOffset() >= ts.offset())) {
+                    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+                        if (includeWSBeforePHPDoc) {
+                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_RIGHT_BRACE, ts.offset()));
+                        }
+                        addFormatToken(formatTokens);
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+                        //if (!includeWBC) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_RIGHT_BRACE, ts.offset()));
+                        //}
+                        addFormatToken(formatTokens);
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FUNCTION, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof IfStatement) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_RIGHT_BRACE, ts.offset()));
+                        addFormatToken(formatTokens);
+                    } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_RIGHT_BRACE, ts.offset()));
+                        addFormatToken(formatTokens);
+                    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_RIGHT_BRACE, ts.offset()));
+                        addFormatToken(formatTokens);
+                    } else if (parent instanceof SwitchStatement) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_RIGHT_BACE, ts.offset()));
+                        addFormatToken(formatTokens);
+                    } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_RIGHT_BRACE, ts.offset()));
+                        addFormatToken(formatTokens);
+                    } else {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_RIGHT_BRACE, ts.offset()));
                         addFormatToken(formatTokens);
                     }
-		}
-	    }
-	    ts.movePrevious();
-	}
+                } else {
+                    FormatToken lastToken = formatTokens.get(formatTokens.size() - 1);
+                    if (!(lastToken.getId() == FormatToken.Kind.TEXT && lastToken.getOffset() >= ts.offset())
+                            && lastIndex < ts.index()) {
+                        addFormatToken(formatTokens);
+                    }
+                }
+            }
+            ts.movePrevious();
+        }
     }
 
     @Override
     public void visit(CastExpression node) {
-	super.visit(node);
+        super.visit(node);
     }
 
     @Override
     public void visit(ClassDeclaration node) {
 
-	addAllUntilOffset(node.getStartOffset());
-	if (includeWSBeforePHPDoc) {
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
-	} else {
-	    includeWSBeforePHPDoc = true;
-	}
-	while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
-	    switch (ts.token().id()) {
-		case PHP_IMPLEMENTS:
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
-		    Expression inter = node.getInterfaes().get(0);
-		    ts.movePrevious();
-		    addUnbreakalbeSequence(inter, true); // adding implements keyword and first interface
-		    for (int i = 1; i < node.getInterfaes().size(); i++) {
-			if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
-			    addFormatToken(formatTokens);
-			}
-			formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST, ts.offset()));
-			inter = node.getInterfaes().get(i);
-			addUnbreakalbeSequence(inter, false);
-		    }
-		    break;
-		case PHP_EXTENDS:
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+        addAllUntilOffset(node.getStartOffset());
+        if (includeWSBeforePHPDoc) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
+        } else {
+            includeWSBeforePHPDoc = true;
+        }
+        while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
+            switch (ts.token().id()) {
+                case PHP_IMPLEMENTS:
+                    if (node.getInterfaes().size() > 0) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                        Expression inter = node.getInterfaes().get(0);
+                        ts.movePrevious();
+                        addUnbreakalbeSequence(inter, true); // adding implements keyword and first interface
+                        for (int i = 1; i < node.getInterfaes().size(); i++) {
+                            if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
+                                addFormatToken(formatTokens);
+                            }
+                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST, ts.offset()));
+                            inter = node.getInterfaes().get(i);
+                            addUnbreakalbeSequence(inter, false);
+                        }
+                    }
+                    break;
+                case PHP_EXTENDS:
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
                     addFormatToken(formatTokens);
-		    break;
+                    break;
                 default:
                     addFormatToken(formatTokens);
             }
-	}
-	    
-	ts.movePrevious();
-	super.visit(node);
+        }
+
+        ts.movePrevious();
+        super.visit(node);
     }
 
     @Override
     public void visit(ClassInstanceCreation node) {
-	scan(node.getClassName());
-	if (node.ctorParams() != null && node.ctorParams().size() > 0) {
-	    formatTokens.add(new FormatToken.IndentToken(node.getClassName().getEndOffset(), options.continualIndentSize));
-	    scan(node.ctorParams());
-	    formatTokens.add(new FormatToken.IndentToken(node.ctorParams().get(node.ctorParams().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
-	    addAllUntilOffset(node.getEndOffset());
-	} else {
-	    super.visit(node);
-	}
+        scan(node.getClassName());
+        if (node.ctorParams() != null && node.ctorParams().size() > 0) {
+            formatTokens.add(new FormatToken.IndentToken(node.getClassName().getEndOffset(), options.continualIndentSize));
+            scan(node.ctorParams());
+            formatTokens.add(new FormatToken.IndentToken(node.ctorParams().get(node.ctorParams().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
+            addAllUntilOffset(node.getEndOffset());
+        } else {
+            super.visit(node);
+        }
     }
 
     @Override
     public void visit(ConditionalExpression node) {
-	scan(node.getCondition());
-	boolean wrap = node.getIfTrue() != null ? true : false;
+        scan(node.getCondition());
+        boolean wrap = node.getIfTrue() != null ? true : false;
         ASTNode astNode = path.get(1);
-	boolean putContinualIndent = !(astNode instanceof Assignment
+        boolean putContinualIndent = !(astNode instanceof Assignment
                 || astNode instanceof ReturnStatement);
-	if (wrap) {
-	    while (ts.moveNext()
-		    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString()))) {
-		addFormatToken(formatTokens);
-	    }
+        if (wrap) {
+            while (ts.moveNext()
+                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString()))
+                    && lastIndex< ts.index()) {
+                addFormatToken(formatTokens);
+            }
 
-	    int start = ts.offset();
-	    if (putContinualIndent) {
-		formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
-	    }
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, start));
-	    ts.movePrevious();
-	    addAllUntilOffset(node.getIfTrue().getStartOffset());
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+            int start = ts.offset();
+            if (putContinualIndent) {
+                formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
+            }
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, start));
+            ts.movePrevious();
+            addAllUntilOffset(node.getIfTrue().getStartOffset());
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
 
-	}
-	scan(node.getIfTrue());
-	if (wrap) {
-	    addEndOfUnbreakableSequence(node.getIfTrue().getEndOffset());
-	    if (putContinualIndent) {
-		formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-	    }
-	}
-	wrap = node.getIfFalse() != null ? true : false;
-	if (wrap) {
-	    while (ts.moveNext()
-                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString()))) {
-		addFormatToken(formatTokens);
-	    }
-	    int start = ts.offset();
-	    if (putContinualIndent) {
-		formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
-	    }
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, start));
-	    ts.movePrevious();
-	    addAllUntilOffset(node.getIfFalse().getStartOffset());
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        }
+        scan(node.getIfTrue());
+        if (wrap) {
+            addEndOfUnbreakableSequence(node.getIfTrue().getEndOffset());
+            if (putContinualIndent) {
+                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+            }
+        }
+        wrap = node.getIfFalse() != null ? true : false;
+        if (wrap) {
+            while (ts.moveNext()
+                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString()))
+                    && lastIndex < ts.index()) {
+                addFormatToken(formatTokens);
+            }
+            int start = ts.offset();
+            if (putContinualIndent) {
+                formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
+            }
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_TERNARY_OP, start));
+            ts.movePrevious();
+            addAllUntilOffset(node.getIfFalse().getStartOffset());
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
 
-	}
-	scan(node.getIfFalse());
-	if (wrap) {
-	    addEndOfUnbreakableSequence(node.getIfFalse().getEndOffset());
-	    if (putContinualIndent) {
-		formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-	    }
-	}
+        }
+        scan(node.getIfFalse());
+        if (wrap) {
+            addEndOfUnbreakableSequence(node.getIfFalse().getEndOffset());
+            if (putContinualIndent) {
+                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+            }
+        }
     }
 
     @Override
     public void visit(DoStatement node) {
-	ASTNode body = node.getBody();
-	if (body != null && !(body instanceof Block)) {
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_DO_STATEMENT, ts.offset()));
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	    scan(body);
-	    addEndOfUnbreakableSequence(body.getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-	} else {
-	    scan(body);
-	}
-	scan(node.getCondition());
-	addAllUntilOffset(node.getEndOffset());
+        ASTNode body = node.getBody();
+        if (body != null && !(body instanceof Block)) {
+            addAllUntilOffset(body.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_DO_STATEMENT, ts.offset()));
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+            scan(body);
+            addEndOfUnbreakableSequence(body.getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+        } else {
+            scan(body);
+        }
+        scan(node.getCondition());
+        addAllUntilOffset(node.getEndOffset());
     }
 
     @Override
     public void visit(ExpressionStatement node) {
-	if (node.getExpression() instanceof FunctionInvocation) {
-	    super.visit(node);
-	} else {
-	    addAllUntilOffset(node.getStartOffset());
-	    if (moveNext()) {
-		addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
+        if (node.getExpression() instanceof FunctionInvocation) {
+            super.visit(node);
+        } else {
+            addAllUntilOffset(node.getStartOffset());
+            if (moveNext() && lastIndex < ts.index()) {
+                addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
                 Expression expression = node.getExpression();
-		boolean addIndent = !(expression instanceof MethodInvocation || expression instanceof StaticMethodInvocation);
-		if (addIndent) {
-		    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
-		    super.visit(node);
-		    formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
-		} else {
-		    super.visit(node);
-		}
+                boolean addIndent = !(expression instanceof MethodInvocation || expression instanceof StaticMethodInvocation);
+                if (addIndent) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                    super.visit(node);
+                    formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
+                } else {
+                    super.visit(node);
+                }
 
-	    }
-	}
+            }
+        }
     }
 
     @Override
     public void visit(FieldsDeclaration node) {
-	Block block = (Block) path.get(1);
-	int index = 0;
-	List<Statement> statements = block.getStatements();
-	while (index < statements.size() && statements.get(index).getStartOffset() < node.getStartOffset()) {
-	    index++;
-	}
-	addAllUntilOffset(node.getStartOffset());
-	if (index < statements.size()
-		&& index > 0 && statements.get(index - 1) instanceof FieldsDeclaration) {
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
-	} else {
-	    if (includeWSBeforePHPDoc) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
-	    } else {
-		includeWSBeforePHPDoc = true;
-	    }
-	}
-	super.visit(node);
-	if (index == statements.size() - 1
-		|| ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof FieldsDeclaration))) {
-	    //addAllUntilOffset(statements.get(index).getEndOffset() + 1);
-	    addRestOfLine();
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELD, ts.offset() + ts.token().length()));
-	}
+        Block block = (Block) path.get(1);
+        int index = 0;
+        List<Statement> statements = block.getStatements();
+        while (index < statements.size() && statements.get(index).getStartOffset() < node.getStartOffset()) {
+            index++;
+        }
+        addAllUntilOffset(node.getStartOffset());
+        if (includeWSBeforePHPDoc && index < statements.size()
+                && index > 0 && statements.get(index - 1) instanceof FieldsDeclaration) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
+        } else {
+            if (includeWSBeforePHPDoc) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELDS, ts.offset()));
+            } else {
+                includeWSBeforePHPDoc = true;
+            }
+        }
+        super.visit(node);
+        if (index == statements.size() - 1
+                || ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof FieldsDeclaration))) {
+            //addAllUntilOffset(statements.get(index).getEndOffset() + 1);
+            addRestOfLine();
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELDS, ts.offset() + ts.token().length()));
+        }
     }
 
     @Override
     public void visit(ForEachStatement node) {
-	scan(node.getExpression());
-	scan(node.getKey());
-	scan(node.getValue());
-	ASTNode body = node.getStatement();
-	if (body != null && (body instanceof Block && !((Block) body).isCurly())) {
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    scan(node.getStatement());
+        scan(node.getExpression());
+        scan(node.getKey());
+        scan(node.getValue());
+        ASTNode body = node.getStatement();
+        if (body != null && (body instanceof Block && !((Block) body).isCurly())) {
+            addAllUntilOffset(body.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            scan(node.getStatement());
             if (ts.token().id() == PHPTokenId.T_INLINE_HTML) {
                 // we are at the embeded html and we need to put the indent after
                 // php open tag
@@ -600,132 +614,133 @@ public class FormatVisitor extends DefaultVisitor {
                 }
                 ts.movePrevious();
             }
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-	} else if (body != null && !(body instanceof Block)) {
-	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
-	} else {
-	    scan(node.getStatement());
-	}
+            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+        } else if (body != null && !(body instanceof Block)) {
+            addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
+        } else {
+            scan(node.getStatement());
+        }
     }
 
     @Override
     public void visit(ForStatement node) {
-	scan(node.getInitializers());
-	boolean wrap = node.getConditions() != null && node.getConditions().size() > 0 ? true : false;
-	if (wrap) {
-	    int start = node.getConditions().get(0).getStartOffset();
-	    addAllUntilOffset(start);
-	    formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_FOR, start));
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	}
-	scan(node.getConditions());
-	if (wrap) {
-	    addEndOfUnbreakableSequence(node.getConditions().get(node.getConditions().size() - 1).getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-	}
-	wrap = node.getUpdaters() != null && node.getUpdaters().size() > 0 ? true : false;
-	if (wrap) {
-	    int start = node.getUpdaters().get(0).getStartOffset();
-	    addAllUntilOffset(start);
-	    formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_FOR, start));
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	}
-	scan(node.getUpdaters());
-	if (wrap) {
-	    addEndOfUnbreakableSequence(node.getUpdaters().get(node.getUpdaters().size() - 1).getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-	}
-	ASTNode body = node.getBody();
-	if (body != null && (body instanceof Block && !((Block) body).isCurly())) {
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    scan(node.getBody());
+        scan(node.getInitializers());
+        boolean wrap = node.getConditions() != null && node.getConditions().size() > 0 ? true : false;
+        if (wrap) {
+            int start = node.getConditions().get(0).getStartOffset();
+            addAllUntilOffset(start);
+            formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_FOR, start));
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        }
+        scan(node.getConditions());
+        if (wrap) {
+            addEndOfUnbreakableSequence(node.getConditions().get(node.getConditions().size() - 1).getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
+        wrap = node.getUpdaters() != null && node.getUpdaters().size() > 0 ? true : false;
+        if (wrap) {
+            int start = node.getUpdaters().get(0).getStartOffset();
+            addAllUntilOffset(start);
+            formatTokens.add(new FormatToken.IndentToken(start, options.continualIndentSize));
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_FOR, start));
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(start, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        }
+        scan(node.getUpdaters());
+        if (wrap) {
+            addEndOfUnbreakableSequence(node.getUpdaters().get(node.getUpdaters().size() - 1).getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
+        ASTNode body = node.getBody();
+        if (body != null && (body instanceof Block && !((Block) body).isCurly())) {
+            addAllUntilOffset(body.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            scan(node.getBody());
             if (ts.token().id() == PHPTokenId.T_INLINE_HTML
                     && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
                 addFormatToken(formatTokens);
             }
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-	} else if (body != null && !(body instanceof Block)) {
-	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
-	} else {
-	    scan(node.getBody());
-	}
+            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+        } else if (body != null && !(body instanceof Block)) {
+            addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
+        } else {
+            scan(node.getBody());
+        }
     }
 
     @Override
     public void visit(FunctionDeclaration node) {
-	if (!(path.size() > 1 && path.get(1) instanceof MethodDeclaration)) {
-	    while (ts.moveNext() && (ts.token().id() == PHPTokenId.WHITESPACE
-		    || isComment(ts.token()))) {
-		addFormatToken(formatTokens);
-	    }
-	    if (includeWSBeforePHPDoc) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION, ts.offset()));
-	    } else {
-		includeWSBeforePHPDoc = true;
-	    }
-	    ts.movePrevious();
-	}
-	scan(node.getFunctionName());    // scan the name
-	// scan the parameters
-	List<FormalParameter> parameters = node.getFormalParameters();
-	if (parameters != null && parameters.size() > 0) {
-	    while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()) {
-		addFormatToken(formatTokens);
-	    }
-	    ts.movePrevious();
-	    addUnbreakalbeSequence(parameters.get(0), true);
-	    for (int i = 1; i < parameters.size(); i++) {
-		if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
-		    addFormatToken(formatTokens);
-		} else {
-		    ts.movePrevious();
-		}
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_PARAMETER_LIST, ts.offset() + ts.token().length()));
-		addUnbreakalbeSequence(parameters.get(i), false);
-	    }
-	}
+        if (!(path.size() > 1 && path.get(1) instanceof MethodDeclaration)) {
+            while (ts.moveNext() && (ts.token().id() == PHPTokenId.WHITESPACE
+                    || isComment(ts.token()))) {
+                addFormatToken(formatTokens);
+            }
+            if (includeWSBeforePHPDoc) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION, ts.offset()));
+            } else {
+                includeWSBeforePHPDoc = true;
+            }
+            ts.movePrevious();
+        }
+        scan(node.getFunctionName());    // scan the name
+        // scan the parameters
+        List<FormalParameter> parameters = node.getFormalParameters();
+        if (parameters != null && parameters.size() > 0) {
+            while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()) {
+                addFormatToken(formatTokens);
+            }
+            ts.movePrevious();
+            addUnbreakalbeSequence(parameters.get(0), true);
+            for (int i = 1; i < parameters.size(); i++) {
+                if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
+                    addFormatToken(formatTokens);
+                } else {
+                    ts.movePrevious();
+                }
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_PARAMETER_LIST, ts.offset() + ts.token().length()));
+                addUnbreakalbeSequence(parameters.get(i), false);
+            }
+        }
         scan(node.getBody()); // scan the body of the function
     }
 
     @Override
     public void visit(FunctionInvocation node) {
-	if (path.size() > 1 && path.get(1) instanceof MethodInvocation) {
-	    while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_OBJECT_OPERATOR
-		    && ts.offset() < node.getStartOffset()) {
-		addFormatToken(formatTokens);
-	    }
-	    if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_CHAINED_METHOD_CALLS, ts.offset()));
-		addFormatToken(formatTokens);
-	    } else {
-		ts.movePrevious();
-	    }
+        if (path.size() > 1 && path.get(1) instanceof MethodInvocation) {
+            while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_OBJECT_OPERATOR
+                    && ((ts.offset() + ts.token().length()) < node.getStartOffset())) {
+                addFormatToken(formatTokens);
+            }
+            if (ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_CHAINED_METHOD_CALLS, ts.offset()));
+                addFormatToken(formatTokens);
+            } else {
+                ts.movePrevious();
+            }
 
-	}
-	scan(node.getFunctionName());
+        }
+        scan(node.getFunctionName());
         List<Expression> parameters = node.getParameters();
-	if (parameters != null && parameters.size() > 0) {
-            boolean addIndentation = !(path.get(1) instanceof Assignment);
+        if (parameters != null && parameters.size() > 0) {
+            boolean addIndentation = !(path.get(1) instanceof Assignment || (path.size() > 2 && path.get(1) instanceof MethodInvocation && path.get(2) instanceof Assignment));
             if (addIndentation) {
                 formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
             }
-	    while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()) {
-		addFormatToken(formatTokens);
-	    }
-	    ts.movePrevious();
-	    addUnbreakalbeSequence(parameters.get(0), true);
-	    for (int i = 1; i < parameters.size(); i++) {
-		if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
-		    addFormatToken(formatTokens);
-		} else {
-		    ts.movePrevious();
-		}
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_ARGUMENT_LIST, ts.offset() + ts.token().length()));
-		addUnbreakalbeSequence(parameters.get(i), false);
-	    }
+            while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()
+                    && lastIndex < ts.index()) {
+                addFormatToken(formatTokens);
+            }
+            ts.movePrevious();
+            addUnbreakalbeSequence(parameters.get(0), true);
+            for (int i = 1; i < parameters.size(); i++) {
+                if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
+                    addFormatToken(formatTokens);
+                } else {
+                    ts.movePrevious();
+                }
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_ARGUMENT_LIST, ts.offset() + ts.token().length()));
+                addUnbreakalbeSequence(parameters.get(i), false);
+            }
 //            if (ts.token().id() == PHPTokenId.WHITESPACE) {
 //                addFormatToken(formatTokens);
 //            }
@@ -754,9 +769,9 @@ public class FormatVisitor extends DefaultVisitor {
                     formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
                 }
             }
-	}
+        }
         addAllUntilOffset(node.getEndOffset());
-        
+
 //	if (node.getParameters() != null && node.getParameters().size() > 0) {
 //	    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
 //	    scan(node.getParameters());
@@ -769,100 +784,102 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(InfixExpression node) {
-	scan(node.getLeft());
-	FormatToken.Kind whitespace = FormatToken.Kind.WHITESPACE_AROUND_BINARY_OP;
+        scan(node.getLeft());
+        FormatToken.Kind whitespace = FormatToken.Kind.WHITESPACE_AROUND_BINARY_OP;
 
-	if (node.getOperator() == InfixExpression.OperatorType.CONCAT) {
-	    whitespace = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
-	}
+        if (node.getOperator() == InfixExpression.OperatorType.CONCAT) {
+            whitespace = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
+        }
 
-	while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
-		&& ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR) {
-	    addFormatToken(formatTokens);
-	}
-	if (ts.token().id() == PHPTokenId.PHP_TOKEN || ts.token().id() == PHPTokenId.PHP_OPERATOR) {
-	    formatTokens.add(new FormatToken(whitespace, ts.offset()));
-	    addFormatToken(formatTokens);
-	    formatTokens.add(new FormatToken(whitespace, ts.offset() + ts.token().length()));
-	} else {
-	    ts.movePrevious();
-	}
-	scan(node.getRight());
+        while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
+                && ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR
+                && lastIndex < ts.index()) {
+            addFormatToken(formatTokens);
+        }
+        if (ts.token().id() == PHPTokenId.PHP_TOKEN || ts.token().id() == PHPTokenId.PHP_OPERATOR) {
+            formatTokens.add(new FormatToken(whitespace, ts.offset()));
+            addFormatToken(formatTokens);
+            formatTokens.add(new FormatToken(whitespace, ts.offset() + ts.token().length()));
+        } else {
+            ts.movePrevious();
+        }
+        scan(node.getRight());
     }
 
     @Override
     public void visit(IfStatement node) {
-	addAllUntilOffset(node.getCondition().getStartOffset());
-	formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
-	scan(node.getCondition());
-	ASTNode body = node.getTrueStatement();
-	formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
-	if (body != null && body instanceof Block && !((Block) body).isCurly()) {
-	    isCurly = false;
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    scan(body);
+        addAllUntilOffset(node.getCondition().getStartOffset());
+        formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+        scan(node.getCondition());
+        ASTNode body = node.getTrueStatement();
+        formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        if (body != null && body instanceof Block && !((Block) body).isCurly()) {
+            isCurly = false;
+            addAllUntilOffset(body.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            scan(body);
             if (ts.token().id() == PHPTokenId.T_INLINE_HTML
                     && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
                 addFormatToken(formatTokens);
             }
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-	} else if (body != null && !(body instanceof Block)) {
-	    isCurly = false;
-	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT);
-	} else {
-	    scan(node.getTrueStatement());
-	}
-	body = node.getFalseStatement();
-	if (body != null && body instanceof Block && !((Block) body).isCurly()
-		&& !(body instanceof IfStatement)) {
-	    isCurly = false;
-	    while (ts.moveNext() && ts.offset() < body.getStartOffset()) {
-		if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		} else {
-		    addFormatToken(formatTokens);
-		}
-	    }
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+        } else if (body != null && !(body instanceof Block)) {
+            isCurly = false;
+            addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT);
+        } else {
+            scan(node.getTrueStatement());
+        }
+        body = node.getFalseStatement();
+        if (body != null && body instanceof Block && !((Block) body).isCurly()
+                && !(body instanceof IfStatement)) {
+            isCurly = false;
+            while (ts.moveNext() && ts.offset() < body.getStartOffset()) {
+                if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                } else {
+                    addFormatToken(formatTokens);
+                }
+            }
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
             ts.movePrevious();
-	    scan(node.getFalseStatement());
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-	} else if (body != null && !(body instanceof Block) && !(body instanceof IfStatement)) {
-	    isCurly = false;
-	    while (ts.moveNext() && ts.offset() < body.getStartOffset()) {
-		if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		} else {
-		    addFormatToken(formatTokens);
-		}
-	    }
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT, ts.offset()));
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	    scan(body);
-	    addEndOfUnbreakableSequence(body.getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-	} else {
-	    scan(node.getFalseStatement());
-	}
+            scan(node.getFalseStatement());
+            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+        } else if (body != null && !(body instanceof Block) && !(body instanceof IfStatement)) {
+            isCurly = false;
+            while (ts.moveNext() && ts.offset() < body.getStartOffset()) {
+                if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                } else {
+                    addFormatToken(formatTokens);
+                }
+            }
+            ts.movePrevious();
+            addAllUntilOffset(body.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT, ts.offset()));
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+            scan(body);
+            addEndOfUnbreakableSequence(body.getEndOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+        } else {
+            scan(node.getFalseStatement());
+        }
 
     }
 
     @Override
     public void visit(MethodDeclaration node) {
-	while (ts.moveNext() && (ts.token().id() == PHPTokenId.WHITESPACE
-		|| isComment(ts.token()))) {
-	    addFormatToken(formatTokens);
-	}
-	if (includeWSBeforePHPDoc) {
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION, ts.offset()));
-	} else {
-	    includeWSBeforePHPDoc = true;
-	}
-	ts.movePrevious();
-	super.visit(node);
+        while (ts.moveNext() && (ts.token().id() == PHPTokenId.WHITESPACE
+                || isComment(ts.token()))) {
+            addFormatToken(formatTokens);
+        }
+        if (includeWSBeforePHPDoc) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION, ts.offset()));
+        } else {
+            includeWSBeforePHPDoc = true;
+        }
+        ts.movePrevious();
+        super.visit(node);
     }
 
     @Override
@@ -900,12 +917,12 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(NamespaceDeclaration node) {
-	addAllUntilOffset(node.getStartOffset());
-	formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_NAMESPACE, node.getStartOffset()));
-	scan(node.getName());
-	addRestOfLine();
-	formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_NAMESPACE, ts.offset() + ts.token().length()));
-	scan(node.getBody());
+        addAllUntilOffset(node.getStartOffset());
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_NAMESPACE, node.getStartOffset()));
+        scan(node.getName());
+        addRestOfLine();
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_NAMESPACE, ts.offset() + ts.token().length()));
+        scan(node.getBody());
     }
 
     @Override
@@ -917,13 +934,15 @@ public class FormatVisitor extends DefaultVisitor {
             ts.movePrevious();
             addFormatToken(formatTokens);
             super.visit(program);
-            FormatToken lastToken = formatTokens.size() > 0 
+            FormatToken lastToken = formatTokens.size() > 0
                     ? formatTokens.get(formatTokens.size() - 1)
                     : null;
             while (ts.moveNext()) {
                 if (lastToken == null || lastToken.isWhitespace() || lastToken.getOffset() > ts.offset()) {
-                    addFormatToken(formatTokens);
-                    lastToken = formatTokens.get(formatTokens.size() - 1);
+                    if (lastIndex < ts.index()) {
+                        addFormatToken(formatTokens);
+                        lastToken = formatTokens.get(formatTokens.size() - 1);
+                    }
                 }
             }
             path.removeFirst();
@@ -932,70 +951,73 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ReturnStatement node) {
-        while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_RETURN) {
+        while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_RETURN
+                && ((ts.offset() + ts.token().length()) <= node.getEndOffset())) {
             addFormatToken(formatTokens);
         }
         // add return
-        addFormatToken(formatTokens);
-        formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
-        super.visit(node);
-        formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        if (ts.token().id() == PHPTokenId.PHP_RETURN) {
+            addFormatToken(formatTokens);
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+            super.visit(node);
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+        }
     }
-    
+
     @Override
     public void visit(SingleFieldDeclaration node) {
-	scan(node.getName());
-	if (node.getValue() != null) {
-	    while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
-		if (ts.token().id() == PHPTokenId.PHP_TOKEN && "=".equals(ts.token().text().toString())) {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
-		    addFormatToken(formatTokens);
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
-		} else {
-		    addFormatToken(formatTokens);
-		}
-	    }
-	    ts.movePrevious();
-	    if (node.getValue() != null) {
-		formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
-		scan(node.getValue());
-		formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * options.continualIndentSize));
-	    }
-	}
+        scan(node.getName());
+        if (node.getValue() != null) {
+            while (ts.moveNext() && ts.offset() < node.getValue().getStartOffset()) {
+                if (ts.token().id() == PHPTokenId.PHP_TOKEN && "=".equals(ts.token().text().toString())) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset()));
+                    addFormatToken(formatTokens);
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_ASSIGN_OP, ts.offset() + ts.token().length()));
+                } else {
+                    addFormatToken(formatTokens);
+                }
+            }
+            ts.movePrevious();
+            if (node.getValue() != null) {
+                formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                scan(node.getValue());
+                formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * options.continualIndentSize));
+            }
+        }
     }
 
     @Override
     public void visit(SwitchCase node) {
-	if (node.getValue() == null) {
-	    ts.moveNext();
-	    addFormatToken(formatTokens);
-	} else {
-	    scan(node.getValue());
-	}
-	formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
-	if (node.getActions() != null) {
-	    scan(node.getActions());
-	    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
-	}
+        if (node.getValue() == null) {
+            ts.moveNext();
+            addFormatToken(formatTokens);
+        } else {
+            scan(node.getValue());
+        }
+        formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
+        if (node.getActions() != null) {
+            scan(node.getActions());
+            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
+        }
 
     }
 
     @Override
     public void visit(SwitchStatement node) {
-	scan(node.getExpression());
-	if (node.getBody() != null && (node.getBody() instanceof Block && !((Block) node.getBody()).isCurly())) {
-	    addAllUntilOffset(node.getBody().getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(node.getBody().getStartOffset(), options.indentSize));
+        scan(node.getExpression());
+        if (node.getBody() != null && (node.getBody() instanceof Block && !((Block) node.getBody()).isCurly())) {
+            addAllUntilOffset(node.getBody().getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(node.getBody().getStartOffset(), options.indentSize));
 
-	    if (node.getBody().getStatements().size() > 0) {
+            if (node.getBody().getStatements().size() > 0) {
                 scan(node.getBody());
-		Statement lastOne = node.getBody().getStatements().get(node.getBody().getStatements().size() - 1);
-		while (lastOne.getEndOffset() < formatTokens.get(formatTokens.size() - 1).getOffset()) {
-		    formatTokens.remove(formatTokens.size() - 1);
-		}
-		while (lastOne.getEndOffset() < ts.offset()) {
-		    ts.movePrevious();
-		}
+                Statement lastOne = node.getBody().getStatements().get(node.getBody().getStatements().size() - 1);
+                while (lastOne.getEndOffset() < formatTokens.get(formatTokens.size() - 1).getOffset()) {
+                    formatTokens.remove(formatTokens.size() - 1);
+                }
+                while (lastOne.getEndOffset() < ts.offset()) {
+                    ts.movePrevious();
+                }
 	    }
             else {
                 while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ENDSWITCH
@@ -1005,63 +1027,63 @@ public class FormatVisitor extends DefaultVisitor {
                 ts.movePrevious();
             }
             formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
-	    addAllUntilOffset(node.getEndOffset());
-	} else {
-	    scan(node.getBody());
-	}
+            addAllUntilOffset(node.getEndOffset());
+        } else {
+            scan(node.getBody());
+        }
     }
 
     @Override
     public void visit(TryStatement node) {
-	scan(node.getBody());
-	scan(node.getCatchClauses());
+        scan(node.getBody());
+        scan(node.getCatchClauses());
     }
 
     @Override
     public void visit(WhileStatement node) {
-	scan(node.getCondition());
-	ASTNode body = node.getBody();
-	if (body != null && (body instanceof Block && !((Block) body).isCurly())) {
-	    addAllUntilOffset(body.getStartOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    scan(node.getBody());
+        scan(node.getCondition());
+        ASTNode body = node.getBody();
+        if (body != null && (body instanceof Block && !((Block) body).isCurly())) {
+            addAllUntilOffset(body.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+            scan(node.getBody());
             if (ts.token().id() == PHPTokenId.T_INLINE_HTML
                     && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
                 addFormatToken(formatTokens);
             }
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
-	} else if (body != null && !(body instanceof Block)) {
-	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_WHILE_STATEMENT);
-	} else {
-	    scan(node.getBody());
-	}
+            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+        } else if (body != null && !(body instanceof Block)) {
+            addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_WHILE_STATEMENT);
+        } else {
+            scan(node.getBody());
+        }
     }
 
     @Override
     public void visit(UseStatement node) {
 
-	if (isPreviousNodeTheSameInBlock(path.get(1), node)) {
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_USE, ts.offset()));
-	} else {
-	    if (includeWSBeforePHPDoc) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE, ts.offset()));
-	    }
-	}
-	includeWSBeforePHPDoc = true;
+        if (isPreviousNodeTheSameInBlock(path.get(1), node)) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_USE, ts.offset()));
+        } else {
+            if (includeWSBeforePHPDoc) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE, ts.offset()));
+            }
+        }
+        includeWSBeforePHPDoc = true;
 
         isFirstUseStatementPart = true;
-	super.visit(node);
-	if (isNextNodeTheSameInBlock(path.get(1), node)) {
-	    addRestOfLine();
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_USE, ts.offset() + ts.token().length()));
-	}
+        super.visit(node);
+        if (isNextNodeTheSameInBlock(path.get(1), node)) {
+            addRestOfLine();
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_USE, ts.offset() + ts.token().length()));
+        }
     }
 
     @Override
     public void visit(UseStatementPart statementPart) {
         FormatToken lastFormatToken = formatTokens.get(formatTokens.size() - 1);
         boolean lastRemoved = false;
-        if (ts.token().id() == PHPTokenId.PHP_NS_SEPARATOR 
+        if (ts.token().id() == PHPTokenId.PHP_NS_SEPARATOR
                 && lastFormatToken.getId() == FormatToken.Kind.TEXT
                 && "\\".equals(lastFormatToken.getOldText())) {
             formatTokens.remove(formatTokens.size() - 1);
@@ -1101,14 +1123,14 @@ public class FormatVisitor extends DefaultVisitor {
             return;
         }
         lastIndex = ts.index();
-	switch (ts.token().id()) {
-	    case WHITESPACE:
-		tokens.add((countOfNewLines(ts.token().text()) > 0)
-			? new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, ts.offset(), ts.token().text().toString())
-			: new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset(), ts.token().text().toString()));
-		break;
-	    case PHP_LINE_COMMENT:
-		String text = ts.token().text().toString();
+        switch (ts.token().id()) {
+            case WHITESPACE:
+                tokens.add((countOfNewLines(ts.token().text()) > 0)
+                        ? new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, ts.offset(), ts.token().text().toString())
+                        : new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset(), ts.token().text().toString()));
+                break;
+            case PHP_LINE_COMMENT:
+                String text = ts.token().text().toString();
                 if (ts.token().text().charAt(ts.token().length() - 1) == '\n') {
                     text = text.substring(0, text.length() - 1);
                     int newOffset = ts.offset() + ts.token().length() - 1;
@@ -1135,272 +1157,273 @@ public class FormatVisitor extends DefaultVisitor {
                     tokens.add(new FormatToken(FormatToken.Kind.LINE_COMMENT, ts.offset(), text));
                 }
                 break;
-	    case PHP_OPENTAG:
+            case PHP_OPENTAG:
             case T_OPEN_TAG_WITH_ECHO:
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
-		tokens.add(new FormatToken(FormatToken.Kind.OPEN_TAG, ts.offset(), ts.token().text().toString()));
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
+                tokens.add(new FormatToken(FormatToken.Kind.OPEN_TAG, ts.offset(), ts.token().text().toString()));
 //		tokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.initialIndent));
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OPEN_PHP_TAG, ts.offset() + ts.token().length()));
-		break;
-	    case PHP_CLOSETAG:
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OPEN_PHP_TAG, ts.offset() + ts.token().length()));
+                break;
+            case PHP_CLOSETAG:
 //		tokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.initialIndent));
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLOSE_PHP_TAG, ts.offset()));
-		tokens.add(new FormatToken(FormatToken.Kind.CLOSE_TAG, ts.offset(), ts.token().text().toString()));
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLOSE_PHP_TAG, ts.offset() + ts.token().length()));
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLOSE_PHP_TAG, ts.offset()));
+                tokens.add(new FormatToken(FormatToken.Kind.CLOSE_TAG, ts.offset(), ts.token().text().toString()));
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLOSE_PHP_TAG, ts.offset() + ts.token().length()));
 
-		break;
-	    case PHP_COMMENT_START:
+                break;
+            case PHP_COMMENT_START:
                 tokens.add(new FormatToken(FormatToken.Kind.COMMENT_START, ts.offset(), ts.token().text().toString()));
                 break;
             case PHP_COMMENT_END:
                 tokens.add(new FormatToken(FormatToken.Kind.COMMENT_END, ts.offset(), ts.token().text().toString()));
                 break;
             case PHP_COMMENT:
-		tokens.add(new FormatToken(FormatToken.Kind.COMMENT, ts.offset(), ts.token().text().toString()));
-		break;
-	    case PHPDOC_COMMENT:
-		tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT, ts.offset(), ts.token().text().toString()));
-		break;
+                tokens.add(new FormatToken(FormatToken.Kind.COMMENT, ts.offset(), ts.token().text().toString()));
+                break;
+            case PHPDOC_COMMENT:
+                tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT, ts.offset(), ts.token().text().toString()));
+                break;
             case PHPDOC_COMMENT_START:
-		tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT_START, ts.offset(), ts.token().text().toString()));
-		break;
+                tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT_START, ts.offset(), ts.token().text().toString()));
+                break;
             case PHPDOC_COMMENT_END:
-		tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT_END, ts.offset(), ts.token().text().toString()));
-		break;
-	    case PHP_OBJECT_OPERATOR:
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_OBJECT_OP, ts.offset()));
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_OBJECT_OP, ts.offset() + ts.token().length()));
-		break;
-	    case PHP_CASTING:
-		text = ts.token().text().toString();
-		String part1 = text.substring(0, text.indexOf('(') + 1);
-		String part2 = text.substring(part1.length(), text.indexOf(')'));
-		String part3 = text.substring(part1.length() + part2.length());
-		String ws1 = "";
-		String ws2 = "";
-		int index = 0;
-		while (index < part2.length() && part2.charAt(index) == ' ') {
-		    ws1 = ws1 + ' ';
-		    index++;
-		}
-		index = part2.length() - 1;
-		while (index > 0 && part2.charAt(index) == ' ') {
-		    ws2 = ws2 + ' ';
-		    index--;
-		}
-		part2 = part2.trim();
-		int length = 0;
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), part1));
-		length += part1.length();
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_TYPE_CAST_PARENS, ts.offset() + part1.length()));
-		if (ws1.length() > 0) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws1));
-		    length += ws1.length();
-		}
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset() + length, part2));
-		length += part2.length();
-		if (ws2.length() > 0) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws2));
-		    length += ws2.length();
-		}
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_TYPE_CAST_PARENS, ts.offset() + length));
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset() + length, part3));
-		length += part3.length();
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_TYPE_CAST, ts.offset() + length));
-		break;
-	    case PHP_TOKEN:
-		text = ts.token().text().toString();
-		ASTNode parent = path.get(0);
-		if ("(".equals(text)) {
-		    if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_METHOD_DEC_PAREN, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof FunctionInvocation || parent instanceof MethodInvocation || parent instanceof ClassInstanceCreation) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_METHOD_CALL_PAREN, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_CALL_PARENS, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof IfStatement) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_PAREN, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_IF_PARENS, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof ForEachStatement || parent instanceof ForStatement) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_PAREN, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_FOR_PARENS, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_PAREN, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_WHILE_PARENS, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof SwitchStatement) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_PAREN, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_SWITCH_PARENS, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof CatchClause) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_PAREN, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_CATCH_PARENS, ts.offset() + ts.token().length()));
-		    } else if (parent instanceof ArrayCreation) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_PAREN, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset() + ts.token().length()));
-		    } else {
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    }
-		} else if (")".equals(text)) {
-		    if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    } else if (parent instanceof FunctionInvocation || parent instanceof MethodInvocation || parent instanceof ClassInstanceCreation) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_CALL_PARENS, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    } else if (parent instanceof IfStatement) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_IF_PARENS, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    } else if (parent instanceof ForEachStatement || parent instanceof ForStatement) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_FOR_PARENS, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_WHILE_PARENS, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    } else if (parent instanceof SwitchStatement) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_SWITCH_PARENS, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    } else if (parent instanceof CatchClause) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_CATCH_PARENS, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    } else if (parent instanceof ArrayCreation) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset()));
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    } else {
-			tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    }
-		} else if ("[".equals(text)) {
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset() + ts.token().length()));
-		} else if ("]".equals(text)) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset()));
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		} else if (parent instanceof ConditionalExpression
-			&& ("?".equals(text) || ":".equals(text))) {
-		    //tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset()));
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
-		} else if (",".equals(text)) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_COMMA, ts.offset()));
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_COMMA, ts.offset() + ts.token().length()));
-		} else if ("!".equals(text)) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-		} else {
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		}
-		break;
-	    case PHP_OPERATOR:
-		text = ts.token().text().toString();
-		if ("=>".equals(text)) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset()));
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset() + ts.token().length()));
-		} else if ("++".equals(text) || "--".equals(text)) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-		    //if (ts.moveNext() && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString()))) {
-			tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-		    //}
+                tokens.add(new FormatToken(FormatToken.Kind.DOC_COMMENT_END, ts.offset(), ts.token().text().toString()));
+                break;
+            case PHP_OBJECT_OPERATOR:
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_OBJECT_OP, ts.offset()));
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_OBJECT_OP, ts.offset() + ts.token().length()));
+                break;
+            case PHP_CASTING:
+                text = ts.token().text().toString();
+                String part1 = text.substring(0, text.indexOf('(') + 1);
+                String part2 = text.substring(part1.length(), text.indexOf(')'));
+                String part3 = text.substring(part1.length() + part2.length());
+                String ws1 = "";
+                String ws2 = "";
+                int index = 0;
+                while (index < part2.length() && part2.charAt(index) == ' ') {
+                    ws1 = ws1 + ' ';
+                    index++;
+                }
+                index = part2.length() - 1;
+                while (index > 0 && part2.charAt(index) == ' ') {
+                    ws2 = ws2 + ' ';
+                    index--;
+                }
+                part2 = part2.trim();
+                int length = 0;
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), part1));
+                length += part1.length();
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_TYPE_CAST_PARENS, ts.offset() + part1.length()));
+                if (ws1.length() > 0) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws1));
+                    length += ws1.length();
+                }
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset() + length, part2));
+                length += part2.length();
+                if (ws2.length() > 0) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + length, ws2));
+                    length += ws2.length();
+                }
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_TYPE_CAST_PARENS, ts.offset() + length));
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset() + length, part3));
+                length += part3.length();
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_TYPE_CAST, ts.offset() + length));
+                break;
+            case PHP_TOKEN:
+                text = ts.token().text().toString();
+                ASTNode parent = path.get(0);
+                if ("(".equals(text)) {
+                    if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_METHOD_DEC_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof FunctionInvocation || parent instanceof MethodInvocation || parent instanceof ClassInstanceCreation) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_METHOD_CALL_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_CALL_PARENS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof IfStatement) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_IF_PARENS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof ForEachStatement || parent instanceof ForStatement) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_FOR_PARENS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_WHILE_PARENS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof SwitchStatement) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_SWITCH_PARENS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof CatchClause) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_CATCH_PARENS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof ArrayCreation) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset() + ts.token().length()));
+                    } else {
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    }
+                } else if (")".equals(text)) {
+                    if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else if (parent instanceof FunctionInvocation || parent instanceof MethodInvocation || parent instanceof ClassInstanceCreation) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_CALL_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else if (parent instanceof IfStatement) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_IF_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else if (parent instanceof ForEachStatement || parent instanceof ForStatement) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_FOR_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_WHILE_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else if (parent instanceof SwitchStatement) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_SWITCH_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else if (parent instanceof CatchClause) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_CATCH_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else if (parent instanceof ArrayCreation) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else {
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    }
+                } else if ("[".equals(text)) {
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset() + ts.token().length()));
+                } else if ("]".equals(text)) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                } else if (parent instanceof ConditionalExpression
+                        && ("?".equals(text) || ":".equals(text))) {
+                    //tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
+                } else if (",".equals(text)) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_COMMA, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_COMMA, ts.offset() + ts.token().length()));
+                } else if ("!".equals(text)) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                } else {
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                }
+                break;
+            case PHP_OPERATOR:
+                text = ts.token().text().toString();
+                if ("=>".equals(text)) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset() + ts.token().length()));
+                } else if ("++".equals(text) || "--".equals(text)) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
+                    //if (ts.moveNext() && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString()))) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                    //}
 //		    ts.movePrevious();
-		} else {
-		    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		}
-		break;
-	    case PHP_WHILE:
-		if (path.get(0) instanceof DoStatement && isCurly) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE, ts.offset()));
-		}
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		break;
-	    case PHP_ELSE:
-	    case PHP_ELSEIF:
-		if (isCurly) {
-		    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ELSE, ts.offset()));
-		}
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		break;
-	    case PHP_SEMICOLON:
+                } else {
+                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                }
+                break;
+            case PHP_WHILE:
+                if (path.get(0) instanceof DoStatement && isCurly) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE, ts.offset()));
+                }
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                break;
+            case PHP_ELSE:
+            case PHP_ELSEIF:
+                if (isCurly) {
+                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ELSE, ts.offset()));
+                }
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                break;
+            case PHP_SEMICOLON:
                 if (!(ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE
                         && countOfNewLines(ts.token().text()) > 0)) {
                     // if a line starts with the semicolon, don't put this whitespace
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SEMI, ts.offset() + ts.token().length()));
                 }
                 ts.moveNext();
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 if (path.size() > 0 && !(path.get(0) instanceof ForStatement)) {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_SEMI, ts.offset() + ts.token().length()));
                 }
-		break;
-	    case PHP_CATCH:
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH, ts.offset()));
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-		break;
-	    case T_INLINE_HTML:
+                break;
+            case PHP_CATCH:
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH, ts.offset()));
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                break;
+            case T_INLINE_HTML:
 		FormatToken.InitToken token = (FormatToken.InitToken)formatTokens.get(0);
-		if (!token.hasHTML() && !isWhitespace(ts.token().text())) {
-		    token.setHasHTML(true);
-		}
-		int startOffset = ts.offset();
-		StringBuilder sb = new StringBuilder(ts.token().text());
-		// merge all html following tokens to one format token;
-		while (ts.moveNext() && ts.token().id() == PHPTokenId.T_INLINE_HTML) {
-		    sb.append(ts.token().text());
-		}
-		
-		if (ts.moveNext()) {
-		    ts.movePrevious();
-		    ts.movePrevious();
-		    tokens.add(new FormatToken(FormatToken.Kind.HTML, startOffset, sb.toString()));
-		} else {
+                if (!token.hasHTML() && !isWhitespace(ts.token().text())) {
+                    token.setHasHTML(true);
+                }
+                int startOffset = ts.offset();
+                StringBuilder sb = new StringBuilder(ts.token().text());
+                // merge all html following tokens to one format token;
+                while (ts.moveNext() && ts.token().id() == PHPTokenId.T_INLINE_HTML) {
+                    sb.append(ts.token().text());
+                }
+
+                if (ts.moveNext()) {
+                    ts.movePrevious();
+                    ts.movePrevious();
+                    tokens.add(new FormatToken(FormatToken.Kind.HTML, startOffset, sb.toString()));
+                } else {
                     // this is the last token in the document
                     lastIndex --;
                 }
-		break;
-	    default:
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-	}
+                break;
+            default:
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+        }
     }
 
     private void addAllUntilOffset(int offset) {
-	while (moveNext() && ts.offset() < offset) {
-	    addFormatToken(formatTokens);
-	}
-	ts.movePrevious();
+        while (moveNext() && ts.offset() < offset
+                && (ts.offset() + ts.token().length()) <= offset) {
+            addFormatToken(formatTokens);
+        }
+        ts.movePrevious();
     }
 
     private void addRestOfLine() {
-	while (ts.moveNext()
+        while (ts.moveNext()
                 && ts.token().id() != PHPTokenId.PHP_LINE_COMMENT
-		&& ((ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)
-		|| isComment(ts.token())
+                && ((ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)
+                || isComment(ts.token())
                 || ts.token().id() == PHPTokenId.PHP_SEMICOLON)) {
-	    addFormatToken(formatTokens);
-	}
-	if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-		|| (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)) {
-	    addFormatToken(formatTokens);
-	    if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-		addFormatToken(formatTokens);
-	    } else {
-		ts.movePrevious();
-	    }
-	} else {
-	    ts.movePrevious();
-	}
+            addFormatToken(formatTokens);
+        }
+        if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
+                || (ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) == 0)) {
+            addFormatToken(formatTokens);
+            if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                addFormatToken(formatTokens);
+            } else {
+                ts.movePrevious();
+            }
+        } else {
+            ts.movePrevious();
+        }
     }
 
     private int getIndentSize() {
-	return options.initialIndent + indentLevel * options.indentSize;
+        return options.initialIndent + indentLevel * options.indentSize;
     }
 
     /**
@@ -1409,115 +1432,115 @@ public class FormatVisitor extends DefaultVisitor {
      * @return number of new lines in the input
      */
     private int countOfNewLines(CharSequence chs) {
-	int count = 0;
-	for (int i = 0; i < chs.length(); i++) {
-	    if (chs.charAt(i) == '\n') { // NOI18N
-		count++;
-	    }
-	}
-	return count;
+        int count = 0;
+        for (int i = 0; i < chs.length(); i++) {
+            if (chs.charAt(i) == '\n') { // NOI18N
+                count++;
+            }
+        }
+        return count;
     }
 
     private void addEndOfUnbreakableSequence(int endOffset) {
         boolean wasLastLineComment = false;
-	while (ts.moveNext()
-		&& ((ts.token().id() == PHPTokenId.WHITESPACE
-		&& countOfNewLines(ts.token().text()) == 0)
-		|| isComment(ts.token()))) {
+        while (ts.moveNext()
+                && ((ts.token().id() == PHPTokenId.WHITESPACE
+                && countOfNewLines(ts.token().text()) == 0)
+                || isComment(ts.token()))) {
             if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-		    && !"//".equals(ts.token().text().toString())) {
+                    && !"//".equals(ts.token().text().toString())) {
                 addFormatToken(formatTokens);
                 wasLastLineComment = true;
-		break;
-	    }
-	    addFormatToken(formatTokens);
-	    
-	}
-	if (wasLastLineComment) {
-	    FormatToken last = formatTokens.remove(formatTokens.size() - 1);
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
-	    formatTokens.add(last);
-	} else {
-	    ts.movePrevious();
-	    if ((ts.token().id() == PHPTokenId.WHITESPACE
-		    && countOfNewLines(ts.token().text()) == 0)) {
-		FormatToken removedWS = formatTokens.remove(formatTokens.size() - 1);
-		formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
+                break;
+            }
+            addFormatToken(formatTokens);
+
+        }
+        if (wasLastLineComment) {
+            FormatToken last = formatTokens.remove(formatTokens.size() - 1);
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
+            formatTokens.add(last);
+        } else {
+            ts.movePrevious();
+            if ((ts.token().id() == PHPTokenId.WHITESPACE
+                    && countOfNewLines(ts.token().text()) == 0)) {
+                FormatToken removedWS = formatTokens.remove(formatTokens.size() - 1);
+                formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
                 formatTokens.add(removedWS);
-	    } else {
-		formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
-	    }
-	}
+            } else {
+                formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
+            }
+        }
     }
 
     private void addUnbreakalbeSequence(ASTNode node, boolean addAnchor) {
-	formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	addAllUntilOffset(node.getStartOffset());
+        formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        addAllUntilOffset(node.getStartOffset());
 //	while (ts.moveNext() && ts.offset() < endOffset) {
 //	    if (positionOfAnchor > 0 && ts.offset() == positionOfAnchor) {
 //		formatTokens.add(new FormatToken.AnchorToken(ts.offset()));
 //	    }
 //	    addFormatToken(formatTokens);  // add all until the end offset
 //	}
-	if (addAnchor) {
-	    formatTokens.add(new FormatToken.AnchorToken(ts.offset() + ts.token().length()));
-	}
-	scan(node);
+        if (addAnchor) {
+            formatTokens.add(new FormatToken.AnchorToken(ts.offset() + ts.token().length()));
+        }
+        scan(node);
 //	ts.movePrevious();
-	// add , whitespaces and comments
-	while (ts.moveNext()
-		&& (ts.token().id() == PHPTokenId.WHITESPACE
-		|| isComment(ts.token())
-		|| (ts.token().id() == PHPTokenId.PHP_TOKEN && ",".equals(ts.token().text().toString())))) {
-	    addFormatToken(formatTokens);
-	}
-	ts.movePrevious();
+        // add , whitespaces and comments
+        while (ts.moveNext()
+                && (ts.token().id() == PHPTokenId.WHITESPACE
+                || isComment(ts.token())
+                || (ts.token().id() == PHPTokenId.PHP_TOKEN && ",".equals(ts.token().text().toString())))) {
+            addFormatToken(formatTokens);
+        }
+        ts.movePrevious();
 
-	int index = formatTokens.size() - 1;
-	FormatToken lastToken = formatTokens.get(index);
-	FormatToken removedWS = null;
-	if (lastToken.getId() == FormatToken.Kind.WHITESPACE || lastToken.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
-	    removedWS = formatTokens.remove(formatTokens.size() - 1);
-	    index--;
-	    lastToken = formatTokens.get(index);
-	}
+        int index = formatTokens.size() - 1;
+        FormatToken lastToken = formatTokens.get(index);
+        FormatToken removedWS = null;
+        if (lastToken.getId() == FormatToken.Kind.WHITESPACE || lastToken.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+            removedWS = formatTokens.remove(formatTokens.size() - 1);
+            index--;
+            lastToken = formatTokens.get(index);
+        }
 
-	if (lastToken.getId() == FormatToken.Kind.WHITESPACE_AFTER_COMMA) {
-	    formatTokens.remove(index);
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
-	    formatTokens.add(lastToken);
-	    if (removedWS != null) {
-		formatTokens.add(removedWS);
-	    }
-	} else {
-	    if (lastToken.getId() == FormatToken.Kind.LINE_COMMENT && removedWS != null) {
-		formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
-		formatTokens.add(removedWS);
-		ts.moveNext();
-	    } else {
-		formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
+        if (lastToken.getId() == FormatToken.Kind.WHITESPACE_AFTER_COMMA) {
+            formatTokens.remove(index);
+            formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
+            formatTokens.add(lastToken);
+            if (removedWS != null) {
+                formatTokens.add(removedWS);
+            }
+        } else {
+            if (lastToken.getId() == FormatToken.Kind.LINE_COMMENT && removedWS != null) {
+                formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
+                formatTokens.add(removedWS);
+                ts.moveNext();
+            } else {
+                formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
                 if (removedWS != null) {
                     formatTokens.add(removedWS);
 //                    ts.moveNext();
                 }
-	    }
+            }
 
-	}
+        }
     }
 
     private boolean isComment(Token<? extends PHPTokenId> token) {
-	return token.id() == PHPTokenId.PHPDOC_COMMENT
-		|| token.id() == PHPTokenId.PHPDOC_COMMENT_END
-		|| token.id() == PHPTokenId.PHPDOC_COMMENT_START
-		|| token.id() == PHPTokenId.PHP_COMMENT
-		|| token.id() == PHPTokenId.PHP_COMMENT_END
-		|| token.id() == PHPTokenId.PHP_COMMENT_START
-		|| token.id() == PHPTokenId.PHP_LINE_COMMENT;
+        return token.id() == PHPTokenId.PHPDOC_COMMENT
+                || token.id() == PHPTokenId.PHPDOC_COMMENT_END
+                || token.id() == PHPTokenId.PHPDOC_COMMENT_START
+                || token.id() == PHPTokenId.PHP_COMMENT
+                || token.id() == PHPTokenId.PHP_COMMENT_END
+                || token.id() == PHPTokenId.PHP_COMMENT_START
+                || token.id() == PHPTokenId.PHP_LINE_COMMENT;
     }
 
     private boolean isPreviousNodeTheSameInBlock(ASTNode astNode, Statement statement) {
-	int index = 0;   // index of the current statement in the block
-	List<Statement> statements = null;
+        int index = 0;   // index of the current statement in the block
+        List<Statement> statements = null;
 
         if (astNode instanceof Block) {
             statements = ((Block)astNode).getStatements();
@@ -1536,8 +1559,8 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     private boolean isNextNodeTheSameInBlock(ASTNode astNode, Statement statement) {
-	int index = 0;   // index of the current statement in the block
-	List<Statement> statements = null;
+        int index = 0;   // index of the current statement in the block
+        List<Statement> statements = null;
 
         if (astNode instanceof Block) {
             statements = ((Block)astNode).getStatements();
@@ -1556,22 +1579,22 @@ public class FormatVisitor extends DefaultVisitor {
 
     private void addNoCurlyBody(ASTNode body, FormatToken.Kind before) {
         addAllUntilOffset(body.getStartOffset());
-            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString())) {
-                // the body is not defined yet. See issue #187665
-                addFormatToken(formatTokens);
-            } else {
-                ts.movePrevious();
-            }
-            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-            if (!(body instanceof ASTError)) {
-                formatTokens.add(new FormatToken(before, body.getStartOffset()));
-            }
-	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(body.getStartOffset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
-	    scan(body);
-	    addEndOfUnbreakableSequence(body.getEndOffset());
-	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
+        if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString())) {
+            // the body is not defined yet. See issue #187665
+            addFormatToken(formatTokens);
+        } else {
+            ts.movePrevious();
+        }
+        formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
+        if (!(body instanceof ASTError)) {
+            formatTokens.add(new FormatToken(before, body.getStartOffset()));
+        }
+        formatTokens.add(new FormatToken.UnbreakableSequenceToken(body.getStartOffset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
+        scan(body);
+        addEndOfUnbreakableSequence(body.getEndOffset());
+        formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
     }
-    
+
     private boolean moveNext() {
         boolean value = ts.moveNext();
         if (value) {
@@ -1582,11 +1605,11 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     protected static boolean isWhitespace (final CharSequence text) {
-	int index = 0;
-	while (index < text.length()
-		&& Character.isWhitespace(text.charAt(index))) {
-	    index++;
-	}
-	return index == text.length();
+        int index = 0;
+        while (index < text.length()
+                && Character.isWhitespace(text.charAt(index))) {
+            index++;
+        }
+        return index == text.length();
     }
 }

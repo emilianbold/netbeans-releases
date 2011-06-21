@@ -469,7 +469,13 @@ abstract class AbstractFolder extends FileObject {
     *   or folder does not exist
     * @exception IllegalArgumentException if <code>this</code> is not a folder
     */
-    public final synchronized FileObject getFileObject(String name, String ext) {
+    @Override
+    public final FileObject getFileObject(String name, String ext) {
+        getFileSystem().waitRefreshed();
+        return getFileObjectImpl(name, ext);
+    }
+        
+    private synchronized FileObject getFileObjectImpl(String name, String ext) {
         check();
 
         if ((ext == null) || ext.equals("")) { // NOI18N

@@ -57,6 +57,9 @@ import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
+import org.openide.windows.Mode;
 
 
 /**
@@ -150,42 +153,55 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
                 setOpaque( false);
         }
         
+        @Override
         public ModeView getModeView() {
             return abstractModeContainer.getModeView();
         }
         
+        @Override
         public int getKind() {
             return abstractModeContainer.getKind();
         }
         
         // TopComponentDroppable>>
+        @Override
         public Shape getIndicationForLocation(Point location) {
             return abstractModeContainer.getIndicationForLocation(location);
         }
         
+        @Override
         public Object getConstraintForLocation(Point location) {
             return abstractModeContainer.getConstraintForLocation(location);
         }
         
+        @Override
         public Component getDropComponent() {
             return abstractModeContainer.getDropComponent();
         }
         
+        @Override
         public ViewElement getDropViewElement() {
             return abstractModeContainer.getDropModeView();
         }
         
-        public boolean canDrop(TopComponent transfer, Point location) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
             return abstractModeContainer.canDrop(transfer);
         }
         
-        public boolean supportsKind(int kind, TopComponent transfer) {
-            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
+            if( transfer.isModeTransfer() ) {
+                ModeView mv = getModeView();
+                Mode mode = WindowManagerImpl.getInstance().findMode( mv.getTopComponents().get( 0 ) );
+                if( mode.getName().equals( transfer.getMode().getName() ) )
+                    return false;
+            }
+            if(transfer.isAllowedToMoveAnywhere()) {
                 return true;
             }
             
-            boolean isNonEditor = kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
+            boolean isNonEditor = transfer.getKind() == Constants.MODE_KIND_VIEW || transfer.getKind() == Constants.MODE_KIND_SLIDING;
             boolean thisIsNonEditor = getKind() == Constants.MODE_KIND_VIEW || getKind() == Constants.MODE_KIND_SLIDING;
 
             return (isNonEditor == thisIsNonEditor);

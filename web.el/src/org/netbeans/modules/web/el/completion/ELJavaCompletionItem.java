@@ -50,16 +50,17 @@ import javax.lang.model.element.ExecutableElement;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
-import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.web.el.CompilationContext;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
@@ -76,38 +77,62 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
     private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/jsf_bean_16.png";//NOI18N
 
     private final String elementName;
-    private final Element javaElement;
     private final ELElement elElement;
-    private final ELTypeUtilities typeUtilities;
     private final ElementHandleAdapter adapter;
+    
+    private final String javaElementSimpleName;
+    private final String javaElementTypeName;
+    private final String javaElementParametersAsString;
+    private final List<String> javaElementParametersList;
+    private final boolean isMethod;
+    private final boolean isMethodWithParams;
 
-    public ELJavaCompletionItem(Element javaElement, ELElement elElement, ELTypeUtilities typeUtilities) {
-        this(javaElement, null, elElement, typeUtilities);
+
+    public ELJavaCompletionItem(CompilationContext info, Element javaElement, ELElement elElement) {
+        this(info, javaElement, null, elElement);
     }
     
-    public ELJavaCompletionItem(Element javaElement, String elementName, ELElement elElement, ELTypeUtilities typeUtilities) {
+    public ELJavaCompletionItem(CompilationContext info, Element javaElement, String elementName, ELElement elElement) {
         assert javaElement != null;
-        this.javaElement = javaElement;
         this.elElement = elElement;
-        this.typeUtilities = typeUtilities;
         this.elementName = elementName;
-        this.adapter = new ElementHandleAdapter();
+        
+        isMethod =  javaElement.getKind() == javax.lang.model.element.ElementKind.METHOD;
+        
+        javaElementSimpleName = javaElement.getSimpleName().toString();
+            
+        javaElementTypeName = ELTypeUtilities.getTypeNameFor(info, javaElement);
+        javaElementParametersAsString = isMethod 
+                ? ELTypeUtilities.getParametersAsString(info, (ExecutableElement) javaElement)
+                : null;
+        javaElementParametersList = isMethod
+                ? ELTypeUtilities.getParameterNames(info, (ExecutableElement) javaElement)
+                : Collections.<String>emptyList();
+        
+        isMethodWithParams = isMethod && !javaElementParametersList.isEmpty();
+        
+        adapter = new ElementHandleAdapter(info, javaElement);
+        
         setAnchorOffset(elElement.getOriginalOffset().getStart());
     }
 
     @Override
-    public ElementHandle getElement() {
+    public org.netbeans.modules.csl.api.ElementHandle getElement() {
         return adapter;
     }
 
     @Override
     public String getName() {
-        return adapter.getName();
+        return elementName != null ? elementName : RefactoringUtil.getPropertyName(javaElementSimpleName, true);
     }
-
+        
     @Override
     public ElementKind getKind() {
-        return adapter.getKind();
+        if(isPropertyMethod()) {
+            return ElementKind.PROPERTY;
+        } else {
+            return isMethod() ? ElementKind.METHOD : ElementKind.CLASS;
+        }
     }
     
     @Override
@@ -122,11 +147,11 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         formatter.appendText(getName());
         
         //do not add the method parameters for the is/get/set methods - properties
-        if(adapter.isMethod()) {
-            if(!adapter.isPropertyMethod()) {
-                if(adapter.isMethodWithParamaters()) {
+        if(isMethod()) {
+            if(!isPropertyMethod()) {
+                if(isMethodWithParamaters()) {
                     //method with params
-                    formatter.appendText(typeUtilities.getParametersAsString((ExecutableElement) javaElement));
+                    formatter.appendText(javaElementParametersAsString);
                 } else {
                     //w/o params, add empty () pair
                     formatter.appendText("()");
@@ -140,12 +165,12 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
-        return typeUtilities.getTypeNameFor(javaElement);
+        return javaElementTypeName;
     }
 
     @Override
     public ImageIcon getIcon() {
-        if (adapter.getKind() == ElementKind.CLASS) {
+        if (getKind() == ElementKind.CLASS) {
             return ImageUtilities.loadImageIcon(ICON_PATH, false);
         }
         return super.getIcon();
@@ -153,15 +178,15 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
     @Override
     public List<String> getInsertParams() {
-        if (!adapter.isMethod()) {
+        if (!isMethod()) {
             return null;
         }
-        if(adapter.isPropertyMethod()) { //no params for properties
+        if(isPropertyMethod()) { //no params for properties
             return null;
         }
         
-        return !adapter.isPropertyMethod() && adapter.isMethodWithParamaters() 
-                ? typeUtilities.getParameterNames((ExecutableElement) javaElement) :
+        return !isPropertyMethod() && isMethodWithParamaters() 
+                ? javaElementParametersList :
                 Collections.<String>singletonList(""); //add and empty paramater for non argument method calls
     }
 
@@ -169,9 +194,49 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
     public String[] getParamListDelimiters() {
         return new String[]{"(", ")"};
     }
+
+    private boolean isMethod() {
+        return isMethod;
+    }
+
+    private boolean isMethodWithParamaters() {
+        return isMethodWithParams;
+    }
+
+    private boolean isPropertyMethod() {
+        return isMethod() && !isMethodWithParamaters() && 
+                RefactoringUtil.isPropertyAccessor(javaElementSimpleName);
+    }
+
     
     final class ElementHandleAdapter extends ELElementHandle {
 
+        
+        private final String in;
+        private final ElementHandle elementHandle;
+        
+        public ElementHandleAdapter(CompilationContext info, Element javaElement) {
+            this.in = getIn(javaElement);
+            this.elementHandle = ElementHandle.create(javaElement);
+        }
+        
+        @Override
+        public String getName() {
+            return ELJavaCompletionItem.this.getName();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ELJavaCompletionItem.this.getKind();
+        }
+
+        private String getIn(Element javaElement) {
+            if (isMethod()) {
+                return javaElement.getEnclosingElement().getSimpleName().toString();
+            }
+            return javaElement.getSimpleName().toString();
+        }
+        
         @Override
         public FileObject getFileObject() {
             return elElement.getSnapshot().getSource().getFileObject();
@@ -179,30 +244,14 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getMimeType() {
-            return "text/java";
-        }
-
-        @Override
-        public String getName() {
-            return elementName != null ? elementName : RefactoringUtil.getPropertyName(javaElement.getSimpleName().toString(), true);
+            return "text/java"; //NOI18N
         }
             
         @Override
         public String getIn() {
-            if (isMethod()) {
-                return javaElement.getEnclosingElement().getSimpleName().toString();
-            }
-            return javaElement.getSimpleName().toString();
+            return in;
         }
 
-        @Override
-        public ElementKind getKind() {
-            if(isPropertyMethod()) {
-                return ElementKind.PROPERTY;
-            } else {
-                return isMethod() ? ElementKind.METHOD : ElementKind.CLASS;
-            }
-        }
 
         @Override
         public Set<Modifier> getModifiers() {
@@ -210,7 +259,7 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         }
 
         @Override
-        public boolean signatureEquals(ElementHandle handle) {
+        public boolean signatureEquals(org.netbeans.modules.csl.api.ElementHandle handle) {
             return getName().equals(handle.getName());
         }
 
@@ -219,28 +268,12 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
             return elElement.getOriginalOffset();
         }
 
-        public Element getOriginalElement() {
-            return javaElement;
-        }
-
-        private boolean isMethod() {
-            return javaElement.getKind() == javax.lang.model.element.ElementKind.METHOD;
-        }
-        
-        private boolean isMethodWithParamaters() {
-            return isMethod() && !typeUtilities.getParameterNames((ExecutableElement) javaElement).isEmpty();
-        }
-        
-        private boolean isPropertyMethod() {
-            return isMethod() && !isMethodWithParamaters() && 
-                    RefactoringUtil.isPropertyAccessor(javaElement.getSimpleName().toString());
-        }
-
         @Override
         String document(ParserResult info) {
             final String[] result = new String[1];
             try {
-                ClasspathInfo cp = ClasspathInfo.create(info.getSnapshot().getSource().getFileObject());
+                FileObject file = info.getSnapshot().getSource().getFileObject();
+                ClasspathInfo cp = ClasspathInfo.create(file);
                 JavaSource source = JavaSource.create(cp);
                 if (source == null) {
                     return null;
@@ -248,10 +281,12 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
                 source.runUserActionTask(new Task<CompilationController>() {
 
                     @Override
-                    public void run(CompilationController parameter) throws Exception {
-                        ElementJavadoc javadoc = ElementJavadoc.create(parameter, getOriginalElement());
+                    public void run(CompilationController info) throws Exception {
+                        Element element = elementHandle.resolve(info);
+                        ElementJavadoc javadoc = ElementJavadoc.create(info, element);
                         result[0] = javadoc.getText();
                     }
+                    
                 }, true);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

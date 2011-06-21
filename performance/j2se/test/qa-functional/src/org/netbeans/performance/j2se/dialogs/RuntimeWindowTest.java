@@ -44,6 +44,8 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
@@ -59,7 +61,9 @@ import org.netbeans.junit.NbModuleSuite;
  * @author  anebuzelsky@netbeans.org
  */
 public class RuntimeWindowTest extends PerformanceTestCase {
-
+    
+    private final String menupath = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
+                +"|"+Bundle.getStringTrimmed("org.netbeans.core.ide.Bundle", "CTL_ServicesTabAction");
     
     /** Creates a new instance of RuntimeWindow */
     public RuntimeWindowTest(String testName) {
@@ -89,7 +93,7 @@ public class RuntimeWindowTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open() {
-        new RuntimeViewAction().performMenu();
+        MainWindowOperator.getDefault().menuBar().pushMenu(menupath,"|");
         return new RuntimeTabOperator();
     }
     

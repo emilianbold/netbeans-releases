@@ -138,12 +138,12 @@ public class LibrariesStorageTest extends NbTestCase {
         assertEquals("Libraries count",2,libs.length);
         LibraryImplementation impl = libs[0].getName().equals("Library2") ? libs[0] : libs[1];
 
-        assertEquals("MyName", LibrariesCustomizer.getLocalizedName(impl));
+        assertEquals("MyName", Util.getLocalizedName(impl));
 
         LibrariesModel model = new LibrariesModel();
         ProxyLibraryImplementation proxy = ProxyLibraryImplementation.createProxy(impl, model);
 
-        assertEquals("MyName", LibrariesCustomizer.getLocalizedName(proxy));
+        assertEquals("MyName", Util.getLocalizedName(proxy));
     }
 
     public void testAddLibrary() throws Exception {

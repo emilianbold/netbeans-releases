@@ -192,6 +192,27 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         refreshComponents();
     }
 
+    public MultiDiffPanelController (File file, String rev1, String rev2) {
+        context = null;
+        this.currentFile = file;
+        panel = new MultiDiffPanel();
+        diffViewPanel = new PlaceholderPanel();
+        diffViewPanel.setComponent(getInfoPanelLoading());
+        replaceVerticalSplitPane(diffViewPanel);
+        initToolbarButtons();
+        initNextPrevActions();
+        for (JComponent c : new JComponent[] { panel.tgbHeadVsIndex, panel.tgbHeadVsWorking, panel.tgbIndexVsWorking }) {
+            c.setVisible(false);
+        }
+        // mimics refreshSetups()
+        Map<File, Setup> localSetups = Collections.singletonMap(currentFile, new Setup(file, rev1, rev2));
+        setSetups(localSetups, Collections.<File, EditorCookie>emptyMap());
+        setDiffIndex(file, 0, false);
+        dpt = new DiffPrepareTask(setups.values().toArray(new Setup[setups.size()]));
+        prepareTask = Utils.createTask(dpt);
+        prepareTask.schedule(0);
+    }
+
     private void replaceVerticalSplitPane(JComponent replacement) {
         panel.removeAll();
         panel.setLayout(new BorderLayout());
@@ -316,7 +337,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     }
 
     void focus () {
-        fileTable.focus();
+        if (fileTable != null) {
+            fileTable.focus();
+        }
     }
 
     private void displayDiffView() {

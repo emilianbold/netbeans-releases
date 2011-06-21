@@ -44,6 +44,10 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
@@ -82,7 +86,6 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionLayers;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
 import org.netbeans.modules.cnd.debugger.common2.utils.ListMap;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 
@@ -132,8 +135,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     // turned on when killEngine is issued
     protected boolean postedKillEngine = false;
 
-    protected FileMapper fmap = FileMapper.getDefault();
-
     protected Location visitedLocation = null;
 
     protected final DebuggerAnnotation visitMarker;
@@ -145,17 +146,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     protected ListMap<WatchVariable> watches = new ListMap<WatchVariable>();
 
     // local stuff
-    protected ModelChangeDelegator localUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator localUpdater = new ModelChangeDelegator();
     private boolean showAutos = false;
     protected final ArrayList<Variable> autos = new ArrayList<Variable>();
 
     // stack stuff
     protected Frame[] guiStackFrames = null;
     protected Frame currentFrame;
-    protected ModelChangeDelegator stackUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator stackUpdater = new ModelChangeDelegator();
 
     // thread stuff
-    protected ModelChangeDelegator threadUpdater = new ModelChangeDelegator();
+    protected final ModelChangeDelegator threadUpdater = new ModelChangeDelegator();
 
     // assembly level stuff
     private boolean srcRequested = true;
@@ -411,6 +412,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         //System.out.println("STATE CHANGED @@@@@@@@@ " + state);
         if (isCurrent()) {
             updateActions();
+	    invalidateSessionData(); // CR 6993279
         } else {
             // When user switches sessions by hand then we'll adjust
             // the actions.
@@ -853,7 +855,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             public void run() {
                 if (isSrcRequested() && haveSource()) {
                     // Locations should already be in local path form.
-		    final String mFileName = fmap.engineToWorld(getVisitedLocation().src());
+		    final String mFileName = fmap().engineToWorld(getVisitedLocation().src());
 		    Line l = EditorBridge.getLine(mFileName, getVisitedLocation().line(), 
                             NativeDebuggerImpl.this);
 		    if (l != null) {
@@ -928,10 +930,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	updateLocation(true, ShowMode.AUTO);
     }
 
-    public FileMapper fmap() {
-	return fmap;
-    }
-    
     public void setSrcOODMessage(String msg) {
         if (msg != null && !srcOOD) {
             // If srcOOD is not set it's quite likley that this is a
@@ -1652,5 +1650,24 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     public Variable[] getAutos() {
 	Variable array[] = autos.toArray(new Variable[autos.size()]);
 	return array;
+    }
+
+    public void copyStack() {
+        if (guiStackFrames == null)
+	    return;
+        StringBuilder frameStr = new StringBuilder(guiStackFrames.length);
+        for (int fx = 0; fx < guiStackFrames.length; fx++) {
+	    frameStr.append(guiStackFrames[fx].getLocationName());
+	    frameStr.append('\n');
+	}
+	Clipboard clipboard = org.openide.util.Lookup.getDefault().lookup(Clipboard.class);
+        if (clipboard == null) {
+            clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        }
+        Transferable transferableText =
+                new StringSelection(frameStr.toString());
+        clipboard.setContents(
+                transferableText,
+                null);
     }
 }

@@ -49,6 +49,63 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="CE.closeLast.boolean">
+        <api name="text"/>
+        <summary>CloneableEditor.closeLast</summary>
+        <version major="6" minor="39"/>
+        <date day="1" month="6" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no"
+          deprecation="yes" modification="no" semantic="compatible" 
+        />
+        <description>
+            <p>
+                <code>CloneableEditor</code> has a new utility method
+                <code>closeLast</code>.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditor"/>
+        <issue number="196810"/>
+    </change>
+    <change id="CE.associateLookup">
+        <api name="text"/>
+        <summary>CloneableEditor(associateLookup)</summary>
+        <version major="6" minor="39"/>
+        <date day="1" month="6" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no"
+          deprecation="yes" modification="no" semantic="compatible" 
+        />
+        <description>
+            <p>
+                <code>CloneableEditor</code> offers new constructor
+                that will reuse the lookup provided by its 
+                <a href="@TOP@/org/openide/text/CloneableEditorSupport.html">CloneableEditorSupport</a>.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditor"/>
+        <issue number="196810"/>
+    </change>
+    <change id="initializeBySupport">
+        <api name="text"/>
+        <summary>CloneableEditor.initializeBySupport</summary>
+        <version major="6" minor="39"/>
+        <date day="1" month="6" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no"
+          deprecation="yes" modification="no" semantic="compatible" 
+        />
+        <description>
+            <p>
+                Subclasses of <code>CloneableEditor</code> can manually request own 
+                initialization by calling its
+                <a href="@TOP@/org/openide/text/CloneableEditor.html#initializeBySupport()">initializeBySupport</a>
+                method.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditor"/>
+        <issue number="196810"/>
+    </change>
     <change id="NbDocument-Annotatable">
         <api name="text"/>
         <summary>NbDocument.Annotatable threading changes</summary>

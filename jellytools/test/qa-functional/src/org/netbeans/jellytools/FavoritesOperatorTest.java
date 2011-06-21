@@ -53,16 +53,18 @@ import junit.framework.Test;
 public class FavoritesOperatorTest extends JellyTestCase {
 
     private static FavoritesOperator favoritesOper;
+    public static String[] tests = {
+        "testInvoke",
+        "testTree",
+        "testVerify"
+    };
 
     public FavoritesOperatorTest(java.lang.String testName) {
         super(testName);
     }
 
     public static Test suite() {
-        return createModuleTest(FavoritesOperatorTest.class,
-                "testInvoke",
-                "testTree",
-                "testVerify");
+        return createModuleTest(FavoritesOperatorTest.class, tests);
     }
 
     /** Print out test name. */

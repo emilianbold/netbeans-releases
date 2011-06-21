@@ -66,7 +66,7 @@ public class CLIHandlerTest extends NbTestCase {
     public CLIHandlerTest(String name) {
         super(name);
     }
-
+    
     protected @Override void setUp() throws Exception {
         LOG = Logger.getLogger("TEST-" + getName());
         

@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.java.hints.jackpot.spi;
 
-import com.sun.source.tree.Tree.Kind;
 import java.util.Collections;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 
@@ -55,9 +55,10 @@ import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 public class HintDescriptionFactory {
 
     private       HintMetadata metadata;
-    private       Kind triggerKind;
-    private       PatternDescription triggerPattern;
+    private       Trigger trigger;
     private       Worker worker;
+    private       AdditionalQueryConstraints additionalConstraints;
+    private       String hintText;
     private       boolean finished;
 
     private HintDescriptionFactory() {
@@ -72,21 +73,12 @@ public class HintDescriptionFactory {
         return this;
     }
 
-    public HintDescriptionFactory setTriggerKind(Kind triggerKind) {
-        if (this.triggerPattern != null) {
-            throw new IllegalStateException(this.triggerPattern.getPattern());
+    public HintDescriptionFactory setTrigger(Trigger trigger) {
+        if (this.trigger != null) {
+            throw new IllegalStateException(this.trigger.toString());
         }
 
-        this.triggerKind = triggerKind;
-        return this;
-    }
-
-    public HintDescriptionFactory setTriggerPattern(PatternDescription triggerPattern) {
-        if (this.triggerKind != null) {
-            throw new IllegalStateException(this.triggerKind.name());
-        }
-        
-        this.triggerPattern = triggerPattern;
+        this.trigger = trigger;
         return this;
     }
 
@@ -95,15 +87,24 @@ public class HintDescriptionFactory {
         return this;
     }
 
+    public HintDescriptionFactory setAdditionalConstraints(AdditionalQueryConstraints additionalConstraints) {
+        this.additionalConstraints = additionalConstraints;
+        return this;
+    }
+
+    public HintDescriptionFactory setHintText(@NonNull String hintText) {
+        this.hintText = hintText;
+        return this;
+    }
+
     public HintDescription produce() {
         if (metadata == null) {
             metadata = new HintMetadata("no-id", "", "", "", true, HintMetadata.Kind.HINT_NON_GUI, HintSeverity.WARNING, null, Collections.<String>emptyList());
         }
-        if (this.triggerKind == null) {
-            return HintDescription.create(metadata, triggerPattern, worker);
-        } else {
-            return HintDescription.create(metadata, triggerKind, worker);
+        if (this.additionalConstraints == null) {
+            this.additionalConstraints = AdditionalQueryConstraints.empty();
         }
+        return HintDescription.create(metadata, trigger, worker, additionalConstraints, hintText);
     }
     
 }

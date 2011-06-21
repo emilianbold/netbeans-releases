@@ -114,6 +114,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
         // increase time to wait
         outputTabOperator.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         // wait build is finished
+        MainWindowOperator.getDefault().waitStatusText("Finished building SampleProject (compile-single).");
         outputTabOperator.waitText("BUILD SUCCESSFUL");
     }
 

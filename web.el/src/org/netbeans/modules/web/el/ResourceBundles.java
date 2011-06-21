@@ -62,6 +62,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -86,7 +87,10 @@ public final class ResourceBundles {
 
     private final WebModule webModule;
     private final Project project;
-    private List<String> bundles;
+    private List<ResourceBundle> bundles;
+    /* bundle variable name to ResourceBundle map */
+    private Map<String, ResourceBundle> bundleVar2BundleMap = new HashMap<String, ResourceBundle>();
+    /* bundle base name to java.util.ResourceBundle map */
     private Map<String, java.util.ResourceBundle> bundlesMap;
 
     private ResourceBundles(WebModule webModule, Project project) {
@@ -119,8 +123,8 @@ public final class ResourceBundles {
      * @return
      */
     public boolean isResourceBundleIdentifier(String identifier) {
-        for (String bundle : getBundles()) {
-            if (bundle.equals(identifier)) {
+        for (ResourceBundle bundle : getBundles()) {
+            if (bundle.getVar().equals(identifier)) {
                 return true;
             }
         }
@@ -209,11 +213,12 @@ public final class ResourceBundles {
 
     /**
      * Gets the entries in the bundle identified by {@code bundleName}.
-     * @param bundleName
+     * @param bundleVar
      * @return
      */
-    public Map<String,String> getEntries(String bundleName) {
-        java.util.ResourceBundle resourceBundle = getBundlesMap().get(bundleName);
+    public Map<String,String> getEntries(String bundleVar) {
+        ResourceBundle bundle = bundleVar2BundleMap.get(bundleVar);
+        java.util.ResourceBundle resourceBundle = getBundlesMap().get(bundle.getBaseName());
         if (resourceBundle == null) {
             return Collections.emptyMap();
         }
@@ -229,7 +234,7 @@ public final class ResourceBundles {
      * Gets the base names of the defined bundles (such as {@code i18n}.
      * @return a list of the base names; never {@code null}.
      */
-    public List<String> getBundles() {
+    public List<ResourceBundle> getBundles() {
         if (bundles == null) {
             bundles = initJSFResourceBundles();
         }
@@ -242,8 +247,13 @@ public final class ResourceBundles {
      * @param webModule
      * @return
      */
-    private List<String> initJSFResourceBundles() {
-        return webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase()) : Collections.<String>emptyList();
+    private List<ResourceBundle> initJSFResourceBundles() {
+        List<ResourceBundle> foundBundles = webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase()) : Collections.<ResourceBundle>emptyList();
+        //make the bundle var to bundle 
+        for(ResourceBundle b : foundBundles) {
+            bundleVar2BundleMap.put(b.getVar(), b);
+        }
+        return foundBundles;
     }
      
     private Map<String, java.util.ResourceBundle> getBundlesMap() {
@@ -267,7 +277,8 @@ public final class ResourceBundles {
         }
 
         SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (String bundleFile : getBundles()) {
+        for (ResourceBundle bundle : getBundles()) {
+            String bundleFile = bundle.getBaseName();
             for (SourceGroup sourceGroup : sourceGroups) {
                 FileObject rootFolder = sourceGroup.getRootFolder();
 

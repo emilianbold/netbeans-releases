@@ -13,6 +13,7 @@ class Https_Institution_Get_Recruiters extends Subject implements IBuilder, IXHT
      * @var string
      */
     private $atom = '';
+
     /**
      * Holds mode in which profile is opened
      *

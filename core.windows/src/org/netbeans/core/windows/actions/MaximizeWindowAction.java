@@ -171,7 +171,7 @@ public class MaximizeWindowAction extends AbstractAction {
         ModeImpl activeMode = (ModeImpl)wm.findMode(active);
         if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)) {
             String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
-            putValue(Action.NAME, (isPopup ? Actions.cutAmpersand(label) : label));
+            putValue(Action.NAME, label);
             setEnabled(false);
             return;
         }
@@ -192,7 +192,7 @@ public class MaximizeWindowAction extends AbstractAction {
         } else {
             label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction");
         }
-        putValue(Action.NAME, (isPopup ? Actions.cutAmpersand(label) : label));
+        putValue(Action.NAME, label);
         
         setEnabled(activeMode != null /*&& activeMode.getKind() != Constants.MODE_KIND_SLIDING*/);
     }

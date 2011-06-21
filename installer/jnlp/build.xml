@@ -30,7 +30,7 @@ All Rights Reserved.
     <property name="allmodules" value="${nb.cluster.platform}" />
     
     
-    <taskdef name="moduleinfo" classpath="${nb_all}/nbbuild/nbantext.jar" classname="org.netbeans.nbbuild.ModuleInfo" />
+    <taskdef name="moduleinfo" classpath="${nb_all}/nbbuild/build/nbantext.jar" classname="org.netbeans.nbbuild.ModuleInfo" />
     
     <target name="compile">
         <delete file="src/META-INF/netbeans-location.properties"/>
@@ -189,7 +189,7 @@ All Rights Reserved.
     </path>
     
     <target name="jars" depends="compile">
-        <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="${nb_all}/nbbuild/build/nbantext.jar"/>
         
         <repeat values="${allmodules}" name="maindir" target="buildjar"/>
         <mkdir dir="jars"/>

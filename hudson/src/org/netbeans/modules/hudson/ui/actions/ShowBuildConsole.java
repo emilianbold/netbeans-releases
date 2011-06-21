@@ -54,9 +54,11 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -108,6 +110,7 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
         String urlPrefix = url + "progressiveLog?start="; // NOI18N
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
+        boolean running = job.getLastBuild() > job.getLastCompletedBuild(); // XXX should also check that this is in fact the current build
         try {
             while (true) {
                 LOG.log(Level.FINE, "{0} polling", url);
@@ -140,6 +143,13 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
                 }
                 if (!moreData) {
                     LOG.log(Level.FINE, "{0} EOF", url);
+                    if (running) {
+                        LOG.fine("was running, will resynchronize");
+                        HudsonInstance instance = job.getInstance();
+                        if (instance instanceof HudsonInstanceImpl) {
+                            ((HudsonInstanceImpl) instance).synchronize();
+                        }
+                    }
                     break;
                 }
                 try {

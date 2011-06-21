@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.discovery.projectimport;
 
 import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import java.beans.PropertyChangeEvent;
@@ -302,6 +302,7 @@ public class ImportProject implements PropertyChangeListener {
             buildResult = CndPathUtilitities.normalizeSlashes(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
+        extConf.getProfile().setRunDirectory(workingDirRel);        
         // Include directories
         if (includeDirectories != null && includeDirectories.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(includeDirectories, ";"); // NOI18N

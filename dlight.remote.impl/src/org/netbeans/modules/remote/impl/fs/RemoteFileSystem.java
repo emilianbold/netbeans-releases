@@ -326,6 +326,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (parent != null) {
             if (attrName.equals(READONLY_ATTRIBUTES)) {
                 return Boolean.FALSE;
+            } else if (attrName.equals("isRemoteAndSlow")) { // NOI18N
+                return Boolean.TRUE;
             } else if (attrName.equals("FileSystem.rootPath")) { //NOI18N
                 return this.getRoot().getPath();
             } else if (attrName.equals("java.io.File")) { //NOI18N
@@ -356,6 +358,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                     aKey = aKey.substring(prefix.length(),aKey.length()-1);
                     res.add(aKey);
                 }
+            }
+            res.add("isRemoteAndSlow"); // NOI18N
+            if (RemoteFileObjectBase.RETURN_JAVA_IO_FILE) {
+                res.add("java.io.File");// NOI18N
             }
             return Collections.enumeration(res);
         }

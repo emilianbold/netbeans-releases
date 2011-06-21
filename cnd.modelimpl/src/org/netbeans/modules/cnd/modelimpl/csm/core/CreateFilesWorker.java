@@ -176,6 +176,10 @@ final class CreateFilesWorker {
                 return false;
             }
             if (removedFiles.contains(nativeFileItem)) {
+                FileImpl file = project.getFile(nativeFileItem.getAbsolutePath(), true);
+                if (file != null) {
+                    project.removeFile(nativeFileItem.getAbsolutePath());
+                }
                 return true;
             }
             assert (nativeFileItem.getFileObject() != null) : "native file item must have valid File object";
