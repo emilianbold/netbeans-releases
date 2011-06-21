@@ -75,6 +75,8 @@ public class Update implements PropertyChangeListener {
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_UpdateForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_UpdateForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSN_UpdateForm_Action_Cancel")); // NOI18N
+        okButton.setEnabled(false);
+        panel.addPropertyChangeListener(this);
     } 
     
     public boolean showDialog() {
@@ -97,16 +99,17 @@ public class Update implements PropertyChangeListener {
         return ret;       
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(okButton != null) {
-            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
+        if (okButton != null && UpdatePanel.PROP_VALID.equals(evt.getPropertyName())) {
+            boolean valid = (Boolean) evt.getNewValue();
             okButton.setEnabled(valid);
         }       
     }
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision()[0];
+        return panel.getSelectedRevision().getRevisionNumber();
     }
     public boolean isForcedUpdateRequested() {
         if (panel == null) return false;

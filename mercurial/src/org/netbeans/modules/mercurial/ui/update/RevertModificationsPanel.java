@@ -85,7 +85,7 @@ public class RevertModificationsPanel extends ChangesetPickerPanel {
         doBackupChxBox.setSelected(doBackup);
         JPanel optionsPanel = new JPanel(new BorderLayout());
         optionsPanel.add(doBackupChxBox, BorderLayout.NORTH);
-        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(10, 12, 10, 12));
+        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0));
         setOptionsPanel(optionsPanel, null);
     }
 }

@@ -51,6 +51,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import java.io.File;
+import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 
 /**
  *
@@ -79,6 +80,8 @@ public class RevertModifications implements PropertyChangeListener {
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSN_RevertForm_Action_Cancel")); // NOI18N
+        okButton.setEnabled(false);
+        panel.addPropertyChangeListener(this);
     } 
     
     public boolean showDialog() {
@@ -118,7 +121,7 @@ public class RevertModifications implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(okButton != null) {
+        if (ChangesetPickerPanel.PROP_VALID.equals(evt.getPropertyName()) && okButton != null) {
             boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
             okButton.setEnabled(valid);
         }       
@@ -126,7 +129,7 @@ public class RevertModifications implements PropertyChangeListener {
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision()[0];
+        return panel.getSelectedRevision().getRevisionNumber();
     }
     
     public boolean isBackupRequested() {
