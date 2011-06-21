@@ -464,15 +464,27 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         @Override
         public void perform () {
             try {
-                DefaultListModel targetsModel = new DefaultListModel();
+                final DefaultListModel targetsModel = new DefaultListModel();
                 final RepositoryRevision displayedRevision = getDisplayedRevision();
                 if (displayedRevision == null) {
-                    targetsModel.addElement(TIP);
+                    if (acceptSelection(NO_REVISION)) {
+                        targetsModel.addElement(NO_REVISION);
+                    }
+                    if (acceptSelection(TIP)) {
+                        targetsModel.addElement(TIP);
+                    }
                 } else {
                     targetsModel.addElement(displayedRevision.getLog());
                 }
-                revisionsComboBox.setModel(targetsModel);
-                Thread.interrupted();  // clear interupted status
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        revisionsComboBox.setModel(targetsModel);
+                        if (!targetsModel.isEmpty()) {
+                            revisionsComboBox.setSelectedIndex(0);
+                        }
+                    }
+                });
                 if (displayedRevision == null) {
                     refreshRevisions(this);
                 } else {
