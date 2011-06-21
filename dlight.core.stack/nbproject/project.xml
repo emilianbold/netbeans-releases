@@ -101,7 +101,6 @@
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
-                <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
