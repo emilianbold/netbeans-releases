@@ -640,25 +640,9 @@ public final class LayerBuilder {
             }
             String piece = pieces[pieces.length - 1];
             org.w3c.dom.Element file = find(e, piece, "file|folder");
-            if (folder) {
-                if (file == null) {
-                    file = (org.w3c.dom.Element) e.appendChild(doc.createElement("folder"));
-                }
-            } else {
-                if (file != null) {
-                    e.removeChild(file);
-                }
-                file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
-            }
-            file.setAttribute("name", piece);
-            NodeList oldComments = file.getChildNodes();
-            for (int i = 0; i < oldComments.getLength();) {
-                Node node = oldComments.item(i);
-                if (node.getNodeType() == Node.COMMENT_NODE) {
-                    file.removeChild(node);
-                } else {
-                    i++;
-                }
+            if (file == null) {
+                file = (org.w3c.dom.Element) e.appendChild(doc.createElement(folder ? "folder" : "file"));
+                file.setAttribute("name", piece);
             }
             if (originatingElement != null) {
                 // Embed comment in generated-layer.xml for easy navigation back to the annotation.
@@ -675,7 +659,18 @@ public final class LayerBuilder {
                 default:
                     name = originatingElement.toString();
                 }
-                file.appendChild(doc.createComment(name));
+                boolean addComment = true;
+                NodeList oldComments = file.getChildNodes();
+                for (int i = 0; i < oldComments.getLength(); i++) {
+                    Node node = oldComments.item(i);
+                    if (node.getNodeType() == Node.COMMENT_NODE && node.getNodeValue().equals(name)) {
+                        addComment = false;
+                        break;
+                    }
+                }
+                if (addComment) {
+                    file.appendChild(doc.createComment(name));
+                }
             }
             for (Map.Entry<String,String[]> entry : attrs.entrySet()) {
                 org.w3c.dom.Element former = find(file, entry.getKey(), "attr");
@@ -689,6 +684,15 @@ public final class LayerBuilder {
             if (url != null) {
                 file.setAttribute("url", url);
             } else if (contents != null) {
+                NodeList oldContents = file.getChildNodes();
+                for (int i = 0; i < oldContents.getLength();) {
+                    Node node = oldContents.item(i);
+                    if (node.getNodeType() == Node.CDATA_SECTION_NODE) {
+                        file.removeChild(node);
+                    } else {
+                        i++;
+                    }
+                }
                 file.appendChild(doc.createCDATASection(contents));
             }
             return LayerBuilder.this;
