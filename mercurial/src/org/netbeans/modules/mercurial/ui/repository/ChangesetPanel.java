@@ -37,12 +37,15 @@ public class ChangesetPanel extends javax.swing.JPanel {
 
     public void setDescription(String desc){
         jTextArea1.setText(desc);
+        jTextArea1.setCaretPosition(0);
     }
     public void setAuthor(String author){
         jTextField2.setText(author);
+        jTextField2.setCaretPosition(0);
     }
     public void setDate(String date){
         jTextField3.setText(date);
+        jTextField3.setCaretPosition(0);
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -82,7 +85,7 @@ public class ChangesetPanel extends javax.swing.JPanel {
         jScrollPane1.setBorder(null);
 
         jTextArea1.setBackground(jTextField2.getBackground());
-        jTextArea1.setColumns(20);
+        jTextArea1.setColumns(1);
         jTextArea1.setEditable(false);
         jTextArea1.setForeground(jTextField2.getForeground());
         jTextArea1.setRows(1);

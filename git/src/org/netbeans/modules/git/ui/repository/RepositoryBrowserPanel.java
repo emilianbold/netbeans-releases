@@ -591,7 +591,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private BranchesTopChildren (File repository) {
             this.repository = repository;
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
-            info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            if (info == null) {
+                LOG.log(Level.INFO, "BranchesTopChildren() : Null info for {0}", repository); //NOI18N
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            }
         }
 
         @Override

@@ -82,6 +82,8 @@ public class Backout implements PropertyChangeListener {
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(Backout.class, "CTL_BackoutForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Backout.class, "ACSD_BackoutForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(Backout.class, "ACSN_BackoutForm_Action_Cancel")); // NOI18N
+        okButton.setEnabled(false);
+        panel.addPropertyChangeListener(this);
     } 
     
     public boolean showDialog() {
@@ -101,16 +103,17 @@ public class Backout implements PropertyChangeListener {
         return ret;       
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(okButton != null) {
-            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
+        if (okButton != null && StripPanel.PROP_VALID.equals(evt.getPropertyName())) {
+            boolean valid = (Boolean) evt.getNewValue();
             okButton.setEnabled(valid);
         }       
     }
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision()[0];
+        return panel.getSelectedRevision().getRevisionNumber();
     }
     public String getCommitMessage() {
         if (panel == null) return null;
