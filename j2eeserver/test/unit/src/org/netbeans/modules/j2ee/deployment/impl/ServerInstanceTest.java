@@ -72,7 +72,7 @@ public class ServerInstanceTest extends ServerRegistryTestBase {
         // setup
         ServerRegistry registry = ServerRegistry.getInstance();
         String url = "fooservice:testStartStopInstance";
-        registry.addInstance(url, "user", "password", "TestInstance", true, null);
+        registry.addInstance(url, "user", "password", "TestInstance", true, false, null);
         ServerInstance instance = registry.getServerInstance(url);
         ServerTarget target = instance.getServerTarget("Target 1");
 
