@@ -141,16 +141,19 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         return new WinVistaViewTabDisplayerUI((TabDisplayer)c);
     }
      
+    @Override
     public void installUI (JComponent c) {
         super.installUI(c);
         initColors();
         c.setOpaque(true);
     }
 
+    @Override
     protected AbstractViewTabDisplayerUI.Controller createController() {
         return new OwnController();
     }
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
@@ -160,6 +163,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         return prefSize;
     }
 
+    @Override
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
@@ -189,6 +193,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
                 HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
+    @Override
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
         boolean isFirst = index == 0;
@@ -227,6 +232,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         g.translate(-x, -y);
     }
 
+    @Override
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
         // shrink rectangle - don't affect border and tab header
@@ -262,6 +268,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
     /**
      * Override to bold font
      */
+    @Override
     protected Font getTxtFont() {
         Font font = super.getTxtFont();
         if (!font.isBold()) {
@@ -363,6 +370,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         }
     }
 
+    @Override
     public Icon getButtonIcon(int buttonId, int buttonState) {
         Icon res = null;
         initIcons();
@@ -373,6 +381,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         return res;
     }
 
+    @Override
     public void postTabAction(TabActionEvent e) {
         super.postTabAction(e);
         if( TabDisplayer.COMMAND_MAXIMIZE.equals( e.getActionCommand() ) ) {
@@ -403,6 +412,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
          * Triggers visual tab header change when mouse enters/leaves tab in
          * advance to superclass functionality.
          */
+        @Override
         public void mouseMoved(MouseEvent e) {
             super.mouseMoved(e);
             Point pos = e.getPoint();
@@ -412,6 +422,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         /**
          * Resets tab header in advance to superclass functionality
          */
+        @Override
         public void mouseExited(MouseEvent e) {
             super.mouseExited(e);
             if( !inControlButtonsRect(e.getPoint())) {
