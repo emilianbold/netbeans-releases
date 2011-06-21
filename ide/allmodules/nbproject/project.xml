@@ -168,7 +168,6 @@ made subject to such option by the copyright holder.
                 <project>../../dlight.core.stack</project>
                 <project>../../dlight.core.ui</project>
                 <project>../../dlight.cpu</project>
-                <project>../../dlight.db.derby</project>
                 <project>../../dlight.db.h2</project>
                 <project>../../dlight.dtrace</project>
                 <project>../../dlight.extras</project>
