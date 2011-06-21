@@ -17,17 +17,18 @@ Use is subject to license terms.  *-->
         For working with remote web services, setting a proxy can be important in one or more of the following areas:
 
         <ul>
-            <li>When retrieving the WSDL file in the Web Service Client wizard.
-            <li>When using the IDE to test the web service.
-            <li>When deploying to the Oracle GlassFish Open Source Edition Server.
-            <li>When deploying to the JBoss Server.
-            <li>When deploying to the Tomcat Web Server.
-            <li>When deploying a web service client in a Java application.
+            <li>When retrieving the WSDL file in the Web Service Client wizard.</li>
+            <li>When using the IDE to test the web service.</li>
+            <li>When deploying to the Oracle GlassFish Open Source Edition Server.</li>
+            <li>When deploying to the Oracle WebLogic Server.</li>
+            <li>When deploying to the JBoss Server.</li>
+            <li>When deploying to the Tomcat Web Server.</li>
+                
+            <li>When deploying a web service client in a Java application.</li>
         </ul>
 
         <p>The proxy settings for each of the situations above are described below.
-
-        <p><b>To retrieve the WSDL file in the Web Service Client wizard:</b>
+        <h3>Setting Proxy When Retrieving WSDL Files in the Web Service Client Wizard</h3>
         <p>Typically, an error such as the following is displayed in the Web Service Client wizard when the proxy settings
         for retrieving a WSDL file have
         not been set correctly:
@@ -38,8 +39,7 @@ Use is subject to license terms.  *-->
         <li>In the HTTP Proxy Settings window, set the proxy host and port number.</ol>
         <p>The changes take effect when you click OK.
 
-
-        <p><b>To use the IDE to test the web service:</b>
+        <h3>Setting Proxy When Testing a Web Service</h3>
         <p>Typically, an error such as the following is returned when the proxy settings
         for testing a web service from the IDE have
         not been set correctly:
@@ -50,15 +50,15 @@ Use is subject to license terms.  *-->
         <li>In the Options window, set the proxy host and port number.</ol>
         <p>The changes take effect when you exit the Options window.
 
-        <p><b>To set a proxy on the GlassFish Server:</b>
+        <h3>Setting a Proxy on the GlassFish Server</h3>
         <p>Typically, an error such as the following is returned when the proxy settings
         for a web service or web service client deployed to the GlassFish Server have
-        not been set correctly:
-        <p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
-        <p>Do the following to check and set the proxy:
+        not been set correctly:</p>
+        <p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt></p>
+        <p>Do the following to check and set the proxy:</p>
         <ol>
-        <li>Open the Services window (Ctrl-5).
-        <li>If the GlassFish Server is not started, start it.
+            <li>Open the Services window (Ctrl-5).</li>
+            <li>If the GlassFish Server is not started, start it.</li>
         <li>Right-click the GlassFish
         Server node and select View Admin Console. The Administration Console opens in a browser.</li>
         <li>In the left side tree menu, go to Configurations &gt; server-config &gt; JVM settings.
@@ -71,9 +71,29 @@ Use is subject to license terms.  *-->
             <br><tt>-Dhttp.proxyPort=<i>your.proxy.port.number</i></tt></li>
         <li>Click Save.</li>
         </ol>
-        <p>Stop and restart the server for the new proxy settings to take effect.
+        <p>Stop and restart the server for the new proxy settings to take effect.</p>
+        <h3>Setting a Proxy on the WebLogic Server</h3>
+           <p>Typically, an error such as the following is returned when the proxy settings
+        for a web service or web service client deployed to the WebLogic Server have
+        not been set correctly:</p>
+        <p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt></p>
+        <p>Do the following to check and set the proxy:</p>
+        <ol>
+            <li>Open the Services window (Ctrl-5).</li>
+            <li>If the WebLogic Server is not started, start it.</li>
+        <li>Right-click the WebLogic
+        Server node and select View Admin Console. The Administration Console opens in a browser.</li> 
+        <li>Log in. The main page of the Admin Console opens.</li>
+        <li>Go to Environment &gt; Servers. A table of servers appears.</li>
+        <li>In the table of servers, click the name of the server for which you want to set a proxy. The Settings page for that server appears.</li>
+        <li>Select the Configuration tab and the Server Start sub-tab. A page opens for configuring Node Manager startup settings.</li>
+        <li>In the Arguments field, type or paste in the following two arguments, separated by a space:
+            <pre>-Dhttp.proxyHost=<i>your.proxy.host</i> -Dhttp.proxyPort=<i>your.proxy.port.number</i></pre></li>
+        <li>Click Save.</li>
+        </ol>
+            
 
-        <p><b>To deploy to the JBoss Server:</b>
+        <h3>Setting a Proxy on the JBoss Server</h3>
         <p>Typically, <i>nothing</i> is displayed in the browser when the proxy settings
         for a web service or web service client deployed to JBoss have
         not been set correctly.
@@ -85,7 +105,7 @@ Use is subject to license terms.  *-->
         <p>Stop and then restart the server for the new proxy settings to take effect.
 
 
-        <p><b>To deploy to the Tomcat Web Server:</b>
+        <h3>Setting a Proxy on the Tomcat Web Server</h3>
         <p>Typically, <i>nothing</i> is displayed in the browser when the proxy settings
         for a web service or web service client deployed to JBoss have
         not been set correctly.
@@ -99,7 +119,7 @@ Use is subject to license terms.  *-->
         <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</i></tt></ol>
         <p>Start the server for the new proxy settings to take effect.
   
-        <p><b>To deploy a web service client in a Java application:</b>
+        <h3>Setting a Proxy When Deploying a Web Service Client in a Java Application</h3>
 
         <p>Typically, an error such as the following is returned when the proxy settings
         for a web service or web service client deployed from a Java application have
