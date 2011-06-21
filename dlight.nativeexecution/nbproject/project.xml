@@ -188,6 +188,7 @@
                 <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.analytics.utils.ui</friend>
+                <friend>com.sun.tools.binary.audit.previse</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
