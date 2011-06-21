@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -96,7 +97,8 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
             return null;
-        }        
+        }       
+        Project fallbackProject = null;
         String path = fo.getPath();
         for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
             Provider project = nativeProject.getProject();
@@ -109,29 +111,49 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                     MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
                     if (descriptor != null) {
                         boolean mine = false;
+                        boolean rememberAsFolderOwnerCandidate = false;
+                        FileObject folder = null;                        
                         if (fo.isData()) {
+                            // look for item directly using unix-like path as expected by find*Item methods
                             mine = descriptor.findProjectItemByPath(path) != null || descriptor.findExternalItemByPath(path) != null;
+                            if (!mine) {
+                                // not existing file can belong to existing folder of this project
+                                rememberAsFolderOwnerCandidate = true;
+                                folder = fo.getParent();
+                            }
                         } else if (fo.isFolder()) {
-                            mine = descriptor.findFolderByPath(path) != null;
+                            folder = fo;
+                        }
+                        if (folder != null) {
+                            // findFolderByPath expects unix delimeters => ok to use getPath
+                            mine = descriptor.findFolderByPath(folder.getPath()) != null;
                             if (!mine) {
                                 List<String> absRoots = new ArrayList<String>();
                                 absRoots.addAll(descriptor.getAbsoluteSourceRoots());
                                 absRoots.addAll(descriptor.getAbsoluteTestRoots());
-                                for (String srcPath : absRoots) {
-                                    if (path.startsWith(srcPath)) {
-                                        mine = true;
-                                        break;
+                                if (!absRoots.isEmpty()) {
+                                    // abs paths are in normalized format => get normalized folder path as well
+                                    String folderPath = CndFileUtils.normalizePath(folder);
+                                    for (String srcPath : absRoots) {
+                                        if (folderPath.startsWith(srcPath)) {
+                                            mine = true;
+                                            break;
+                                        }
                                     }
                                 }
                             }
                         }
                         if (mine) {
-                            return (Project) project;
+                            if (!rememberAsFolderOwnerCandidate) {
+                                return (Project) project;
+                            } else {
+                                fallbackProject = (Project) project;
+                            }
                         }
                     }
                 }
             }
         }
-        return null;
+        return fallbackProject;
     }
 }
