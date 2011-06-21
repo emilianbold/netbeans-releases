@@ -338,7 +338,7 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
                 .add(18, 18, 18)
                 .add(jLabel6)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(txtFilter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
+                .add(txtFilter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
         );
         panelSearchOptionsLayout.setVerticalGroup(
             panelSearchOptionsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -438,17 +438,16 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private boolean getMore (int limit) {
         if (bGettingRevisions) return false;
 
-        switch (limit) {
-            case Mercurial.HG_FETCH_ALL_REVISIONS:
-                btnFetchAll.setEnabled(false); // no break, disable others as well
-            case Mercurial.HG_FETCH_50_REVISIONS:
-                btnFetch50.setEnabled(false); // no break, disable others as well
-            case Mercurial.HG_FETCH_20_REVISIONS:
-                btnFetch20.setEnabled(false);
-                break;
+        if (limit == Mercurial.HG_FETCH_ALL_REVISIONS) {
+            btnFetchAll.setEnabled(false);
+            btnFetch50.setEnabled(false);
+            btnFetch20.setEnabled(false);
         }
         messageInfofetcher = defaultMessageInfoFetcher;
         fetchRevisionLimit = limit;
+        if (messages != null) {
+            fetchRevisionLimit += messages.length;
+        }
         filterTimer.stop();
         hgProgressSupport = new HgProgressSupport() {
             @Override
@@ -523,18 +522,10 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
-                if (fetchRevisionLimit > messages.length) {
-                    switch (fetchRevisionLimit) {
-                        case Mercurial.HG_NUMBER_TO_FETCH_DEFAULT:
-                            if (messageInfofetcher != defaultMessageInfoFetcher) {
-                                break;
-                            }
-                        case Mercurial.HG_FETCH_20_REVISIONS:
-                            btnFetch20.setEnabled(false);
-                        case Mercurial.HG_FETCH_50_REVISIONS:
-                            btnFetch50.setEnabled(false);
-                            btnFetchAll.setEnabled(false);
-                    }
+                if (fetchRevisionLimit > messages.length && messageInfofetcher == defaultMessageInfoFetcher) {
+                    btnFetch20.setEnabled(false);
+                    btnFetch50.setEnabled(false);
+                    btnFetchAll.setEnabled(false);
                 }
                 applyFilter();
                 bGettingRevisions = false;
