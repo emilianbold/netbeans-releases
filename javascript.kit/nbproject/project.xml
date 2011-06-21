@@ -11,7 +11,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.100</specification-version>
+                        <specification-version>1.113.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -20,28 +20,28 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.1</specification-version>
+                        <specification-version>2.17.2.2.1.1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.82</specification-version>
+                        <specification-version>0.100.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javascript.hints</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.36</specification-version>
+                        <specification-version>0.49.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javascript.refactoring</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.62</specification-version>
+                        <specification-version>0.74.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
