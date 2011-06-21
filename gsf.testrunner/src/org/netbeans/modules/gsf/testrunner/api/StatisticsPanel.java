@@ -62,6 +62,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Panel containing the toolbar and the tree of test results.
@@ -89,7 +90,8 @@ final class StatisticsPanel extends JPanel {
     
     private final ResultDisplayHandler displayHandler;
 
-    int filterMask = Status.PASSED.getBitMask();
+    private static final String KEY_FILTER_MASK = "filterMask"; // NOI18N
+    private int filterMask = NbPreferences.forModule(StatisticsPanel.class).getInt(KEY_FILTER_MASK, Status.PASSED.getBitMask());
 
     private static final Icon rerunIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true);
     private static final Icon rerunFailedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(
@@ -312,13 +314,15 @@ final class StatisticsPanel extends JPanel {
             switch(e.getStateChange()) {
                 case ItemEvent.SELECTED:
                     filterMask &= ~itemMask;
-                    treePanel.setFilterMask(filterMask);
-                    return;
+                    break;
                 case ItemEvent.DESELECTED:
                     filterMask |= itemMask;
-                    treePanel.setFilterMask(filterMask);
+                    break;
+                default:
                     return;
             }
+            treePanel.setFilterMask(filterMask);
+            NbPreferences.forModule(StatisticsPanel.class).putInt(KEY_FILTER_MASK, filterMask);
         }
     } // FilterItemListener
 
