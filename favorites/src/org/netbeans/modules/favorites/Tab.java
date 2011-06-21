@@ -185,7 +185,7 @@ implements Runnable, ExplorerManager.Provider {
     }
     
     /** Transfer focus to view. */
-    @SuppressWarnings("deprecation") @Override
+    @Override
     public void requestFocus () {
         super.requestFocus();
         if (view != null) {
@@ -194,7 +194,7 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     /** Transfer focus to view. */
-    @SuppressWarnings("deprecation") @Override
+    @Override
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow();
         if (view != null) {
