@@ -54,14 +54,14 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.6</specification-version>
+                        <specification-version>3.47.1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.31.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
