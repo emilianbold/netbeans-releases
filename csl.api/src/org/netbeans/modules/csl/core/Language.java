@@ -93,6 +93,7 @@ public final class Language {
     private String iconBase;
     private String mime;
     private Boolean useCustomEditorKit;
+    private Boolean useMultiview;
     private List<Action> actions;
     private GsfLanguage language;
     private DefaultLanguageConfig languageConfig;
@@ -175,6 +176,17 @@ public final class Language {
     
     void setUseCustomEditorKit(boolean useCustomEditorKit) {
         this.useCustomEditorKit = useCustomEditorKit;
+    }
+    
+    public boolean useMultiview() {
+        if (useMultiview == null) {
+            useMultiview = Boolean.FALSE;
+        }
+        return useMultiview;
+    }
+    
+    void setUseMultiview(boolean use) {
+        this.useMultiview = use;
     }
     
     /** Return the display-name (user visible, and localized) name of this language.

@@ -37,32 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.csl.spi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 
 /**
- * @since 1.19
- * @author vita
+ *
+ * @author Tomas Stupka
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
-public @interface LanguageRegistration {
+public class LanguageRegistrationTest extends NbTestCase {
 
-    String [] mimeType();
-    boolean useCustomEditorKit() default false;
-    
-    /**
-     * Determines if the editor will be provided as a Multiview
-     * 
-     * @since 2.20
-     */
-    boolean useMultiview() default false;
-    
+    public LanguageRegistrationTest(String name) {
+        super(name);
+    }
+
+    public static void testUseMultiview() {
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType("text/x-test");
+        assertNotNull(l);
+        assertEquals("text/x-test", l.getMimeType());
+        assertTrue(l.useMultiview());
+    }
+   
+    @LanguageRegistration(
+        mimeType="text/x-test",
+        useMultiview=true
+    )
+    public static class TestLanguage extends DefaultLanguageConfig {
+
+        @Override
+        public org.netbeans.api.lexer.Language getLexerLanguage() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
 }
