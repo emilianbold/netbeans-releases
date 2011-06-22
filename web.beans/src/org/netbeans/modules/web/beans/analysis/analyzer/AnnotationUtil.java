@@ -134,6 +134,14 @@ public final class AnnotationUtil {
     
     public static final String DEFAULT_FQN = "javax.enterprise.inject.Default";     // NOI18N
     
+    public static final String POST_CONSTRUCT = "javax.annotation.PostConstruct";   // NOI18N
+    
+    public static final String PRE_DESTROY = "javax.annotation.PreDestroy";         // NOI18N
+    
+    public static final String POST_ACTIVATE = "javax.ejb.PostActivate";            // NOI18N
+    
+    public static final String PRE_PASSIVATE = "javax.ejb.PrePassivate";            // NOI18N
+    
     private AnnotationUtil(){
     }
     
@@ -189,9 +197,12 @@ public final class AnnotationUtil {
                         AnnotationUtil.DECORATOR, model.getCompilationController());
     }
     
-    public static boolean isLifecycleCallback( ExecutableElement element ) {
-        // TODO 
-        return false;
+    public static boolean isLifecycleCallback( ExecutableElement element , 
+            CompilationInfo info ) 
+    {
+        AnnotationMirror annotationMirror = getAnnotationMirror(element, info, 
+                POST_ACTIVATE, POST_CONSTRUCT , PRE_DESTROY, PRE_PASSIVATE);
+        return annotationMirror != null;
     }
     
 }
