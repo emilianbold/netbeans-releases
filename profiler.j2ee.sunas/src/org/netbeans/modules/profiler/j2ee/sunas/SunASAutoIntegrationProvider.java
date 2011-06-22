@@ -308,9 +308,11 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP3_DIRECT_MSG,
                                                       new Object[] {
                                                           SUNAS_8PE_DOMAINSCRIPT_NAME, "",
-                                                          getProfilerAgentCommandLineArgsForDomainScript(targetOS,
-                                                                                                         attachSettings.isRemote(),
-                                                                                                         attachSettings.getPort())
+                                                          getJvmOptionsElementText(
+                                                              getProfilerAgentCommandLineArgsForDomainScript(targetOS,
+                                                              attachSettings.isRemote(),
+                                                              attachSettings.getPort())
+                                                          )
                                                       })); // NOI18N
         } else {
             instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP3_DYNAMIC_MSG,
@@ -452,9 +454,9 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP4_MSG,
                                                   new Object[] {
                                                       "",
-                                                      getProfilerAgentCommandLineArgsForDomainScript(targetOS,
-                                                                                                     attachSettings.isRemote(),
-                                                                                                     attachSettings.getPort())
+                                                      getJvmOptionsElementText(
+                                                          getProfilerAgentCommandLineArgsForDomainScript(targetOS, attachSettings.isRemote(), attachSettings.getPort())
+                                                      )
                                                   })); // NOI18N
 
         // Step 5
@@ -579,9 +581,9 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP6_MSG,
                                                   new Object[] {
                                                       "",
-                                                      getProfilerAgentCommandLineArgsForDomainScript(targetOS,
-                                                                                                     attachSettings.isRemote(),
-                                                                                                     attachSettings.getPort()),
+                                                      getJvmOptionsElementText(
+                                                          getProfilerAgentCommandLineArgsForDomainScript(targetOS, attachSettings.isRemote(), attachSettings.getPort())
+                                                      ),
                                                       IntegrationUtils.getRemoteAbsolutePathHint()
                                                   })); // NOI18N
 
@@ -729,6 +731,14 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         insertJvmOptionsElement(domainScriptDocument, profilerElement, optionsString);
     }
 
+    protected String getJvmOptionsElementText(String options) {
+        return createJvmOptionsElementText(options);
+    }
+    
+    final protected String createJvmOptionsElementText(String options) {
+        return "&nbsp;&nbsp;&lt;jvm-options&gt;" + options.trim() + "&lt;/jvm-options&gt;<br>"; // NOI18N
+    }
+    
     final protected void insertJvmOptionsElement(Document domainScriptDocument, Element profilerElement, String option) {
         Element jvmOptionsElement = domainScriptDocument.createElement("jvm-options"); // NOI18N
         jvmOptionsElement.setTextContent(option);
@@ -737,7 +747,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     
     private static String getAsScriptFilePath(final String installDir, final String specDir, final String scriptName,
                                               final String targetOS) {
-        final String separator = System.getProperty("file.separator"); // NOI18N
+        final String separator = IntegrationUtils.getPathSeparator(targetOS); // NOI18N
         StringBuilder path = new StringBuilder();
 
         path.append(installDir);

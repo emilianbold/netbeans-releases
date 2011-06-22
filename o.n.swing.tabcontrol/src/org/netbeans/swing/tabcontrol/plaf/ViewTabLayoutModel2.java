@@ -85,17 +85,20 @@ final class ViewTabLayoutModel2 implements TabLayoutModel, ChangeListener {
         displayer.getModel().addChangeListener(this);
     }
 
+    @Override
     public int getH(int index) {
         checkIndex(index);
         Insets insets = displayer.getInsets();
         return displayer.getHeight() - (insets.bottom + insets.top);
     }
     
+    @Override
     public int getY(int index) {
         checkIndex(index);
         return displayer.getInsets().top;
     }
 
+    @Override
     public int getW(int index) {
         checkIndex(index);
         
@@ -103,6 +106,7 @@ final class ViewTabLayoutModel2 implements TabLayoutModel, ChangeListener {
         return getXCoords()[tabPos] - getX(index);
     }
 
+    @Override
     public int getX(int index) {
         checkIndex(index);
         
@@ -110,6 +114,7 @@ final class ViewTabLayoutModel2 implements TabLayoutModel, ChangeListener {
         return tabPos > 0 ? getXCoords()[tabPos - 1] : displayer.getInsets().left;
     }
 
+    @Override
     public int indexOfPoint(int x, int y) {
         Insets insets = displayer.getInsets();
         int contentWidth = displayer.getWidth()
@@ -137,6 +142,7 @@ final class ViewTabLayoutModel2 implements TabLayoutModel, ChangeListener {
         return -1;
     }
 
+    @Override
     public int dropIndexOfPoint(int x, int y) {
         Insets insets = displayer.getInsets();
         int contentWidth = displayer.getWidth()
@@ -159,6 +165,7 @@ final class ViewTabLayoutModel2 implements TabLayoutModel, ChangeListener {
         return Math.min(result, displayer.getModel().size());*/
     }
 
+    @Override
     public void setPadding(Dimension d) {
         // do nothing
     }
@@ -232,6 +239,7 @@ final class ViewTabLayoutModel2 implements TabLayoutModel, ChangeListener {
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         updatePermutations();
     }
