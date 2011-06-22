@@ -342,7 +342,6 @@ public class ProjectTab extends TopComponent
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
         
-    @SuppressWarnings("deprecation") 
     @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
@@ -350,7 +349,6 @@ public class ProjectTab extends TopComponent
     }
 
     //#41258: In the SDI, requestFocus is called rather than requestFocusInWindow:
-    @SuppressWarnings("deprecation") 
     @Override
     public void requestFocus() {
         super.requestFocus();

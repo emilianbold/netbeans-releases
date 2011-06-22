@@ -114,15 +114,37 @@ public class LayerBuilderTest extends NbTestCase {
                 "<file name='b.xml' url='/resources/b.xml'/></filesystem>", dump());
     }
 
-    public void testOverwriting() throws Exception {
-        b.file("Menu/File/x.instance").stringvalue("instanceClass", "some.X").write();
-        assertEquals("<filesystem><folder name='Menu'>" +
-                "<folder name='File'><file name='x.instance'><attr name='instanceClass' stringvalue='some.X'/></file></folder>" +
-                "</folder></filesystem>", dump());
+    public void testOverwritingAttribute() throws Exception {
         b.file("Menu/File/x.instance").write();
         assertEquals("<filesystem><folder name='Menu'>" +
                 "<folder name='File'><file name='x.instance'/></folder>" +
                 "</folder></filesystem>", dump());
+        b.file("Menu/File/x.instance").stringvalue("instanceClass", "some.X").write();
+        assertEquals("<filesystem><folder name='Menu'>" +
+                "<folder name='File'><file name='x.instance'><attr name='instanceClass' stringvalue='some.X'/></file></folder>" +
+                "</folder></filesystem>", dump());
+        b.file("Menu/File/x.instance").stringvalue("instanceClass", "another.X").write();
+        assertEquals("<filesystem><folder name='Menu'>" +
+                "<folder name='File'><file name='x.instance'><attr name='instanceClass' stringvalue='another.X'/></file></folder>" +
+                "</folder></filesystem>", dump());
+        b.file("Menu/File/x.instance").stringvalue("displayName", "Hello").write();
+        assertEquals("<filesystem><folder name='Menu'>" +
+                "<folder name='File'><file name='x.instance'><attr name='instanceClass' stringvalue='another.X'/><attr name='displayName' stringvalue='Hello'/></file></folder>" +
+                "</folder></filesystem>", dump());
+    }
+
+    public void testOverwritingURL() throws Exception {
+        b.file("f.xml").url("/f1.xml").write();
+        assertEquals("<filesystem><file name='f.xml' url='/f1.xml'/></filesystem>", dump());
+        b.file("f.xml").url("/f2.xml").write();
+        assertEquals("<filesystem><file name='f.xml' url='/f2.xml'/></filesystem>", dump());
+    }
+
+    public void testOverwritingContents() throws Exception {
+        b.file("f.txt").contents("hello").write();
+        assertEquals("<filesystem><file name='f.txt'><![CDATA[hello]]></file></filesystem>", dump());
+        b.file("f.txt").contents("goodbye").write();
+        assertEquals("<filesystem><file name='f.txt'><![CDATA[goodbye]]></file></filesystem>", dump());
     }
 
     public void testShadows() throws Exception {
