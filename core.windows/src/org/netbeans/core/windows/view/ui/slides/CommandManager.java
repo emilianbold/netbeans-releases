@@ -208,6 +208,7 @@ final class CommandManager implements ActionListener {
      * received events to tabbed instance, which ensures that 
      * actions are handled in the same way as usual.
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (TabbedContainer.COMMAND_POPUP_REQUEST.equals(e.getActionCommand())) {
             TabActionEvent tae = (TabActionEvent) e;
@@ -421,6 +422,7 @@ final class CommandManager implements ActionListener {
     private final Action escapeAction = new EscapeAction();
     
     private final class EscapeAction extends javax.swing.AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
             slideBar.getSelectionModel().setSelectedIndex(-1);
         }
