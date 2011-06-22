@@ -69,6 +69,8 @@ import org.netbeans.modules.web.core.syntax.AutoTagImporterProvider;
 import org.netbeans.spi.editor.completion.*;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -87,6 +89,7 @@ import org.openide.xml.XMLUtil;
 public class JspCompletionItem implements CompletionItem {
 
     private static final int DEFAULT_SORT_PRIORITY = 10;
+    private static final Logger logger = Logger.getLogger(JspCompletionItem.class.getName());
 
     //----------- Factory methods --------------
     public static JspCompletionItem createJspAttributeValueCompletionItem(String value, int substitutionOffset) {
@@ -418,6 +421,9 @@ public class JspCompletionItem implements CompletionItem {
                 String surl = url.toString();
                 int first = surl.indexOf('#') + 1;
                 String helpText = constructHelp(url);
+                if (helpText == null) {
+                    return null;
+                }
                 if (first > 0) {
                     int last = surl.lastIndexOf('#') + 1;
                     String from = surl.substring(first, last - 1);
@@ -809,6 +815,7 @@ public class JspCompletionItem implements CompletionItem {
             baos.close();
             return text;
         } catch (java.io.IOException e) {
+            logger.log(Level.INFO, url.toString(), e);
             return null;
         }
     }
