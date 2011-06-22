@@ -739,7 +739,7 @@ public class Utils {
             return null;
         }
 
-return null;// FIXXX        return FileOwnerQuery.getOwner(mostActiveFileObject);
+        return ProjectUtilities.getProject(mostActiveFileObject);
     }
 
     public static ListCellRenderer getPresenterListRenderer() {
