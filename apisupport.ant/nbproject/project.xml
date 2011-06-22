@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.apache.tools.ant.module</code-name-base>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.6</specification-version>
+                        <specification-version>3.47.1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.31.1</specification-version>
                     </run-dependency>
                 </dependency>	
             </module-dependencies>

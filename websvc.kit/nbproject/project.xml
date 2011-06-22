@@ -52,107 +52,107 @@ made subject to such option by the copyright holder.
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.kit</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.14.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.kit</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.14.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.web.kit</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.11.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.clientapi</code-name-base>
                     <run-dependency>
-                        <specification-version>1.6</specification-version>
+                        <specification-version>1.18.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.core</code-name-base>
                     <run-dependency>
-                        <specification-version>1.7</specification-version>
+                        <specification-version>1.20.1.1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.customization</code-name-base>
                     <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.12.1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.design</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.11.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.editor.hints</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.13.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.jaxwsapi</code-name-base>
                     <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.12.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.jaxwsmodel</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.2</specification-version>
+                        <specification-version>1.14.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.manager</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.11.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.metro.lib</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.14.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.metro.model</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.8.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.metro.samples</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.12.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
                     <run-dependency>
-                        <specification-version>1.6</specification-version>
+                        <specification-version>1.17.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.wsitconf</code-name-base>
                     <run-dependency>
-                        <specification-version>3.0</specification-version>
+                        <specification-version>3.15.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.wsstack.jaxws</code-name-base>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>1.5</specification-version>
+                        <specification-version>1.9.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

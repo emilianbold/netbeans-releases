@@ -9,69 +9,69 @@
                     <code-name-base>org.netbeans.modules.db</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.24</specification-version>
+                        <specification-version>1.44.1.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.core</code-name-base>
                     <run-dependency>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.19.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.dataview</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.11.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.drivers</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.12.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.metadata.model</code-name-base>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>0.1</specification-version>
+                        <specification-version>0.13.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.mysql</code-name-base>
                     <run-dependency>
-                        <specification-version>0.1</specification-version>
+                        <specification-version>0.11.1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.sql.editor</code-name-base>
                     <run-dependency>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.19.1.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.db.sql.visualeditor</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.13.1.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.dbapi</code-name-base>
                     <run-dependency>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.17.1.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.derby</code-name-base>
                     <run-dependency>
-                        <specification-version>1.17</specification-version>
+                        <specification-version>1.23.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.ide.kit</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.15.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
