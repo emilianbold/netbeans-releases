@@ -124,7 +124,7 @@ public class DelegateFieldAnalizer implements FieldAnalyzer {
         }
     }
 
-    private Collection<TypeMirror> getDecoratedTypes( TypeElement element , 
+    public static Collection<TypeMirror> getDecoratedTypes( TypeElement element , 
             CompilationInfo info ) 
     {
         TypeElement serializable = info.getElements().getTypeElement(
@@ -134,7 +134,7 @@ public class DelegateFieldAnalizer implements FieldAnalyzer {
         return result;
     }
 
-    private void collectDecoratedTypes( TypeMirror type,
+    private static void collectDecoratedTypes( TypeMirror type,
             Collection<TypeMirror> result, TypeElement serializable, 
             CompilationInfo info)
     {
