@@ -42,15 +42,12 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -58,6 +55,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer.FieldAnalyzer;
 import org.netbeans.modules.web.beans.api.model.CdiException;
@@ -74,7 +72,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class InjectionPointAnalyzer implements FieldAnalyzer {
+public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> implements FieldAnalyzer {
     
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
@@ -97,8 +95,8 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
                         model.lookupInjectables(element,null);
                     checkResult(result, element, model, descriptions, info );
                     if ( AnnotationUtil.isDelegate(element, parent, model)){
-                        checkDecoratedBeans( result , element, model, info , 
-                                descriptions);
+                        analyzeDecoratedBeans(result, element, null, parent,  
+                                model, info, descriptions);
                     }
                 }
                 
@@ -109,38 +107,38 @@ public class InjectionPointAnalyzer implements FieldAnalyzer {
         }
     }
     
-    private void checkDecoratedBeans( DependencyInjectionResult result,
-            VariableElement element, WebBeansModel model, CompilationInfo info,
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer#addClassError(javax.lang.model.element.VariableElement, java.lang.Object, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void addClassError( VariableElement element, Void fake, 
+            TypeElement decoratedBean, WebBeansModel model, CompilationInfo info,
+                 List<ErrorDescription> descriptions )
+    {
+        ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element , model, info , 
+                    NbBundle.getMessage(InjectionPointAnalyzer.class, 
+                            "ERR_FinalDecoratedBean",                       // NOI18N
+                            decoratedBean.getQualifiedName().toString()));
+        descriptions.add( description );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer#addMethodError(javax.lang.model.element.VariableElement, java.lang.Object, javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void addMethodError( VariableElement element, Void fake,
+            TypeElement decoratedBean, Element decoratedMethod,
+            WebBeansModel model, CompilationInfo info,
             List<ErrorDescription> descriptions )
     {
-        Set<TypeElement> decoratedBeans = null;
-        if ( result instanceof DependencyInjectionResult.ApplicableResult ){
-            DependencyInjectionResult.ApplicableResult appResult = 
-                (DependencyInjectionResult.ApplicableResult) result;
-            decoratedBeans = appResult.getTypeElements();
-        }
-        else if ( result instanceof DependencyInjectionResult.InjectableResult ){
-            Element decorated = ((DependencyInjectionResult.InjectableResult)result).
-                getElement();
-            if ( decorated instanceof TypeElement ){
-                decoratedBeans = Collections.singleton( (TypeElement)decorated);
-            }
-        }
-        if ( decoratedBeans == null ){
-            return;
-        }
-        for( TypeElement decorated : decoratedBeans ){
-            Set<Modifier> modifiers = decorated.getModifiers();
-            if ( modifiers.contains(Modifier.FINAL)){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element , model, info , 
-                        NbBundle.getMessage(InjectionPointAnalyzer.class, 
-                                "ERR_FinalDecoratedBean",                   // NOI18N
-                                decorated.getQualifiedName().toString()));
-                descriptions.add( description );
-                return;
-            }
-        }
+        ErrorDescription description = CdiEditorAnalysisFactory.createError(
+                element, model, info, NbBundle.getMessage(
+                        InjectionPointAnalyzer.class,
+                        "ERR_FinalMethodDecoratedBean", // NOI18N
+                        decoratedBean.getQualifiedName().toString(),
+                        decoratedMethod.getSimpleName().toString()));
+        descriptions.add(description);
     }
 
     private void checkInjectionPointMetadata( VariableElement element,
