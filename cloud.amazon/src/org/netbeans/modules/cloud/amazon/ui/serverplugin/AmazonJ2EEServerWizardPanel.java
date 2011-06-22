@@ -106,10 +106,8 @@ public class AmazonJ2EEServerWizardPanel implements WizardDescriptor.Asynchronou
     public void storeSettings(WizardDescriptor settings) {
     }
     
-    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
-
     public void setErrorMessage(String message) {
-        wd.putProperty(PROP_ERROR_MESSAGE, message);
+        wd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
     
     @Override

@@ -39,35 +39,29 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
+package org.netbeans.modules.cloud.common.spi.support.serverplugins;
 
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.openide.util.Lookup;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
 
 /**
  *
  */
-public class AmazonModuleConfiguration implements ModuleConfiguration {
+public class ModuleConfigurationFactoryImpl implements ModuleConfigurationFactory2 {
 
-    private J2eeModule module;
-
-    public AmazonModuleConfiguration(J2eeModule module) {
-        this.module = module;
+    public ModuleConfigurationFactoryImpl() {
     }
     
     @Override
-    public Lookup getLookup() {
-        return  Lookup.EMPTY;
+    public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
+        return new ModuleConfigurationImpl(j2eeModule);
     }
 
     @Override
-    public J2eeModule getJ2eeModule() {
-        return module;
-    }
-
-    @Override
-    public void dispose() {
+    public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
+        return new ModuleConfigurationImpl(j2eeModule);
     }
     
 }

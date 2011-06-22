@@ -56,6 +56,9 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
+import org.netbeans.modules.cloud.common.spi.support.serverplugins.DeploymentStatus;
+import org.netbeans.modules.cloud.common.spi.support.serverplugins.ProgressObjectImpl;
+import org.netbeans.modules.cloud.common.spi.support.serverplugins.TargetImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 
@@ -87,7 +90,7 @@ public class AmazonDeploymentManager implements DeploymentManager2 {
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
         ProgressObjectImpl po = new ProgressObjectImpl(new TargetModuleID[0]/* XXXXXXX */, "Distributing...");
-        Future<AmazonInstance.DeploymentStatus> task = AmazonInstance.deployAsync(f, appName, envID, keyId, key, po);
+        Future<DeploymentStatus> task = AmazonInstance.deployAsync(f, appName, envID, keyId, key, po);
         return po;
     }
 

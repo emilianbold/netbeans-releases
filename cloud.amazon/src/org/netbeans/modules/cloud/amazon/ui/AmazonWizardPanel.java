@@ -52,6 +52,7 @@ import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEInstance;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -64,16 +65,19 @@ public class AmazonWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public static final String KEY = "secret-access-key"; // String
     public static final String SERVERS = "secrets"; // List<Node>
     
+    private ChangeSupport listeners;
     private AmazonWizardComponent component;
     private List<Node> servers;
+    private WizardDescriptor wd = null;
     
     public AmazonWizardPanel() {
+        listeners = new ChangeSupport(this);
     }
     
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new AmazonWizardComponent();
+            component = new AmazonWizardComponent(this);
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getPanelContentData());            
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(0));
         }
@@ -94,26 +98,49 @@ public class AmazonWizardPanel implements WizardDescriptor.AsynchronousValidatin
 
     @Override
     public void readSettings(WizardDescriptor settings) {
+        wd = settings;
     }
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(KEY_ID, component.getKeyId());
-        settings.putProperty(KEY, component.getKey());
-        settings.putProperty(SERVERS, servers);
+        if (component != null) {
+            settings.putProperty(KEY_ID, component.getKeyId());
+            settings.putProperty(KEY, component.getKey());
+            settings.putProperty(SERVERS, servers);
+        }
+    }
+    
+    public void setErrorMessage(String message) {
+        wd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     @Override
     public boolean isValid() {
+        if (component == null || wd == null) {
+            // ignore this case
+        } else if (component.getKeyId().trim().length() == 0) {
+            setErrorMessage(NbBundle.getMessage(AmazonWizardPanel.class, "AmazonWizardPanel.missingKeyID"));
+            return false;
+        } else if (component.getKey().trim().length() == 0) {
+            setErrorMessage(NbBundle.getMessage(AmazonWizardPanel.class, "AmazonWizardPanel.missingKey"));
+            return false;
+        }
+        setErrorMessage("");
         return true;
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        listeners.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        listeners.removeChangeListener(l);
+    }
+    
+    void fireChange() {
+        listeners.fireChange();
     }
 
     @Override

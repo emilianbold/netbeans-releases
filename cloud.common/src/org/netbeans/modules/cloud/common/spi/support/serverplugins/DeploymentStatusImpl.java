@@ -39,29 +39,68 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
+package org.netbeans.modules.cloud.common.spi.support.serverplugins;
 
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
 
 /**
  *
  */
-public class AmazonModuleConfigurationFactory implements ModuleConfigurationFactory2 {
+public class DeploymentStatusImpl implements DeploymentStatus {
 
-    public AmazonModuleConfigurationFactory() {
+    private CommandType command;
+    private StateType state;
+    private ActionType action;
+    private String message;
+
+    public DeploymentStatusImpl(CommandType command, StateType state, ActionType action, String message) {
+        this.command = command;
+        this.state = state;
+        this.action = action;
+        this.message = message;
     }
     
     @Override
-    public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
-        return new AmazonModuleConfiguration(j2eeModule);
+    public StateType getState() {
+        return state;
     }
 
     @Override
-    public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
-        return new AmazonModuleConfiguration(j2eeModule);
+    public CommandType getCommand() {
+        return command;
+    }
+
+    @Override
+    public ActionType getAction() {
+        return action;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public boolean isCompleted() {
+        return StateType.COMPLETED.equals(state);
+    }
+
+    @Override
+    public boolean isFailed() {
+        return StateType.FAILED.equals(state);
+    }
+
+    @Override
+    public boolean isRunning() {
+        return StateType.RUNNING.equals(state);
+    }
+
+    @Override
+    public String toString() {
+        return "DeploymentStatusImpl{" + "command=" + command + ", state=" + state + ", action=" + action + ", message=" + message + '}';
     }
     
 }

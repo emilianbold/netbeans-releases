@@ -39,31 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
+package org.netbeans.modules.cloud.common.spi.support.serverplugins;
 
-import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.openide.util.Lookup;
 
 /**
  *
  */
-public class AmazonRegistryNodeFactory implements RegistryNodeFactory {
+public class ModuleConfigurationImpl implements ModuleConfiguration {
 
+    private J2eeModule module;
+
+    public ModuleConfigurationImpl(J2eeModule module) {
+        this.module = module;
+    }
+    
     @Override
-    public Node getManagerNode(Lookup lookup) {
-        AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setName("manager node");
-        return an;
+    public Lookup getLookup() {
+        return  Lookup.EMPTY;
     }
 
     @Override
-    public Node getTargetNode(Lookup lookup) {
-        AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setName("target node");
-        return an;
+    public J2eeModule getJ2eeModule() {
+        return module;
+    }
+
+    @Override
+    public void dispose() {
     }
     
 }

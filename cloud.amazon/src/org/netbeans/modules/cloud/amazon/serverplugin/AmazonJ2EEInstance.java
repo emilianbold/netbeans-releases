@@ -43,6 +43,7 @@ package org.netbeans.modules.cloud.amazon.serverplugin;
 
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentStatus;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
+import org.netbeans.modules.cloud.common.spi.support.serverplugins.InstanceState;
 
 /**
  *
@@ -56,14 +57,6 @@ public class AmazonJ2EEInstance {
     private InstanceState state;
     private String containerType;
 
-    public static enum InstanceState {
-        LAUNCHING,
-        UPDATING,
-        READY,
-        TERMINATING,
-        TERMINATED
-    }
-    
     public AmazonJ2EEInstance(AmazonInstance amazonInstance, String applicationName, 
             String environmentName, String environmentId, String containerType) {
         this.amazonInstance = amazonInstance;

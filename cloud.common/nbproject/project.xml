@@ -3,25 +3,8 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.cloud.amazon</code-name-base>
+            <code-name-base>org.netbeans.modules.cloud.common</code-name-base>
             <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.amazon</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cloud.common</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.core</code-name-base>
                     <build-prerequisite/>
@@ -133,7 +116,11 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.cloud.amazon</friend>
+                <friend>org.netbeans.modules.cloud.oracle</friend>
+                <package>org.netbeans.modules.cloud.common.spi.support.serverplugins</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

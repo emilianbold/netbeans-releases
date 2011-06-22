@@ -42,17 +42,24 @@
 
 package org.netbeans.modules.cloud.amazon.ui;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.util.NbBundle;
 
 /**
  *
  */
-public class AmazonWizardComponent extends javax.swing.JPanel {
+public class AmazonWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
+    private AmazonWizardPanel panel;
+    
     /** Creates new form AmazonWizardComponent */
-    public AmazonWizardComponent() {
+    public AmazonWizardComponent(AmazonWizardPanel panel) {
+        this.panel = panel;
         initComponents();
         setName(NbBundle.getBundle(AmazonWizardComponent.class).getString("LBL_Name")); // NOI18N
+        accessKey.getDocument().addDocumentListener(this);
+        secret.getDocument().addDocumentListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -119,5 +126,20 @@ public class AmazonWizardComponent extends javax.swing.JPanel {
     
     public String getKey() {
         return secret.getText();
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        panel.fireChange();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        panel.fireChange();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        panel.fireChange();
     }
 }

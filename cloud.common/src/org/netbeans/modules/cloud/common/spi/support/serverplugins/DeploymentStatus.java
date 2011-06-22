@@ -39,31 +39,14 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
-
-import javax.enterprise.deploy.spi.Target;
+package org.netbeans.modules.cloud.common.spi.support.serverplugins;
 
 /**
  *
  */
-public class TargetImpl implements Target {
-
-    private String name;
-
-    public static final Target SOME = new TargetImpl("some-target");
-    
-    private TargetImpl(String name) {
-        this.name = name;
-    }
-    
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        return "target-description";
-    }
-    
+public enum DeploymentStatus {
+    SUCCESS,
+    FAILED,
+    UNKNOWN,
+    EXCEPTION
 }
