@@ -112,7 +112,7 @@ public class NbClassLoaderTest extends NbTestCase {
     public void testFastIsUsedForFileUrl() throws Exception {
         CharSequence log = Log.enable(NbClassLoader.class.getName(), Level.FINE);
         LocalFileSystem lfs = new LocalFileSystem();
-        File here = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
+        File here = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
         lfs.setRootDirectory(here);
         lfs.setReadOnly(true);
         ClassLoader cl = new NbClassLoader(new FileObject[]{lfs.getRoot()}, ClassLoader.getSystemClassLoader().getParent(), null);
