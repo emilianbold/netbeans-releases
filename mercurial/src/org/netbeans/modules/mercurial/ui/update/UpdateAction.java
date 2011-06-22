@@ -68,13 +68,12 @@ import org.openide.util.NbBundle;
  */
 public class UpdateAction extends ContextAction {
     
-    private static final String HG_TIP = "tip"; // NOI18N
-
     @Override
     protected boolean enable(Node[] nodes) {
         return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Update"; // NOI18N
     }
@@ -86,28 +85,20 @@ public class UpdateAction extends ContextAction {
     
     public static void update(final VCSContext ctx){
 
-//        final File root = HgUtils.getRootFile(ctx);
-//        if (root == null) return;
-//        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
-
-
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        File[] files = HgUtils.filterForRepository(ctx, root, false);
-        String rev = null;
 
         final Update update = new Update(root);
         if (!update.showDialog()) {
             return;
         }
-        rev = update.getSelectionRevision();
-        if(rev == null) rev = HG_TIP;
+        final String revStr = update.getSelectionRevision();
         final boolean doForcedUpdate = update.isForcedUpdateRequested();
-        final String revStr = rev;
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 boolean bNoUpdates = true;
                 OutputLogger logger = getLogger();
@@ -120,7 +111,8 @@ public class UpdateAction extends ContextAction {
                             "MSG_UPDATE_TITLE_SEP")); // NOI18N
                     logger.output(
                                 NbBundle.getMessage(UpdateAction.class,
-                                "MSG_UPDATE_INFO_SEP", revStr, root.getAbsolutePath())); // NOI18N
+                                "MSG_UPDATE_INFO_SEP", revStr == null ? NbBundle.getMessage(UpdateAction.class, "MSG_UPDATE_REVISION_PARENT") //NOI18N
+                            : revStr, root.getAbsolutePath())); // NOI18N
                     if (doForcedUpdate) {
                         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(UpdateAction.class, "MSG_UPDATE_CONFIRM_QUERY")); // NOI18N
                         descriptor.setTitle(NbBundle.getMessage(UpdateAction.class, "MSG_UPDATE_CONFIRM")); // NOI18N

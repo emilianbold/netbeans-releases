@@ -37,50 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.db.derby;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
-import org.openide.util.Utilities;
+package org.netbeans.modules.csl.spi;
+
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author Tomas Stupka
  */
-public class DerbyStackStorageTest extends CommonStackDataStorageTests {
+public class LanguageRegistrationTest extends NbTestCase {
 
-    @Override
-    protected StackDataStorage createStorage() {
-        try {
-            SQLStackDataStorage result = new SQLStackDataStorage();
-            DerbyDataStorage st = new DerbyDataStorage();
-            st.connect();
-            result.attachTo(st);
-            return result;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    public LanguageRegistrationTest(String name) {
+        super(name);
     }
 
-    @Override
-    protected boolean shutdownStorage(StackDataStorage db) {
-        boolean result = ((SQLStackDataStorage) db).shutdown(true);
+    public static void testUseMultiview() {
+        Language l = LanguageRegistry.getInstance().getLanguageByMimeType("text/x-test");
+        assertNotNull(l);
+        assertEquals("text/x-test", l.getMimeType());
+        assertTrue(l.useMultiview());
+    }
+   
+    @LanguageRegistration(
+        mimeType="text/x-test",
+        useMultiview=true
+    )
+    public static class TestLanguage extends DefaultLanguageConfig {
 
-        if (Utilities.isWindows()) {
-            // on Windows lck file of DerbyBD is not released even on
-            // close()... So directory removing will fail...
-            result = true;
+        @Override
+        public org.netbeans.api.lexer.Language getLexerLanguage() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        return result;
-    }
-
-    @Override
-    protected void flush(StackDataStorage db) {
-        ((SQLStackDataStorage) db).flush();
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
     }
 }

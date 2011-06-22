@@ -3083,7 +3083,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         final MITList results = stopRecord.results();
         
         // detect first stop (in _start or main)
-        if (session().getPid() <= 0 && firstBreakpointId != null) {
+        if (firstBreakpointId != null) {
             MIValue bkptnoValue = results.valueOf("bkptno"); // NOI18N
             boolean cont = (bkptnoValue == null) ||
                (bkptnoValue != null && (firstBreakpointId.equals(bkptnoValue.asConst().value())));

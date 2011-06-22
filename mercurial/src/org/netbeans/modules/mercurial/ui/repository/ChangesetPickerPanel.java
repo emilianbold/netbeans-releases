@@ -58,15 +58,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import javax.swing.SwingUtilities;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -86,7 +83,6 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
 
     private File                            repository;
     private File[]                          roots; // MAY be null
-    private RequestProcessor.Task           refreshViewTask;
     private static final RequestProcessor   rp = new RequestProcessor("ChangesetPicker", 1, true);  // NOI18N
     private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
     private boolean bGettingRevisions = false;
@@ -94,6 +90,7 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
     private final MessageInfoFetcher defaultMessageInfoFetcher;
     private MessageInfoFetcher messageInfofetcher;
     private HgProgressSupport hgProgressSupport;
+    private InitialLoadingProgressSupport initialProgressSupport;
     private static final String MARK_ACTIVE_HEAD = "*"; //NOI18N
     public static final String PROP_VALID = "prop.valid"; //NOI18N
     
@@ -113,7 +110,6 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
     public ChangesetPickerPanel(File repo, File[] files) {
         repository = repo;
         roots = files;
-        refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
         jPanel1.setVisible(false);
         revisionsComboBox.setCellRenderer(new RevisionRenderer());
@@ -169,7 +165,8 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
     }
 
     protected void loadRevisions () {
-        refreshViewTask.schedule(0);
+        initialProgressSupport = new InitialLoadingProgressSupport();
+        initialProgressSupport.start(rp, repository, getRefreshLabel()); //NOI18N
     }
 
     protected void setOptionsPanel (JPanel optionsPanel, Border parentPanelBorder) {
@@ -195,8 +192,11 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
 
     @Override
     public void removeNotify() {
-        refreshViewTask.cancel();
-        HgProgressSupport supp = hgProgressSupport;
+        HgProgressSupport supp = initialProgressSupport;
+        if (supp != null) {
+            supp.cancel();
+        }
+        supp = hgProgressSupport;
         if (supp != null) {
             supp.cancel();
         }
@@ -338,7 +338,7 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
                 .add(18, 18, 18)
                 .add(jLabel6)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(txtFilter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
+                .add(txtFilter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
         );
         panelSearchOptionsLayout.setVerticalGroup(
             panelSearchOptionsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -438,22 +438,21 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private boolean getMore (int limit) {
         if (bGettingRevisions) return false;
 
-        switch (limit) {
-            case Mercurial.HG_FETCH_ALL_REVISIONS:
-                btnFetchAll.setEnabled(false); // no break, disable others as well
-            case Mercurial.HG_FETCH_50_REVISIONS:
-                btnFetch50.setEnabled(false); // no break, disable others as well
-            case Mercurial.HG_FETCH_20_REVISIONS:
-                btnFetch20.setEnabled(false);
-                break;
+        if (limit == Mercurial.HG_FETCH_ALL_REVISIONS) {
+            btnFetchAll.setEnabled(false);
+            btnFetch50.setEnabled(false);
+            btnFetch20.setEnabled(false);
         }
         messageInfofetcher = defaultMessageInfoFetcher;
         fetchRevisionLimit = limit;
+        if (messages != null) {
+            fetchRevisionLimit += messages.length;
+        }
         filterTimer.stop();
         hgProgressSupport = new HgProgressSupport() {
             @Override
             public void perform() {
-                refreshRevisions();
+                refreshRevisions(this);
                 hgProgressSupport = null;
             }
         };
@@ -461,52 +460,56 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         return true;
     }
 
-    /**
-     * Must NOT be run from AWT.
-     */
-    private void setupModels() {
-        // XXX attach Cancelable hook
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(getRefreshLabel()); // NOI18N
-        try {
-            DefaultListModel targetsModel = new DefaultListModel();
-            final RepositoryRevision displayedRevision = getDisplayedRevision();
-            if (displayedRevision == null) {
-                targetsModel.addElement(TIP);
-            } else {
-                targetsModel.addElement(displayedRevision.getLog());
-            }
-            revisionsComboBox.setModel(targetsModel);
-            Thread.interrupted();  // clear interupted status
-            ph.start();
-            if (displayedRevision == null) {
-                refreshRevisions();
-            } else {
+    private class InitialLoadingProgressSupport extends HgProgressSupport {
+        @Override
+        public void perform () {
+            try {
+                final DefaultListModel targetsModel = new DefaultListModel();
+                final RepositoryRevision displayedRevision = getDisplayedRevision();
+                if (displayedRevision == null) {
+                    if (acceptSelection(NO_REVISION)) {
+                        targetsModel.addElement(NO_REVISION);
+                    }
+                    if (acceptSelection(TIP)) {
+                        targetsModel.addElement(TIP);
+                    }
+                } else {
+                    targetsModel.addElement(displayedRevision.getLog());
+                }
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
-                        revisionsComboBox.setSelectedValue(displayedRevision.getLog(), true);
-                        revisionsComboBox.setEnabled(false);
-                        panelSearchOptions.setVisible(false);
+                        revisionsComboBox.setModel(targetsModel);
+                        if (!targetsModel.isEmpty()) {
+                            revisionsComboBox.setSelectedIndex(0);
+                        }
                     }
                 });
-            }
-        } finally {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ph.finish();
+                if (displayedRevision == null) {
+                    refreshRevisions(this);
+                } else {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            revisionsComboBox.setSelectedValue(displayedRevision.getLog(), true);
+                            revisionsComboBox.setEnabled(false);
+                            panelSearchOptions.setVisible(false);
+                        }
+                    });
                 }
-            });
+            } finally {
+                initialProgressSupport = null;
+            }
         }
     }
 
-    private void refreshRevisions() {
+    private void refreshRevisions (HgProgressSupport supp) {
         bGettingRevisions = true;
 
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
         MessageInfoFetcher fetcher = getMessageInfoFetcher();
         HgLogMessage[] fetchedMessages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<File>(Arrays.asList(roots)), fetchRevisionLimit, logger);
-        if (fetchedMessages.length > 0) {
+        if (!supp.isCanceled() && fetchedMessages.length > 0) {
             try {
                 parentRevision = HgCommand.getParent(repository, null, null);
             } catch (HgException ex) {
@@ -514,32 +517,26 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             }
         }
 
-        if( fetchedMessages == null || fetchedMessages.length == 0){
-            fetchedMessages = new HgLogMessage[] { NO_REVISION };
-        }
-        synchronized (LOCK) {
-            messages = fetchedMessages;
-        }
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run () {
-                if (fetchRevisionLimit > messages.length) {
-                    switch (fetchRevisionLimit) {
-                        case Mercurial.HG_NUMBER_TO_FETCH_DEFAULT:
-                            if (messageInfofetcher != defaultMessageInfoFetcher) {
-                                break;
-                            }
-                        case Mercurial.HG_FETCH_20_REVISIONS:
-                            btnFetch20.setEnabled(false);
-                        case Mercurial.HG_FETCH_50_REVISIONS:
-                            btnFetch50.setEnabled(false);
-                            btnFetchAll.setEnabled(false);
-                    }
-                }
-                applyFilter();
-                bGettingRevisions = false;
+        if (!supp.isCanceled()) {
+            if( fetchedMessages == null || fetchedMessages.length == 0){
+                fetchedMessages = new HgLogMessage[] { NO_REVISION };
             }
-        });
+            synchronized (LOCK) {
+                messages = fetchedMessages;
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    if (fetchRevisionLimit > messages.length && messageInfofetcher == defaultMessageInfoFetcher) {
+                        btnFetch20.setEnabled(false);
+                        btnFetch50.setEnabled(false);
+                        btnFetchAll.setEnabled(false);
+                    }
+                    applyFilter();
+                    bGettingRevisions = false;
+                }
+            });
+        }
     }
 
     private MessageInfoFetcher getMessageInfoFetcher() {
@@ -556,13 +553,6 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     
     protected final HgRevision getParentRevision () {
         return parentRevision;
-    }
-
-    private class RefreshViewTask implements Runnable {
-        @Override
-        public void run() {
-            setupModels();
-        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -633,7 +623,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         synchronized (LOCK) {
             for (HgLogMessage message : messages) {
                 if (applies(filter, message)) {
-                    if (selectedRevision != null && message.getRevisionNumber().equals(selectedRevision.getRevisionNumber())) {
+                    if (selectedRevision != null && message.getCSetShortID().equals(selectedRevision.getCSetShortID())) {
                         toSelectRevision = message;
                     } else if (parentRevision != null && message.getCSetShortID().equals(parentRevision.getChangesetId())) {
                         toSelectRevision = message;

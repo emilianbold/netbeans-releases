@@ -104,6 +104,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -828,12 +829,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * <p>Subclasses should override this method to transfer focus to desired
      * focusable component. <code>TopComponent</code> itself is not focusable.
      * See for example {@link org.openide.text.CloneableEditor#requestFocus}.
-     * @deprecated Use {@link #requestActive} instead to make TopComponent active
-     * in window system not only focused. This method should have been preserved
-     * for focus management only but not activation of <code>TopComponent</code> inside
-     * window system.
+     * <p><strong>Note:</strong> Use {@link #requestActive} instead to make TopComponent active
+     * in the window system (not only focused). This method should be considered deprecated
+     * for calling from outside; but it may be overridden (inside of which you may call super).
      */
-    @Deprecated
     @Override
     public void requestFocus() {
         if (isFocusable()) {
@@ -850,12 +849,10 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * <p>Subclasses should override this method to transfer focus to desired
      * focusable component. <code>TopComponent</code> itself is not focusable.
      * See for example {@link org.openide.text.CloneableEditor#requestFocusInWindow}.
-     * @deprecated Use {@link #requestActive} instead to make TopComponent active
-     * in window system not only focused. This method should have been preserved
-     * for focus management only but not activation of <code>TopComponent</code> inside
-     * window system.
+     * <p><strong>Note:</strong> Use {@link #requestActive} instead to make TopComponent active
+     * in the window system (not only focused). This method should be considered deprecated
+     * for calling from outside; but it may be overridden (inside of which you may call super).
      */
-    @Deprecated
     @Override
     public boolean requestFocusInWindow() {
         if (isFocusable()) {

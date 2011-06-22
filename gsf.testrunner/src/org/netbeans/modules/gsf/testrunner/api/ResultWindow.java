@@ -342,7 +342,6 @@ final class ResultWindow extends TopComponent {
         return (JSplitPane)tabPane.getSelectedComponent();
     }
 
-    @SuppressWarnings("deprecation") // seems to be OK to override, just not to call from outside?
     public @Override boolean requestFocusInWindow() {
         JSplitPane view = getCurrentResultView();
         if (view == null) {

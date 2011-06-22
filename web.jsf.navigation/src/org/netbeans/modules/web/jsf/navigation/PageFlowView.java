@@ -575,14 +575,12 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     }
 
 
-    @SuppressWarnings(value = "deprecation")
     @Override
     public void requestFocus() {
         super.requestFocus();
         getScene().getView().requestFocus();
     }
 
-    @SuppressWarnings(value = "deprecation")
     @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
