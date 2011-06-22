@@ -2164,13 +2164,17 @@ public class Installer extends ModuleInstall implements Runnable {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        protected void assignInternalURL(URL u) {
+        @Override protected void assignInternalURL(final URL u) {
             if (browser != null) {
-                try {
-                    browser.setPage(u);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        try {
+                            browser.setPage(u);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             }
             markAssigned();
         }
