@@ -190,6 +190,7 @@ public class TreeEvaluator {
             }
             //return exprTree.accept(new EvaluatorVisitor(), evaluationContext);
         } catch (IllegalStateException isex) {
+            loggerMethod.log(Level.CONFIG, "During evaluation of '"+expression.getExpression()+"'"); // Just log the expression.
             Throwable thr = isex.getCause();
             if (thr instanceof IncompatibleThreadStateException) {
                 throw (IncompatibleThreadStateException) thr;

@@ -2808,6 +2808,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 return vm.mirrorOf(0l).type();
             case SHORT:
                 return vm.mirrorOf((short) 0).type();
+            case VOID:
+                return vm.mirrorOfVoid().type();
             default:
                 throw new IllegalStateException("Tree = "+arg0);
         }
