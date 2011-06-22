@@ -48,9 +48,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.eclipse.osgi.baseadaptor.BaseAdaptor;
@@ -73,6 +77,8 @@ import org.eclipse.osgi.framework.log.FrameworkLog;
 import org.eclipse.osgi.framework.log.FrameworkLogEntry;
 import org.netbeans.core.netigso.spi.NetigsoArchive;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -83,12 +89,17 @@ import org.osgi.framework.FrameworkEvent;
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public final class NetbinoxHooks implements HookConfigurator, ClassLoadingHook,
-BundleFileFactoryHook, FrameworkLog, AdaptorHook {
+BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
     private static transient Map<Bundle,ClassLoader> map;
     private static transient NetigsoArchive archive;
+    private static transient Lookup.Result<HookConfigurator> configurators;
+    private static transient Collection<? extends HookConfigurator> previous = Collections.emptyList();
+    private static transient HookRegistry hookRegistry;
     static void clear() {
         map = null;
         archive = null;
+        configurators = null;
+        hookRegistry = null;
     }
 
     static void registerMap(Map<Bundle, ClassLoader> bundleMap) {
@@ -99,13 +110,17 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook {
         archive = netigsoArchive;
     }
 
+    @Override
     public void addHooks(HookRegistry hr) {
+        hookRegistry = hr;
         hr.addClassLoadingHook(this);
         hr.addBundleFileFactoryHook(this);
         hr.addAdaptorHook(this);
-        for (HookConfigurator hc : Lookup.getDefault().lookupAll(HookConfigurator.class)) {
-            hc.addHooks(hr);
+        if (configurators == null) {
+            configurators = Lookup.getDefault().lookupResult(HookConfigurator.class);
+            configurators.addLookupListener(this);
         }
+        resultChanged(null);
     }
 
     public byte[] processClass(String string, byte[] bytes, ClasspathEntry ce, BundleEntry be, ClasspathManager cm) {
@@ -305,5 +320,16 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook {
 
     public FrameworkLog createFrameworkLog() {
         return this;
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        Collection<? extends HookConfigurator> now = configurators.allInstances();
+        Set<HookConfigurator> added = new HashSet<HookConfigurator>(now);
+        added.removeAll(previous);
+        for (HookConfigurator hc : added) {
+            hc.addHooks(hookRegistry);
+        }
+        previous = now;
     }
 }

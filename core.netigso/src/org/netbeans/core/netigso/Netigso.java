@@ -184,7 +184,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 continue;
             }
             RequiredBundle[] arr = pkgAdm.getRequiredBundles(loc);
-            for (RequiredBundle rb : arr) {
+            if (arr != null) for (RequiredBundle rb : arr) {
                 for (Bundle n : rb.getRequiringBundles()) {
                     if (allCnbs.contains(n.getSymbolicName().replace('-', '_'))) {
                         needEnablement.add(loc);

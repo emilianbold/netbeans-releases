@@ -47,6 +47,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=HookConfigurator.class)
 public class Main implements HookConfigurator {
+    @Override
     public void addHooks(HookRegistry hr) {
         assert hr != null;
         System.setProperty("main.hook", "true");
