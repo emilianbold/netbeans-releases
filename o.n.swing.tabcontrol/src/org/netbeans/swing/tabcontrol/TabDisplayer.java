@@ -66,7 +66,6 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleSelection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.plaf.AbstractTabCellRenderer;
-import org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.BasicTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.TabCellRenderer;
 import org.netbeans.swing.tabcontrol.plaf.TabState;
@@ -298,6 +297,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
      * comes before the <code>type</code> property is initialized.  Provides
      * a reasonable fallback UI for use on unknown look and feels.
      */
+    @Override
     public final void updateUI() {
         if (!initialized) {
             return;
@@ -373,6 +373,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
 
     /** Returns an different UIClassID depending on the value of the <code>type</code>
      * property. */
+    @Override
     public String getUIClassID() {
         switch (getType()) {
             case TYPE_VIEW : return VIEW_TAB_DISPLAYER_UI_CLASS_ID;
@@ -393,14 +394,17 @@ public final class TabDisplayer extends JComponent implements Accessible {
         return type;
     }
 
+    @Override
     public final Dimension getPreferredSize() {
         return getUI().getPreferredSize(this);
     }
     
+    @Override
     public final Font getFont() {
         return getUI().getTxtFont();
     }
 
+    @Override
     public final Dimension getMinimumSize() {
         return getUI().getMinimumSize(this);
     }
@@ -468,6 +472,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
      * Gets tooltip for the tab corresponding to the mouse event, or if no
      * tab, delegates to the default implementation.
      */
+    @Override
     public final String getToolTipText(MouseEvent event) {
         if (ui != null) {
             Point p = event.getPoint();
@@ -599,6 +604,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
         return locationInformer;
     }
     
+    @Override
     public AccessibleContext getAccessibleContext() {
         if (accessibleContext == null) {
             accessibleContext = new AccessibleTabDisplayer();
@@ -640,6 +646,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
             getModel().addChangeListener(this);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             Object o = e.getSource();
             firePropertyChange(AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY,
@@ -653,6 +660,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * @return an instance of AccessibleRole describing the role of 
          *          the object
          */
+        @Override
         public AccessibleRole getAccessibleRole() {
             return AccessibleRole.PAGE_TAB_LIST;
         }
@@ -662,6 +670,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          *
          * @return the number of accessible children in the object.
          */
+        @Override
         public int getAccessibleChildrenCount() {
             return getModel().size();
         }
@@ -673,6 +682,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * @return the Accessible child of the object
          * @exception IllegalArgumentException if index is out of bounds
          */
+        @Override
         public Accessible getAccessibleChild(int i) {
             if (i < 0 || i >= getModel().size()) {
                 return null;
@@ -695,6 +705,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
 	 * 
 	 * @return this object
          */
+        @Override
         public AccessibleSelection getAccessibleSelection() {
            return this;
         }        
@@ -707,6 +718,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * @return the <code>Accessible</code> at the specified
          *    location, if it exists
          */
+        @Override
         public Accessible getAccessibleAt(Point p) {
             int tab = tabForCoordinate(p);
             if (tab == -1) {
@@ -721,6 +733,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          *
          * @return the number of items currently selected.
          */
+        @Override
         public int getAccessibleSelectionCount() {
             return 1;
         }
@@ -737,6 +750,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * @return the i-th selected child
          * @see #getAccessibleSelectionCount
          */
+        @Override
         public Accessible getAccessibleSelection(int i) {
             // always just one selected.. -> ignore i
             int index  = getSelectionModel().getSelectedIndex();
@@ -750,6 +764,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * @param i the zero-based index of the child in this Accessible object.
          * @see AccessibleContext#getAccessibleChild
          */
+        @Override
         public boolean isAccessibleChildSelected(int i) {
             return i == getSelectionModel().getSelectedIndex();
         }
@@ -764,6 +779,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * @param i the zero-based index of the child
          * @see AccessibleContext#getAccessibleChild
          */
+        @Override
         public void addAccessibleSelection(int i) {
             //TODO?
         }
@@ -776,6 +792,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * @param i the zero-based index of the child
          * @see AccessibleContext#getAccessibleChild
          */
+        @Override
         public void removeAccessibleSelection(int i) {
             //TODO?
         }
@@ -784,6 +801,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * Clears the selection in the object, so that no children in the
          * object are selected.
          */
+        @Override
         public void clearAccessibleSelection() {
             //TODO?
         }
@@ -792,6 +810,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
          * Causes every child of the object to be selected
          * if the object supports multiple selections.
          */
+        @Override
         public void selectAllAccessibleSelection() {
             //TODO?
         }

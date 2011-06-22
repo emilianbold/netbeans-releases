@@ -72,6 +72,7 @@ public class DefaultTabDataModel implements TabDataModel {
     private transient ArrayList<ComplexListDataListener> listenerList;
 
     private class L extends ArrayList<TabData> {
+        @Override
         public void removeRange(int fromIndex, int toIndex) {
             super.removeRange(fromIndex, toIndex);
         }
@@ -96,14 +97,17 @@ public class DefaultTabDataModel implements TabDataModel {
         list.addAll(Arrays.asList(data));
     }
 
+    @Override
     public java.util.List<TabData> getTabs() {
         return Collections.unmodifiableList(list);
     }
 
+    @Override
     public TabData getTab(int index) {
         return (TabData) list.get(index);
     }
 
+    @Override
     public void setTabs(TabData[] data) {
 
         TabData[] oldContents = new TabData[list.size()];
@@ -125,6 +129,7 @@ public class DefaultTabDataModel implements TabDataModel {
         fireIndicesChanged(vclde);
     }
 
+    @Override
     public void setIcon(int index, Icon i) {
         boolean[] widthChanged = new boolean[]{false};
 
@@ -153,6 +158,7 @@ public class DefaultTabDataModel implements TabDataModel {
         }
     }
 
+    @Override
     public void setText(int index, String txt) {
         boolean[] widthChanged = new boolean[]{false};
         boolean fireChange = _setText(index, txt, widthChanged);
@@ -237,6 +243,7 @@ public class DefaultTabDataModel implements TabDataModel {
         return null;
     }
 
+    @Override
     public void setIconsAndText(int[] indices, String[] txt, Icon[] icons) {
         boolean[] iconWidthsChanged = new boolean[]{false};
         boolean[] txtWidthsChanged = new boolean[]{false};
@@ -280,6 +287,7 @@ public class DefaultTabDataModel implements TabDataModel {
         }
     }
 
+    @Override
     public void setIcon(int[] indices, Icon[] icons) {
         boolean[] widthChanged = new boolean[]{false};
         int[] toFire = _setIcon(indices, icons, widthChanged);
@@ -292,6 +300,7 @@ public class DefaultTabDataModel implements TabDataModel {
         }
     }
 
+    @Override
     public void setText(int[] indices, String[] txt) {
         boolean[] widthChanged = new boolean[]{false};
         int[] toFire = _setText(indices, txt, widthChanged);
@@ -316,6 +325,7 @@ public class DefaultTabDataModel implements TabDataModel {
         }
     }
 
+    @Override
     public void setTab(int index, TabData data) {
         if (!data.equals(getTab(index))) {
             TabData olddata = getTab(index);
@@ -332,6 +342,7 @@ public class DefaultTabDataModel implements TabDataModel {
         }
     }
 
+    @Override
     public void addTab(int index, TabData data) {
         list.add(index, data);
         ComplexListDataEvent lde = new ComplexListDataEvent(this,
@@ -341,6 +352,7 @@ public class DefaultTabDataModel implements TabDataModel {
         fireIntervalAdded(lde);
     }
 
+    @Override
     public void addTabs(int start, TabData[] data) {
         list.addAll(start, Arrays.asList(data));
         ComplexListDataEvent lde = new ComplexListDataEvent(this, ListDataEvent.INTERVAL_ADDED, start, start
@@ -350,6 +362,7 @@ public class DefaultTabDataModel implements TabDataModel {
         fireIntervalAdded(lde);
     }
 
+    @Override
     public void removeTab(int index) {
         TabData[] td = new TabData[]{(TabData) list.get(index)};
         list.remove(index);
@@ -364,6 +377,7 @@ public class DefaultTabDataModel implements TabDataModel {
      * Remove a range of tabs from <code>start</code> up to <i>and including</i> 
      * <code>finish</code>.
      */
+    @Override
     public void removeTabs(int start, int end) {
         java.util.List affected = list.subList(start, end);
         if (start == end) {
@@ -378,6 +392,7 @@ public class DefaultTabDataModel implements TabDataModel {
         fireIntervalRemoved(lde);
     }
 
+    @Override
     public void addTabs(int[] indices, TabData[] data) {
         Map<Integer,TabData> m = new HashMap<Integer,TabData>(data.length);
         for (int i = 0; i < data.length; i++) {
@@ -396,6 +411,7 @@ public class DefaultTabDataModel implements TabDataModel {
         fireIndicesAdded(clde);
     }
 
+    @Override
     public void removeTabs(int[] indices) {
         Arrays.sort(indices);
         TabData[] affected = new TabData[indices.length];
@@ -409,10 +425,12 @@ public class DefaultTabDataModel implements TabDataModel {
         fireIndicesRemoved(clde);
     }
 
+    @Override
     public int size() {
         return list.size();
     }
 
+    @Override
     public synchronized void addComplexListDataListener(
             ComplexListDataListener listener) {
         synchronized( LOCK ) {
@@ -423,6 +441,7 @@ public class DefaultTabDataModel implements TabDataModel {
         }
     }
 
+    @Override
     public synchronized void removeComplexListDataListener(
             ComplexListDataListener listener) {
         synchronized( LOCK ) {
