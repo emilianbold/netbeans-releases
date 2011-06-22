@@ -44,6 +44,7 @@
 package org.netbeans.modules.profiler.j2ee.sunas;
 
 import java.util.StringTokenizer;
+import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
@@ -110,6 +111,21 @@ public class Glassfish3IntegrationProvider extends SunASAutoIntegrationProvider 
             
             insertJvmOptionsElement(domainScriptDocument, profilerElement, option);
         }
+    }
+
+    @Override
+    protected String getJvmOptionsElementText(String options) {
+        StringBuilder sb = new StringBuilder();
+        StringTokenizer tk = new StringTokenizer(options);
+        
+        while (tk.hasMoreTokens()) {
+            String option = tk.nextToken();
+            if (option.trim().isEmpty()) continue;
+            
+            sb.append(createJvmOptionsElementText(option));
+        }
+        
+        return sb.toString();
     }
     
     
