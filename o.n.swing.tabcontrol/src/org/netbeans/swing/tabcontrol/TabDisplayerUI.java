@@ -80,6 +80,7 @@ public abstract class TabDisplayerUI extends ComponentUI {
     }
 
 
+    @Override
     public void installUI(JComponent c) {
         assert c == displayer;
         selectionModel = displayer.getSelectionModel();
@@ -93,6 +94,7 @@ public abstract class TabDisplayerUI extends ComponentUI {
         installSelectionModel();
     }
 
+    @Override
     public void uninstallUI(JComponent c) {
         assert c == displayer;
     }
