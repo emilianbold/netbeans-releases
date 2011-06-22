@@ -42,11 +42,9 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import org.netbeans.modules.maven.customizer.PropertySplitter;
 import junit.framework.TestCase;
 
 /**
- *
  * @author mkleint
  */
 public class PropertySplitterTest extends TestCase {
@@ -55,14 +53,6 @@ public class PropertySplitterTest extends TestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testNextPair() {
         PropertySplitter instance = new PropertySplitter("exec=\"tes t1\"");
         String result = instance.nextPair();
@@ -86,6 +76,12 @@ public class PropertySplitterTest extends TestCase {
         assertEquals("exec=\"test1 exec2=test2\"", result);
         result = instance.nextPair();
         assertEquals("exec2=\"test3==test3\"", result);
+
+        instance = new PropertySplitter("\"-Dfoo bar=baz quux\" whatever");
+        instance.setSeparator(' ');
+        assertEquals("\"-Dfoo bar=baz quux\"", instance.nextPair());
+        assertEquals("whatever", instance.nextPair());
+        assertEquals(null, instance.nextPair());
     }
 
 }

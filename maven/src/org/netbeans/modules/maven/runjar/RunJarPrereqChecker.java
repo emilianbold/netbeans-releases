@@ -52,23 +52,24 @@ import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
+import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.M2Configuration;
+import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
+import static org.netbeans.modules.maven.runjar.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDescriptor;
@@ -77,10 +78,9 @@ import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
- *
  * @author mkleint
  */
 @ProjectServiceProvider(service=PrerequisitesChecker.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR)
@@ -88,7 +88,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
 
     private String mainClass;
 
-    public boolean checkRunConfig(RunConfig config) {
+    @Override public boolean checkRunConfig(RunConfig config) {
         String actionName = config.getActionName();
         Set<Map.Entry<Object, Object>> entries = config.getProperties().entrySet();
         for (Map.Entry<Object, Object> str : entries) {
@@ -133,37 +133,32 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
         return true;
     }
 
-
+    @Messages({
+        "LBL_ChooseMainClass_Title=Select Main Class for Execution",
+        "LBL_ChooseMainClass_OK=Select Main Class"
+    })
     private String eventuallyShowDialog(Project project, String actionName) {
         if (mainClass != null) {
             return mainClass;
         }
         List<FileObject> roots = new ArrayList<FileObject>();
         Sources srcs = ProjectUtils.getSources(project);
-        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (int i = 0; i < grps.length; i++) {
-            SourceGroup sourceGroup = grps[i];
+        for (SourceGroup sourceGroup : srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             if (MavenSourcesImpl.NAME_SOURCE.equals(sourceGroup.getName())) {
                 roots.add(sourceGroup.getRootFolder());
             }
         }
-        grps = srcs.getSourceGroups(MavenSourcesImpl.TYPE_GEN_SOURCES);
-        for (int i = 0; i < grps.length; i++) {
-            SourceGroup sourceGroup = grps[i];
+        for (SourceGroup sourceGroup : srcs.getSourceGroups(MavenSourcesImpl.TYPE_GEN_SOURCES)) {
             roots.add(sourceGroup.getRootFolder());
         }
-        final JButton okButton = new JButton(NbBundle.getMessage(RunJarPrereqChecker.class, "LBL_ChooseMainClass_OK"));
-//        JButton okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (RunJarPanel.class, "AD_ChooseMainClass_OK"));
-
-
+        final JButton okButton = new JButton(LBL_ChooseMainClass_OK());
         final MainClassChooser panel = new MainClassChooser(roots.toArray(new FileObject[0]));
         Object[] options = new Object[]{
             okButton,
             DialogDescriptor.CANCEL_OPTION
         };
         panel.addChangeListener(new ChangeListener() {
-
-            public void stateChanged(ChangeEvent e) {
+            @Override public void stateChanged(ChangeEvent e) {
                 if (e.getSource() instanceof MouseEvent && MouseUtils.isDoubleClick(((MouseEvent) e.getSource()))) {
                     // click button and finish the dialog with selected class
                     okButton.doClick();
@@ -176,7 +171,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
         okButton.setEnabled(false);
         DialogDescriptor desc = new DialogDescriptor(
                 panel,
-                NbBundle.getMessage(RunJarPrereqChecker.class, "LBL_ChooseMainClass_Title"),
+                LBL_ChooseMainClass_Title(),
                 true,
                 options,
                 options[0],
@@ -197,12 +192,22 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
         return null;
     }
 
-    private void writeMapping(String actionName, Project project, String clazz) {
+    static void writeMapping(String actionName, Project project, String clazz) {
         try {
             M2ConfigProvider usr = project.getLookup().lookup(M2ConfigProvider.class);
             ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getDefaultConfig().getRawMappingsAsString()));
-            NetbeansActionMapping mapp = ActionToGoalUtils.getDefaultMapping(actionName, project);
-            mapping.addAction(mapp);
+            NetbeansActionMapping mapp = null;
+            for (NetbeansActionMapping check : mapping.getActions()) {
+                if (check.getActionName().equals(actionName)) {
+                    mapp = check;
+                    break;
+                }
+            }
+            if (mapp == null) {
+                mapp = ActionToGoalUtils.getDefaultMapping(actionName, project);
+                mapping.addAction(mapp);
+            }
+            // XXX should this rather run on _all_ actions that reference ${packageClassName}?
             Set<Map.Entry<Object, Object>> entries = mapp.getProperties().entrySet();
             for (Map.Entry<Object, Object> str : entries) {
                 String val = (String) str.getValue();
