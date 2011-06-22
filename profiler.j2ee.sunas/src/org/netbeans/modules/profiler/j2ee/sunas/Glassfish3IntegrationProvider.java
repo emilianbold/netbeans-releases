@@ -43,20 +43,23 @@
 
 package org.netbeans.modules.profiler.j2ee.sunas;
 
+import java.util.StringTokenizer;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
-public class GlassfishIntegrationProvider extends SunASAutoIntegrationProvider {
+public class Glassfish3IntegrationProvider extends SunASAutoIntegrationProvider {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private final String APP_SERVER_CONSOLE_TITLE = NbBundle.getMessage(this.getClass(),
-                                                                        "SunAS8IntegrationProvider_ProfiledSunAs9GlassFishConsoleString"); // NOI18N
-    private final String APP_SERVER_TITLE = NbBundle.getMessage(this.getClass(), "SunAS8IntegrationProvider_SunAs9GlassFishString"); // NOI18N
+                                                                        "GlassFishV3IntegraionProvider_ProfiledGlassFish3ConsoleString"); // NOI18N
+    private final String APP_SERVER_TITLE = NbBundle.getMessage(this.getClass(), "GlassFishV3IntegraionProvider_GlassFishV3String"); // NOI18N
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -65,11 +68,11 @@ public class GlassfishIntegrationProvider extends SunASAutoIntegrationProvider {
     }
 
     protected int getAttachWizardPriority() {
-        return 21;
+        return 20;
     }
 
     protected int getMagicNumber() {
-        return 20;
+        return 30;
     }
 
     protected String getWinConsoleString() {
@@ -81,4 +84,33 @@ public class GlassfishIntegrationProvider extends SunASAutoIntegrationProvider {
                + IntegrationUtils.getDirectorySeparator(targetOS) + IntegrationUtils.getProfilerAgentLibraryFile(targetOS) + "=" //NOI18N
                + "\\\"" + IntegrationUtils.getLibsDir(targetOS, isRemote) + "\\\"" + "," + portNumber + "\""; //NOI18N
     }
+
+    @Override
+    protected String getConfigDir(String targetOS) {
+        return "glassfish" + IntegrationUtils.getDirectorySeparator(targetOS) + super.getConfigDir(targetOS);
+    }
+
+    @Override
+    protected String getDomainsDirPath(String separator) {
+        return "glassfish" + separator + super.getDomainsDirPath(separator);
+    }
+
+    @Override
+    protected boolean usesXMLDeclaration() {
+        return false;
+    }
+
+    @Override
+    protected void insertJvmOptions(Document domainScriptDocument, Element profilerElement, String optionsString) {
+        StringTokenizer tk = new StringTokenizer(optionsString);
+        
+        while (tk.hasMoreTokens()) {
+            String option = tk.nextToken();
+            if (option.trim().isEmpty()) continue;
+            
+            insertJvmOptionsElement(domainScriptDocument, profilerElement, option);
+        }
+    }
+    
+    
 }
