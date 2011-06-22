@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -2910,7 +2911,22 @@ final class Central implements ControllerHandler {
      * Slide out all non-editor TopComponents.
      */
     private void slideAllViews() {
+        //find appropriate sliding bars first, otherwise the split hierarchy
+        //will change while sliding some windows so the sliding positions would be wrong
+        Map<TopComponent, String> tc2slideSide = new HashMap<TopComponent, String>(30);
         Set<? extends Mode> modes = getModes();
+        for( Iterator<? extends Mode> i=modes.iterator(); i.hasNext(); ) {
+            ModeImpl modeImpl = (ModeImpl)i.next();
+            if( modeImpl.getKind() == Constants.MODE_KIND_VIEW 
+                    && modeImpl != getViewMaximizedMode()
+                    && modeImpl.getState() != Constants.MODE_STATE_SEPARATED ) {
+                List<TopComponent> views = getModeOpenedTopComponents( modeImpl );
+                for( Iterator<TopComponent> j=views.iterator(); j.hasNext(); ) {
+                    TopComponent tc = j.next();
+                    tc2slideSide.put( tc, guessSlideSide( tc ) );
+                }
+            }
+        }
         for( Iterator<? extends Mode> i=modes.iterator(); i.hasNext(); ) {
             ModeImpl modeImpl = (ModeImpl)i.next();
             if( modeImpl.getKind() == Constants.MODE_KIND_VIEW 
@@ -2920,7 +2936,7 @@ final class Central implements ControllerHandler {
                 Collections.reverse( views );
                 for( Iterator<TopComponent> j=views.iterator(); j.hasNext(); ) {
                     TopComponent tc = j.next();
-                    slide( tc, modeImpl, guessSlideSide( tc ) );
+                    slide( tc, modeImpl, tc2slideSide.get( tc ) );
                 }
             }
         }
