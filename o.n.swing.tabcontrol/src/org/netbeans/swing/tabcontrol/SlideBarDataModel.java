@@ -44,8 +44,6 @@
 
 package org.netbeans.swing.tabcontrol;
 
-import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
-import org.netbeans.swing.tabcontrol.TabDataModel;
 
 /*
  * Data model of slide bar. It's the same as TabDataModel, but has
@@ -79,10 +77,12 @@ public interface SlideBarDataModel extends TabDataModel {
             super();
         }
 
+        @Override
         public int getOrientation() {
             return orientation;
         }
 
+        @Override
         public void setOrientation(int orientation) {
             this.orientation = orientation;
         }
