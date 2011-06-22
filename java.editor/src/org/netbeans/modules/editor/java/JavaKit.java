@@ -516,9 +516,10 @@ public class JavaKit extends NbEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             try {
                 super.actionPerformed(evt, target);
-                // XXX temporary solution until the editor will provide a SPI to plug. See issue #115739
-                // This must run outside the document lock
-                if (isJavadocTouched) {
+                Document doc = target.getDocument();
+                if (isJavadocTouched && !org.netbeans.lib.editor.util.swing.DocumentUtilities.isWriteLocked(doc)) {
+                    // XXX temporary solution until the editor will provide a SPI to plug. See issue #115739
+                    // This must run outside the document lock
                     Lookup.Result<TextAction> res = MimeLookup.getLookup(MimePath.parse("text/x-javadoc")).lookupResult(TextAction.class);
                     ActionEvent newevt = new ActionEvent(target, ActionEvent.ACTION_PERFORMED, "fix-javadoc");
                     for (TextAction action : res.allInstances()) {
@@ -526,7 +527,6 @@ public class JavaKit extends NbEditorKit {
                     }
                 } else {
                     //Complete block comment
-                    Document doc = target.getDocument();
                     int start = ((AbstractDocument) doc).getParagraphElement(target.getCaretPosition()).getStartOffset();
                     int end = ((AbstractDocument) doc).getParagraphElement(target.getCaretPosition()).getEndOffset();
                     //Check if line with just one * surrounded by spaces is already entered
