@@ -804,7 +804,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     tc = (TopComponent)tr.getTransferData(df);
                 }
 
-                return new TopComponentDraggable( tc );
+                if( null != tc )
+                    return new TopComponentDraggable( tc );
             } catch(UnsupportedFlavorException ufe) {
                 Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
