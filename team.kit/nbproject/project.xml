@@ -8,19 +8,19 @@
                 <dependency>
                     <code-name-base>org.netbeans.libs.smack</code-name-base>
                     <run-dependency>
-                        <specification-version>3.1</specification-version>
+                        <specification-version>3.10.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.kenai</code-name-base>
                     <run-dependency>
-                        <specification-version>0.1</specification-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.kenai.ui</code-name-base>
                     <run-dependency>
-                        <specification-version>0.1</specification-version>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
