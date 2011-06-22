@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  * @author Alexander Simon
  */
 public class MagicCache {
-    private static final int BUF_LENGTH = 80;
+    private static final int BUF_LENGTH = 4000;
     private static final String cacheName = ".rfs_magic"; // NOI18N
     private final RemoteDirectory dir;
     private Map<String, byte[]> cache;
@@ -120,7 +120,7 @@ public class MagicCache {
                         file = line.substring(2);
                         res = new byte[BUF_LENGTH];
                         pos = 0;
-                    } else if (line.startsWith("0000")){ // NOI18N
+                    } else if (line.startsWith("000")){ // NOI18N
                         String[] split = line.split(" "); // NOI18N
                         if (split.length > 1) {
                             for(int i = 1; i< split.length; i++) {
