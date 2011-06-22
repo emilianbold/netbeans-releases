@@ -84,13 +84,16 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
             Description info = findInfo(e);
             String id = info.preferredID().replace('.', '-');
             
+            String role = reg.role();
+            String rootFolder = role.isEmpty() ? "Windows2" : "Windows2/Roles/" + role;
+
             File settingsFile = layer(e).
-                file("Windows2/Components/" + id + ".settings").
+                file(rootFolder+"/Components/" + id + ".settings").
                 contents(settingsFile(e));
             settingsFile.write();
             
             File modeFile = layer(e).
-                file("Windows2/Modes/" + reg.mode() + "/" + id + ".wstcref").
+                file(rootFolder+"/Modes/" + reg.mode() + "/" + id + ".wstcref").
                 position(reg.position()).
                 contents(modeFile(info.preferredID(), reg.openAtStartup()));
             modeFile.write();

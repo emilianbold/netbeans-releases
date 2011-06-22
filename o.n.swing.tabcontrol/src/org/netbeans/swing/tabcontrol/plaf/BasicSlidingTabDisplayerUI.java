@@ -87,11 +87,13 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
         return new BasicSlidingTabDisplayerUI((TabDisplayer) c);
     }
     
+    @Override
     protected void install() {
         displayer.setLayout (new OrientedLayoutManager());
         syncButtonsWithModel();
     }
     
+    @Override
     protected Font createFont() {
         //XXX Sideways text is more readable with a slightly larger bold font
         Font f = super.createFont();
@@ -100,14 +102,17 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
         return f;
     }
 
+    @Override
     protected void uninstall() {
         displayer.removeAll();
     }
     
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         return displayer.getLayout().preferredLayoutSize(c);
     }
 
+    @Override
     public Dimension getMinimumSize(JComponent c) {
         return displayer.getLayout().minimumLayoutSize(c);
     }
@@ -148,27 +153,33 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
     /** Not used so much to determine layout as to calculate preferred sizes
      * here
      */
+    @Override
     protected TabLayoutModel createLayoutModel() {
        DefaultTabLayoutModel result = new DefaultTabLayoutModel(displayer.getModel(), displayer);
        result.setPadding (new Dimension (15, 2));
        return result;
     }
     
+    @Override
     protected MouseListener createMouseListener() {
         return new MouseAdapter() {};
     }
     
+    @Override
     public void requestAttention (int tab) {
         //not implemented
     }
     
+    @Override
     public void cancelRequestAttention (int tab) {
         //not implemented
     }
     
+    @Override
     protected ChangeListener createSelectionListener() {
         return new ChangeListener() {
             private int lastKnownSelection = -1;
+            @Override
             public void stateChanged (ChangeEvent ce) {
                 int selection = selectionModel.getSelectedIndex();
                 if (selection != lastKnownSelection) {
@@ -193,10 +204,12 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
         };
     }
     
+    @Override
     public Polygon getExactTabIndication(int index) {
         return new EqualPolygon (findButtonFor(index).getBounds());
     }
     
+    @Override
     public Polygon getInsertTabIndication(int index) {
         Rectangle r = findButtonFor (index).getBounds();
         Polygon result = new EqualPolygon (findButtonFor(index).getBounds());
@@ -213,6 +226,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
         return null;
     }
     
+    @Override
     public Rectangle getTabRect(int index, Rectangle destination) {
         if (destination == null) {
             destination = new Rectangle();
@@ -226,6 +240,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
         return destination;
     }
     
+    @Override
     public int tabForCoordinate(Point p) {
         Component[] c = displayer.getComponents();
         for (int i=0; i < c.length; i++) {
@@ -239,6 +254,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
     }
 
     protected final class SlidingPropertyChangeListener extends AbstractTabDisplayerUI.DisplayerPropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             super.propertyChange(e);
             if (TabDisplayer.PROP_ORIENTATION.equals(e.getPropertyName())) {
@@ -252,6 +268,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
     }
 
      /** Paints the rectangle occupied by a tab into an image and returns the result */
+    @Override
     public Image createImageOfTab(int index) {
         TabData td = displayer.getModel().getTab(index);
         
@@ -301,11 +318,13 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
             setFocusable(false);
         }
 
+        @Override
         public void addNotify() {
             super.addNotify();
             ToolTipManager.sharedInstance().registerComponent(this);
         }
 
+        @Override
         public void removeNotify() {
             super.removeNotify();
             ToolTipManager.sharedInstance().unregisterComponent(this);
@@ -316,6 +335,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
             return displayer.isActive();
         }
 
+        @Override
         public void updateUI () {
             SlidingTabDisplayerButtonUI ui = null;
             try {
@@ -330,6 +350,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
             setUI ((ButtonUI) SlidingTabDisplayerButtonUI.createUI(this));
         }
 
+        @Override
         public String getUIClassID() {
             return UI_KEY;
         }
@@ -340,6 +361,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
             return getDisplayerOrientation();
         }
         
+        @Override
         public String getText() {
             if (index == -1) {
                 //We're being called in the superclass constructor when the UI is
@@ -354,11 +376,13 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
             return lastKnownText;
         }
         
+        @Override
         public String getToolTipText() {
             return displayer.getModel().getTab(index).getTooltip();
         }
 
         /** Implementation of ActionListener - sets the selected index in the selection model */
+        @Override
         public final void actionPerformed(ActionEvent e) {
             if (!isSelected()) {
                 selectionModel.setSelectedIndex (-1);
@@ -372,6 +396,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
             return index;
         }
         
+        @Override
         public Icon getIcon() {
             if (index == -1) {
                 //We're being called in the superclass constructor when the UI is
@@ -413,18 +438,21 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
         }
     }
 
+    @Override
     protected void modelChanged() {
         if (syncButtonsWithModel()) {
             displayer.validate();
         }
     }
 
+    @Override
     public Icon getButtonIcon(int buttonId, int buttonState) {
         return null;
     }
 
     private static final Comparator<Component> BUTTON_COMPARATOR = new IndexButtonComparator();
     private static class IndexButtonComparator implements Comparator<Component> {
+        @Override
         public int compare(Component o1, Component o2) {
             if (o2 instanceof IndexButton && o1 instanceof IndexButton) {
                 return ((IndexButton) o1).getIndex() - ((IndexButton) o2).getIndex();
@@ -434,10 +462,12 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
     }
     
     private final class OrientedLayoutManager implements LayoutManager {
+        @Override
         public void addLayoutComponent(String name, Component comp) {
             //do nothing
         }
         
+        @Override
         public void layoutContainer(Container parent) {
             synchronized (parent.getTreeLock()) {
                 syncButtonsWithModel();
@@ -478,10 +508,12 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
             }
         }
         
+        @Override
         public Dimension minimumLayoutSize(Container parent) {
             return preferredLayoutSize(parent);
         }
         
+        @Override
         public Dimension preferredLayoutSize(Container parent) {
             Object orientation = getDisplayerOrientation();
             boolean flip = orientation == TabDisplayer.ORIENTATION_EAST || 
@@ -501,6 +533,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
             return result;
         }
         
+        @Override
         public void removeLayoutComponent(Component comp) {
             //do nothing
         }
