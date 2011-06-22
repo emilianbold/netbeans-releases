@@ -42,11 +42,9 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import org.netbeans.modules.maven.customizer.RunJarPanel;
 import junit.framework.TestCase;
 
 /**
- *
  * @author mkleint
  */
 public class RunJarPanelTest extends TestCase {
@@ -90,6 +88,14 @@ public class RunJarPanelTest extends TestCase {
         assertEquals("-Dparam1=\"one two three\" -classpath %classpath", RunJarPanel.splitJVMParams(line));
         assertEquals("${packageClassName}", RunJarPanel.splitMainClass(line));
         assertEquals("%classpath ${packageClassName}", RunJarPanel.splitParams(line));
+        line = "-D\"foo bar=baz quux\" -classpath %classpath my.App";
+        assertEquals("-D\"foo bar=baz quux\" -classpath %classpath", RunJarPanel.splitJVMParams(line));
+        assertEquals("my.App", RunJarPanel.splitMainClass(line));
+        assertEquals("", RunJarPanel.splitParams(line));
+        line = "\"-Dfoo bar=baz quux\" -classpath %classpath my.App"; // #199411
+        assertEquals("\"-Dfoo bar=baz quux\" -classpath %classpath", RunJarPanel.splitJVMParams(line));
+        assertEquals("my.App", RunJarPanel.splitMainClass(line));
+        assertEquals("", RunJarPanel.splitParams(line));
     }
 
 

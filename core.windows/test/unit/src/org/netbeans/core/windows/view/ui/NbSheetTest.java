@@ -49,9 +49,11 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.actions.GlobalPropertiesAction;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.modules.ModuleInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -72,13 +74,25 @@ public class NbSheetTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
-        s = NbSheet.findDefault();
+        Lookup.getDefault().lookup(ModuleInfo.class);
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            @Override
+            public void run() {
+                s = NbSheet.findDefault();
+            }
+        });
         assertNotNull("Sheet found", s);
         assertFalse("Not yet visible", s.isShowing());
         a = GlobalPropertiesAction.get(GlobalPropertiesAction.class);
         tc = new TopComponent();
+    }
+    
+    @Override
+    protected int timeOut() {
+        return 15000;
     }
 
     public void testIssue97069EgUseSetActivatedNodesNull() throws Exception {
@@ -112,8 +126,13 @@ public class NbSheetTest extends NbTestCase {
         assertEquals("One node displayed", 1, s.getNodes().length);
         assertEquals("it is node", activate.node, s.getNodes()[0]);
         assertEquals("No activated nodes", null, s.getActivatedNodes());
-        
-        s.close();
+
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                s.close();
+            }
+        });
         
         final N another = new N("another");
         

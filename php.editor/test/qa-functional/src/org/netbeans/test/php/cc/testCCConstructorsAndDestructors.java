@@ -102,13 +102,14 @@ public class testCCConstructorsAndDestructors extends cc
 
     // Check constructor
     String sCode = "function __con";
-    String sIdeal = "function  __construct() {";
+    String sIdeal = "            function __construct() {";
     TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     WaitCompletionScanning( );
 
     // Get code
     String sText = eoPHP.getText( eoPHP.getLineNumber( ) - 1 );
+    sText= sText.substring(0, sText.lastIndexOf("{")+1); // there is new line symbol
 
     // Check code completion list
     if( -1 == sText.indexOf( sIdeal ) )
