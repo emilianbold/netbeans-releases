@@ -92,7 +92,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final boolean trace = Boolean.getBoolean("cnd.remote.directory.trace"); //NOI18N
 
     private Reference<DirectoryStorage> storageRef = new SoftReference<DirectoryStorage>(null);
-    private MagicCache magicCache;
+    private Reference<MagicCache> magicCache = new SoftReference<MagicCache>(null);
 
     private static final class RefLock {}
     private final Object refLock = new RefLock();    
@@ -1188,18 +1188,22 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private MagicCache getMagicCache() {
+        MagicCache magic;
         synchronized (magicLock) {
-            if (magicCache == null) {
-                magicCache = new MagicCache(this);
+            magic = magicCache.get();
+            if (magic == null) {
+                magic = new MagicCache(this);
+                magicCache = new SoftReference<MagicCache>(magic);
             }
         }
-        return magicCache;
+        return magic;
     }
 
     private void dropMagic() {
         synchronized (magicLock) {
-            if (magicCache != null) {
-                magicCache.clean(null);
+            MagicCache magic = magicCache.get();
+            if (magic != null) {
+                magic.clean(null);
             } else {
                 new MagicCache(this).clean(null);
             }

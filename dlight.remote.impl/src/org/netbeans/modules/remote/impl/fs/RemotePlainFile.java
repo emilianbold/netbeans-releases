@@ -142,7 +142,8 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     //org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern.match(MIMEResolverImpl.java:801)
     private boolean isMimeResolving() {
         for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
-            if ("org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern".equals(element.getClassName())) { //NOI18N
+            if ("org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern".equals(element.getClassName()) ||  //NOI18N
+                "org.openide.loaders.DefaultDataObject".equals(element.getClassName()) && "fixCookieSet".equals(element.getMethodName())) { //NOI18N
                 return true;
             }
         }
