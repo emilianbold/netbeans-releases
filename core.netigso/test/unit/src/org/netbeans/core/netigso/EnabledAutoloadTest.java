@@ -45,6 +45,7 @@
 package org.netbeans.core.netigso;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.Module;
@@ -54,6 +55,10 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Lookup;
+import org.openide.util.test.TestFileUtils;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.launch.Framework;
 
 /**
  *
@@ -83,6 +88,7 @@ public class EnabledAutoloadTest extends NbTestCase {
         jars.mkdirs();
 
         j1 = SetupHid.createTestJAR(getDataDir(), jars, "simple-module.jar", null);
+        System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     public void testDependOnAutoload() throws Exception {
@@ -115,4 +121,68 @@ public class EnabledAutoloadTest extends NbTestCase {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
+
+    public void testAutoloadBundles() throws Exception {
+        CharSequence log;
+        
+        ModuleManager mgr = Main.getModuleSystem().getManager();
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            File jar1 = new File(getWorkDir(), "j1.jar");
+            TestFileUtils.writeZipFile(jar1,
+                    "META-INF/MANIFEST.MF:Bundle-SymbolicName: m1\nExport-Package: m1\nBundle-Version: 1.0\n",
+                    "m1/res:ource");
+            Module m1 = mgr.create(jar1, null, false, true, false);
+            File jar2 = new File(getWorkDir(), "j2.jar");
+            TestFileUtils.writeZipFile(jar2,
+                    "META-INF/MANIFEST.MF:Bundle-SymbolicName: m2\nExport-Package: m2\nBundle-Version: 1.0\nRequire-Bundle: m1\n",
+                    "m2/res:ource");
+            Module m2 = mgr.create(jar2, null, false, true, false);
+            File jar3 = new File(getWorkDir(), "j3.jar");
+            TestFileUtils.writeZipFile(jar3,
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: m3\nOpenIDE-Module-Module-Dependencies: m2\nOpenIDE-Module-Public-Packages: -\n");
+            Module m3 = mgr.create(jar3, null, false, false, false);
+            
+            log = Log.enable("org.netbeans", Level.INFO);
+            mgr.enable(m3);
+            assertTrue(m3.isEnabled());
+            assertTrue(m2.isEnabled());
+            assertFalse("Module M1 is not enabled in ", m1.isEnabled());
+            assertNotNull(m3.getClassLoader().getResource("m2/res"));
+            assertNull("Can't load from not enabled bundle", m2.getClassLoader().getResource("m1/res"));
+            assertNotNull("But can load directly from bundle", bundle(m1).getResource("m1/res"));
+
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+        assertAsynchronousMessage(log, "bundle m1@1.0.0 resolved");
+        if (log.toString().contains("bundle m2")) {
+            fail("m2 is turned on as module and listed on its own");
+        }
+    }
+
+    private void assertAsynchronousMessage(CharSequence log, String text) throws InterruptedException {
+        for (int i = 0; i < 50; i++) {
+            if (log.toString().contains(text)) {
+                return;
+            }
+            Thread.sleep(100);
+        }
+        fail("There should be a message about enabling m1:\n" + log);
+    }
+
+    static Bundle bundle(Module module) throws Exception {
+        final Netigso netigso = Lookup.getDefault().lookup(Netigso.class);
+        Method m = Netigso.class.getDeclaredMethod("getFramework");
+        m.setAccessible(true);
+        Framework f = (Framework) m.invoke(netigso);
+        for (Bundle b : f.getBundleContext().getBundles()) {
+            if (b.getSymbolicName().equals(module.getCodeNameBase())) {
+                return b;
+            }
+        }
+        fail("no bundle found for " + module);
+        return null;
+    }
+
 }

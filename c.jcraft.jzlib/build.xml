@@ -43,16 +43,16 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-
-<filesystem>
-    <folder name="Services">
-        <folder name="Hidden">
-            <file name="org-netbeans-lib-jsch-antlibrary.instance">
-                <attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/>
-                <attr name="instanceOf" stringvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider"/>
-                <attr name="url" urlvalue="nbinst://org.netbeans.libs.jsch/modules/ext/jsch-0.1.44.jar"/>
-            </file>
-        </folder>
-    </folder>
-</filesystem>
+<project name="c.jcraft.jzlib" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/jzlib-1.0.7.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="com.jcraft.jzlib"/>
+                <attribute name="Bundle-Version" value="1.0.7"/>
+                <attribute name="Export-Package" value="com.jcraft.jzlib"/>
+            </manifest>
+        </jar>
+    </target>
+</project>
