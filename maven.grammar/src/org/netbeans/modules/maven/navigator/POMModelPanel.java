@@ -307,7 +307,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             // can be null for stuff in jars?
             if (file != null) {
                 try {
-                    MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
+                    MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
                     List<Project> prjs = new ArrayList<Project>();
                     List<POMModel> mdls = new ArrayList<POMModel>();
                     POMQNames names = null;
