@@ -77,7 +77,7 @@ public class IntegrationTest extends NbTestCase {
             NbModuleSuite.emptyConfiguration().addTest(
                 IntegrationTest.class
             ).honorAutoloadEager(true).clusters(
-                ".*"
+                "platform.*"
             ).failOnException(Level.WARNING)/*.failOnMessage(Level.WARNING)*/
             .gui(false)
         .suite();
