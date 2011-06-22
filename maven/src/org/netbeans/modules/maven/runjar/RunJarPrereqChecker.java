@@ -197,12 +197,22 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
         return null;
     }
 
-    private void writeMapping(String actionName, Project project, String clazz) {
+    static void writeMapping(String actionName, Project project, String clazz) {
         try {
             M2ConfigProvider usr = project.getLookup().lookup(M2ConfigProvider.class);
             ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getDefaultConfig().getRawMappingsAsString()));
-            NetbeansActionMapping mapp = ActionToGoalUtils.getDefaultMapping(actionName, project);
-            mapping.addAction(mapp);
+            NetbeansActionMapping mapp = null;
+            for (NetbeansActionMapping check : mapping.getActions()) {
+                if (check.getActionName().equals(actionName)) {
+                    mapp = check;
+                    break;
+                }
+            }
+            if (mapp == null) {
+                mapp = ActionToGoalUtils.getDefaultMapping(actionName, project);
+                mapping.addAction(mapp);
+            }
+            // XXX should this rather run on _all_ actions that reference ${packageClassName}?
             Set<Map.Entry<Object, Object>> entries = mapp.getProperties().entrySet();
             for (Map.Entry<Object, Object> str : entries) {
                 String val = (String) str.getValue();
