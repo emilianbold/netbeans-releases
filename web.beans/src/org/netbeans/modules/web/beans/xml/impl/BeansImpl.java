@@ -70,14 +70,14 @@ class BeansImpl extends WebBeansComponentImpl implements Beans {
      * @see org.netbeans.modules.web.beans.xml.Beans#addElement(org.netbeans.modules.web.beans.xml.BeansElement)
      */
     public void addElement( BeansElement element ) {
-        appendChild(BEANS,  element );
+        appendChild(BEANS_ELEMENT,  element );
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.Beans#addElement(int, org.netbeans.modules.web.beans.xml.BeansElement)
      */
     public void addElement( int index, BeansElement element ) {
-        insertAtIndex( BEANS, element, index);
+        insertAtIndex( BEANS_ELEMENT, element, index);
     }
 
     /* (non-Javadoc)
