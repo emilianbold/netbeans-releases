@@ -295,7 +295,7 @@ public class testCC extends cc {
         System.out.println("==== go to click on item ====");
         jCompl.listItself.clickOnItem("$GLOBALS", new CFulltextStringComparator());
 
-        WindowOperator jdDoc = new WindowOperator(2);
+        WindowOperator jdDoc = new WindowOperator(1);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
     
 //        try {
@@ -364,7 +364,7 @@ public class testCC extends cc {
         t.setTimeout("JScrollBarOperator.OneScrollClickTimeout", 60000);
         t.setTimeout("JScrollBarOperator.WholeScrollTimeout", 60000);
         jCompl.listItself.setTimeouts(t);
-        WindowOperator jdDoc = new WindowOperator(2);
+        WindowOperator jdDoc = new WindowOperator(1);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
         String sCompleteContent = jeEdit.getText();
         // Check content
@@ -464,7 +464,7 @@ public class testCC extends cc {
         CompletionInfo jCompl = GetCompletion();
         jCompl.listItself.clickOnItem("function_0001");
 
-        WindowOperator jdDoc = new WindowOperator(2);
+        WindowOperator jdDoc = new WindowOperator(1);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
         String sCompleteContent = jeEdit.getText();
         // Check content
