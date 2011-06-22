@@ -51,7 +51,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -61,8 +60,8 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public abstract class AbstractInterceptedElementAnalyzer {
     
 
-    protected boolean hasInterceptorBindings(Element element,
-            WebBeansModel model, List<ErrorDescription> descriptions )
+    protected Set<AnnotationMirror> getInterceptorBindings(Element element,
+            WebBeansModel model)
     {
         Collection<AnnotationMirror> interceptorBindings = model
                 .getInterceptorBindings(element);
@@ -72,6 +71,12 @@ public abstract class AbstractInterceptedElementAnalyzer {
         Set<AnnotationMirror> set = new HashSet<AnnotationMirror>(
                 interceptorBindings);
         set.retainAll(annotations);
-        return !set.isEmpty();
+        return set;
+    }
+    
+    protected boolean hasInterceptorBindings(Element element,
+            WebBeansModel model )
+    {
+        return !getInterceptorBindings(element, model).isEmpty();
     }
 }
