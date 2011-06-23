@@ -73,6 +73,7 @@ import org.netbeans.modules.mercurial.ui.menu.ExportMenu;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
+import org.netbeans.modules.mercurial.ui.menu.BranchMenu;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
 import org.netbeans.modules.mercurial.ui.pull.FetchAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
@@ -351,6 +352,8 @@ public class MercurialAnnotator extends VCSAnnotator {
                 actions.add(SystemAction.get(IgnoreAction.class));
             }
             actions.add(null);
+            actions.add(new BranchMenu(null));
+            actions.add(null);
             actions.add(SystemAction.get(PropertiesAction.class));
         } else {
             Lookup context = ctx.getElements();
@@ -391,6 +394,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 }
                 actions.add(null);
                 actions.add(new ShareMenu());
+                actions.add(new BranchMenu(context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }
