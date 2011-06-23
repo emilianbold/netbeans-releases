@@ -325,7 +325,7 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
                 chooserFrame.setProfilingPointFactory((currentFactory == ppFactories.length) ? null : ppFactories[currentFactory],
                                                       currentFactory);
             } else {
-                if (EditorSupport.getDefault().currentlyInJavaEditor()) {
+                if (EditorSupport.currentlyInJavaEditor()) {
                     resetFactories();
                     chooserFrame.setProfilingPointFactory((currentFactory == ppFactories.length) ? null : ppFactories[currentFactory],
                                                           currentFactory);

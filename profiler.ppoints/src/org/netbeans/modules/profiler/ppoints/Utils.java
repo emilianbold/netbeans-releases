@@ -401,7 +401,7 @@ public class Utils {
     }
 
     public static CodeProfilingPoint.Location getCurrentLocation(int lineOffset) {
-        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return CodeProfilingPoint.Location.EMPTY;
@@ -443,7 +443,7 @@ public class Utils {
     }
 
     public static CodeProfilingPoint.Location getCurrentSelectionEndLocation(int lineOffset) {
-        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return CodeProfilingPoint.Location.EMPTY;
@@ -474,7 +474,7 @@ public class Utils {
     }
 
     public static CodeProfilingPoint.Location[] getCurrentSelectionLocations() {
-        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return new CodeProfilingPoint.Location[0];
@@ -523,7 +523,7 @@ public class Utils {
     }
 
     public static CodeProfilingPoint.Location getCurrentSelectionStartLocation(int lineOffset) {
-        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return CodeProfilingPoint.Location.EMPTY;
@@ -727,7 +727,7 @@ public class Utils {
     }
 
     public static Lookup.Provider getMostActiveJavaProject() {
-        EditorContext mostActiveContext = EditorSupport.getDefault().getMostActiveJavaEditorContext();
+        EditorContext mostActiveContext = EditorSupport.getMostActiveJavaEditorContext();
 
         if (mostActiveContext == null) {
             return null;
