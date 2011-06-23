@@ -56,6 +56,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -73,6 +76,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.core.ui.sampler.SamplesOutputStream;
+import org.openide.util.Exceptions;
 
 /**
  * BlacklistedClassesHandler performs processing of log messages to identify
@@ -83,7 +88,7 @@ import java.util.logging.Logger;
  * non-identifier character. Leading and trailing spaces are ignored.
  *
  * Use getInstance and getBlacklistedClassesHandler methods to ensure that
- * only one incstance of BlacklistedClassesHandlerSingleton is used across
+ * only one instance of BlacklistedClassesHandlerSingleton is used across
  * the different classloaders
  *
  * @author nenik, mrkam@netbeans.org
@@ -108,6 +113,10 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     private String newWhitelistFileName;
     private String previousWhitelistFileName = null;
     private File whitelistStorageDir = null;
+    private SamplesOutputStream samples;
+    private ByteArrayOutputStream stream;
+    private ThreadMXBean threadBean;
+    private long start;
 
     private BlacklistedClassesHandlerSingleton() {
     }
@@ -162,6 +171,14 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
             }
         }
 
+        threadBean = ManagementFactory.getThreadMXBean();
+        start = System.currentTimeMillis();
+        stream = new ByteArrayOutputStream();
+        try {
+            samples = new SamplesOutputStream(stream, null, 5000);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
 
         loadBlackList(blacklistFileName);
         loadWhiteList(this.whitelistFileName, whitelist);
@@ -380,6 +397,13 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 exceptions.add(exc);
                                 whitelistViolators.put(className, exceptions);
                                 violation++;
+                                ThreadInfo[] threads = threadBean.dumpAllThreads(false, false);
+                                for (ThreadInfo ti : threads) {
+                                    if (ti.getThreadId() == Thread.currentThread().getId()) {
+                                        samples.writeSample(new ThreadInfo[] {ti}, start*1000000L + violation * 10000000L, -1);
+                                        break;
+                            }
+                        }
                             }
                         }
                     } else if (generatingWhitelist) {
@@ -742,5 +766,17 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
         newWhitelist.clear();
         whitelistEnabled = false;
         generatingWhitelist = false;
+    }
+
+    @Override
+    public void writeViolationsSnapshot(File file) {
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            samples.close();
+            fos.write(stream.toByteArray());
+            fos.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

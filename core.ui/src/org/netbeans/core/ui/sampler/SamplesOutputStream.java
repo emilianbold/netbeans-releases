@@ -64,7 +64,7 @@ import javax.management.openmbean.CompositeData;
  *
  * @author Tomas Hurka
  */
-class SamplesOutputStream {
+public class SamplesOutputStream {
 
     private static final String[][] methods = new String[][]{
         {"sun.management.ThreadInfoCompositeData", "toCompositeData"}, // NOI18N Sun JVM
@@ -105,7 +105,7 @@ class SamplesOutputStream {
         return toCompositeDataMethod != null;
     }
 
-    SamplesOutputStream(OutputStream os, Sampler progress, int max) throws IOException {
+    public SamplesOutputStream(OutputStream os, Sampler progress, int max) throws IOException {
         maxSamples = max;
         this.progress = progress;
         outStream = os;
@@ -116,7 +116,7 @@ class SamplesOutputStream {
         samples = new ArrayList(1024);
     }
 
-    void writeSample(ThreadInfo[] infos, long time, long selfThreadId) throws IOException {
+    public void writeSample(ThreadInfo[] infos, long time, long selfThreadId) throws IOException {
         List<Long> sameT = new ArrayList();
         List<ThreadInfo> newT = new ArrayList();
         List<Long> tids = new ArrayList();
@@ -208,7 +208,7 @@ class SamplesOutputStream {
         }
     }
 
-    void close() throws IOException {
+    public void close() throws IOException {
         steCache = null;
         GZIPOutputStream stream = new GZIPOutputStream(outStream, 64 * 1024);
         ObjectOutputStream out = new ObjectOutputStream(stream);
