@@ -221,6 +221,10 @@ public class CompletionContextImpl extends CompletionContext {
         String temp = CompletionUtil.getPrefixFromTag(tagName);
         if(temp != null) defNS = defNS+":"+temp; //NOI18N
         List<DocRootAttribute> attributes = docRoot.getAttributes();
+        
+        String version = null;
+        boolean xsltDeclared = false;
+        
         for(int index=0; index<attributes.size(); index++) {
             DocRootAttribute attr = attributes.get(index);
             String attrName = attr.getName();
@@ -234,12 +238,33 @@ public class CompletionContextImpl extends CompletionContext {
                 noNamespaceSchemaLocation = attr.getValue().trim();
                 continue;
             }            
+            
+            //resolve xsl stylesheets w/o the schema location specification.
+            //In such case the root element only contains the xmlns:xsl=""http://www.w3.org/1999/XSL/Transform"
+            //along with the version attribute.
+            //If such ns is declared and the version is 2.0 then use the 
+            //http://www.w3.org/2007/schema-for-xslt20.xsd schema for the completion model
+            
+            if(attr.getValue().trim().equals("http://www.w3.org/1999/XSL/Transform")) { //NOI18N
+                xsltDeclared = true;
+            }
+            if(CompletionUtil.getLocalNameFromTag(attrName).
+                    equals("version")) { //NOI18N
+                version = attr.getValue().trim();
+            }
+            
             if(! attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE))
                 continue;            
             if(attrName.equals(defNS))
                 this.defaultNamespace = attr.getValue();
             declaredNamespaces.put(attrName, attr.getValue());
         }
+        
+        if(schemaLocation == null && xsltDeclared && "2.0".equals(version)) {
+            //only the second "token" from the schemaLocation is considered as the schema
+            schemaLocation = "schema http://www.w3.org/2007/schema-for-xslt20.xsd"; //NOI18N
+        }
+        
     }
 
     private TokenSequence getTokenSequence() {
