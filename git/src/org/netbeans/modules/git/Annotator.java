@@ -100,7 +100,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
- * TODO: handle annotations
  * @author ondra
  */
 public class Annotator extends VCSAnnotator implements PropertyChangeListener {
@@ -302,10 +301,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             annotateNameHtml(name, mostImportantInfo, mostImportantFile);
     }
 
-    private void refresh () {
-        // TODO: implement, [status repository branch tags? etc.]
-    }
-
     private static boolean isMoreImportant (FileInformation a, FileInformation b) {
         if (b == null) return true;
         if (a == null) return false;
@@ -315,7 +310,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
 
     private Image annotateFileIcon (VCSContext context, Image icon) throws IllegalArgumentException {
         FileInformation mostImportantInfo = null;
-        File mostImportantFile = null;
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getStatus(file);
             if (!info.containsStatus(STATUS_IS_IMPORTANT)) {
@@ -323,7 +317,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             }
             if (isMoreImportant(info, mostImportantInfo)) {
                 mostImportantInfo = info;
-                mostImportantFile = file;
             }
         }
         if(mostImportantInfo == null) return null;
