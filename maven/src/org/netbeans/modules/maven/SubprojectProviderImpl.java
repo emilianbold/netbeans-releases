@@ -157,7 +157,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
             if (!projectFile.equals(basedir) //#175331
                  && projectFile.exists()) {
                 FileObject projectDir = FileUtil.toFileObject(projectFile);
-                if (projectDir != null && !isProcessed(resultset, projectDir)) {
+                if (projectDir != null && projectDir.isFolder() && !isProcessed(resultset, projectDir)) {
                     Project proj = processOneSubproject(projectDir);
                     NbMavenProjectImpl mv = proj != null ? proj.getLookup().lookup(NbMavenProjectImpl.class) : null;
                     if (mv != null) {
