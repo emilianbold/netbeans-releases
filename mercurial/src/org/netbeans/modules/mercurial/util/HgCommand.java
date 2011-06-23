@@ -77,6 +77,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
@@ -87,6 +89,7 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
@@ -276,6 +279,7 @@ public class HgCommand {
     private final static String HG_ARGUMENT_LIST_TOO_LONG_ERR = "Argument list too long"; //NOI18N
 
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
+    private final static String HG_BRANCHES_CMD = "branches"; // NOI18N
 
     private static final String HG_NO_REPOSITORY_ERR = "There is no Mercurial repository here"; // NOI18N
     private static final String HG_NO_RESPONSE_ERR = "no suitable response from remote hg!"; // NOI18N
@@ -1041,6 +1045,42 @@ public class HgCommand {
             }
         }
         return messages;
+    }
+
+    private static HgBranch[] processBranches (List<String> lines, List<HgLogMessage> heads) {
+        List<HgBranch> branches = new ArrayList<HgBranch>();
+        Pattern p = Pattern.compile("^(.+)(\\b\\d+):(\\S+)(.*)$"); //NOI18N
+        for (String line : lines) {
+            Matcher m = p.matcher(line);
+            if (!m.matches()){
+                Mercurial.LOG.log(Level.WARNING, "HgCommand.processBranches(): Failed when matching: {0}", new Object[] { line }); //NOI18N
+            } else {
+                String branchName = m.group(1).trim();
+                String revNumber = m.group(2).trim();
+                String changeSetId = m.group(3).trim();
+                String status = m.group(4).trim().toLowerCase();
+                HgLogMessage info = null;
+                for (HgLogMessage head : heads) {
+                    if (head.getRevisionNumber().equals(revNumber) || head.getCSetShortID().equals(changeSetId)) {
+                        info = head;
+                    }
+                }
+                if (info == null) {
+                    Mercurial.LOG.log(Level.WARNING, "HgCommand.processBranches(): Failed when pairing branch with head info : {0}:{1}:{2}\n{3}", //NOI18N
+                            new Object[] { branchName, revNumber, changeSetId, heads });
+                } else {
+                    boolean closed = false;
+                    boolean active = true;
+                    if (status.contains("inactive")) { //NOI18N
+                        active = false;
+                    } else if (status.contains("closed")) { //NOI18N
+                        closed = true;
+                    }
+                    branches.add(new HgBranch(branchName, info, closed, active));
+                }
+            }
+        }
+        return branches.toArray(new HgBranch[branches.size()]);
     }
 
     public static HgLogMessage[] getIncomingMessages(final File root, String toRevision, boolean bShowMerges,  OutputLogger logger) {
@@ -2221,7 +2261,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> getHeadRevisions(File repository) throws HgException {
-        return getHeadInfo(repository, HG_REV_TEMPLATE_CMD, false);
+        return getHeadInfo(repository, true, HG_REV_TEMPLATE_CMD, false);
     }
 
     /**
@@ -2232,7 +2272,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> getHeadRevisions(String repository) throws HgException {
-        return getHeadInfo(repository, HG_REV_TEMPLATE_CMD, false);
+        return getHeadInfo(repository, true, HG_REV_TEMPLATE_CMD, false);
     }
 
     /**
@@ -2243,7 +2283,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static HgLogMessage[] getHeadRevisionsInfo (File repository, OutputLogger logger) throws HgException {
-        List<String> list = getHeadInfo(repository, HG_LOG_BASIC_CHANGESET_NAME, true);
+        List<String> list = getHeadInfo(repository, true, HG_LOG_BASIC_CHANGESET_NAME, true);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
                 handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
@@ -2289,17 +2329,40 @@ public class HgCommand {
         return id;
     }
 
+    public static HgBranch[] getBranches (File repository, OutputLogger logger) throws HgException {
+        List<String> list = getHeadInfo(repository, false, HG_LOG_BASIC_CHANGESET_NAME, true);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+             }
+        }
+        List<HgLogMessage> heads = processLogMessages(repository, null, list, false);
+        list = getBranches(repository);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+             }
+        }
+        return processBranches(list, heads);
+    }
+
     private static Boolean topoAvailable;
-    private static List<String> getHeadInfo (String repository, String template, boolean useStyle) throws HgException {
+    private static List<String> getHeadInfo (String repository, boolean topo, String template, boolean useStyle) throws HgException {
         if (repository == null) return null;
 
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_HEADS_CMD);
-        topoAvailable = Boolean.TRUE.equals(topoAvailable) || topoAvailable == null && HgUtils.hasTopoOption(Mercurial.getInstance().getVersion());
-        if (topoAvailable) {
-            command.add(HG_FLAG_TOPO);
+        if (topo) {
+            topoAvailable = Boolean.TRUE.equals(topoAvailable) || topoAvailable == null && HgUtils.hasTopoOption(Mercurial.getInstance().getVersion());
+            if (topoAvailable) {
+                command.add(HG_FLAG_TOPO);
+            }
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository);
@@ -2311,9 +2374,9 @@ public class HgCommand {
                 command.add(template);
             }
             List<String> output = exec(command);
-            if (topoAvailable && output.contains("hg heads: option --topo not recognized")) { //NOI18N
+            if (topo && topoAvailable && output.contains("hg heads: option --topo not recognized")) { //NOI18N
                 topoAvailable = false;
-                return getHeadInfo(repository, template, useStyle);
+                return getHeadInfo(repository, topo, template, useStyle);
             }
             return output;
         } catch (IOException ex) {
@@ -2324,9 +2387,21 @@ public class HgCommand {
         }
     }
 
-    private static List<String> getHeadInfo(File repository, String template, boolean useStyle) throws HgException {
+    private static List<String> getHeadInfo(File repository, boolean topo, String template, boolean useStyle) throws HgException {
         if (repository == null) return null;
-        return getHeadInfo(repository.getAbsolutePath(), template, useStyle);
+        return getHeadInfo(repository.getAbsolutePath(), topo, template, useStyle);
+    }
+
+    private static List<String> getBranches (File repository) throws HgException {
+        if (repository == null) return null;
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_BRANCHES_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        return exec(command);
     }
 
     /**
