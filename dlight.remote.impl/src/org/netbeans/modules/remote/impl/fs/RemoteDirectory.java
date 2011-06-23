@@ -1183,7 +1183,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         throw new FileNotFoundException(getPath());
     }
 
-    public byte[] getMagic(RemotePlainFile file) {
+    public byte[] getMagic(RemoteFileObjectFile file) {
         return getMagicCache().get(file.getNameExt());
     }
 
