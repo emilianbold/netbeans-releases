@@ -82,6 +82,7 @@ public class ViewSwitcher extends AbstractAction implements ContextAwareAction, 
     }
 
     private ViewSwitcher(HudsonInstance instance) {
+        super(ViewSwitcher_label());
         this.instance = instance;
     }
 
