@@ -381,6 +381,37 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         dllPaths.put(dll, null);
                     }
                 }
+                List<String> secondary = new ArrayList<String>();
+                for(Map.Entry entry : dllPaths.entrySet()) {
+                    if (cancel.get()) {
+                        break;
+                    }
+                    if (entry.getValue() != null) {
+                        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                        final Map<String, Object> map = new HashMap<String, Object>();
+                        map.put("DW:buildResult", entry.getValue()); // NOI18N
+                        if (extension != null) {
+                            extension.discoverArtifacts(map);
+                            @SuppressWarnings("unchecked")
+                            List<String> dlls = (List<String>) map.get("DW:dependencies"); // NOI18N
+                            if (dlls != null) {
+                                for(String so : dlls) {
+                                    if (!dllPaths.containsKey(so)) {
+                                        secondary.add(so);
+                                    }
+                                }
+                                //@SuppressWarnings("unchecked")
+                                //List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
+                            }
+                        }
+                    }
+                }
+                for(String so : secondary) {
+                    if (cancel.get()) {
+                        break;
+                    }
+                    dllPaths.put(so, findLocation(so, ldLibPath));
+                }
                 updateDllArtifacts(root, dllPaths, search);
                 if (!cancel.get() && search && root.length() > 1) {
                     ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
