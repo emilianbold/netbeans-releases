@@ -555,6 +555,7 @@ public class ProjectTab extends TopComponent
                          if (confirm.getValue() == NotifyDescriptor.OK_OPTION) {
                              if (!OpenProjectList.getDefault().isOpen(project)) {
                                  OpenProjects.getDefault().open(new Project[] { project }, false);
+                                 ProjectsRootNode.ProjectChildren.RP.post(new Runnable() {@Override public void run() {}}).waitFinished(); // #199669
                              }
                              tempNode = root.findNode(objectToSelect);
                          }
