@@ -620,7 +620,13 @@ public class FormatVisitor extends DefaultVisitor {
                 includeWSBeforePHPDoc = true;
             }
         }
-        super.visit(node);
+        if (node.getFields().size() > 1) {
+            formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize));
+            super.visit(node);
+            formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize * -1));
+        } else {
+            super.visit(node);
+        }
         if (index == statements.size() - 1
                 || ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof FieldsDeclaration))) {
             //addAllUntilOffset(statements.get(index).getEndOffset() + 1);
