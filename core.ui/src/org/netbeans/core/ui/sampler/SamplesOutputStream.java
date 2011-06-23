@@ -252,15 +252,21 @@ class SamplesOutputStream {
     }
 
     private void openProgress() {
-        progress.openProgress(STEPS);
+        if (progress != null) {
+            progress.openProgress(STEPS);
+        }
     }
 
     private void closeProgress() {
-        progress.closeProgress();
+        if (progress != null) {
+            progress.closeProgress();
+        }
     }
 
     private void step(int i) {
-        progress.progress(i);
+        if (progress != null) {
+            progress.progress(i);
+        }
     }
 
     private static class Sample {
