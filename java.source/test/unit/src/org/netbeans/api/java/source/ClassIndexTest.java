@@ -51,14 +51,18 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -66,6 +70,8 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -294,8 +300,213 @@ public class ClassIndexTest extends NbTestCase {
             }
         });
     }
-    
-    
+
+    public void testGetElementsScopes() throws Exception {
+        createJavaFile (srcRoot,"org.me.base","Base", "package org.me.base;\npublic class Base {}\n");
+        createJavaFile (srcRoot,"org.me.pkg1","Class1", "package org.me.pkg1;\npublic class Class1 extends org.me.base.Base {}\n");
+        createJavaFile (srcRoot,"org.me.pkg2","Class2", "package org.me.pkg2;\npublic class Class2 extends org.me.base.Base {}\n");
+        IndexingManager.getDefault().refreshIndexAndWait(srcRoot.getURL(), null, true);
+        final ClassPath scp = ClassPathSupport.createClassPath(srcRoot);
+        final ClasspathInfo cpInfo = ClasspathInfo.create(
+            ClassPathSupport.createClassPath(new URL[0]),
+            ClassPathSupport.createClassPath(new URL[0]),
+            scp);
+        final ClassIndex ci = cpInfo.getClassIndex();
+        Set<ElementHandle<TypeElement>> r = ci.getElements(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+            EnumSet.of(ClassIndex.SearchScope.SOURCE));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+
+        r = ci.getElements(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+            Collections.singleton(
+                ClassIndex.createPackageSearchScope(
+                    ClassIndex.SearchScope.SOURCE,
+                    "org.me.pkg1",
+                    "org.me.pkg2")));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+
+        Set<ClassIndex.SearchScopeType> scopes = new HashSet<ClassIndex.SearchScopeType>();
+        scopes.add(ClassIndex.createPackageSearchScope(
+            ClassIndex.SearchScope.SOURCE,
+            "org.me.pkg1"));
+        scopes.add(ClassIndex.createPackageSearchScope(
+            ClassIndex.SearchScope.SOURCE,
+            "org.me.pkg2"));
+        r = ci.getElements(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+            scopes);
+        assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+
+        r = ci.getElements(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+            Collections.singleton(
+                new ClassIndex.SearchScopeType() {
+                    @Override
+                    public Set<? extends String> getPackages() {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean isSources() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isDependencies() {
+                        return false;
+                    }
+                }));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+
+        r = ci.getElements(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+            Collections.singleton(
+                ClassIndex.createPackageSearchScope(
+                    ClassIndex.SearchScope.SOURCE,
+                    "org.me.pkg1")));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1"}, r);
+
+        r = ci.getElements(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "org.me.base.Base"),
+            EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+            Collections.singleton(
+                ClassIndex.createPackageSearchScope(
+                    ClassIndex.SearchScope.SOURCE)));
+        assertElementHandles(new String[]{}, r);
+
+        r = ci.getElements(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "java.lang.Object"),
+            EnumSet.allOf(ClassIndex.SearchKind.class),
+            EnumSet.of(ClassIndex.SearchScope.SOURCE));
+        assertElementHandles(new String[]{"org.me.base.Base", "org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+
+        r = ci.getElements(
+            ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, "java.lang.Object"),
+            EnumSet.allOf(ClassIndex.SearchKind.class),
+            Collections.singleton(ClassIndex.createPackageSearchScope(ClassIndex.SearchScope.SOURCE, "org.me.pkg1")));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1"}, r);
+    }
+
+    public void testGetDeclaredTypesScopes() throws Exception {
+        createJavaFile (srcRoot,"org.me.pkg1","Class1", "package org.me.pkg1;\npublic class Class1 {}\n");
+        createJavaFile (srcRoot,"org.me.pkg2","Class2", "package org.me.pkg2;\npublic class Class2 {}\n");
+        IndexingManager.getDefault().refreshIndexAndWait(srcRoot.getURL(), null, true);
+        final ClassPath scp = ClassPathSupport.createClassPath(srcRoot);
+        final ClasspathInfo cpInfo = ClasspathInfo.create(
+            ClassPathSupport.createClassPath(new URL[0]),
+            ClassPathSupport.createClassPath(new URL[0]),
+            scp);
+        final ClassIndex ci = cpInfo.getClassIndex();
+        Set<ElementHandle<TypeElement>> r = ci.getDeclaredTypes(
+            "",
+            ClassIndex.NameKind.PREFIX,
+            EnumSet.of(ClassIndex.SearchScope.SOURCE));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+
+        r = ci.getDeclaredTypes(
+            "",
+            ClassIndex.NameKind.PREFIX,
+            Collections.singleton(
+                ClassIndex.createPackageSearchScope(
+                    ClassIndex.SearchScope.SOURCE,
+                    "org.me.pkg1",
+                    "org.me.pkg2")));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+
+        Set<ClassIndex.SearchScopeType> scopes = new HashSet<ClassIndex.SearchScopeType>();
+        scopes.add(ClassIndex.createPackageSearchScope(
+            ClassIndex.SearchScope.SOURCE,
+            "org.me.pkg1"));
+        scopes.add(ClassIndex.createPackageSearchScope(
+            ClassIndex.SearchScope.SOURCE,
+            "org.me.pkg2"));
+        r = ci.getDeclaredTypes(
+            "",
+            ClassIndex.NameKind.PREFIX,
+            scopes);
+        assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+        r = ci.getDeclaredTypes(
+            "",
+            ClassIndex.NameKind.PREFIX,
+            Collections.singleton(
+                new ClassIndex.SearchScopeType() {
+                    @Override
+                    public Set<? extends String> getPackages() {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean isSources() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isDependencies() {
+                        return false;
+                    }
+                }));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1","org.me.pkg2.Class2"}, r);
+
+        r = ci.getDeclaredTypes(
+            "",
+            ClassIndex.NameKind.PREFIX,
+            Collections.singleton(
+                ClassIndex.createPackageSearchScope(
+                    ClassIndex.SearchScope.SOURCE,
+                    "org.me.pkg1")));
+        assertElementHandles(new String[]{"org.me.pkg1.Class1"}, r);
+
+        r = ci.getDeclaredTypes(
+            "",
+            ClassIndex.NameKind.PREFIX,
+            Collections.singleton(
+                ClassIndex.createPackageSearchScope(
+                    ClassIndex.SearchScope.SOURCE)));
+        assertElementHandles(new String[]{}, r);
+    }
+
+    private FileObject createJavaFile (
+            final FileObject root,
+            final String pkg,
+            final String name,
+            final String content) throws IOException {
+            final FileObject file = FileUtil.createData(
+                root,
+                String.format("%s/%s.java",
+                    FileObjects.convertPackage2Folder(pkg),
+                    name));
+            final FileLock lck = file.lock();
+            try {
+                final PrintWriter out = new PrintWriter (new OutputStreamWriter(file.getOutputStream(lck)));
+                try {
+                    out.print(content);
+                } finally {
+                    out.close();
+                }
+            } finally {
+                lck.releaseLock();
+            }
+            return file;
+    }
+
+    private void assertElementHandles(final String[] expected, final Set<ElementHandle<TypeElement>> result) {
+        final Set<String> expSet = new HashSet(Arrays.asList(expected));
+        for (ElementHandle<TypeElement> handle : result) {
+            if (!expSet.remove(handle.getQualifiedName())) {
+                throw new AssertionError("Expected: " + Arrays.toString(expected) +" Result: " + result);
+            }
+        }
+        if (!expSet.isEmpty()) {
+            throw new AssertionError("Expected: " + Arrays.toString(expected) +" Result: " + result);
+        }
+    }
+
     private static void assertExpectedEvents (final Set<EventType> et, final List<? extends EventRecord> eventLog) {
         assert et != null;
         assert eventLog != null;
