@@ -132,6 +132,10 @@ public final class MavenEmbedder {
         return embedderConfiguration.getSystemProperties();
     }
 
+    boolean isOffline() {
+        return embedderConfiguration.isOffline();
+    }
+
     private String getLocalRepositoryPath() {
         if (embedderConfiguration.getLocalRepository() != null) {
             return embedderConfiguration.getLocalRepository().getAbsolutePath();
@@ -197,7 +201,7 @@ public final class MavenEmbedder {
     public MavenProject readProject(File fallback) {
         try {
             MavenExecutionRequest req = createMavenExecutionRequest();
-            req.setOffline(embedderConfiguration.isOffline());
+            req.setOffline(isOffline());
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             configuration.setRepositorySession(maven.newRepositorySession(req));
@@ -230,6 +234,7 @@ public final class MavenEmbedder {
         req.setLocalRepository(localRepository);
         req.setRemoteRepositories(remoteRepositories);
         req.setArtifact(sources);
+        req.setOffline(isOffline());
         // XXX need to somehow use ProgressTransferListener.activeListener() here; CreateLibraryAction's use of ProgressTransferListener.cancellable() also probably a no-op until setAggregateHandle called
         repositorySystem.resolve(req);
         // XXX check result for exceptions and throw them now?
@@ -294,7 +299,7 @@ public final class MavenEmbedder {
         }
         
         req.setSystemProperties(getSystemProperties());
-        req.setOffline(embedderConfiguration.isOffline());
+        req.setOffline(isOffline());
         try {
             populator.populateDefaults(req);
             populator.populateFromSettings(req, getSettings());
@@ -313,8 +318,11 @@ public final class MavenEmbedder {
      */
     public void setUpLegacySupport() {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
+        session.setOffline(isOffline());
         session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(getLocalRepository().getBasedir()));
-        lookupComponent(LegacySupport.class).setSession(new MavenSession(getPlexus(), session, new DefaultMavenExecutionRequest(), new DefaultMavenExecutionResult()));
+        DefaultMavenExecutionRequest mavenExecutionRequest = new DefaultMavenExecutionRequest();
+        mavenExecutionRequest.setOffline(isOffline());
+        lookupComponent(LegacySupport.class).setSession(new MavenSession(getPlexus(), session, mavenExecutionRequest, new DefaultMavenExecutionResult()));
     }
 
 }
