@@ -52,13 +52,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
@@ -85,7 +85,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     @Override
     public void discoverArtifacts(Map<String, Object> map) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
-        Applicable applicable = isApplicable(descriptor);
+        Applicable applicable = isApplicable(descriptor, false);
         if (applicable != null) {
             if (applicable.isApplicable()) {
                 descriptor.setCompilerName(applicable.getCompilerName());
@@ -112,7 +112,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         generator.makeProject();
     }
 
-    public DiscoveryExtensionInterface.Applicable isApplicable(DiscoveryDescriptor descriptor) {
+    public DiscoveryExtensionInterface.Applicable isApplicable(DiscoveryDescriptor descriptor, boolean findMain) {
         Progress progress = new MyProgress();
         progress.start(0);
         try {
@@ -122,7 +122,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             if (applicable.isApplicable()){
                 return applicable;
             }
-            applicable = isApplicableDwarfExecutable(descriptor);
+            applicable = isApplicableDwarfExecutable(descriptor, findMain);
             if (applicable.isApplicable()){
                 return applicable;
             }
@@ -153,7 +153,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         }
     }
     
-    private DiscoveryExtensionInterface.Applicable isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
+    private DiscoveryExtensionInterface.Applicable isApplicableDwarfExecutable(DiscoveryDescriptor descriptor, boolean findMain){
         String selectedExecutable = descriptor.getBuildResult();
         if (selectedExecutable == null) {
             return ApplicableImpl.getNotApplicable(null);
@@ -167,6 +167,14 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
             provider.getProperty("libraries").setValue(new String[0]); // NOI18N
+            ProviderProperty property = provider.getProperty("find_main");
+            if (property != null) {
+                if (findMain) {
+                    property.setValue(Boolean.TRUE);
+                } else {
+                    property.setValue(Boolean.FALSE);
+                }
+            }
             Applicable canAnalyze = provider.canAnalyze(proxy);
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
@@ -258,13 +266,13 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
     }
     
-    public DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project) {
+    public DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project, boolean findMain) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
-        return isApplicable(descriptor);
+        return isApplicable(descriptor, findMain);
     }
     
     public boolean canApply(DiscoveryDescriptor descriptor) {
-        if (!isApplicable(descriptor).isApplicable()){
+        if (!isApplicable(descriptor, false).isApplicable()){
             return false;
         }
         String level = descriptor.getLevel();
@@ -279,6 +287,10 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             String selectedExecutable = descriptor.getBuildResult();
             String additional = descriptor.getAditionalLibraries();
             provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
+            ProviderProperty property = provider.getProperty("find_main");
+            if (property != null) {
+                property.setValue(Boolean.TRUE);
+            }
             if (additional != null && additional.length()>0){
                 List<String> list = new ArrayList<String>();
                 StringTokenizer st = new StringTokenizer(additional,";");  // NOI18N
