@@ -91,7 +91,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
     private final HgFolderEventsHandler hgFolderEventsHandler;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
-    private static final File userDir = new File(System.getProperty("netbeans.user")); //NOI18N;
+    private static final File userDir = System.getProperty("netbeans.user", "").isEmpty() ? null : new File(System.getProperty("netbeans.user")); //NOI18N;
     private final Mercurial hg;
 
     MercurialInterceptor(Mercurial hg, FileStatusCache cache) {
@@ -419,7 +419,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private boolean isUnderIgnoredUserDir (File file) {
-        return Utils.isAncestorOrEqual(userDir, file) && HgUtils.isIgnored(file, false);
+        return userDir != null && Utils.isAncestorOrEqual(userDir, file) && HgUtils.isIgnored(file, false);
     }
 
     private class RefreshTask implements Runnable {
