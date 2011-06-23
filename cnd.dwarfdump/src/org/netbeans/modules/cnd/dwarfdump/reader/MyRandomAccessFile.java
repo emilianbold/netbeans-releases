@@ -63,7 +63,13 @@ public final class MyRandomAccessFile extends RandomAccessFile {
         channel = getChannel();
         bufferSize = Math.min(channel.size(), Integer.MAX_VALUE - 1);
         bufferShift = 0;
-        buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
+        try {
+            buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
+        } catch (IOException ex) {
+            channel.close();
+            close();
+            throw ex;
+        }
     }
 
     @Override
@@ -103,6 +109,13 @@ public final class MyRandomAccessFile extends RandomAccessFile {
 
     @Override
     public void seek(long pos) throws IOException {
+        long filePointer = getFilePointer();
+        if (pos == filePointer) {
+            return;
+        }
+        if (pos == channel.size()) {
+            return;
+        }
         if (pos >= bufferShift && pos < bufferShift + bufferSize) {
             buffer.position((int) (pos-bufferShift));
         } else {
