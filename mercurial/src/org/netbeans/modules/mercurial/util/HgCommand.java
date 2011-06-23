@@ -130,7 +130,6 @@ public class HgCommand {
     private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
     private static final String HG_STATUS_FLAG_TIP_CMD = "tip"; // NOI18N
-    private static final String HG_STATUS_FLAG_REM_DEL_CMD = "-rd"; // NOI18N
     private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduC"; // NOI18N
     private static final String HG_HEAD_STR = "HEAD"; // NOI18N
     private static final String HG_FLAG_DATE_CMD = "--date"; // NOI18N
@@ -145,10 +144,7 @@ public class HgCommand {
     private static final String HG_REVERT_NOBACKUP_CMD = "--no-backup"; // NOI18N
     private static final String HG_ADD_CMD = "add"; // NOI18N
 
-    private static final String HG_BRANCH_CMD = "branch"; // NOI18N
     private static final String HG_BRANCH_REV_CMD = "tip"; // NOI18N
-    private static final String HG_BRANCH_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
-    private static final String HG_BRANCH_SHORT_CS_TEMPLATE_CMD = "--template={node|short}\\n"; // NOI18N
     private static final String HG_BRANCH_INFO_TEMPLATE_CMD = "--template={branches}:{rev}:{node|short}\\n"; // NOI18N
 
     private static final String HG_CREATE_CMD = "init"; // NOI18N
@@ -189,9 +185,7 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_EXPORT_FILE_CMD =
         "--template=# Mercurial Export File Diff\\n# changeset: \\t{rev}:{node|short}\\n# user:\\t\\t{author}\\n# date:\\t\\t{date|isodate}\\n# summary:\\t{desc}\\n\\n";
 
-    private static final String HG_CSET_TEMPLATE_CMD = "--template={rev}:{node|short}\\n"; // NOI18N
     private static final String HG_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
-    private static final String HG_CSET_TARGET_TEMPLATE_CMD = "--template={rev} ({node|short})\\n"; // NOI18N
 
     private static final String HG_CAT_CMD = "cat"; // NOI18N
     private static final String HG_FLAG_OUTPUT_CMD = "--output"; // NOI18N

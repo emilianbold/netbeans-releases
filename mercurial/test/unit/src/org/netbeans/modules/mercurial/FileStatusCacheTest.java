@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -68,6 +69,7 @@ public class FileStatusCacheTest extends AbstractHgTest {
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
         super.setUp();
+        MockLookup.setLayersAndInstances();
         // create
         workdir = getWorkTreeDir();
         Mercurial.STATUS_LOG.setLevel(Level.FINE);
