@@ -44,6 +44,7 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
@@ -182,7 +183,7 @@ public class OutputTabOperator extends JComponentOperator {
      */
     public JButtonOperator btnReRun() {
         if (btnReRun == null) {
-            btnReRun = new JButtonOperator((JButton) JButtonOperator.waitJComponent(getParent(), "Re-run", true, true));
+            btnReRun = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) new OutputOperator().getSource(), "Re-run", true, true));
         }
         return btnReRun;
     }
@@ -197,7 +198,7 @@ public class OutputTabOperator extends JComponentOperator {
      */
     public JButtonOperator btnReRunWithDifferentParameters() {
         if (btnReRunWithDifferentParameters == null) {
-            btnReRunWithDifferentParameters = new JButtonOperator((JButton) JButtonOperator.waitJComponent(getParent(), "Re-run with Different Parameters", true, true));
+            btnReRunWithDifferentParameters = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) new OutputOperator().getSource(), "Re-run with Different Parameters", true, true));
         }
         return btnReRunWithDifferentParameters;
     }
@@ -212,7 +213,7 @@ public class OutputTabOperator extends JComponentOperator {
      */
     public JButtonOperator btnStop() {
         if (btnStop == null) {
-            btnStop = new JButtonOperator((JButton) JButtonOperator.waitJComponent(getParent(), "Stop", true, true));
+            btnStop = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) new OutputOperator().getSource(), "Stop", true, true));
         }
         return btnStop;
     }
@@ -227,7 +228,7 @@ public class OutputTabOperator extends JComponentOperator {
      */
     public JButtonOperator btnAntSettings() {
         if (btnAntSettings == null) {
-            btnAntSettings = new JButtonOperator((JButton) JButtonOperator.waitJComponent(getParent(), "Ant Settings", true, true));
+            btnAntSettings = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) new OutputOperator().getSource(), "Ant Settings", true, true));
         }
         return btnAntSettings;
     }
