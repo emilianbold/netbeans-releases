@@ -235,7 +235,7 @@ public class CreateDependencies implements PropertyChangeListener {
                 try {
                     ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                     MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
-                    Applicable applicable = extension.isApplicable(map, lastSelectedProject);
+                    Applicable applicable = extension.isApplicable(map, lastSelectedProject, false);
                     if (applicable.isApplicable()) {
                         ImportExecutable.resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                         if (extension.canApply(map, lastSelectedProject)) {
