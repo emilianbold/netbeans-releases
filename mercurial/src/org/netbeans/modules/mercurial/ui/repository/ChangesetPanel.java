@@ -36,13 +36,16 @@ public class ChangesetPanel extends javax.swing.JPanel {
     }
 
     public void setDescription(String desc){
-        jTextField1.setText(desc);
+        jTextArea1.setText(desc);
+        jTextArea1.setCaretPosition(0);
     }
     public void setAuthor(String author){
         jTextField2.setText(author);
+        jTextField2.setCaretPosition(0);
     }
     public void setDate(String date){
         jTextField3.setText(date);
+        jTextField3.setCaretPosition(0);
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -57,13 +60,14 @@ public class ChangesetPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
         jTextField2 = new javax.swing.JTextField();
         jTextField3 = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jPanel1.border.title"))); // NOI18N
 
-        jLabel1.setLabelFor(jTextField1);
+        jLabel1.setLabelFor(jTextArea1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setLabelFor(jTextField2);
@@ -72,50 +76,57 @@ public class ChangesetPanel extends javax.swing.JPanel {
         jLabel3.setLabelFor(jTextField3);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jLabel3.text")); // NOI18N
 
-        jTextField1.setEditable(false);
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField1.text")); // NOI18N
-
         jTextField2.setEditable(false);
         jTextField2.setText(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField2.text")); // NOI18N
 
         jTextField3.setEditable(false);
         jTextField3.setText(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField3.text")); // NOI18N
 
+        jScrollPane1.setBorder(null);
+
+        jTextArea1.setBackground(jTextField2.getBackground());
+        jTextArea1.setColumns(1);
+        jTextArea1.setEditable(false);
+        jTextArea1.setForeground(jTextField2.getForeground());
+        jTextArea1.setRows(1);
+        jTextArea1.setBorder(jTextField2.getBorder());
+        jScrollPane1.setViewportView(jTextArea1);
+        jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField1.AccessibleContext.accessibleDescription")); // NOI18N
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+            .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
                     .add(jLabel2)
-                    .add(jLabel3))
+                    .add(jLabel3)
+                    .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jTextField3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
                     .add(jTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
+                    .add(jTextField3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(14, 14, 14)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(14, 14, 14)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel3))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
-        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField1.AccessibleContext.accessibleDescription")); // NOI18N
         jTextField2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField2.AccessibleContext.accessibleDescription")); // NOI18N
         jTextField3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChangesetPanel.class, "ChangesetPanel.jTextField3.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -137,7 +148,8 @@ public class ChangesetPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
     // End of variables declaration//GEN-END:variables

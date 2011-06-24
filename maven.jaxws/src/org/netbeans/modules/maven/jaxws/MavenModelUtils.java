@@ -607,11 +607,13 @@ public final class MavenModelUtils {
                         updateScopeTo = "compile"; //NOI18N
                     }
                 }
-            } else {
+            }/* 
+                Fix for BZ#198531 - Netbeans automatically modifies dependency scope of webservices-rt in pom.xml 
+                else {
                 if ("compile".equals(metroScope)) { //NOI18N
                     updateScopeTo = "provided"; //NOI18N
                 }
-            }
+            }*/
             if (updateScopeTo != null) {
                 final String targetScope = updateScopeTo;
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {

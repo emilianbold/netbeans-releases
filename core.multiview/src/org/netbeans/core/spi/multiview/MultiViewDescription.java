@@ -45,6 +45,7 @@
 package org.netbeans.core.spi.multiview;
 
 import java.awt.Image;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.util.HelpCtx;
 
 /** Description of multi view element. Implementations should be lightweight
@@ -56,6 +57,7 @@ import org.openide.util.HelpCtx;
  *
  * @author  Dafe Simonek, Milos Kleint
  */
+@MimeLocation(subfolderName="MultiView")
 public interface MultiViewDescription {
     
     /** Gets persistence type of multi view element, the TopComponent will decide

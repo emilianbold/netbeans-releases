@@ -183,21 +183,35 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
     @Override
-    public <T> void search (final String binaryName, final Set<UsageType> usageType, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
+    public <T> void search (
+            @NonNull final String binaryName,
+            @NonNull final Set<? extends UsageType> usageType,
+            @NonNull final Set<? extends ClassIndex.SearchScopeType> scope,
+            @NonNull final Convertor<? super Document, T> convertor,
+            @NonNull final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         try {
             if (BinaryAnalyser.OBJECT.equals(binaryName)) {
-                this.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, convertor, result);
-                return;
+                this.getDeclaredTypes(
+                    "", //NOI18N
+                    ClassIndex.NameKind.PREFIX,
+                    scope,
+                    convertor,
+                    result);
+            } else {
+                IndexManager.readAccess(new IndexManager.Action<Void> () {
+                    @Override
+                    public Void run () throws IOException, InterruptedException {
+                        final Query usagesQuery = QueryUtil.scopeFilter(
+                                QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD),
+                                scope);
+                        if (usagesQuery != null) {
+                            index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                        }
+                        return null;
+                    }
+                });
             }
-
-            IndexManager.readAccess(new IndexManager.Action<Void> () {
-                @Override
-                public Void run () throws IOException, InterruptedException {
-                    usages(binaryName, usageType, convertor, result);
-                    return null;
-                }
-            });
         } catch (IOException ioe) {
             this.<Void,IOException>handleException(null, ioe);
         }
@@ -205,18 +219,27 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
                        
     @Override
-    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
+    public <T> void getDeclaredTypes (
+            @NonNull final String simpleName,
+            @NonNull final ClassIndex.NameKind kind,
+            @NonNull final Set<? extends ClassIndex.SearchScopeType> scope,
+            @NonNull final Convertor<? super Document, T> convertor,
+            @NonNull final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         try {
             IndexManager.readAccess(new IndexManager.Action<Void> () {
                 @Override
                 public Void run () throws IOException, InterruptedException {
-                    final Query query =  Queries.createQuery(
+                    final Query query =  QueryUtil.scopeFilter(
+                        Queries.createQuery(
                             DocumentUtil.FIELD_SIMPLE_NAME,
                             DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,
                             simpleName,
-                            DocumentUtil.translateQueryKind(kind));
-                    index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                            DocumentUtil.translateQueryKind(kind)),
+                        scope);
+                    if (query != null) {
+                        index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                    }
                     return null;
                 }
             });
@@ -393,12 +416,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
             }
         }
     }
-    
-    private <T> void usages (final String binaryName, final Set<UsageType> usageType, Convertor<? super Document, T> convertor, Set<? super T> result) throws InterruptedException, IOException {
-        final Query usagesQuery = QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD);
-        this.index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
-    }
-    
+
     private synchronized void resetPkgCache() {        
         rootPkgCache = null;
     }

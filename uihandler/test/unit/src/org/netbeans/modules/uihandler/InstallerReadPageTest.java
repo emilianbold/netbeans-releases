@@ -61,7 +61,6 @@ import java.util.logging.Logger;
 import javax.swing.JScrollPane;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -100,7 +99,6 @@ public class InstallerReadPageTest extends NbTestCase {
         installer.doClose();
     }
 
-    @RandomlyFails
     public void testURLInCzechEncoding() throws Exception {
         doEncodingTest("iso-8859-2", "<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-2'></meta>");
     }

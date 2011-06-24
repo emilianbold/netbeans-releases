@@ -469,6 +469,7 @@ public class Hk2PluginProperties {
         }
         InetSocketAddress isa = new InetSocketAddress(host, port);
         Socket socket = new Socket();
+        Logger.getLogger("glassfish-socket-connect-diagnostic").log(Level.FINE, "Using socket.connect", new Exception());
         socket.connect(isa, 2000);
         socket.setSoTimeout(2000);
         try { socket.close(); } catch (IOException ioe) {

@@ -252,6 +252,15 @@ public abstract class BaseAnnotation extends Annotation {
         Impl i = new Impl();
 
         doc.render(i);
+        
+        if (i.pos == null) {
+            i.pos = new Position() {
+                @Override
+                public int getOffset() {
+                    return -1;
+                }
+            };
+        }
 
         return i.pos;
     }

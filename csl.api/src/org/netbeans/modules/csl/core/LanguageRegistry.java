@@ -385,6 +385,12 @@ public final class LanguageRegistry implements Iterable<Language> {
                     LOG.fine("Language for '" + mimeType + "' is using custom editor kit."); //NOI18N
                 }
                 
+                Boolean useMultiview = (Boolean)subtypes[j].getAttribute("useMultiview"); // NOI18N
+                if (useMultiview != null && useMultiview.booleanValue()) {
+                    language.setUseMultiview(true);
+                    LOG.fine("Language for '" + mimeType + "' is using multview."); //NOI18N
+                }
+                
                 // Try to obtain icon from (new) IDE location for icons per mime type:
                 FileObject loaderMimeFile = sfs.findResource("Loaders/" + mimeType); // NOI18N
                 if (loaderMimeFile != null) {

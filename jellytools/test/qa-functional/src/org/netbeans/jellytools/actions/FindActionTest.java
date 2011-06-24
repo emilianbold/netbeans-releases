@@ -45,7 +45,6 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.FindInFilesOperator;
 import org.netbeans.jellytools.JavaProjectsTabOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -54,12 +53,12 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 /** Test org.netbeans.jellytools.actions.FindAction
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class FindActionTest extends JellyTestCase {
 
-    private static final String[] tests = new String[] {
+    public static final String[] tests = new String[]{
         "testPerformPopup",
         "testPerformMenu",
         "testPerformAPI",
@@ -72,11 +71,10 @@ public class FindActionTest extends JellyTestCase {
     public FindActionTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        
         return createModuleTest(FindActionTest.class, tests);
     }
 
@@ -84,34 +82,27 @@ public class FindActionTest extends JellyTestCase {
     protected void setUp() throws IOException {
         openDataProjects("SampleProject");
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
+
     /** Test performPopup */
     public void testPerformPopup() {
         Node node = new JavaProjectsTabOperator().getProjectRootNode("SampleProject"); // NOI18N
         new FindAction().performPopup(node);
         new FindInFilesOperator().close();
     }
-    
+
     /** Test performMenu */
     public void testPerformMenu() {
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
         new FindAction().performMenu(node);
         new FindInFilesOperator().close();
     }
-    
+
     /** Test performAPI */
     public void testPerformAPI() {
         new FindAction().performAPI();
         new FindInFilesOperator().close();
     }
-    
+
     /** Test performShortcut */
     public void testPerformShortcut() {
         new FindAction().performShortcut();
@@ -121,5 +112,4 @@ public class FindActionTest extends JellyTestCase {
         // See issue http://www.netbeans.org/issues/show_bug.cgi?id=56672.
         closeAllModal();
     }
-    
 }

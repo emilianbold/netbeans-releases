@@ -46,7 +46,6 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +66,7 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescrip
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOVisibility;
@@ -180,7 +180,7 @@ public final class TerminalSupportImpl {
 //                            npb.setWorkingDirectory("${HOME}");
                         npb.setExecutable(shell);
                         NativeExecutionDescriptor descr;
-                        descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(ioRef.get());
+                        descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(true).inputOutput(ioRef.get());
                         descr.postExecution(new Runnable() {
 
                             @Override
@@ -208,7 +208,7 @@ public final class TerminalSupportImpl {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                             }
                         }
-                    } catch (CancellationException ex) {
+                    } catch (java.util.concurrent.CancellationException ex) { // VK: don't quite understand who can throw it?
                         Exceptions.printStackTrace(ex);
                         reportInIO(ioRef.get(), ex);
                     }

@@ -181,16 +181,16 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
         ic.add(p);
         assertTrue("enabled", item.isEnabled());
         assertEquals("One change", 1, change);
-        
-        item.removeNotify();
-        
-        CharSequence log2 = Log.enable("org.netbeans.modules.project.ui.actions", Level.FINER);
-        ic.remove(p);
-        ic.add(p2);
-        
-        if (log2.length() > 0) {
-            fail("Nothing shall happen:\n" + log2);
-        }
+
+        if (menu) {
+            item.removeNotify();
+            CharSequence log2 = Log.enable("org.netbeans.modules.project.ui.actions", Level.FINER);
+            ic.remove(p);
+            ic.add(p2);
+            if (log2.length() > 0) {
+                fail("Nothing shall happen:\n" + log2);
+            }
+        } // irrelevant for popups
     }
 
     public void testStackOverFlow() throws IOException {

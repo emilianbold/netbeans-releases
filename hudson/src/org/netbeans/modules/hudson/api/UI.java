@@ -155,11 +155,4 @@ public class UI {
         return new ShowFailures(build);
     }
 
-    /**
-     * Action to create a new job on a server.
-     */
-    public static Action createJobAction(HudsonInstance server) {
-        return new CreateJob(server);
-    }
-
 }

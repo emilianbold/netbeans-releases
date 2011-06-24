@@ -140,7 +140,7 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CloneDestinationPanel.class, "CloneDestinationPanel.jLabel3.text")); // NOI18N
 
-        remoteTextField.setText(org.openide.util.NbBundle.getMessage(CloneDestinationPanel.class, "CloneDestinationPanel.remoteTextField.text")); // NOI18N
+        remoteTextField.setText("origin");
         remoteTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 remoteTextFieldActionPerformed(evt);

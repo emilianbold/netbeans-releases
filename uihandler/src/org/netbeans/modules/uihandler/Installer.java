@@ -1963,7 +1963,11 @@ public class Installer extends ModuleInstall implements Runnable {
                         }
                         browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
                         browser.setPreferredSize(dim);
-                        browser.setEditable(false);
+                        try {
+                            browser.setEditable(false);
+                        } catch (NullPointerException x) {
+                            LOG.log(Level.WARNING, "Java bug #7050995?", x);
+                        }
                         browser.setEditorKit(new HTMLEditorKit()); // needed up to nb5.5
                         browser.setBackground(new JLabel().getBackground());
                         browser.addHyperlinkListener(SubmitInteractive.this);
@@ -1991,13 +1995,11 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 });
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                throw new IllegalStateException(ex);
             } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
+                throw new IllegalStateException(ex);
             }
-            if (d == null){
-                throw new IllegalStateException("Dialog was not created correctly");
-            }
+            assert d != null;
         }
 
         public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -2162,13 +2164,17 @@ public class Installer extends ModuleInstall implements Runnable {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        protected void assignInternalURL(URL u) {
+        @Override protected void assignInternalURL(final URL u) {
             if (browser != null) {
-                try {
-                    browser.setPage(u);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        try {
+                            browser.setPage(u);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             }
             markAssigned();
         }

@@ -99,6 +99,7 @@ public class OutputLogger implements ISVNNotifyListener {
         }
     }
     private AbstractAction action;
+    private String lastCompletedMessage;
     
     private OutputLogger(SVNUrl repositoryRoot) {
         repositoryRootString = repositoryRoot.toString();
@@ -126,6 +127,10 @@ public class OutputLogger implements ISVNNotifyListener {
     
     @Override
     public void logCompleted(final String message) {
+        if (message.equals(lastCompletedMessage)) {
+            return;
+        }
+        lastCompletedMessage = message;
         rp.post(new Runnable() {
             @Override
             public void run() {                

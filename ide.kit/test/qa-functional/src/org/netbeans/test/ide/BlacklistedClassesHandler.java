@@ -42,6 +42,7 @@
 
 package org.netbeans.test.ide;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
@@ -227,4 +228,15 @@ public interface BlacklistedClassesHandler {
      * @return list of violators
      */
     public String reportViolations(PrintWriter out);
+    
+    /**
+     * Allows for reinitialization of the handler
+     */
+    public void resetInitiated();
+
+    /**
+     * writes list of violators in NPSS snapshot file
+     * @param file File NPSS output file
+     */
+    public void writeViolationsSnapshot(File file);
 }

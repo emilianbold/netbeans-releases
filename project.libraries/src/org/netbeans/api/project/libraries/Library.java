@@ -54,6 +54,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
+import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
@@ -176,7 +177,7 @@ public final class Library {
      * @return String the display name, never returns null.
      */
     public String getDisplayName () {
-        return org.netbeans.modules.project.libraries.ui.LibrariesCustomizer.getLocalizedName(this.impl);
+        return Util.getLocalizedName(this.impl);
     }
 
 

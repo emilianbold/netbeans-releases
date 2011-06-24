@@ -105,7 +105,7 @@ import org.netbeans.swing.tabcontrol.TabbedContainer;
 public class TopComponentOperator extends JComponentOperator {
     /** "Close Window" popup menu item. */
     private static final String closeWindowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-            "LBL_CloseWindowAction");
+            "CTL_CloseWindowAction");
     /** "Close All Documents" popup menu item. */
     private static final String closeAllDocumentsItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
             "LBL_CloseAllDocumentsAction");

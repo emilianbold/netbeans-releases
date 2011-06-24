@@ -164,57 +164,65 @@ public class VariableProvider {
             
             if (TraceFlags.EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER) {
                 // it works but does it too slow
-                TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1"), APTLanguageSupport.GNU_CPP); // NOI18N
 
-                CPPParserEx parser = CPPParserEx.getInstance(decl.getContainingFile().getName().toString(), buildTokenStream, 0);
-                parser.type_name();
-                AST ast = parser.getAST();
-
-
-                CsmType type = TypeFactory.createType(ast, decl.getContainingFile(), null, 0, decl.getScope());
-                if(CsmKindUtilities.isInstantiation(decl)) {
-                    type = checkTemplateType(type, (Instantiation)decl);
-                }
-                for (CsmTemplateParameter csmTemplateParameter : mapping.keySet()) {
-                    type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
-                }
-
-                if (CsmKindUtilities.isTemplateParameterType(type)) {
-                    CsmSpecializationParameter instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
-                    int iteration = 15;
-                    while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
-                            CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
-                        CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
-                        if (nextInstantiatedType != null) {
-                            instantiatedType = nextInstantiatedType;
-                        } else {
-                            break;
+                int flags = CPPParserEx.CPP_CPLUSPLUS;
+                flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+                try {
+                    // use cached TS
+                    TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1"), APTLanguageSupport.GNU_CPP); // NOI18N
+                    if (buildTokenStream != null) {
+                        CPPParserEx parser = CPPParserEx.getInstance(decl.getContainingFile().getName().toString(), buildTokenStream, flags);
+                        parser.type_name();
+                        AST ast = parser.getAST();
+                
+                        CsmType type = TypeFactory.createType(ast, decl.getContainingFile(), null, 0, decl.getScope());
+                        if(CsmKindUtilities.isInstantiation(decl)) {
+                            type = checkTemplateType(type, (Instantiation)decl);
                         }
-                        iteration--;
-                    }
-                    if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
-                        type = ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
-                    }
-                }
-                
-                if(CsmKindUtilities.isInstantiation(decl)) {
-                    type = Instantiation.createType(type, (Instantiation)decl);
-                }
-                
-                CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
-                if (CsmKindUtilities.isTemplate(originalClassifier)) {
-                    CsmObject instantiate = InstantiationProviderImpl.getDefault().instantiate((CsmTemplate) originalClassifier, Collections.<CsmSpecializationParameter>emptyList(), mapping, decl.getContainingFile(), decl.getStartOffset());
-                    if (CsmKindUtilities.isClassifier(instantiate)) {
-                        originalClassifier = (CsmClassifier) instantiate;
-                    }
-                }
-                if(CsmKindUtilities.isInstantiation(originalClassifier)) {
-                    Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier); // NOI18N
-                    if (eval instanceof Integer) {
-                        return (Integer) eval;
-                    }
-                }
+                        for (CsmTemplateParameter csmTemplateParameter : mapping.keySet()) {
+                            type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
+                        }
 
+                        if (CsmKindUtilities.isTemplateParameterType(type)) {
+                            CsmSpecializationParameter instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
+                            int iteration = 15;
+                            while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
+                                    CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
+                                CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
+                                if (nextInstantiatedType != null) {
+                                    instantiatedType = nextInstantiatedType;
+                                } else {
+                                    break;
+                                }
+                                iteration--;
+                            }
+                            if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
+                                type = ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
+                            }
+                        }
+
+                        if(CsmKindUtilities.isInstantiation(decl)) {
+                            type = Instantiation.createType(type, (Instantiation)decl);
+                        }
+
+                        CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
+                        if (CsmKindUtilities.isTemplate(originalClassifier)) {
+                            CsmObject instantiate = ((InstantiationProviderImpl)InstantiationProviderImpl.getDefault()).instantiate((CsmTemplate) originalClassifier, mapping);
+                            if (CsmKindUtilities.isClassifier(instantiate)) {
+                                originalClassifier = (CsmClassifier) instantiate;
+                            }
+                        }
+                        if(CsmKindUtilities.isInstantiation(originalClassifier)) {
+                            Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier); // NOI18N
+                            if (eval instanceof Integer) {
+                                return (Integer) eval;
+                            }
+                        }
+
+                    }
+                } catch (Throwable ex) {
+                }
+                
             }
         }
 

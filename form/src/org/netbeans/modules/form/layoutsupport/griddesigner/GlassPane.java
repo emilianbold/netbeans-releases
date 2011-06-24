@@ -78,7 +78,7 @@ import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsCh
 /**
  * Glass pane of the grid designer.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public class GlassPane extends JPanel implements GridActionPerformer {
     /** Color of the grid. */
@@ -281,8 +281,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 g.setColor(GridDesigner.SELECTION_COLOR);
                 g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
             }
-            paintConstraints(g);
-            paintSelection(g);
+            if (!animation) {
+                paintConstraints(g);
+                paintSelection(g);
+            }
         }
         if (animation && (animPhase == 1f)) {
             // End of animation
@@ -402,15 +404,18 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      */
     private void paintConstraints(Graphics g) {
         Point shift = fromComponentPane(new Point());
-        Graphics gg = g.create();
-        gg.translate(shift.x, shift.y);
+        Graphics gClip = g.create();
+        Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
+        gClip.clipRect(paneRect.x, paneRect.y, paneRect.width, paneRect.height);
+        gClip.translate(shift.x, shift.y);
         for (Component comp : componentPane.getComponents()) {
             if (GridUtils.isPaddingComponent(comp)) {
                 continue;
             }
             boolean selected = selection.contains(comp);
-            gridInfo.paintConstraints(gg, comp, selected);
+            gridInfo.paintConstraints(gClip, comp, selected);
         }
+        gClip.dispose();
     }
 
     /**
@@ -419,10 +424,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @param g graphics object.
      */
     private void paintSelection(Graphics g) {
-        if (animation) return;
         Graphics gClip = g.create();
         Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
-        gClip.setClip(paneRect);
+        gClip.clipRect(paneRect.x, paneRect.y, paneRect.width, paneRect.height);
         for (Component selComp : selection) {
             Rectangle rect = fromComponentPane(selectionResizingBounds(selComp));
             Rectangle inner = fromComponentPane(selComp.getBounds());
@@ -1390,10 +1394,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     // We set all grid location properties even when
                     // just one changes to avoid unexpected behaviour
                     // caused by GridBagConstraint.RELATIVE or REMAINDER
-                    gridManager.setGridX(selComp, gridX+xDelta);
-                    gridManager.setGridY(selComp, gridY+yDelta);
-                    gridManager.setGridWidth(selComp, width+widthDelta);
-                    gridManager.setGridHeight(selComp, height+heightDelta);
+                    gridManager.setGridPosition(selComp,
+                        gridX+xDelta, gridY+yDelta, width+widthDelta, height+heightDelta);
                     columns = Math.max(columns, gridX+xDelta+width+widthDelta);
                     rows = Math.max(rows, gridY+yDelta+height+heightDelta);
                 }

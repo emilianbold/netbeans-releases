@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.classpath;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -53,7 +52,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -161,17 +159,12 @@ public class ClassPathProviderImplTest extends NbTestCase {
         MockPropertyChangeListener pcl2 = new MockPropertyChangeListener();
         bcp.addPropertyChangeListener(pcl2);
         assertFalse(bcp.toString(), bcp.toString().contains("override.jar"));
-        FileObject jar = TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
+        TestFileUtils.writeZipFile(d, "target/endorsed/override.jar", "javax/Whatever.class:whatever");
         EndorsedClassPathImpl.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        String sha1 = RepositoryUtil.calculateSHA1Checksum(FileUtil.toFile(jar));
-        File tmpJar = FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), sha1 + ".jar"));
-        FileUtil.refreshFor(tmpJar);
-        FileObject tmpJarFO = FileUtil.toFileObject(tmpJar);
-        assertNotNull(tmpJarFO);
-        assertRoots(cp, tmpJarFO);
+        assertTrue(cp.toString(), cp.toString().contains("3d096f11a5bcae595a2588e07c6deb89b000b79b.jar"));
         pcl2.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
-        assertTrue(bcp.toString(), bcp.toString().contains(sha1 + ".jar"));
+        assertTrue(bcp.toString(), bcp.toString().contains("3d096f11a5bcae595a2588e07c6deb89b000b79b.jar"));
         d.getFileObject("target").delete();
         pcl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertRoots(cp);
@@ -185,6 +178,28 @@ public class ClassPathProviderImplTest extends NbTestCase {
             roots.add(FileUtil.isArchiveFile(file) ? FileUtil.getArchiveRoot(file) : file);
         }
         assertEquals(roots, new LinkedHashSet<FileObject>(Arrays.asList(cp.getRoots())));
+    }
+
+    public void testGeneratedSources() throws Exception { // #187595
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        FileObject gsrc = FileUtil.createFolder(d, "target/generated-sources/xjc");
+        gsrc.createData("Whatever.class");
+        FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
+        FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
+        gtsrc.createData("Whatever.class");
+        assertRoots(ClassPath.getClassPath(src, ClassPath.SOURCE), src, gsrc);
+        assertRoots(ClassPath.getClassPath(gsrc, ClassPath.SOURCE), src, gsrc);
+        assertRoots(ClassPath.getClassPath(tsrc, ClassPath.SOURCE), tsrc, gtsrc);
+        assertRoots(ClassPath.getClassPath(gtsrc, ClassPath.SOURCE), tsrc, gtsrc);
     }
 
 }

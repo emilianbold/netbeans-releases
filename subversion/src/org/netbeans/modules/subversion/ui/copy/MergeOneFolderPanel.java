@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
-import org.netbeans.modules.subversion.ui.wizards.*;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -66,7 +66,6 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Message")); // NOI18N
 
@@ -77,6 +76,9 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
         mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EndingRev")); // NOI18N
 
+        mergeEndRevisionTextField.setText(SVNRevision.HEAD.toString());
+        mergeEndRevisionTextField.setToolTipText(org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartSearchButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Search")); // NOI18N
         mergeStartSearchButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -84,19 +86,18 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(mergeAfterEmptyLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
-
         mergeStartUrlComboBox.setEditable(true);
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartBrowseButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Browse")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndSearchButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Search2")); // NOI18N
 
+        mergeStartRevisionTextField.setText(SVNRevision.HEAD.toString());
+        mergeStartRevisionTextField.setToolTipText(org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
+
         jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png"))); // NOI18N
         jLabel8.setLabelFor(mergeStartRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Start")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndBrowseRevisionButton, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Browse")); // NOI18N
 
@@ -107,27 +108,26 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(mergeAfterRevisionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(mergeStartRepositoryFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(mergeStartRepositoryFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(mergeAfterRevisionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(mergeAfterEmptyLabel)
-                    .add(jLabel9)
-                    .add(layout.createSequentialGroup()
-                        .add(mergeStartRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(mergeStartSearchButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(mergeStartBrowseRevisionButton))
+                    .add(mergeStartUrlComboBox, 0, 408, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(mergeEndSearchButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(mergeEndBrowseRevisionButton))
-                    .add(mergeStartUrlComboBox, 0, 422, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(mergeStartRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(mergeStartSearchButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(mergeStartBrowseRevisionButton)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mergeStartBrowseButton))
         );
@@ -145,16 +145,12 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
                     .add(mergeStartSearchButton)
                     .add(jLabel8)
                     .add(mergeStartBrowseRevisionButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel9)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(mergeAfterRevisionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(mergeEndRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(mergeEndSearchButton)
-                    .add(mergeAfterRevisionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(mergeEndBrowseRevisionButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mergeAfterEmptyLabel)
                 .addContainerGap())
         );
 
@@ -176,8 +172,6 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    final javax.swing.JLabel mergeAfterEmptyLabel = new javax.swing.JLabel();
     final javax.swing.JLabel mergeAfterRevisionLabel = new javax.swing.JLabel();
     final javax.swing.JButton mergeEndBrowseRevisionButton = new javax.swing.JButton();
     final javax.swing.JTextField mergeEndRevisionTextField = new javax.swing.JTextField();

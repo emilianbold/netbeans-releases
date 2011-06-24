@@ -44,24 +44,30 @@
 package org.netbeans.modules.subversion.ui.copy;
 
 import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
 /**
  *
@@ -72,7 +78,10 @@ public abstract class CopyDialog {
     private DialogDescriptor dialogDescriptor;
     private JButton okButton, cancelButton;
     private JPanel panel;
-
+    private static final Pattern TEMPLATE_PATTERN = Pattern.compile("(branches|tags)/(.+?)(/.*)?"); //NOI18N
+    private static final String BRANCHES_FOLDER = "branches"; //NOI18N
+    private static final String TRUNK_FOLDER = "trunk"; //NOI18N
+    private static final String BRANCH_TEMPLATE = "[BRANCH_NAME]"; //NOI18N
     private Map<String, JComboBox> urlComboBoxes;
     
     CopyDialog(JPanel panel, String title, String okLabel) {                
@@ -95,13 +104,24 @@ public abstract class CopyDialog {
         getUrlComboBoxes().clear();
     }
     
-    protected void setupUrlComboBox(JComboBox cbo, String key) {
+    protected void setupUrlComboBox (RepositoryFile repositoryFile, JComboBox cbo, String key) {
         if(cbo==null) {
             return;
         }
-        List<String> recentFolders = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), key);
+        List<String> recentFolders = new LinkedList<String>(Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), key));
+        for (String template : getTemplates(repositoryFile)) {
+            recentFolders.remove(template);
+            recentFolders.add(0, template);
+        }
         ComboBoxModel rootsModel = new DefaultComboBoxModel(new Vector<String>(recentFolders));
         cbo.setModel(rootsModel);        
+        JTextComponent comp = (JTextComponent) cbo.getEditor().getEditorComponent();
+        String txt = comp.getText();
+        int pos = txt.indexOf(BRANCH_TEMPLATE);
+        if (pos > -1) {
+            comp.setCaretPosition(pos);
+            comp.moveCaretPosition(pos + BRANCH_TEMPLATE.length());
+        }
                 
         getUrlComboBoxes().put(key, cbo);
     }    
@@ -142,6 +162,26 @@ public abstract class CopyDialog {
     
     protected JButton getOKButton() {
         return okButton;
+    }
+
+    private Collection<String> getTemplates (RepositoryFile repositoryFile) {
+        List<String> templates = new LinkedList<String>();
+        String relativePath = SVNUrlUtils.getRelativePath(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl());
+        Matcher matcher = TEMPLATE_PATTERN.matcher(relativePath);
+        if (matcher.matches()) {
+            StringBuilder sb = new StringBuilder(relativePath);
+            sb.replace(matcher.start(2), matcher.end(2), BRANCH_TEMPLATE);
+            sb.replace(matcher.start(1), matcher.end(1), BRANCHES_FOLDER);
+            templates.add(sb.toString());
+            sb = new StringBuilder(relativePath);
+            sb.replace(0, matcher.end(2), TRUNK_FOLDER);
+            templates.add(sb.toString());
+        }
+        if (relativePath.startsWith(TRUNK_FOLDER + "/")) { //NOI18N
+            templates.add(new StringBuilder(relativePath).replace(0, TRUNK_FOLDER.length(), BRANCHES_FOLDER + "/" + BRANCH_TEMPLATE).toString());
+        }
+        Collections.reverse(templates);
+        return templates;
     }
 
 }

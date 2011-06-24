@@ -95,12 +95,21 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
             n = WindowManager.getDefault ().getRegistry ().getActivatedNodes ();
         }
         
-        
         Map<FileSystem,Set<FileObject>> fsSet = new HashMap<FileSystem,Set<FileObject>>();
-
-        if (n != null) {
-            for (Node node : n) {
+        List<DataObject> l = new LinkedList<DataObject>();
+        if(n == null || n.length == 0) {
+            l.addAll(lookup.lookupAll(DataObject.class));
+        } else {
+            for(Node node : n) {
                 DataObject obj = node.getCookie(DataObject.class);
+                if(obj != null) {
+                    l.add(obj);
+                }
+            }
+        }
+
+        if (!l.isEmpty()) {
+            for (DataObject obj : l) {
                  while (obj instanceof DataShadow)
                      obj = ((DataShadow) obj).getOriginal();
                  if (obj != null) {

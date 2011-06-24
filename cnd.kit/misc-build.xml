@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
     <target name="-init-tasks">
         <taskdef name="sortmodules"
                 classname="org.netbeans.nbbuild.SortSuiteModules"
-                classpath="${nbbuild}/nbantext.jar"/>
+                classpath="${nbbuild}/build/nbantext.jar"/>
     </target>
 
     <target name="-init-modules" depends="-init-tasks">

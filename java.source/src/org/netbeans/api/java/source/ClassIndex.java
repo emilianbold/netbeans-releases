@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -63,6 +64,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -87,6 +89,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
@@ -212,19 +215,61 @@ public final class ClassIndex {
     };
     
     /**
-     * Scope used by {@link ClassIndex} to search in
+     * Default predefined {@link SearchScopeType}s
      */
-    public enum SearchScope {
+    public enum SearchScope implements SearchScopeType {
         /**
          * Search is done in source path
          */
-        SOURCE,
+        SOURCE {
+            @Override
+            public boolean isSources() {return true;}
+            @Override
+            public boolean isDependencies() {return false;}
+        },
         /**
          * Search is done in compile and boot path
          */
-        DEPENDENCIES
+        DEPENDENCIES {
+            @Override
+            public boolean isSources() {return false;}
+            @Override
+            public boolean isDependencies() {return true;}
+        };
+
+        @Override
+        @CheckForNull
+        public Set<? extends String> getPackages() {
+            return null;
+        }
     };
-    
+
+    /**
+     * Scope used by {@link ClassIndex} to search in
+     * @since 0.82
+     */
+    public static interface SearchScopeType {
+        /**
+         * Limits search only into given packages.
+         * @return set of packages to search in or null which
+         * means all packages
+         */
+        @CheckForNull
+        Set<? extends String> getPackages();
+
+        /**
+         * Search in source path.
+         * @return if true search in done in sources
+         */
+        boolean isSources();
+
+        /**
+         * Search in dependent libraries bootpath,  compilepath.
+         * @return if true search in done in dependent libraries
+         */
+        boolean isDependencies();
+    }
+
     static {
 	ClassIndexImpl.FACTORY = new ClassIndexFactoryImpl();
     }
@@ -288,7 +333,10 @@ public final class ClassIndex {
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
      */
-    public @NullUnknown Set<ElementHandle<TypeElement>> getElements (final @NonNull ElementHandle<TypeElement> element, final @NonNull Set<SearchKind> searchKind, final @NonNull Set<SearchScope> scope) {
+    public @NullUnknown Set<ElementHandle<TypeElement>> getElements (
+            final @NonNull ElementHandle<TypeElement> element,
+            final @NonNull Set<SearchKind> searchKind,
+            final @NonNull Set<? extends SearchScopeType> scope) {
         assert element != null;
         assert element.getSignature()[0] != null;
         assert searchKind != null;
@@ -301,7 +349,12 @@ public final class ClassIndex {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
                     try {
-                        query.search(binaryName, ut, thConvertor, result);
+                        query.search(
+                            binaryName,
+                            ut,
+                            scope,
+                            thConvertor,
+                            result);
                     } catch (Index.IndexClosedException e) {
                         logClosedIndex (query);
                     } catch (IOException e) {
@@ -324,20 +377,28 @@ public final class ClassIndex {
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
      */
-    public @NullUnknown Set<FileObject> getResources (final @NonNull ElementHandle<TypeElement> element, final @NonNull Set<SearchKind> searchKind, final @NonNull Set<SearchScope> scope) {
+    public @NullUnknown Set<FileObject> getResources (
+            final @NonNull ElementHandle<TypeElement> element,
+            final @NonNull Set<SearchKind> searchKind,
+            final @NonNull Set<? extends SearchScopeType> scope) {
         assert element != null;
         assert element.getSignature()[0] != null;
         assert searchKind != null;
         final Set<FileObject> result = new HashSet<FileObject> ();
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
-        final String binaryName = element.getSignature()[0];        
+        final String binaryName = element.getSignature()[0];
         try {
             if (!ut.isEmpty()) {
                 for (ClassIndexImpl query : queries) {
                     final Convertor<? super Document, FileObject> foConvertor = DocumentUtil.fileObjectConvertor (query.getSourceRoots());
                     try {
-                        query.search (binaryName, ut, foConvertor, result);
+                        query.search(
+                            binaryName,
+                            ut,
+                            scope,
+                            foConvertor,
+                            result);
                     } catch (Index.IndexClosedException e) {
                         logClosedIndex (query);
                     } catch (IOException e) {
@@ -349,7 +410,7 @@ public final class ClassIndex {
         } catch (InterruptedException e) {
             return null;
         }
-    }        
+    }
     
     
     /**
@@ -362,7 +423,10 @@ public final class ClassIndex {
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
      */
-    public @NullUnknown Set<ElementHandle<TypeElement>> getDeclaredTypes (final @NonNull String name, final @NonNull NameKind kind, final @NonNull Set<SearchScope> scope) {
+    public @NullUnknown Set<ElementHandle<TypeElement>> getDeclaredTypes (
+            final @NonNull String name,
+            final @NonNull NameKind kind,
+            final @NonNull Set<? extends SearchScopeType> scope) {
         assert name != null;
         assert kind != null;
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
@@ -371,7 +435,12 @@ public final class ClassIndex {
         try {
             for (ClassIndexImpl query : queries) {
                 try {
-                    query.getDeclaredTypes (name, kind, thConvertor, result);
+                    query.getDeclaredTypes (
+                        name,
+                        kind,
+                        scope,
+                        thConvertor,
+                        result);
                 } catch (Index.IndexClosedException e) {
                     logClosedIndex (query);
                 } catch (IOException e) {
@@ -400,7 +469,10 @@ public final class ClassIndex {
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
      */
-    public @NullUnknown Set<String> getPackageNames (final @NonNull String prefix, boolean directOnly, final @NonNull Set<SearchScope> scope) {
+    public @NullUnknown Set<String> getPackageNames (
+            final @NonNull String prefix,
+            boolean directOnly,
+            final @NonNull Set<? extends SearchScopeType> scope) {
         assert prefix != null;
         final Set<String> result = new HashSet<String> ();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
@@ -419,9 +491,45 @@ public final class ClassIndex {
             return null;
         }
     }
-    
-    // Private innerclasses ----------------------------------------------------
-        
+
+    /**
+     * Creates a search scope limited to list of packages.
+     * @param base the base search scope to restrict
+     * @param pkgs a list of packages in which the search should be performed
+     * @return a newly created search scope
+     * @since 0.82
+     */
+    @NonNull
+    public static SearchScopeType createPackageSearchScope(
+            @NonNull final SearchScopeType base,
+            @NonNull final String... pkgs) {
+        Parameters.notNull("base", base);   //NOI18N
+        Parameters.notNull("pkgs", pkgs);   //NOI18N
+        final Set<String> pkgSet = new HashSet<String>(Arrays.asList(pkgs));
+        final Set<? extends String> basePkgs = base.getPackages();
+        if (basePkgs != null) {
+            pkgSet.addAll(basePkgs);
+        }
+        final Set<String> newPkgs = Collections.unmodifiableSet(pkgSet);
+        return new SearchScopeType() {
+            @Override
+            public Set<? extends String> getPackages() {
+                return newPkgs;
+            }
+
+            @Override
+            public boolean isSources() {
+                return base.isSources();
+            }
+
+            @Override
+            public boolean isDependencies() {
+                return base.isDependencies();
+            }
+        };
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Private implementation">
     private static class ClassIndexFactoryImpl implements ClassIndexFactory {
         
 	public ClassIndex create(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {            
@@ -465,15 +573,17 @@ public final class ClassIndex {
             }
         });        
     }
-    
-    private Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {
+
+    private Iterable<? extends ClassIndexImpl> getQueries (final Set<? extends SearchScopeType> scope) {
         final Set<ClassIndexImpl> result = new HashSet<ClassIndexImpl> ();
         synchronized (this) {
-            if (scope.contains(SearchScope.SOURCE)) {
-                result.addAll(this.sourceIndeces);
-            }
-            if (scope.contains(SearchScope.DEPENDENCIES)) {
-                result.addAll(this.depsIndeces);
+            for (SearchScopeType s : scope) {
+                if (s.isSources()) {
+                    result.addAll(this.sourceIndeces);
+                }
+                if (s.isDependencies()) {
+                    result.addAll(this.depsIndeces);
+                }
             }
         }
         LOGGER.log(
@@ -487,8 +597,8 @@ public final class ClassIndex {
                     result
                 });
         return result;
-    }        
-    
+    }
+
     private void createQueriesForRoots (final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries, final Set<? super URL> oldState) {
         final PathRegistry preg = PathRegistry.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
@@ -820,4 +930,5 @@ public final class ClassIndex {
     private static void assertParserEventThread() {
         assert Utilities.isTaskProcessorThread(Thread.currentThread());
     }
+    //</editor-fold>
 }

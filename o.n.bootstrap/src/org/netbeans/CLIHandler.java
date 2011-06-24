@@ -579,6 +579,7 @@ public abstract class CLIHandler extends Object {
                     try {
                         raf = new RandomAccessFile(lockFile, "rw");
                         lock = tryLock(raf);
+                        OUTPUT.log(Level.FINER, "tryLock when null on {0} result: {1}", new Object[] { lockFile, lock });
                         if (!cleanLockFile && !lockFile.canWrite()) {
                             return new Status(Status.CANNOT_WRITE);
                         }
@@ -607,7 +608,8 @@ public abstract class CLIHandler extends Object {
                 
                 final RandomAccessFile os = raf;
                 raf.seek(0L);
-                server = new Server(os, arr, block, handlers, failOnUnknownOptions);
+                
+                server = new Server(new FileAndLock(os, lock), arr, block, handlers, failOnUnknownOptions);
                 int p = server.getLocalPort();
                 os.writeInt(p);
                 os.getChannel().force(true);
@@ -1112,6 +1114,7 @@ public abstract class CLIHandler extends Object {
         }
 
         final void stopServer () {
+            OUTPUT.log(Level.FINER, "stopServer, unlock: {0}", unlock);
             if (unlock != null) {
                 try {
                     unlock.close();
@@ -1375,5 +1378,19 @@ public abstract class CLIHandler extends Object {
         
     } // end of Server
     
-    
+    private static final class FileAndLock implements Closeable {
+        private final Closeable file;
+        private final FileLock lock;
+
+        public FileAndLock(Closeable file, FileLock lock) {
+            this.file = file;
+            this.lock = lock;
+        }
+
+        @Override
+        public void close() throws IOException {
+            lock.release();
+            file.close();
+        }
+    } // end of FileAndLock
 }

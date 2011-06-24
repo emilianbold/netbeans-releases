@@ -262,12 +262,6 @@ public class WLDeploymentFactory implements DeploymentFactory {
             super(urls, parent);
         }
 
-        public void addURL(File f) throws MalformedURLException {
-            if (f.isFile()) {
-                addURL(f.toURL());
-            }
-        }
-
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             Class<?> clazz = super.findClass(name);

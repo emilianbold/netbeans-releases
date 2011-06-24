@@ -42,18 +42,25 @@
 
 package org.netbeans.modules.form.layoutsupport.griddesigner;
 
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.Graphics;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import org.netbeans.modules.form.FormLoaderSettings;
+import org.openide.util.*;
+import org.openide.util.ImageUtilities;
 
 /**
  * Utilities of the grid designer.
  *
- * @author Jan Stola
+ * @author Jan Stola, Petr Somol
  */
 public class GridUtils {
     /** Client property that marks padding component. */
@@ -203,6 +210,44 @@ public class GridUtils {
         parent.doLayout();
         cont.invalidate();
         cont.doLayout();
+    }
+
+    /**
+     * Loads an image based on resource path.
+     * Exactly like <code>ImageUtilities.loadImage(String, boolean)</code> but converts
+     * the loaded image to BufferedImage to save memory footprint
+     * and to enable usage in <code>TexturePaint</code>
+     * 
+     * @param resource resource path of the image (no initial slash)
+     * @param localized true for localized search
+     * @return image's BufferedImage or null if the image cannot be loaded
+     */
+    public static BufferedImage loadBufferedImage(String resource, boolean localized) {
+        Image image = ImageUtilities.loadImage(resource, localized);
+        if( image == null ) return null;
+        int width = image.getWidth(null);
+        int height = image.getHeight(null);
+        BufferedImage rep;
+        if ( Utilities.isMac() ) {
+            rep = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
+        } else {
+            ColorModel model;
+            try {
+                model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice().getDefaultConfiguration()
+                    .getColorModel(java.awt.Transparency.TRANSLUCENT);
+            }
+            catch(HeadlessException he) {
+                model = ColorModel.getRGBdefault();
+            }
+            rep = new BufferedImage(
+                    model, model.createCompatibleWritableRaster(width, height), model.isAlphaPremultiplied(), null
+                );
+        }
+        Graphics g = rep.createGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        return rep;
     }
 
 }

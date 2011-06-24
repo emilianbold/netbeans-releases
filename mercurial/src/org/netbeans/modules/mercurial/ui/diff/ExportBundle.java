@@ -45,6 +45,8 @@ package org.netbeans.modules.mercurial.ui.diff;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 import org.openide.DialogDescriptor;
@@ -60,6 +62,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.DialogDisplayer;
@@ -72,7 +75,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author ondra
  */
-class ExportBundle extends ExportDiffSupport implements ActionListener {
+class ExportBundle extends ExportDiffSupport implements ActionListener, PropertyChangeListener {
 
     private ExportBundlePanel panel;
     private JButton okButton;
@@ -89,6 +92,7 @@ class ExportBundle extends ExportDiffSupport implements ActionListener {
         resourceNames.put("CTL_Export_Title", "CTL_ExportBundleDialog_Title");
     }
     private static final String SEP = " "; //NOI18N
+    private final JButton selectButton;
 
     public ExportBundle(File repository) {
         super(new File[]{repository}, HgModuleConfig.getDefault().getPreferences());
@@ -106,6 +110,8 @@ class ExportBundle extends ExportDiffSupport implements ActionListener {
         panel.baseRevision.setSelectedIndex(0);
         panel.txtTopRevision.setText(HG_TIP);
         panel.addActionListener(this);
+        selectButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(selectButton, org.openide.util.NbBundle.getMessage(ExportBundle.class, "CTL_ExportBundle.ChangesetPicker_SelectButton")); //NOI18N
         this.changesetPickerPanel = new ChangesetPickerSimplePanel(repository);
     }
 
@@ -259,8 +265,6 @@ class ExportBundle extends ExportDiffSupport implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        JButton selectButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(selectButton, org.openide.util.NbBundle.getMessage(ExportBundle.class, "CTL_ExportBundle.ChangesetPicker_SelectButton")); //NOI18N
         DialogDescriptor dd = new DialogDescriptor(changesetPickerPanel,
                 org.openide.util.NbBundle.getMessage(ExportBundle.class, "CTL_ExportBundle.ChangesetPicker_Title"), // NOI18N
                 true,
@@ -269,13 +273,16 @@ class ExportBundle extends ExportDiffSupport implements ActionListener {
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(this.getClass()),
                 null);
+        selectButton.setEnabled(changesetPickerPanel.getSelectedRevision() != null);
+        changesetPickerPanel.addPropertyChangeListener(this);
         changesetPickerPanel.initRevisions();
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
+        changesetPickerPanel.removePropertyChangeListener(this);
         if (dd.getValue() == selectButton) {
-            String[] revisionWithChangeset = changesetPickerPanel.getSelectedRevision();
-            String revision = revisionWithChangeset[1].isEmpty() ? revisionWithChangeset[0]
-                    : new StringBuilder(revisionWithChangeset[0]).append(SEP).append("(").append(revisionWithChangeset[1]).append(")").toString();
+            HgLogMessage revisionWithChangeset = changesetPickerPanel.getSelectedRevision();
+            String revision = ChangesetPickerPanel.HG_TIP.equals(revisionWithChangeset.getRevisionNumber()) ? ChangesetPickerPanel.HG_TIP
+                    : new StringBuilder(revisionWithChangeset.getRevisionNumber()).append(SEP).append("(").append(revisionWithChangeset.getCSetShortID()).append(")").toString();
             if (ExportBundlePanel.CMD_SELECT_BASE_REVISION.equals(command)) {
                 panel.baseRevision.setModel(new DefaultComboBoxModel(new String[] {HG_NULL_BASE, revision})); //NOI18N
                 panel.baseRevision.setSelectedItem(revision);
@@ -285,12 +292,20 @@ class ExportBundle extends ExportDiffSupport implements ActionListener {
         }
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (selectButton != null && ChangesetPickerSimplePanel.PROP_VALID.equals(evt.getPropertyName())) {
+            boolean valid = (Boolean) evt.getNewValue();
+            selectButton.setEnabled(valid);
+        }
+    }
+
     private static class ChangesetPickerSimplePanel extends ChangesetPickerPanel {
 
         private boolean initialized;
 
         public ChangesetPickerSimplePanel(File repository) {
-            super(repository, new File[]{repository});
+            super(repository, null);
             initComponents();
         }
 

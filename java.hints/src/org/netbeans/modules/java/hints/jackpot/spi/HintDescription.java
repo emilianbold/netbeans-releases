@@ -45,7 +45,11 @@ package org.netbeans.modules.java.hints.jackpot.spi;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.Parameters;
 
@@ -56,25 +60,22 @@ import org.openide.util.Parameters;
 public final class HintDescription {
 
     private final HintMetadata metadata;
-    private final Kind triggerKind;
-    private final PatternDescription triggerPattern;
+    private final Trigger trigger;
     private final Worker worker;
+    private final AdditionalQueryConstraints additionalConstraints;
+    private final String hintText;
 
-    private HintDescription(HintMetadata metadata, Kind triggerKind, PatternDescription triggerPattern, Worker worker) {
+    private HintDescription(HintMetadata metadata, Trigger trigger, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText) {
         this.metadata = metadata;
-        this.triggerKind = triggerKind;
-        this.triggerPattern = triggerPattern;
+        this.trigger = trigger;
         this.worker = worker;
+        this.additionalConstraints = additionalConstraints;
+        this.hintText = hintText;
     }
 
     //XXX: should not be public
-    public Kind getTriggerKind() {
-        return triggerKind;
-    }
-
-    //XXX: should not be public
-    public PatternDescription getTriggerPattern() {
-        return triggerPattern;
+    public Trigger getTrigger() {
+        return trigger;
     }
 
     //XXX: should not be public
@@ -90,79 +91,22 @@ public final class HintDescription {
         return metadata.suppressWarnings;
     }
 
-    static HintDescription create(HintMetadata metadata, PatternDescription triggerPattern, Worker worker) {
-        return new HintDescription(metadata, null, triggerPattern, worker);
+    public AdditionalQueryConstraints getAdditionalConstraints() {
+        return additionalConstraints;
     }
 
-    static HintDescription create(HintMetadata metadata, Kind triggerKind, Worker worker) {
-        return new HintDescription(metadata, triggerKind, null, worker);
+    //XXX: should not be accessible to public
+    public @CheckForNull String getHintText() {
+        return hintText;
+    }
+
+    static HintDescription create(HintMetadata metadata, Trigger trigger, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText) {
+        return new HintDescription(metadata, trigger, worker, additionalConstraints, hintText);
     }
 
     @Override
     public String toString() {
-        return "[HintDescription:" + getTriggerPattern().getPattern()+ "]";
-    }
-
-    public static final class PatternDescription {
-        
-        private final String pattern;
-        private final Map<String, String> constraints;
-        private final Iterable<? extends String> imports;
-
-        private PatternDescription(String pattern, Map<String, String> constraints, String... imports) {
-            this.pattern = pattern;
-            this.constraints = constraints;
-            this.imports = Arrays.asList(imports);
-        }
-
-        public static PatternDescription create(String pattern, Map<String, String> constraints, String... imports) {
-            Parameters.notNull("pattern", pattern);
-            Parameters.notNull("constraints", constraints);
-            Parameters.notNull("imports", imports);
-            
-            return new PatternDescription(pattern, constraints, imports);
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final PatternDescription other = (PatternDescription) obj;
-            if ((this.pattern == null) ? (other.pattern != null) : !this.pattern.equals(other.pattern)) {
-                return false;
-            }
-            if (this.constraints != other.constraints && (this.constraints == null || !this.constraints.equals(other.constraints))) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 71 * hash + (this.pattern != null ? this.pattern.hashCode() : 0);
-            hash = 71 * hash + (this.constraints != null ? this.constraints.hashCode() : 0);
-            return hash;
-        }
-
-        //XXX: should not be public:
-        public String getPattern() {
-            return pattern;
-        }
-
-        //XXX: should not be public:
-        public Map<String, String> getConstraints() {
-            return constraints;
-        }
-
-        //XXX: should not be public:
-        public Iterable<? extends String> getImports() {
-            return imports;
-        }
+        return "[HintDescription:" + getTrigger() + "]";
     }
 
     public static interface Worker {
@@ -171,4 +115,16 @@ public final class HintDescription {
 
     }
 
+    public static final class AdditionalQueryConstraints {
+        public final Set<String> requiredErasedTypes;
+
+        public AdditionalQueryConstraints(Set<String> requiredErasedTypes) {
+            this.requiredErasedTypes = Collections.unmodifiableSet(new HashSet<String>(requiredErasedTypes));
+        }
+
+        private static final AdditionalQueryConstraints EMPTY = new AdditionalQueryConstraints(Collections.<String>emptySet());
+        public static AdditionalQueryConstraints empty() {
+            return EMPTY;
+        }
+    }
 }

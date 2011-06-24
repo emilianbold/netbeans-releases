@@ -51,6 +51,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
@@ -71,6 +72,16 @@ public class MergeRevisionsPanel extends ChangesetPickerPanel {
     @Override
     protected String getRefreshLabel() {
         return NbBundle.getMessage(UpdatePanel.class, "MSG_Refreshing_Update_Versions"); //NOI18N
+    }
+
+    @Override
+    protected boolean acceptSelection (HgLogMessage rev) {
+        boolean accepted = rev != null;
+        HgRevision parentRevision;
+        if (accepted && (parentRevision = getParentRevision()) != null) {
+            accepted = !rev.getCSetShortID().equals(parentRevision.getChangesetId());
+        }
+        return accepted;
     }
 
     private void initComponents() {

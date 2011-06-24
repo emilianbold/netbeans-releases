@@ -42,16 +42,13 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -60,12 +57,12 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
+import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
-import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -77,7 +74,9 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-public class InjectionPointParameterAnalyzer implements MethodAnalyzer {
+public class InjectionPointParameterAnalyzer 
+   extends AbstractDecoratorAnalyzer<ExecutableElement> implements MethodAnalyzer 
+{
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
@@ -99,8 +98,8 @@ public class InjectionPointParameterAnalyzer implements MethodAnalyzer {
                             var, (DeclaredType) parent.asType());
                         checkResult(result, element, var, model,descriptions, info );
                         if ( AnnotationUtil.isDelegate(var, parent, model)){
-                            checkDecoratedBeans( result ,var, element, model, info , 
-                                    descriptions);
+                            analyzeDecoratedBeans(result, var, element, parent,
+                                    model, info, descriptions);
                         }
                     }
                     if ( cancel.get()){
@@ -121,39 +120,38 @@ public class InjectionPointParameterAnalyzer implements MethodAnalyzer {
 
     }
     
-    private void checkDecoratedBeans( DependencyInjectionResult result,
-            VariableElement element, ExecutableElement method,
-            WebBeansModel model, CompilationInfo info,
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer#addClassError(javax.lang.model.element.VariableElement, java.lang.Object, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void addClassError( VariableElement element, ExecutableElement method,
+            TypeElement decoratedBean, WebBeansModel model,
+            CompilationInfo info, List<ErrorDescription> descriptions )
+    {
+        ErrorDescription description = CdiEditorAnalysisFactory.
+            createError( element , method, model, info , 
+                    NbBundle.getMessage(InjectionPointParameterAnalyzer.class, 
+                            "ERR_FinalDecoratedBean",                   // NOI18N
+                            decoratedBean.getQualifiedName().toString()));
+        descriptions.add( description );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer#addMethodError(javax.lang.model.element.VariableElement, java.lang.Object, javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     */
+    @Override
+    protected void addMethodError( VariableElement element,
+            ExecutableElement method, TypeElement decoratedBean,
+            Element decoratedMethod, WebBeansModel model, CompilationInfo info,
             List<ErrorDescription> descriptions )
     {
-        Set<TypeElement> decoratedBeans = null;
-        if ( result instanceof DependencyInjectionResult.ApplicableResult ){
-            DependencyInjectionResult.ApplicableResult appResult = 
-                (DependencyInjectionResult.ApplicableResult) result;
-            decoratedBeans = appResult.getTypeElements();
-        }
-        else if ( result instanceof DependencyInjectionResult.InjectableResult ){
-            Element decorated = ((DependencyInjectionResult.InjectableResult)result).
-                getElement();
-            if ( decorated instanceof TypeElement ){
-                decoratedBeans = Collections.singleton( (TypeElement)decorated);
-            }
-        }
-        if ( decoratedBeans == null ){
-            return;
-        }
-        for( TypeElement decorated : decoratedBeans ){
-            Set<Modifier> modifiers = decorated.getModifiers();
-            if ( modifiers.contains(Modifier.FINAL)){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element , method, model, info , 
-                        NbBundle.getMessage(InjectionPointAnalyzer.class, 
-                                "ERR_FinalDecoratedBean",                   // NOI18N
-                                decorated.getQualifiedName().toString()));
-                descriptions.add( description );
-                return;
-            }
-        }
+        ErrorDescription description = CdiEditorAnalysisFactory.createError(
+                element, method, model, info, NbBundle.getMessage(
+                        InjectionPointParameterAnalyzer.class,
+                        "ERR_FinalMethodDecoratedBean", // NOI18N
+                        decoratedBean.getQualifiedName().toString(),
+                        decoratedMethod.getSimpleName().toString()));
+        descriptions.add(description);
     }
     
     private void checkInjectionPointMetadata( VariableElement var,

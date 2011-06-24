@@ -45,12 +45,14 @@
 package org.netbeans.modules.project.libraries;
 
 import java.net.URL;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 
-public final class DefaultLibraryImplementation implements LibraryImplementation {
+public final class DefaultLibraryImplementation implements NamedLibraryImplementation {
 
     private String description;
 
@@ -62,6 +64,8 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     private String libraryType;
 
     private String localizingBundle;
+
+    private String displayName;
 
     private List<PropertyChangeListener> listeners;
 
@@ -78,20 +82,24 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     }
 
 
+    @Override
     public String getType() {
         return libraryType;
     }
 
+    @Override
     public void setName(final String name) throws UnsupportedOperationException {
         String oldName = this.name;
         this.name = name;
         this.firePropertyChange (PROP_NAME, oldName, this.name);
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public List<URL> getContent(String contentType) throws IllegalArgumentException {
         List<URL> content = contents.get(contentType);
         if (content == null)
@@ -99,6 +107,7 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         return Collections.unmodifiableList (content);
     }
 
+    @Override
     public void setContent(String contentType, List<URL> path) throws IllegalArgumentException {
         if (path == null) {
             throw new IllegalArgumentException ();
@@ -112,37 +121,53 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         }
     }
 
+    @Override
     public String getDescription () {
             return this.description;
     }
 
+    @Override
     public void setDescription (String text) {
         String oldDesc = this.description;
         this.description = text;
         this.firePropertyChange (PROP_DESCRIPTION, oldDesc, this.description);
     }
 
+    @Override
     public String getLocalizingBundle() {
         return this.localizingBundle;
     }
 
+    @Override
     public void setLocalizingBundle(String resourceName) {
         this.localizingBundle = resourceName;
     }
 
+    @Override
+    public @CheckForNull String getDisplayName() {
+        return this.displayName;
+    }
+
+    public void setDisplayName(final @NullAllowed String displayName) {
+        this.displayName = displayName;
+    }
+
+    @Override
     public synchronized void addPropertyChangeListener (PropertyChangeListener l) {
         if (this.listeners == null)
             this.listeners = new ArrayList<PropertyChangeListener>();
         this.listeners.add (l);
     }
 
+    @Override
     public synchronized void removePropertyChangeListener (PropertyChangeListener l) {
         if (this.listeners == null)
             return;
         this.listeners.remove (l);
     }
 
-    public @Override String toString() {
+    @Override
+    public String toString() {
         return "DefaultLibraryImplementation[" + name + "]"; // NOI18N
     }
 

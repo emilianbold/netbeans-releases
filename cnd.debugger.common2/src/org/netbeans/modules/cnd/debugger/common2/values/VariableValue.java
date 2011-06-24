@@ -63,8 +63,12 @@ public class VariableValue {
 	    return toHTML(text, true, false, null);
 	}
     }
+    
+    public static String bold(String text) {
+        return toHTML(text, true, false, null);
+    }
 
-        public static String toHTML(String text, boolean bold,  boolean italics, Color color) {
+    public static String toHTML(String text, boolean bold,  boolean italics, Color color) {
         if (text == null) {
             return null;
         }

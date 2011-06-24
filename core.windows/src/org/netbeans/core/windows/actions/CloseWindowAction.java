@@ -86,8 +86,7 @@ implements PropertyChangeListener {
         tc = topcomp;
         //Include the name in the label for the popup menu - it may be clicked over
         //a component that is not selected
-        putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class,
-        "LBL_CloseWindowAction")); //NOI18N
+        putValue(Action.NAME, NbBundle.getMessage(CloseWindowAction.class, "CTL_CloseWindowAction")); //NOI18N
         if( WindowManagerImpl.getInstance().isEditorTopComponent(tc) ) {
             setEnabled(Switches.isEditorTopComponentClosingEnabled() && Switches.isClosingEnabled(tc));
         } else {

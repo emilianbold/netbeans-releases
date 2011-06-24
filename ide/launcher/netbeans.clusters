@@ -7,24 +7,18 @@ ergonomics
 # and now the rest
 ide
 java
-xml
 apisupport
 webcommon
 websvccommon
 enterprise
 mobility
 profiler
-ruby
 python
 php
-visualweb
-soa
 identity
-uml
 harness
 cnd
 dlight
 groovy
 extra
-javafx
 javacard

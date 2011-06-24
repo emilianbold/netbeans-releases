@@ -45,11 +45,10 @@
 package org.netbeans.core.windows.model;
 
 
-import org.openide.windows.TopComponent;
+import java.util.Collection;
 
 import java.awt.*;
 import java.util.List;
-import java.util.Map;
 
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.SplitConstraint;
@@ -82,7 +81,7 @@ interface ModeModel {
     /** Adds closed TopComponent. */
     public void addClosedTopComponent(TopComponent tc);
     // XXX
-    public void addUnloadedTopComponent(String tcID);
+    public void addUnloadedTopComponent(String tcID, int index);
     // XXX
     public void setUnloadedSelectedTopComponent(String tcID);
     /** Set top component that was selected before switching to/from maximized mode */
@@ -114,6 +113,10 @@ interface ModeModel {
     public int getFrameState();
     /** Gets whether it is permanent. */
     public boolean isPermanent();
+    /** Makes the mode permanent 
+     * @since 2.30
+     */
+    public void makePermanent();
     /** */
     public boolean isEmpty();
     /** */
@@ -141,5 +144,13 @@ interface ModeModel {
     
     /** Gets position of opened top component in this mode */
     public int getOpenedTopComponentTabPosition (TopComponent tc);
+    /** @since 2.30 */
+    public boolean isMinimized();
+    /** @since 2.30 */
+    public void setMinimized( boolean minimized );
+    /** @since 2.30 */
+    public Collection<String> getOtherNames();
+    /** @since 2.30 */
+    public void addOtherName( String otherModeName );
 }
 

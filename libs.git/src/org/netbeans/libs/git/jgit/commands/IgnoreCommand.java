@@ -72,7 +72,7 @@ public class IgnoreCommand extends IgnoreUnignoreCommand {
     }
 
     @Override
-    protected MatchResult addStatement (List<IgnoreRule> ignoreRules, File gitIgnore, String path, boolean isDirectory, boolean rootIgnore) throws IOException {
+    protected MatchResult addStatement (List<IgnoreRule> ignoreRules, File gitIgnore, String path, boolean isDirectory, boolean rootIgnore, boolean writableIgnoreFile) throws IOException {
         MatchResult result = MatchResult.CHECK_PARENT;
         boolean changed = false;
         String escapedPath = escapeChars(path);
@@ -82,22 +82,26 @@ public class IgnoreCommand extends IgnoreUnignoreCommand {
                 if (rule.getResult()) {
                     if (result == MatchResult.NOT_IGNORED && escapedPath.equals(rule.getPattern(true))) {
                         // this statement is redundant, since it is negated in one of following statements
-                        it.remove();
-                        changed = true;
+                        if (writableIgnoreFile) {
+                            it.remove();
+                            changed = true;
+                        }
                     } else if (result != MatchResult.NOT_IGNORED) {
                         result = MatchResult.IGNORED;
                     }
                 } else {
                     if (escapedPath.equals(rule.getPattern(true))) {
-                        it.remove();
-                        changed = true;
+                        if (writableIgnoreFile) {
+                            it.remove();
+                            changed = true;
+                        }
                     } else if (result != MatchResult.IGNORED) {
                         result = MatchResult.NOT_IGNORED;
                     }
                 }
             }
         }
-        if (!result.equals(MatchResult.IGNORED) && (result.equals(MatchResult.NOT_IGNORED) || rootIgnore)) {
+        if (writableIgnoreFile && !result.equals(MatchResult.IGNORED) && (result.equals(MatchResult.NOT_IGNORED) || rootIgnore)) {
             if (escapedPath.startsWith("!")) { //NOI18N
                 escapedPath = "\\" + escapedPath; //NOI18N
             }
@@ -109,5 +113,10 @@ public class IgnoreCommand extends IgnoreUnignoreCommand {
             save(gitIgnore, ignoreRules);
         }
         return result;
+    }
+
+    @Override
+    protected boolean handleAdditionalIgnores (String path, boolean directory) throws IOException {
+        return checkExcludeFile(path, directory) != MatchResult.IGNORED && checkGlobalExcludeFile(path, directory) != MatchResult.IGNORED;
     }
 }

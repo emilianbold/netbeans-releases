@@ -39,16 +39,15 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -62,6 +61,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 /**
@@ -73,25 +73,23 @@ public class SubprojectProviderImpl implements SubprojectProvider {
 
     private final NbMavenProjectImpl project;
     private final NbMavenProject watcher;
-    private List<ChangeListener> listeners;
-    private ChangeListener listener2;
-    private PropertyChangeListener propertyChange;
+    private final ChangeSupport cs = new ChangeSupport(this);
+    private final ChangeListener listener2;
+    private final PropertyChangeListener propertyChange;
 
-    /** Creates a new instance of SubprojectProviderImpl */
     public SubprojectProviderImpl(NbMavenProjectImpl proj, NbMavenProject watcher) {
         project = proj;
         this.watcher = watcher;
-        listeners = new ArrayList<ChangeListener>();
         propertyChange = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            @Override public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                    fireChange();
+                    cs.fireChange();
                 }
             }
         };
         listener2 = new ChangeListener() {
-            public void stateChanged(ChangeEvent event) {
-                fireChange();
+            @Override public void stateChanged(ChangeEvent event) {
+                cs.fireChange();
             }
         };
         MavenFileOwnerQueryImpl.getInstance().addChangeListener(
@@ -100,7 +98,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
     }
 
 
-    public Set<? extends Project> getSubprojects() {
+    @Override public Set<? extends Project> getSubprojects() {
         Set<Project> projects = new HashSet<Project>();
         File basedir = FileUtil.toFile(project.getProjectDirectory());
         try {
@@ -138,16 +136,14 @@ public class SubprojectProviderImpl implements SubprojectProvider {
         return false;
     }
 
-    private void addProjectModules(File basedir, Set<Project> resultset, List modules) throws InterruptedException {
-        if (modules == null || modules.size() == 0) {
+    private void addProjectModules(File basedir, Set<Project> resultset, List<String> modules) throws InterruptedException {
+        if (modules == null) {
             return;
         }
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
+        for (String path : modules) {
             if (Thread.interrupted()) {
                 throw new InterruptedException();
             }
-            String path = (String) it.next();
             if (path.trim().length() == 0) {
                 //#175331
                 continue;
@@ -157,7 +153,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
             if (!projectFile.equals(basedir) //#175331
                  && projectFile.exists()) {
                 FileObject projectDir = FileUtil.toFileObject(projectFile);
-                if (projectDir != null && !isProcessed(resultset, projectDir)) {
+                if (projectDir != null && projectDir.isFolder() && !isProcessed(resultset, projectDir)) {
                     Project proj = processOneSubproject(projectDir);
                     NbMavenProjectImpl mv = proj != null ? proj.getLookup().lookup(NbMavenProjectImpl.class) : null;
                     if (mv != null) {
@@ -173,13 +169,9 @@ public class SubprojectProviderImpl implements SubprojectProvider {
                     // HUH?
                     ErrorManager.getDefault().log("fileobject not found=" + sub); //NOI18N
                 }
-
             } else {
                 ErrorManager.getDefault().log("project file not found=" + sub); //NOI18N
             }
-
-
-
         }
     }
 
@@ -195,27 +187,18 @@ public class SubprojectProviderImpl implements SubprojectProvider {
         return null;
     }
 
-    public synchronized void addChangeListener(ChangeListener changeListener) {
-        if (listeners.size() == 0) {
+    @Override public synchronized void addChangeListener(ChangeListener changeListener) {
+        if (!cs.hasListeners()) {
             watcher.addPropertyChangeListener(propertyChange);
         }
-        listeners.add(changeListener);
+        cs.addChangeListener(changeListener);
     }
 
-    public synchronized void removeChangeListener(ChangeListener changeListener) {
-        listeners.remove(changeListener);
-        if (listeners.size() == 0) {
+    @Override public synchronized void removeChangeListener(ChangeListener changeListener) {
+        cs.removeChangeListener(changeListener);
+        if (!cs.hasListeners()) {
             watcher.removePropertyChangeListener(propertyChange);
         }
     }
 
-    private void fireChange() {
-        List<ChangeListener> lists = new ArrayList<ChangeListener>();
-        synchronized (this) {
-            lists.addAll(listeners);
-        }
-        for (ChangeListener listener : lists) {
-            listener.stateChanged(new ChangeEvent(this));
-        }
-    }
 }

@@ -67,6 +67,6 @@ public class OutputWindowViewAction extends Action {
 
     /** Creates new instance. */    
     public OutputWindowViewAction() {
-        super(menu, null, "org.netbeans.core.output2.OutputWindowAction", keystroke);
+        super(menu, null, "org.netbeans.core.io.ui.IOWindowAction", keystroke);
     }
 }

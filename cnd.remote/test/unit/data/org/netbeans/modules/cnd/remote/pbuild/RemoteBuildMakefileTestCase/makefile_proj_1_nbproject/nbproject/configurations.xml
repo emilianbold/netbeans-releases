@@ -7,7 +7,7 @@
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
                    projectFiles="false">
-      <itemPath>../makefile_proj_1_external/makefile</itemPath>
+      <itemPath>../makefile_proj_1_external/Makefile</itemPath>
       <itemPath>makefile_proj_1_nbproject-Makefile.mk</itemPath>
     </logicalFolder>
   </logicalFolder>

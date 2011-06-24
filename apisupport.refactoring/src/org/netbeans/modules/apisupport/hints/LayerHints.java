@@ -82,6 +82,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.xml.EntityCatalog;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -221,7 +222,8 @@ public class LayerHints implements UpToDateStatusProviderFactory {
                         }
                     }
                     DefaultHandler2 handler = new Handler();
-                    parser.getXMLReader().setProperty("http://xml.org/sax/properties/lexical-handler", handler); // NOI18N
+                    parser.getXMLReader().setContentHandler(handler); // NOI18N
+                    parser.getXMLReader().setEntityResolver(EntityCatalog.getDefault());
                     parser.parse(in, handler);
                     return lines;
                 }

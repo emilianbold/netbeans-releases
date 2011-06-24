@@ -51,6 +51,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.test.MockLookup;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -69,6 +70,7 @@ public class VersionsCacheTest extends AbstractSvnTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         // create
         workdir = getWC();
     }

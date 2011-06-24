@@ -155,6 +155,8 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
 
         if (Util.allMimeTypes == null) {
             Util.allMimeTypes = new HashSet<String>();
+        } else {
+            Util.allMimeTypes = new HashSet<String>(Util.allMimeTypes);
         }
 
         Util.allMimeTypes.add("text/x-java");

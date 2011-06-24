@@ -2,8 +2,45 @@
 <html>
     
     <!--
-    *     Copyright  2009 Sun Microsystems, Inc. All rights reserved.
-    *     Use is subject to license terms.
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2011 Sun Microsystems, Inc.
     -->
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -30,19 +67,35 @@
         be included in deployment, use the Libraries page of the Project Properties 
         dialog box.</p>
       
-        <h3>Compilation Settings</h3>
-        <p>Depending on the web service type, you configure compilation settings
-        in different ways. For JAX-WS web services, you use the Web Service Attributes Editor
-        to customize WSDL files. For JAX-RPC web services that
-        are created from WSDL, you use the
-        Project Properties dialog box to configure the <tt>wscompile</tt> tool. For details,
-        see <a href="../build/about_build_ws.html">About Building Web Services</a>.</p>
+        <h3>JAX-WS Service Compilation Settings</h3>
+        <p>For JAX-WS web services, you can either use the <a href="../nodes/wsitconf-EditWSAttributesCookieImpl.html">
+                Web Service Attributes editor</a> or generate
+                WSDL and Schema files and edit them manually. </p>
+        <p>To use the Web Service Attributes editor, go to the Projects window, find the
+        project's Web Services node, right-click the web service and select Edit Web Service Attributes.</p>
+        <p>To generate WSDL and Schema files, go to the Projects window, find the
+        project's Web Services node, right-click the web service and choose Generate and Copy WSDL. A
+        wizard opens in which you select the location for the WSDL and schema files. After you generate the
+        schema and WSDL, you can edit them manually. After editing these files, you need to add a wsdlLocation
+        attribute to the service's @WebService annotation. The wsdlLocation attribute's value is the path to the
+        generated WSDL.</p>
+        
+        <p class="note" >If you copy and edit the WSDL and schema files, you must add the wsdlLocation to the 
+            web service. The IDE generates a WSDL file at build time, and if the wsdlLocation is not specified,
+            the IDE uses the WSDL it generates itself instead of the one you generated.</p> 
+        <h3>RESTful Service Compilation Settings</h3>
+        <p>The main decision you make when you create a RESTful service is how to register that service. When you 
+        create the service, the IDE opens a dialog where you choose whether to use the default web.xml deployment
+        descriptor created by the IDE or to write the registration yourself. For EE6 services, you also have the
+        choice of using an IDE-generated subclass of javax.ws.rs.core.Application. After you create the service, you can
+        change how the service is registered by going to the Projects window, right-clicking the application's RESTful 
+        Web Services node, and choosing REST Resources Configuration.</p>
+        <p>You can also generate and edit a WADL for a web application. To generate the WADL, select New File &gt; Web Services
+        &gt; WADL Document. To help you edit the WADL document, install the WADL Designer plugin.</p>
         <h3>Deployment Settings</h3>
         <p>There are several key steps to configuring deployment settings:</p>
         <ul>
-            <li><b>Setting the target server.</b> Although the IDE only supports the Sun 
-                Java Systems Application Server, you can have several instances of the server 
-                registered. You can set the target server instance for a project by doing 
+            <li><b>Setting the target server.</b> You can set the target server instance for a project by doing 
                 any of the following: 
                 <ul>
                     <li>Specifying the server in the New Project wizard when creating the project.</li>
@@ -52,34 +105,32 @@
                     deployed to the same server instance as the enterprise application.</li>
                 </ul>
             </li>
-            <li><b>Adding the project module to a J2EE application.</b> You can add a web application or EJB module 
+            <li><b>Adding the project module to a Java EE Enterprise Application.</b> You can add a web application or EJB module 
                 to an enterprise project by doing either of the following: 
                 <ul>
                     <li>Specifying the enterprise application in the New Project wizard when 
                     creating the project.</li>
-                    <li>Right-clicking the J2EE Modules node for any enterprise application 
-                    project and choosing Add J2EE Module.</li>
+                    <li>Right-clicking the Java EE Modules node for any enterprise application 
+                    project and choosing Add Java EE Module.</li>
                 </ul>
             </li>
-            <li><b>Configuring web services via annotations.</b> You only do this for JAX-WS web services (that is,
-                for Java EE 5). For these web services, the IDE generates annotation snippets
+            <li><b>Configuring web services via annotations.</b>  
+                The IDE generates annotation snippets
                 in the artifacts that it creates and lets you use code completion to fill out the
                 annotation snippets.
                 
             </li>
-            <li><b>Configuring web services via deployment descriptors.</b> 
-                In principle, you only do this
-                for JAX-RPC web services (that is, J2EE 1.4).  For these web services, the IDE automatically updates 
-                your deployment descriptors as you code your web service. Whenever you insert 
-                a call to an enterprise bean or create select or finder methods, the IDE automatically 
-                enters the necessary information in your deployment descriptors. You can manually 
-                configure your deployment descriptors by expanding the EJB module's Configuration 
-                Files node and double-clicking <tt>webservices.xml</tt> or the deployment descriptors applicable to the project.
+            <li><p><b>Configuring web services via deployment descriptors.</b> 
+                You can manually 
+                configure your deployment descriptors by opening the project's web.xml deployment descriptor.
+                In the case of EE6 RESTful services, which by default do not have deployment descriptors,
+                you can generate a deployment descriptor by adding New &gt; Web &gt; Standard deployment 
+                descriptor (web.xml). </p>
+                <p>Changes made to the web.xml deployment descriptor override configuration 
+                settings in annotations.</p>
+                
           
-                <p>Even though JAX-WS (Java EE 5) web services are generally configured
-                via annotations, you can still continue configuring them by means of
-                deployment descriptors, to override annotations. For example, a developer might
-                use annotations which a deployer wants to override.
+                
             </li>
         </ul>
         

@@ -115,10 +115,12 @@ public class AddToFavoritesTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-        favoritesWindow.maximize();
-    	Node n=new Node(favoritesWindow.tree(), fileName);
-        n.performPopupAction(REMOVE_FROM_FAVORITES);
-        favoritesWindow.close();
+        if (favoritesWindow!=null){
+            favoritesWindow.maximize();
+            Node n=new Node(favoritesWindow.tree(), fileName);
+            n.performPopupAction(REMOVE_FROM_FAVORITES);
+            favoritesWindow.close();
+        }
     }
     
     public void prepare() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,6 +44,11 @@
 
 package org.netbeans.modules.search;
 
+import javax.swing.JEditorPane;
+import org.openide.text.NbDocument;
+import org.openide.cookies.EditorCookie;
+import org.openide.windows.TopComponent;
+import org.openide.nodes.Node;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.GroupLayout;
@@ -145,6 +150,26 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (searchAndReplace){
             updateReplacePatternColor();
         }
+        
+        Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
+        if (arr.length > 0) {
+            EditorCookie ec = arr[0].getCookie (EditorCookie.class);
+            if (ec != null) {
+                JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
+                if (recentPane != null) {
+                    String initSearchText = null;
+                    if (org.netbeans.editor.Utilities.isSelectionShowing(recentPane.getCaret())) {
+                        initSearchText = recentPane.getSelectedText();
+                    }
+                    if (initSearchText != null) {
+                        cboxTextToFind.setSelectedIndex(-1);
+                        textToFindEditor.setText(initSearchText);
+                        searchCriteria.setTextPattern(initSearchText);
+                    }
+                }
+            }
+        }
+
     }
 
     /** This method is called from within the constructor to
@@ -377,12 +402,15 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             PatternChangeListener(JComboBox srcCBox) {
                 this.sourceComboBox = srcCBox;
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 update(e);
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 update(e);
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 update(e);
             }
@@ -593,6 +621,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         usabilityChangeListener = l;
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (usabilityChangeListener != null) {
             usabilityChangeListener.stateChanged(new ChangeEvent(this));
@@ -604,6 +633,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * 
      * @param  e  event object holding information about the change
      */
+    @Override
     public void itemStateChanged(ItemEvent e) {
         final ItemSelectable toggle = e.getItemSelectable();
         final boolean selected = (e.getStateChange() == ItemEvent.SELECTED);
@@ -630,6 +660,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         radioBtnGroup = new ButtonGroup();
         
         ItemListener buttonStateListener = new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     AbstractButton selectedButton = (AbstractButton) e.getSource();
@@ -820,6 +851,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      */
     private static class TextFieldFocusListener implements FocusListener {
 
+        @Override
         public void focusGained(FocusEvent e) {
             if (!e.isTemporary()) {
                 JTextComponent textComp = (JTextComponent) e.getSource();
@@ -829,12 +861,16 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             }
         }
 
+        @Override
         public void focusLost(FocusEvent e) {
             /* do nothing */
         }
 
     }
 
+    private static final Logger watcherLogger = Logger.getLogger(
+            "org.netbeans.modules.search.BasicSearchForm.FileNamePatternWatcher");//NOI18N
+        
     /**
      * Extension of the {@code TextFieldFocusListener}
      * - besides selecting of all text upon focus gain,
@@ -844,9 +880,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      */
     private final class FileNamePatternWatcher extends TextFieldFocusListener
                                                implements HierarchyListener {
-        
-        private final Logger watcherLogger = Logger.getLogger(
-                "org.netbeans.modules.search.BasicSearchForm.FileNamePatternWatcher");//NOI18N
         
         private final JTextComponent txtComp;
         private final Document doc;
@@ -860,6 +893,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             doc = txtComp.getDocument();
         }
         
+        @Override
         public void hierarchyChanged(HierarchyEvent e) {
             if ((e.getComponent() != txtComp)
                     || ((e.getChangeFlags() & DISPLAYABILITY_CHANGED) == 0)

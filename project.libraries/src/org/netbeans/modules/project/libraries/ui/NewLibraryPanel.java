@@ -45,13 +45,8 @@
 package org.netbeans.modules.project.libraries.ui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
@@ -65,8 +60,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     private LibraryStorageArea area;
 
     private DialogDescriptor dd;
-
-    private static final Pattern VALID_LIBRARY_NAME = Pattern.compile("[-._a-zA-Z0-9]+"); // NOI18N
+    
 
     public NewLibraryPanel (LibrariesModel model, String preselectedLibraryType, LibraryStorageArea area) {
         this.model = model;
@@ -142,37 +136,20 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     private void nameChanged () {
         String name = this.name.getText();
         boolean valid = false;
-        String message;
+        String message = "";    //NOI18N
         if (name.length() == 0) {
             message = NbBundle.getMessage(NewLibraryPanel.class,"ERR_InvalidName");
-        }
-        else {
-            valid = LibrariesCustomizer.isValidName(model, name, area);
-            if (valid) {
-                if (isReasonableAntProperty(name)) {
-                    message = " ";   //NOI18N
-                } else {
-                    valid = false;
-                    message = NbBundle.getMessage(NewLibraryPanel.class,"ERR_InvalidCharacters");
-                }
-            }
-            else {
-                message = NbBundle.getMessage(NewLibraryPanel.class, "ERR_ExistingName", name);
-            }
+        } else if (LibrariesCustomizer.isExistingDisplayName(model, name, area)){
+            message = NbBundle.getMessage(NewLibraryPanel.class, "ERR_ExistingName", name);
+        } else {
+            valid = true;
         }
         if (dd != null) {
             dd.setValid(valid);
         }
         this.status.setText(message);
     }
-    
-    private boolean isReasonableAntProperty(String name) {
-        // XXX: there is method in PropertyUtils.isUsablePropertyName()
-        // which should be used here but that would create dependency
-        // on ant/project modules which is not desirable.
-        // XXX: The restriction of display name should be fixed in promo F
-        return VALID_LIBRARY_NAME.matcher(name).matches();
-    }
+        
     
     /** This method is called from within the constructor to
      * initialize the form.

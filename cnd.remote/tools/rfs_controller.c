@@ -59,8 +59,8 @@
 static int emulate = false;
 
 enum  {
-    VERSION_1 = '1',
-    VERSION_2 = '2'
+    VERSION_1 = '3',
+    VERSION_2 = '4'
 } protocol_version = 0;
 
 typedef struct connection_data {
@@ -426,7 +426,9 @@ static void free_file_list(file_elem* list) {
 }
 
 static int init() {
-    trace("Initialization\n");
+    trace("Initialization. Sending supported versions: %c %c\n", VERSION_1, VERSION_2);
+    fprintf(stdout, "VERSIONS %c %c\n", VERSION_1, VERSION_2);
+    fflush(stdout);
     int bufsize = 256;
     char buffer[bufsize];
     if(fgets(buffer, bufsize, stdin)) {

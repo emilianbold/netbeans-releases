@@ -109,6 +109,61 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="FileSystemAction.no.nodes">
+          <api name="awt"/>
+          <summary>lookup(DataObject.class) fallback</summary>
+          <version major="7" minor="26"/>
+          <date day="21" month="6" year="2011"/>
+          <author login="tstupka"/>
+          <compatibility semantic="compatible" addition="yes"/>
+          <description>
+              <p>
+                  In FileSystemAction.createMenu(boolean popUp, Lookup lookup) 
+                  fallback on .lookup(DataObject.class) in case the given lookup 
+                  contains no nodes. 
+              </p>
+          </description>
+          <class package="org.openide.actions" name="FileSystemAction"/>
+      </change>      
+      <change id="org.openide.loaders.FolderChildren.delayedCreation">
+          <api name="loaders"/>
+          <summary>Children for DataFolder are more effective</summary>
+          <version major="7" minor="25"/>
+          <date day="10" month="6" year="2011"/>
+          <author login="jtulach"/>
+          <compatibility semantic="incompatible" binary="compatible" deletion="no"
+            addition="yes" modification="yes" source="compatible">
+                Not fully compatible. In case your application desperately
+                needs the original mode, use the
+                <a href="@TOP@architecture-summary.html#systemproperty-org.openide.loaders.FolderChildren.delayedCreation">
+                org.openide.loaders.FolderChildren.delayedCreation    
+                </a> property.
+          </compatibility>
+          <description>
+              <p>
+                  The nodes view over a <code>DataFolder</code> now creates
+                  real nodes in background which provides better performance
+                  on slow, remote filesystems.
+              </p>
+          </description>
+          <class package="org.openide.loaders" name="DataFolder"/>
+      </change>
+      <change id="DataEditorSupport.create-callable">
+          <api name="editor"/>
+          <summary>DataEditorSupport.create(...., Callable&lt;Pane&gt;)</summary>
+          <version major="7" minor="23"/>
+          <date day="1" month="6" year="2011"/>
+          <author login="jtulach"/>
+          <compatibility semantic="compatible" addition="yes"/>
+          <description>
+              <p>
+                  New <code>create</code> factory method to allow creation
+                  of different <code>CloneableEditorSupport.Pane</code> implementations
+                  than the default <code>CloneableEditor</code>.
+              </p>
+          </description>
+          <class package="org.openide.text" name="DataEditorSupport"/>
+      </change>
       <change id="removing.org.openide.loaders.DataFolder.lazy">
           <api name="loaders"/>
           <summary>Removed <code>org.openide.loaders.DataFolder.lazy</code></summary>

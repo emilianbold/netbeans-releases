@@ -51,6 +51,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import java.io.File;
+import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 
 /**
  *
@@ -61,6 +62,7 @@ public class RevertModifications implements PropertyChangeListener {
     private RevertModificationsPanel panel;
     private JButton okButton;
     private JButton cancelButton;
+    private final File repository;
     
     /** Creates a new instance of RevertModifications */
     public RevertModifications(File repository, File[] files) {
@@ -68,6 +70,7 @@ public class RevertModifications implements PropertyChangeListener {
     }
 
     public RevertModifications(File repository, File[] files, String defaultRevision) {
+        this.repository = repository;
         panel = new RevertModificationsPanel(repository, files);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Revert")); // NOI18N
@@ -77,10 +80,15 @@ public class RevertModifications implements PropertyChangeListener {
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSN_RevertForm_Action_Cancel")); // NOI18N
+        okButton.setEnabled(false);
+        panel.addPropertyChangeListener(this);
     } 
     
     public boolean showDialog() {
         File[] revertFiles = panel.getRootFiles();
+        if (revertFiles == null) {
+            revertFiles = new File[] { repository };
+        }
         DialogDescriptor dialogDescriptor;
 
         String title;
@@ -111,8 +119,9 @@ public class RevertModifications implements PropertyChangeListener {
         return ret;       
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(okButton != null) {
+        if (ChangesetPickerPanel.PROP_VALID.equals(evt.getPropertyName()) && okButton != null) {
             boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
             okButton.setEnabled(valid);
         }       
@@ -120,7 +129,7 @@ public class RevertModifications implements PropertyChangeListener {
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision()[0];
+        return panel.getSelectedRevision().getRevisionNumber();
     }
     
     public boolean isBackupRequested() {

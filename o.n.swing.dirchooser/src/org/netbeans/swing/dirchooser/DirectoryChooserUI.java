@@ -196,7 +196,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private FileCompletionPopup completionPopup;
     
-    private final static UpdateWorker updateWorker = new UpdateWorker();
+    private final UpdateWorker updateWorker = new UpdateWorker();
     
     private boolean useShellFolder = false;
     
@@ -1039,7 +1039,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             int slash = name.lastIndexOf(File.separatorChar);
             if (slash != -1) {
                 String prefix = name.substring(0, slash + 1);
-                File dir = new File(prefix);
+                File dir = getFileChooser().getFileSystemView().createFileObject(prefix);
                 File[] children;
                 synchronized (listFilesWorker) {
                     if (!dir.equals(lastDir)) {
@@ -2153,7 +2153,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             // #105801: completionPopup might not be ready when updateCompletions not called (empty text field)
             if (completionPopup != null && !completionPopup.isVisible()) {
                 if (keyCode == KeyEvent.VK_ENTER) {
-                    File file = new File(filenameTextField.getText());
+                    File file = getFileChooser().getFileSystemView().createFileObject(filenameTextField.getText());
                     if(file.exists() && file.isDirectory()) {
                         setSelected(new File[] {file});
                         fileChooser.approveSelection();
@@ -2519,7 +2519,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     if ( realCloned.removeAll( currentFiles.keySet()) ){
                         // Handle added folders
                         for ( String name : realCloned ){
-                            DirectoryNode added = new DirectoryNode( new File( folder, name ) );
+                            DirectoryNode added = new DirectoryNode( getFileChooser().getFileSystemView().createFileObject( folder, name ) );
                             model.insertNodeInto( added, node, node.getChildCount());
                         }
                     }
@@ -2615,7 +2615,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    private static class DirectoryTreeModel extends DefaultTreeModel {
+    private class DirectoryTreeModel extends DefaultTreeModel {
         
         public DirectoryTreeModel(TreeNode root) {
             super(root);
@@ -2626,7 +2626,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             boolean refreshTree = false;
             DirectoryNode node = (DirectoryNode)path.getLastPathComponent();
             File f = node.getFile();
-            File newFile = new File(f.getParentFile(), (String)newValue);
+            File newFile = getFileChooser().getFileSystemView().createFileObject(f.getParentFile(), (String)newValue);
             
             if(f.renameTo(newFile)) {
                 // fix bug #97521, #96960
@@ -2646,7 +2646,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
 
-    private static class UpdateWorker implements Runnable {
+    private class UpdateWorker implements Runnable {
         private volatile String lastUpdatePathName = null;
         private DirectoryChooserUI ui;
         private volatile File work;

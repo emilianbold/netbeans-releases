@@ -24,19 +24,20 @@
 #   varname:		SOURCE_BRANCH
 #   value_example:	release701
 #
-# @See push_transplanted.sh
 #
+
+#!/bin/sh
 
 AWK=/bin/nawk
 
 STATUS=0
 
-## Functions 
+## Functions
 
 rollback() {
-   printf "Rollback any unpushed changes ... "
+   echo "Rollback any unpushed changes ... "
 
-   for r in `hg out | sed 's/^changeset.*:\([0-9a-f]*\)$/\1/p;d'`; do
+   for r in `hg out -n | sed 's/^changeset.*:\([0-9a-f]*\)$/\1/p;d'`; do
       echo hg strip $r
       hg --config extensions.mq= strip -n -f $r || return 1
    done
@@ -75,7 +76,7 @@ cp ${REVFILE} ${REVFILE}.tmp
 REV=`cat ${REVFILE}.tmp`
 
 TEMPFILE=`mktemp`
-trap "rm -f ${TEMPFILE}; exit \${STATUS}" 1 2 15 EXIT
+trap "rm -f ${TEMPFILE}; rm -f ${REVFILE}.tmp; exit \${STATUS}" 1 2 15 EXIT
 
 echo Getting revisions from ${REV} to tip ...
 echo "----------------------------------------------------------"
@@ -97,4 +98,19 @@ for i in `cat ${TEMPFILE} | ${AWK} '/^[0-9]/{print $1}'`; do
    echo OK
    echo "----------------------------------------------------------"
 done
+
+ant -Djava.awt.headless=true clean build-nozip || fail_rollback
+
+echo "----------------------------------------------------------"
+echo Pushing changes...
+echo "----------------------------------------------------------"
+cat ${TEMPFILE}
+echo "----------------------------------------------------------"
+echo hg push
+hg push || fail_rollback
+
+LAST_REV=`cat ${REVFILE}.tmp`
+NEW_REV=`expr ${LAST_REV} + 1`
+echo ${NEW_REV} > ${REVFILE}
+
 

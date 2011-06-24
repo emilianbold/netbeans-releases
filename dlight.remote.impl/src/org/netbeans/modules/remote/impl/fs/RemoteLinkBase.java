@@ -149,6 +149,15 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
+    public String getMIMEType() {
+        RemoteFileObjectBase delegate = getDelegate();
+        if (delegate != null) {
+            return delegate.getMIMEType();
+        }
+        return super.getMIMEType();
+    }
+
+    @Override
     public InputStream getInputStream() throws FileNotFoundException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate == null) {

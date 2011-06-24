@@ -50,6 +50,7 @@ import org.openide.util.NbBundle;
 import java.awt.Dialog;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
+import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.modules.project.libraries.ui.NewLibraryPanel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -125,9 +126,15 @@ public final class LibrariesCustomizer {
         setAccessibleDescription(dlg, customizer.getAccessibleContext().getAccessibleDescription());
         dlg.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            final String currentLibraryName = p.getLibraryName();
+            final String antLibraryName = 
+                org.netbeans.modules.project.libraries.ui.LibrariesCustomizer.createFreeAntLibraryName(
+                    currentLibraryName,
+                    customizer.getModel(),
+                    area);
             LibraryImplementation impl;
             if (area != LibrariesModel.GLOBAL_AREA) {
-                impl = customizer.getModel().createArealLibrary(p.getLibraryType(), p.getLibraryName(), manager.getArea());
+                impl = customizer.getModel().createArealLibrary(p.getLibraryType(), antLibraryName, manager.getArea());
             } else {
                 LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(p.getLibraryType());
                 if (provider == null) {
@@ -136,6 +143,7 @@ public final class LibrariesCustomizer {
                 impl = provider.createLibrary();
                 impl.setName(p.getLibraryName());
             }
+            Util.setDisplayName(impl, currentLibraryName);
             customizer.getModel().addLibrary(impl);
             customizer.forceTreeRecreation();
             if (customizeLibrary(customizer, impl)) {

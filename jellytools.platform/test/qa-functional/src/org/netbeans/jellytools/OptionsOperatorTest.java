@@ -43,84 +43,65 @@
  */
 package org.netbeans.jellytools;
 
-import java.io.IOException;
-import java.util.Properties;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.junit.NbTestSuite;
 
 /** Tests org.netbeans.jellytools.OptionsOperator. */
 public class OptionsOperatorTest extends JellyTestCase {
 
-
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-            TestRunner.run(suite());
-    }
-    
-    public static String[] tests = new String[] {
-        
+    public static String[] tests = new String[]{
         "testSelectEditor",
         "testSelectFontAndColors",
         "testSelectKeymap",
         "testSelectMiscellaneous",
         "testSelectGeneral",
         "testClose"};
-    
+
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static NbTestSuite suite() {
-       
-        return (NbTestSuite) createModuleTest(OptionsOperatorTest.class, 
-        tests);
+
+        return (NbTestSuite) createModuleTest(OptionsOperatorTest.class,
+                tests);
     }
-    
+
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
     public OptionsOperatorTest(String testName) {
         super(testName);
     }
-    
     private static OptionsOperator optionsOperator = null;
-    
+
     /** Setup */
+    @Override
     public void setUp() throws Exception {
-
-        System.out.println("### "+getName()+" ###");   
+        System.out.println("### " + getName() + " ###");
         // opens Options window
-        if(optionsOperator == null) {
+        if (optionsOperator == null) {
 
-             //Make sure the menu has time to load
+            //Make sure the menu has time to load
             new Action(Bundle.getStringTrimmed(
-                "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
+                    "org.netbeans.core.ui.resources.Bundle", "Menu/Tools"), null).performMenu();
 
             Thread.sleep(1000);
 
 
             new Action(Bundle.getStringTrimmed(
-                "org.netbeans.core.ui.resources.Bundle", "Menu/GoTo"), null).performMenu();
+                    "org.netbeans.core.ui.resources.Bundle", "Menu/GoTo"), null).performMenu();
 
             Thread.sleep(1000);
 
             optionsOperator = OptionsOperator.invoke();
         }
     }
-    
+
     /** Tear down. */
+    @Override
     public void tearDown() {
     }
 
-    public void testLevelsShowing() {
-        optionsOperator.hideLevels();
-        optionsOperator.showLevels();
-        optionsOperator.hideLevels();
-        optionsOperator.showLevels();
-    }
-    
     /** Test of selectEditor method. */
     public void testSelectEditor() {
         optionsOperator.selectEditor();
@@ -140,15 +121,14 @@ public class OptionsOperatorTest extends JellyTestCase {
     public void testSelectMiscellaneous() {
         optionsOperator.selectMiscellaneous();
     }
-    
+
     /** Test of selectGeneral method.  */
     public void testSelectGeneral() {
         optionsOperator.selectGeneral();
     }
-    
+
     /** Test of close method.  */
     public void testClose() {
         optionsOperator.close();
     }
-
 }

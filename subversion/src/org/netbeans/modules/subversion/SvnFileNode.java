@@ -158,5 +158,6 @@ public class SvnFileNode {
         getCopy();
         isFile();
         getMimeType();
+        getInformation().getEntry(file); // CommitTableModel.getValueAt may trigger status
     }
 }

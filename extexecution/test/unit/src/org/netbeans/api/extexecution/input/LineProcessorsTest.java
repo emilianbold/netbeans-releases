@@ -42,8 +42,7 @@
 
 package org.netbeans.api.extexecution.input;
 
-import org.netbeans.api.extexecution.input.LineProcessor;
-import org.netbeans.api.extexecution.input.LineProcessors;
+import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -136,7 +135,7 @@ public class LineProcessorsTest extends NbTestCase {
     }
 
     public void testPrinting() {
-        TestInputWriter writer = new TestInputWriter(new PrintWriter(System.out));
+        TestInputWriter writer = new TestInputWriter(new PrintWriter(new ByteArrayOutputStream()));
         LineProcessor lineProcessor = LineProcessors.printing(writer, true);
         for (String line : PRINTING_TEST_LINES) {
             lineProcessor.processLine(line);
@@ -151,7 +150,7 @@ public class LineProcessorsTest extends NbTestCase {
         }
         assertEquals(PRINTING_TEST_LINES, writer.getPrinted());
 
-        writer = new TestInputWriter(new PrintWriter(System.out));
+        writer = new TestInputWriter(new PrintWriter(new ByteArrayOutputStream()));
         lineProcessor = LineProcessors.printing(writer, false);
         lineProcessor.reset();
         assertEquals(0, writer.getResetsProcessed());
@@ -161,7 +160,7 @@ public class LineProcessorsTest extends NbTestCase {
     }
 
     public void testPrintingCloseOrdering() {
-        final TestInputWriter writer = new TestInputWriter(new PrintWriter(System.out));
+        final TestInputWriter writer = new TestInputWriter(new PrintWriter(new ByteArrayOutputStream()));
         final LineProcessor delegate = LineProcessors.printing(writer, false);
 
         LineProcessor lineProcessor = new LineProcessor() {

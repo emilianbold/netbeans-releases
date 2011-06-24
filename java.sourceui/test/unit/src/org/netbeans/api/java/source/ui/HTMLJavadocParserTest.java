@@ -51,4 +51,14 @@ public class HTMLJavadocParserTest extends TestCase {
 
   }
 
+  public void test199194() throws MalformedURLException {
+    URL url = HTMLJavadocParserTest.class.getResource("JavaApplication1.html");
+    String result = HTMLJavadocParser.getJavadocText(url, false);
+    assertNotNull(result);
+
+    result = HTMLJavadocParser.getJavadocText(
+        new URL(url, "JavaApplication1.html#test(java.lang.Object)"), false);
+    assertNotNull(result);
+    assertTrue(result.contains("C"));
+  }
 }

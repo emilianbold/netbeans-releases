@@ -47,6 +47,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
@@ -69,6 +70,10 @@ import org.netbeans.jemmy.operators.Operator.ComponentVisualizer;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.actions.SystemAction;
 
 
@@ -82,7 +87,7 @@ import org.openide.util.actions.SystemAction;
  * UnsupportedOperationException.<p>
  * Current implementation supports MENU_MODE when menuPath is defined, POPUP_MODE
  * when popupPath is defined, API_MODE when systemActionClass is defined and
- * SHORTCUT_MODE when shorcut is defined (see Action constructors).<p>
+ * SHORTCUT_MODE when shortcut is defined (see Action constructors).<p>
  * Action also can be performed using runtime default mode by calling perform(...).<p>
  * When default mode is not support by the action other modes are tried till
  * supported mode found and action is performed.
@@ -90,7 +95,9 @@ import org.openide.util.actions.SystemAction;
  * <BR>Timeouts used: <BR>
  * Action.WaitAfterShortcutTimeout - time to sleep between shortcuts in sequence (default 0) <BR>
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
+ */
 public class Action {
     
     /** through menu action performing mode */    
@@ -120,6 +127,8 @@ public class Action {
     protected String popupPath;
     /** SystemAction class of current action or null when API_MODE is not supported */    
     protected Class systemActionClass;
+    /** Path to action instance FileObject in layer or null when API_MODE is not supported or systemActionClass is used. */
+    protected String layerInstancePath;
 
     /** Array of key strokes or null when SHORTCUT_MODE is not supported. */
     protected KeyStroke[] keystrokes;
@@ -172,21 +181,18 @@ public class Action {
      * @deprecated Use {@link Action#Action(String menuPath, String popupPath, String systemActionClass, KeyStroke[] keystrokes)} instead.
     */
     public Action(String menuPath, String popupPath, String systemActionClass, Shortcut[] shortcuts) {
-        this.menuPath = menuPath;
-        this.popupPath = popupPath;
-        if (systemActionClass==null) {
-            this.systemActionClass = null;
-        } else try {
-            this.systemActionClass = Class.forName(systemActionClass);
-        } catch (ClassNotFoundException e) {
-            this.systemActionClass = null;
-        }
+        this(menuPath, popupPath, systemActionClass, convertShortcuts(shortcuts));
+    }
+    
+    private static KeyStroke[] convertShortcuts(Shortcut[] shortcuts) {
+        KeyStroke[] keystrokes = null;
         if(shortcuts != null) {
-            this.keystrokes = new KeyStroke[shortcuts.length];
+            keystrokes = new KeyStroke[shortcuts.length];
             for(int i=0;i<shortcuts.length;i++) {
-                this.keystrokes[i] = KeyStroke.getKeyStroke(shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers());
+                keystrokes[i] = KeyStroke.getKeyStroke(shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers());
             }
         }
+        return keystrokes;
     }
      
     /** creates new Action instance
@@ -239,6 +245,9 @@ public class Action {
         this.popupPath = popupPath;
         if (systemActionClass==null) {
             this.systemActionClass = null;
+        } else if (systemActionClass.endsWith(".instance")) {
+            // action defined declaratively in annotation (e.g. ServicesTab)
+            this.layerInstancePath = systemActionClass;
         } else try {
             this.systemActionClass = Class.forName(systemActionClass);
         } catch (ClassNotFoundException e) {
@@ -558,18 +567,29 @@ public class Action {
      * @throws UnsupportedOperationException when action does not support API mode */
     @SuppressWarnings("unchecked")
     public void performAPI() {
-        if (systemActionClass==null) {
+        if (systemActionClass==null && layerInstancePath == null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not support API call.");
         }
         try {
             // actions has to be invoked in dispatch thread (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
             EventQueue.invokeAndWait(new Runnable() {
+                @Override
                 public void run() {
-                    if(SystemAction.class.isAssignableFrom(systemActionClass)) {
+                    if (layerInstancePath != null) {
+                        // action defined declaratively in annotation (e.g. ServicesTab)
+                        try {
+                            FileObject fo = FileUtil.getConfigFile(layerInstancePath);
+                            DataObject dob = DataObject.find(fo);
+                            javax.swing.Action action = (javax.swing.Action) ((InstanceCookie) dob).instanceCreate();
+                            action.actionPerformed(new ActionEvent(new Container(), 0, null));
+                        } catch (Exception e) {
+                            throw new JemmyException("Cannot perform declaratively defined action  \"" + layerInstancePath + "\".", e);
+                        }
+                    } else if(SystemAction.class.isAssignableFrom(systemActionClass)) {
                         // SystemAction used in IDE
                         SystemAction.get(systemActionClass).actionPerformed(
                                                 new ActionEvent(new Container(), 0, null));
-                    } else {
+                    } else if (javax.swing.Action.class.isAssignableFrom(systemActionClass)) {
                         // action implements javax.swing.Action
                         try {
                             ((javax.swing.Action)systemActionClass.newInstance()).actionPerformed(
@@ -577,12 +597,21 @@ public class Action {
                         } catch (Exception e) {
                             throw new JemmyException("Exception when trying to create instance of action \""+systemActionClass.getName()+"\".", e);
                         }
+                    } else if (ActionListener.class.isAssignableFrom(systemActionClass)) {
+                        try {
+                            ((ActionListener)systemActionClass.newInstance()).actionPerformed(
+                                                new ActionEvent(new Container(), 0, null));
+                        } catch (Exception e) {
+                            throw new JemmyException("Exception when trying to create instance of action \""+systemActionClass.getName()+"\".", e);
+                        }
+                    } else {
+                        throw new JemmyException("Cannot create instance of action \""+systemActionClass.getName()+"\".");
                     }
                 }
             });
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
-            throw new JemmyException("Interrupted", e);
+            throw new JemmyException("API call failed.", e);
         }
     }
     
@@ -957,6 +986,7 @@ public class Action {
             
         /** returns String representation of shortcut
          * @return String representation of shortcut */        
+        @Override
         public String toString() {
             String s=KeyEvent.getKeyModifiersText(getKeyModifiers());
             return s+(s.length()>0?"+":"")+KeyEvent.getKeyText(getKeyCode());

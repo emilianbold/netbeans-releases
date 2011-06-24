@@ -9,13 +9,13 @@
     <target name="build-nbi-engine" depends="init">
          <ant dir="${basedir}/../nbi/engine" target="jar" inheritAll="false">
             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
-            <property name="javac.source"           value="${javac.source}"/>
-            <property name="javac.target"           value="${javac.source}"/>
+            <property name="build.dir" location="${build.dir}/engine/build"/>
+            <property name="dist.dir" location="${build.dir}/engine/dist"/>
          </ant>
     </target>
 
     <target name="copy-nbi-engine">
-         <copy file="${basedir}/../nbi/engine/dist/nbi-engine.jar" todir="${cluster}/modules/ext"/> 
+         <copy file="${build.dir}/engine/dist/nbi-engine.jar" todir="${cluster}/modules/ext"/>
     </target>
 
     <target name="netbeans-extra" depends="copy-nbi-engine"/>
@@ -23,9 +23,4 @@
     <target name="jar" depends="init,build-nbi-engine,projectized-common.jar">
     </target>
 
-    <target name="clean" depends="projectized-common.clean">
-       <ant dir="${basedir}/../nbi/engine" target="clean" inheritAll="false">
-            <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
-       </ant>
-    </target>
 </project>

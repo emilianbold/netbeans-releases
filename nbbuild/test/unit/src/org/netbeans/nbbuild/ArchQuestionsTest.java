@@ -78,7 +78,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-                "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+                "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
                 "<target name=\"all\" >" +
                 "  <arch answers=\"" + answers + "\" output='" + output + "' />" +
                 "</target>" +
@@ -107,7 +107,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
             "  <arch answers=\"" + answers + "\" output=\"x.html\" />" +
             "<target name=\"all\" >" +
             "  " +
@@ -134,7 +134,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
             "  <arch answers=\"" + answers + "\" output=\"x.html\" />" +
             "<target name=\"all\" >" +
             "  " +
@@ -242,7 +242,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
             "  <arch answers=\"" + answers + "\" output='" + output + "' />" +
             "<target name=\"all\" >" +
             "  " +
@@ -419,7 +419,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
             "  <arch answers=\"" + answers + "\" output='" + output + "'" +
             "     apichanges='" + apichanges + "'    xsl='" + xsl + "'\n" +
             "   />\n" +
@@ -695,7 +695,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
             "  <arch answers=\"" + answers + "\" output='" + output + "'" +
             "     project='" + project + "' \n" +
             "     xsl='" + xsl + "' \n" + 
@@ -729,7 +729,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <arch answers=\"" + answers + "\" output='" + "x.html" + "' />" +
             "</target>" +
@@ -780,7 +780,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <arch answers=\"" + answers + "\" output='" + output + "' />" +
             "</target>" +
@@ -814,7 +814,7 @@ public class ArchQuestionsTest extends TestBase implements EntityResolver {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <property name='javadoc.title' value='My Lovely Profiler'/>" +
             "  <arch answers=\"" + answers + "\" output='" + output + "' />" +

@@ -46,6 +46,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -221,7 +222,10 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
      *         "l link-target link-name"
      * @throws Exception 
      */
-    protected static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws Exception {
+    public static void createDirStructure(ExecutionEnvironment env, String baseDir, String[] creationData) throws IOException {
+        if (baseDir == null || baseDir.length() == 0 || baseDir.equals("/")) {
+            throw new IllegalArgumentException("Illegal base dir: " + baseDir);
+        }
         StringBuilder script = new StringBuilder();
         try {
             script.append("mkdir -p \"").append(baseDir).append("\";\n");
@@ -229,6 +233,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             script.append("rm -rf *").append(";\n");
             Set<String> checkedPaths = new HashSet<String>();
             for (String data : creationData) {
+                if (data.length() < 3 || data.charAt(1) != ' ') {
+                    throw new IllegalArgumentException("wrong format: " + data);
+                }
                 String[] parts = data.split(" ");
                 String path = parts[1];
                 int slashPos = path.lastIndexOf('/');

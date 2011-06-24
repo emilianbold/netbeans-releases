@@ -48,11 +48,8 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.subversion.Subversion;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
 import org.netbeans.api.project.*;
 import java.io.*;
 import java.util.*;
@@ -168,12 +165,14 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
     private File lookupImportDirectory(File file) {
         FileObject fo = FileUtil.toFileObject(file);
         Project project = null;
-        try {
-            project = ProjectManager.getDefault().findProject(fo);
-        } catch (IOException ex) {
-            Subversion.LOG.log(Level.WARNING, null, ex);
-        } catch (IllegalArgumentException ex) {
-            Subversion.LOG.log(Level.WARNING, null, ex);
+        if (fo.isFolder()) {
+            try {
+                project = ProjectManager.getDefault().findProject(fo);
+            } catch (IOException ex) {
+                Subversion.LOG.log(Level.WARNING, null, ex);
+            } catch (IllegalArgumentException ex) {
+                Subversion.LOG.log(Level.WARNING, null, ex);
+            }
         }
     
         File importDirectory = null;
@@ -186,26 +185,8 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
             } else {
                 importDirectory = FileUtil.toFile(project.getProjectDirectory());
             }
-        } else {
-            DataObject dataObject = null;
-            try {
-                dataObject = DataObject.find(fo);
-            } catch (DataObjectNotFoundException ex) {
-                Subversion.LOG.log(Level.WARNING, null, ex);
-            }
-            if (dataObject instanceof DataShadow) {
-                dataObject = ((DataShadow) dataObject).getOriginal();
-            }
-            if (dataObject != null) {
-                fo = dataObject.getPrimaryFile();
-            }
-
-            if (fo != null) {
-                File f = FileUtil.toFile(fo);
-                if (f != null && f.isDirectory()) {
-                    importDirectory = f;
-                }
-            }
+        } else if (file.isDirectory()) {
+            importDirectory = file;
         }
         return importDirectory;
     }

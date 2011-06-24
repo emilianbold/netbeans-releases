@@ -243,6 +243,18 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertEquals("testDecryption", testCase.getName());
     }
 
+    public void testParseLogIssue198920() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "phpunit-log-issue198920.xml")));
+        TestSessionVO testSession = new TestSessionVO();
+
+        PhpUnitLogParser.parse(reader, testSession);
+
+        assertSame(3, testSession.getTestSuites().size());
+        assertSame(2, testSession.getTestSuites().get(0).getTestCases().size());
+        assertSame(3, testSession.getTestSuites().get(1).getTestCases().size());
+        assertSame(1, testSession.getTestSuites().get(2).getTestCases().size());
+    }
+
     private File getLogForMoreSuites() throws Exception {
         File xmlLog = new File(getDataDir(), "phpunit-log-more-suites.xml");
         assertTrue(xmlLog.isFile());

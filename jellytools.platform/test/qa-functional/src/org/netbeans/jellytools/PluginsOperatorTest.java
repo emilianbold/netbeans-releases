@@ -45,6 +45,7 @@ package org.netbeans.jellytools;
 
 import javax.swing.JTextField;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
@@ -147,8 +148,11 @@ public class PluginsOperatorTest extends JellyTestCase {
      * - click Cancel
      */
     public void testUninstall() throws Exception {
-        pluginsOper.cbShowDetails().setSelected(true);
-
+        try {
+            pluginsOper.cbShowDetails().setSelected(true);
+        } catch (JemmyException e) {
+            // check box not available
+        }
         pluginsOper.selectPlugins(new String[]{
                     "Java",
                     TEST_PLUGIN
@@ -165,7 +169,11 @@ public class PluginsOperatorTest extends JellyTestCase {
      * - click Cancel
      */
     public void testDeactivate() {
-        pluginsOper.cbShowDetails().setSelected(true);
+        try {
+            pluginsOper.cbShowDetails().setSelected(true);
+        } catch (JemmyException e) {
+            // check box not available
+        }
         pluginsOper.selectPlugin(TEST_PLUGIN);
         pluginsOper.deactivate();
         pluginsOper.installer().cancel();

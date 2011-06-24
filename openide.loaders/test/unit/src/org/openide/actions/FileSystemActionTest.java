@@ -42,18 +42,22 @@
 
 package org.openide.actions;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
-import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataFolder;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -86,5 +90,36 @@ public class FileSystemActionTest extends NbTestCase {
 
         DynamicMenuContent submenu2 = (DynamicMenuContent)pm.getMenuPresenter();
         assertEquals("One action", 1, submenu2.getMenuPresenters().length);
+    }
+    
+    public void testCreateMenu() throws IOException {
+        TestFS fs = new TestFS();
+        FileObject fo = fs.getRoot();
+     
+        // create menu for a lookup containg a node
+        Lookup lkp = Lookups.singleton(DataFolder.findFolder(fo).getNodeDelegate());
+        JMenuItem[] item = FileSystemAction.createMenu(true, lkp);
+        assertTrue(item.length > 0);
+        
+        // create menu for a lookup containg a DataObject
+        lkp = Lookups.singleton(DataFolder.findFolder(fo));
+        item = FileSystemAction.createMenu(true, lkp);
+        assertTrue(item.length > 0);
+}
+    
+    private class TestFS extends LocalFileSystem {
+        @Override
+        public SystemAction[] getActions() {
+            return new SystemAction[] {
+                new testFSAction()
+            }; 
+        }
+        private class testFSAction extends SystemAction implements Presenter.Menu, Presenter.Popup {
+            @Override public String getName() { return ""; }
+            @Override public HelpCtx getHelpCtx() { return null; }
+            @Override public void actionPerformed(ActionEvent ev) { }
+            @Override public JMenuItem getMenuPresenter() { return new JMenuItem(); }
+            @Override public JMenuItem getPopupPresenter() { return new JMenuItem(); }
+        }
     }
 }

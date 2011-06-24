@@ -44,25 +44,32 @@
 package org.netbeans.modules.mercurial.ui.repository;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
-import java.util.LinkedHashSet;
 import java.util.logging.Level;
-import javax.swing.SwingUtilities;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import javax.swing.border.Border;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressHandle;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -72,30 +79,68 @@ import org.netbeans.modules.mercurial.util.HgCommand;
  *
  * @author  Padraig O'Briain
  */
-public class ChangesetPickerPanel extends javax.swing.JPanel {
+public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
 
     private File                            repository;
     private File[]                          roots; // MAY be null
-    private RequestProcessor.Task           refreshViewTask;
     private static final RequestProcessor   rp = new RequestProcessor("ChangesetPicker", 1, true);  // NOI18N
-    private HgLogMessage[] messages;
     private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
     private boolean bGettingRevisions = false;
-    private Set<String> revisions;
-    private static final String HG_TIP = "tip"; // NOI18N
+    public static final String HG_TIP = "tip"; // NOI18N
     private final MessageInfoFetcher defaultMessageInfoFetcher;
     private MessageInfoFetcher messageInfofetcher;
     private HgProgressSupport hgProgressSupport;
+    private InitialLoadingProgressSupport initialProgressSupport;
+    private static final String MARK_ACTIVE_HEAD = "*"; //NOI18N
+    public static final String PROP_VALID = "prop.valid"; //NOI18N
+    
+    protected static final HgLogMessage TIP = new HgLogMessage(null, Collections.<String>emptyList(), HG_TIP, 
+            null, null, null, Long.toString(new Date().getTime()), HG_TIP, 
+            null, null, null, null, null, "", ""); //NOI18N
+    protected static final HgLogMessage NO_REVISION = new HgLogMessage(null, Collections.<String>emptyList(), null, 
+            null, null, null, Long.toString(new Date().getTime()), NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Revision_Default"), //NOI18N
+            null, null, null, null, null, "", ""); //NOI18N
+    private HgRevision parentRevision;
+    private boolean validSelection;
+    private final Timer filterTimer;
+    private HgLogMessage[] messages;
+    private final Object LOCK = new Object();
 
     /** Creates new form ReverModificationsPanel */
     public ChangesetPickerPanel(File repo, File[] files) {
         repository = repo;
         roots = files;
-        refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
         jPanel1.setVisible(false);
-        revisionsComboBox.setMaximumRowCount(Mercurial.HG_MAX_REVISION_COMBO_SIZE);
+        revisionsComboBox.setCellRenderer(new RevisionRenderer());
         defaultMessageInfoFetcher = new MessageInfoFetcher();
+        
+        filterTimer = new Timer(300, new ActionListener() {
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                filterTimer.stop();
+                applyFilter();
+            }
+        });
+        txtFilter.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate (DocumentEvent e) {
+                if (!bGettingRevisions) {
+                    filterTimer.restart();
+                }
+            }
+
+            @Override
+            public void removeUpdate (DocumentEvent e) {
+                if (!bGettingRevisions) {
+                    filterTimer.restart();
+                }
+            }
+
+            @Override
+            public void changedUpdate (DocumentEvent e) {
+            }
+        });
     }
 
     public File[] getRootFiles () {
@@ -103,26 +148,12 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Returns an array of two strings, where the one under index 0 is a revision number and the second under index 1 is a changeset string.
-     * However note that the changeset can be an empty string, when the revision is e.g. TIP
+     * Returns a selected revision or null if no revision is selected.
      * @return
      */
-    public String[] getSelectedRevision() {
-        String revStr = (String) revisionsComboBox.getSelectedItem();
-        String changesetStr = new String();
-        if(revStr != null){
-            if (revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Revision_Default")) || // NOI18N
-                revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_20_Revisions")) || // NOI18N
-                revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_50_Revisions")) || // NOI18N
-                revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_All_Revisions")) || // NOI18N
-                revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Tip_Revision"))) { // NOI18N
-                revStr = HG_TIP;
-            } else {
-                revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
-                changesetStr = messages == null ? "" : messages[revisionsComboBox.getSelectedIndex()].getCSetShortID(); //NOI18N
-            }
-        }
-        return new String[] { revStr, changesetStr };
+    public HgLogMessage getSelectedRevision() {
+        HgLogMessage rev = (HgLogMessage) revisionsComboBox.getSelectedValue();
+        return rev;
     }
 
     protected String getRefreshLabel () {
@@ -134,8 +165,8 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     }
 
     protected void loadRevisions () {
-        assert revisions == null : "Revisions already loaded"; //NOI18N
-        refreshViewTask.schedule(0);
+        initialProgressSupport = new InitialLoadingProgressSupport();
+        initialProgressSupport.start(rp, repository, getRefreshLabel()); //NOI18N
     }
 
     protected void setOptionsPanel (JPanel optionsPanel, Border parentPanelBorder) {
@@ -161,8 +192,11 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
 
     @Override
     public void removeNotify() {
-        refreshViewTask.cancel();
-        HgProgressSupport supp = hgProgressSupport;
+        HgProgressSupport supp = initialProgressSupport;
+        if (supp != null) {
+            supp.cancel();
+        }
+        supp = hgProgressSupport;
         if (supp != null) {
             supp.cancel();
         }
@@ -177,157 +211,305 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        revisionsLabel = new javax.swing.JLabel();
-        revisionsComboBox = new javax.swing.JComboBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         changesetPanel1 = new org.netbeans.modules.mercurial.ui.repository.ChangesetPanel();
+        jPanel2 = new javax.swing.JPanel();
+        revisionsLabel = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        revisionsComboBox = new javax.swing.JList();
+        panelSearchOptions = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        btnFetchAll = new org.netbeans.modules.versioning.history.LinkButton();
+        btnFetch50 = new org.netbeans.modules.versioning.history.LinkButton();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        btnFetch20 = new org.netbeans.modules.versioning.history.LinkButton();
+        jLabel6 = new javax.swing.JLabel();
+        txtFilter = new javax.swing.JTextField();
 
-        revisionsLabel.setLabelFor(revisionsComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.revisionsLabel.text")); // NOI18N
-
-        revisionsComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                revisionsComboBoxActionPerformed(evt);
-            }
+        jList1.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
         });
+        jScrollPane1.setViewportView(jList1);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, null);
+        jSplitPane1.setBorder(null);
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setResizeWeight(0.75);
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.options"))); // NOI18N
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jSplitPane1.setBottomComponent(jPanel3);
+
+        org.openide.awt.Mnemonics.setLocalizedText(revisionsLabel, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.revisionsLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, null);
         jLabel2.setEnabled(false);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.options"))); // NOI18N
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, null);
+
+        revisionsComboBox.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        revisionsComboBox.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                revisionsComboBoxValueChanged(evt);
+            }
+        });
+        jScrollPane2.setViewportView(revisionsComboBox);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.jLabel5.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnFetchAll, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.btnFetchAll.text")); // NOI18N
+        btnFetchAll.setToolTipText(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.btnFetchAll.toolTipText")); // NOI18N
+        btnFetchAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFetchAllActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnFetch50, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.btnFetch50.text")); // NOI18N
+        btnFetch50.setToolTipText(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.btnFetch50.toolTipText")); // NOI18N
+        btnFetch50.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFetch50ActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "|");
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.jLabel3.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnFetch20, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.btnFetch20.text")); // NOI18N
+        btnFetch20.setToolTipText(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.btnFetch20.toolTipText")); // NOI18N
+        btnFetch20.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFetch20ActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setLabelFor(txtFilter);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.jLabel6.text")); // NOI18N
+        jLabel6.setToolTipText(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.jLabel6.toolTipText")); // NOI18N
+
+        txtFilter.setText(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.txtFilter.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout panelSearchOptionsLayout = new org.jdesktop.layout.GroupLayout(panelSearchOptions);
+        panelSearchOptions.setLayout(panelSearchOptionsLayout);
+        panelSearchOptionsLayout.setHorizontalGroup(
+            panelSearchOptionsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(panelSearchOptionsLayout.createSequentialGroup()
+                .add(jLabel3)
+                .add(5, 5, 5)
+                .add(btnFetch20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(5, 5, 5)
+                .add(jLabel4)
+                .add(5, 5, 5)
+                .add(btnFetch50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(5, 5, 5)
+                .add(jLabel5)
+                .add(5, 5, 5)
+                .add(btnFetchAll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(jLabel6)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(txtFilter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
+        );
+        panelSearchOptionsLayout.setVerticalGroup(
+            panelSearchOptionsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(panelSearchOptionsLayout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(panelSearchOptionsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(btnFetch20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4)
+                    .add(btnFetch50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel5)
+                    .add(btnFetchAll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel6)
+                    .add(txtFilter, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(0, 0, 0))
+        );
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                        .add(24, 24, 24))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(revisionsLabel)
+                        .addContainerGap(252, Short.MAX_VALUE))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jLabel2)
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, panelSearchOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))
+                        .addContainerGap())))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(revisionsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                .add(8, 8, 8)
+                .add(panelSearchOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jSplitPane1.setTopComponent(jPanel2);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(41, 41, 41)
-                        .add(revisionsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 303, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel2)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)))
-                .addContainerGap())
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(4, 4, 4)
-                .add(jLabel2)
-                .add(17, 17, 17)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(revisionsLabel)
-                    .add(revisionsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(changesetPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
-    int index = revisionsComboBox.getSelectedIndex();
-    if(getMore((String) revisionsComboBox.getSelectedItem())) return;//GEN-HEADEREND:event_revisionsComboBoxActionPerformed
-    
-    if(messages != null && index >= 0 && index < messages.length ){
-        changesetPanel1.setInfo(messages[index]);
-    }
-}                                                 
-
-    private boolean getMore(String revStr) {
-        if (bGettingRevisions) return false;//GEN-LAST:event_revisionsComboBoxActionPerformed
-        boolean bGetMore = false;
-        int limit = -1;
-
-        if (revStr != null && revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_20_Revisions"))) { //NOI18N
-            bGetMore = true;
-            limit = Mercurial.HG_FETCH_20_REVISIONS;
-        } else if (revStr != null && revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_50_Revisions"))) { //NOI18N
-            bGetMore = true;
-            limit = Mercurial.HG_FETCH_50_REVISIONS;
-        } else if (revStr != null && revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_All_Revisions"))) { //NOI18N
-            bGetMore = true;
-            limit = Mercurial.HG_FETCH_ALL_REVISIONS;
+private void revisionsComboBoxValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_revisionsComboBoxValueChanged
+    if (!evt.getValueIsAdjusting()) {
+        HgLogMessage rev = (HgLogMessage) revisionsComboBox.getSelectedValue();
+        boolean oldValid = validSelection;
+        validSelection = acceptSelection(rev);
+        if (oldValid != validSelection) {
+            firePropertyChange(PROP_VALID, oldValid, validSelection);
         }
-        if (bGetMore && !bGettingRevisions) {
-            messageInfofetcher = defaultMessageInfoFetcher;
-            fetchRevisionLimit = limit;
-            hgProgressSupport = new HgProgressSupport() {
-                @Override
-                public void perform() {
-                    refreshRevisions();
-                    hgProgressSupport = null;
-                }
-            };
-            hgProgressSupport.start(rp, repository,
-                    org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetching_Revisions")); // NOI18N
-        }
-        return bGetMore;
-    }
 
-    /**
-     * Must NOT be run from AWT.
-     */
-    private void setupModels() {
-        // XXX attach Cancelable hook
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(getRefreshLabel()); // NOI18N
-        try {
-            revisions = new LinkedHashSet<String>();
-            RepositoryRevision displayedRevision = getDisplayedRevision();
-            if (displayedRevision == null) {
-                revisions.add(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Tip_Revision")); // NOI18N
-            } else {
-                revisions.add(getRevisionLabel(displayedRevision));
+        if (validSelection) {
+            changesetPanel1.setInfo(rev);
+        }
+    }
+}//GEN-LAST:event_revisionsComboBoxValueChanged
+
+private void btnFetch20ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFetch20ActionPerformed
+    getMore(Mercurial.HG_FETCH_20_REVISIONS);
+}//GEN-LAST:event_btnFetch20ActionPerformed
+
+private void btnFetch50ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFetch50ActionPerformed
+    getMore(Mercurial.HG_FETCH_50_REVISIONS);
+}//GEN-LAST:event_btnFetch50ActionPerformed
+
+private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFetchAllActionPerformed
+    getMore(Mercurial.HG_FETCH_ALL_REVISIONS);
+}//GEN-LAST:event_btnFetchAllActionPerformed
+
+    private boolean getMore (int limit) {
+        if (bGettingRevisions) return false;
+
+        if (limit == Mercurial.HG_FETCH_ALL_REVISIONS) {
+            btnFetchAll.setEnabled(false);
+            btnFetch50.setEnabled(false);
+            btnFetch20.setEnabled(false);
+        }
+        messageInfofetcher = defaultMessageInfoFetcher;
+        fetchRevisionLimit = limit;
+        if (messages != null) {
+            fetchRevisionLimit += messages.length;
+        }
+        filterTimer.stop();
+        hgProgressSupport = new HgProgressSupport() {
+            @Override
+            public void perform() {
+                refreshRevisions(this);
+                hgProgressSupport = null;
             }
-            ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(revisions));
-            revisionsComboBox.setModel(targetsModel);
-            Thread.interrupted();  // clear interupted status
-            ph.start();
-            if (displayedRevision == null) {
-                refreshRevisions();
-            } else {
-                revisionsComboBox.setEditable(false);
-                changesetPanel1.setInfo(displayedRevision.getLog());
-            }
-        } finally {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    ph.finish();
+        };
+        hgProgressSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetching_Revisions")); //NOI18N
+        return true;
+    }
+
+    private class InitialLoadingProgressSupport extends HgProgressSupport {
+        @Override
+        public void perform () {
+            try {
+                final DefaultListModel targetsModel = new DefaultListModel();
+                final RepositoryRevision displayedRevision = getDisplayedRevision();
+                if (displayedRevision == null) {
+                    if (acceptSelection(NO_REVISION)) {
+                        targetsModel.addElement(NO_REVISION);
+                    }
+                    if (acceptSelection(TIP)) {
+                        targetsModel.addElement(TIP);
+                    }
+                } else {
+                    targetsModel.addElement(displayedRevision.getLog());
                 }
-            });
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        revisionsComboBox.setModel(targetsModel);
+                        if (!targetsModel.isEmpty()) {
+                            revisionsComboBox.setSelectedIndex(0);
+                        }
+                    }
+                });
+                if (displayedRevision == null) {
+                    refreshRevisions(this);
+                } else {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            revisionsComboBox.setSelectedValue(displayedRevision.getLog(), true);
+                            revisionsComboBox.setEnabled(false);
+                            panelSearchOptions.setVisible(false);
+                        }
+                    });
+                }
+            } finally {
+                initialProgressSupport = null;
+            }
         }
     }
 
-    private void refreshRevisions() {
+    private void refreshRevisions (HgProgressSupport supp) {
         bGettingRevisions = true;
-        revisions.remove(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_20_Revisions")); //NOI18N
-        revisions.remove(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_50_Revisions")); //NOI18N
-        revisions.remove(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_All_Revisions")); //NOI18N
-        ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(revisions));
-        revisionsComboBox.setModel(targetsModel);
-        revisionsComboBox.setSelectedIndex(0);
-        changesetPanel1.clearInfo();
 
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
         MessageInfoFetcher fetcher = getMessageInfoFetcher();
-        messages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<File>(Arrays.asList(roots)), fetchRevisionLimit, logger);
-        HgLogMessage.HgRevision parentRevision = null;
-        if (messages.length > 0) {
+        HgLogMessage[] fetchedMessages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<File>(Arrays.asList(roots)), fetchRevisionLimit, logger);
+        if (!supp.isCanceled() && fetchedMessages.length > 0) {
             try {
                 parentRevision = HgCommand.getParent(repository, null, null);
             } catch (HgException ex) {
@@ -335,38 +517,26 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             }
         }
 
-        Set<String>  targetRevsSet = new LinkedHashSet<String>();
-
-        int size;
-        if( messages == null || messages.length == 0){
-            size = 0;
-            targetRevsSet.add(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Revision_Default")); // NOI18N
-        }else{
-            size = messages.length;
-            int i = 0 ;
-            while(i < size){
-                StringBuilder sb = new StringBuilder().append(messages[i].getRevisionNumber()).append(" (").append(messages[i].getCSetShortID()); //NOI18N
-                if (parentRevision != null && parentRevision.getRevisionNumber().equals(messages[i].getRevisionNumber())) {
-                    sb.append(" - ").append(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_ChangesetPickerPanel.currentHead")); //NOI18N
-                }
-                sb.append(")"); //NOI18N
-                targetRevsSet.add(sb.toString());
-                i++;
+        if (!supp.isCanceled()) {
+            if( fetchedMessages == null || fetchedMessages.length == 0){
+                fetchedMessages = new HgLogMessage[] { NO_REVISION };
             }
+            synchronized (LOCK) {
+                messages = fetchedMessages;
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    if (fetchRevisionLimit > messages.length && messageInfofetcher == defaultMessageInfoFetcher) {
+                        btnFetch20.setEnabled(false);
+                        btnFetch50.setEnabled(false);
+                        btnFetchAll.setEnabled(false);
+                    }
+                    applyFilter();
+                    bGettingRevisions = false;
+                }
+            });
         }
-        if(targetRevsSet.size() > 0){
-            targetRevsSet.add(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_20_Revisions")); //NOI18N
-            targetRevsSet.add(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_50_Revisions")); //NOI18N
-            targetRevsSet.add(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_All_Revisions")); //NOI18N
-        }
-        targetsModel = new DefaultComboBoxModel(new Vector<String>(targetRevsSet));
-        revisionsComboBox.setModel(targetsModel);
-
-        if (targetRevsSet.size() > 0 ) {
-            revisionsComboBox.setSelectedIndex(0);
-        }
-        this.revisions = targetRevsSet;
-        bGettingRevisions = false;
     }
 
     private MessageInfoFetcher getMessageInfoFetcher() {
@@ -377,24 +547,126 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
         return f;
     }
 
-    private class RefreshViewTask implements Runnable {
-        public void run() {
-            setupModels();
-        }
+    protected boolean acceptSelection (HgLogMessage rev) {
+        return rev != null;
+    }
+    
+    protected final HgRevision getParentRevision () {
+        return parentRevision;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.netbeans.modules.versioning.history.LinkButton btnFetch20;
+    private org.netbeans.modules.versioning.history.LinkButton btnFetch50;
+    private org.netbeans.modules.versioning.history.LinkButton btnFetchAll;
     private org.netbeans.modules.mercurial.ui.repository.ChangesetPanel changesetPanel1;
     protected final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
     protected final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JList jList1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JComboBox revisionsComboBox;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JPanel panelSearchOptions;
+    private javax.swing.JList revisionsComboBox;
     protected javax.swing.JLabel revisionsLabel;
+    private javax.swing.JTextField txtFilter;
     // End of variables declaration//GEN-END:variables
 
     protected static class MessageInfoFetcher {
         protected HgLogMessage[] getMessageInfo(File repository, Set<File> setRoots, int fetchRevisionLimit, OutputLogger logger) {
             return HgCommand.getLogMessagesNoFileInfo(repository, setRoots, fetchRevisionLimit, logger);
         }
+    }
+
+    private class RevisionRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value instanceof HgLogMessage) {
+                HgLogMessage message = (HgLogMessage) value;
+                if (message == TIP || message == NO_REVISION) {
+                    value = message.getCSetShortID();
+                } else {
+                    StringBuilder sb = new StringBuilder().append(message.getRevisionNumber());
+                    HgRevision parent = parentRevision;
+                    if (parent != null && parent.getRevisionNumber().equals(message.getRevisionNumber())) {
+                        sb.append(MARK_ACTIVE_HEAD);
+                    }
+                    StringBuilder labels = new StringBuilder();
+                    for (String branch : message.getBranches()) {
+                        labels.append(branch).append(' ');
+                    }
+                    for (String tag : message.getTags()) {
+                        labels.append(tag).append(' ');
+                        break; // just one tag
+                    }
+                    sb.append(" (").append(labels).append(labels.length() == 0 ? "" : "- ").append(message.getCSetShortID().substring(0, 7)).append(")"); //NOI18N
+                    value = sb.toString();
+                }
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private void applyFilter () {
+        HgLogMessage selectedRevision = getSelectedRevision();
+        DefaultListModel targetsModel = new DefaultListModel();
+        targetsModel.removeAllElements();
+        HgLogMessage toSelectRevision = null;
+        String filter = txtFilter.getText();
+        synchronized (LOCK) {
+            for (HgLogMessage message : messages) {
+                if (applies(filter, message)) {
+                    if (selectedRevision != null && message.getCSetShortID().equals(selectedRevision.getCSetShortID())) {
+                        toSelectRevision = message;
+                    } else if (parentRevision != null && message.getCSetShortID().equals(parentRevision.getChangesetId())) {
+                        toSelectRevision = message;
+                    }
+                    targetsModel.addElement(message);
+                }
+            }
+        }
+        if (!Arrays.equals(targetsModel.toArray(), ((DefaultListModel) revisionsComboBox.getModel()).toArray())) {
+            revisionsComboBox.setModel(targetsModel);
+            if (toSelectRevision != null) {
+                revisionsComboBox.setSelectedValue(toSelectRevision, true);
+            } else if (targetsModel.size() > 0) {
+                revisionsComboBox.setSelectedIndex(0);
+            }
+        }
+    }
+
+    private boolean applies (String filter, HgLogMessage message) {
+        boolean applies = filter.isEmpty();
+        filter = filter.toLowerCase();
+        if (!applies) {
+            if (message.getRevisionNumber().contains(filter)
+                    || message.getAuthor().toLowerCase().contains(filter)
+                    || message.getCSetShortID().toLowerCase().contains(filter)
+                    || message.getMessage().toLowerCase().contains(filter)
+                    || message.getUsername().toLowerCase().contains(filter)
+                    || applies(filter, message.getBranches())
+                    || applies(filter, message.getTags())
+                    || DateFormat.getDateTimeInstance().format(message.getDate()).toLowerCase().contains(filter)
+                    ) {
+                applies = true;
+            }
+        }
+        return applies;        
+    }
+    
+    private boolean applies (String format, String[] array) {
+        for (String v : array) {
+            if (v.toLowerCase().contains(format)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -3730,10 +3730,24 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         // coalesce ordinary jobs
                         Work absorbedBy = null;
                         if (!wait) {
-                            for(Work w : todo) {
-                                if (w.absorb(work)) {
-                                    absorbedBy = w;
-                                    break;
+                            boolean allowAbsorb = true;
+
+                            //XXX (#198565): don't let FileListWork forerun delete works:
+                            if (work instanceof FileListWork) {
+                                for (Work w : todo) {
+                                    if (w instanceof DeleteWork) {
+                                        allowAbsorb = false;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (allowAbsorb) {
+                                for(Work w : todo) {
+                                    if (w.absorb(work)) {
+                                        absorbedBy = w;
+                                        break;
+                                    }
                                 }
                             }
                         }

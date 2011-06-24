@@ -78,7 +78,7 @@ public class StripPanel extends ChangesetPickerPanel {
         doBackupChxBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StripPanel.class, "ACSD_doBackupChxBox")); // NOI18N
         JPanel optionsPanel = new JPanel(new BorderLayout());
         optionsPanel.add(doBackupChxBox, BorderLayout.NORTH);
-        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(10, 12, 10, 12));
+        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0));
         setOptionsPanel(optionsPanel, null);
     }
 

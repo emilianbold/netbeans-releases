@@ -607,7 +607,7 @@ Yes. Component can control its persistence and way how they are displayed in con
     </api>
 
     <api type="export" group="property" name="org.netbeans.core.windows.Splitter.Respect.MinimumSize.Enabled" category="stable">
-         Name of resource bundle property which forces splitter to ingore TopComponent
+         Name of resource bundle property which forces splitter to ignore TopComponent
          minimum size when resizing when its value is set to <code>false</code>,
          the default value is <code>true</code>.
          When this feature is enabled then the splitter bars will not move beyond
@@ -622,6 +622,57 @@ Yes. Component can control its persistence and way how they are displayed in con
         sliding bars and the main desktop area component. That means that the main
         window background will be showing through these components.
         The property value must be set before the window system loads.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.Mode.View.DragAndDrop.Enabled" category="stable">
+         Name of resource bundle property which allows to drag and drop the whole
+         group of non-document windows when its value is set to <code>true</code>,
+         which is also the default value.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.Mode.Editor.DragAndDrop.Enabled" category="stable">
+         Name of resource bundle property which allows to drag and drop the whole
+         group of document windows when its value is set to <code>true</code>,
+         which is also the default value.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.Mode.View.Undocking.Enabled" category="stable">
+         Name of resource bundle property which allows to float the whole
+         group of non-document windows when its value is set to <code>true</code>,
+         which is also the default value.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.Mode.Editor.Undocking.Enabled" category="stable">
+         Name of resource bundle property which allows to float the whole
+         group of document windows when its value is set to <code>true</code>,
+         which is also the default value.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.Mode.Sliding.Enabled" category="stable">
+         Name of resource bundle property which allows to minimize (slide-out) the whole
+         group of non-document windows when its value is set to <code>true</code>,
+         which is also the default value.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.TopComponent.Auto.Slide.In.Minimized.Mode.Enabled" category="stable">
+         Name of resource bundle property which controls the opening of windows in a
+         minimized (slided-out) group of non-document windows. When set to true
+         (the default value) then a window which should open in a minimized group (Mode)
+         will open also minimized (slided-out). When set to false a window will open
+         docked even though the whole group (Mode) has been minimized.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+    </api>
+    
+    <api type="export" group="property" name="org.netbeans.core.windows.Mode.Closing.Enabled" category="stable">
+         Name of resource bundle property which allows to close the whole
+         group of non-document windows when its value is set to <code>true</code>,
+         which is also the default value.
+         The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
     </api>
 </answer>
 

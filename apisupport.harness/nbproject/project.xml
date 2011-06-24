@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
             <extra-compilation-unit>
                 <package-root>jnlp-src</package-root>
                 <classpath>${jnlp.cp}</classpath>
-                <built-to>build/jnlp-launcher-classes</built-to>
+                <built-to>${build.dir}/jnlp-launcher-classes</built-to>
                 <built-to>${cluster}/jnlp/jnlp-launcher.jar</built-to>
             </extra-compilation-unit>
         </data>

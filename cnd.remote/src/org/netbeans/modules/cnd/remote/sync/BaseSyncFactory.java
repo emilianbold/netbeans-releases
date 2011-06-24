@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
@@ -66,8 +67,9 @@ public abstract class BaseSyncFactory extends RemoteSyncFactory {
                            System.err.printf("Error creating directory %s\n", privateStorageFile.getAbsolutePath());
                        }
                    }
-                   File[] sourceRoots = RemoteProjectSupport.getProjectSourceDirs(project);
-                   return createNew(execEnv, out, err, privateStorageFile, sourceRoots);
+                   AtomicReference<String> runDir = new AtomicReference<String>();
+                   File[] sourceRoots = RemoteProjectSupport.getProjectSourceDirs(project, runDir);
+                   return createNew(execEnv, out, err, privateStorageFile, runDir.get(), sourceRoots);
        }
        return null;
    }

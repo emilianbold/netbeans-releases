@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -55,6 +54,7 @@ import java.util.Map;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -65,7 +65,6 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 
 /**
@@ -215,7 +214,7 @@ public class QtUiDataLoader extends UniFileLoader {
 
             FileObject fo = f.createData(name, ext);
             java.text.Format frm = createFormat(f, name, ext);
-
+            boolean remoteFS = !CndFileUtils.isLocalFileSystem(fo.getFileSystem());
             BufferedReader r = new BufferedReader(new InputStreamReader(
                     getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
             try {
@@ -228,7 +227,11 @@ public class QtUiDataLoader extends UniFileLoader {
                         String current;
                         while ((current = r.readLine()) != null) {
                             w.write(frm.format(current));
-                            w.newLine();
+                            if (remoteFS) {
+                                w.newLine();
+                            } else {
+                                w.write("\n"); //NOI18N
+                            }
                         }
                     } finally {
                         w.close();

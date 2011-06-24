@@ -42,7 +42,6 @@
 
 package org.netbeans.api.extexecution;
 
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;

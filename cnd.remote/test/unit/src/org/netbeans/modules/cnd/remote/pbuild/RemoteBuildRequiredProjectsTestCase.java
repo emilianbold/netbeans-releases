@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.remote.pbuild;
 import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
@@ -66,9 +67,12 @@ public class RemoteBuildRequiredProjectsTestCase extends RemoteBuildTestBase {
     }
 
     private void doTest(Toolchain toolchain) throws Exception {
-        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        MakeProject project = openProject("B", execEnv, Sync.RFS, toolchain);
-        buildProject(project, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
+        MakeProject projectB = openProject("B", execEnv, Sync.RFS, toolchain);
+        MakeProject projectA = (MakeProject) ProjectManager.getDefault().findProject(projectB.getProjectDirectory().getParent().getFileObject("A"));
+        assertNotNull(projectA);
+        ensureMakefilesWritten(projectA);
+        buildProject(projectB, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     @ForAllEnvironments

@@ -41,16 +41,18 @@
  */
 package examples;
 
+import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 public class WizardsTest extends JellyTestCase {
-    
+
     /** Constructor required by JUnit */
     public WizardsTest(String testName) {
         super(testName);
@@ -66,7 +68,7 @@ public class WizardsTest extends JellyTestCase {
         System.out.println("########  " + getName() + "  #######");
         openDataProjects("SampleProject");
     }
-    
+
     /** Test new file wizard using predefined operators. */
     public void testWizards() {
         // open new file wizard
@@ -80,9 +82,11 @@ public class WizardsTest extends JellyTestCase {
         NewJavaFileNameLocationStepOperator nfnlso = new NewJavaFileNameLocationStepOperator();
         nfnlso.txtObjectName().typeText("MyNewClass");
         // finish wizard
-        nfnlso.finish();
+        //nfnlso.finish();
+        // cancel wizard
+        nfnlso.cancel();
     }
-    
+
     /** Test new project wizard using generic WizardOperator. */
     public void testGenericWizards() {
         // open new project wizard
@@ -92,7 +96,7 @@ public class WizardsTest extends JellyTestCase {
         npwo.next();
         // create operator for next page
         WizardOperator wo = new WizardOperator("Web Application");
-        JTextFieldOperator txtName = new JTextFieldOperator(wo, "WebApplication");
+        JTextFieldOperator txtName = new JTextFieldOperator((JTextField) new JLabelOperator(wo, "Project Name:").getLabelFor());
         txtName.clearText();
         txtName.typeText("MyApp");
         wo.cancel();

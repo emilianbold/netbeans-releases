@@ -72,8 +72,14 @@ public class Hk2ApplicationNode extends Hk2ItemNode {
                         Map<String, String> ip = commonModule.getInstanceProperties();
                         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
                         String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
-                        result = Utils.getHttpListenerProtocol(host, httpPort) +
+                        String url = ip.get(GlassfishModule.URL_ATTR);
+                        if (url == null || !url.contains("ee6wc")) {
+                            result = Utils.getHttpListenerProtocol(host, httpPort) +
                                 "://" + host + ":" + httpPort + "/" + app.getContextRoot();
+                        } else {
+                            result = "http" +
+                                "://" + host + ":" + httpPort + "/" + app.getContextRoot();
+                        }
                         if(result.endsWith("//")) {
                             result = result.substring(0, result.length()-1);
                         }

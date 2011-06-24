@@ -312,6 +312,13 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 return fastCheckProblem;
             }
         }
+        
+        if (newName.contains("$")) {
+            fastCheckProblem = createProblem(fastCheckProblem, false, org.openide.util.NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_DollarWarning"));
+        }
+        if ((kind.isClass() || kind.isInterface()) && !Character.isUpperCase(newName.charAt(0)) ) {
+            fastCheckProblem = createProblem(fastCheckProblem, false, org.openide.util.NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_UpperCaseWarning"));
+        }
         return fastCheckProblem;
     }
     

@@ -1684,7 +1684,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 } else {
                     item.setText(NbBundle.getMessage(POMModelVisitor.class, "ACT_PARENT", artifact != null ? artifact : "project"));
                 }
-                item.setEnabled(val[index] != null);
+                item.setEnabled(/* #199345 */index < val.length && val[index] != null);
                 menu.add(item);
                 index++;
             }

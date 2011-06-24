@@ -205,10 +205,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     
     private int getType(FileObject file) {
         if (isChildOf(file, project.getSourceRoots(false)) ||
-            isChildOf(file, project.getGeneratedSourceRoots())) {
+            isChildOf(file, project.getGeneratedSourceRoots(false))) {
             return TYPE_SRC;
         }
-        if (isChildOf(file, project.getSourceRoots(true))) {
+        if (isChildOf(file, project.getSourceRoots(true)) ||
+            isChildOf(file, project.getGeneratedSourceRoots(true))) {
             return TYPE_TESTSRC;
         }
         

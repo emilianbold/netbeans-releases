@@ -354,6 +354,10 @@ public class GotoDeclarationTest extends TestBase {
 //testfiles/gotodeclaration/testClassInstantiation/testClassInstantiation.php
         checkDeclaration(getTestPath(), "$mammal = new Mamm^al;", "function ^__construct() {//Mammal");
     }
+    
+    public void testClassInstantiation_2() throws Exception {
+        checkDeclaration(getTestPath(), "class Mammal extends Animal^ {", "abstract class ^Animal");
+    }
 
     public void testSuperClasses() throws Exception {
 //testfiles/gotodeclaration/testSuperClasses/testSuperClasses.php

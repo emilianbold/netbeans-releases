@@ -124,9 +124,22 @@ public class UnlockAction extends ContextAction {
                     boolean force = false;
                     do {
                         cont = false;
-                        LockedFilesListener list = new LockedFilesListener(paths);
-                        client.addNotifyListener(list);
-                        client.unlock(files, force);
+                        boolean resumeAuth = true;
+                            LockedFilesListener list;
+                            do {
+                                list = new LockedFilesListener(paths);
+                                client.addNotifyListener(list);
+                                client.unlock(files, force);
+                                if (list.isAuthError() && (resumeAuth = SvnClientExceptionHandler.handleAuth(url))) {
+                                    client.removeNotifyListener(list);
+                                    client = Subversion.getInstance().getClient(url, this);
+                                } else {
+                                    break;
+                                }
+                            } while (resumeAuth);
+                            if (!resumeAuth) {
+                                break;
+                            }
                         client.removeNotifyListener(list);
                         if (!force && !list.lockedFiles.isEmpty() && !lockedByOther(client, list.lockedFiles).isEmpty()) {
                             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(UnlockAction.class, "MSG_UnlockAction.lockedFiles.description"), //NOI18N
@@ -160,6 +173,7 @@ public class UnlockAction extends ContextAction {
     private static class LockedFilesListener implements ISVNNotifyListener {
         private final Map<File, String> paths;
         private final Set<File> lockedFiles = new HashSet<File>();
+        private boolean authError;
 
         public LockedFilesListener (Map<File, String> paths) {
             this.paths = paths;
@@ -196,6 +210,8 @@ public class UnlockAction extends ContextAction {
                         break;
                     }
                 }
+            } else if (SvnClientExceptionHandler.isAuthentication(error)) {
+                authError = true;
             }
         }
 
@@ -209,6 +225,10 @@ public class UnlockAction extends ContextAction {
 
         @Override
         public void onNotify (File file, SVNNodeKind svnnk) {
+        }
+
+        private boolean isAuthError () {
+            return authError;
         }
     }
 }

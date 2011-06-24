@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -105,6 +107,11 @@ public class RemoteJarServiceProvider implements SetupProvider {
         }
         return result;
     }
+    
+    @Override
+    public void failed(Collection<File> files, StringBuilder describeProblem) {
+        describeProblem.append(NbBundle.getMessage(RemoteJarServiceProvider.class, "ErrorUploadingJar"));
+    }    
 
     public static NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);

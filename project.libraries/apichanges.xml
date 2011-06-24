@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
 
+    <change id="library-display-name">
+        <api name="general"/>
+        <summary>Allow user created library to provide display name</summary>
+        <version major="1" minor="31"/>
+        <date day="16" month="6" year="2011"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added <code>displayName</code> property into the <code>Library</code>'s SPI
+            allowing an implementor to provide the a display name of the <code>Library</code>
+            which differs from the system (identifying) name.
+        </description>
+        <class package="org.netbeans.api.project.libraries" name="LibraryManager"/>
+        <class package="org.netbeans.spi.project.libraries" name="NamedLibraryImplementation"/>
+        <issue number="199253"/>
+    </change>
     <change id="use-uri-for-relative-paths">
         <api name="general"/>
         <summary>URI used for relative library entries instead of URL</summary>

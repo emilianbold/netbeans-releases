@@ -44,6 +44,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -479,6 +480,55 @@ public class TryTest extends GeneratorTestMDRCompat {
                 TryTree orig = (TryTree) method.getBody().getStatements().get(0);
                 TryTree nue = make.Try(Collections.<Tree>emptyList(), orig.getBlock(), orig.getCatches(), orig.getFinallyBlock());
                 workingCopy.rewrite(orig, nue);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testWithResourceRename() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try (InputStream in = new FileInputStream(\"\")) {\n" +
+            "        } catch (IOException e) {}\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try (InputStream ni = new FileInputStream(\"\")) {\n" +
+            "        } catch (IOException e) {}\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED); //for RESOLVED, the 1.7 runtime (java.lang.AutoCloseable) would be needed
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitVariable(VariableTree node, Void p) {
+                        if (node.getName().contentEquals("in")) {
+                            workingCopy.rewrite(node, make.setLabel(node, "ni"));
+                        }
+                        return super.visitVariable(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
             }
 
         };

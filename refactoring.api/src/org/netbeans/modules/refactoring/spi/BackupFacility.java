@@ -206,7 +206,7 @@ public abstract class BackupFacility {
             try {
                 BackupEntry entry = new BackupEntry();
                 entry.file = File.createTempFile("nbbackup", null); //NOI18N
-                copy(FileUtil.toFile(file), entry.file);
+                copy(file, entry.file);
                 entry.path = file.getURL().toURI();
                 map.put(currentId, entry);
                 entry.file.deleteOnExit();
@@ -264,6 +264,12 @@ public abstract class BackupFacility {
                 }
                  FileUtil.createFolder(f);
             }
+        }
+        
+        private void copy(FileObject a, File b) throws IOException {
+            InputStream fs = a.getInputStream();
+            FileOutputStream fo = new FileOutputStream(b);
+            copy(fs, fo);
         }
         
         private void copy(File a, File b) throws IOException {

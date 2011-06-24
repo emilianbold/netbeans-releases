@@ -171,18 +171,25 @@ public class DefaultStackParserImpl implements CallStackEntryParser {
         }
 
         private static EntryWithOffset parse(CharSequence part) {
+            long offset = -1;
+            CharSequence entry = part;
 
-            Matcher m = pattern.matcher(part);
-            if (m.matches()) {
-                return new EntryWithOffset(m.group(1), Long.parseLong(m.group(2)));
+            try {
+                Matcher m = pattern.matcher(part);
+                if (m.matches()) {
+                    entry = m.group(1);
+                    offset = Long.parseLong(m.group(2));
+                } else {
+                    m = hexPattern.matcher(part);
+                    if (m.matches()) {
+                        entry = m.group(1);
+                        offset = Long.parseLong(m.group(2), 16);
+                    }
+                }
+            } catch (NumberFormatException ex) {
             }
 
-            m = hexPattern.matcher(part);
-            if (m.matches()) {
-                return new EntryWithOffset(m.group(1), Long.parseLong(m.group(2), 16));
-            }
-
-            return new EntryWithOffset(part, -1);
+            return new EntryWithOffset(entry, offset);
         }
     }
 }

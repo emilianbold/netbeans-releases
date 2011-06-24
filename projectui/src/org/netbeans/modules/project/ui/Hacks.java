@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -76,7 +77,7 @@ public class Hacks {
 
     private Hacks() {}
     
-    private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(Hacks.class.getName());
 
     static final RequestProcessor RP = new RequestProcessor("Project UI"); // NOI18N
     
@@ -89,7 +90,10 @@ public class Hacks {
         final AtomicReference<PropertyChangeListener> displayNameListener = new AtomicReference<PropertyChangeListener>();
         final RequestProcessor.Task task = RP.create(new Runnable() {
             String lastKnownTitle; // #134802
-            public void run() {
+            final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
+            final String NO_PROJECT_TITLE = MessageFormat.format(NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString("CTL_MainWindow_Title_No_Project"), BUILD_NUMBER);
+            final String PROJECT_TITLE_FORMAT = NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString("CTL_MainWindow_Title");
+            public @Override void run() {
                 Node[] sel = r.getActivatedNodes();
                 Set<Project> projects = new HashSet<Project>();
                 boolean noProjectsOpen = OpenProjectList.getDefault().getOpenProjects().length == 0;
@@ -99,9 +103,7 @@ public class Hacks {
                     if (p != null) {
                         projects.add(p);
                         if (noProjectsOpen) {
-                            Logger.getLogger(Hacks.class.getName())./*XXX for now*/fine("Activated node selection " + Arrays.toString(sel) +
-                                    " contains nonopen project " + p + " though none are open; leak? activated TC: " + r.getActivated() +
-                                    " current nodes: " + Arrays.toString(r.getCurrentNodes()) + " (report in issue #102805)");
+                            LOG.log(/*XXX for now*/Level.FINE, "Activated node selection {0} contains nonopen project {1} though none are open; leak? activated TC: {2} current nodes: {3} (report in issue #102805)", new Object[] {Arrays.toString(sel), p, r.getActivated(), Arrays.toString(r.getCurrentNodes())});
                         }
                     } else {
                         DataObject d = l.lookup(DataObject.class);
@@ -115,6 +117,7 @@ public class Hacks {
                     }
                 }
                 final String pname;
+                LOG.log(Level.FINER, "found project selection: {0}", projects);
                 if (projects.size() == 1) {
                     Project p = projects.iterator().next();
                     ProjectInformation info = ProjectUtils.getInformation(p);
@@ -128,35 +131,40 @@ public class Hacks {
                     pname = NbBundle.getMessage(Hacks.class, "LBL_MultipleProjects");
                 }
                 EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        // depends on exported keys in core/windows
-                        String format = NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").
-                                getString(pname != null ? "CTL_MainWindow_Title" : "CTL_MainWindow_Title_No_Project");
-                        String title = pname != null?
-                            MessageFormat.format(format, BUILD_NUMBER, pname) :
-                            MessageFormat.format(format, BUILD_NUMBER);
+                    public @Override void run() {
+                        String title = pname != null ? MessageFormat.format(PROJECT_TITLE_FORMAT, BUILD_NUMBER, pname) : NO_PROJECT_TITLE;
                         Frame mainWindow = WindowManager.getDefault().getMainWindow();
-                        if (lastKnownTitle == null || lastKnownTitle.equals(mainWindow.getTitle())) {
+                        String currTitle = mainWindow.getTitle();
+                        if (currTitle == null || currTitle.isEmpty() || currTitle.equals(lastKnownTitle) || /*#199245*/currTitle.equals(NO_PROJECT_TITLE)) {
                             lastKnownTitle = title;
                             mainWindow.setTitle(title);
+                        } else {
+                            LOG.log(Level.FINE, "not replacing {0} with {1} since it was last set to {2}", new Object[] {currTitle, title, lastKnownTitle});
                         }
                     }
                 });
             }
         });
-        displayNameListener.set(new PropertyChangeListener() {
-            public @Override void propertyChange(PropertyChangeEvent ev) {
-                String prop = ev.getPropertyName();
-                if (prop == null || prop.equals(ProjectInformation.PROP_DISPLAY_NAME)) {
-                    task.schedule(0);
-                }
-            }
-        });
-        r.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent ev) {
-                if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(ev.getPropertyName())) {
-                    task.schedule(200);
-                }
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            public @Override void run() {
+                task.schedule(0);
+                displayNameListener.set(new PropertyChangeListener() {
+                    public @Override void propertyChange(PropertyChangeEvent ev) {
+                        String prop = ev.getPropertyName();
+                        if (prop == null || prop.equals(ProjectInformation.PROP_DISPLAY_NAME)) {
+                            LOG.finer("got PROP_DISPLAY_NAME");
+                            task.schedule(0);
+                        }
+                    }
+                });
+                r.addPropertyChangeListener(new PropertyChangeListener() {
+                    public @Override void propertyChange(PropertyChangeEvent ev) {
+                        if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(ev.getPropertyName())) {
+                            LOG.finer("got PROP_ACTIVATED_NODES");
+                            task.schedule(200);
+                        }
+                    }
+                });
             }
         });
     }

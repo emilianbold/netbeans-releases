@@ -46,16 +46,21 @@ package org.netbeans.modules.web.project;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 
 /**
  * An implementation of PersistenceProviderSupplier for web project.
@@ -83,28 +88,45 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         }
         List<Provider> result = new ArrayList<Provider>();
         
-        addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault1.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER2_0, "hibernatePersistenceProviderIsDefault2.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER1_0, "toplinkPersistenceProviderIsDefault", platform, result);// NOI18N
-        addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.DATANUCLEUS_PROVIDER, "dataNucleusPersistenceProviderIsDefault", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault2.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER1_0, "openJpaPersistenceProviderIsDefault1.0", platform, result); // NOI18N
-        //addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER1_0, "eclipseLinkPersistenceProviderIsDefault", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault", platform, result); // NOI18N
+        Set<Provider> candidates = new HashSet<Provider>();
+        // TODO why we are selecting only some of them  ?
+        // can't we just use ProviderUtil.getAllProviders() ?
+        candidates.add(ProviderUtil.HIBERNATE_PROVIDER);
+        candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_0);
+        candidates.add(ProviderUtil.TOPLINK_PROVIDER1_0);
+        candidates.add(ProviderUtil.KODO_PROVIDER);
+        candidates.add(ProviderUtil.DATANUCLEUS_PROVIDER);
+        candidates.add(ProviderUtil.OPENJPA_PROVIDER);
+        candidates.add(ProviderUtil.OPENJPA_PROVIDER1_0);
+        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER);
+        addPersistenceProviders(candidates, platform, result);
         
         return result;
     }
     
-    private void addPersistenceProvider(Provider provider, String defaultProvider, J2eePlatform platform, List<Provider> providers){
-        // would need an api for this..
-        if (platform.isToolSupported(provider.getProviderClass())){
-            if (platform.isToolSupported(defaultProvider)){
-                providers.add(0, provider);
-            } else {
-                providers.add(provider);
+    private void addPersistenceProviders(Set<Provider> providers, J2eePlatform platform, List<Provider> result){
+        JpaSupport jpaSupport = JpaSupport.getInstance(platform);
+        Map<String, JpaProvider> map = new HashMap<String, JpaProvider>();
+        for (JpaProvider provider : jpaSupport.getProviders()) {
+            map.put(provider.getClassName(), provider);
+        }
+        for (Provider provider : providers) {
+            JpaProvider jpa = map.get(provider.getProviderClass());
+            if (jpa != null) {
+                String version = ProviderUtil.getVersion(provider);
+                if (version == null
+                        || ((version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
+                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported()))) {
+
+                    if (jpa.isDefault()) {
+                        result.add(0, provider);
+                    } else {
+                        result.add(provider);
+                    }
+                }
             }
         }
+        return;
     }
     
     public boolean supportsDefaultProvider() {

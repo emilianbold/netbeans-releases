@@ -102,6 +102,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         Set<String> allTestedMethods = new HashSet<String>(Arrays.asList(
                 "add",
                 "addNotificationListener",
+                "blame",
                 "catFile",
                 "catIndexEntry",
                 "checkout",
@@ -119,6 +120,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getBranches",
                 "getCommonAncestor",
                 "getConflicts",
+                "getPreviousRevision",
                 "getRemote",
                 "getRemotes",
                 "getRepositoryState",
@@ -184,6 +186,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         Set<String> allTestedMethods = new HashSet<String>(Arrays.asList(
                 "add",
                 "addNotificationListener",
+                "blame",
                 "catFile",
                 "catIndexEntry",
                 "checkout",
@@ -201,6 +204,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getBranches",
                 "getCommonAncestor",
                 "getConflicts",
+                "getPreviousRevision",
                 "getRemote",
                 "getRemotes",
                 "getRepositoryState",
@@ -227,6 +231,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "unignore"));
         Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
+                "blame",
                 "catFile",
                 "catIndexEntry",
                 "createBranch",
@@ -239,6 +244,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getBranches",
                 "getCommonAncestor",
                 "getConflicts",
+                "getPreviousRevision",
                 "getRemote",
                 "getRemotes",
                 "getRepositoryState",
@@ -287,6 +293,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         Set<String> allTestedMethods = new HashSet<String>(Arrays.asList(
                 "add",
                 "addNotificationListener",
+                "blame",
                 "catFile",
                 "catIndexEntry",
                 "checkout",
@@ -304,6 +311,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getBranches",
                 "getCommonAncestor",
                 "getConflicts",
+                "getPreviousRevision",
                 "getRemote",
                 "getRemotes",
                 "getRepositoryState",
@@ -420,6 +428,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         Set<String> allTestedMethods = new HashSet<String>(Arrays.asList(
                 "add",
                 "addNotificationListener",
+                "blame",
                 "catFile",
                 "catIndexEntry",
                 "checkout",
@@ -437,6 +446,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getBranches",
                 "getCommonAncestor",
                 "getConflicts",
+                "getPreviousRevision",
                 "getRemote",
                 "getRemotes",
                 "getRepositoryState",
@@ -463,6 +473,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "unignore"));
         Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
+                "blame",
                 "catFile",
                 "catIndexEntry",
                 "exportCommit",
@@ -470,6 +481,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 "getBranches",
                 "getCommonAncestor",
                 "getConflicts",
+                "getPreviousRevision",
                 "getRemote",
                 "getRemotes",
                 "getRepositoryState",

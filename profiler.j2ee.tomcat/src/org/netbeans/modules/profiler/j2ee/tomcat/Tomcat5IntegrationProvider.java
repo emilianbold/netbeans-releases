@@ -99,7 +99,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
         String targetOS = attachSettings.getHostOS();
 
         if (isTomcatExeUsed(targetOS, this.getInstallationPath())) {
-            StringBuffer catalinaScript = getChangedLines(targetOS, attachSettings, getCatalinaBase(), false);
+            StringBuilder catalinaScript = getChangedLines(targetOS, attachSettings, getCatalinaBase(), false);
 
             File catalinaScriptFile = new File(getModifiedScriptPath(targetOS, false));
             OutputStream os = null;
@@ -185,12 +185,13 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
         return retValue;
     }
 
-    private StringBuffer getChangedLines(final String targetOS, final AttachSettings attachSettings, final String catalinaBase,
+    private StringBuilder getChangedLines(final String targetOS, final AttachSettings attachSettings, final String catalinaBase,
                                          final boolean inHtml) {
-        final String separator = System.getProperty("file.separator"); // NOI18N
+        // this path is taken only on windows
+        final String separator = IntegrationUtils.getPathSeparator(targetOS); // NOI18N
         String catalinaBaseOption = ""; // NOI18N
 
-        StringBuffer catalinaScript = new StringBuffer();
+        StringBuilder catalinaScript = new StringBuilder();
         catalinaScript.append(IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
                                                                                IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
                                                                                                                                 getTargetJava(),
@@ -245,7 +246,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
         }
     }
 
-    private void appendNewLine(final boolean inHtml, final StringBuffer buffer) {
+    private void appendNewLine(final boolean inHtml, final StringBuilder buffer) {
         if (inHtml) {
             buffer.append("<br>"); // NOI18N
         } else {

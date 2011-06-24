@@ -476,6 +476,12 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
      */
     public static AntProjectHelper getHelperFor(Project p) {
         Reference<AntProjectHelper> helperRef = project2Helper.get(p);
+        if (helperRef == null) {
+            p = p.getLookup().lookup(Project.class);
+            if (p != null) {
+                helperRef = project2Helper.get(p);
+            }
+        }
         return helperRef != null ? helperRef.get() : null;
     }
 

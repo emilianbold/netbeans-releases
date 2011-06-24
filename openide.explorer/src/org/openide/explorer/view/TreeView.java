@@ -1029,7 +1029,7 @@ public abstract class TreeView extends JScrollPane {
                 TreePath[] paths = new TreePath[arr.length];
                 final boolean log = LOG.isLoggable(Level.FINE);
                 if (log) {
-                    LOG.fine("synchronizeSelectedNodes");
+                    LOG.log(Level.FINE, "synchronizeSelectedNodes: {0}", arr.length);
                 }
                 for (int i = 0; i < arr.length; i++) {
                     paths[i] = getTreePath(arr[i]);

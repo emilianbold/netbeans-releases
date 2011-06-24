@@ -257,16 +257,14 @@ public class TopSecurityManager extends SecurityManager {
     public @Override final void checkPropertyAccess(String x) {
         if ("netbeans.debug.exceptions".equals(x)) { // NOI18N
             // Get rid of this old system property.
-            Class[] ctxt = getClassContext();
-            for (int i = 0; i < ctxt.length; i++) {
-                Class c = ctxt[i];
+            for (Class<?> c : getClassContext()) {
                 if (c != TopSecurityManager.class &&
                         c != System.class &&
                         c != Boolean.class) {
                     String n = c.getName();
                     synchronized (warnedClassesNDE) {
                         if (warnedClassesNDE.add(n)) {
-                            System.err.println("Warning: use of system property netbeans.debug.exceptions in " + n + " has been obsoleted in favor of java.util.logging.Logger"); // NOI18N
+                            LOG.log(Level.WARNING, "use of system property netbeans.debug.exceptions has been obsoleted in favor of java.util.logging.Logger at {0}", findCallStackLine(n));
                         }
                     }
                     break;
@@ -274,23 +272,29 @@ public class TopSecurityManager extends SecurityManager {
             }
         }
         if ("netbeans.home".equals(x)) { // NOI18N
-            // Get rid of this old system property.
-            Class[] ctxt = getClassContext();
-            for (int i = 0; i < ctxt.length; i++) {
-                Class c = ctxt[i];
+            // Control access to this system property.
+            for (Class<?> c : getClassContext()) {
                 if (c != TopSecurityManager.class &&
                         c != System.class &&
                         c != Boolean.class) {
                     String n = c.getName();
                     synchronized (warnedClassesNH) {
                         if (warnedClassesNH.add(n)) {
-                            System.err.println("Warning: use of system property netbeans.home in " + n + " has been obsoleted in favor of InstalledFileLocator"); // NOI18N
+                            LOG.log(Level.WARNING, "use of system property netbeans.home has been obsoleted in favor of InstalledFileLocator at {0}", findCallStackLine(n)); // NOI18N
                         }
                     }
                     break;
                 }
             }
         }
+    }
+    private static String findCallStackLine(String callerClazz) {
+        for (StackTraceElement line : Thread.currentThread().getStackTrace()) {
+            if (line.getClassName().equals(callerClazz)) {
+                return line.toString();
+            }
+        }
+        return callerClazz;
     }
     private final Set<String> warnedClassesNDE = new HashSet<String>(25);
     private static final Set<String> warnedClassesNH = new HashSet<String>(25);
@@ -302,6 +306,7 @@ public class TopSecurityManager extends SecurityManager {
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
         warnedClassesNH.add("org.netbeans.lib.uihandler.LogFormatter");
         warnedClassesNH.add("org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties"); // AS bundle is not in any cluster
+        warnedClassesNH.add("org.netbeans.modules.apisupport.project.universe.NbPlatform"); // defaultPlatformLocation
     }
 
     /* ----------------- private methods ------------- */

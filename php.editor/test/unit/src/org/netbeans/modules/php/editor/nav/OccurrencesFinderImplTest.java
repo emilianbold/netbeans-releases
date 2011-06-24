@@ -353,6 +353,10 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$e instanceof $mExpect^edException", true);
     }
     
+    public void testIssue198449_01() throws Exception {
+        checkOccurrences(getTestPath(), "$cl^ass = 'StdClass';", true);
+    }
+    
 
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)

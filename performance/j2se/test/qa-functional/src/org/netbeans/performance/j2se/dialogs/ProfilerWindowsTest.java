@@ -131,7 +131,8 @@ public class ProfilerWindowsTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(commandName);
+        MainWindowOperator.getDefault().menuBar().closeSubmenus();
+        MainWindowOperator.getDefault().menuBar().pushMenu(commandName);
         return new TopComponentOperator(windowName);
     }
     

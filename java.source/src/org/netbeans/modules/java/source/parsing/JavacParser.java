@@ -51,6 +51,7 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.DuplicateClassChecker;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -99,7 +100,6 @@ import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
-import javax.tools.ToolProvider;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorRegistry;
@@ -715,41 +715,33 @@ public class JavacParser extends Parser {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
         }
 
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        try {
-            //The ToolProvider.defaultJavaCompiler will use the context classloader to load the javac implementation
-            //it should be load by the current module's classloader (should delegate to other module's classloaders as necessary)
-            Thread.currentThread().setContextClassLoader(ClasspathInfo.class.getClassLoader());
-            JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
-            JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
-                    ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
-                    diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
-            if (aptEnabled) {
-                task.setProcessors(processors);
-            }
-            Context context = task.getContext();
-            JavadocClassReader.preRegister(context, !backgroundCompilation);
-            if (cnih != null) {
-                context.put(ClassNamesForFileOraculum.class, cnih);
-            }
-            if (dcc != null) {
-                context.put(DuplicateClassChecker.class, dcc);
-            }                    
-            if (cancelService != null) {
-                DefaultCancelService.preRegister(context, cancelService);
-            }
-            Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
-            if (!backgroundCompilation) {
-                JavacFlowListener.preRegister(context);
-                ErrorHandlingJavadocEnter.preRegister(context);
-                JavadocMemberEnter.preRegister(context);
-                JavadocEnv.preRegister(context, cpInfo);
-            }
-            TIME_LOGGER.log(Level.FINE, "JavaC", context);
-            return task;
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
+        JavaCompiler tool = JavacTool.create();
+        JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
+                ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
+                diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
+        if (aptEnabled) {
+            task.setProcessors(processors);
         }
+        Context context = task.getContext();
+        JavadocClassReader.preRegister(context, !backgroundCompilation);
+        if (cnih != null) {
+            context.put(ClassNamesForFileOraculum.class, cnih);
+        }
+        if (dcc != null) {
+            context.put(DuplicateClassChecker.class, dcc);
+        }                    
+        if (cancelService != null) {
+            DefaultCancelService.preRegister(context, cancelService);
+        }
+        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        if (!backgroundCompilation) {
+            JavacFlowListener.preRegister(context);
+            ErrorHandlingJavadocEnter.preRegister(context);
+            JavadocMemberEnter.preRegister(context);
+            JavadocEnv.preRegister(context, cpInfo);
+        }
+        TIME_LOGGER.log(Level.FINE, "JavaC", context);
+        return task;
     }
 
     private static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(@NullAllowed String sourceLevel, ClasspathInfo cpInfo) {

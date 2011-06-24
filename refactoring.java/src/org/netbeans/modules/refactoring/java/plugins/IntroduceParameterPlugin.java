@@ -363,7 +363,10 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
 
                 createAndAddElements(Collections.singleton(treePathHandle.getFileObject()), t, elements, refactoring);
 
-                TransformTask transform = new TransformTask(new ChangeParamsTransformer(paramTable, allMethods, null), treePathHandle);
+                ChangeParametersRefactoring chgRef = new ChangeParametersRefactoring(treePathHandle);
+                chgRef.setModifiers(null);
+                chgRef.setParameterInfo(paramTable);
+                TransformTask transform = new TransformTask(new ChangeParamsTransformer(chgRef, allMethods), treePathHandle);
                 Problem p = createAndAddElements(a, transform, elements, refactoring);
                 if (p != null) {
                     fireProgressListenerStop();

@@ -47,6 +47,7 @@ import com.sun.source.tree.TreeVisitor;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -135,6 +136,35 @@ public class JackpotTrees {
 
     }
     
+    public static class VariableWildcard extends FakeVariable implements IdentifierTree {
+
+        private final Name ident;
+
+        public VariableWildcard(Context ctx, Name ident, JCIdent jcIdent) {
+            super(ctx, ident, jcIdent);
+            this.ident = ident;
+        }
+
+        public Name getName() {
+            return ident;
+        }
+
+        @Override
+        public Kind getKind() {
+            return Kind.IDENTIFIER;
+        }
+
+        @Override
+        public <R, D> R accept(TreeVisitor<R, D> v, D d) {
+            return v.visitIdentifier(this, d);
+        }
+
+        @Override
+        public String toString() {
+            return ident.toString();
+        }
+    }
+
     private static class FakeVariable extends JCVariableDecl {
         
         private final JCIdent jcIdent;
@@ -167,4 +197,40 @@ public class JackpotTrees {
         }
     }
 
+    public static class CaseWildcard extends JCCase implements IdentifierTree {
+
+        private final Name ident;
+        private final JCIdent jcIdent;
+
+        public CaseWildcard(Context ctx, Name ident, JCIdent jcIdent) {
+            super(jcIdent, List.<JCStatement>nil());
+            this.ident = ident;
+            this.jcIdent = jcIdent;
+        }
+
+        public Name getName() {
+            return ident;
+        }
+
+        @Override
+        public Kind getKind() {
+            return Kind.IDENTIFIER;
+        }
+
+        @Override
+        public void accept(Visitor v) {
+            v.visitIdent(jcIdent);
+        }
+
+        @Override
+        public <R, D> R accept(TreeVisitor<R, D> v, D d) {
+            return v.visitIdentifier(this, d);
+        }
+
+        @Override
+        public String toString() {
+            return "case " + ident.toString();
+        }
+
+    }
 }

@@ -46,19 +46,15 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.junit.NbTestSuite;
 
 /** JUnit test suite with Jemmy support
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @version 1.0
+ * @author Adam Sotona
  */
 public class AddLocaleActionTest extends JellyTestCase {
 
@@ -75,11 +71,6 @@ public class AddLocaleActionTest extends JellyTestCase {
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new AddLocaleActionTest("testPerformPopup"));
-        return suite;
-         */
         return createModuleTest(AddLocaleActionTest.class, tests);
     }
 
@@ -88,15 +79,6 @@ public class AddLocaleActionTest extends JellyTestCase {
         openDataProjects("SampleProject");
     }
     
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    /** simple test case
-     */
     public void testPerformPopup() {
         Node n = new Node(new SourcePackagesNode("SampleProject"), "sample1|properties.properties");
         new AddLocaleAction().performPopup(n);

@@ -155,6 +155,19 @@ public class RecognizeInstanceFilesTest extends NamedServicesLookupTest{
         
         LOG.info("Ids ok");
     }
+    
+    public void testUnderstandsShadowFiles() throws Exception {
+        LOG.info("creating instances");
+        
+        FileObject inst = FileUtil.createData(root, "inst/real/X.instance");
+        inst.setAttribute("instanceCreate", Long.valueOf(1000));
+
+        FileObject shadow = FileUtil.createData(root, "inst/shadow/X.shadow");
+        shadow.setAttribute("originalFile", inst.getPath());
+        
+        Long l = Lookups.forPath("inst/shadow").lookup(Long.class);
+        assertEquals("1000 found", Long.valueOf(1000), l);
+    }
 
     public void testNumericOrdering() throws Exception {
         class Tst implements FileSystem.AtomicAction {

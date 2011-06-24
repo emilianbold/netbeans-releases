@@ -77,6 +77,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
@@ -87,6 +89,7 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
@@ -127,7 +130,6 @@ public class HgCommand {
     private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
     private static final String HG_STATUS_FLAG_TIP_CMD = "tip"; // NOI18N
-    private static final String HG_STATUS_FLAG_REM_DEL_CMD = "-rd"; // NOI18N
     private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduC"; // NOI18N
     private static final String HG_HEAD_STR = "HEAD"; // NOI18N
     private static final String HG_FLAG_DATE_CMD = "--date"; // NOI18N
@@ -142,10 +144,7 @@ public class HgCommand {
     private static final String HG_REVERT_NOBACKUP_CMD = "--no-backup"; // NOI18N
     private static final String HG_ADD_CMD = "add"; // NOI18N
 
-    private static final String HG_BRANCH_CMD = "branch"; // NOI18N
     private static final String HG_BRANCH_REV_CMD = "tip"; // NOI18N
-    private static final String HG_BRANCH_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
-    private static final String HG_BRANCH_SHORT_CS_TEMPLATE_CMD = "--template={node|short}\\n"; // NOI18N
     private static final String HG_BRANCH_INFO_TEMPLATE_CMD = "--template={branches}:{rev}:{node|short}\\n"; // NOI18N
 
     private static final String HG_CREATE_CMD = "init"; // NOI18N
@@ -167,10 +166,6 @@ public class HgCommand {
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
-    private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD =
-            "--template=rev:{rev}\\nauth:{author}\\nuser:{author|user}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
-            "\\nendCS:\\n"; // NOI18N
-    private static final String HG_LOG_REV_TIP_RANGE = "tip:0"; // NOI18N
     private static final String HG_LOG_REVISION_OUT = "rev:"; // NOI18N
     private static final String HG_LOG_AUTHOR_OUT = "auth:"; // NOI18N
     private static final String HG_LOG_USER_OUT = "user:"; // NOI18N
@@ -182,15 +177,15 @@ public class HgCommand {
     private static final String HG_LOG_FILEADDS_OUT = "file_adds:"; // NOI18N
     private static final String HG_LOG_FILEDELS_OUT = "file_dels:"; // NOI18N
     private static final String HG_LOG_FILECOPIESS_OUT = "file_copies:"; // NOI18N
+    private static final String HG_LOG_BRANCHES_OUT = "branches:"; // NOI18N
+    private static final String HG_LOG_TAGS_OUT = "tags:"; // NOI18N
     private static final String HG_LOG_ENDCS_OUT = "endCS:"; // NOI18N
 
     private static final String HG_LOG_PATCH_CMD = "-p";
     private static final String HG_LOG_TEMPLATE_EXPORT_FILE_CMD =
         "--template=# Mercurial Export File Diff\\n# changeset: \\t{rev}:{node|short}\\n# user:\\t\\t{author}\\n# date:\\t\\t{date|isodate}\\n# summary:\\t{desc}\\n\\n";
 
-    private static final String HG_CSET_TEMPLATE_CMD = "--template={rev}:{node|short}\\n"; // NOI18N
     private static final String HG_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
-    private static final String HG_CSET_TARGET_TEMPLATE_CMD = "--template={rev} ({node|short})\\n"; // NOI18N
 
     private static final String HG_CAT_CMD = "cat"; // NOI18N
     private static final String HG_FLAG_OUTPUT_CMD = "--output"; // NOI18N
@@ -278,6 +273,7 @@ public class HgCommand {
     private final static String HG_ARGUMENT_LIST_TOO_LONG_ERR = "Argument list too long"; //NOI18N
 
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
+    private final static String HG_BRANCHES_CMD = "branches"; // NOI18N
 
     private static final String HG_NO_REPOSITORY_ERR = "There is no Mercurial repository here"; // NOI18N
     private static final String HG_NO_RESPONSE_ERR = "no suitable response from remote hg!"; // NOI18N
@@ -303,6 +299,7 @@ public class HgCommand {
     private static final String HG_ADDING = "adding";                   //NOI18N
     private static final String HG_WARNING_PERFORMANCE_FILES_OVER = ": files over"; //NOI18N
     private static final String HG_WARNING_PERFORMANCE_CAUSE_PROBLEMS = "cause memory and performance problems"; //NOI18N
+    private static final String HG_ABORT_CANNOT_FOLLOW_NONEXISTENT_FILE = "cannot follow nonexistent file"; //NOI18N
 
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -339,6 +336,7 @@ public class HgCommand {
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
+    private static final String HG_LOG_BASIC_CHANGESET_NAME = "log-no-files-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_CHANGESET_GENERAL_NAME = "changeset.tmpl"; //NOI18N
     private static final String HG_LOG_STYLE_NAME = "log.style";        //NOI18N
     private static final String HG_ARGUMENT_STYLE = "--style=";         //NOI18N
@@ -808,13 +806,19 @@ public class HgCommand {
         command.remoteUrl = toUrl;
         command.repository = repository;
         command.additionalOptions.add(HG_VERBOSE_CMD);
-        command.additionalOptions.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
-        command.showSaveOption = showSaveCredentialsOption;
-        command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PUSH};
+        File tempFolder = Utils.getTempFolder(false);
+        try {
+            command.additionalOptions.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
+            command.showSaveOption = showSaveCredentialsOption;
+            command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PUSH};
 
-        List<String> retval = command.invoke();
-
-        return retval;
+            return command.invoke();
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            Utils.deleteRecursively(tempFolder);
+        }
     }
 
     /**
@@ -943,12 +947,13 @@ public class HgCommand {
         return retval;
     }
 
-    public static List<HgLogMessage> processLogMessages(File root, List<File> files, List<String> list, final List<HgLogMessage> messages) {
-        return processLogMessages(root, files, list, messages, false);
+    public static List<HgLogMessage> processLogMessages (File root, List<File> files, List<String> list) {
+        return processLogMessages(root, files, list, false);
     }
 
-    public static List<HgLogMessage> processLogMessages(File root, List<File> files, List<String> list, final List<HgLogMessage> messages, boolean revertOrder) {
-        String rev, author, username, desc, date, id, parents, fm, fa, fd, fc;
+    public static List<HgLogMessage> processLogMessages (File root, List<File> files, List<String> list, boolean revertOrder) {
+        List<HgLogMessage> messages = new LinkedList<HgLogMessage>();
+        String rev, author, username, desc, date, id, parents, fm, fa, fd, fc, branches, tags;
         List<String> filesShortPaths = new ArrayList<String>();
 
         final String rootPath = root.getAbsolutePath();
@@ -968,6 +973,7 @@ public class HgCommand {
             }
 
             rev = author = username = desc = date = id = parents = fm = fa = fd = fc = null;
+            branches = tags = "";
             boolean bEnd = false;
             boolean stillInMessage = false; // commit message can have multiple lines !!!
             for (String s : list) {
@@ -1004,6 +1010,12 @@ public class HgCommand {
                 } else if (s.indexOf(HG_LOG_FILECOPIESS_OUT) == 0) {
                     fc = s.substring(HG_LOG_FILECOPIESS_OUT.length()).trim();
                     stillInMessage = false;
+                } else if (s.indexOf(HG_LOG_BRANCHES_OUT) == 0) {
+                    branches = s.substring(HG_LOG_BRANCHES_OUT.length()).trim();
+                    stillInMessage = false;
+                } else if (s.indexOf(HG_LOG_TAGS_OUT) == 0) {
+                    tags = s.substring(HG_LOG_TAGS_OUT.length()).trim();
+                    stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_ENDCS_OUT) == 0) {
                     stillInMessage = false;
                     bEnd = true;
@@ -1015,7 +1027,7 @@ public class HgCommand {
                 }
 
                 if (rev != null & bEnd) {
-                    HgLogMessage hgMsg = new HgLogMessage(rootPath, filesShortPaths, rev, author, username, desc, date, id, parents, fm, fa, fd, fc);
+                    HgLogMessage hgMsg = new HgLogMessage(rootPath, filesShortPaths, rev, author, username, desc, date, id, parents, fm, fa, fd, fc, branches, tags);
                     if (revertOrder) {
                         messages.add(0, hgMsg);
                     } else {
@@ -1029,12 +1041,48 @@ public class HgCommand {
         return messages;
     }
 
+    private static HgBranch[] processBranches (List<String> lines, List<HgLogMessage> heads) {
+        List<HgBranch> branches = new ArrayList<HgBranch>();
+        Pattern p = Pattern.compile("^(.+)(\\b\\d+):(\\S+)(.*)$"); //NOI18N
+        for (String line : lines) {
+            Matcher m = p.matcher(line);
+            if (!m.matches()){
+                Mercurial.LOG.log(Level.WARNING, "HgCommand.processBranches(): Failed when matching: {0}", new Object[] { line }); //NOI18N
+            } else {
+                String branchName = m.group(1).trim();
+                String revNumber = m.group(2).trim();
+                String changeSetId = m.group(3).trim();
+                String status = m.group(4).trim().toLowerCase();
+                HgLogMessage info = null;
+                for (HgLogMessage head : heads) {
+                    if (head.getRevisionNumber().equals(revNumber) || head.getCSetShortID().equals(changeSetId)) {
+                        info = head;
+                    }
+                }
+                if (info == null) {
+                    Mercurial.LOG.log(Level.WARNING, "HgCommand.processBranches(): Failed when pairing branch with head info : {0}:{1}:{2}\n{3}", //NOI18N
+                            new Object[] { branchName, revNumber, changeSetId, heads });
+                } else {
+                    boolean closed = false;
+                    boolean active = true;
+                    if (status.contains("inactive")) { //NOI18N
+                        active = false;
+                    } else if (status.contains("closed")) { //NOI18N
+                        closed = true;
+                    }
+                    branches.add(new HgBranch(branchName, info, closed, active));
+                }
+            }
+        }
+        return branches.toArray(new HgBranch[branches.size()]);
+    }
+
     public static HgLogMessage[] getIncomingMessages(final File root, String toRevision, boolean bShowMerges,  OutputLogger logger) {
-        final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);
+        List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
             List<String> list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(root, null, list, messages, true);
+            messages = processLogMessages(root, null, list, true);
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
@@ -1048,11 +1096,11 @@ public class HgCommand {
     }
 
     public static HgLogMessage[] getOutMessages(final File root, String toRevision, boolean bShowMerges, OutputLogger logger) {
-        final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);
+        List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
             List<String> list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(root, null, list, messages, true);
+            messages = processLogMessages(root, null, list, true);
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
@@ -1076,7 +1124,7 @@ public class HgCommand {
     public static HgLogMessage[] getLogMessages(final File root,
             final Set<File> files, String fromRevision, String toRevision,
             boolean bShowMerges,  boolean bGetFileInfo, int limit, OutputLogger logger, boolean ascOrder) {
-        final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);
+        List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
             String headRev = HgCommand.getLastRevision(root, null);
@@ -1089,7 +1137,7 @@ public class HgCommand {
             list = HgCommand.doLog(root,
                     filesList,
                     fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
-            processLogMessages(root, filesList, list, messages, ascOrder);
+            messages = processLogMessages(root, filesList, list, ascOrder);
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
@@ -1248,11 +1296,7 @@ public class HgCommand {
 
         File tempFolder = Utils.getTempFolder(false);
         try {
-            if (bGetFileInfo) {
-                command.add(prepareLogTemplate(tempFolder, HG_LOG_FULL_CHANGESET_NAME));
-            } else {
-                command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
-            }
+            command.add(prepareLogTemplate(tempFolder, bGetFileInfo ? HG_LOG_FULL_CHANGESET_NAME : HG_LOG_BASIC_CHANGESET_NAME));
 
             if (files != null) {
                 for (File f : files) {
@@ -1263,6 +1307,8 @@ public class HgCommand {
             if (!list.isEmpty()) {
                 if (isErrorNoRepository(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+                } else if (list.get(0).toLowerCase().contains(HG_ABORT_CANNOT_FOLLOW_NONEXISTENT_FILE)) {
+                    // nothing
                 } else if (isErrorAbort(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
                 }
@@ -1290,22 +1336,27 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_TIP_CMD);
-        command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-
-        List<String> list = exec(command);
-        if (!list.isEmpty()) {
-            if (isErrorNoRepository(list.get(0))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
-             } else if (isErrorAbort(list.get(0))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
-             }
+        File tempFolder = Utils.getTempFolder(false);
+        try {
+            command.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
+            List<String> list = exec(command);
+            if (!list.isEmpty()) {
+                if (isErrorNoRepository(list.get(0))) {
+                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+                 } else if (isErrorAbort(list.get(0))) {
+                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+                 }
+            }
+            List<HgLogMessage> messages = processLogMessages(repository, null, list, false);
+            return messages.get(0);
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            Utils.deleteRecursively(tempFolder);
         }
-        List<HgLogMessage> messages = new ArrayList<HgLogMessage>(1);
-        messages = processLogMessages(repository, null, list, messages, false);
-
-        return messages.get(0);
     }
 
 
@@ -2204,7 +2255,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> getHeadRevisions(File repository) throws HgException {
-        return  getHeadInfo(repository, HG_REV_TEMPLATE_CMD);
+        return getHeadInfo(repository, true, HG_REV_TEMPLATE_CMD, false);
     }
 
     /**
@@ -2215,7 +2266,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> getHeadRevisions(String repository) throws HgException {
-        return  getHeadInfo(repository, HG_REV_TEMPLATE_CMD);
+        return getHeadInfo(repository, true, HG_REV_TEMPLATE_CMD, false);
     }
 
     /**
@@ -2226,7 +2277,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static HgLogMessage[] getHeadRevisionsInfo (File repository, OutputLogger logger) throws HgException {
-        List<String> list = getHeadInfo(repository, HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
+        List<String> list = getHeadInfo(repository, true, HG_LOG_BASIC_CHANGESET_NAME, true);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
                 handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
@@ -2234,8 +2285,7 @@ public class HgCommand {
                 handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
              }
         }
-        List<HgLogMessage> messages = new ArrayList<HgLogMessage>(5);
-        messages = processLogMessages(repository, null, list, messages, false);
+        List<HgLogMessage> messages = processLogMessages(repository, null, list, false);
         return messages.toArray(new HgLogMessage[messages.size()]);
     }
 
@@ -2273,32 +2323,79 @@ public class HgCommand {
         return id;
     }
 
+    public static HgBranch[] getBranches (File repository, OutputLogger logger) throws HgException {
+        List<String> list = getHeadInfo(repository, false, HG_LOG_BASIC_CHANGESET_NAME, true);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+             }
+        }
+        List<HgLogMessage> heads = processLogMessages(repository, null, list, false);
+        list = getBranches(repository);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+             }
+        }
+        return processBranches(list, heads);
+    }
+
     private static Boolean topoAvailable;
-    private static List<String> getHeadInfo(String repository, String template) throws HgException {
+    private static List<String> getHeadInfo (String repository, boolean topo, String template, boolean useStyle) throws HgException {
         if (repository == null) return null;
 
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_HEADS_CMD);
-        topoAvailable = Boolean.TRUE.equals(topoAvailable) || topoAvailable == null && HgUtils.hasTopoOption(Mercurial.getInstance().getVersion());
-        if (topoAvailable) {
-            command.add(HG_FLAG_TOPO);
+        if (topo) {
+            topoAvailable = Boolean.TRUE.equals(topoAvailable) || topoAvailable == null && HgUtils.hasTopoOption(Mercurial.getInstance().getVersion());
+            if (topoAvailable) {
+                command.add(HG_FLAG_TOPO);
+            }
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository);
-        command.add(template);
-        List<String> output = exec(command);
-        if (topoAvailable && output.contains("hg heads: option --topo not recognized")) { //NOI18N
-            topoAvailable = false;
-            return getHeadInfo(repository, template);
+        File tempFolder = Utils.getTempFolder(false);
+        try {
+            if (useStyle) {
+                command.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
+            } else {
+                command.add(template);
+            }
+            List<String> output = exec(command);
+            if (topo && topoAvailable && output.contains("hg heads: option --topo not recognized")) { //NOI18N
+                topoAvailable = false;
+                return getHeadInfo(repository, topo, template, useStyle);
+            }
+            return output;
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            Utils.deleteRecursively(tempFolder);
         }
-        return output;
     }
 
-    private static List<String> getHeadInfo(File repository, String template) throws HgException {
+    private static List<String> getHeadInfo(File repository, boolean topo, String template, boolean useStyle) throws HgException {
         if (repository == null) return null;
-        return getHeadInfo(repository.getAbsolutePath(), template);
+        return getHeadInfo(repository.getAbsolutePath(), topo, template, useStyle);
+    }
+
+    private static List<String> getBranches (File repository) throws HgException {
+        if (repository == null) return null;
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_BRANCHES_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        return exec(command);
     }
 
     /**
@@ -2378,19 +2475,25 @@ public class HgCommand {
             command.add(HG_FLAG_REV_CMD);
             command.add(revision);
         }
-        command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
-
-        List<String> list = null;
-        if (file != null) command.add(file.getAbsolutePath());
-        list = exec(command);
-        if (!list.isEmpty()) {
-            if (isErrorNoRepository(list.get(0))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), OutputLogger.getLogger(null));
-            } else if (isErrorAbort(list.get(0))) {
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), OutputLogger.getLogger(null));
+        File tempFolder = Utils.getTempFolder(false);
+        try {
+            command.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
+            if (file != null) command.add(file.getAbsolutePath());
+            List<String> list = exec(command);
+            if (!list.isEmpty()) {
+                if (isErrorNoRepository(list.get(0))) {
+                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), OutputLogger.getLogger(null));
+                } else if (isErrorAbort(list.get(0))) {
+                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), OutputLogger.getLogger(null));
+                }
             }
+            return processLogMessages(repository, file == null ? Collections.<File>emptyList() : Collections.singletonList(file), list);
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            Utils.deleteRecursively(tempFolder);
         }
-        return processLogMessages(repository, file == null ? Collections.<File>emptyList() : Collections.singletonList(file), list, new LinkedList<HgLogMessage>());
     }
 
 

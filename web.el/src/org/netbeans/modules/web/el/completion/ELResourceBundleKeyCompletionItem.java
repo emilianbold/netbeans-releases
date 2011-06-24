@@ -80,7 +80,7 @@ final class ELResourceBundleKeyCompletionItem extends DefaultCompletionProposal 
 
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
-        formatter.appendHtml("<font color='#ce7b00'>" + value + "</font>");
+        formatter.appendHtml("<font color='#ce7b00'>" + value + "</font>"); //NOI18N
         return formatter.getText();
     }
 
@@ -96,7 +96,7 @@ final class ELResourceBundleKeyCompletionItem extends DefaultCompletionProposal 
 
     @Override
     public ElementHandle getElement() {
-        return new ResourceBundleElementHandle();
+        return new ResourceBundleItemElementHandle();
     }
 
     @Override
@@ -104,11 +104,11 @@ final class ELResourceBundleKeyCompletionItem extends DefaultCompletionProposal 
         return ImageUtilities.loadImageIcon(ICON_PATH, false);
     }
 
-    private class ResourceBundleElementHandle extends ELElementHandle {
+    private class ResourceBundleItemElementHandle extends ELElementHandle {
 
         @Override
         String document(ParserResult info) {
-            return key + "=" + "<font color='#ce7b00'>" + value + "</font>";
+            return key + "=" + "<font color='#ce7b00'>" + value + "</font>"; //NOI18N
         }
 
         @Override
