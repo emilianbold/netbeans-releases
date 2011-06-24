@@ -69,7 +69,7 @@ public class ServerInstanceTest extends ServerRegistryTestBase {
         ServerRegistry registry = ServerRegistry.getInstance();
         Map<String, String> props = new HashMap<String, String>();
         props.put(InstanceProperties.HTTP_PORT_NUMBER, "8080");
-        registry.addInstance(URL, "user", "password", "TestInstance", true, props); // NOI18N
+        registry.addInstance(URL, "user", "password", "TestInstance", true, false, props); // NOI18N
     }
 
     @Override
