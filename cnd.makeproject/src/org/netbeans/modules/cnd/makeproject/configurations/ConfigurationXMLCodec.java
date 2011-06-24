@@ -175,6 +175,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void startElement(String element, Attributes atts) {
         if (element.equals(CONF_ELEMENT)) {
             int confType = 0;
+            String customizerId = null;
             String type = atts.getValue(TYPE_ATTR);
             if (type == null) {
                 // Old type. Only makefile was really working...
@@ -195,8 +196,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
             } else if (type.equals("7")) {// FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_DB_APPLICATION;
+            } else if (type.equals("10")) {// FIXUP // NOI18N
+                confType = MakeConfiguration.TYPE_CUSTOM;
+                customizerId = atts.getValue(CUSTOMIZERID_ATTR);
             }
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType, customizerId);
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
@@ -215,9 +219,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(NEO_CONF_ELEMENT)) {
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_APPLICATION);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_APPLICATION, null);
         } else if (element.equals(EXT_CONF_ELEMENT)) {
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_MAKEFILE);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_MAKEFILE, null);
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
             currentFolder = new Folder(projectDescriptor, projectDescriptor.getLogicalFolders(), "ExternalFiles", "Important Files", false, Folder.Kind.IMPORTANT_FILES_FOLDER); // NOI18N
             projectDescriptor.setExternalFileItems(currentFolder);
@@ -929,7 +933,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         return path;
     }
 
-    private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType) {
+    private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType, String customizerId) {
         String host;
         // here we need to handle tags added between version.
         // becase such tags will not be handled in "endElement" callbacks        
@@ -944,7 +948,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } catch (FileStateInvalidException ex) {
             throw new IllegalStateException(ex);
         }
-        MakeConfiguration makeConfiguration = new MakeConfiguration(fsPath, getString(value), confType, host);
+        MakeConfiguration makeConfiguration = new MakeConfiguration(fsPath, getString(value), confType, customizerId, host);
         return makeConfiguration;
     }
 

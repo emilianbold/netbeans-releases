@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -655,6 +656,23 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     /**
+     * @return active configuration type (doesn't force reading configuration metadata) (V >= V78). Returns -1 if not found.
+     */
+    private String getCustomizerIdFromProjectXML() {
+        Element data = helper.getPrimaryConfigurationData(true);
+        data = helper.getPrimaryConfigurationData(true);
+        NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CUSTOMIZERID_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            Node typeNode = nodeList.item(0).getFirstChild();
+            if (typeNode != null) {
+                String type = typeNode.getNodeValue();
+                return type;
+            }
+        }
+        return null;
+    }
+
+    /**
      * @return active configuration type (doesn't force reading configuration metadata)
      * If metadata already read, get type from the active configuration (it may have changed)
      * If not read, try private.xml (V >= V77)
@@ -1106,8 +1124,28 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 case MakeConfiguration.TYPE_QT_STATIC_LIB:
                     icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
                     break;
+                case MakeConfiguration.TYPE_CUSTOM: // <== FIXUP
+                    MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
+                    icon = ImageUtilities.loadImageIcon(makeProjectCustomizer.getIconPath(), false); // NOI18N
+                    break;
             }
             return icon;
+        }
+        
+        private String getProjectCustomizerId() {
+            return getCustomizerIdFromProjectXML();
+        }
+        
+        private MakeProjectCustomizer getProjectCustomizer(String customizerId) {
+            MakeProjectCustomizer makeProjectCustomizer = null;
+            Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
+            for (MakeProjectCustomizer instance : mwc) {
+                if (customizerId.equals(instance.getCustomizerId())) {
+                    makeProjectCustomizer = instance;
+                    break;
+                }
+            }
+            return makeProjectCustomizer;
         }
 
         @Override

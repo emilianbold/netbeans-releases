@@ -848,7 +848,7 @@ public class ConfigurationMakefileWriter {
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
                     if (compiler != null && compiler.getDescriptor() != null) {
                         String fromLinker = ""; // NOI18N
-                        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+                        if (conf.isDynamicLibraryConfiguration()) {
                             if (conf.getLinkerConfiguration().getPICOption().getValue()) {
                                 fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
                             }
@@ -1107,7 +1107,7 @@ public class ConfigurationMakefileWriter {
 
                     if (compiler != null && compiler.getDescriptor() != null) {
                         String fromLinker = ""; // NOI18N
-                        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+                        if (conf.isDynamicLibraryConfiguration()) {
                             if (conf.getLinkerConfiguration().getPICOption().getValue()) {
                                 fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
                             }

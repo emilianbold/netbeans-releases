@@ -117,6 +117,10 @@ public class MakeConfiguration extends Configuration {
         getString("QtDynamicLibraryName"),
         getString("QtStaticLibraryName")
     };
+    
+    private static String[] TYPE_NAMES_CUSTOM = {
+        "CUSTOM"                                        // <=== FIXUP
+    };
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
@@ -125,6 +129,8 @@ public class MakeConfiguration extends Configuration {
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
     public static final int TYPE_DB_APPLICATION = 7;
+    public static final int TYPE_CUSTOM = 10;
+    
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
@@ -150,6 +156,8 @@ public class MakeConfiguration extends Configuration {
     private RemoteSyncFactory fixedRemoteSyncFactory;
     private volatile RemoteProject.Mode remoteMode;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
+    
+    private String customizerId = null;
 
     //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
@@ -162,7 +170,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
-        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, hostUID, hostCS, defaultToolCollection);
+        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, null, hostUID, hostCS, defaultToolCollection);
     }
     
     public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue) {
@@ -170,10 +178,14 @@ public class MakeConfiguration extends Configuration {
     }
 
     public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID) {
-        this(fsPath, name, configurationTypeValue, hostUID, null, true);
+        this(fsPath, name, configurationTypeValue, null, hostUID, null, true);
+    }
+    
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID) {
+        this(fsPath, name, configurationTypeValue, customizerId, hostUID, null, true);
     }
 
-    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(fsPath, name);
         remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
@@ -185,9 +197,12 @@ public class MakeConfiguration extends Configuration {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_DB, null, TYPE_DB_APPLICATION);
         } else if (configurationTypeValue == TYPE_QT_APPLICATION || configurationTypeValue == TYPE_QT_DYNAMIC_LIB || configurationTypeValue == TYPE_QT_STATIC_LIB) {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_QT, null, TYPE_QT_APPLICATION);
+        } else if (configurationTypeValue == TYPE_CUSTOM) {
+            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_CUSTOM, null, TYPE_CUSTOM);
         } else {
             assert false;
         }
+        setCustomizerId(customizerId);
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
         if (defaultToolCollection) {
             compilerSet = new CompilerSet2Configuration(developmentHost);
@@ -321,7 +336,8 @@ public class MakeConfiguration extends Configuration {
         return getConfigurationType().getValue() == TYPE_APPLICATION ||
                getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
                getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
-               getConfigurationType().getValue() == TYPE_STATIC_LIB;
+               getConfigurationType().getValue() == TYPE_STATIC_LIB ||
+               getConfigurationType().getValue() == TYPE_CUSTOM;    // <=== FIXUP
     }
 
     public boolean isLibraryConfiguration() {
@@ -330,16 +346,22 @@ public class MakeConfiguration extends Configuration {
             case TYPE_STATIC_LIB:
             case TYPE_QT_DYNAMIC_LIB:
             case TYPE_QT_STATIC_LIB:
+            case TYPE_CUSTOM: // <=== FIXUP
                 return true;
             default:
                 return false;
         }
     }
+    
+    public boolean isCustomConfiguration() {
+        return getConfigurationType().getValue() == TYPE_CUSTOM;
+    }
 
     public boolean isLinkerConfiguration() {
         return getConfigurationType().getValue() == TYPE_APPLICATION ||
                getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
+               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
+               getConfigurationType().getValue() == TYPE_CUSTOM;   // <=== FIXUP
     }
 
     public final boolean isMakefileConfiguration() {
@@ -350,6 +372,7 @@ public class MakeConfiguration extends Configuration {
         switch (getConfigurationType().getValue()) {
             case TYPE_DYNAMIC_LIB:
             case TYPE_QT_DYNAMIC_LIB:
+            case TYPE_CUSTOM: // <=== FIXUP
                 return true;
             default:
                 return false;
@@ -852,6 +875,20 @@ public class MakeConfiguration extends Configuration {
         //asmRequired.setValueDef(hasCAsmFiles);
 
         languagesDirty = false;
+    }
+
+    /**
+     * @return the customizerId
+     */
+    public String getCustomizerId() {
+        return customizerId;
+    }
+
+    /**
+     * @param customizerId the customizerId to set
+     */
+    public void setCustomizerId(String customizerId) {
+        this.customizerId = customizerId;
     }
 
     public class LanguageBooleanConfiguration extends BooleanConfiguration {

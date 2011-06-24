@@ -947,9 +947,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             n1 = doc.createElement(MakeProjectTypeImpl.CONFIGURATION_NAME_ELEMENT);
             n1.appendChild(doc.createTextNode(conf.getName()));
             element2.appendChild(n1);
+            
             n1 = doc.createElement(MakeProjectTypeImpl.CONFIGURATION_TYPE_ELEMENT);
             n1.appendChild(doc.createTextNode("" + ((MakeConfiguration) conf).getConfigurationType().getValue()));
             element2.appendChild(n1);
+            
+            if (((MakeConfiguration) conf).isCustomConfiguration()) {
+                n1 = doc.createElement(MakeProjectTypeImpl.CUSTOMIZERID_ELEMENT);
+                n1.appendChild(doc.createTextNode("" + ((MakeConfiguration) conf).getCustomizerId()));
+                element2.appendChild(n1);
+            }
+            
             element.appendChild(element2);
         }
         data.appendChild(element);
@@ -1003,6 +1011,22 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             elem.appendChild(doc.createTextNode("" + getConfs().getActiveAsIndex()));
             data.appendChild(elem);
         }
+
+        if (((MakeConfiguration) getConfs().getActive()).isCustomConfiguration()) {
+            // Create custumizerid type node
+            nodeList = data.getElementsByTagName(MakeProjectTypeImpl.ACTIVE_CONFIGURATION_CUSTOMIZERID);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                // Node already there
+                Node node = nodeList.item(0);
+                node.setTextContent(((MakeConfiguration) getConfs().getActive()).getCustomizerId());
+            } else {
+                // Create node
+                Element elem = doc.createElementNS(MakeProjectTypeImpl.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.ACTIVE_CONFIGURATION_CUSTOMIZERID); // NOI18N
+                elem.appendChild(doc.createTextNode(((MakeConfiguration) getConfs().getActive()).getCustomizerId()));
+                data.appendChild(elem);
+            }
+        }
+
 
         helper.putPrimaryConfigurationData(data, false);
     }

@@ -269,7 +269,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     public String getBasicOptions() {
         String options = ""; // NOI18N
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
-        if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+        if (getMakeConfiguration().isDynamicLibraryConfiguration()) {
             String libName = getOutputValue();
             int sep = libName.lastIndexOf('/');
             if (sep >= 0 && libName.length() > 1) {
@@ -289,7 +289,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (cs != null && getStripOption().getValue()) {
             options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getStripFlag() + " "; // NOI18N
         }
-        if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+        if (getMakeConfiguration().isDynamicLibraryConfiguration()) {
             // FIXUP: should move to Platform
             if (cs != null) {
                 if (getPICOption().getValue()) {
@@ -379,7 +379,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 set2.setDisplayName(getString("OptionsTxt"));
                 set2.setShortDescription(getString("OptionsHint"));
                 set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
-                if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+                if (conf.isDynamicLibraryConfiguration()) {
                     set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
                     if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                         set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
@@ -462,6 +462,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 outputName = outputName.toLowerCase();
                 break;
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
+            case MakeConfiguration.TYPE_CUSTOM: // <=== FIXUP
                 outputName = Platforms.getPlatform(getMakeConfiguration().getDevelopmentHost().getBuildPlatform()).getLibraryName(outputName);
                 break;
         }
@@ -474,7 +475,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION ||
             getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DB_APPLICATION) {
             outputName = outputName.toLowerCase();
-        } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+        } else if (getMakeConfiguration().isDynamicLibraryConfiguration()) {
             outputName = "lib" + outputName + ".so"; // NOI18N
         }
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // NOI18N
