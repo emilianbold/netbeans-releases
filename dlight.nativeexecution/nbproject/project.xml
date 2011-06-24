@@ -226,6 +226,7 @@
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server.common</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
+                <friend>com.sun.tools.tuxedo.componentproject</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
