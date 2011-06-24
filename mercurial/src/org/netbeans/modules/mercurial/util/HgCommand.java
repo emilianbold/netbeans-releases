@@ -163,6 +163,7 @@ public class HgCommand {
     private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
     private static final String HG_PARENT_CMD = "parents";              //NOI18N
+    private static final String HG_PARAM_BRANCH = "--branch"; // NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
@@ -1126,17 +1127,17 @@ public class HgCommand {
         return messages.toArray(new HgLogMessage[0]);
     }
 
-    public static HgLogMessage[] getLogMessagesNoFileInfo(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, int limitRevisions, OutputLogger logger) {
-         return getLogMessages(root, files, fromRevision, toRevision, bShowMerges, false, limitRevisions, logger, true);
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, int limitRevisions, List<String> branchNames, OutputLogger logger) {
+         return getLogMessages(root, files, fromRevision, toRevision, bShowMerges, false, limitRevisions, branchNames, logger, true);
     }
 
     public static HgLogMessage[] getLogMessagesNoFileInfo(final File root, final Set<File> files, int limit, OutputLogger logger) {
-         return getLogMessages(root, files, "0", HG_STATUS_FLAG_TIP_CMD, true, false, limit, logger, false);
+         return getLogMessages(root, files, "0", HG_STATUS_FLAG_TIP_CMD, true, false, limit, Collections.<String>emptyList(), logger, false);
     }
 
     public static HgLogMessage[] getLogMessages(final File root,
             final Set<File> files, String fromRevision, String toRevision,
-            boolean bShowMerges,  boolean bGetFileInfo, int limit, OutputLogger logger, boolean ascOrder) {
+            boolean bShowMerges,  boolean bGetFileInfo, int limit, List<String> branchNames, OutputLogger logger, boolean ascOrder) {
         List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
         try {
@@ -1149,7 +1150,7 @@ public class HgCommand {
             List<File> filesList = files != null ? new ArrayList<File>(files) : null;
             list = HgCommand.doLog(root,
                     filesList,
-                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
+                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, branchNames, logger);
             messages = processLogMessages(root, filesList, list, ascOrder);
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
@@ -1252,11 +1253,12 @@ public class HgCommand {
      * @param List<File> of files which revision history is to be retrieved.
      * @param String Template specifying how output should be returned
      * @param boolean flag indicating if debug param should be used - required to get all file mod, add, del info
+     * @param branchNames list of branches you want to browse - equiv to --branch
      * @return List<String> cmdOutput of the log entries for the specified file.
      * @throws org.netbeans.modules.mercurial.HgException
      */
     private static List<String> doLog(File repository, List<File> files,
-            String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, OutputLogger logger) throws HgException {
+            String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, List<String> branchNames, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
 
@@ -1300,6 +1302,11 @@ public class HgCommand {
         if(dateStr == null && revStr != null){
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
+        }
+        
+        for (String branch : branchNames) {
+            command.add(HG_PARAM_BRANCH);
+            command.add(branch);
         }
 
         if (revStr == null) {

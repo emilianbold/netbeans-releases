@@ -66,6 +66,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mercurial.options.AnnotationColorProvider;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
@@ -137,7 +138,6 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Modified_Locally");
     private static final String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
-    private static final String LABEL_DEFAULT_BRANCH = "default"; //NOI18N
 
     MercurialAnnotator(FileStatusCache cache) {
         this.cache = cache;
@@ -586,7 +586,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                     label.append(b);
                 }
                 if (label.length() == 0) {
-                    label.append(LABEL_DEFAULT_BRANCH);
+                    label.append(HgBranch.DEFAULT_NAME);
                 }
                 if (parent.getTags().length == 0) {
                     label.append(' ').append(parent.getCSetShortID().substring(0, Math.min(7, parent.getCSetShortID().length())));
@@ -596,8 +596,8 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                     }
                 }
             } else if (parents.length > 1) {
-                String b1 = parents[0].getBranches().length == 0 ? LABEL_DEFAULT_BRANCH : parents[0].getBranches()[0];
-                String b2 = parents[1].getBranches().length == 0 ? LABEL_DEFAULT_BRANCH : parents[1].getBranches()[0];
+                String b1 = parents[0].getBranches().length == 0 ? HgBranch.DEFAULT_NAME : parents[0].getBranches()[0];
+                String b2 = parents[1].getBranches().length == 0 ? HgBranch.DEFAULT_NAME : parents[1].getBranches()[0];
                 if (b1.equals(b2)) {
                     label.append(NbBundle.getMessage(MercurialAnnotator.class, "LBL_Annotator.label.merged.oneBranch", new Object[] { //NOI18N
                         parents[0].getCSetShortID().substring(0, Math.min(7, parents[0].getCSetShortID().length())), 
@@ -754,8 +754,8 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                     label = NbBundle.getMessage(MercurialAnnotator.class, "LBL_Annotator.currentBranch.toolTip", branchName); //NOI18N
                 }
             } else if (parents.length > 1) {
-                String b1 = parents[0].getBranches().length == 0 ? LABEL_DEFAULT_BRANCH : parents[0].getBranches()[0];
-                String b2 = parents[1].getBranches().length == 0 ? LABEL_DEFAULT_BRANCH : parents[1].getBranches()[0];
+                String b1 = parents[0].getBranches().length == 0 ? HgBranch.DEFAULT_NAME : parents[0].getBranches()[0];
+                String b2 = parents[1].getBranches().length == 0 ? HgBranch.DEFAULT_NAME : parents[1].getBranches()[0];
                 if (b1.equals(b2)) {
                     label = NbBundle.getMessage(MercurialAnnotator.class, "LBL_Annotator.mergeNeeded.oneBranch.toolTip", new Object[] { //NOI18N
                         parents[0].getCSetShortID().substring(0, Math.min(7, parents[0].getCSetShortID().length())), 

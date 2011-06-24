@@ -139,6 +139,16 @@ public class BranchSelector implements ListSelectionListener, DocumentListener {
         boolean ret = dialogDescriptor.getValue() == okButton;
         return ret;
     }
+    
+    public boolean showGeneralDialog () {
+        JButton btn = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(btn, org.openide.util.NbBundle.getMessage(BranchSelector.class, "CTL_BranchSelectorPanel_Action_OK")); // NOI18N
+        btn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSD_BranchSelectorPanel_Action_OK")); // NOI18N
+        btn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSN_BranchSelectorPanel_Action_OK")); // NOI18N
+        btn.setEnabled(false);
+        return showDialog(btn, NbBundle.getMessage(BranchSelector.class, "CTL_BranchSelectorPanel.title", repository.getName()), //NOI18N
+                NbBundle.getMessage(BranchSelector.class, "BranchSelectorPanel.infoLabel.text")); //NOI18N
+    }
 
     public String getBranchName () {
         HgBranch selectedBranch = getSelectedBranch();
