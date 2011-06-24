@@ -712,6 +712,43 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(0, indexerFactory.indexer.getDirtyCount());
     }
 
+    public void testFileUpdateRename() throws Exception {
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
+        mcpi1.addResource(this.srcRootWithFiles1);
+        ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+
+        final URL newURL = new URL(f1.getParent().getURL(), "newName.foo");
+        final URL oldURL = f1.getURL();
+
+        indexerFactory.indexer.setExpectedFile(new URL[0], new URL[]{oldURL}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{newURL}, new URL[]{oldURL}, new URL[0]);
+        final CountDownLatch waitFor = new CountDownLatch(1);
+        IndexingController.getDefault().enterProtectedMode();
+        try {
+            f1.getOutputStream().close();
+            FileLock lock = f1.lock();
+            try {
+                FileObject f = f1.move(lock, f1.getParent(), "newName", "foo");
+            } finally {
+                lock.releaseLock();
+            }
+        } finally {
+            IndexingController.getDefault().exitProtectedMode(new Runnable() {
+                @Override public void run() {
+                    waitFor.countDown();
+                }
+            });
+        }
+        assertTrue(waitFor.await(5, TimeUnit.SECONDS));
+        assertEquals("INDEX: " + newURL + "\nDELETE: " + oldURL + "\nINDEX: " + newURL + "\n", indexerFactory.indexer.log.toString());
+    }
+
     private void touchFile (final File file) throws IOException {
         OutputStream out = new FileOutputStream (file);
         out.close();
@@ -2514,6 +2551,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 if (indexer.expectedDeleted.remove(i.getURL())) {
                     indexer.deletedFilesLatch.countDown();
                 }
+                indexer.log.append("DELETE: " + i.getURL() + "\n");
             }
         }
 
@@ -2563,6 +2601,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         private final Set<URL> expectedDirty = new HashSet<URL>();
         private final Map<URL,Pair<Boolean,Boolean>> contextState = new HashMap<URL, Pair<Boolean, Boolean>>();
         private Runnable callBack;
+        private final StringBuilder log = new StringBuilder();
 
         public void setExpectedFile (URL[] files, URL[] deleted, URL[] dirty) {
             expectedIndex.clear();
@@ -2578,6 +2617,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             indexFilesLatch = new CountDownLatch(expectedIndex.size());
             deletedFilesLatch = new CountDownLatch(expectedDeleted.size());
             dirtyFilesLatch = new CountDownLatch(expectedDirty.size());
+            log.delete(0, log.length());
         }
 
         public void setCallBack (final Runnable callBack) {
@@ -2620,6 +2660,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 if (expectedIndex.remove(i.getURL())) {
                     indexFilesLatch.countDown();
                 }
+                log.append("INDEX: " + i.getURL() + "\n");
             }            
             if (callBack != null) {
                 callBack.run();
