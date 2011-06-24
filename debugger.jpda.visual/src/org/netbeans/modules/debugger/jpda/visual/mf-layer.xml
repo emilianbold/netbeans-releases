@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
     <!-- Main menu -->
     <folder name="Menu">
         <folder name="RunProject">
-            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
+            <file name="org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.instance"/>
                 <attr name="position" intvalue="1850"/>
             </file>
