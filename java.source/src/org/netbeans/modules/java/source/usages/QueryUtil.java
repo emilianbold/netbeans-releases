@@ -43,15 +43,20 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.PrefixFilter;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.util.Parameters;
 
@@ -65,7 +70,7 @@ class QueryUtil {
     
     static Query createUsagesQuery(
             final @NonNull String resourceName,
-            final @NonNull Set<ClassIndexImpl.UsageType> mask,
+            final @NonNull Set<? extends ClassIndexImpl.UsageType> mask,
             final @NonNull Occur operator) {
         Parameters.notNull("resourceName", resourceName);
         Parameters.notNull("mask", mask);
@@ -83,7 +88,61 @@ class QueryUtil {
             throw new IllegalArgumentException();
         }
     }
-        
+
+    @CheckForNull
+    static Query scopeFilter (
+            @NonNull final Query q,
+            @NonNull final Set<? extends SearchScopeType> scope) {
+        assert q != null;
+        assert scope != null;
+        Set<String> pkgs = null;
+        for (SearchScopeType s : scope) {
+            Set<? extends String> sp = s.getPackages();
+            if (sp != null) {
+                if (pkgs == null) {
+                    pkgs = new HashSet<String>();
+                }
+                pkgs.addAll(sp);
+            }
+        }
+        if (pkgs == null) {
+            return q;
+        }
+        switch (pkgs.size()) {
+            case 0:
+                return null;
+            case 1:
+            {
+                //Todo perf: Use filter query
+                final BooleanQuery qFiltered = new BooleanQuery();
+                qFiltered.add(
+                    new TermQuery(
+                        new Term (
+                            DocumentUtil.FIELD_PACKAGE_NAME,
+                            pkgs.iterator().next())),
+                    Occur.MUST);
+                qFiltered.add(q, Occur.MUST);
+                return qFiltered;
+            }
+            default:
+            {
+                final BooleanQuery qPkgs = new BooleanQuery();
+                for (String pkg : pkgs) {
+                    qPkgs.add(
+                        new TermQuery(
+                            new Term(
+                                DocumentUtil.FIELD_PACKAGE_NAME,
+                                pkg)),
+                            Occur.SHOULD);
+                }
+                final BooleanQuery qFiltered = new BooleanQuery();
+                qFiltered.add(q, Occur.MUST);
+                qFiltered.add(qPkgs, Occur.MUST);
+                return qFiltered;
+            }
+        }
+    }
+
     static Pair<StoppableConvertor<Term,String>,Term> createPackageFilter(
             final @NullAllowed String prefix,
             final boolean directOnly) {
@@ -128,9 +187,6 @@ class QueryUtil {
             }
             return null;
         }
-        
     }
-    
     //</editor-fold>
-            
 }
