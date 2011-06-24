@@ -94,6 +94,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.KeyringSupport;
@@ -158,7 +159,6 @@ public class HgCommand {
 
     private static final String HG_LOG_CMD = "log"; // NOI18N
     private static final String HG_TIP_CMD = "tip"; // NOI18N
-    private static final String HG_ID_CMD = "identify"; // NOI18N
     private static final String HG_OUT_CMD = "out"; // NOI18N
     private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
@@ -366,40 +366,53 @@ public class HgCommand {
         }
         MAX_COMMANDLINE_SIZE = maxCmdSize;
     }
-    private static final HashSet<String> GUARDED_COMMANDS;
-    static {
-        GUARDED_COMMANDS = new HashSet<String>(8);
-        GUARDED_COMMANDS.add(HG_BACKOUT_CMD);
-        GUARDED_COMMANDS.add(HG_CLONE_CMD);
-        GUARDED_COMMANDS.add(HG_IMPORT_CMD);
-        GUARDED_COMMANDS.add(HG_FETCH_CMD);
-        GUARDED_COMMANDS.add(HG_PULL_CMD);
-        GUARDED_COMMANDS.add(HG_MERGE_CMD);
-        GUARDED_COMMANDS.add(HG_UNBUNDLE_CMD);
-        GUARDED_COMMANDS.add(HG_UPDATE_ALL_CMD);
-    }
 
-    private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
-    static {
-        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(17);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ANNOTATE_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_CAT_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_EXPORT_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_BUNDLE_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ID_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_INCOMING_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_LOG_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUTGOING_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUT_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PARENT_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PUSH_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_RESOLVE_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_STATUS_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_TIP_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERIFY_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERSION_CMD);
-        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VIEW_CMD);
-    }
+    private static final HashSet<String> GUARDED_COMMANDS = new HashSet<String>(Arrays.asList(
+            HG_BACKOUT_CMD,
+            HG_CLONE_CMD,
+            HG_IMPORT_CMD,
+            HG_FETCH_CMD,
+            HG_PULL_CMD,
+            HG_MERGE_CMD,
+            HG_UNBUNDLE_CMD,
+            HG_UPDATE_ALL_CMD
+    ));
+
+    private static final HashSet<String> WORKING_COPY_PARENT_MODIFYING_COMMANDS = new HashSet<String>(Arrays.asList(
+        HG_BACKOUT_CMD,
+        HG_CLONE_CMD,
+        HG_COMMIT_CMD,
+        HG_CREATE_CMD,
+        HG_FETCH_CMD,
+        HG_IMPORT_CMD,
+        HG_MERGE_CMD,
+        HG_PULL_CMD,
+        HG_ROLLBACK_CMD,
+        HG_STRIP_CMD,
+        HG_UNBUNDLE_CMD,
+        HG_UPDATE_ALL_CMD
+    ));
+
+    private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(Arrays.asList(
+        HG_ANNOTATE_CMD,
+        HG_BRANCHES_CMD,
+        HG_BUNDLE_CMD,
+        HG_CAT_CMD,
+        HG_EXPORT_CMD,
+        HG_HEADS_CMD,
+        HG_INCOMING_CMD,
+        HG_LOG_CMD,
+        HG_OUTGOING_CMD,
+        HG_OUT_CMD,
+        HG_PARENT_CMD,
+        HG_PUSH_CMD,
+        HG_RESOLVE_CMD,
+        HG_STATUS_CMD,
+        HG_TIP_CMD,
+        HG_VERIFY_CMD,
+        HG_VERSION_CMD,
+        HG_VIEW_CMD
+    ));
     private static final String HG_FLAG_TOPO = "--topo"; //NOI18N
     
     private static final String CMD_EXE = "cmd.exe"; //NOI18N
@@ -2289,40 +2302,6 @@ public class HgCommand {
         return messages.toArray(new HgLogMessage[messages.size()]);
     }
 
-    /**
-     * Returns the changeset id of current head
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return current head's changeset id
-     */
-    public static String getCurrentHeadChangeset (File repository, OutputLogger logger) {
-        if (repository == null) return null;
-
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_ID_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        command.add("-i"); //NOI18N
-
-        List<String> list;
-        try {
-            list = exec(command);
-        } catch (HgException ex) {
-            Mercurial.LOG.log(ex instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, ex);
-            list = Collections.<String>emptyList();
-        }
-        String id = "-1"; //NOI18N
-        if (!list.isEmpty()) {
-            id = list.get(0).trim();
-            if (id.endsWith("+")) { //NOI18N
-                id = id.substring(0, id.length() - 1);
-            }
-        }
-        return id;
-    }
-
     public static HgBranch[] getBranches (File repository, OutputLogger logger) throws HgException {
         List<String> list = getHeadInfo(repository, false, HG_LOG_BASIC_CHANGESET_NAME, true);
         if (!list.isEmpty()) {
@@ -3004,6 +2983,10 @@ public class HgCommand {
             } catch (Exception ex) {
                 Mercurial.LOG.log(Level.WARNING, null, ex);
                 return null;
+            } finally {
+                if (repository != null && changesParents(hgCommand)) {
+                    WorkingCopyInfo.refreshAsync(repository);
+                }
             }
         } finally{
             if (outputStyleFile != null) {
@@ -3778,6 +3761,10 @@ public class HgCommand {
      */
     private static boolean isGuardedCommand(String hgCommand) {
         return GUARDED_COMMANDS.contains(hgCommand);
+    }
+
+    private static boolean changesParents (String hgCommand) {
+        return WORKING_COPY_PARENT_MODIFYING_COMMANDS.contains(hgCommand);
     }
 
     private static boolean modifiesRepository (String hgCommand) {
