@@ -62,6 +62,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
@@ -212,6 +213,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             instantiatingIterator.setPort(instance.getPort());
             instantiatingIterator.setDomainName(instance.getDomainName());
             instantiatingIterator.setHost(instance.getHost());
+            instantiatingIterator.setWhiteListTool(whiteListField.getText());
         }
         return true;
     }
@@ -400,6 +402,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         jpa2SwitchLabel = new javax.swing.JLabel();
         jpa2Status = new javax.swing.JLabel();
         jpa2SwitchButton = new javax.swing.JButton();
+        whiteListField = new javax.swing.JTextField();
+        whiteListLabel = new javax.swing.JLabel();
+        whiteListButton = new javax.swing.JButton();
 
         localInstancesLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         localInstancesLabel.setLabelFor(localInstancesCombo);
@@ -441,6 +446,16 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             }
         });
 
+        whiteListLabel.setLabelFor(whiteListField);
+        org.openide.awt.Mnemonics.setLocalizedText(whiteListLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.whiteListLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(whiteListButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.whiteListButton.text")); // NOI18N
+        whiteListButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                whiteListButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -448,10 +463,10 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(localInstancesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(localInstancesCombo, 0, 293, Short.MAX_VALUE)
+                .add(localInstancesCombo, 0, 269, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseButton))
-            .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+            .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -466,7 +481,13 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                     .add(jpa2Status))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jpa2SwitchButton)
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(whiteListLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(whiteListField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(whiteListButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -490,7 +511,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                     .add(jpa2SwitchLabel)
                     .add(jpa2Status)
                     .add(jpa2SwitchButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 20, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(whiteListLabel)
+                    .add(whiteListField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(whiteListButton)))
         );
 
         localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
@@ -499,7 +524,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        // TODO add your handling code here:
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         Object item = localInstancesCombo.getEditor().getItem();
@@ -523,6 +547,32 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         updateJpa2Status();
     }//GEN-LAST:event_jpa2SwitchButtonActionPerformed
 
+    private void whiteListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_whiteListButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new FileFilter() {
+
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getAbsolutePath().endsWith(".jar"); // NOI18N
+            }
+
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(ServerPropertiesVisual.class, "JarFilterDescription");
+            }
+        });
+        String path = whiteListField.getText();
+        if (path != null && path.trim().length() > 0) {
+            chooser.setSelectedFile(new File(path));
+        } else {
+            chooser.setSelectedFile(new File(instantiatingIterator.getServerRoot()));
+        }
+        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+            whiteListField.setText(chooser.getSelectedFile().getAbsolutePath());
+            fireChangeEvent();
+        }
+    }//GEN-LAST:event_whiteListButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
@@ -536,6 +586,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
+    private javax.swing.JButton whiteListButton;
+    private javax.swing.JTextField whiteListField;
+    private javax.swing.JLabel whiteListLabel;
     // End of variables declaration//GEN-END:variables
     
 
