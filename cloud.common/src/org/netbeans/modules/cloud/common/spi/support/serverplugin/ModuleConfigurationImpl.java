@@ -39,16 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.common.spi.support.serverplugins;
+package org.netbeans.modules.cloud.common.spi.support.serverplugin;
+
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.openide.util.Lookup;
 
 /**
  *
  */
-public enum InstanceState {
-    LAUNCHING,
-    UPDATING,
-    READY,
-    TERMINATING,
-    TERMINATED
-}
+public class ModuleConfigurationImpl implements ModuleConfiguration {
 
+    private J2eeModule module;
+
+    public ModuleConfigurationImpl(J2eeModule module) {
+        this.module = module;
+    }
+    
+    @Override
+    public Lookup getLookup() {
+        return  Lookup.EMPTY;
+    }
+
+    @Override
+    public J2eeModule getJ2eeModule() {
+        return module;
+    }
+
+    @Override
+    public void dispose() {
+    }
+    
+}

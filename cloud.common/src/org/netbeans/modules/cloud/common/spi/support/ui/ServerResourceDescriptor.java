@@ -39,61 +39,44 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.ui;
+package org.netbeans.modules.cloud.common.spi.support.ui;
 
-import java.awt.Component;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import javax.swing.Icon;
 
 /**
  *
  */
-public class AmazonWizardPanel2 implements WizardDescriptor.Panel<WizardDescriptor> {
-
-    private AmazonWizardComponent2 component;
-    private List<Node> servers;
+public final class ServerResourceDescriptor {
     
-    public AmazonWizardPanel2() {
+    private String type; // server, database, etc.
+
+    private String name; // "Weblogic X, MySQL Y"
+    
+    private String desc; // not used right now
+    
+    private Icon icon; // optional
+
+    public ServerResourceDescriptor(String type, String name, String desc, Icon icon) {
+        this.type = type;
+        this.name = name;
+        this.desc = desc;
+        this.icon = icon;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public Icon getIcon() {
+        return icon;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getType() {
+        return type;
     }
     
-    @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new AmazonWizardComponent2(servers);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, AmazonWizardPanel.getPanelContentData());            
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1));
-        }
-        return component;
-    }
-
-    @Override
-    public HelpCtx getHelp() {
-        return null;
-    }
-
-    @Override
-    public void readSettings(WizardDescriptor settings) {
-        servers = (List<Node>)settings.getProperty(AmazonWizardPanel.SERVERS);
-    }
-
-    @Override
-    public void storeSettings(WizardDescriptor settings) {
-    }
-
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener l) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener l) {
-    }
-
 }

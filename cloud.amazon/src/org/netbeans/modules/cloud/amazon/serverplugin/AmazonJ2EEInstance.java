@@ -43,7 +43,7 @@ package org.netbeans.modules.cloud.amazon.serverplugin;
 
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentStatus;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
-import org.netbeans.modules.cloud.common.spi.support.serverplugins.InstanceState;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.InstanceState;
 
 /**
  *
@@ -99,10 +99,6 @@ public class AmazonJ2EEInstance {
         this.amazonInstance = amazonInstance;
     }
 
-    public String getDisplayName() {
-        return getApplicationName() + " on " +getEnvironmentName();
-    }
-    
     public String getId() {
         return createURL(getApplicationName(), getEnvironmentId(), getContainerType());
     }
@@ -139,5 +135,10 @@ public class AmazonJ2EEInstance {
     public String toString() {
         return "AmazonJ2EEInstance{" + "amazonInstance=" + amazonInstance + ", applicationName=" + applicationName + ", environmentName=" + environmentName + ", environmentId=" + environmentId + '}';
     }
+
+    public String getDisplayName() {
+        return getEnvironmentName()+"/"+getApplicationName()+" on "+getAmazonInstance().getName();
+    }
+    
     
 }

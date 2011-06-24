@@ -56,9 +56,9 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
-import org.netbeans.modules.cloud.common.spi.support.serverplugins.DeploymentStatus;
-import org.netbeans.modules.cloud.common.spi.support.serverplugins.ProgressObjectImpl;
-import org.netbeans.modules.cloud.common.spi.support.serverplugins.TargetImpl;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.TargetImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 

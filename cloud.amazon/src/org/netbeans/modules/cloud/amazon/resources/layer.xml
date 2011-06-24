@@ -91,7 +91,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     node and the Target node
                 -->
                 <file name="RegistryNodeFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.amazon.serverplugin.AmazonRegistryNodeFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.common.spi.support.serverplugin.RegistryNodeFactoryImpl"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 
@@ -113,7 +113,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     etc.
                 -->
                 <file name="ModuleConfigurationFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.amazon.serverplugin.AmazonModuleConfigurationFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.common.spi.support.serverplugin.ModuleConfigurationFactoryImpl"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
                 

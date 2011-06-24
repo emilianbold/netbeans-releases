@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.common.spi.support.serverplugins;
+package org.netbeans.modules.cloud.common.spi.support.serverplugin;
 
 import javax.enterprise.deploy.spi.Target;
 

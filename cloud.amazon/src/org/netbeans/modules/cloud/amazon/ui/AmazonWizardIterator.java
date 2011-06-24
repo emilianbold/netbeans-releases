@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cloud.amazon.ui;
 
+import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class AmazonWizardIterator implements WizardDescriptor.InstantiatingItera
     private ChangeSupport listeners;
     private WizardDescriptor wizard;
     private AmazonWizardPanel panel;
-    private AmazonWizardPanel2 panel2;
+    private CloudResourcesWizardPanel panel2;
     boolean first = true;
 
     public AmazonWizardIterator() {
@@ -101,7 +102,7 @@ public class AmazonWizardIterator implements WizardDescriptor.InstantiatingItera
             return panel;
         } else {
             if (panel2 == null) {
-                panel2 = new AmazonWizardPanel2();
+                panel2 = new CloudResourcesWizardPanel(AmazonWizardPanel.getPanelContentData()[0]);
             }
             return panel2;
         }

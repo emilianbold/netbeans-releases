@@ -39,57 +39,16 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
-
-import javax.swing.JComponent;
-import org.netbeans.modules.cloud.amazon.ui.AmazonJ2EEInstanceNode;
-import org.netbeans.spi.server.ServerInstanceImplementation;
-import org.openide.nodes.Node;
+package org.netbeans.modules.cloud.common.spi.support.serverplugin;
 
 /**
  *
  */
-public class AmazonJ2EEServerInstanceImplementation implements ServerInstanceImplementation {
-
-    private AmazonJ2EEInstance aij;
-
-    public AmazonJ2EEServerInstanceImplementation(AmazonJ2EEInstance aij) {
-        this.aij = aij;
-    }
-    
-    @Override
-    public String getDisplayName() {
-        return getBasicNode().getDisplayName(); //aij.getApplicationName() + " - " + aij.getEnvironmentName();
-    }
-
-    @Override
-    public String getServerDisplayName() {
-        return "Tomcat";
-    }
-
-    @Override
-    public Node getFullNode() {
-        return getBasicNode();
-    }
-
-    @Override
-    public Node getBasicNode() {
-        return new AmazonJ2EEInstanceNode(aij);
-    }
-
-    @Override
-    public JComponent getCustomizer() {
-        return null;
-    }
-
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isRemovable() {
-        return false;
-    }
-
+public enum InstanceState {
+    LAUNCHING,
+    UPDATING,
+    READY,
+    TERMINATING,
+    TERMINATED
 }
+

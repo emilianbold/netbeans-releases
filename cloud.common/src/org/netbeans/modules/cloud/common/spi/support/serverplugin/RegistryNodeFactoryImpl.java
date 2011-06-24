@@ -39,68 +39,31 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.common.spi.support.serverplugins;
+package org.netbeans.modules.cloud.common.spi.support.serverplugin;
 
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
  */
-public class DeploymentStatusImpl implements DeploymentStatus {
+public class RegistryNodeFactoryImpl implements RegistryNodeFactory {
 
-    private CommandType command;
-    private StateType state;
-    private ActionType action;
-    private String message;
-
-    public DeploymentStatusImpl(CommandType command, StateType state, ActionType action, String message) {
-        this.command = command;
-        this.state = state;
-        this.action = action;
-        this.message = message;
-    }
-    
     @Override
-    public StateType getState() {
-        return state;
+    public Node getManagerNode(Lookup lookup) {
+        AbstractNode an = new AbstractNode(Children.LEAF);
+        an.setName("manager node");
+        return an;
     }
 
     @Override
-    public CommandType getCommand() {
-        return command;
-    }
-
-    @Override
-    public ActionType getAction() {
-        return action;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public boolean isCompleted() {
-        return StateType.COMPLETED.equals(state);
-    }
-
-    @Override
-    public boolean isFailed() {
-        return StateType.FAILED.equals(state);
-    }
-
-    @Override
-    public boolean isRunning() {
-        return StateType.RUNNING.equals(state);
-    }
-
-    @Override
-    public String toString() {
-        return "DeploymentStatusImpl{" + "command=" + command + ", state=" + state + ", action=" + action + ", message=" + message + '}';
+    public Node getTargetNode(Lookup lookup) {
+        AbstractNode an = new AbstractNode(Children.LEAF);
+        an.setName("target node");
+        return an;
     }
     
 }

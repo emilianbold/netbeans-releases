@@ -119,7 +119,8 @@
             <friend-packages>
                 <friend>org.netbeans.modules.cloud.amazon</friend>
                 <friend>org.netbeans.modules.cloud.oracle</friend>
-                <package>org.netbeans.modules.cloud.common.spi.support.serverplugins</package>
+                <package>org.netbeans.modules.cloud.common.spi.support.serverplugin</package>
+                <package>org.netbeans.modules.cloud.common.spi.support.ui</package>
             </friend-packages>
         </data>
     </configuration>

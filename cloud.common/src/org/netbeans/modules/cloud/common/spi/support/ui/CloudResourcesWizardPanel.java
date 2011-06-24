@@ -39,14 +39,73 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.common.spi.support.serverplugins;
+package org.netbeans.modules.cloud.common.spi.support.ui;
+
+import java.awt.Component;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  *
  */
-public enum DeploymentStatus {
-    SUCCESS,
-    FAILED,
-    UNKNOWN,
-    EXCEPTION
+public class CloudResourcesWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+
+    private CloudResourcesWizardComponent component;
+    private List<ServerResourceDescriptor> resources;
+    
+    public static final String PROP_SERVER_RESOURCES = "server-resources";
+    
+    private String firstPanelName;
+    
+    public CloudResourcesWizardPanel(String firstPanelName) {
+        this.firstPanelName = firstPanelName;
+    }
+    
+    @Override
+    public Component getComponent() {
+        if (component == null) {
+            component = new CloudResourcesWizardComponent(resources);
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, 
+                    new String[] {firstPanelName, "Cloud Resources"}
+                    );
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1));
+        }
+        return component;
+    }
+
+    private CloudResourcesWizardComponent getComponentImpl() {
+        return component;
+    }
+    
+    @Override
+    public HelpCtx getHelp() {
+        return null;
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        resources = (List<ServerResourceDescriptor>)settings.getProperty(PROP_SERVER_RESOURCES);
+        assert resources != null;
+        settings.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
+    }
+
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+    }
+
 }
