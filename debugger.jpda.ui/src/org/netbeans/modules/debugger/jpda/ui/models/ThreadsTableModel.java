@@ -311,6 +311,11 @@ public class ThreadsTableModel implements TableModel, Constants {
                 }
             }
             time = System.currentTimeMillis() - time;
+            if (time < 0) {
+                time = 10;
+            } else if (time > 100) {
+                time = 100;
+            }
             refreshTask.schedule(100*((int) time) + 200);
         }
     }
