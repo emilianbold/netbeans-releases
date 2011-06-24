@@ -94,6 +94,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.KeyringSupport;
@@ -378,6 +379,21 @@ public class HgCommand {
         GUARDED_COMMANDS.add(HG_UNBUNDLE_CMD);
         GUARDED_COMMANDS.add(HG_UPDATE_ALL_CMD);
     }
+
+    private static final HashSet<String> WORKING_COPY_PARENT_MODIFYING_COMMANDS = new HashSet<String>(Arrays.asList(
+        HG_BACKOUT_CMD,
+        HG_CLONE_CMD,
+        HG_COMMIT_CMD,
+        HG_CREATE_CMD,
+        HG_FETCH_CMD,
+        HG_IMPORT_CMD,
+        HG_MERGE_CMD,
+        HG_PULL_CMD,
+        HG_ROLLBACK_CMD,
+        HG_STRIP_CMD,
+        HG_UNBUNDLE_CMD,
+        HG_UPDATE_ALL_CMD
+    ));
 
     private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
     static {
@@ -3004,6 +3020,10 @@ public class HgCommand {
             } catch (Exception ex) {
                 Mercurial.LOG.log(Level.WARNING, null, ex);
                 return null;
+            } finally {
+                if (repository != null && changesParents(hgCommand)) {
+                    WorkingCopyInfo.refreshAsync(repository);
+                }
             }
         } finally{
             if (outputStyleFile != null) {
@@ -3778,6 +3798,10 @@ public class HgCommand {
      */
     private static boolean isGuardedCommand(String hgCommand) {
         return GUARDED_COMMANDS.contains(hgCommand);
+    }
+
+    private static boolean changesParents (String hgCommand) {
+        return WORKING_COPY_PARENT_MODIFYING_COMMANDS.contains(hgCommand);
     }
 
     private static boolean modifiesRepository (String hgCommand) {

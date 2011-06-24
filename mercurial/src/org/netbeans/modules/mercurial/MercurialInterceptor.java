@@ -585,6 +585,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     Mercurial.STATUS_LOG.fine("handleDirstateEvent: planning repository scan for " + repository.getAbsolutePath()); //NOI18N
                     reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
                     refreshOpenFilesTask.schedule(3000);
+                    WorkingCopyInfo.refreshAsync(repository);
                 }
             }
             return lastModified;
