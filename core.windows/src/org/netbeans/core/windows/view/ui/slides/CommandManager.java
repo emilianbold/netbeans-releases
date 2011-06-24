@@ -111,6 +111,9 @@ final class CommandManager implements ActionListener {
         if (Constants.LEFT.equals(side)) {
             finish.width = finish.width + delta;
         }
+        if (Constants.TOP.equals(side)) {
+            finish.height = finish.height + delta;
+        }
         op.setFinishBounds(finish);
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_SLIDE_RESIZE, op));
         
@@ -190,6 +193,8 @@ final class CommandManager implements ActionListener {
             side = Constants.RIGHT;
         } else if (orientation == SlideBarDataModel.SOUTH) {
             side = Constants.BOTTOM;
+        } else if (orientation == SlideBarDataModel.NORTH) {
+            side = Constants.TOP;
         }
         return side;
     }

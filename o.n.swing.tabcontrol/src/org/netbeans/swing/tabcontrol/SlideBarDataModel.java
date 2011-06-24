@@ -56,6 +56,10 @@ public interface SlideBarDataModel extends TabDataModel {
     public static final int EAST = 1;
     public static final int WEST = 2;
     public static final int SOUTH = 3;
+    /**
+     * @since 1.27
+     */
+    public static final int NORTH = 4;
 
     /** Orientation of slide bar
      */

@@ -378,6 +378,9 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
                 slideh = slideh + ResizeGestureRecognizer.RESIZE_BUFFER;
                 slidey = slidey - ResizeGestureRecognizer.RESIZE_BUFFER;
             }
+            if (orientation == SlideBarDataModel.NORTH) {
+                slideh = slideh + ResizeGestureRecognizer.RESIZE_BUFFER;
+            }
             actArea = SwingUtilities.computeUnion(
                 slidex, slidey, slidew,
                 slideh, actArea);

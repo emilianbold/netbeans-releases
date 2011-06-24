@@ -215,7 +215,9 @@ final class Central implements ControllerHandler {
             boolean left = (impl == null || impl.getSelectedTopComponent() == null);
             impl = model.getSlidingMode(Constants.RIGHT);
             boolean right = (impl == null || impl.getSelectedTopComponent() == null);
-            if (bottom && left && right) {
+            impl = model.getSlidingMode(Constants.TOP);
+            boolean top = (impl == null || impl.getSelectedTopComponent() == null);
+            if (bottom && left && right && top) {
                 return;
             }
         }
@@ -1088,6 +1090,17 @@ final class Central implements ControllerHandler {
                 }
             }
         }        
+        slid = model.getSlidingMode(Constants.TOP);
+        if (slid != null) {
+            TopComponent[] tcs = slid.getTopComponents();
+            for (int i = 0; i < tcs.length; i++) {
+                String tcID = WindowManagerImpl.getInstance().findTopComponentID(tcs[i]);
+                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcID);
+                if (impl == mode) {
+                    return false;
+                }
+            }
+        }        
         return true;
     }
     
@@ -1656,8 +1669,8 @@ final class Central implements ControllerHandler {
     }
 
     /** Creates new mode on side of specified one and puts there the TopComponentS. */
-    private ModeImpl attachModeToSide(ModeImpl attachMode, String side) {
-        return attachModeToSide( attachMode, side, ModeImpl.getUnusedModeName(), attachMode.getKind(), false);
+    private ModeImpl attachModeToSide(ModeImpl attachMode, String side, int modeKind) {
+        return attachModeToSide( attachMode, side, ModeImpl.getUnusedModeName(), modeKind, false);
     }
 
     /** Creates new mode on side of desktop */
@@ -2082,11 +2095,25 @@ final class Central implements ControllerHandler {
     
     @Override
     public void userDroppedTopComponents(ModeImpl mode, TopComponentDraggable draggable, String side) {
-        ModeImpl newMode = attachModeToSide( mode, side );
+        int newKind = mode.getKind();
+        if( draggable.getKind() != Constants.MODE_KIND_EDITOR && mode.getKind() == Constants.MODE_KIND_EDITOR ) {
+            //we're dropping view window(s) to a side of a editor mode
+            //check if the drop is within editor hierarchy (i.e. we must create 
+            //a new editor mode for the view window(s) or whether the drop is 
+            //around the whole editor area. Then we can create a new view mode.
+            SplitConstraint[] editorConstraints = getEditorAreaConstraints();
+            SplitConstraint[] attachConstraints = mode.getConstraints();
+            int a = 0;
+        }
+        ModeImpl newMode = attachModeToSide( mode, side, newKind );
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode( newMode, draggable.getTopComponent() );
         } else {
-            dockMode( newMode, draggable.getMode() );
+            if( newKind != draggable.getKind() ) {
+                mergeModes( draggable.getMode(), newMode, -1 );
+            } else {
+                dockMode( newMode, draggable.getMode() );
+            }
         }
         
         updateViewAfterDnD(true);
@@ -2399,6 +2426,31 @@ final class Central implements ControllerHandler {
         setModeMinimized( mode, true );
     }
 
+    /**
+     * User restored a Mode from minimized state in given sliding Mode.
+     * @param slidingMode
+     * @param modeToRestore 
+     * @since 2.35
+     */
+    void userRestoredMode( ModeImpl slidingMode, ModeImpl modeToRestore ) {
+        setModeMinimized( modeToRestore, false );
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        for( TopComponent tc : slidingMode.getOpenedTopComponents() ) {
+            String id = wm.findTopComponentID( tc );
+            ModeImpl prevMode = model.getModeTopComponentPreviousMode( slidingMode, id );
+            if( prevMode.equals( modeToRestore ) ) {
+                int prevIndex = model.getModeTopComponentPreviousIndex(slidingMode, id);
+                moveTopComponentIntoMode(prevMode, tc, prevIndex);
+
+            }
+        }
+        if(isVisible()) {
+            viewRequestor.scheduleRequest(
+                new ViewRequest(null, View.CHANGE_TOPCOMPONENT_AUTO_HIDE_DISABLED, null, null));
+        }
+        setActiveMode( modeToRestore );
+    }
+
     @Override
     public void userUndockedTopComponent(TopComponent tc, ModeImpl mode) {
         Point tcLoc = tc.getLocation();
@@ -2537,6 +2589,7 @@ final class Central implements ControllerHandler {
             model.setActiveMode(mode);
             model.setModeSelectedTopComponent(mode, tc);
         } else {
+            sortSlidedOutTopComponentsByPrevModes( mode );
             // don't activate sliding modes, it means the component slides out, that's a bad thing..
             // make some other desktop mode active
             if(prevMode != null && prevMode == getActiveMode() 
@@ -2553,6 +2606,12 @@ final class Central implements ControllerHandler {
         return moved;
     }
 
+    private void sortSlidedOutTopComponentsByPrevModes( ModeImpl slidingMode ) {
+        if( !Switches.isModeSlidingEnabled() )
+            return;
+        
+        List<String> opened = slidingMode.getOpenedTopComponentsIDs();
+    }
     
     private void updateViewAfterDnD(boolean unmaximize) {
         if( unmaximize ) {
@@ -2645,7 +2704,7 @@ final class Central implements ControllerHandler {
         String side = model.getSlidingModeConstraints( mode );
         model.setSlideInSize( side, 
                 mode.getSelectedTopComponent(), 
-                Constants.BOTTOM.equals( side ) ? rect.height : rect.width );
+                Constants.BOTTOM.equals( side ) || Constants.TOP.equals(side) ? rect.height : rect.width );
         if( null != mode.getSelectedTopComponent() ) {
             String tcID = WindowManagerImpl.getInstance().findTopComponentID( mode.getSelectedTopComponent() );
             model.setTopComponentMaximizedWhenSlidedIn( tcID, false );
