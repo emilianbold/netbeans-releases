@@ -42,28 +42,39 @@
 package org.netbeans.modules.cloud.oracle.ui;
 
 import java.awt.Image;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import javax.swing.Action;
+import oracle.nuviaq.model.xml.ApplicationDeploymentType;
+import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  */
 public class OracleJ2EEInstanceNode extends AbstractNode {
     
-    public static final String TOMCAT_ICON = "org/netbeans/modules/cloud/oracle/ui/resources/weblogic.png"; // NOI18N
+    public static final String WEBLOGIC_ICON = "org/netbeans/modules/cloud/oracle/ui/resources/weblogic.png"; // NOI18N
     
     // TODO: impl this properly
     
     private OracleJ2EEInstance aij;
     
     public OracleJ2EEInstanceNode(OracleJ2EEInstance aij) {
-        super(Children.LEAF);
+        super(new OracleJ2EEInstanceChildren(aij));
         this.aij = aij;
         setName(""); // NOI18N
-        setDisplayName(aij.getDisplayName()+" / "+aij.getOracleInstance().getName());
-        setIconBaseWithExtension(TOMCAT_ICON);
+        setDisplayName(aij.getDisplayName());
+        setIconBaseWithExtension(WEBLOGIC_ICON);
         
     }
     
@@ -102,4 +113,79 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
         return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }
 
+    private static class OracleJ2EEInstanceChildren extends Children.Keys<ApplicationDeploymentType> {
+
+        private OracleJ2EEInstance aij;
+
+        public OracleJ2EEInstanceChildren(OracleJ2EEInstance aij) {
+            this.aij = aij;
+            setKeys(Collections.<ApplicationDeploymentType>emptySet());
+        }
+        
+        @Override
+        protected void addNotify() {
+            readKeys();
+        }
+
+        @Override
+        protected void removeNotify() {
+            setKeys(Collections.<ApplicationDeploymentType>emptySet());
+        }
+        
+        @Override
+        protected Node[] createNodes(ApplicationDeploymentType key) {
+            return new Node[]{new ApplicationNode(aij, key)};
+        }
+        
+        private List<ApplicationDeploymentType> getKeys () {
+            return null;
+        }
+        
+        private void readKeys() {
+            OracleInstance.runAsynchronously(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    List<ApplicationDeploymentType> apps = aij.getOracleInstance().getApplications(aij.getInstanceId());
+                    OracleJ2EEInstanceChildren.this.setKeys(apps);
+                    return null;
+                }
+            });
+        }
+    }
+
+    public static class ApplicationNode extends AbstractNode {
+
+        // TODO: impl this properly
+
+        public ApplicationNode(OracleJ2EEInstance aij, ApplicationDeploymentType app) {
+            super(Children.LEAF, Lookups.fixed(aij, app));
+            setName(""); // NOI18N
+            setDisplayName(app.getApplicationId());
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return badgeIcon(UISupport.getIcon(UISupport.ServerIcon.WAR_ARCHIVE));
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return badgeIcon(UISupport.getIcon(UISupport.ServerIcon.WAR_ARCHIVE));
+        }
+
+        private Image badgeIcon(Image origImg) {
+            Image badge = null;        
+            return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
+        }
+        
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                SystemAction.get(ViewApplicationAction.class),
+                SystemAction.get(UndeployApplicationAction.class),
+            };
+        }
+
+    }
+    
 }

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cloud.oracle.serverplugin;
 
-import org.netbeans.modules.cloud.common.spi.support.serverplugins.InstanceState;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.InstanceState;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 
 /**
@@ -101,7 +101,7 @@ public class OracleJ2EEInstance {
     }
 
     public String getDisplayName() {
-        return getInstanceId();
+        return "Weblogic Java Service on "+getOracleInstance().getName();
     }
     
     public String getId() {

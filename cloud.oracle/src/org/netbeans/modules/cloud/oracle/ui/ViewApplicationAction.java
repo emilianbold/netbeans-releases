@@ -39,65 +39,53 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.serverplugin;
+package org.netbeans.modules.cloud.oracle.ui;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import oracle.nuviaq.api.PlatformManagerConnectionFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import oracle.nuviaq.model.xml.ApplicationDeploymentType;
+import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
+import org.openide.awt.HtmlBrowser;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  */
-public class OracleDeploymentFactory implements DeploymentFactory {
-
-    public static final String ORACLE_URI = "oracle:";  // NOI18N
-
-    public static final String IP_INSTANCE_ID = "instance-id";  // NOI18N
-    public static final String IP_URL_ENDPOINT = "url-endpoint";  // NOI18N
-    
-    @Override
-    public boolean handlesURI(String string) {
-        return string.startsWith(ORACLE_URI);
-    }
+public class ViewApplicationAction extends NodeAction {
 
     @Override
-    public DeploymentManager getDeploymentManager(String uri, String username,
-            String password) throws DeploymentManagerCreationException {
-        InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
+    protected void performAction(Node[] activatedNodes) {
+        OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
+        ApplicationDeploymentType app = activatedNodes[0].getLookup().lookup(ApplicationDeploymentType.class);
+        String appContext = app.getArchiveUrl().substring(0, app.getArchiveUrl().lastIndexOf('.'));
+        String url = "http://localhost:7001/"+appContext+"/";
         try {
-            return new OracleDeploymentManager(
-                    PlatformManagerConnectionFactory.createServiceEndpoint(
-                        new URL(props.getProperty(IP_URL_ENDPOINT)), 
-                        username,
-                        password),
-                    props.getProperty(IP_INSTANCE_ID));
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
-            return null;
         }
     }
 
     @Override
-    public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        // XXX
-        return new OracleDeploymentManager(
-                null,
-                "");
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
+                activatedNodes[0].getLookup().lookup(ApplicationDeploymentType.class) != null;
     }
 
     @Override
-    public String getDisplayName() {
-        return "Oracle Cloud 9";
+    public String getName() {
+        return "View";
     }
 
     @Override
-    public String getProductVersion() {
-        return "1.0";
+    public HelpCtx getHelpCtx() {
+        return null;
     }
     
 }

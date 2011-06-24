@@ -70,24 +70,12 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cloud.oracle</friend>
-                <package>com.oracle.cloud9.client.api</package>
-                <package>com.oracle.cloud9.client.model</package>
+                <package>oracle.nuviaq.api</package>
+                <package>oracle.nuviaq.model.xml</package>
             </friend-packages>
-            <!--            <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-client-1.3.jar</runtime-relative-path>
-                <binary-origin>external/jersey-client-1.3.jar</binary-origin>
-            </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-core-1.3.jar</runtime-relative-path>
-                <binary-origin>external/jersey-core-1.3.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/rest/jsr311-api-1.1.1.jar</runtime-relative-path>
-                <binary-origin>external/jsr311-api-1.1.1.jar</binary-origin>
-            </class-path-extension> -->
-            <class-path-extension>
-                <runtime-relative-path>ext/cloud9client.jar</runtime-relative-path>
-                <binary-origin>external/cloud9client.jar</binary-origin>
+                <runtime-relative-path>ext/nuviaq-api.jar</runtime-relative-path>
+                <binary-origin>external/nuviaq-api.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

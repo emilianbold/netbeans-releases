@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.openide.WizardDescriptor;
@@ -59,6 +60,7 @@ public class OracleWizardIterator implements WizardDescriptor.InstantiatingItera
     private ChangeSupport listeners;
     private WizardDescriptor wizard;
     private OracleWizardPanel panel;
+    private CloudResourcesWizardPanel panel2;
     boolean first = true;
 
     public OracleWizardIterator() {
@@ -101,11 +103,10 @@ public class OracleWizardIterator implements WizardDescriptor.InstantiatingItera
             }
             return panel;
         } else {
-//            if (panel2 == null) {
-//                panel2 = new AmazonWizardPanel2();
-//            }
-//            return panel2;
-            return null;
+            if (panel2 == null) {
+                panel2 = new CloudResourcesWizardPanel(OracleWizardPanel.getPanelContentData()[0]);
+            }
+            return panel2;
         }
     }
 
@@ -116,7 +117,7 @@ public class OracleWizardIterator implements WizardDescriptor.InstantiatingItera
 
     @Override
     public boolean hasNext() {
-        return /*first*/ false;
+        return first;
     }
 
     @Override

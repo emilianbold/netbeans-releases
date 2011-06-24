@@ -59,7 +59,7 @@ public class OracleJ2EEServerInstanceImplementation implements ServerInstanceImp
     
     @Override
     public String getDisplayName() {
-        return aij.getDisplayName();
+        return getBasicNode().getDisplayName();
     }
 
     @Override

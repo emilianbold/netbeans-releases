@@ -41,27 +41,28 @@
  */
 package org.netbeans.modules.cloud.oracle;
 
-import com.oracle.cloud9.client.api.PlatformManager;
-import com.oracle.cloud9.client.api.PlatformManagerConnectionFactory;
-import com.oracle.cloud9.client.api.PlatformManagerException;
-import com.oracle.cloud9.client.model.ApplicationDeploymentType;
-import com.oracle.cloud9.client.model.PlatformDeploymentType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import oracle.nuviaq.api.PlatformManager;
+import oracle.nuviaq.api.PlatformManagerConnectionFactory;
+import oracle.nuviaq.api.PlatformManagerException;
+import oracle.nuviaq.model.xml.ApplicationDeploymentType;
+import oracle.nuviaq.model.xml.JobType;
+import oracle.nuviaq.model.xml.PlatformDeploymentType;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.cloud.common.spi.support.serverplugins.DeploymentStatus;
-import org.netbeans.modules.cloud.common.spi.support.serverplugins.ProgressObjectImpl;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -72,7 +73,7 @@ import org.openide.util.RequestProcessor;
  */
 public class OracleInstance {
 
-    private static final RequestProcessor ORACLE_RP = new RequestProcessor("oracle cloud 9", 1); // NOI18N
+    private static final RequestProcessor ORACLE_RP = new RequestProcessor("oracle cloud 9", 10); // NOI18N
     
     private static final Logger LOG = Logger.getLogger(OracleInstance.class.getSimpleName());
     
@@ -117,9 +118,13 @@ public class OracleInstance {
         return urlEndpoint;
     }
 
-    private synchronized PlatformManager getPlatformManager() {
+    public synchronized PlatformManager getPlatformManager() {
         if (platform == null) {
-            platform = PlatformManagerConnectionFactory.getDefault(urlEndpoint);
+            try {
+                platform = PlatformManagerConnectionFactory.createServiceEndpoint(new URL(urlEndpoint), tenantUserName, tenantPassword);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return platform;
     }
@@ -160,18 +165,78 @@ public class OracleInstance {
         assert !SwingUtilities.isEventDispatchThread();
         try {
             if (po != null) {
-                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_DEPLOY_AUTH"));
+                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
             }
+            assert f.exists() : "archive does not exist: "+f;
+            String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
             ApplicationDeploymentType adt =new ApplicationDeploymentType();
             adt.setInstanceId(instanceId);
-            pm.deployApplication(is, adt);
-            return DeploymentStatus.SUCCESS;
+            
+            // XXX: what should this be???
+            //adt.setApplicationId("id"+System.currentTimeMillis());
+            adt.setApplicationId(appContext);
+            
+            adt.setArchiveUrl(f.getName());
+            
+            boolean redeploy = false;
+            List<ApplicationDeploymentType> apps = pm.listApplications(instanceId);
+            for (ApplicationDeploymentType app : apps) {
+                if (app.getApplicationId().equals(appContext)) {
+                    redeploy = true;
+                    adt = app;
+                    break;
+                }
+            }
+            
+            JobType jt;
+            if (redeploy) {
+                LOG.log(Level.INFO, "redeploying: archive="+f+" "+adt); // NOI18N
+                jt = pm.redeployApplication(is, adt);
+                LOG.log(Level.INFO, "redeployed as "+jt.getJobId()+" "+jt); // NOI18N
+            } else {
+                LOG.log(Level.INFO, "deploying: archive="+f+" "+adt); // NOI18N
+                jt = pm.deployApplication(is, adt);
+                LOG.log(Level.INFO, "deployed as "+jt.getJobId()+" "+jt); // NOI18N
+            }
+            
+            if (po != null) {
+                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
+            }
+            
+            while (true) {
+                try {
+                    // let's wait
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
+                JobType latestJob = pm.describeJob(jt.getJobId());
+                String jobStatus = latestJob.getStatus();
+                if ("Complete".equals(jobStatus)) {
+                    
+                    // XXX: how do I get this one:
+                    
+                    url[0] = "http://localhost:7001/"+appContext+"/";
+                    
+                    return DeploymentStatus.SUCCESS;
+                } else if ("submitted".equalsIgnoreCase(jobStatus)) {
+                    // let's wait longer
+                } else if ("running".equalsIgnoreCase(jobStatus)) {
+                    // let's wait longer
+                } else if ("failed".equalsIgnoreCase(jobStatus)) {
+                    return DeploymentStatus.FAILED;
+                }
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return DeploymentStatus.UNKNOWN;
         } catch (PlatformManagerException ex) {
             Exceptions.printStackTrace(ex);
+            return DeploymentStatus.UNKNOWN;
+        } catch (Throwable t) {
+            Exceptions.printStackTrace(t);
             return DeploymentStatus.UNKNOWN;
         }
     }
@@ -187,5 +252,15 @@ public class OracleInstance {
     }
     
 //    private static List<Future> tasks = new ArrayList<Future>();
+
+    public List<ApplicationDeploymentType> getApplications(String instanceID) {
+        assert !SwingUtilities.isEventDispatchThread();
+        return getPlatformManager().listApplications(instanceID);
+    }
+
+    public void undeploy(ApplicationDeploymentType app) {
+        assert !SwingUtilities.isEventDispatchThread();
+        getPlatformManager().undeployApplication(app.getInstanceId(), app.getApplicationId());
+    }
     
 }

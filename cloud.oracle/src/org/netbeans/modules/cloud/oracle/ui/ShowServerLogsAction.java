@@ -39,65 +39,45 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.serverplugin;
+package org.netbeans.modules.cloud.oracle.ui;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import oracle.nuviaq.api.PlatformManagerConnectionFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  */
-public class OracleDeploymentFactory implements DeploymentFactory {
+public class ShowServerLogsAction extends NodeAction {
 
-    public static final String ORACLE_URI = "oracle:";  // NOI18N
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        OracleInstance ai = activatedNodes[0].getLookup().lookup(OracleInstance.class);
+        LogsComponent.showJobsDialog(ai);
+    }
 
-    public static final String IP_INSTANCE_ID = "instance-id";  // NOI18N
-    public static final String IP_URL_ENDPOINT = "url-endpoint";  // NOI18N
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleInstance.class) != null;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
     
     @Override
-    public boolean handlesURI(String string) {
-        return string.startsWith(ORACLE_URI);
+    public String getName() {
+        return "View Jobs and Logs";
     }
 
     @Override
-    public DeploymentManager getDeploymentManager(String uri, String username,
-            String password) throws DeploymentManagerCreationException {
-        InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
-        try {
-            return new OracleDeploymentManager(
-                    PlatformManagerConnectionFactory.createServiceEndpoint(
-                        new URL(props.getProperty(IP_URL_ENDPOINT)), 
-                        username,
-                        password),
-                    props.getProperty(IP_INSTANCE_ID));
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
-    }
-
-    @Override
-    public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        // XXX
-        return new OracleDeploymentManager(
-                null,
-                "");
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Oracle Cloud 9";
-    }
-
-    @Override
-    public String getProductVersion() {
-        return "1.0";
+    public HelpCtx getHelpCtx() {
+        return null;
     }
     
 }

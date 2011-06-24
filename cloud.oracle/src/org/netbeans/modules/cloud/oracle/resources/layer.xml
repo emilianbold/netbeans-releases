@@ -48,7 +48,7 @@
                     node and the Target node
                 -->
                 <file name="RegistryNodeFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleRegistryNodeFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.common.spi.support.serverplugin.RegistryNodeFactoryImpl"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 
@@ -70,7 +70,7 @@
                     etc.
                 -->
                 <file name="ModuleConfigurationFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.oracle.serverplugin.OracleModuleConfigurationFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cloud.common.spi.support.serverplugin.ModuleConfigurationFactoryImpl"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
                 

@@ -85,6 +85,7 @@ public class OracleInstanceNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(RefreshOracleInstanceNodeAction.class),
+            SystemAction.get(ShowServerLogsAction.class),
             null,
             SystemAction.get(RemoveOracleInstanceAction.class),
             null,
