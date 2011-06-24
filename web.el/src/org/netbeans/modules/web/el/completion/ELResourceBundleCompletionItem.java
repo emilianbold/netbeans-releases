@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -48,11 +51,21 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.web.el.ResourceBundles;
+import org.netbeans.modules.web.el.spi.ResourceBundle;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
- *
+ * TODO add some kind of bundle message expression type recognition or setting.
+ *      currently the dot notation (msg.key) is used, one may be used 
+ *      to use the bracket notation (msg['key').
+ * 
  * @author Erno Mononen
  */
 final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
@@ -60,15 +73,24 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
     private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/propertiesLocale.gif";//NOI18N
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
-    private final String bundle;
+    private final ResourceBundle bundle;
+    private final ResourceBundles bundles;
+    private final FileObject file;
 
-    public ELResourceBundleCompletionItem(String bundle) {
+    public ELResourceBundleCompletionItem(FileObject file, ResourceBundle bundle, ResourceBundles bundles) {
         this.bundle = bundle;
+        this.bundles = bundles;
+        this.file = file;
     }
 
     @Override
     public String getName() {
-        return bundle;
+        return bundle.getVar();
+    }
+
+    @Override
+    public String getRhsHtml(HtmlFormatter formatter) {
+        return bundle.getBaseName();
     }
 
     @Override
@@ -83,7 +105,7 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
 
     @Override
     public ElementHandle getElement() {
-        return null;
+        return new ResourceBundleElementHandle();
     }
 
     @Override
@@ -95,9 +117,8 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
     public String getCustomInsertTemplate() {
         StringBuilder result = new StringBuilder();
         result.append(getInsertPrefix())
-                .append("['")
-                .append("${cursor}")
-                .append("']");
+                .append(".")
+                .append("${cursor}"); //NOI18N                
         scheduleShowingCompletion();
         return result.toString();
     }
@@ -110,5 +131,66 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
                 Completion.get().showCompletion();
             }
         }, 250, TimeUnit.MILLISECONDS);
+    }
+    
+    private class ResourceBundleElementHandle extends ELElementHandle {
+
+        @Override
+        String document(ParserResult info) {
+            StringBuilder buf = new StringBuilder();
+            
+            Map<String, String> entries = bundles.getEntries(bundle.getVar());
+            for(String key : entries.keySet()) {
+                String value = entries.get(key);
+                buf.append(key);
+                buf.append('='); //NOI18N
+                buf.append("<font color='#ce7b00'>"); //NOI18N
+                buf.append(value); 
+                buf.append("</font>"); //NOI18N
+                buf.append("<br>"); //NOI18N
+            }
+            return buf.toString();
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return file;
+        }
+
+        @Override
+        public String getMimeType() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return ELResourceBundleCompletionItem.this.getName();
+        }
+
+        @Override
+        public String getIn() {
+            return null;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+
     }
 }

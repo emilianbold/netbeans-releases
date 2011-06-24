@@ -71,7 +71,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
 
     private static final Logger LOG = Logger.getLogger(HudsonSubversionSCM.class.getName());
 
-    public Configuration forFolder(File folder) {
+    public @Override Configuration forFolder(File folder) {
         try {
             SvnUtils.Info info = SvnUtils.parseCheckout(folder.toURI().toURL());
             if (info == null) {
@@ -79,7 +79,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
             }
             final String urlS = info.module.toString();
             return new Configuration() {
-                public void configure(Document doc) {
+                public @Override void configure(Document doc) {
                     Element root = doc.getDocumentElement();
                     Element configXmlSCM = (Element) root.appendChild(doc.createElement("scm")); // NOI18N
                     configXmlSCM.setAttribute("class", "hudson.scm.SubversionSCM"); // NOI18N
@@ -91,7 +91,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
                     configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("false")); // NOI18N
                     Helper.addTrigger(doc);
                 }
-                public ConfigurationStatus problems() {
+                public @Override ConfigurationStatus problems() {
                     return null;
                 }
             };
@@ -102,7 +102,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
         }
     }
 
-    public String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot) {
+    public @Override String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot) {
         try {
             SvnUtils.Info local = SvnUtils.parseCheckout(localRoot.toURI().toURL());
             if (local == null) {
@@ -148,7 +148,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
         }
     }
 
-    public List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJob job, final Element changeSet) {
+    public @Override List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJob job, final Element changeSet) {
         if (!"svn".equals(Helper.xpath("kind", changeSet))) { // NOI18N
             return null;
         }
@@ -157,25 +157,25 @@ public class HudsonSubversionSCM implements HudsonSCM {
             SubversionItem(Element xml) {
                 this.itemXML = xml;
             }
-            public String getUser() {
+            public @Override String getUser() {
                 return Helper.xpath("user", itemXML); // NOI18N
             }
-            public String getMessage() {
+            public @Override String getMessage() {
                 return Helper.xpath("msg", itemXML); // NOI18N
             }
-            public Collection<? extends HudsonJobChangeFile> getFiles() {
+            public @Override Collection<? extends HudsonJobChangeFile> getFiles() {
                 class SubversionFile implements HudsonJobChangeFile {
                     final Element fileXML;
                     SubversionFile(Element xml) {
                         this.fileXML = xml;
                     }
-                    public String getName() {
+                    public @Override String getName() {
                         return Helper.xpath("file", fileXML); // NOI18N
                     }
-                    public EditType getEditType() {
+                    public @Override EditType getEditType() {
                         return EditType.valueOf(Helper.xpath("editType", fileXML)); // NOI18N
                     }
-                    public OutputListener hyperlink() {
+                    public @Override OutputListener hyperlink() {
                         String module = Helper.xpath("revision/module", changeSet); // NOI18N
                         String rev = Helper.xpath("revision", itemXML); // NOI18N
                         if (module == null || !module.startsWith("http") || rev == null) { // NOI18N

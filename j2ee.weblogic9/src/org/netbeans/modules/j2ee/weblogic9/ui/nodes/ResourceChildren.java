@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -53,13 +54,23 @@ import org.openide.util.NbBundle;
  */
 class ResourceChildren extends WLNodeChildren<ResourceNode> {
     
-    ResourceChildren(Lookup lookup){
-        setKeys( new ResourceNode[]{ 
-                createJDBCNode(lookup),
+    private final WLDeploymentManager manager;
+
+    ResourceChildren(Lookup lookup) {
+        this.manager = lookup.lookup(WLDeploymentManager.class);
+        assert manager != null;
+        
+        if (manager.isWebProfile()) {
+            setKeys(new ResourceNode[] { 
+                    createJDBCNode(lookup),
+                    createLibraries(lookup)});            
+        } else {
+            setKeys(new ResourceNode[] { 
+                    createJDBCNode(lookup),
                     createConnectorsNode(lookup),
-                        createJavaMail(lookup),
-                            createLibraries(lookup)});
-                                //createTuxedoResources(lookup)});
+                    createJavaMail(lookup),
+                    createLibraries(lookup)});
+        }
     } 
 
     private ResourceNode createConnectorsNode( Lookup lookup ) {
@@ -78,8 +89,11 @@ class ResourceChildren extends WLNodeChildren<ResourceNode> {
                     NbBundle.getMessage(ResourceChildren.class, "LBL_JavaMail"));   // NOI18N
     }
     
-    private ResourceNode createLibraries( Lookup lookup ){
-        return new ResourceNode(new LibrariesChildrenFactory(lookup) , 
+    private ResourceNode createLibraries( Lookup lookup ) {       
+        // TODO proxy for LibrariesChildrenFactory ?
+        return new ResourceNode(manager.isWebProfile()
+                ? new WebProfileLibrariesChildrenFactory(lookup)
+                : new LibrariesChildrenFactory(lookup), 
                 ResourceNodeType.LIBRARY,
                     NbBundle.getMessage(ResourceChildren.class, "LBL_Libraries"));   // NOI18N
     }

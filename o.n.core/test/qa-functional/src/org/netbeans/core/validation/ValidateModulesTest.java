@@ -215,7 +215,7 @@ public class ValidateModulesTest extends NbTestCase {
         Set<Manifest> manifests = new HashSet<Manifest>();
         boolean foundJUnit = false;
         for (Module m : mgr.getModules()) {
-            Manifest manifest = m.getManifest();
+            Manifest manifest = new Manifest(m.getManifest());
             if (m.isAutoload()) {
                 manifest.getMainAttributes().putValue("autoload", "true");
             } else if (m.isEager()) {

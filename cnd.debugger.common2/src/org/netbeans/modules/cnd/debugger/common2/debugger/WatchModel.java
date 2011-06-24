@@ -65,6 +65,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MaxObjectAction;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.spi.viewmodel.NodeModel;
 
 /**
@@ -168,7 +170,7 @@ public final class WatchModel extends VariableModel
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
 	assert ! (node instanceof NativeWatch) : 
 	       "WatchModel.get*(): got a NativeWatch"; // NOI18N
-        if (node instanceof WatchModel.EmptyWatch) {
+        if (node instanceof EmptyWatch) {
             return "<_html><font color=\"#808080\">&lt;" + // [TODO] <_html> tag used as workaround, see TreeModelNode.setName() // NOI18N
                         Catalog.get("CTL_WatchesModel_Empty_Watch_Hint") + // NOI18N
                         "&gt;</font></html>"; // NOI18N
@@ -307,6 +309,9 @@ public final class WatchModel extends VariableModel
     @Override
     public void performDefaultAction(Object o) throws UnknownTypeException {
 	assert !(o instanceof Watch);
+        if (o instanceof EmptyWatch) {
+            NEW_WATCH_ACTION.actionPerformed(null);
+        }
 	// no-op
 	// LATER: super.performDefaultAction(o);
     }
@@ -315,7 +320,7 @@ public final class WatchModel extends VariableModel
 	Catalog.get("ACT_WATCH_Delete"), // NOI18N
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return !(node instanceof WatchModel.EmptyWatch);
+                return !(node instanceof EmptyWatch);
             }
             public void perform (final Object[] nodes) {
 		if (!SwingUtilities.isEventDispatchThread()) {
@@ -362,17 +367,23 @@ public final class WatchModel extends VariableModel
     public Action[] getActions(Object o) throws UnknownTypeException {
 	assert ! (o instanceof NativeWatch) : 
 	       "WatchModel.get*(): got a NativeWatch"; // NOI18N
+       EngineDescriptor desp = debugger.getNDI().getEngineDescriptor();
+        boolean canDoMaxObject = desp.hasCapability(EngineCapability.MAX_OBJECT);
+        boolean canDoDy = desp.hasCapability(EngineCapability.DYNAMIC_TYPE);
+        boolean canDoIn = desp.hasCapability(EngineCapability.INHERITED_MEMBERS);
+        boolean canDoSt = desp.hasCapability(EngineCapability.STATIC_MEMBERS);
+
 	if (o == TreeModel.ROOT) {
 	    return new Action[] {
 		NEW_WATCH_ACTION,
 		null,
 		new DeleteAllAction(),
 		null,
-		Action_INHERITED_MEMBERS,
-		Action_DYNAMIC_TYPE,
-		Action_STATIC_MEMBERS,
-		null,
-		SystemAction.get(MaxObjectAction.class),
+                canDoIn ? Action_INHERITED_MEMBERS : null,
+                canDoDy ? Action_DYNAMIC_TYPE : null,
+                canDoSt ? Action_STATIC_MEMBERS : null,
+                null,
+                canDoMaxObject ? SystemAction.get(MaxObjectAction.class) : null,
 		null,
 	    };
 
@@ -383,10 +394,11 @@ public final class WatchModel extends VariableModel
 		DELETE_ACTION,
 		new DeleteAllAction(),
 		null,
-		Action_INHERITED_MEMBERS,
-		Action_DYNAMIC_TYPE,
-		Action_STATIC_MEMBERS,
-		SystemAction.get(MaxObjectAction.class),
+                canDoIn ? Action_INHERITED_MEMBERS : null,
+                canDoDy ? Action_DYNAMIC_TYPE : null,
+                canDoSt ? Action_STATIC_MEMBERS : null,
+                null,
+                canDoMaxObject ? SystemAction.get(MaxObjectAction.class) : null,
 		null,
 	    };
 

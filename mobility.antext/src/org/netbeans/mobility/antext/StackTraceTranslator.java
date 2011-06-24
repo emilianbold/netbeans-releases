@@ -215,6 +215,10 @@ public class StackTraceTranslator
     
     private int getLineNumber(final Code code, int offset)
     {
+        //#170792
+        if (code == null) {
+            return -1;
+        }
         offset -= 3;
         if (offset < 0 || offset >= code.getByteCodes().length) return -1;
         final int lineTable[] = code.getLineNumberTable();

@@ -50,7 +50,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.jar.JarOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.netbeans.ProxyURLStreamHandlerFactory;
 import org.openide.filesystems.FileObject;
@@ -68,6 +71,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
     
     private static final String RESOURCE = "test.txt";
     private static final String JAR_FILE = "test.jar";
+    private Logger LOG;
     
     public ArchiveURLMapperTest(String testName) {
         super(testName);
@@ -76,6 +80,12 @@ public class ArchiveURLMapperTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        LOG = Logger.getLogger("test." + getName());
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     private URL createJarFile () throws IOException {
@@ -162,6 +172,9 @@ public class ArchiveURLMapperTest extends NbTestCase {
         jos.putNextEntry(entry);
         jos.write("content in newInNested".getBytes());
         jos.close();
+        
+        LOG.log(Level.INFO, "Writing new {0}", metaJar);
+        
         jos = new JarOutputStream(new FileOutputStream(metaJar));
         // meta.jar/nested.jar
         entry = new ZipEntry("nested.jar");
@@ -175,10 +188,16 @@ public class ArchiveURLMapperTest extends NbTestCase {
         jos.close();
         TestFileUtils.touch(metaJar, null);  // just for sure
 
+        LOG.info("Before refresh");
         metaJarFO.refresh();
+        LOG.info("After refresh");
 
         // check meta.jar/newFile
         FileObject newFO = metaRoot.getFileObject("newFile");
+        LOG.log(Level.INFO, "newFile obtained: {0}", newFO);
+        if (newFO == null) {
+            fail("newFile should be found among:\n" + Arrays.toString(metaRoot.getChildren()));
+        }
         assertEquals("new content", newFO.asText());
         // check meta.jar/nested.jar/newInNested
         nestedRoot = FileUtil.getArchiveRoot(nestedJarFO);

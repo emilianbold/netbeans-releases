@@ -45,7 +45,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -141,7 +140,7 @@ public final class JSchConnectionTask implements Cancellable {
                 return new Result(null, new Problem(ProblemType.CONNECTION_TIMEOUT, e));
             }
             return new Result(null, new Problem(ProblemType.CONNECTION_FAILED, e));
-        } catch (CancellationException ex) {
+        } catch (java.util.concurrent.CancellationException ex) {
             log.log(Level.FINE, "CancellationException", ex); // NOI18N
             return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
 

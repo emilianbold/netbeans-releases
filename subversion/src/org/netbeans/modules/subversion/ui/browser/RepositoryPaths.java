@@ -52,7 +52,9 @@ import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.logging.Level;
+import javax.swing.InputVerifier;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -139,6 +141,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
 
         if(revisionTextField!=null) {
             this.revisionTextField = revisionTextField;
+            revisionTextField.setInputVerifier(new RevisionInputVerifier());
             revisionTextField.getDocument().addDocumentListener(this);
             this.searchRevisionButton = searchRevisionButton;
             this.browseRevisionButton = browseRevisionButton;
@@ -149,6 +152,19 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                 browseRevisionButton.addActionListener(this);
             }
         }                
+    }
+    
+    private static class RevisionInputVerifier extends InputVerifier {
+        @Override
+        public boolean verify (JComponent input) {
+            if (input instanceof JTextComponent) {
+                JTextComponent comp = (JTextComponent) input;
+                if (comp.getText().trim().isEmpty()) {
+                    comp.setText(SVNRevision.HEAD.toString());
+                }
+            }
+            return true;
+        }
     }
 
     public void setupBehavior(String browserPurpose, int browserMode, String browserHelpID, String searchHelpID) {
@@ -232,7 +248,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         RepositoryFile[] selectedFiles = browser.getRepositoryFiles();
 
         if(selectedFiles.length > 0) {                
-            StringBuffer paths = new StringBuffer();
+            StringBuilder paths = new StringBuilder();
             for (int i = 0; i < selectedFiles.length; i++) {
                 paths.append(selectedFiles[i].getPath());
                 if(i < selectedFiles.length - 1) {
@@ -255,6 +271,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 revisionTextField.setText(repositoryFiles[0].getRevision().toString());
             }
@@ -284,6 +301,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         dialogDescriptor.setValid(false);
         
         svnSearch.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 //if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
                     dialogDescriptor.setValid(svnSearch.getSelectedRevision() != null);
@@ -322,6 +340,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         return SvnUtils.getSVNRevision(revisionString);        
     }           
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == browseButton) {
             browseRepository();
@@ -332,14 +351,17 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         validateUserInput();
     }
@@ -378,7 +400,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }
 
     private void fireValidPropertyChanged(boolean oldValue, boolean valid) {
-        getChangeSupport().firePropertyChange(new PropertyChangeEvent(this, PROP_VALID, new Boolean(oldValue), new Boolean(valid)));        
+        getChangeSupport().firePropertyChange(new PropertyChangeEvent(this, PROP_VALID, oldValue, valid));        
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {

@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -49,6 +50,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
@@ -75,22 +78,30 @@ public class DelegateMethodAnalyzer implements MethodAnalyzer {
             List<ErrorDescription> descriptions , AtomicBoolean cancel)
     {
         List<? extends VariableElement> parameters = element.getParameters();
+        int i=0;
         for (VariableElement param : parameters) {
-            if ( cancel.get() ){
+            if (cancel.get()) {
                 return;
             }
-            if( AnnotationUtil.hasAnnotation(param, AnnotationUtil.DELEGATE_FQN, 
-                    compInfo))
+            if (AnnotationUtil.hasAnnotation(param,
+                    AnnotationUtil.DELEGATE_FQN, compInfo))
             {
-                if ( cancel.get() ){
+                if (cancel.get()) {
                     return;
                 }
-                checkMethodDefinition(element , param, compInfo , descriptions );
-                if ( cancel.get() ){
+                checkMethodDefinition(element, param, compInfo, descriptions);
+                if (cancel.get()) {
                     return;
                 }
-                checkClassDefinition( parent , element, param, compInfo , descriptions );
+                checkClassDefinition(parent, element, param, compInfo,
+                        descriptions);
+                if (cancel.get()) {
+                    return;
+                }
+                checkDelegateType(param, i, element, parent, compInfo,
+                        descriptions);
             }
+            i++;
         }
     }
 
@@ -107,6 +118,29 @@ public class DelegateMethodAnalyzer implements MethodAnalyzer {
                         "ERR_DelegateIsNotInDecorator")); // NOI18N
             descriptions.add( description );
         }        
+    }
+
+    private void checkDelegateType( VariableElement element, int i,
+            ExecutableElement method, TypeElement parent,
+            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+    {
+        ExecutableType methodType = (ExecutableType) compInfo.getTypes()
+                .asMemberOf((DeclaredType) parent.asType(), method);
+        List<? extends TypeMirror> parameterTypes = methodType
+                .getParameterTypes();
+        TypeMirror parameterType = parameterTypes.get(i);
+        Collection<TypeMirror> decoratedTypes = DelegateFieldAnalizer
+                .getDecoratedTypes(parent, compInfo);
+        for (TypeMirror decoratedType : decoratedTypes) {
+            if (!compInfo.getTypes().isSubtype(parameterType, decoratedType)) {
+                ErrorDescription description = CdiEditorAnalysisFactory
+                        .createError(element, compInfo, NbBundle.getMessage(
+                                DelegateMethodAnalyzer.class,
+                                "ERR_DelegateTypeHasNoDecoratedType")); // NOI18N
+                descriptions.add(description);
+                return;
+            }
+        }
     }
 
     private void checkMethodDefinition( ExecutableElement element, 

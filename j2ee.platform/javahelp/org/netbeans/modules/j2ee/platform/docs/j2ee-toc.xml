@@ -17,9 +17,9 @@ Other names may be trademarks of their respective owners.
 <toc version="2.0">
     <tocitem text="IDE Basics">
         <tocitem text="Getting Started">
-                <tocitem text="Enterprise Applications" target="ent_app_process" />
-                <tocitem text="Web Services" target="ws_process" />
-                <tocitem text="Web Service Clients" target="wsc_process" />
+            <tocitem text="Enterprise Applications" target="ent_app_process" />
+            <tocitem text="Web Services" target="ws_process" />
+            <tocitem text="Web Service Clients" target="wsc_process" />
         </tocitem>
     </tocitem>
     <tocitem text="Java Applications">
@@ -29,46 +29,46 @@ Other names may be trademarks of their respective owners.
     </tocitem>
 
     <tocitem text="IDE Basics" >
-    <tocitem text="Servers and Databases">
+        <tocitem text="Servers and Databases">
 
-        <tocitem text="Servers">
-            <tocitem text="About Servers" target="about_server"/>
-            <tocitem text="About Connection Pools" target="server_aboutdbconnect"/>
-            <tocitem text="Registering a Server" target="server_register" />
-            <tocitem text="Starting and Stopping a Server" target="server_start" />
+            <tocitem text="Servers">
+                <tocitem text="About Servers" target="about_server"/>
+                <tocitem text="About Connection Pools" target="server_aboutdbconnect"/>
+                <tocitem text="Registering a Server" target="server_register" />
+                <tocitem text="Starting and Stopping a Server" target="server_start" />
 
-            <tocitem text="GlassFish Application Server">
-                <tocitem text="About the GlassFish Application Server"  target="aboutplugin"/>
-                <tocitem text="Working with the GlassFish Application Server"  target="working_withsjs"/>
-                <tocitem text="GlassFish Application Server Tasks: Quick Reference"  target="sjs_quickref"/>
-                <tocitem text="Registering a Server Instance"  target="register_appserver"/>
-                <tocitem text="Viewing the Server in the IDE"  target="viewing_appserver"/>
-                <tocitem text="Viewing the Server Log File"  target="viewing_logfile"/>
-                <tocitem text="Accessing the Server Admin Console"  target="adminconsole"/>
-                <tocitem text="Modifying JVM Properties"  target="sjs_jvm"/>
-                <tocitem text="Setting up a Connection Pool"  target="def_connpool"/>
-                <tocitem text="Setting up a JDBC Resource"  target="def_jdbcresource"/>
-                <tocitem text="Setting up a JMS Resource"  target="def_jms"/>
-                <tocitem text="Setting up a JavaMail Session Resource"  target="def_javamail"/>
-                <tocitem text="Registering and Deleting a Resource"  target="register_resource"/>
-                <tocitem text="Managing Users"  target="sjs_manageuser"/>
-                <tocitem text="Configuring Security Roles"  target="sjs_security"/>
+                <tocitem text="GlassFish Application Server">
+                    <tocitem text="About the GlassFish Application Server"  target="aboutplugin"/>
+                    <tocitem text="Working with the GlassFish Application Server"  target="working_withsjs"/>
+                    <tocitem text="GlassFish Application Server Tasks: Quick Reference"  target="sjs_quickref"/>
+                    <tocitem text="Registering a Server Instance"  target="register_appserver"/>
+                    <tocitem text="Viewing the Server in the IDE"  target="viewing_appserver"/>
+                    <tocitem text="Viewing the Server Log File"  target="viewing_logfile"/>
+                    <tocitem text="Accessing the Server Admin Console"  target="adminconsole"/>
+                    <tocitem text="Modifying JVM Properties"  target="sjs_jvm"/>
+                    <tocitem text="Setting up a Connection Pool"  target="def_connpool"/>
+                    <tocitem text="Setting up a JDBC Resource"  target="def_jdbcresource"/>
+                    <tocitem text="Setting up a JMS Resource"  target="def_jms"/>
+                    <tocitem text="Setting up a JavaMail Session Resource"  target="def_javamail"/>
+                    <tocitem text="Registering and Deleting a Resource"  target="register_resource"/>
+                    <tocitem text="Managing Users"  target="sjs_manageuser"/>
+                    <tocitem text="Configuring Security Roles"  target="sjs_security"/>
+                </tocitem>
+
+                <tocitem text="JBoss Application Server" >
+                    <tocitem text="About the JBoss Application Server" target="about_jboss" />
+                    <tocitem text="Working with the JBoss Application Server" target="jboss_process" />
+                    <tocitem text="JBoss Application Server Tasks: Quick Reference" target="jboss_quickref" />
+                    <tocitem text="Registering a JBoss Application Server" target="registering_app_server_jboss" />
+                    <tocitem text="Accessing the JBoss Application Server Utilities" target="management_console_app_server_jboss" />
+                    <tocitem text="Setting Up a Connection Pool on the JBoss Application Server" target="datasource_app_server_jboss" />
+                </tocitem>
+                <tocitem text="Oracle WebLogic Server">
+                    <tocitem text="Registering an Oracle WebLogic Server" target="registering_app_server_weblogic" />
+                </tocitem>
             </tocitem>
 
-            <tocitem text="JBoss Application Server" >
-                <tocitem text="About the JBoss Application Server" target="about_jboss" />
-                <tocitem text="Working with the JBoss Application Server" target="jboss_process" />
-                <tocitem text="JBoss Application Server Tasks: Quick Reference" target="jboss_quickref" />
-                <tocitem text="Registering a JBoss Application Server" target="registering_app_server_jboss" />
-                <tocitem text="Accessing the JBoss Application Server Utilities" target="management_console_app_server_jboss" />
-                <tocitem text="Setting Up a Connection Pool on the JBoss Application Server" target="datasource_app_server_jboss" />
-            </tocitem>
-            <tocitem text="Oracle WebLogic Server">
-                <tocitem text="Registering an Oracle WebLogic Server" target="registering_app_server_weblogic" />
-            </tocitem>
         </tocitem>
-
-    </tocitem>
     </tocitem>
     
     <!-- Start of enterprise applications -->
@@ -178,93 +178,90 @@ Other names may be trademarks of their respective owners.
         </tocitem>
     </tocitem>
     
-        <tocitem text="Web Services"  expand="false">
-            <tocitem text="About Web Services" >
-                <tocitem text="About Web Services" target="about_ws" />
-                <tocitem text="About RESTful Web Services" target="about_rest" />
-                <tocitem text="Working with Web Services" target="ws_process" />
-                <tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />	
-            </tocitem>
-            <tocitem text="Creating Web Services" >
-                <tocitem text="About Creating Web Services" target="about_implement_ws" />
-                 <tocitem text="RESTful Web Service Creation" >
-                    <tocitem text="Generating a RESTful Web Service from Scratch" target="create_rest_from_scratch" />
-                    <tocitem text="SaaS Components and the Web Service Manager" target="wsc_rest" />
-                    <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
-                    <tocitem text="Testing a RESTful Web Service" target="test_rest" />
-                </tocitem>
-                <tocitem text="Empty JAX-WS Web Service Creation" >
-                    <tocitem text="Generating a JAX-WS Web Service from Scratch" target="create_ws_from_scratch" />
-                    <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
-                </tocitem>
-                <tocitem text="Java-Based JAX-WS Web Service Creation" >
-                    <tocitem text="Creating a JAX-WS Web Service from a Java Class" target="create_ws_from_java" />
-                    <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
-                </tocitem>
-                <tocitem text="WSDL-Based JAX-WS Web Service Creation" >
-                    <tocitem text="Generating a WSDL File" target="create_wsdl_file" />
-                    <tocitem text="Generating a JAX-WS Web Service from a WSDL File" target="create_ws_from_wsdl" />
-                    <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
-                </tocitem>
-            </tocitem>
-            <tocitem text="Configuring Web Services" >
-                <tocitem text="About Configuring Web Services" target="config_ws_about" />
-                <tocitem text="About Annotations" target="about_annotations" />	   
-                <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
-                <tocitem text="Configuring via Annotations" target="config_ws_annotations" />
-                <tocitem text="Configuring via Deployment Descriptors" target="config_ws_dd" />
-            </tocitem>  
-            <tocitem text="Building Web Services" >
-                <tocitem text="About Building Web Services" target="about_build_ws" />
-                <tocitem text="About the Web Service Attributes Editor" target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" />
-            </tocitem>
-            <tocitem text="Deploying and Testing Web Services" >
-                <tocitem text="About Deploying and Testing Web Services" target="about_deploy_and_test_ws" />
-                <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 	
-                <tocitem text="Deploying a Web Service" target="expose_ws" />
-                <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
-                <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
-                <tocitem text="Testing a RESTful Web Service" target="test_rest" />
-		<tocitem text="Viewing the Published WSDL File" target="test_ws" /> 
-            </tocitem>
-            <tocitem text="Creating Web Service Clients" >
-                <tocitem text="About Web Service Clients" target="about_wsc" />
-                <tocitem text="Working with Web Service Clients" target="wsc_process" />
-                <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
-                <tocitem text="Generating a JAX-WS Web Service Client" target="wsc_create" />
-                <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
-                <tocitem text="Using the Preregistered Web Service Clients" target="wsc_rest" />
-                <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
-                <tocitem text="Asynchronously Calling a JAX-WS Web Service Operation" target="wsc_call_ws_asynchronous" />
-                <tocitem text="Building a Web Service Client" target="wsc_build" />
-                <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
-            </tocitem>
-            <tocitem text="Creating Handlers" >
-                <tocitem text="About Creating Handlers" target="about_ws_soap_message" />
-                <tocitem text="Creating a Handler" target="create_ws_soap_message" />
-                <tocitem text="Configuring a Handler" target="configure_ws_soap_message" />
-                <tocitem text="Testing and Using a Handler" target="test_and_use_ws_soap_message" />
-            </tocitem>
-             <tocitem text="Using JAXB for Java-XML Binding" >
-                <tocitem text="About Using JAXB for Java-XML Binding" target="about_jaxb" />
-                <tocitem text="Generating Java Classes from XML Schema Documents" target="jaxb_wizard" />
-                <tocitem text="Marshalling Java Classes to XML Elements" target="marshall_unmarshall" />
-                <tocitem text="Unmarshalling XML Elements to Java Classes" target="unmarshall_marshall" />
-           </tocitem>
-               <tocitem text="Configuring Quality of Service">
-                   <tocitem text="About Quality of Service" target="org.netbeans.modules.websvc.wsitconf.about"/>
-                   <tocitem text="Configuring Quality of Service" target="org.netbeans.modules.websvc.wsitconf.access"/>
-                   <tocitem text="Port Binding" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode"/>
-                   <tocitem text="Operation">
-                        <tocitem text="About Operations" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode"/>
-                        <tocitem text="Operation" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode"/>
-                        <tocitem text="Input Message" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode"/>
-                        <tocitem text="Output Message" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode"/>
-                   </tocitem>
-                   <tocitem text="Transport" target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode"/>
-                   <tocitem text="Security" target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode"/>
-                   <tocitem text="Advanced Configuration" target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode"/>
-               </tocitem>
+    <tocitem text="Web Services"  expand="false">
+        <tocitem text="About Web Services" >
+            <tocitem text="About Web Services" target="about_ws" />
+            <tocitem text="About SOAP (JAX-WS) Web Services" target="about_soap" />
+            <tocitem text="About RESTful Web Services" target="about_rest" />
+            <tocitem text="Working with Web Services" target="ws_process" />
+            <tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />	
         </tocitem>
+        <tocitem text="Creating Web Services" >
+            <tocitem text="About Creating Web Services" target="about_implement_ws" />
+            <tocitem text="Creating RESTful Web Services" >
+                <tocitem text="How to Create a RESTful Web Service" target="create_rest_from_scratch" />
+                <tocitem text="How to Test a RESTful Web Service" target="test_rest" />
+            </tocitem>
+            <tocitem text="Creating JAX-WS Web Services" >
+                <tocitem text="How to Create an Empty JAX-WS Web Service" target="create_ws_from_scratch" />
+                <tocitem text="How to Create a JAX-WS Web Service from a Java Class" target="create_ws_from_java" />
+                <tocitem text="How to Create a JAX-WS Web Service from a WSDL File" target="create_ws_from_wsdl" />
+                <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
+                <tocitem text="Using the SOAP Web Service Designer" target="ws_designer" />
+            </tocitem>
+            
+                
+        </tocitem>
+        <tocitem text="Configuring Web Services" >
+            <tocitem text="About Configuring Web Services" target="config_ws_about" />
+            <tocitem text="About Annotations" target="about_annotations" />	   
+            <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
+            <tocitem text="Configuring via Annotations" target="config_ws_annotations" />
+            <tocitem text="Configuring via Deployment Descriptors" target="config_ws_dd" />
+        </tocitem>  
+        
+        
+        <tocitem text="Deploying and Testing Web Services" >
+            <tocitem text="About Deploying and Testing Web Services" target="about_deploy_and_test_ws" />
+            <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 	
+            <tocitem text="Deploying a Web Service" target="expose_ws" />
+            <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
+            <tocitem text="Testing a RESTful Web Service" target="test_rest" />
+        </tocitem>
+        <tocitem text="Creating SOAP Web Service Clients" >
+            <tocitem text="About SOAP Web Service Clients" target="about_wsc" />
+            <tocitem text="Working with SOAP Web Service Clients" target="wsc_process" />
+            <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
+            <tocitem text="Generating a JAX-WS Web Service Client" target="wsc_create" />
+            <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
+            <tocitem text="Asynchronously Calling a JAX-WS Web Service Operation" target="wsc_call_ws_asynchronous" />
+            <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
+        </tocitem>
+        <tocitem text="Creating RESTful Web Service Clients">
+            <tocitem text="About RESTful Web Service Clients" target="about_rest_wsc" />
+            <tocitem text="Working with RESTful Web Service Clients" target="wsc_rest_process" />
+            <tocitem text="Generating RESTful Web Service Java Clients" target="wsc_rest_java" />
+            <tocitem text="Generating RESTful Web Service JavaScript Clients" target="wsc_stubs" />
+            <tocitem text="Using the Web Service Manager" target="wsc_rest" />
+
+        </tocitem>
+        <tocitem text="Creating Handlers" >
+            <tocitem text="About Creating Handlers" target="about_ws_soap_message" />
+            <tocitem text="Creating a Handler" target="create_ws_soap_message" />
+            <tocitem text="Configuring a Handler" target="configure_ws_soap_message" />
+            <tocitem text="Testing and Using a Handler" target="test_and_use_ws_soap_message" />
+        </tocitem>
+        <tocitem text="Using JAXB for Java-XML Binding" >
+            <tocitem text="About Using JAXB for Java-XML Binding" target="about_jaxb" />
+            <tocitem text="Generating Java Classes from XML Schema Documents" target="jaxb_wizard" />
+            <tocitem text="Marshalling Java Classes to XML Elements" target="marshall_unmarshall" />
+            <tocitem text="Unmarshalling XML Elements to Java Classes" target="unmarshall_marshall" />
+        </tocitem>
+        <tocitem text="Configuring Quality of Service">
+            <tocitem text="About Quality of Service" target="org.netbeans.modules.websvc.wsitconf.about"/>
+            <tocitem text="About the Web Service Attributes Editor" target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" />
+            <tocitem text="Configuring Quality of Service" target="org.netbeans.modules.websvc.wsitconf.access"/>
+            <tocitem text="Port Binding" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode"/>
+            <tocitem text="Operation">
+                <tocitem text="About Operations" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode"/>
+                <tocitem text="Operation" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode"/>
+                <tocitem text="Input Message" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode"/>
+                <tocitem text="Output Message" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode"/>
+            </tocitem>
+            <tocitem text="Transport" target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode"/>
+            <tocitem text="Security" target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode"/>
+            <tocitem text="Advanced Configuration" target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode"/>
+        </tocitem>
+    </tocitem>
 </toc>
 

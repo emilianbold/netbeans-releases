@@ -43,6 +43,7 @@ package org.netbeans.modules.nativeexecution.pty;
 
 import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.support.ShellSession;
 
 /**
@@ -68,6 +69,8 @@ public final class SttySupport {
             result = ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
         } catch (IOException ex) {
             // bad luck.. still just ignore..
+        } catch (CancellationException ex) {
+            // TODO:CancellationException error processing
         }
 
         return result;

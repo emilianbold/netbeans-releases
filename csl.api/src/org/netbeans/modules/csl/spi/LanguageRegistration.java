@@ -58,4 +58,11 @@ public @interface LanguageRegistration {
     String [] mimeType();
     boolean useCustomEditorKit() default false;
     
+    /**
+     * Determines if the editor will be provided as a Multiview
+     * 
+     * @since 2.20
+     */
+    boolean useMultiview() default false;
+    
 }

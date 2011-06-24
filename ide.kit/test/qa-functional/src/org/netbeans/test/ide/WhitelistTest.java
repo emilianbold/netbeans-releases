@@ -169,6 +169,7 @@ public class WhitelistTest extends JellyTestCase {
             String txt = null;
             if (number > 0) {
                 txt = bcHandler.reportViolations(getLog("violations_" + stage + ".xml"));
+                bcHandler.writeViolationsSnapshot(new File(getWorkDir(),"violations_" + stage + ".npss"));
             }
             if (number > allowed) {
                 fail(

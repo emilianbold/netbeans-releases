@@ -780,7 +780,7 @@ public class Gdb {
 
         // characters from gdb accumulate here and are forwarded to the tap
         private StringBuilder interceptBuffer = new StringBuilder();
-        private LinkedList<String> interceptedLines = new LinkedList<String>();
+        private final LinkedList<String> interceptedLines = new LinkedList<String>();
 
 	/* OLD
         // buffer for accumulating incoming (from process) characters (via
@@ -981,7 +981,9 @@ public class Gdb {
                 appendChar(char_CR);
 
 		String line = interceptBuffer.toString();
-                interceptedLines.addLast(line);
+                synchronized (interceptedLines) {
+                    interceptedLines.addLast(line);
+                }
                 interceptBuffer = new StringBuilder();
 
 		// do some pattern recognition and alternative colored output.
@@ -1033,14 +1035,16 @@ public class Gdb {
         private final RequestProcessor processingQueue = new RequestProcessor("GDB output processing", 1); // NOI18N
 
         private void dispatchInterceptedLines() {
-            while (!interceptedLines.isEmpty()) {
-                final String line = interceptedLines.removeFirst();
+            synchronized (interceptedLines) {
+                while (!interceptedLines.isEmpty()) {
+                    final String line = interceptedLines.removeFirst();
 
-                processingQueue.post(new Runnable() {
-                    public void run() {
-                        miProxy.processLine(line);
-                    }
-                });
+                    processingQueue.post(new Runnable() {
+                        public void run() {
+                            miProxy.processLine(line);
+                        }
+                    });
+                }
             }
         }
     }
@@ -1085,7 +1089,7 @@ public class Gdb {
                 if (record.isStream()) {
                     String stream = record.stream();
                     if (stream.contains("configured") && stream.contains("mingw")) { //NOI18N
-                        fmap = FileMapper.getDefault(FileMapper.Type.MSYS);
+                        fmap = FileMapper.getByType(FileMapper.Type.MSYS);
                     }
                 }
 

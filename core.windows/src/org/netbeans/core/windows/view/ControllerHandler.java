@@ -46,13 +46,12 @@
 package org.netbeans.core.windows.view;
 
 
-import java.util.ArrayList;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.model.ModelElement;
-import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import org.openide.windows.TopComponent;
 
 import java.awt.*;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 
 
 /**
@@ -97,19 +96,19 @@ public interface ControllerHandler {
     // Helpers<<
     
     // DnD>>
-    public void userDroppedTopComponents(ModeImpl mode, TopComponent[] tcs);
+    public void userDroppedTopComponents(ModeImpl mode, TopComponentDraggable draggable);
     
-    public void userDroppedTopComponents(ModeImpl mode, TopComponent[] tcs, int index);
+    public void userDroppedTopComponents(ModeImpl mode, TopComponentDraggable draggable, int index);
     
-    public void userDroppedTopComponents(ModeImpl mode, TopComponent[] tcs, String side);
+    public void userDroppedTopComponents(ModeImpl mode, TopComponentDraggable draggable, String side);
     
-    public void userDroppedTopComponentsIntoEmptyEditor(TopComponent[] tcs);
+    public void userDroppedTopComponentsIntoEmptyEditor(TopComponentDraggable draggable);
     
-    public void userDroppedTopComponentsAround(TopComponent[] tcs, String side);
+    public void userDroppedTopComponentsAround(TopComponentDraggable draggable, String side);
     
-    public void userDroppedTopComponentsAroundEditor(TopComponent[] tcs, String side, int modeKind);
+    public void userDroppedTopComponentsAroundEditor(TopComponentDraggable draggable, String side);
     
-    public void userDroppedTopComponentsIntoFreeArea(TopComponent[] tcs, Rectangle bounds, int modeKind);
+    public void userDroppedTopComponentsIntoFreeArea(TopComponentDraggable draggable, Rectangle bounds);
     // DnD<<
 
     // undock/dock

@@ -44,6 +44,7 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
@@ -98,7 +99,8 @@ public class ProjectsWindowTest extends PerformanceTestCase {
     }
     
     public void shutdown() {
-        new ProjectViewAction().performMenu();
+        MainWindowOperator.getDefault().menuBar().closeSubmenus();
+        MainWindowOperator.getDefault().menuBar().pushMenu("Window|Projects");
     }
     
 }

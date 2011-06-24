@@ -122,8 +122,10 @@ public class FmtOptions {
     public static final String blankLinesBeforeClassEnd = "blankLinesBeforeClassEnd"; //NOI18N
     public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
     public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
-    public static final String blankLinesBeforeField = "blankLinesBeforeField"; //NOI18N
-    public static final String blankLinesAfterField = "blankLinesAfterField"; //NOI18N
+    public static final String blankLinesBeforeFields = "blankLinesBeforeField"; //NOI18N
+    public static final String blankLinesBetweenFields = "blankLinesBetweenField"; //NOI18N
+    public static final String blankLinesAfterFields = "blankLinesAfterField"; //NOI18N
+    public static final String blankLinesGroupFieldsWithoutDoc = "blankLinesGroupFieldsWithoutDoc"; //NOI18N
     public static final String blankLinesBeforeFunction = "blankLinesBeforeFunction"; //NOI18N
     public static final String blankLinesAfterFunction = "blankLinesAfterFunction"; //NOI18N
     public static final String blankLinesBeforeFunctionEnd = "blankLinesBeforeFunctionEnd"; //NOI18N
@@ -284,8 +286,10 @@ public class FmtOptions {
             { blankLinesAfterClass, "1"}, //NOI18N
             { blankLinesAfterClassHeader, "0"}, //NOI18N
             { blankLinesBeforeClassEnd, "0"}, //NOI18N
-            { blankLinesBeforeField, "1"}, //NOI18N
-            { blankLinesAfterField, "1"}, //NOI18N
+            { blankLinesBeforeFields, "1"}, //NOI18N
+	    { blankLinesGroupFieldsWithoutDoc, TRUE}, //NOI18N
+	    { blankLinesBetweenFields, "1"}, //NOI18N
+            { blankLinesAfterFields, "1"}, //NOI18N
             { blankLinesBeforeFunction, "1"}, //NOI18N
             { blankLinesAfterFunction, "1"}, //NOI18N
             { blankLinesBeforeFunctionEnd, "0"}, //NOI18N

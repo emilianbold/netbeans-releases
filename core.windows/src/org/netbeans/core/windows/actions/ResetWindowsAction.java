@@ -64,7 +64,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
@@ -131,17 +130,17 @@ public class ResetWindowsAction implements ActionListener {
             @Override
             public void run() {
                 //find the local folder that must be deleted
-                FileObject rootFolder = FileUtil.getConfigFile( PersistenceManager.ROOT_LOCAL_FOLDER );
-                if (reset && null != rootFolder) {
-                    try {
-                        for( FileObject fo : rootFolder.getChildren() ) {
-                            if( PersistenceManager.COMPS_FOLDER.equals( fo.getName() ) )
-                                continue; //do not delete settings files
-                            fo.delete();
-                        }
-                    } catch( IOException ioE ) {
-                        ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
+                try {
+                    FileObject rootFolder = PersistenceManager.getDefault().getRootLocalFolder();
+                    if (reset && null != rootFolder) {
+                            for( FileObject fo : rootFolder.getChildren() ) {
+                                if( PersistenceManager.COMPS_FOLDER.equals( fo.getName() ) )
+                                    continue; //do not delete settings files
+                                fo.delete();
+                            }
                     }
+                } catch( IOException ioE ) {
+                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
                 }
                 
                 //reset the window system
@@ -160,7 +159,11 @@ public class ResetWindowsAction implements ActionListener {
                 ModeImpl editorMode = (ModeImpl) wm.findMode("editor"); //NOI18N
                 //re-open editor windows that were opened before the reset
                 for( int i=0; i<editors.length && null != editorMode; i++ ) {
-                    editorMode.addOpenedTopComponentNoNotify(editors[i]);
+                    ModeImpl mode = ( ModeImpl ) wm.findMode( editors[i] );
+                    if( null == mode )
+                        mode = editorMode;
+                    if( null != mode )
+                        mode.addOpenedTopComponentNoNotify(editors[i]);
                 }
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override

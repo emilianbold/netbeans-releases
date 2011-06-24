@@ -62,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 
@@ -293,6 +294,8 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
                 if (hostinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
                     exeSuffix = ".exe"; // NOI18N
                 }
+            } catch (CancellationException ex) {
+                // TODO:CancellationException error processing
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

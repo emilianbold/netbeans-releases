@@ -41,16 +41,22 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * This class holds a single shell session per environment
@@ -77,7 +83,7 @@ public final class ShellSession {
         }
     }
 
-    private static synchronized NativeProcess startProcess(ExecutionEnvironment env) throws IOException {
+    private static synchronized NativeProcess startProcess(ExecutionEnvironment env) throws IOException, CancellationException {
         NativeProcess result;
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
         HostInfo info = HostInfoUtils.getHostInfo(env);
@@ -88,7 +94,7 @@ public final class ShellSession {
         return result;
     }
 
-    public static synchronized String[] execute(final ExecutionEnvironment env, final String command) throws IOException {
+    public static synchronized String[] execute(final ExecutionEnvironment env, final String command) throws IOException, CancellationException {
         NativeProcess process = sessions.get(env);
 
         if (process == null || process.getState() != NativeProcess.State.RUNNING) {
@@ -98,8 +104,25 @@ public final class ShellSession {
         String cmd = command + "; echo " + eop + " \n"; // NOI18N
         process.getOutputStream().write(cmd.getBytes());
         process.getOutputStream().flush();
-        String[] result = getResult(process.getInputStream());
 
+        final InputStream errorStream = process.getErrorStream();
+        final AtomicBoolean isReady = new AtomicBoolean(false);
+
+        RequestProcessor.getDefault().submit(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    while (!isReady.get() && errorStream.available() > 0) {
+                        errorStream.read();
+                    }
+                } catch (IOException ex) {
+                }
+            }
+        });
+
+        String[] result = getResult(process.getInputStream());
+        isReady.set(true);
         return result;
     }
 

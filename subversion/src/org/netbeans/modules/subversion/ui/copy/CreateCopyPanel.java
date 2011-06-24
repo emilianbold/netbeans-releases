@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
-import org.netbeans.modules.subversion.ui.wizards.*;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -71,7 +71,6 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Name")); // NOI18N
@@ -117,6 +116,9 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         jLabel4.setLabelFor(copyFromRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_Revision")); // NOI18N
 
+        copyFromRevisionTextField.setText(SVNRevision.HEAD.toString());
+        copyFromRevisionTextField.setToolTipText(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "LBL_CopyForm_RevisionHint")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_Search")); // NOI18N
         searchButton.setToolTipText(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_Search")); // NOI18N
 
@@ -124,8 +126,6 @@ public class CreateCopyPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(skipCheckBox, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_Skip")); // NOI18N
         skipCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "LBL_CopyForm_RevisionHint")); // NOI18N
 
         jLabel7.setLabelFor(previewTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Preview")); // NOI18N
@@ -142,8 +142,6 @@ public class CreateCopyPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(skipCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
                     .add(jLabel2)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -157,25 +155,25 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(copyFromRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 117, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(searchButton))
-                            .add(jLabel6)
-                            .add(copyFromLocalTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
-                            .add(copyFromRemoteTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)))
+                            .add(copyFromLocalTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 709, Short.MAX_VALUE)
+                            .add(copyFromRemoteTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 709, Short.MAX_VALUE)))
+                    .add(skipCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 837, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 837, Short.MAX_VALUE)
                     .add(jLabel5)
                     .add(switchToCheckBox)
                     .add(invalidValuesLabel)
-                    .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 811, Short.MAX_VALUE)
+                    .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 837, Short.MAX_VALUE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 837, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(copyToLabel)
                             .add(jLabel7))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(previewTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 672, Short.MAX_VALUE)
+                            .add(previewTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 678, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(urlComboBox, 0, 570, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -204,9 +202,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                     .add(jLabel4)
                     .add(copyFromRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(searchButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel6)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(skipCheckBox)
                 .add(31, 31, 31)
                 .add(jLabel5)
@@ -267,7 +263,6 @@ public class CreateCopyPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JRadioButton localRadioButton = new javax.swing.JRadioButton();

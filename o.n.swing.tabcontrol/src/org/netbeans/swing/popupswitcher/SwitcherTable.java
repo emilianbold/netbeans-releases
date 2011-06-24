@@ -60,6 +60,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
+import org.openide.awt.HtmlRenderer;
 import org.openide.util.Utilities;
 
 /**
@@ -73,7 +74,7 @@ import org.openide.util.Utilities;
  * @author mkrauskopf
  */
 public class SwitcherTable extends JTable {
-    
+
     private static final Border rendererBorder =
             BorderFactory.createEmptyBorder(2, 5, 0, 5);
     
@@ -152,8 +153,16 @@ public class SwitcherTable extends JTable {
         Component ren = renderer.getTableCellRendererComponent(this, item,
                 selected, selected, row, column);
         JLabel lbl = null;
-        if( ren instanceof JLabel )
-            lbl = (JLabel) ren;
+        if (ren instanceof JLabel) {
+            // #199007: Swing HTML renderer does a poor job of truncating long labels
+            JLabel prototype = (JLabel) ren;
+            lbl = HtmlRenderer.createLabel();
+            lbl.setForeground(prototype.getForeground());
+            lbl.setBackground(prototype.getBackground());
+            lbl.setFont(prototype.getFont());
+            // border, text will be overwritten below anyway
+            ren = lbl;
+        }
         
         if (item == null) {
             // it's a filler space, we're done

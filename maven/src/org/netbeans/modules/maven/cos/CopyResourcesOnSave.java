@@ -336,7 +336,11 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
 
         resourceLoop:
         for (Resource res : resources) {
-            URI uri = FileUtilities.getDirURI(prj.getProjectDirectory(), res.getDirectory());
+            String dir = res.getDirectory();
+            if (dir == null) {
+                continue;
+            }
+            URI uri = FileUtilities.getDirURI(prj.getProjectDirectory(), dir);
             FileObject fo = FileUtil.toFileObject(new File(uri));
             if (fo != null && FileUtil.isParentOf(fo, child)) {
                 String path = FileUtil.getRelativePath(fo, child);

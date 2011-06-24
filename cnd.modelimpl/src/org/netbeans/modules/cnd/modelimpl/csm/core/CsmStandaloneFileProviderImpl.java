@@ -308,7 +308,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         System.err.printf("### Standalone provider:  %s\n", String.format(pattern, args)); //NOI18N
     }
 
-    private static final class NativeProjectImpl implements NativeProject {
+    /*package*/ static final class NativeProjectImpl implements NativeProject {
 
         private final List<FSPath> sysIncludes;
         private final List<FSPath> usrIncludes;

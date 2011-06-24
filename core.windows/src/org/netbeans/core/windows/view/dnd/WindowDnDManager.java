@@ -67,7 +67,7 @@ import org.openide.windows.TopComponent;
 /**
  * Manager for window DnD. Manages notifying all opened
  * <code>ModeContainer</code>'s to be notified about starting
- * and finishe window drag operation.
+ * and finished window drag operation.
  *
  *
  * @author  Peter Zavadsky
@@ -108,10 +108,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     // Helpers
     private TopComponentDroppable startingDroppable;
     private Point startingPoint;
-    // XXX Normal way it should be possible to retrieve from DnD events.
-    private TopComponent startingTransfer;
-    /** kind of mode into which belonged last dragged TopComponent at that time */
-    private int draggedKind;
+    // TopComponent being dragged or null if the whole Mode is being dragged
+    private TopComponentDraggable startingTransfer;
 
     /** drag feedback handler, listen to the mouse pointer motion during the drag */
     private MotionListener motionListener;
@@ -143,7 +141,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     
     /** Indicates whether the window drag and drop is enabled. */
     public static boolean isDnDEnabled() {
-        return !Constants.SWITCH_DND_DISABLE && Switches.isTopComponentDragAndDropEnabled();
+        return !Constants.SWITCH_DND_DISABLE 
+                && (Switches.isTopComponentDragAndDropEnabled() 
+                    || Switches.isEditorModeDragAndDropEnabled()
+                    || Switches.isViewModeDragAndDropEnabled());
     }
 
     /** Gets the only current instance of <code>DragSource</code> used in 
@@ -170,6 +171,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     } 
     
     /** Sets the <code>dropSuccess</code> flag. */
+    @Override
     public void setDropSuccess(boolean dropSuccess) {
         this.dropSuccess = dropSuccess;
     }
@@ -181,6 +183,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     
     /**Sets the last drop target compoent over which hovered the mouse.
      * Hacking purpose only. */
+    @Override
     public void setLastDropTarget(DropTargetGlassPane target) {
         if(target != lastTargetWRef.get()) {
             lastTargetWRef = new WeakReference<DropTargetGlassPane>(target);
@@ -202,7 +205,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         return startingPoint;
     }
     
-    public TopComponent getStartingTransfer() {
+    public TopComponentDraggable getStartingTransfer() {
         return startingTransfer;
     }
 
@@ -211,7 +214,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * <code>ModeContainer.DropInidicator</code> interface about
      * starting drag operation. */
     public void dragStarting(TopComponentDroppable startingDroppable, Point startingPoint,
-    TopComponent startingTransfer) {
+    TopComponentDraggable startingTransfer) {
         if(DEBUG) {
             debugLog(""); // NOI18N
             debugLog("dragStarting"); // NOI18N
@@ -220,14 +223,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         this.startingDroppable = startingDroppable;
         this.startingPoint = startingPoint;
         this.startingTransfer = startingTransfer;
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(startingTransfer);
-        this.draggedKind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
-
-        // exclude dragged separate view
-        /*Window rpc = SwingUtilities.getWindowAncestor(startingTransfer);
-        if (rpc != null && !WindowManagerImpl.getInstance().getMainWindow().equals(rpc)) {
-            ZOrderManager.getInstance().setExcludeFromOrder((RootPaneContainer)rpc, true);
-        }*/
         
         Map<JRootPane,Component> addedRoots = new HashMap<JRootPane, Component>();
         Set<Component> addedFrames = new HashSet<Component>();
@@ -381,6 +376,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
     
     /** Gets set of floating frames. */
+    @Override
     public Set<Component> getFloatingFrames() {
         synchronized(floatingFrames) {
             return new HashSet<Component>(floatingFrames);
@@ -401,10 +397,12 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
 
     // XXX
+    @Override
     public boolean isCopyOperationPossible() {
         return topComponentDragSupport.isCopyOperationPossible();
     }
     
+    @Override
     public Controller getController() {
         return viewAccessor.getController();
     }
@@ -422,14 +420,14 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     
     /** Indicates whether there is a droppable in main window, specified
      * by screen location. */
-    private boolean isInMainWindowDroppable(Point location, int kind, TopComponent transfer) {
-        return findMainWindowDroppable(location, kind, transfer) != null;
+    private boolean isInMainWindowDroppable(Point location, TopComponentDraggable transfer) {
+        return findMainWindowDroppable(location, transfer) != null;
     }
     
     /** Checks whetner the point is inside one of floating window,
      * i.e. separated modes, droppable area. The point is relative to screen. */
-    private static boolean isInFloatingFrameDroppable(Set<Component> floatingFrames, Point location, int kind, TopComponent transfer) {
-        return findFloatingFrameDroppable(floatingFrames, location, kind, transfer) != null;
+    private static boolean isInFloatingFrameDroppable(Set<Component> floatingFrames, Point location, TopComponentDraggable transfer) {
+        return findFloatingFrameDroppable(floatingFrames, location, transfer) != null;
     }
     
     /** 
@@ -465,15 +463,15 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
     /** Finds <code>TopComponentDroppable</code> from specified screen location. */
     private TopComponentDroppable findDroppableFromScreen(
-    Set<Component> floatingFrames, Point location, int kind, TopComponent transfer) {
+    Set<Component> floatingFrames, Point location, TopComponentDraggable transfer) {
 
-        TopComponentDroppable droppable = findMainWindowDroppable(location, kind, transfer);
+        TopComponentDroppable droppable = findMainWindowDroppable(location, transfer);
         if(droppable != null) {
             return droppable;
         }
         
-        if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(transfer) ) {
-            droppable = findFloatingFrameDroppable(floatingFrames, location, kind, transfer);
+        if( transfer.isUndockingEnabled() ) {
+            droppable = findFloatingFrameDroppable(floatingFrames, location, transfer);
             if(droppable != null) {
                 return droppable;
             } 
@@ -494,8 +492,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     
     /** Gets droppable from main window, specified by screen location.
      * Helper method. */
-    private TopComponentDroppable findMainWindowDroppable(
-    Point location, int kind, TopComponent transfer) {
+    private TopComponentDroppable findMainWindowDroppable(Point location, TopComponentDraggable transfer) {
         
         JFrame mainWindow = (JFrame)WindowManagerImpl.getInstance().getMainWindow();
 
@@ -505,7 +502,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
         Point p = new Point(location);
         SwingUtilities.convertPointFromScreen(p, mainWindow.getContentPane());
-        if( Switches.isTopComponentSlidingEnabled() && Switches.isSlidingEnabled(transfer) ) {
+        if( transfer.isSlidingEnabled() ) {
             if (lastSlideDroppable != null) {
                 if (lastSlideDroppable.isWithinSlide(p)) {
                     return lastSlideDroppable;
@@ -515,6 +512,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             if (droppable != null) {
                 CenterSlidingDroppable drop = new CenterSlidingDroppable(viewAccessor, droppable, Constants.LEFT);
                 if (drop.isWithinSlide(p)) {
+                    if( !drop.supportsKind( transfer ) ) {
+                        lastSlideDroppable = null;
+                        return null;
+                    }
                     lastSlideDroppable = drop;
                     return drop;
                 }
@@ -523,6 +524,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             if (droppable != null) {
                 CenterSlidingDroppable drop = new CenterSlidingDroppable(viewAccessor, droppable, Constants.RIGHT);
                 if (drop.isWithinSlide(p)) {
+                    if( !drop.supportsKind( transfer ) ) {
+                        lastSlideDroppable = null;
+                        return null;
+                    }
                     lastSlideDroppable = drop;
                     return drop;
                 }
@@ -531,13 +536,17 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             if (droppable != null) {
                 CenterSlidingDroppable drop = new CenterSlidingDroppable(viewAccessor, droppable, Constants.BOTTOM);
                 if (drop.isWithinSlide(p)) {
+                    if( !drop.supportsKind( transfer ) ) {
+                        lastSlideDroppable = null;
+                        return null;
+                    }
                     lastSlideDroppable = drop;
                     return drop;
                 }
             }
         }
         lastSlideDroppable = null;
-        if (isNearEditorEdge(location, viewAccessor, kind)) {
+        if (isNearEditorEdge(location, viewAccessor, transfer.getKind())) {
             return getEditorAreaDroppable();
         }
         if (isNearEdge(location, viewAccessor)) {
@@ -545,7 +554,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
         Point mainP = new Point(location);
         SwingUtilities.convertPointFromScreen(mainP, mainWindow);
-        return findDroppable(mainWindow, mainP, kind, transfer);
+        return findDroppable(mainWindow, mainP, transfer);
     }
     
     private static TopComponentDroppable findSlideDroppable(Component comp) {
@@ -561,16 +570,14 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /** Gets droppable from separated (floating) window, specified
      * by screen location. Helper method. */
     private static TopComponentDroppable findFloatingFrameDroppable(
-    Set<Component> floatingFrames, Point location, int kind, TopComponent transfer) {
+    Set<Component> floatingFrames, Point location, TopComponentDraggable transfer) {
         for(Component comp: floatingFrames) {
             Rectangle bounds = comp.getBounds();
             
             if(bounds.contains(location) &&
                ZOrderManager.getInstance().isOnTop((RootPaneContainer)comp, location)) {
                 TopComponentDroppable droppable = findDroppable(comp,
-                        new Point(location.x - bounds.x, location.y - bounds.y),
-                        kind,
-                        transfer);
+                        new Point(location.x - bounds.x, location.y - bounds.y), transfer);
                 if(droppable != null) {
                     return droppable;
                 }
@@ -586,7 +593,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * also contains the specified location.
      * Utilitity method. */
     private static TopComponentDroppable findDroppable(Component comp,
-                         Point location, int kind, TopComponent transfer) {
+                         Point location, TopComponentDraggable transfer) {
         RootPaneContainer rpc;
         if(comp instanceof RootPaneContainer) {
             rpc = (RootPaneContainer)comp;
@@ -617,7 +624,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         
         if(deepest instanceof TopComponentDroppable) {
             TopComponentDroppable droppable = (TopComponentDroppable)deepest;
-            if(droppable.supportsKind(kind, transfer)) {
+            if(droppable.supportsKind(transfer)) {
                 return droppable;
             }
         }
@@ -625,7 +632,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         while(deepest != null) {
             TopComponentDroppable nextDroppable = (TopComponentDroppable)SwingUtilities.getAncestorOfClass(
                     TopComponentDroppable.class, deepest);
-            if(nextDroppable != null && nextDroppable.supportsKind(kind, transfer)) {
+            if(nextDroppable != null && nextDroppable.supportsKind(transfer)) {
                 return nextDroppable;
             }
             deepest = (Component)nextDroppable;
@@ -748,20 +755,17 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * @param location screen location */
     boolean tryPerformDrop(Controller controller, Set<Component> floatingFrames,
     Point location, int dropAction, Transferable transferable) {
-        TopComponent[] tcArray = extractTopComponent(
+        TopComponentDraggable draggable = extractTopComponentDraggable(
             dropAction == DnDConstants.ACTION_COPY,
             transferable
         );
         
-        if(tcArray == null || tcArray.length == 0) {
+        if(draggable == null) {
             return false;
         }
         
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tcArray[0]);
-        int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
-        
         TopComponentDroppable droppable
-                = findDroppableFromScreen(floatingFrames, location, kind, tcArray[0]);
+                = findDroppableFromScreen(floatingFrames, location, draggable);
         if(droppable == null) {
             return false;
         }
@@ -770,13 +774,13 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         if(dropComponent != null) {
             SwingUtilities.convertPointFromScreen(location, dropComponent);
         }
-        return performDrop(controller, droppable, dropAction, tcArray, location, draggedKind);
+        return performDrop(controller, droppable, draggable, location);
     }
     
     /** Extracts <code>TopComponent</code> instance from
      * <code>Transferable</code> according the <code>dropAction</code>.
      * Utility method. */
-    static TopComponent[] extractTopComponent(boolean clone,
+    static TopComponentDraggable extractTopComponentDraggable(boolean clone,
     Transferable tr) {
         DataFlavor df = getDataFlavorForDropAction(clone);
         
@@ -800,7 +804,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     tc = (TopComponent)tr.getTransferData(df);
                 }
 
-                return new TopComponent[] {tc};
+                return new TopComponentDraggable( tc );
             } catch(UnsupportedFlavorException ufe) {
                 Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
@@ -808,10 +812,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             }
         }
     
-        df = new DataFlavor(TopComponentDragSupport.MIME_TOP_COMPONENT_ARRAY, null);
+        df = new DataFlavor(TopComponentDragSupport.MIME_TOP_COMPONENT_MODE, null);
         if(tr.isDataFlavorSupported(df)) {
             try {
-                return (TopComponent[])tr.getTransferData(df);
+                ModeImpl mode = (ModeImpl)tr.getTransferData(df);
+                return new TopComponentDraggable( mode );
             } catch(UnsupportedFlavorException ufe) {
                 Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
@@ -845,18 +850,18 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * Performs actual drop operation. Called from DropTargetListener.
      * @return <code>true</code> if the drop was successful */
     private static boolean performDrop(Controller controller,
-    TopComponentDroppable droppable, int dropAction, TopComponent[] tcArray, Point location, int draggedKind) {
+    TopComponentDroppable droppable, TopComponentDraggable draggable, Point location) {
         if(DEBUG) {
             debugLog(""); // NOI18N
             debugLog("performDrop"); // NOI18N
             debugLog("droppable=" + droppable); // NOI18N
         }
 
-        if(tcArray == null || tcArray.length == 0) {
+        if(draggable == null) {
             return true;
         }
         
-        if(!droppable.canDrop(tcArray[0], location)) {
+        if(!droppable.canDrop(draggable, location)) {
             return true;
         }
         
@@ -864,19 +869,17 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         Object constr = droppable.getConstraintForLocation(location);
 
         if(viewElement instanceof EditorView)  {
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tcArray[0]);
-            int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
+            int kind = draggable.getKind();
             if(kind == Constants.MODE_KIND_EDITOR) {
-                controller.userDroppedTopComponentsIntoEmptyEditor(tcArray);
+                controller.userDroppedTopComponentsIntoEmptyEditor(draggable);
             } else {
                 if(constr == Constants.TOP
                 || constr == Constants.LEFT
                 || constr == Constants.RIGHT
                 || constr == Constants.BOTTOM) {
-                    controller.userDroppedTopComponentsAroundEditor(tcArray, (String)constr, kind);
-                } else if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-                || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(tcArray[0])) {
-                    controller.userDroppedTopComponentsIntoEmptyEditor(tcArray);
+                    controller.userDroppedTopComponentsAroundEditor(draggable, (String)constr);
+                } else if( draggable.isAllowedToMoveAnywhere() ) {
+                    controller.userDroppedTopComponentsIntoEmptyEditor(draggable);
                 }
             }
         } else if(viewElement instanceof ModeView) {
@@ -885,11 +888,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             || constr == Constants.LEFT
             || constr == Constants.RIGHT
             || constr == Constants.BOTTOM) {
-                controller.userDroppedTopComponents(modeView, tcArray, (String)constr);
+                controller.userDroppedTopComponents(modeView, draggable, (String)constr);
             } else if(constr instanceof Integer) {
-                controller.userDroppedTopComponents(modeView, tcArray, ((Integer)constr).intValue());
+                controller.userDroppedTopComponents(modeView, draggable, ((Integer)constr).intValue());
             } else {
-                controller.userDroppedTopComponents(modeView, tcArray);
+                controller.userDroppedTopComponents(modeView, draggable);
             }
         } else if(viewElement == null) { // XXX around area or free area
             if(constr == Constants.TOP
@@ -897,19 +900,19 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             || constr == Constants.RIGHT
             || constr == Constants.BOTTOM) { // XXX around area
                 if( droppable instanceof EditorAreaDroppable ) {
-                    controller.userDroppedTopComponentsAroundEditor(tcArray, (String)constr, Constants.MODE_KIND_EDITOR);
+                    controller.userDroppedTopComponentsAroundEditor(draggable, (String)constr);
                 } else {
-                    controller.userDroppedTopComponentsAround(tcArray, (String)constr);
+                    controller.userDroppedTopComponentsAround(draggable, (String)constr);
                 }
             } else if(constr instanceof Rectangle) { // XXX free area
                 Rectangle bounds = (Rectangle)constr;
                 // #38657 Refine bounds.
-                Component modeComp = SwingUtilities.getAncestorOfClass(ModeComponent.class, tcArray[0]);
-                if(modeComp != null) {
-                    bounds.setSize(modeComp.getWidth(), modeComp.getHeight());
+                Rectangle modeBounds = draggable.getBounds();
+                if( null != modeBounds ) {
+                    bounds.setSize(modeBounds.width, modeBounds.height);
                 }
                 
-                controller.userDroppedTopComponentsIntoFreeArea(tcArray, bounds, draggedKind);
+                controller.userDroppedTopComponentsIntoFreeArea(draggable, bounds);
             }
         }
 
@@ -943,6 +946,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         
 
         /** Implements <code>DragSourceMotionListener</code>. */
+        @Override
         public void dragMouseMoved(DragSourceDragEvent evt) {
             if(DEBUG) {
                 debugLog("dragMouseMoved evt=" + evt); // NOI18N
@@ -961,17 +965,16 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 handleWindowMove(mode, windowDnDManager.startingTransfer, evt);
             }*/
             boolean isInMainDroppable
-                    = windowDnDManager.isInMainWindowDroppable(location, windowDnDManager.draggedKind, windowDnDManager.startingTransfer);
+                    = windowDnDManager.isInMainWindowDroppable(location, windowDnDManager.startingTransfer);
             boolean isInFrameDroppable
-                    = isInFloatingFrameDroppable(windowDnDManager.getFloatingFrames(), location, windowDnDManager.draggedKind, windowDnDManager.startingTransfer)
-                    && Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(windowDnDManager.startingTransfer);
+                    = isInFloatingFrameDroppable(windowDnDManager.getFloatingFrames(), location, windowDnDManager.startingTransfer)
+                    && windowDnDManager.startingTransfer.isUndockingEnabled();
             boolean isAroundCenterPanel
                     = isAroundCenterPanel(location);
-            boolean shouldPaintFakeWindow = false;
 
             if(isInMainDroppable || isInFrameDroppable || isAroundCenterPanel) {
                 TopComponentDroppable droppable 
-                        = windowDnDManager.findDroppableFromScreen(windowDnDManager.getFloatingFrames(), location, windowDnDManager.draggedKind, windowDnDManager.startingTransfer);
+                        = windowDnDManager.findDroppableFromScreen(windowDnDManager.getFloatingFrames(), location, windowDnDManager.startingTransfer);
                 //hack - can't get the bounds correctly, sometimes freearedroppable gets here..
                 
                 if (droppable instanceof FreeAreaDroppable) {
@@ -999,21 +1002,17 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     }
                     dragOverDropTarget(location, droppable);
                 }
-            } else if(!isInMainWindow(location)
-            && windowDnDManager.isInFloatingFrame(location)) {
+            } else if(!isInMainWindow(location) 
+                        && windowDnDManager.isInFloatingFrame(location)) {
                 // Simulates success drop in free area.
                 topComponentDragSupport.setSuccessCursor(false);
             } else if(isInFreeArea(location, fakeWindow)
-            && getFreeAreaDroppable(location).canDrop(windowDnDManager.startingTransfer, location)
-                    && Switches.isTopComponentUndockingEnabled()
-                     && Switches.isUndockingEnabled(windowDnDManager.startingTransfer)) {
+                        && getFreeAreaDroppable(location).canDrop(windowDnDManager.startingTransfer, location)
+                        && windowDnDManager.startingTransfer.isUndockingEnabled()) {
                 topComponentDragSupport.setSuccessCursor(true);
-                // paint fake window during move over free area
-//                shouldPaintFakeWindow = true;
             } else {
                 topComponentDragSupport.setUnsuccessCursor();
             }
-            paintFakeWindow(shouldPaintFakeWindow, evt);
             
             if(!isInMainDroppable && !isInFrameDroppable && !isAroundCenterPanel) {
                 clearExitedDropTarget();
@@ -1048,16 +1047,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             }
         }
         
-        /** Gets main drop target glass pane.*/
-        private static DropTargetGlassPane getMainDropTargetGlassPane() {
-            Component glass = ((JFrame)WindowManagerImpl.getInstance().getMainWindow()).getGlassPane();
-            if(glass instanceof DropTargetGlassPane) {
-                return (DropTargetGlassPane)glass;
-            } else {
-                return null;
-            }
-        }
-
         void dragFinished () {
             previousDragLoc = null;
             if (fakeWindow != null) {
@@ -1066,43 +1055,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             }
         }
         
-        /** Shows or hides fake window as drag under effect
-         */
-        private void paintFakeWindow (boolean visible, DragSourceDragEvent evt) {
-//            Point loc = evt.getLocation();
-//            // no window if location is unknown
-//            if (loc == null) {
-//                return;
-//            }
-//            if (fakeWindow == null) {
-//                fakeWindow = createFakeWindow();
-//                isSizeSet = false;
-//            }
-//            fakeWindow.setLocation(loc);
-//            fakeWindow.setVisible(visible);
-//            // calculate space for window with decorations (title, border...)
-//            if (visible && !isSizeSet) {
-//                Dimension size = windowDnDManager.startingTransfer.getSize();
-//                Insets insets = fakeWindow.getInsets();
-//                size.width += insets.left + insets.right;
-//                size.height += insets.top + insets.bottom;
-//                fakeWindow.setSize(size);
-//                isSizeSet = true;
-//            }
-        }
-
-        /** Creates and returns fake window as drag under effect */
-        private Window createFakeWindow () {
-            Window result;
-            if (windowDnDManager.draggedKind == Constants.MODE_KIND_EDITOR) {
-                result = new JFrame();
-            } else {
-                result = new JDialog((JFrame) null);
-            }
-            result.setAlwaysOnTop(true);
-            return result;
-        }
-
     } // End of class MotionListener.
     
 
@@ -1119,6 +1071,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private class CenterPanelDroppable implements TopComponentDroppable {
 
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public java.awt.Shape getIndicationForLocation(Point p) {
             Rectangle bounds = getDropComponent().getBounds();
             Rectangle res = null;
@@ -1140,6 +1093,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
 
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public Object getConstraintForLocation(Point p) {
             Rectangle bounds = getDropComponent().getBounds();
             Component leftSlide = viewAccessor.getSlidingModeComponent(Constants.LEFT);
@@ -1160,32 +1114,33 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
 
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public Component getDropComponent() {
             return MainWindow.getInstance().getDesktop();
         }
         
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public ViewElement getDropViewElement() {
             return null;
         }
         
-        public boolean canDrop(TopComponent transfer, Point location) {
-            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
+            if( transfer.isAllowedToMoveAnywhere() ) {
                 return true;
             }
 
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
-            return mode != null && (mode.getKind() == Constants.MODE_KIND_VIEW || mode.getKind() == Constants.MODE_KIND_SLIDING);
+            return transfer.getKind() == Constants.MODE_KIND_VIEW || transfer.getKind() == Constants.MODE_KIND_SLIDING;
         }
         
-        public boolean supportsKind(int kind, TopComponent transfer) {
-            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
+            if( transfer.isAllowedToMoveAnywhere() ) {
                 return true;
             }
 
-            return kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
+            return transfer.getKind() == Constants.MODE_KIND_VIEW || transfer.getKind() == Constants.MODE_KIND_SLIDING;
         }
 
 
@@ -1195,6 +1150,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private class EditorAreaDroppable implements TopComponentDroppable {
 
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public java.awt.Shape getIndicationForLocation(Point p) {
             Rectangle bounds = getDropComponent().getBounds();
             Rectangle res = null;
@@ -1216,6 +1172,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
 
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public Object getConstraintForLocation(Point p) {
             Rectangle bounds = getDropComponent().getBounds();
             Component leftSlide = viewAccessor.getSlidingModeComponent(Constants.LEFT);
@@ -1236,32 +1193,33 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
 
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public Component getDropComponent() {
             return WindowManagerImpl.getInstance().getEditorAreaComponent();
         }
         
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public ViewElement getDropViewElement() {
             return null;
         }
         
-        public boolean canDrop(TopComponent transfer, Point location) {
-            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
+            if(transfer.isAllowedToMoveAnywhere() ) {
                 return true;
             }
 
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
-            return mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR;
+            return transfer.getKind() == Constants.MODE_KIND_EDITOR;
         }
         
-        public boolean supportsKind(int kind, TopComponent transfer) {
-            if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
+            if(transfer.isAllowedToMoveAnywhere() ) {
                 return true;
             }
 
-            return kind == Constants.MODE_KIND_EDITOR;
+            return transfer.getKind() == Constants.MODE_KIND_EDITOR;
         }
 
 
@@ -1278,32 +1236,36 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         }
         
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public java.awt.Shape getIndicationForLocation(Point p) {
             return null;
         }
         
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public Object getConstraintForLocation(Point p) {
             return new Rectangle(location.x, location.y,
                 Constants.DROP_NEW_MODE_SIZE.width, Constants.DROP_NEW_MODE_SIZE.height);
         }
         
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public Component getDropComponent() {
             return null;
         }
         
         /** Implements <code>TopComponentDroppable</code>. */
+        @Override
         public ViewElement getDropViewElement() {
             return null;
         }
         
-        public boolean canDrop(TopComponent transfer, Point location) {
-            if (Constants.SWITCH_MODE_ADD_NO_RESTRICT ||
-                WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
+            if (transfer.isAllowedToMoveAnywhere()) {
                 return true;
             }
-            ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
+            ModeImpl mode = transfer.getMode();
 
             // don't accept drop from separated mode with single component in it,
             // it makes no sense (because such DnD into free area equals to
@@ -1316,7 +1278,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             return true;
         }
         
-        public boolean supportsKind(int kind, TopComponent transfer) {
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
             return true;
         }
 
@@ -1343,22 +1306,27 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             isShowing = false;
         }
         
-        public boolean canDrop(TopComponent transfer, Point location) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
             return original.canDrop(transfer, location);
         }
 
+        @Override
         public Object getConstraintForLocation(Point location) {
             return original.getConstraintForLocation(location);
         }
 
+        @Override
         public Component getDropComponent() {
             return original.getDropComponent();
         }
 
+        @Override
         public ViewElement getDropViewElement() {
             return original.getDropViewElement();
         }
 
+        @Override
         public Shape getIndicationForLocation(Point location) {
             Shape toReturn = original.getIndicationForLocation(location);
             Rectangle dim = original.getDropComponent().getBounds();
@@ -1425,10 +1393,12 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             
         }
 
-        public boolean supportsKind(int kind, TopComponent transfer) {
-            return original.supportsKind(kind, transfer);
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
+            return original.supportsKind(transfer);
         }
 
+        @Override
         public void additionalDragPaint(Graphics2D g) {
             Rectangle dim = original.getDropComponent().getBounds();
             if (dim.width > 10 && dim.height > 10) {
@@ -1467,6 +1437,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             g.setColor(col);
         }
         
+        @Override
         public Rectangle getPaintArea() {
             Rectangle dim = original.getDropComponent().getBounds();
             if (dim.width > 10 && dim.height > 10) {

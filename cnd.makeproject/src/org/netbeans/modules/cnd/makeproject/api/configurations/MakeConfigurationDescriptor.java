@@ -804,10 +804,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         updateExtensionList();
         if (!isModified()) {
-            if (!MakeProjectUtils.isFullRemote(project)) {
-                // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
-                new ConfigurationMakefileWriter(this).writeMissingMakefiles();
-            }
+            //if (!MakeProjectUtils.isFullRemote(project)) {
+            //    // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
+            //    new ConfigurationMakefileWriter(this).writeMissingMakefiles();
+            //}
+            new ConfigurationMakefileWriter(this).write();
             ConfigurationPrivateXMLWriter();
             saveProject();
 
@@ -899,7 +900,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             element.appendChild(n1);
         }
         data.appendChild(element);
-        helper.putPrimaryConfigurationData(data, true);
 
         // Remove old source root node
         nodeList = data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ROOT_LIST_ELEMENT);
@@ -919,8 +919,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             element.appendChild(n1);
         }
         data.appendChild(element);
-        helper.putPrimaryConfigurationData(data, true);
-
 
         // Remove old configuration node
         nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CONFIGURATION_LIST_ELEMENT);
@@ -944,9 +942,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             element.appendChild(element2);
         }
         data.appendChild(element);
-
-        helper.putPrimaryConfigurationData(data, true);
-
 
         // Create source encoding node
         nodeList = data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ENCODING_TAG);

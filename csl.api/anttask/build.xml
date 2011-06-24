@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
                 <!-- Note: in NB 4.0, ${ant.home}/lib/ant.jar will work as is -->
                 <pathelement path="${netbeans.library.path}"/>
                 <pathelement path="${ant.home}/lib/ant.jar"/>
-                <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
+                <pathelement location="${nbantext.jar}"/>
 		<!--<pathelement location="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />-->
 		<!--<pathelement location="${nb_all}/schema2beans/dev/schema2beansdev.jar" />-->
 	  </classpath>

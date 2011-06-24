@@ -71,6 +71,7 @@ import java.net.URL;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.logging.Logger;
+import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -101,27 +102,33 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         VOLUME_TYPE_JAVADOC,
     }));
 
+    @Override
     public String getLibraryType() {
         return LIBRARY_TYPE;
     }
     
+    @Override
     public String getDisplayName () {
         return NbBundle.getMessage (J2SELibraryTypeProvider.class,"TXT_J2SELibraryType");
     }
 
+    @Override
     public String[] getSupportedVolumeTypes () {
         return VOLUME_TYPES;
     }
 
+    @Override
     public LibraryImplementation createLibrary() {
         return new J2SELibraryImpl ();
     }
 
 
+    @Override
     public void libraryCreated(final LibraryImplementation libraryImpl) {
         assert libraryImpl != null;
         ProjectManager.mutex().postWriteRequest(
                 new Runnable () {
+                    @Override
                     public void run () {
                         try {
                             EditableProperties props = PropertyUtils.getGlobalProperties();
@@ -137,9 +144,11 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         );
     }
 
+    @Override
     public void libraryDeleted(final LibraryImplementation libraryImpl) {
         assert libraryImpl != null;
         ProjectManager.mutex().postWriteRequest(new Runnable () {
+                @Override
                 public void run() {
                     try {
                         EditableProperties props = PropertyUtils.getGlobalProperties();
@@ -155,6 +164,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             });
     }
 
+    @Override
     public Customizer getCustomizer(String volumeType) {
         if (VOLUME_TYPES[0].equals(volumeType)||
             VOLUME_TYPES[1].equals(volumeType)||
@@ -167,6 +177,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
     }
     
 
+    @Override
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }
@@ -228,13 +239,15 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
     }
     
     //Like DefaultLibraryTypeProvider but in addition checks '/' on the end of folder URLs.
-    private static class J2SELibraryImpl implements LibraryImplementation {
+    private static class J2SELibraryImpl implements NamedLibraryImplementation {
         private String description;
 
         private Map<String,List<URL>> contents;
 
         // library 'binding name' as given by user
         private String name;
+
+        private String displayName;
 
         private String localizingBundle;
 
@@ -251,20 +264,34 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         }
 
 
+        @Override
         public String getType() {
             return LIBRARY_TYPE;
         }
 
+        @Override
         public void setName(final String name) throws UnsupportedOperationException {
             String oldName = this.name;
             this.name = name;
             this.firePropertyChange (PROP_NAME, oldName, this.name);
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return this.displayName;
+        }
+
+        @Override
         public List<URL> getContent(String contentType) throws IllegalArgumentException {
             List<URL> content = contents.get(contentType);
             if (content == null)
@@ -272,6 +299,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             return Collections.unmodifiableList (content);
         }
 
+        @Override
         public void setContent(final String contentType, List<URL> path) throws IllegalArgumentException {
             if (path == null) {
                 throw new IllegalArgumentException ();
@@ -311,37 +339,44 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             return checkedResources;
         }
 
+        @Override
         public String getDescription () {
                 return this.description;
         }
 
+        @Override
         public void setDescription (String text) {
             String oldDesc = this.description;
             this.description = text;
             this.firePropertyChange (PROP_DESCRIPTION, oldDesc, this.description);
         }
 
+        @Override
         public String getLocalizingBundle() {
             return this.localizingBundle;
         }
 
+        @Override
         public void setLocalizingBundle(String resourceName) {
             this.localizingBundle = resourceName;
         }
 
+        @Override
         public synchronized void addPropertyChangeListener (PropertyChangeListener l) {
             if (this.listeners == null)
                 this.listeners = new ArrayList<PropertyChangeListener>();
             this.listeners.add (l);
         }
 
+        @Override
         public synchronized void removePropertyChangeListener (PropertyChangeListener l) {
             if (this.listeners == null)
                 return;
             this.listeners.remove (l);
         }
 
-        public @Override String toString() {
+        @Override
+        public String toString() {
             return this.getClass().getName()+"[" + name + "]"; // NOI18N
         }
 

@@ -60,6 +60,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
@@ -563,18 +564,11 @@ public class Utilities {
 
         return false;
     }
-    
+
+    private static final Set<ElementKind> LOCAL_ELEMENT_KINDS = EnumSet.of(ElementKind.PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.EXCEPTION_PARAMETER, ElementKind.RESOURCE_VARIABLE);
+
     public static boolean isPrivateElement(Element el) {
-        if (el.getKind() == ElementKind.PARAMETER)
-            return true;
-        
-        if (el.getKind() == ElementKind.LOCAL_VARIABLE)
-            return true;
-        
-        if (el.getKind() == ElementKind.EXCEPTION_PARAMETER)
-            return true;
-        
-        return el.getModifiers().contains(Modifier.PRIVATE);
+        return LOCAL_ELEMENT_KINDS.contains(el.getKind()) || el.getModifiers().contains(Modifier.PRIVATE);
     }
 
 

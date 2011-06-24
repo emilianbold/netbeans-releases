@@ -201,6 +201,23 @@ public class GridBagManager implements GridManager {
     }
 
     @Override
+    public void setGridPosition(Component component, int gridX, int gridY, int gridWidth, int gridHeight) {
+        boolean widthRemainder = info.getGridWidthRemainder(component);
+        boolean heightRemainder = info.getGridHeightRemainder(component);
+        int oldXEnd = info.getGridX(component)+info.getGridWidth(component);
+        int oldYEnd = info.getGridY(component)+info.getGridHeight(component);
+        setGridX(component, gridX);
+        setGridY(component, gridY);
+        // Keeping REMAINDER where it seems to be appropriate
+        if (!widthRemainder || (oldXEnd > gridX+gridWidth)) {
+            setGridWidth(component, gridWidth);
+        }
+        if (!heightRemainder || (oldYEnd > gridY+gridHeight)) {
+            setGridHeight(component, gridHeight);
+        }
+    }
+
+    @Override
     public void addComponent(Component component, int gridX, int gridY, int gridWidth, int gridHeight) {
         if (!GridUtils.isPaddingComponent(component)) {
             throw new IllegalArgumentException();
@@ -271,10 +288,17 @@ public class GridBagManager implements GridManager {
         for (Component component : getContainer().getComponents()) {
             int x = info.getGridX(component);
             int width = info.getGridWidth(component);
+            int newX = x;
+            int newWidth = width;
             if (x >= newColumnIndex) {
-                setGridX(component, ++x);
+                newX++;
             } else if (x+width > newColumnIndex) {
-                setGridWidth(component, ++width);
+                newWidth++;
+            }
+            if ((x != newX) || (width != newWidth)) {
+                int y = info.getGridY(component);
+                int height = info.getGridHeight(component);
+                setGridPosition(component, newX, y, newWidth, height);
             }
         }
     }
@@ -286,11 +310,25 @@ public class GridBagManager implements GridManager {
             int width = info.getGridWidth(component);
             if (x==columnIndex && width==1) {
                 removeComponent(component);
-            } else if (x > columnIndex) {
-                setGridX(component, --x);
-            } else if (x+width > columnIndex) {
-                setGridWidth(component, --width);
-            }
+            } else {
+                int newX = x;
+                int newWidth = width;
+                if (x > columnIndex) {
+                    newX--;
+                } else if (x+width > columnIndex) {
+                    newWidth--;
+                }
+                if ((x != newX) || (width != newWidth)) {
+                    int y = info.getGridY(component);
+                    int height = info.getGridHeight(component);
+                    boolean widthRemainder = info.getGridWidthRemainder(component);
+                    setGridPosition(component, newX, y, newWidth, height);
+                    if (widthRemainder) {
+                        // Deletion of a column shouldn't override REMAINDER width
+                        setGridWidth(component, GridBagConstraints.REMAINDER);
+                    }
+                }
+            } 
         }
     }
 
@@ -299,10 +337,17 @@ public class GridBagManager implements GridManager {
         for (Component component : getContainer().getComponents()) {
             int y = info.getGridY(component);
             int height = info.getGridHeight(component);
+            int newY = y;
+            int newHeight = height;
             if (y >= newRowIndex) {
-                setGridY(component, ++y);
+                newY++;
             } else if (y+height > newRowIndex) {
-                setGridHeight(component, ++height);
+                newHeight++;
+            }
+            if ((y != newY) || (height != newHeight)) {
+                int x = info.getGridX(component);
+                int width = info.getGridWidth(component);
+                setGridPosition(component, x, newY, width, newHeight);
             }
         }
     }
@@ -314,10 +359,24 @@ public class GridBagManager implements GridManager {
             int height = info.getGridHeight(component);
             if (y==rowIndex && height==1) {
                 removeComponent(component);
-            } else if (y > rowIndex) {
-                setGridY(component, --y);
-            } else if (y+height > rowIndex) {
-                setGridHeight(component, --height);
+            } else {
+                int newY = y;
+                int newHeight = height;
+                if (y > rowIndex) {
+                    newY--;
+                } else if (y+height > rowIndex) {
+                    newHeight--;
+                }
+                if ((y != newY) || (height != newHeight)) {
+                    int x = info.getGridX(component);
+                    int width = info.getGridWidth(component);
+                    boolean heightRemainder = info.getGridHeightRemainder(component);
+                    setGridPosition(component, x, newY, width, newHeight);
+                    if (heightRemainder) {
+                        // Deletion of a row shouldn't override REMAINDER height
+                        setGridHeight(component, GridBagConstraints.REMAINDER);
+                    }
+                }
             }
         }
     }

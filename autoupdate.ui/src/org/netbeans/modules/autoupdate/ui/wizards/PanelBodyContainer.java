@@ -303,7 +303,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         public UpdateProgress(long friendlyEstimatedTime, String progressDisplayName) {
             this.friendlyEstimatedTime = friendlyEstimatedTime;
             this.progressDisplayName = progressDisplayName;
-            this.task = Installer.RP.post(this);
+            this.task = Installer.RP.create(this);
         }
 
         @Override

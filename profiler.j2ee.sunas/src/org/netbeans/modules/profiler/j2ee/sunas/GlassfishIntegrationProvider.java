@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.j2ee.sunas;
 
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,7 +65,7 @@ public class GlassfishIntegrationProvider extends SunASAutoIntegrationProvider {
     }
 
     protected int getAttachWizardPriority() {
-        return 20;
+        return 21;
     }
 
     protected int getMagicNumber() {

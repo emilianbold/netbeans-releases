@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.subversion.api;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -69,10 +68,8 @@ import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -409,6 +406,7 @@ public class Subversion {
             final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
             RequestProcessor rp = getSubversion().getRequestProcessor(repositoryUrl);
             SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
                 public void perform() {
                     SvnClient client;
                     try {
@@ -417,7 +415,7 @@ public class Subversion {
                         SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
                         return;
                     }
-                    CommitAction.performCommit(client, message, commitFiles, new Context(roots), this, false, Collections.<SvnHook>emptyList() );
+                    CommitAction.performCommit(client, message, commitFiles, roots, this, false, Collections.<SvnHook>emptyList() );
                 }
             };
             support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")).waitFinished(); // NOI18N

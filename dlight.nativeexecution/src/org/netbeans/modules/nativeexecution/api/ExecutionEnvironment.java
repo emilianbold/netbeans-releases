@@ -42,7 +42,7 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 
 /**
  * The configuration of the environment for a {@link NativeProcess} execution.

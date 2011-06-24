@@ -44,11 +44,13 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jellytools.actions.OptionsViewAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -98,6 +100,7 @@ public class OptionsTest extends PerformanceTestCase {
 //        new OptionsViewAction().performMenu();
 //        options = new OptionsOperator();
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Options","|");
+        JellyTestCase.closeAllModal();
         return new org.netbeans.jellytools.NbDialogOperator("Options");
 //        return options;
     }

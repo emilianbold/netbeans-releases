@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="LanguageRegistration.useMultiview">
+        <api name="csl.api"/>
+        <summary>Add useMultiview to @LanguageRegistration</summary>
+        <version major="2" minor="20"/>
+        <date day="16" month="6" year="2011"/>
+        <author login="tstupka"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="incompatible" source="compatible" deprecation="no"/>
+        <description>
+            <p>
+                Add attribute useMultiview to the @LanguageRegistration annotation.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="LanguageRegistration"/>
+        <issue number="199462"/>
+    </change>
     <change id="CslTemplateExpansion">
         <api name="csl.api"/>
         <summary>Template expansion no longer requires parsing of the source</summary>

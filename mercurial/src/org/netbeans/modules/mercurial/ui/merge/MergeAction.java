@@ -132,7 +132,7 @@ public class MergeAction extends ContextAction {
                         public void run() {
                             try {
                                 String revStr = null;
-                                MergeRevisions mergeDlg = new MergeRevisions(root, new File[] {root});
+                                MergeRevisions mergeDlg = new MergeRevisions(root, null);
                                 if (!mergeDlg.showDialog()) {
                                     return;
                                 }
@@ -149,6 +149,8 @@ public class MergeAction extends ContextAction {
                             } catch (HgException ex) {
                                 NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                                 DialogDisplayer.getDefault().notifyLater(e);
+                            } finally {
+                                logger.closeLog();
                             }
                         }
                     });

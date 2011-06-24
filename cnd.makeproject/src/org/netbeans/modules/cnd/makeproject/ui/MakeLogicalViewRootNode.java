@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
@@ -48,6 +49,7 @@ import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -79,9 +82,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.api.project.BrokenIncludes;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
@@ -99,6 +105,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.xml.XMLUtil;
 
 /**
  * Filter node contain additional features for the Make physical
@@ -135,7 +142,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         brokenIncludesResult.addLookupListener(MakeLogicalViewRootNode.this);
         resultChanged(null);
 
-        brokenLinks = MakeLogicalViewProvider.hasBrokenLinks();
+        brokenLinks = provider.hasBrokenLinks();
         brokenIncludes = hasBrokenIncludes(provider.getProject());
         // Handle annotations
         setForceAnnotation(true);
@@ -144,17 +151,46 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         }
         ProjectInformation pi = provider.getProject().getLookup().lookup(ProjectInformation.class);
         pi.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, pi));
+        ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
+        if (gotMakeConfigurationDescriptor()) {
+            MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+            confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+        }
+
     }
 
     @Override
     public String getHtmlDisplayName() {
+        String ret;
         ExecutionEnvironment env = provider.getProject().getRemoteFileSystemHost();
         if (env != null && env.isRemote()) {
-            return NbBundle.getMessage(MakeLogicalViewProvider.class, "ProjectHtmlDisplayName", getName(), env.getDisplayName());
+            ret = NbBundle.getMessage(MakeLogicalViewProvider.class, "ProjectHtmlDisplayName", getName(), env.getDisplayName()); // NOI18N
+        } else {
+            if (brokenLinks) {
+                ret = getName();
+            } else {
+                ret = super.getHtmlDisplayName();
+            }
         }
-        return super.getHtmlDisplayName();
+        if (brokenLinks) {
+            try {
+                ret = XMLUtil.toElementContent(ret);
+            } catch (CharConversionException ex) {
+                return ret;
+            }
+            return "<font color=\"#"+Integer.toHexString(getErrorForeground().getRGB() & 0xffffff) +"\">" + ret + "</font>"; //NOI18N
+        }
+        return ret;
     }
-    
+
+    private static Color getErrorForeground() {
+        Color result = UIManager.getDefaults().getColor("nb.errorForeground");  //NOI18N
+        if (result == null) {
+            result = Color.RED;
+        }
+        return result;
+    }
+
     public void reInit(MakeConfigurationDescriptor configurationDescriptor) {
         Folder logicalFolders = configurationDescriptor.getLogicalFolders();
         if (folder != null) {
@@ -163,6 +199,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         folder = logicalFolders;
         ic.add(logicalFolders);
         setChildren(new LogicalViewChildren(folder, provider));
+        MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+        confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
         stateChanged(null);
     }
 
@@ -279,6 +317,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             fireNameChange(null, null);
         } else if (ProjectInformation.PROP_ICON.equals(prop)) {
             fireIconChange();
+        } else if (ProjectConfigurationProvider.PROP_CONFIGURATIONS.equals(prop)) {
+            stateChanged(null) ;
         }
     }
 
@@ -300,9 +340,15 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
      **/
     @Override
     public void stateChanged(ChangeEvent e) {
-        brokenLinks = MakeLogicalViewProvider.hasBrokenLinks();
+        brokenLinks = provider.hasBrokenLinks();
         brokenIncludes = hasBrokenIncludes(getProject());
-        brokenProject = provider.getMakeConfigurationDescriptor().getState() == State.BROKEN || provider.getMakeConfigurationDescriptor().getConfs().size() == 0;
+        MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
+        if (makeConfigurationDescriptor != null) {
+            brokenProject =  makeConfigurationDescriptor.getState() == State.BROKEN;
+            if (gotMakeConfigurationDescriptor() && provider.getMakeConfigurationDescriptor().getConfs().size() == 0 ) {
+                brokenProject = true;
+            }
+        }
         updateAnnotationFiles();
         EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
 //            fireIconChange(); // MakeLogicalViewRootNode
@@ -338,10 +384,10 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
-
+    
     private Image mergeBadge(Image original) {
         if (brokenLinks) {
-            return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenProjectBadge, 8, 0);
+            return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenLinkBadge, 8, 0);
         } else if (brokenIncludes) {
             return ImageUtilities.mergeImages(original, MakeLogicalViewProvider.brokenIncludeBadge, 8, 0);
         } else if (brokenProject) {
@@ -389,6 +435,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             // Add remaining actions
             actions.add(null);
             //actions.add(SystemAction.get(ToolsAction.class));
+            if (brokenLinks) {
+                actions.add(new ResolveReferenceAction(provider.getProject()));
+            }
             //actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
         }

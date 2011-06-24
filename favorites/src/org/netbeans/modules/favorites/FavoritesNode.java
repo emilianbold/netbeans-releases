@@ -45,6 +45,7 @@
 package org.netbeans.modules.favorites;
 
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -72,6 +73,10 @@ import org.openide.loaders.LoaderTransfer;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -349,39 +354,67 @@ public final class FavoritesNode extends FilterNode implements Index {
         
         @Override
         protected Node[] createNodes(Node node) {
-            org.openide.nodes.Children ch = Children.LEAF;
-            DataObject obj = node.getLookup().lookup(DataObject.class);
+            FileObject fo = node.getLookup().lookup(FileObject.class);
+            if (fo == null) {
+                DataObject obj = node.getLookup().lookup(DataObject.class);
+                fo = obj.getPrimaryFile();
+            }
             if (hideHidden) {
-                if (obj != null && !VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile())) {
+                if (fo != null && !VisibilityQuery.getDefault().isVisible(fo)) {
                     return null;
                 }
             }
-
-            DataFolder folder = node.getLookup().lookup(DataFolder.class);
-            if (folder != null) {
-                ch = new Chldrn(new FilterNode(node, folder.createNodeChildren(new VisQ())), true);
-            } else {
-                if (node.isLeaf()) {
-                    ch = org.openide.nodes.Children.LEAF;
-                } else {
-                    ch = new Chldrn(node, true);
-                }
-            }
-            
-            return new Node[] { new ProjectFilterNode (node, ch) };
+            return new Node[] { createFilterNode(node) };
         }
+
     } // end of Chldrn
+    
+    static Node createFilterNode(Node node) {
+        org.openide.nodes.Children ch = findChildren(node);
+        return new ProjectFilterNode(node, ch);
+        
+    }
+    private static org.openide.nodes.Children findChildren(Node node) {
+        org.openide.nodes.Children ch = Children.LEAF;
+        DataFolder folder = node.getLookup().lookup(DataFolder.class);
+        if (folder != null) {
+            ch = new Chldrn(new FilterNode(node, folder.createNodeChildren(new VisQ())), true);
+        } else {
+            if (node.isLeaf()) {
+                ch = org.openide.nodes.Children.LEAF;
+            } else {
+                ch = new Chldrn(node, true);
+            }
+        }
+        return ch;
+    }
 
     /** This FilterNode is sensitive to 'Delete Original Files' property of {@link ProjectOption}.
      * When this property is true then original DataObjects pointed to by links under the project's node
      * are deleted as the Delete is performed on the link's node.
      */
-    private static class ProjectFilterNode extends FilterNode {
+    private static class ProjectFilterNode extends FilterNode implements NodeListener {
 
         /** Creates new ProjectFilterNode. */
         public ProjectFilterNode (Node node, org.openide.nodes.Children children) {
             super (node, children);
+            addNodeListener(this);
         }
+
+        @Override
+        protected NodeListener createNodeListener() {
+            return new NodeAdapter(this) {
+                @Override
+                protected void propertyChange(FilterNode fn, PropertyChangeEvent ev) {
+                    super.propertyChange(fn, ev);
+                    if (Node.PROP_LEAF.equals(ev.getPropertyName())) {
+                        setChildren(findChildren(getOriginal()));
+                    }
+                }
+            };
+        }
+        
+        
         
         @Override
         public void setName(String name) {
@@ -610,7 +643,26 @@ public final class FavoritesNode extends FilterNode implements Index {
             }
             return newArr.toArray (new Action[newArr.size()]);
         }
-        
+
+        @Override
+        public void childrenAdded(NodeMemberEvent ev) {
+        }
+
+        @Override
+        public void childrenRemoved(NodeMemberEvent ev) {
+        }
+
+        @Override
+        public void childrenReordered(NodeReorderEvent ev) {
+        }
+
+        @Override
+        public void nodeDestroyed(NodeEvent ev) {
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+        }
     }
 
     private static class FavoritesPasteType extends PasteType {

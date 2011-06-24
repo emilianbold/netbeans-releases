@@ -95,6 +95,7 @@ public class ExportDiffAction extends ContextAction {
         return true;
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_ExportDiff"; // NOI18N
     }
@@ -111,11 +112,13 @@ public class ExportDiffAction extends ContextAction {
         final File repository = Mercurial.getInstance().getRepositoryRoot(files[0]);
 
         ExportDiffSupport exportDiffSupport = new ExportDiff(repository, files) {
+            @Override
             public void writeDiffFile (final File toFile) {
                 final String revStr = getSelectionRevision();
                 saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
                 HgProgressSupport support = new HgProgressSupport() {
+                    @Override
                     public void perform() {
                         OutputLogger logger = getLogger();
                         performExport(repository, revStr, toFile.getAbsolutePath(), logger);
@@ -136,10 +139,12 @@ public class ExportDiffAction extends ContextAction {
             return;
         final String revStr = repoRev.getLog().getRevisionNumber();
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, null, fileToDiff) {
+            @Override
             public void writeDiffFile (final File toFile) {
                 saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
+                    @Override
                     public void perform() {
                         OutputLogger logger = getLogger();
                         performExportFile(root, revStr, fileToDiff, toFile.getAbsolutePath(), logger);
@@ -158,11 +163,13 @@ public class ExportDiffAction extends ContextAction {
         if ((root == null) || root.getPath().equals(""))                //NOI18N
             return;
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, roots) {
+            @Override
             public void writeDiffFile (final File toFile) {
                 final String revStr = repoRev.getLog().getRevisionNumber();
                 saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
+                    @Override
                     public void perform() {
                         OutputLogger logger = getLogger();
                         performExport(root, revStr, toFile.getAbsolutePath(), logger);

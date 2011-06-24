@@ -448,7 +448,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ClassInstanceCreation node) {
-        occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        if (node.getClassName().getName() instanceof Variable) {
+            scan(node.getClassName().getName());
+        } else {
+            occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+        }
         scan(node.ctorParams());
     }
 

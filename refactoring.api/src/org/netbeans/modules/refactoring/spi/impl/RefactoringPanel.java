@@ -665,7 +665,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                         errorsDesc.append("</font>"); // NOI18N
                     }
                     errorsDesc.append(']');
-                    final CheckNode root = new CheckNode(null, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
+                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
                     Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
                     final Cursor old = getCursor();
@@ -751,6 +751,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             tree.setSelectionRow(0);
                             requestFocus();
                             setRefactoringEnabled(true, true);
+                            if (parametersPanel!=null && (Boolean) parametersPanel.getClientProperty(ParametersPanel.JUMP_TO_FIRST_OCCURENCE)) {
+                                selectNextUsage();
+                            }
                         }
                     });
                 }
@@ -761,6 +764,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
             cont.open();
             cont.requestActive();
+            if (isQuery && !parametersPanel.isCreateNewTab()) {
+                cont.removePanel(null);
+            }
             cont.addPanel(this);
             isVisible = true;
         }

@@ -57,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 
 public class Util {
 
@@ -87,7 +88,7 @@ public class Util {
      * @return the newly-created file
      * @throws IOException
      */
-    public static File copyToTempDir(Class<?> clazz, String resourceName) throws IOException {
+    public static File copyToTempDir(Class<?> clazz, String resourceName) throws IOException, CancellationException {
         return copyToTempDir(clazz.getClassLoader().getResource(resourceName));
     }
 
@@ -98,7 +99,7 @@ public class Util {
      * @return the newly-created file
      * @throws IOException
      */
-    public static File copyToTempDir(URL url) throws IOException {
+    public static File copyToTempDir(URL url) throws IOException, CancellationException {
         if (url == null) {
             return null;
         }

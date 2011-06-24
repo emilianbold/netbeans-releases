@@ -53,6 +53,7 @@ import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -71,7 +72,7 @@ public class SearchHistoryTestCase extends AbstractHgTest {
     @Override
     protected void setUp() throws Exception {
        super.setUp();
-
+        MockLookup.setLayersAndInstances();
         // create
         FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
         wc = getWorkTreeDir();

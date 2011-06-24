@@ -527,6 +527,22 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testClsDeclaration_8() throws Exception {
         checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class ClsDeclarationTest extends Cls2DeclarationTest ^", false);
     }
+    public void testClsDeclaration_9() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration02.php", "extends ^Cls2DeclarationTest", false);
+    }
+    public void testClsDeclaration_10() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration02.php", "extends Cls2DeclarationTest ^", false);
+    }
+    public void testClsDeclaration_11() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration02.php", "implements ^ClsBaseDeclarationTest", false);
+    }
+    public void testClsDeclaration_12() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration02.php", "implements ClsBaseDeclarationTest ^", false);
+    }
+    public void testClsDeclaration_13() throws Exception {
+        checkCompletion("testfiles/completion/lib/clsDeclaration02.php", "extends ^AnClass", false);
+    }
+
     public void testInsideClass() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass.php", "cons^", false);
     }

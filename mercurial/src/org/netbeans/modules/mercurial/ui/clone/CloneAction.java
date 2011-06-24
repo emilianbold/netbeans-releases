@@ -114,35 +114,37 @@ public class CloneAction extends ContextAction {
     }
 
     @Override
-    protected void performContextAction(Node[] nodes) {
-        if (!Mercurial.getInstance().isAvailable(true)) {
-            return;
-        }
-        VCSContext context = HgUtils.getCurrentContext(nodes);
-        final File roots[] = HgUtils.getActionRoots(context);
-        if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        
-        // Get unused Clone Folder name
-        File tmp = root.getParentFile();
-        File projFile = Utils.getProjectFile(context);
-        String folderName = root.getName();
-        Boolean projIsRepos = true;
-        if (!root.equals(projFile))  {
-            // Mercurial Repository is not the same as project root
-            projIsRepos = false;
-        }
-        for(int i = 0; i < 10000; i++){
-            if (!new File(tmp,folderName+"_clone"+i).exists()){ // NOI18N
-                tmp = new File(tmp, folderName +"_clone"+i); // NOI18N
-                break;
+    protected void performContextAction (final Node[] nodes) {
+        HgUtils.runIfHgAvailable(new Runnable() {
+            @Override
+            public void run () {
+                VCSContext context = HgUtils.getCurrentContext(nodes);
+                final File roots[] = HgUtils.getActionRoots(context);
+                if (roots == null || roots.length == 0) return;
+                final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+
+                // Get unused Clone Folder name
+                File tmp = root.getParentFile();
+                File projFile = Utils.getProjectFile(context);
+                String folderName = root.getName();
+                Boolean projIsRepos = true;
+                if (!root.equals(projFile))  {
+                    // Mercurial Repository is not the same as project root
+                    projIsRepos = false;
+                }
+                for(int i = 0; i < 10000; i++){
+                    if (!new File(tmp,folderName+"_clone"+i).exists()){ // NOI18N
+                        tmp = new File(tmp, folderName +"_clone"+i); // NOI18N
+                        break;
+                    }
+                }
+                Clone clone = new Clone(root, tmp);
+                if (!clone.showDialog()) {
+                    return;
+                }
+                performClone(new HgURL(root), clone.getTargetDir(), projIsRepos, projFile, true, null, null, true);
             }
-        }
-        Clone clone = new Clone(root, tmp);
-        if (!clone.showDialog()) {
-            return;
-        }
-        performClone(new HgURL(root), clone.getTargetDir(), projIsRepos, projFile, true, null, null, true);
+        });
     }
 
     /**

@@ -50,7 +50,9 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -62,6 +64,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -749,10 +752,38 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
-            task = new RefactoringActionsProvider.TextComponentTask(ec) {
+            task = new RefactoringActionsProvider.TextComponentTask(ec, true) {
                 @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    return wrap(EncapsulateFieldUI.create(selectedElement, info));
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {   
+                    if (startOffset == endOffset) {
+                        //cursor position
+                        return wrap(EncapsulateFieldUI.create(info, selectedElement));
+                    }
+                    
+                    //editor selection
+                    
+                    Element el = selectedElement.resolveElement(info);
+                    if (el==null) {
+                        return null;
+                    }
+                    if (!(el.getKind().isClass() || el.getKind().isInterface())) {
+                        el = info.getElementUtilities().enclosingTypeElement(el);
+                    }
+                    Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
+                    Element last = null;
+                    for (Element e :ElementFilter.fieldsIn(el.getEnclosedElements())) {
+                        SourcePositions sourcePositions = info.getTrees().getSourcePositions();
+                        Tree leaf = info.getTrees().getPath(e).getLeaf();
+                        long start = sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
+                        long end = sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
+                        if (start >= startOffset && end <=endOffset) {
+                            handles.add(TreePathHandle.create(e, info));
+                        }
+                    }
+                    if (handles.isEmpty()) {
+                        return wrap(EncapsulateFieldUI.create(info, selectedElement));
+                    }
+                    return wrap(EncapsulateFieldUI.create(info, handles.toArray(new TreePathHandle[handles.size()])));
                 }
             };
         } else if (RefactoringActionsProvider.nodeHandle(lookup)) {
@@ -762,7 +793,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
                 @Override
                 protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
-                    ui = EncapsulateFieldUI.create(handle, javac);
+                    ui = EncapsulateFieldUI.create(javac, handle);
                 }
 
                 @Override
@@ -779,7 +810,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 @Override
                 protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo javac) {
                     TreePathHandle tph = handles.iterator().next();
-                    ui = EncapsulateFieldUI.create(tph, javac);
+                    ui = EncapsulateFieldUI.create(javac, tph);
                 }
 
                 @Override

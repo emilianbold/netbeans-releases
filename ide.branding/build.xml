@@ -49,7 +49,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <import file="../nbbuild/templates/projectized.xml"/>
 
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar"
-           classpath="${nb_all}/nbbuild/nbantext.jar"/>
+           classpath="${nbantext.jar}"/>
 
   <target name="netbeans-extra">
 

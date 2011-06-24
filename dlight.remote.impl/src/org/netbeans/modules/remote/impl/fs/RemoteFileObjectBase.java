@@ -90,7 +90,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private static final byte BEING_UPLOADED = 4;
     protected static final byte CONNECTION_ISSUES = 8;
     
-    private static final boolean RETURN_JAVA_IO_FILE = Boolean.getBoolean("remote.java.io.file");
+    /*package*/ static final boolean RETURN_JAVA_IO_FILE = Boolean.getBoolean("remote.java.io.file");
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
@@ -446,6 +446,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public Object getAttribute(String attrName) {
+        if (attrName.equals("isRemoteAndSlow")) { // NOI18N
+            return Boolean.TRUE;
+        }
         if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) { // NOI18N
             return new FileObjectBasedFile(getExecutionEnvironment(), this);
         }

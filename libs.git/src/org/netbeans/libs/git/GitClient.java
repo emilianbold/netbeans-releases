@@ -91,6 +91,17 @@ public interface GitClient {
     public void addNotificationListener (NotificationListener listener);
 
     /**
+     * Annotates lines of a given file in a given revision
+     * @param file
+     * @param revision null for blaming a checked-out file against HEAD
+     * @param monitor
+     * @return
+     * @throws org.netbeans.libs.git.GitException.MissingObjectException
+     * @throws GitException 
+     */
+    public GitBlameResult blame (File file, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+
+    /**
      * Prints file's content in the given revision to output stream
      * @param file
      * @param revision git revision, never null
@@ -263,6 +274,16 @@ public interface GitClient {
      * @throws GitException 
      */
     public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Returns an ancestor revision that modified a given file in any way
+     * @param file limit the result only on revision that actually modified somehow the file
+     * @param revision
+     * @param monitor
+     * @return
+     * @throws GitException 
+     */
+    public GitRevisionInfo getPreviousRevision (File file, String revision, ProgressMonitor monitor) throws GitException;
 
     /**
      * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.

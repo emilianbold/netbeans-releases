@@ -49,9 +49,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +68,9 @@ import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.RootsToFile;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -86,6 +92,7 @@ public final class Git {
 
     private RootsToFile rootsToFile;
     private GitVCS gitVCS;
+    private Result<? extends VCSHyperlinkProvider> hpResult;
     
     private Git () {}
 
@@ -363,4 +370,20 @@ public final class Git {
         knownRoots.clear();
     }
     
+    /**
+     *
+     * @return registered hyperlink providers
+     */
+    public List<VCSHyperlinkProvider> getHyperlinkProviders() {
+        if (hpResult == null) {
+            hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
+        }
+        if (hpResult == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
+        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
+        providersList.addAll(providersCol);
+        return Collections.unmodifiableList(providersList);
+    }
 }

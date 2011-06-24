@@ -59,6 +59,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -73,7 +74,7 @@ public class IgnoresTest extends AbstractHgTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();        
-        
+        MockLookup.setLayersAndInstances();
         // create
         FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
         System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());

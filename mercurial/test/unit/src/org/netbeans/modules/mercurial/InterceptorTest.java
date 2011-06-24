@@ -58,6 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -72,7 +73,7 @@ public class InterceptorTest extends AbstractHgTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
+        MockLookup.setLayersAndInstances();
         // create
         FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
         System.setProperty("netbeans.user", "/tmp/hgtest");

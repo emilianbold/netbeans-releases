@@ -68,6 +68,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -682,11 +684,22 @@ public final class DefaultProjectOperationsImplementation {
         dialog[0] = null;
     }
     
-    static String computeError(File location, String projectNameText, boolean pureRename) {
+    static @CheckForNull String computeError(@NullAllowed File location, String projectNameText, boolean pureRename) {
         return computeError(location, projectNameText, null, pureRename);
     }
     
-    static String computeError(File location, String projectNameText, String projectFolderText, boolean pureRename) {
+    static @CheckForNull String computeError(@NullAllowed File location, String projectNameText, String projectFolderText, boolean pureRename) {
+        if (projectNameText.length() == 0) {
+            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Name_Must_Entered");
+        }
+        if (projectNameText.indexOf('/') != -1 || projectNameText.indexOf('\\') != -1) {
+            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Not_Valid_Filename", projectNameText);
+        }
+
+        if (location == null) {
+            return null; // #199241: skip other checks for remote projects
+        }
+
         File parent = location;
         if (!location.exists()) {
             //if some dirs in teh chain are not created, consider it ok.
@@ -703,10 +716,6 @@ public final class DefaultProjectOperationsImplementation {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Read_Only");
         }
         
-        if (projectNameText.length() == 0) {
-            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Name_Must_Entered");
-        }
-        
         File projectFolderFile = null;
         if (projectFolderText == null) {
             projectFolderFile = new File(location, projectNameText);
@@ -717,10 +726,6 @@ public final class DefaultProjectOperationsImplementation {
         if (projectFolderFile.exists() && !pureRename) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Folder_Exists");
         }
-        
-	if (projectNameText.indexOf('/') != -1 || projectNameText.indexOf('\\') != -1) {
-	    return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Not_Valid_Filename", projectNameText);
-	}
         
         return null;
     }

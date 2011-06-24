@@ -124,7 +124,7 @@ public final class LibraryManager {
             for (CsmUID<CsmProject> uid : uids) {
                 ProjectBase project = (ProjectBase) uid.getObject();
                 if (project != null && ! project.isDisposing() && project.isValid()) {                    
-                    projects.add((ProjectBase) project);
+                    projects.add(project);
                 }
             }            
             return projects;

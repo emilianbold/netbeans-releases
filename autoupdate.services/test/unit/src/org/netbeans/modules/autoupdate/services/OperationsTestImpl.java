@@ -50,6 +50,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import junit.framework.AssertionFailedError;
 import org.netbeans.api.autoupdate.DefaultTestCase;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -96,7 +97,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             public void fileDataCreated (FileEvent fe) {
                 fileChanges[0] = true;
                 fileChangeThreads[0] = Thread.currentThread ();
-                exceptions[0] = new Exception ();
+                exceptions[0] = new Exception ("fileDataCreated " + fe.getFile());
                 LOG.log(Level.INFO, "fileDataCreated {0}", fe.getFile());
             }
 
@@ -104,7 +105,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             public void fileChanged(FileEvent fe) {
                 fileChanges[2] = true;
                 fileChangeThreads[2] = Thread.currentThread ();
-                exceptions[2] = new Exception ();
+                exceptions[2] = new Exception ("fileChanged " + fe.getFile());
                 LOG.log(Level.INFO, "fileChanged {0}", fe.getFile());
             }
 
@@ -113,7 +114,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             public void fileDeleted (FileEvent fe) {
                 fileChanges[1] = true;
                 fileChangeThreads[1] = Thread.currentThread ();
-                exceptions[1] = new Exception ();
+                exceptions[1] = new Exception ("fileDeleted " + fe.getFile());
                 LOG.log(Level.INFO, "fileDeleted {0}", fe.getFile());
             }
 
@@ -188,6 +189,10 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
 
     boolean incrementNumberOfModuleConfigFiles() {
         return true;
+    }
+
+    boolean writeDownConfigFile() {
+        return incrementNumberOfModuleConfigFiles();
     }
     
     /*public void installModuleDirect(UpdateUnit toInstall) throws Exception {
@@ -292,7 +297,15 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             if (incrementNumberOfModuleConfigFiles()) {
                 assertTrue (fileChanges[0]);
             } else {
-                assertFalse("Don't expect any changes", fileChanges[2]);
+                if (writeDownConfigFile()) {
+                    assertTrue("We expect a change in a config file", fileChanges[2]);
+                } else {
+                    if (fileChanges[2]) {
+                        AssertionFailedError afe = new AssertionFailedError("We don't expect any changes");
+                        afe.initCause(exceptions[2]);
+                        throw afe;
+                    }
+                }
                 return installElement;
             }
             fileChanges[0]=false;

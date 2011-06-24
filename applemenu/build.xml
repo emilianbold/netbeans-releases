@@ -47,14 +47,8 @@ made subject to such option by the copyright holder.
 <project name="applemenu" basedir="." default="netbeans">
   <import file="../nbbuild/templates/projectized.xml"/>
 
-  <target name="build-eawtstub">
-    <ant dir="eawtstub" inheritAll="false" target="jar"/>
-  </target>
-
-  <target name="compile" depends="build-eawtstub, projectized-common.compile"/>
-
-  <target name="clean" depends="projectized-common.clean">
-    <ant dir="eawtstub" inheritAll="false" target="clean"/>
+  <target name="compile" depends="projectized-common.compile">
+    <delete dir="${build.classes.dir}/com"/> <!-- just stubs -->
   </target>
 
 </project>

@@ -48,6 +48,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
@@ -133,6 +134,14 @@ public final class AnnotationUtil {
     
     public static final String DEFAULT_FQN = "javax.enterprise.inject.Default";     // NOI18N
     
+    public static final String POST_CONSTRUCT = "javax.annotation.PostConstruct";   // NOI18N
+    
+    public static final String PRE_DESTROY = "javax.annotation.PreDestroy";         // NOI18N
+    
+    public static final String POST_ACTIVATE = "javax.ejb.PostActivate";            // NOI18N
+    
+    public static final String PRE_PASSIVATE = "javax.ejb.PrePassivate";            // NOI18N
+    
     private AnnotationUtil(){
     }
     
@@ -186,6 +195,14 @@ public final class AnnotationUtil {
                 AnnotationUtil.DELEGATE_FQN, model.getCompilationController())
                 && AnnotationUtil.hasAnnotation( parent, 
                         AnnotationUtil.DECORATOR, model.getCompilationController());
+    }
+    
+    public static boolean isLifecycleCallback( ExecutableElement element , 
+            CompilationInfo info ) 
+    {
+        AnnotationMirror annotationMirror = getAnnotationMirror(element, info, 
+                POST_ACTIVATE, POST_CONSTRUCT , PRE_DESTROY, PRE_PASSIVATE);
+        return annotationMirror != null;
     }
     
 }

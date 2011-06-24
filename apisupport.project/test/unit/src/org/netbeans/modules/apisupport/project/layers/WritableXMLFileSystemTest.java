@@ -701,6 +701,19 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         }
         assertSize("Filesystem not too big", count * bytesPerFile, l);
     }
+
+    public void testRemoveAttr() throws Exception { // #199189
+        Layer l = new Layer("");
+        FileSystem fs = l.read();
+        FileObject r = fs.getRoot();
+        FileObject f = r.createData("f");
+        f.setAttribute("a", "v");
+        assertEquals("    <file name=\"f\">\n        <attr name=\"a\" stringvalue=\"v\"/>\n    </file>\n", l.write());
+        FileSystem mfs = new MultiFileSystem(new FileSystem[] {fs});
+        f = mfs.findResource("f");
+        f.setAttribute("a", null);
+        assertEquals("    <file name=\"f\"/>\n", l.write());
+    }
     
     /**
      * Handle for working with an XML layer.

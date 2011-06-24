@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -74,6 +75,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileSystem;
@@ -118,7 +120,7 @@ public class ProjectBridge {
         workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         String prjName = "DiscoveryProject"; // NOI18N
-        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, CndFileUtils.createLocalFile(prjName, baseFolder));// NOI18N
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, CndFileUtils.createLocalFile(baseFolder, prjName));// NOI18N
         prjParams.setOpenFlag(true).setConfiguration(extConf);
         project = ProjectGenerator.createBlankProject(prjParams); // NOI18N
         resultSet.add(project);
@@ -144,6 +146,18 @@ public class ProjectBridge {
      */
     public Item createItem(String path){
         return Item.createInFileSystem(baseFolderFileSystem, getRelativepath(path));
+    }
+    
+    public static void excludeItemFromOtherConfigurations(Item item) {
+        for(Configuration c : item.getFolder().getConfigurationDescriptor().getConfs().getConfigurations()) {
+            if (!c.isDefault()) {
+                MakeConfiguration makeConfiguration = (MakeConfiguration) c;
+                ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
+                if (itemConfiguration != null) {
+                    itemConfiguration.getExcluded().setValue(true);
+                }
+            }
+        }
     }
     
     /**
@@ -511,8 +525,7 @@ public class ProjectBridge {
     }
     
     public static void setExclude(Item item, boolean exclude){
-        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
-        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
             return;
         }
@@ -524,8 +537,7 @@ public class ProjectBridge {
     }
     
     public static void setHeaderTool(Item item){
-        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
-        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
             return;
         }
@@ -534,9 +546,34 @@ public class ProjectBridge {
         }
     }
 
-    public void setSourceTool(Item item, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard languageStandard){
+    private static ItemConfiguration getOrCreateItemConfiguration(Item item) {
         MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        if (itemConfiguration == null) {
+            String mimeType = item.getMIMEType();
+            if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
+                itemConfiguration = new ItemConfiguration(makeConfiguration, item);
+                itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
+                makeConfiguration.addAuxObject(itemConfiguration);
+            } else if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
+                itemConfiguration = new ItemConfiguration(makeConfiguration, item);
+                itemConfiguration.setTool(PredefinedToolKind.CCompiler);
+                makeConfiguration.addAuxObject(itemConfiguration);
+            } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
+                itemConfiguration = new ItemConfiguration(makeConfiguration, item);
+                itemConfiguration.setTool(PredefinedToolKind.FortranCompiler);
+                makeConfiguration.addAuxObject(itemConfiguration);
+            } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
+                itemConfiguration = new ItemConfiguration(makeConfiguration, item);
+                itemConfiguration.setTool(PredefinedToolKind.CustomTool);
+                makeConfiguration.addAuxObject(itemConfiguration);
+            }
+        }
+        return itemConfiguration;
+    }
+    
+    public void setSourceTool(Item item, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard languageStandard){
+        ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
             return;
         }
@@ -577,8 +614,7 @@ public class ProjectBridge {
     }
     
     public CCCCompilerConfiguration getItemConfiguration(Item item) {
-        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
-        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return null;
         }
@@ -590,8 +626,7 @@ public class ProjectBridge {
     }
 
     public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, Item item) {
-        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
-        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
         }
@@ -616,8 +651,7 @@ public class ProjectBridge {
     }
 
     public static void fixFileMacros(Map<String,String> macros, Item item) {
-        MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
-        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
         }

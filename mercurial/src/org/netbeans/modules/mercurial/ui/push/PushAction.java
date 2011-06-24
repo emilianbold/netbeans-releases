@@ -229,8 +229,7 @@ public class PushAction extends ContextAction {
             if ((listOutgoing == null) || listOutgoing.isEmpty()) {
                 return;
             }
-            List<HgLogMessage> messages = new ArrayList<HgLogMessage>();
-            HgCommand.processLogMessages(root, null, listOutgoing, messages);
+            List<HgLogMessage> messages = HgCommand.processLogMessages(root, null, listOutgoing);
 
             boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1));
 

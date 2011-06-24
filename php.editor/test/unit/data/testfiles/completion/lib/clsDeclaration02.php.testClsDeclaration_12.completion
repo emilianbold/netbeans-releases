@@ -1,0 +1,25 @@
+Code completion result for source line:
+implements ClsBaseDeclarationTest |
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    ANS                             [PUBLIC]   null
+PACKAGE    Admin                           [PUBLIC]   null
+PACKAGE    App                             [PUBLIC]   null
+PACKAGE    Brite                           [PUBLIC]   null
+PACKAGE    CNS                             [PUBLIC]   null
+PACKAGE    User                            [PUBLIC]   null
+------------------------------------
+PACKAGE    BNS                             [PUBLIC]   ANS
+PACKAGE    Base                            [PUBLIC]   Brite
+PACKAGE    Controller                      [PUBLIC]   Brite
+PACKAGE    NNS                             [PUBLIC]   CNS
+PACKAGE    Test                            [PUBLIC]   App
+CLASS      ChildInterface                  [PUBLIC]   interfaces.php
+CLASS      If1                             [PUBLIC]   tests166339.php
+CLASS      If2                             [PUBLIC]   tests166339.php
+CLASS      ParentInterface                 [PUBLIC]   interfaces.php
+CLASS      UserInterface                   [PUBLIC]   User
+CLASS      a                               [PUBLIC]   issue137033.php
+CLASS      a186936                         [PUBLIC]   a.php
+CLASS      b186936                         [PUBLIC]   b.php
+CLASS      iface142091                     [PUBLIC]   issue142091.php
+CLASS      ifaceA                          [PUBLIC]   paramdecltypes.php

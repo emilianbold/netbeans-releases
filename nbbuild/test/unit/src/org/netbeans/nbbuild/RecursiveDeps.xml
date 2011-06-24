@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
         <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
         <property name="xtest.home" value="any"/>
         <property name="xtest.testtype" value="testtype"/>
-        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nbantext.jar}"/>
         <parseprojectxml projectfile="${project.file}" project="${nb_all}/java/" modulerunclasspathproperty="cp"/>
         <fail message="${cp}">
             <condition>

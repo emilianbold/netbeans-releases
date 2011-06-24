@@ -72,7 +72,7 @@ public class SunAS8IntegrationProvider extends SunASAutoIntegrationProvider {
     }
 
     protected int getAttachWizardPriority() {
-        return 21;
+        return 22;
     }
 
     protected int getMagicNumber() {

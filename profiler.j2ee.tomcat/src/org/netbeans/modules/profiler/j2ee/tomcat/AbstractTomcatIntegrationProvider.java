@@ -40,7 +40,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.profiler.j2ee.tomcat;
 
 import java.io.File;
@@ -68,6 +67,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
+
     private static final String PROFILED_TOMCAT_CONSOLE_STRING = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ProfiledTomcatConsoleString"); // NOI18N
     private static final String MANUAL_REMOTE_STEP3_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
     private static final String MANUAL_REMOTE_STEP4_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
@@ -99,62 +99,59 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
     private static final String CATALINA_MOD_EXT_STRING = "_nbprofiler"; // NOI18N
     private static final String CATALINA_HOME_VAR_STRING = "CATALINA_HOME"; // NOI18N
     private static final String CATALINA_BASE_VAR_STRING = "CATALINA_BASE"; // NOI18N
-
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
     private SettingsPersistor persistor;
     private String catalinaBase = ""; // NOI18N
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-
     /**
      * Creates a new instance of AbstractTomcatIntegrationProvider
      */
     public AbstractTomcatIntegrationProvider() {
         super();
         this.attachedWizard = new SimpleWizardStep(NbBundle.getMessage(AbstractTomcatIntegrationProvider.class,
-                                                                       "AttachWizard_LocateRequiredFilesString"),
-                                                   new TomcatIntegrationPanel()); // NOI18N
+                "AttachWizard_LocateRequiredFilesString"),
+                new TomcatIntegrationPanel()); // NOI18N
         this.persistor = new IDESettingsPersistor() {
-                protected String getSettingsFileName() {
-                    return "TomcatIntegrationProvider.properties"; // NOI18N
+
+            protected String getSettingsFileName() {
+                return "TomcatIntegrationProvider.properties"; // NOI18N
+            }
+
+            protected void parsePersistableSettings(Properties settings) {
+                final String javaPlatform = settings.getProperty("TomcatIntegrationProvider_" + getMagicNumber()
+                        + "_JavaPlatform", ""); // NOI18N
+
+                if ((javaPlatform != null) && (javaPlatform.length() > 0)) {
+                    setTargetJava(javaPlatform);
+                } else {
+                    setTargetJava(TargetPlatformEnum.JDK5.toString());
                 }
 
-                protected void parsePersistableSettings(Properties settings) {
-                    final String javaPlatform = settings.getProperty("TomcatIntegrationProvider_" + getMagicNumber()
-                                                                     + "_JavaPlatform", ""); // NOI18N
+                setInstallationPath(settings.getProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_InstallDir", "")); // NOI18N
+                setCatalinaBase(settings.getProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_BaseDir", "")); // NOI18N
 
-                    if ((javaPlatform != null) && (javaPlatform.length() > 0)) {
-                        setTargetJava(javaPlatform);
-                    } else {
-                        setTargetJava(TargetPlatformEnum.JDK5.toString());
-                    }
-
-                    setInstallationPath(settings.getProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_InstallDir", "")); // NOI18N
-                    setCatalinaBase(settings.getProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_BaseDir", "")); // NOI18N
-
-                    if ((getInstallationPath() == null) || (getInstallationPath().length() == 0)) {
-                        setInstallationPath(getDefaultInstallationPath());
-                    }
-
-                    if ((getCatalinaBase() == null) || (getCatalinaBase().length() == 0)) {
-                        setCatalinaBase(getDefaultCatalinaBase());
-                    }
+                if ((getInstallationPath() == null) || (getInstallationPath().length() == 0)) {
+                    setInstallationPath(getDefaultInstallationPath());
                 }
 
-                protected Properties preparePersistableSettings() {
-                    Properties settings = new Properties();
-                    settings.setProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_JavaPlatform", getTargetJava()); // NOI18N
-                    settings.setProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_InstallDir", getInstallationPath()); // NOI18N
-                    settings.setProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_BaseDir", getCatalinaBase()); // NOI18N
-
-                    return settings;
+                if ((getCatalinaBase() == null) || (getCatalinaBase().length() == 0)) {
+                    setCatalinaBase(getDefaultCatalinaBase());
                 }
-            };
+            }
+
+            protected Properties preparePersistableSettings() {
+                Properties settings = new Properties();
+                settings.setProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_JavaPlatform", getTargetJava()); // NOI18N
+                settings.setProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_InstallDir", getInstallationPath()); // NOI18N
+                settings.setProperty("TomcatIntegrationProvider_" + getMagicNumber() + "_BaseDir", getCatalinaBase()); // NOI18N
+
+                return settings;
+            }
+        };
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
-
     public IntegrationProvider.IntegrationHints getAfterInstallationHints(AttachSettings attachSettings, boolean automation) {
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
         String targetOS = attachSettings.getHostOS();
@@ -162,10 +159,10 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         // Step 1
         if (attachSettings.isDirect()) {
             hints.addStep(MessageFormat.format(ADDITIONAL_STEPS_STEP1_DIRECT_MSG,
-                                               new Object[] { getModifiedScriptPath(targetOS, true) }));
+                    new Object[]{getModifiedScriptPath(targetOS, true)}));
         } else {
             hints.addStep(MessageFormat.format(ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG,
-                                               new Object[] { getModifiedScriptPath(targetOS, true), "" })); // NOI18N
+                    new Object[]{getModifiedScriptPath(targetOS, true), ""})); // NOI18N
         }
 
         // Step 2
@@ -177,12 +174,12 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         } else {
             hints.addStep(ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG);
             hints.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                                  new Object[] {
-                                                      IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                      IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                                                                                                       attachSettings.isRemote(),
-                                                                                                       attachSettings.getPort())
-                                                  }));
+                    new Object[]{
+                        IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                        IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
+                        attachSettings.isRemote(),
+                        attachSettings.getPort())
+                    }));
         }
 
         // automatic server startup note
@@ -207,33 +204,31 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
 
         // Step 1
         hints.addStep(MessageFormat.format(INTEGR_REVIEW_STEP1_MSG,
-                                           new Object[] {
-                                               getScriptPath(targetOS, true), getModifiedScriptPath(targetOS, true), targetOS
-                                           }));
+                new Object[]{
+                    getScriptPath(targetOS, true), getModifiedScriptPath(targetOS, true), targetOS
+                }));
 
         // Step 2
         hints.addStep(MessageFormat.format(INTEGR_REVIEW_STEP2_MSG,
-                                           new Object[] {
-                                               IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                this.getTargetJavaHome()) // NOI18N
-                                               + "<br>"
-                                               + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_HOME",
-                                                                                                  this.getInstallationPath()) // NOI18N
-                                               + "<br>"
-                                               + (((this.catalinaBase != null) && (this.catalinaBase.length() > 0))
-                                                  ? (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_BASE",
-                                                                                                      this.catalinaBase) // NOI18N
-                                                  + "<br>") : "")
-                                               + (attachSettings.isDirect()
-                                                  ? (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
-                                                                                                      IntegrationUtils
-                                                                                                                                                                                                                                       .getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                                                                                                                                                                        getTargetJava(),
-                                                                                                                                                                                                                                                                        false,
-                                                                                                                                                                                                                                                                        attachSettings
-                                                                                                                                                                                                                                                                        .getPort())) // NOI18N
-                                                  + "<br>") : "")
-                                           })); // NOI18N
+                new Object[]{
+                    IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
+                    this.getTargetJavaHome()) // NOI18N
+                    + "<br>"
+                    + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_HOME",
+                    this.getInstallationPath()) // NOI18N
+                    + "<br>"
+                    + (((this.catalinaBase != null) && (this.catalinaBase.length() > 0))
+                    ? (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_BASE",
+                    this.catalinaBase) // NOI18N
+                    + "<br>") : "")
+                    + (attachSettings.isDirect()
+                    ? (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
+                    IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
+                    getTargetJava(),
+                    false,
+                    attachSettings.getPort())) // NOI18N
+                    + "<br>") : "")
+                })); // NOI18N
 
         return hints;
     }
@@ -244,12 +239,10 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         // Remote attach instructions
         if (attachSettings.isRemote()) {
             return getManualRemoteIntegrationStepsInstructions(targetOS, attachSettings);
-        }
-        // Local direct attach
+        } // Local direct attach
         else if (attachSettings.isDirect()) {
             return getManualLocalDirectIntegrationStepsInstructions(targetOS, attachSettings);
-        }
-        // Local dynamic attach
+        } // Local dynamic attach
         else {
             return getManualLocalDynamicIntegrationStepsInstructions(targetOS, attachSettings);
         }
@@ -274,7 +267,6 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
     }
 
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Validation of filepaths">
     public ValidationResult validateInstallation(final String targetOS, final String path) {
         final String separator = System.getProperty("file.separator"); // NOI18N
@@ -306,42 +298,38 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
     protected abstract int getMagicNumber();
 
     protected IntegrationProvider.IntegrationHints getManualLocalDirectIntegrationStepsInstructions(String targetOS,
-                                                                                                    AttachSettings attachSettings) {
+            AttachSettings attachSettings) {
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
         // Step 1
         hints.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                                           new Object[] {
-                                               IntegrationUtils.getEnvVariableReference("CATALINA_HOME", targetOS),
-                                               IntegrationUtils.getDirectorySeparator(targetOS), "catalina",
-                                               IntegrationUtils.getBatchExtensionString(targetOS)
-                                           })); // NOI18N
+                new Object[]{
+                    IntegrationUtils.getEnvVariableReference("CATALINA_HOME", targetOS),
+                    IntegrationUtils.getDirectorySeparator(targetOS), "catalina",
+                    IntegrationUtils.getBatchExtensionString(targetOS)
+                })); // NOI18N
 
         // Step 2
         hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_MSG,
-                                           new Object[] {
-                                               getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
-                                               (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                 MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                                      new Object[] {
-                                                                                                                          IntegrationUtils
-                                                                                                                          .getJavaPlatformName(getTargetJava())
-                                                                                                                      })))
-                                               + "<br>"
-                                               + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
-                                                                                                  IntegrationUtils
-                                                                                                                                                                                                                                                                                                                                             .getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                                                                                                                                                                                                                                                                              getTargetJava(),
-                                                                                                                                                                                                                                                                                                                                                                              attachSettings
-                                                                                                                                                                                                                                                                                                                                                                              .isRemote(),
-                                                                                                                                                                                                                                                                                                                                                                              attachSettings
-                                                                                                                                                                                                                                                                                                                                                                              .getPort()))
-                                           })); // NOI18N
+                new Object[]{
+                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
+                    (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
+                    MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
+                    new Object[]{
+                        IntegrationUtils.getJavaPlatformName(getTargetJava())
+                    })))
+                    + "<br>"
+                    + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
+                    IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
+                    getTargetJava(),
+                    attachSettings.isRemote(),
+                    attachSettings.getPort()))
+                })); // NOI18N
 
         // Step 3
         hints.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP3_MSG,
-                                           new Object[] {
-                                               getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
-                                           }));
+                new Object[]{
+                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
+                }));
 
         // Step 4
         hints.addStep(MANUAL_DIRECT_STEP4_MSG);
@@ -353,33 +341,32 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
     }
 
     protected IntegrationProvider.IntegrationHints getManualLocalDynamicIntegrationStepsInstructions(String targetOS,
-                                                                                                     AttachSettings attachSettings) {
+            AttachSettings attachSettings) {
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
         // Step 1
         hints.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                                           new Object[] {
-                                               IntegrationUtils.getEnvVariableReference("CATALINA_HOME", targetOS),
-                                               IntegrationUtils.getDirectorySeparator(targetOS), getCatalinaScriptName(),
-                                               IntegrationUtils.getBatchExtensionString(targetOS)
-                                           })); // NOI18N
+                new Object[]{
+                    IntegrationUtils.getEnvVariableReference("CATALINA_HOME", targetOS),
+                    IntegrationUtils.getDirectorySeparator(targetOS), getCatalinaScriptName(),
+                    IntegrationUtils.getBatchExtensionString(targetOS)
+                })); // NOI18N
 
         // Step 2
         hints.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP2_MSG,
-                                           new Object[] {
-                                               getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
-                                               IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                                     new Object[] {
-                                                                                                                         IntegrationUtils
-                                                                                                                         .getJavaPlatformName(getTargetJava())
-                                                                                                                     }))
-                                           })); // NOI18N
+                new Object[]{
+                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
+                    IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
+                    MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
+                    new Object[]{
+                        IntegrationUtils.getJavaPlatformName(getTargetJava())
+                    }))
+                })); // NOI18N
 
         // Step 3
         hints.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP3_MSG,
-                                           new Object[] {
-                                               getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
-                                           }));
+                new Object[]{
+                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
+                }));
 
         // Step 4
         hints.addStep(MANUAL_DYNAMIC_STEP4_MSG);
@@ -388,21 +375,20 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         hints.addHint(REDUCE_OVERHEAD_MSG);
 
         hints.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                              new Object[] {
-                                                  IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                  IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                                                                                                   attachSettings.isRemote(),
-                                                                                                   attachSettings.getPort())
-                                              }));
+                new Object[]{
+                    IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                    IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
+                    attachSettings.isRemote(),
+                    attachSettings.getPort())
+                }));
 
         return hints;
     }
 
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Manual integration steps generation methods">
     protected IntegrationProvider.IntegrationHints getManualRemoteIntegrationStepsInstructions(String targetOS,
-                                                                                               AttachSettings attachSettings) {
+            AttachSettings attachSettings) {
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
 
         // Step 1
@@ -413,39 +399,35 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
 
         // Step 3
         hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP3_MSG,
-                                           new Object[] {
-                                               IntegrationUtils.getEnvVariableReference("REMOTE_CATALINA_HOME", targetOS),
-                                               IntegrationUtils.getDirectorySeparator(targetOS), getCatalinaScriptName(),
-                                               IntegrationUtils.getBatchExtensionString(targetOS)
-                                           })); // NOI18N
+                new Object[]{
+                    IntegrationUtils.getEnvVariableReference("REMOTE_CATALINA_HOME", targetOS),
+                    IntegrationUtils.getDirectorySeparator(targetOS), getCatalinaScriptName(),
+                    IntegrationUtils.getBatchExtensionString(targetOS)
+                })); // NOI18N
 
         // Step 4
         hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP4_MSG,
-                                           new Object[] {
-                                               getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
-                                               (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                 MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                                      new Object[] {
-                                                                                                                          IntegrationUtils
-                                                                                                                          .getJavaPlatformName(getTargetJava())
-                                                                                                                      })))
-                                               + "<br>"
-                                               + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
-                                                                                                  IntegrationUtils
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    .getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     getTargetJava(),
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     attachSettings
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     .isRemote(),
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     attachSettings
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     .getPort())),
-                                               REMOTE_ABSOLUTE_PATH_HINT
-                                           })); // NOI18N
+                new Object[]{
+                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
+                    (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
+                    MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
+                    new Object[]{
+                        IntegrationUtils.getJavaPlatformName(getTargetJava())
+                    })))
+                    + "<br>"
+                    + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
+                    IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
+                    getTargetJava(),
+                    attachSettings.isRemote(),
+                    attachSettings.getPort())),
+                    REMOTE_ABSOLUTE_PATH_HINT
+                })); // NOI18N
 
         // Step 5
         hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP5_MSG,
-                                           new Object[] {
-                                               getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
-                                           }));
+                new Object[]{
+                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
+                }));
 
         // Step 6
         hints.addStep(MANUAL_REMOTE_STEP6_MSG);
@@ -483,7 +465,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
     }
 
     protected void modifyScriptFileForDirectAttach(final String targetOS, final int commPort, final boolean isReplaceFile,
-                                                   StringBuffer buffer) {
+            StringBuffer buffer) {
         String lineBreak = IntegrationUtils.getLineBreak(targetOS);
 
         //    // init insertion points
@@ -504,13 +486,13 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         // create new lines
         //    String header = (isReplaceFile ? IntegrationUtils.getProfilerModifiedReplaceFileHeader(targetOS) : IntegrationUtils.getProfilerModifiedFileHeader(targetOS)) + lineBreak;
         String exportJavaHome = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME", this.getTargetJavaHome())
-                                + lineBreak; // NOI18N
+                + lineBreak; // NOI18N
         String exportCatalinaHome = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_HOME",
-                                                                                     this.getInstallationPath()) + lineBreak; // NOI18N
+                this.getInstallationPath()) + lineBreak; // NOI18N
         String exportCatalinaBase = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_BASE", this.catalinaBase)
-                                    + lineBreak; // NOI18N
+                + lineBreak; // NOI18N
         String exportNativeLibraries = IntegrationUtils.getAddProfilerLibrariesToPathString(targetOS, this.getTargetJava(),
-                                                                                            false, false) + lineBreak;
+                false, false) + lineBreak;
         String exportCatalinaOpts = getJavaOptions(targetOS, this.getTargetJava(), commPort, ' '); // NOI18N
 
         // init counter for insertionPoints offset
@@ -542,7 +524,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
     }
 
     protected void modifyScriptFileForDynamicAttach(final String targetOS, final int commPort, final boolean isReplaceFile,
-                                                    StringBuffer buffer) {
+            StringBuffer buffer) {
         String lineBreak = IntegrationUtils.getLineBreak(targetOS);
 
         // init insertion points
@@ -565,11 +547,11 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         // create new lines
         String header = IntegrationUtils.getProfilerModifiedFileHeader(targetOS) + lineBreak;
         String exportJavaHome = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME", this.getTargetJavaHome())
-                                + lineBreak; // NOI18N
+                + lineBreak; // NOI18N
         String exportCatalinaHome = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_HOME",
-                                                                                     this.getInstallationPath()) + lineBreak; // NOI18N
+                this.getInstallationPath()) + lineBreak; // NOI18N
         String exportCatalinaBase = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_BASE", this.catalinaBase)
-                                    + lineBreak; // NOI18N
+                + lineBreak; // NOI18N
 
         // init counter for insertionPoints offset
         int currentOffset = 0;
@@ -636,6 +618,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) { /* IGNORE */
+
         }
 
         return catalinaBase;
@@ -657,13 +640,14 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         } catch (ThreadDeath td) {
             throw td;
         } catch (Throwable t) { /* IGNORE */
+
         }
 
         return catalinaHome;
     }
 
     private String getJavaOptions(final String targetOS, final String targetJVM, final int commPort, final char delimiter) {
-        StringBuffer javaOpts = new StringBuffer();
+        StringBuilder javaOpts = new StringBuilder();
         boolean nonEmptyOpts = false;
 
         // java opts for debugging
@@ -694,7 +678,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         javaOpts.append(profilerOpts);
 
         return IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS", javaOpts.toString())
-               + IntegrationUtils.getLineBreak(targetOS); // NOI18N
+                + IntegrationUtils.getLineBreak(targetOS); // NOI18N
     }
 
     private boolean validateCatalinaBasePath(final String path) {

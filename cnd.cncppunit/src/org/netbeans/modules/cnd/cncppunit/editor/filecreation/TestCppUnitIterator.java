@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -121,10 +122,10 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
         }
 
         FileObject rootFolder = getRootFolder();
-        File rootFolderFile = CndFileUtils.toFile(rootFolder);
+        FSPath rootFolderFilePath = FSPath.toFSPath(rootFolder);        
         params.putAll(CppUnitCodeGenerator.generateTemplateParamsForFunctions(
                 getTestClassName(),
-                rootFolderFile.getAbsolutePath(),
+                rootFolderFilePath,
                 fs));
 
         String headerName = getTestClassHeaderFileName(); //NOI18N

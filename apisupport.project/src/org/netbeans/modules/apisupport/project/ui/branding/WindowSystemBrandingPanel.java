@@ -76,6 +76,13 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
         cbEnableResizing.addItemListener(listener);
         cbEnableSliding.addItemListener(listener);
         cbEnableViewClosing.addItemListener(listener);
+        cbEnableAutoSlideInMinimizedMode.addItemListener( listener );
+        cbEnableEditorModeDnD.addItemListener( listener );
+        cbEnableEditorModeUndocking.addItemListener( listener );
+        cbEnableModeClosing.addItemListener( listener );
+        cbEnableModeSliding.addItemListener( listener );
+        cbEnableViewModeDnD.addItemListener( listener );
+        cbEnableViewModeUndocking.addItemListener( listener );
     }
     
     
@@ -91,6 +98,13 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
         SplashUISupport.setValue(branding.getWsEnableMinimumSize(), Boolean.toString(cbEnableMinimumSize.isSelected()));
         SplashUISupport.setValue(branding.getWsEnableResizing(), Boolean.toString(cbEnableResizing.isSelected()));
         SplashUISupport.setValue(branding.getWsEnableSliding(), Boolean.toString(cbEnableSliding.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableAutoSlideInMinimizedMode(), Boolean.toString(cbEnableAutoSlideInMinimizedMode.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableEditorModeDnD(), Boolean.toString(cbEnableEditorModeDnD.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableEditorModeUndocking(), Boolean.toString(cbEnableEditorModeUndocking.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableModeClosing(), Boolean.toString(cbEnableModeClosing.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableModeSliding(), Boolean.toString(cbEnableModeSliding.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableViewModeDnD(), Boolean.toString(cbEnableViewModeDnD.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableViewModeUndocking(), Boolean.toString(cbEnableViewModeUndocking.isSelected()));
     }
     
     
@@ -105,6 +119,13 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
         cbEnableResizing.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableResizing()));
         cbEnableSliding.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableSliding()));
         cbEnableViewClosing.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableClosingViews()));
+        cbEnableAutoSlideInMinimizedMode.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableAutoSlideInMinimizedMode()));
+        cbEnableEditorModeDnD.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableEditorModeDnD()));
+        cbEnableEditorModeUndocking.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableEditorModeUndocking()));
+        cbEnableModeClosing.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableModeClosing()));
+        cbEnableModeSliding.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableModeSliding()));
+        cbEnableViewModeDnD.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableViewModeDnD()));
+        cbEnableViewModeUndocking.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableViewModeUndocking()));
         
         enableDisableComponents();
         
@@ -120,6 +141,13 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
         cbEnableSliding.setEnabled(branding.isBrandingEnabled());
         cbEnableViewClosing.setEnabled(branding.isBrandingEnabled());
         cbEnableMaximization.setEnabled(branding.isBrandingEnabled());
+        cbEnableAutoSlideInMinimizedMode.setEnabled(branding.isBrandingEnabled());
+        cbEnableEditorModeDnD.setEnabled(branding.isBrandingEnabled());
+        cbEnableEditorModeUndocking.setEnabled(branding.isBrandingEnabled());
+        cbEnableModeClosing.setEnabled(branding.isBrandingEnabled());
+        cbEnableModeSliding.setEnabled(branding.isBrandingEnabled());
+        cbEnableViewModeDnD.setEnabled(branding.isBrandingEnabled());
+        cbEnableViewModeUndocking.setEnabled(branding.isBrandingEnabled());
     }
     
     /** This method is called from within the constructor to
@@ -139,6 +167,13 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
         cbEnableMinimumSize = new javax.swing.JCheckBox();
         cbEnableMaximization = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
+        cbEnableModeSliding = new javax.swing.JCheckBox();
+        cbEnableViewModeUndocking = new javax.swing.JCheckBox();
+        cbEnableEditorModeUndocking = new javax.swing.JCheckBox();
+        cbEnableViewModeDnD = new javax.swing.JCheckBox();
+        cbEnableEditorModeDnD = new javax.swing.JCheckBox();
+        cbEnableModeClosing = new javax.swing.JCheckBox();
+        cbEnableAutoSlideInMinimizedMode = new javax.swing.JCheckBox();
 
         cbEnableDnd.setMnemonic('D');
         org.openide.awt.Mnemonics.setLocalizedText(cbEnableDnd, org.openide.util.NbBundle.getMessage(WindowSystemBrandingPanel.class, "LBL_EnableDnD")); // NOI18N
@@ -166,6 +201,20 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WindowSystemBrandingPanel.class, "SuiteCustomizerWindowSystemBranding.jLabel1.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbEnableModeSliding, NbBundle.getMessage(WindowSystemBrandingPanel.class, "WindowSystemBrandingPanel.cbEnableModeSliding.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbEnableViewModeUndocking, NbBundle.getMessage(WindowSystemBrandingPanel.class, "WindowSystemBrandingPanel.cbEnableViewModeUndocking.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbEnableEditorModeUndocking, NbBundle.getMessage(WindowSystemBrandingPanel.class, "WindowSystemBrandingPanel.cbEnableEditorModeUndocking.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbEnableViewModeDnD, NbBundle.getMessage(WindowSystemBrandingPanel.class, "WindowSystemBrandingPanel.cbEnableViewModeDnD.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbEnableEditorModeDnD, NbBundle.getMessage(WindowSystemBrandingPanel.class, "WindowSystemBrandingPanel.cbEnableEditorModeDnD.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbEnableModeClosing, NbBundle.getMessage(WindowSystemBrandingPanel.class, "WindowSystemBrandingPanel.cbEnableModeClosing.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbEnableAutoSlideInMinimizedMode, NbBundle.getMessage(WindowSystemBrandingPanel.class, "WindowSystemBrandingPanel.cbEnableAutoSlideInMinimizedMode.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -175,6 +224,13 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbEnableAutoSlideInMinimizedMode)
+                    .addComponent(cbEnableModeClosing)
+                    .addComponent(cbEnableEditorModeDnD)
+                    .addComponent(cbEnableViewModeDnD)
+                    .addComponent(cbEnableEditorModeUndocking)
+                    .addComponent(cbEnableViewModeUndocking)
+                    .addComponent(cbEnableModeSliding)
                     .addComponent(cbEnableEditorClosing)
                     .addComponent(cbEnableMinimumSize)
                     .addComponent(cbEnableFloating)
@@ -183,7 +239,7 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
                     .addComponent(cbEnableViewClosing)
                     .addComponent(cbEnableResizing)
                     .addComponent(cbEnableDnd))
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addContainerGap(127, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -193,9 +249,21 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
                     .addComponent(jLabel1)
                     .addComponent(cbEnableDnd))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbEnableViewModeDnD)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbEnableEditorModeDnD)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbEnableFloating)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbEnableViewModeUndocking)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbEnableEditorModeUndocking)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbEnableSliding)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbEnableModeSliding)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbEnableAutoSlideInMinimizedMode)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbEnableMaximization)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -203,10 +271,12 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbEnableEditorClosing, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbEnableModeClosing)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbEnableResizing)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbEnableMinimumSize)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         cbEnableDnd.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WindowSystemBrandingPanel.class, "ACSD_EnableDnD")); // NOI18N
@@ -226,14 +296,21 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
             
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbEnableAutoSlideInMinimizedMode;
     private javax.swing.JCheckBox cbEnableDnd;
     private javax.swing.JCheckBox cbEnableEditorClosing;
+    private javax.swing.JCheckBox cbEnableEditorModeDnD;
+    private javax.swing.JCheckBox cbEnableEditorModeUndocking;
     private javax.swing.JCheckBox cbEnableFloating;
     private javax.swing.JCheckBox cbEnableMaximization;
     private javax.swing.JCheckBox cbEnableMinimumSize;
+    private javax.swing.JCheckBox cbEnableModeClosing;
+    private javax.swing.JCheckBox cbEnableModeSliding;
     private javax.swing.JCheckBox cbEnableResizing;
     private javax.swing.JCheckBox cbEnableSliding;
     private javax.swing.JCheckBox cbEnableViewClosing;
+    private javax.swing.JCheckBox cbEnableViewModeDnD;
+    private javax.swing.JCheckBox cbEnableViewModeUndocking;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 }

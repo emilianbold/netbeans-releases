@@ -105,6 +105,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     
     private DefaultTableModel model;
     private TreePathHandle selectedObjects;
+    private Collection<TreePathHandle> fields;
     private ChangeListener parent;
     private String classname;
     private static boolean ALWAYS_USE_ACCESSORS = true;
@@ -144,11 +145,12 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
      *
      * @param selectedObjects  array of selected objects
      */
-    public EncapsulateFieldPanel(TreePathHandle selectedObject, ChangeListener parent) {
+    public EncapsulateFieldPanel(TreePathHandle selectedObject, Collection<TreePathHandle> fields, ChangeListener parent) {
         String title = getString("LBL_TitleEncapsulateFields");
         
         this.selectedObjects = selectedObject;
         this.parent = parent;
+        this.fields = fields;
         model = new TabM(columnNames, 0);
         initComponents();
         setName(title);
@@ -207,7 +209,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         int tableSelection = 0;
         for (VariableElement field : initFields(selectedPath, javac)) {
             TreePath fieldTPath = javac.getTrees().getPath(field);
-            boolean createGetter = selectedElm == field;
+            boolean createGetter = fields !=null? fields.contains(TreePathHandle.create(field, javac)) : selectedElm == field ;
             boolean createSetter = createGetter && !field.getModifiers().contains(Modifier.FINAL);
             String getName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
             String setName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);

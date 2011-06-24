@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -81,6 +80,16 @@ import org.openide.util.NbPreferences;
  * @author ak119685
  */
 public final class ConnectionManager {
+    
+    public static class CancellationException extends Exception {
+
+        public CancellationException() {
+        }
+        
+        public CancellationException(String message) {
+            super(message);
+        }        
+    }
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     // Actual sessions pools. One per host

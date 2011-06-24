@@ -216,7 +216,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     }//GEN-LAST:event_updateReferencesCheckBoxActionPerformed
 
     private void textCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_textCheckBoxItemStateChanged
-        // used for change default value for searchInComments check-box.                                                  
+        // used for change default value for searchInComments check-box.
         // The value is persisted and then used as default in next IDE run.
 //        Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
 //        RefactoringModule.setOption("searchInComments.rename", b);

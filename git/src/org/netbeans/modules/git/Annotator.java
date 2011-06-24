@@ -65,6 +65,7 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.actions.ConnectAction;
 import org.netbeans.modules.git.ui.actions.DisconnectAction;
+import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
@@ -90,6 +91,7 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -98,7 +100,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
- * TODO: handle annotations
  * @author ondra
  */
 public class Annotator extends VCSAnnotator implements PropertyChangeListener {
@@ -184,6 +185,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
                 actions.add(new RemoteMenu(ActionDestination.MainMenu, null));
                 actions.add(SystemAction.get(SearchHistoryAction.class));
+                actions.add(SystemAction.get(AnnotateAction.class));
             }
         } else {
             Lookup lkp = context.getElements();
@@ -194,6 +196,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
                 }
             } else {
+                Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
@@ -234,6 +237,9 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
                 actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName"), lkp)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(AnnotateAction.class), ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(nodes) ?
+                                                                        NbBundle.getMessage(AnnotateAction.class, "LBL_HideAnnotateAction_PopupName") : //NOI18N
+                                                                        NbBundle.getMessage(AnnotateAction.class, "LBL_ShowAnnotateAction_PopupName"), lkp)); //NOI18N
             }
         }
 
@@ -295,10 +301,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             annotateNameHtml(name, mostImportantInfo, mostImportantFile);
     }
 
-    private void refresh () {
-        // TODO: implement, [status repository branch tags? etc.]
-    }
-
     private static boolean isMoreImportant (FileInformation a, FileInformation b) {
         if (b == null) return true;
         if (a == null) return false;
@@ -308,7 +310,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
 
     private Image annotateFileIcon (VCSContext context, Image icon) throws IllegalArgumentException {
         FileInformation mostImportantInfo = null;
-        File mostImportantFile = null;
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getStatus(file);
             if (!info.containsStatus(STATUS_IS_IMPORTANT)) {
@@ -316,7 +317,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             }
             if (isMoreImportant(info, mostImportantInfo)) {
                 mostImportantInfo = info;
-                mostImportantFile = file;
             }
         }
         if(mostImportantInfo == null) return null;

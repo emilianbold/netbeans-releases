@@ -48,6 +48,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -175,7 +176,7 @@ public abstract class RemotePathMap extends PathMap {
         if (lpath == null) {
             return null;
         }
-        String ulpath = unifySeparators(lpath);
+        String ulpath = unifySeparators(lpath); // NB: adds a trailing slash
         String rpath = null;
         int max = 0;
         // search for the *longest* key that starts with lpath
@@ -185,7 +186,8 @@ public abstract class RemotePathMap extends PathMap {
                 if (rpath == null || key.length() > max) {
                     max = key.length();
                     String mpoint = entry.getValue();
-                    rpath = mpoint + lpath.substring(key.length()).replace('\\', '/');
+                    String rest = key.length() > lpath.length() ? "" : lpath.substring(key.length()).replace('\\', '/'); //NOI18N
+                    rpath = mpoint + rest;
                 }
             }
         }
@@ -202,12 +204,13 @@ public abstract class RemotePathMap extends PathMap {
         if (rpath == null) {
             return null;
         }
-        String urpath = unifySeparators(rpath);
+        String urpath = unifySeparators(rpath); // NB: adds a trailing slash
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String value = unifySeparators(entry.getValue());
             if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
-                return mpoint + rpath.substring(value.length());
+                String rest = (value.length() > rpath.length()) ? "" : rpath.substring(value.length()); //NOI18N
+                return mpoint + rest;
             }
         }        
         if (useDefault) {
@@ -218,10 +221,19 @@ public abstract class RemotePathMap extends PathMap {
     }
 
     @Override
-    public boolean checkRemotePaths(File[] localPaths, boolean fixMissingPaths) {
+    public boolean checkRemotePaths(File[] localFiles, boolean fixMissingPaths) {
+        List<String> localPaths = new ArrayList<String>();
+        for (File file : localFiles) {
+            if (file.isDirectory()) {
+                localPaths.add(file.getAbsolutePath());
+            } else {
+                localPaths.add(file.getParentFile().getAbsolutePath());
+            }
+        }
+        // sort local paths so that if there are parent paths, they go first
+        Collections.sort(localPaths);
         List<String> invalidLocalPaths = new ArrayList<String>();
-        for (File file : localPaths) {
-            String lPath = file.getAbsolutePath();
+        for (String lPath : localPaths) {
             if (!checkRemotePath(lPath)) {
                 invalidLocalPaths.add(lPath);
             }
@@ -338,6 +350,9 @@ public abstract class RemotePathMap extends PathMap {
         String result = path.replace('\\', '/');
         if (!CndFileUtils.isSystemCaseSensitive()) {
             result = result.toLowerCase();
+        }
+        if (!result.endsWith("/")) { //NOI18N
+            result = result + "/"; //NOI18N
         }
         return result;
     }

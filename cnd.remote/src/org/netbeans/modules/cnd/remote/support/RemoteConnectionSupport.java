@@ -44,10 +44,10 @@ package org.netbeans.modules.cnd.remote.support;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.util.NbBundle;
 
 /**

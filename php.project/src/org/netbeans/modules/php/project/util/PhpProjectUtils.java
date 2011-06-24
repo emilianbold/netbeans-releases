@@ -75,6 +75,7 @@ import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Utility methods.
@@ -83,6 +84,9 @@ import org.openide.util.NbBundle;
 public final class PhpProjectUtils {
     private static final Logger LOGGER = Logger.getLogger(PhpProjectUtils.class.getName());
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.php"); //NOI18N
+
+    private static final boolean IS_UNIX = Utilities.isUnix();
+    private static final boolean IS_MAC = Utilities.isMac();
 
     private PhpProjectUtils() {
     }
@@ -263,6 +267,32 @@ public final class PhpProjectUtils {
             fo = fo.getParent();
         }
         return true;
+    }
+
+    /**
+     * Test whether the given file is a folder and is a symlink.
+     * <p>
+     * In other words, a file is never considered to be a symlink. Directory is checked
+     * and correct result is returned.
+     * @param directory file to be checked, cannot be {@code null}
+     * @return {@code true} if the file is a folder and a symlink, {@code false} otherwise
+     */
+    public static boolean isLink(File directory) {
+        if (!IS_UNIX && !IS_MAC) {
+            return false;
+        }
+        if (!directory.isDirectory()) {
+            return false;
+        }
+        final File canDirectory;
+        try {
+            canDirectory = directory.getCanonicalFile();
+        } catch (IOException ioe) {
+            return false;
+        }
+        final String dirPath = directory.getAbsolutePath();
+        final String canDirPath = canDirectory.getAbsolutePath();
+        return IS_MAC ? !dirPath.equalsIgnoreCase(canDirPath) : !dirPath.equals(canDirPath);
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification

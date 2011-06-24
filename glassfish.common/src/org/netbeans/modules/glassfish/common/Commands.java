@@ -398,7 +398,7 @@ public class Commands {
     public static final class RedeployCommand extends ServerCommand {
 
         public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions, 
-                final File[] libraries, final boolean resourcesChanged) {
+                final File[] libraries, final boolean resourcesChanged, String additionalparam) {
             super("redeploy"); // NOI18N
 
             StringBuilder cmd = new StringBuilder(128);
@@ -410,6 +410,9 @@ public class Commands {
             }
             if (libraries.length > 0) {
                 appendLibraries(cmd, libraries);
+            }
+            if (null != additionalparam && !("".equals(additionalparam.trim()))) {
+                cmd.append(PARAM_SEPARATOR).append(additionalparam);
             }
             addProperties(cmd, preserveSessions, resourcesChanged);
             query = cmd.toString();

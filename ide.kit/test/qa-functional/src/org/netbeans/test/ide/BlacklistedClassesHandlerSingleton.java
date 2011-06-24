@@ -56,6 +56,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -73,6 +76,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.core.ui.sampler.SamplesOutputStream;
+import org.openide.util.Exceptions;
 
 /**
  * BlacklistedClassesHandler performs processing of log messages to identify
@@ -83,13 +88,15 @@ import java.util.logging.Logger;
  * non-identifier character. Leading and trailing spaces are ignored.
  *
  * Use getInstance and getBlacklistedClassesHandler methods to ensure that
- * only one incstance of BlacklistedClassesHandlerSingleton is used across
+ * only one instance of BlacklistedClassesHandlerSingleton is used across
  * the different classloaders
  *
  * @author nenik, mrkam@netbeans.org
  *
  */
 public class BlacklistedClassesHandlerSingleton extends Handler implements BlacklistedClassesHandler {
+    private static final Logger PROXY_LOG = Logger.getLogger("org.netbeans.ProxyClassLoader"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName());
 
     private static BlacklistedClassesHandler instance = null;
     private int violation;
@@ -106,6 +113,10 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     private String newWhitelistFileName;
     private String previousWhitelistFileName = null;
     private File whitelistStorageDir = null;
+    private SamplesOutputStream samples;
+    private ByteArrayOutputStream stream;
+    private ThreadMXBean threadBean;
+    private long start;
 
     private BlacklistedClassesHandlerSingleton() {
     }
@@ -160,22 +171,30 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
             }
         }
 
+        threadBean = ManagementFactory.getThreadMXBean();
+        start = System.currentTimeMillis();
+        stream = new ByteArrayOutputStream();
+        try {
+            samples = new SamplesOutputStream(stream, null, 5000);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
 
         loadBlackList(blacklistFileName);
         loadWhiteList(this.whitelistFileName, whitelist);
 
-        Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).info(this.toString());
+        LOG.info(this.toString());
 
-        Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).info(
+        LOG.info(
                 blacklist.size() + " classes loaded to black list");
         if (this.whitelistEnabled) {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).info(
+            LOG.info(
                     whitelist.size() + " classes loaded to white list.");
         } else if (this.generatingWhitelist) {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).info(
+            LOG.info(
                     whitelist.size() + " classes loaded to white list. Whitelist is being generated.");
         } else {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).info(
+            LOG.info(
                     "White list disabled");
         }
 
@@ -192,10 +211,10 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
         try {
             config.loadFromXML(new BufferedInputStream(new FileInputStream(configFile)));
         } catch (FileNotFoundException fnfe) {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).severe(configFileName + " file not found.");
+            LOG.severe(configFileName + " file not found.");
             return false;
         } catch (java.io.IOException ioe) {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, "Failed to load " + configFileName, ioe);
+            LOG.log(Level.SEVERE, "Failed to load " + configFileName, ioe);
             return false;
         }
         boolean configBlacklistEnabled = Boolean.parseBoolean(config.getProperty("blacklist.enabled"));
@@ -222,7 +241,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
             try {
                 return initSingleton(configBlacklistFileName, configWhitelistFileName, configWhitelistStorageDir, configGenerateWhitelist);
             } catch (Exception ex) {
-                Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE,
+                LOG.log(Level.SEVERE,
                         "Can't initialize BlacklistedClassesHandler due to the following exception:", ex);
 
             }
@@ -378,6 +397,13 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 exceptions.add(exc);
                                 whitelistViolators.put(className, exceptions);
                                 violation++;
+                                ThreadInfo[] threads = threadBean.dumpAllThreads(false, false);
+                                for (ThreadInfo ti : threads) {
+                                    if (ti.getThreadId() == Thread.currentThread().getId()) {
+                                        samples.writeSample(new ThreadInfo[] {ti}, start*1000000L + violation * 10000000L, -1);
+                                        break;
+                            }
+                        }
                             }
                         }
                     } else if (generatingWhitelist) {
@@ -400,23 +426,20 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
 
     public void close() throws SecurityException {
         /* Ugly hack to leave the handler when configuration is reset */
-        Logger logger = Logger.getLogger("org.netbeans.ProxyClassLoader"); // NOI18N
-        logger.addHandler(this);
-        logger.setLevel(Level.ALL);
-        logger.setUseParentHandlers(false);
+        PROXY_LOG.addHandler(this);
+        PROXY_LOG.setLevel(Level.ALL);
+        PROXY_LOG.setUseParentHandlers(false);
     }
 
     public void register() {
-        Logger logger = Logger.getLogger("org.netbeans.ProxyClassLoader"); // NOI18N
-        logger.addHandler(this);
-        logger.setLevel(Level.ALL);
-        logger.setUseParentHandlers(false);
+        PROXY_LOG.addHandler(this);
+        PROXY_LOG.setLevel(Level.ALL);
+        PROXY_LOG.setUseParentHandlers(false);
         System.setProperty("org.netbeans.ProxyClassLoader.level", "ALL"); // NOI18N
     }
 
     public void unregister() {
-        Logger logger = Logger.getLogger("org.netbeans.ProxyClassLoader"); // NOI18N
-        logger.removeHandler(this);
+        PROXY_LOG.removeHandler(this);
     }
 
     public boolean noViolations() {
@@ -442,7 +465,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     }
 
     public void logViolations() {
-	Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).warning(listViolations());
+	LOG.warning(listViolations());
     }
 
     /**
@@ -639,9 +662,9 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                 }
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -654,9 +677,9 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                 }
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(BlacklistedClassesHandlerSingleton.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -707,7 +730,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
             ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(filename)));
             saveWhiteList(ps);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(BlacklistedClassesHandler.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         } finally {
             if (ps != null) {
                 ps.flush();
@@ -732,5 +755,28 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
 
     public boolean hasWhitelistStorage() {
         return whitelistStorageDir != null;
+    }
+    
+    public void resetInitiated() {
+        inited = false;
+        resetViolations();
+        whitelistViolators.clear();
+        whitelist.clear();
+        previousWhitelist.clear();
+        newWhitelist.clear();
+        whitelistEnabled = false;
+        generatingWhitelist = false;
+    }
+
+    @Override
+    public void writeViolationsSnapshot(File file) {
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            samples.close();
+            fos.write(stream.toByteArray());
+            fos.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

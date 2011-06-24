@@ -199,8 +199,7 @@ public class StartTask extends BasicTask<OperationState> {
                             }
                             while (OperationState.RUNNING == state && System.currentTimeMillis() - start < START_TIMEOUT) {
                                 // Send the 'completed' event and return when the server is running
-                                boolean httpLive = CommonServerSupport.isRunning(host, port,
-                                        ip.get(GlassfishModule.DISPLAY_NAME_ATTR));
+                                boolean httpLive = support.isReady(false, 2000, TIMEUNIT); //CommonServerSupport.isRunning(host, port,ip.get(GlassfishModule.DISPLAY_NAME_ATTR));
 
                                 // Sleep for a little so that we do not make our checks too often
                                 //
@@ -265,7 +264,7 @@ public class StartTask extends BasicTask<OperationState> {
             // this may be an autheticated server... so we will say it is started.
             // other operations will fail if the process on the port is not a
             // GF v3 server.
-            if (CommonServerSupport.isRunning(host,port,ip.get(GlassfishModule.DISPLAY_NAME_ATTR))) {
+            if (support.isReady(false, 20000, TIMEUNIT)) {
                 OperationState result = OperationState.COMPLETED;
                 if (GlassfishModule.PROFILE_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
                     result = OperationState.FAILED;
@@ -303,8 +302,7 @@ public class StartTask extends BasicTask<OperationState> {
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
-            boolean httpLive = CommonServerSupport.isRunning(host, port,
-                    ip.get(GlassfishModule.DISPLAY_NAME_ATTR));
+            boolean httpLive = Utils.isLocalPortOccupied(port);
 
             // Sleep for a little so that we do not make our checks too often
             //
@@ -337,8 +335,7 @@ public class StartTask extends BasicTask<OperationState> {
 
                     @Override
                     public void run() {
-                        while (!CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),
-                                ip.get(GlassfishModule.DISPLAY_NAME_ATTR))) {
+                        while (!support.isReady(false, 2000, TIMEUNIT)) { // !CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),                                ip.get(GlassfishModule.DISPLAY_NAME_ATTR))) {
                             try {
                                 Thread.sleep(200);
                             } catch (InterruptedException ex) {

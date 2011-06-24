@@ -23,6 +23,7 @@ Other names may be trademarks of their respective owners.
 
         <!-- Start of "About" section -->
 	<mapID target="about_ws" url="webservice/about/about_ws.html" />
+        <mapID target="about_soap" url="webservice/about/about_soap.html" />
         <mapID target="about_rest" url="webservice/about/about_rest.html" />
 	<mapID target="ws_process" url="webservice/about/ws_process.html" />
 	<mapID target="ws_quickref" url="webservice/about/ws_quickref.html" />
@@ -33,23 +34,18 @@ Other names may be trademarks of their respective owners.
 	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
 	<mapID target="create_ws_from_java" url="webservice/create/create_ws_from_java.html" />
         <mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
-	<mapID target="create_axis" url="webservice/create/create_axis.html" />
-	<mapID target="create_wsdl_file" url="webservice/create/create_wsdl_file.html" />
 	<mapID target="add_ws_operation" url="webservice/create/add_ws_operation.html" />
+        <mapID target="ws_designer" url="webservice/create/soap_ws_designer.html" />
 	<!-- End of "Create" section -->
 	<!-- Start of "Configure" section -->
 	<mapID target="config_ws_about" url="webservice/configure/config_ws_about.html" />
 	<mapID target="config_ws_dd" url="webservice/configure/config_ws_dd.html" />
         <mapID target="about_annotations" url="webservice/configure/about_annotations.html" />
         <mapID target="config_ws_annotations" url="webservice/configure/config_ws_annotations.html" />
-        <mapID target="configure_axis" url="webservice/configure/configure_axis.html" />
 	<!-- End of "Configure" section -->
-	<!-- Start of "Build" section -->
-	<mapID target="about_build_ws" url="webservice/build/about_build_ws.html" />
-	<!-- End of "Build" section -->
+	
 	<!-- Start of "Expose" section -->
         <mapID target="about_deploy_and_test_ws" url="webservice/expose/about_deploy_and_test_ws.html" />
-	<mapID target="test_ws" url="webservice/expose/test_ws.html" />
         <mapID target="test_rest" url="webservice/expose/test_rest.html" />
 	<mapID target="expose_ws" url="webservice/expose/expose_ws.html" />
 	<mapID target="as_setup" url="webservice/expose/as_setup_axis.html" />
@@ -57,11 +53,13 @@ Other names may be trademarks of their respective owners.
 	<!-- End of "Expose" section -->
 	<!-- Start of "Consume" section -->
 	<mapID target="about_wsc" url="webservice/consume/about_wsc.html" />
+        <mapID target="about_rest_wsc" url="webservice/consume/about_restful_wsc.html" />
 	<mapID target="wsc_process" url="webservice/consume/wsc_process.html" />
 	<mapID target="wsc_proxy" url="webservice/consume/wsc_proxy.html" />
+        <mapID target="wsc_rest_process" url="webservice/consume/wsc_rest_process.html" />
         <mapID target="wsc_rest" url="webservice/consume/wsc_rest.html" />
+        <mapID target="wsc_rest_java" url="webservice/consume/wsc_rest_java.html" />
 	<mapID target="wsc_stubs" url="webservice/consume/wsc_stubs.html" />
-        <mapID target="wsc_build" url="webservice/consume/wsc_build.html" />
 	<mapID target="wsc_create" url="webservice/consume/wsc_create.html" />
 	<mapID target="wsc_call_ws" url="webservice/consume/wsc_call_ws.html" />
 	<mapID target="wsc_call_ws_asynchronous" url="webservice/consume/wsc_call_ws_asynchronous.html" />
@@ -100,13 +98,6 @@ Other names may be trademarks of their respective owners.
    
    <!-- End of "WSIT" section -->
 
-<!--Start of Axis2 web service related help links -->
-        <mapID target="org.netbeans.modules.websvc.axis2.wizards.WsFromJavaPanel0" url="webservice/create/create_axis.html" />
-        <mapID target="org.netbeans.modules.websvc.axis2.wizards.WsFromJavaPanel1" url="webservice/create/create_axis.html" />
-        <mapID target="org.netbeans.modules.websvc.axis2.wizards.WsFromWsdlPanel0" url="webservice/create/create_axis.html" />
-        <mapID target="org.netbeans.modules.websvc.axis2.wizards.WsFromWsdlPanel1" url="webservice/create/create_axis.html" />
-        <mapID target="org.netbeans.modules.websvc.axis2.options.Axis2PanelController" url="webservice/expose/as_setup_axis.html" />
-<!--End of Axis2 section -->
 
 <!--Start of RESTful web service wizard help links -->
         <mapID target="org.netbeans.modules.websvc.rest.wizard.EntitySelectionPanel" url="webservice/create/create_rest_from_scratch.html" />

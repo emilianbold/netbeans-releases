@@ -127,7 +127,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private DefaultTableModel tableModel;
     private static final String BINARY_FILE_KEY = "binaryField"; // NOI18N
     private final List<AtomicBoolean> cancelable = new ArrayList<AtomicBoolean>();
-
+    private static final class Lock {}
+    private final Object lock = new Lock();
+    private final AtomicBoolean searching = new AtomicBoolean(false);
 
     /** Creates new form SelectBinaryPanelVisual */
     public SelectBinaryPanelVisual(SelectBinaryPanel controller) {
@@ -345,35 +347,61 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private void checkDll(Map<String, String> dllPaths, String root, List<String> searchPaths, String binary) {
         cancelSearch();
-        AtomicBoolean cancel = new AtomicBoolean(false);
-        cancelable.add(cancel);
         if (validBinary()) {
-            String ldLibPath = CommonUtilities.getLdLibraryPath();
-            ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
-            boolean search = false;
-            for(String dll : dllPaths.keySet()) {
-                if (cancel.get()) {
-                    break;
+            searching.set(true);
+            validateController();
+            synchronized (lock) {
+                final AtomicBoolean cancel = new AtomicBoolean(false);
+                cancelable.add(cancel);
+                ActionListener actionListener = new ActionListener(){
+                     @Override
+                     public void actionPerformed(ActionEvent e) {
+                         cancel.set(true);
+                     }
+                 };
+                cancelSearch.addActionListener(actionListener);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        cancelSearch.setEnabled(true);
+                    }
+                });
+                String ldLibPath = CommonUtilities.getLdLibraryPath();
+                ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
+                boolean search = false;
+                for(String dll : dllPaths.keySet()) {
+                    if (cancel.get()) {
+                        break;
+                    }
+                    String p = findLocation(dll, ldLibPath);
+                    if (p != null) {
+                        dllPaths.put(dll, p);
+                    } else {
+                        search = true;
+                        dllPaths.put(dll, null);
+                    }
                 }
-                String p = findLocation(dll, ldLibPath);
-                if (p != null) {
-                    dllPaths.put(dll, p);
-                } else {
-                    search = true;
-                    dllPaths.put(dll, null);
+                updateDllArtifacts(root, dllPaths, search);
+                if (!cancel.get() && search && root.length() > 1) {
+                    ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
+                    progress.start();
+                    try {
+                        gatherSubFolders(new File(root), new HashSet<String>(), dllPaths, cancel);
+                    } finally {
+                        progress.finish();
+                    }
+                    updateDllArtifacts(root, dllPaths, false);
                 }
+                cancelSearch.removeActionListener(actionListener);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        cancelSearch.setEnabled(false);
+                    }
+                });
             }
-            updateDllArtifacts(root, dllPaths, search);
-            if (!cancel.get() && search && root.length() > 1) {
-                ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
-                progress.start();
-                try {
-                    gatherSubFolders(new File(root), new HashSet<String>(), dllPaths, cancel);
-                } finally {
-                    progress.finish();
-                }
-                updateDllArtifacts(root, dllPaths, false);
-            }
+            searching.set(false);
+            validateController();
         }
     }
 
@@ -404,6 +432,16 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         String name = ff[i].getName();
                         if (result.containsKey(name)) {
                            result.put(name, ff[i].getAbsolutePath());
+                            boolean finished = true;
+                            for (Map.Entry<String,String> entry : result.entrySet()) {
+                                if (entry.getValue() == null) {
+                                    finished = false;
+                                    break;
+                                }
+                            }
+                            if (finished) {
+                                return;
+                            }
                         }
                         gatherSubFolders(ff[i], set, result, cancel);
                     }
@@ -492,6 +530,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         viewLabel = new javax.swing.JLabel();
         viewComboBox = new javax.swing.JComboBox();
         binaryField = new EditableComboBox();
+        cancelSearch = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
@@ -612,6 +651,16 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(binaryField, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cancelSearch, org.openide.util.NbBundle.getMessage(SelectBinaryPanelVisual.class, "SelectBinaryPanelVisual.cancelSearch.text")); // NOI18N
+        cancelSearch.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
+        add(cancelSearch, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void binaryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binaryButtonActionPerformed
@@ -680,7 +729,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     boolean valid() {
-        return checking.get()==0 && validBinary() && validSourceRoot() && validDlls();
+        return !searching.get() && checking.get()==0 && validBinary() && validSourceRoot() && validDlls();
     }
 
     private String getValidBinaryPath() {
@@ -785,6 +834,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private javax.swing.JButton binaryButton;
     private javax.swing.JComboBox binaryField;
     private javax.swing.JLabel binaryLabel;
+    private javax.swing.JButton cancelSearch;
     private javax.swing.JComboBox dependeciesComboBox;
     private javax.swing.JLabel dependenciesLabel;
     private javax.swing.JScrollPane jScrollPane1;

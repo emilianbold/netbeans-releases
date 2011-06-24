@@ -97,7 +97,6 @@ public final class APTFileCacheManager {
         return manager;
     }
     
-    private Reference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>(null);
     private ConcurrentMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> file2AptCacheRef = new ConcurrentHashMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>();
     private final class Lock {}
     private final Object aptCachesLock = new Lock();
@@ -145,29 +144,6 @@ public final class APTFileCacheManager {
         return out;
     }
     
-    private ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache2(CharSequence file, boolean clean) {
-        ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>> cache;
-        synchronized (aptCachesLock) {
-            cache = refAptCaches.get();
-            if (cache == null || clean) {
-                cache = new ConcurrentHashMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>();
-                refAptCaches = new SoftReference<ConcurrentMap<CharSequence, ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>(cache);
-            }
-        }
-        ConcurrentMap<State, APTFileCacheEntry> out = cache.get(file);
-        if (out == null) {
-            out = new ConcurrentHashMap<State, APTFileCacheEntry>();
-            ConcurrentMap<State, APTFileCacheEntry> prev = cache.putIfAbsent(file, out);
-            if (prev != null) {
-                out = prev;
-            }
-        }
-        if (clean) {
-            out.clear();
-        }
-        return out;
-    }
-
     /**
      *
      * @param file

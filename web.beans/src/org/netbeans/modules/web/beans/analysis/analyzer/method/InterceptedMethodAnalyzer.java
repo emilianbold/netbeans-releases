@@ -42,22 +42,30 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
+import java.lang.annotation.ElementType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
 import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetAnalyzer;
+import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
 
@@ -78,6 +86,59 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
             List<ErrorDescription> descriptions , 
             CompilationInfo info , AtomicBoolean cancel )
     {
+        boolean hasInterceptorBindings = hasInterceptorBindings(element, model);
+        if (AnnotationUtil.isLifecycleCallback(element, model.getCompilationController() )) {
+            if (hasInterceptorBindings) {
+                ErrorDescription description = CdiEditorAnalysisFactory
+                    .createNotification( Severity.WARNING, element, model, info ,  
+                        NbBundle.getMessage(InterceptedMethodAnalyzer.class,
+                            "WARN_CallbackInterceptorBinding")); // NOI18N
+                if ( description != null ){
+                    descriptions.add(description);
+                }
+            }
+            if (cancel.get()) {
+                return;
+            }
+            InterceptorsResult interceptorResult = model
+                    .getInterceptors(element);
+            List<TypeElement> interceptors = interceptorResult
+                    .getResolvedInterceptors();
+            AnnotationHelper helper = null;
+            if ( interceptors.size() >0 ){
+                helper = new AnnotationHelper(model.getCompilationController());
+            }
+            for (TypeElement interceptor : interceptors) {
+                Collection<AnnotationMirror> interceptorBindings = model
+                    .getInterceptorBindings(interceptor);
+                for (AnnotationMirror annotationMirror : interceptorBindings) {
+                    Element iBinding = info.getTypes().asElement( 
+                            annotationMirror.getAnnotationType() );
+                    if ( !( iBinding instanceof TypeElement )) {
+                        continue;
+                    }
+                    Set<ElementType> declaredTargetTypes = TargetAnalyzer.
+                        getDeclaredTargetTypes(helper, (TypeElement)iBinding);
+                    if ( declaredTargetTypes.size() != 1 || 
+                            !declaredTargetTypes.contains(ElementType.TYPE))
+                    {
+                        ErrorDescription description = CdiEditorAnalysisFactory
+                            .createError(element, model, info ,  
+                                    NbBundle.getMessage(InterceptedMethodAnalyzer.class,
+                                    "ERR_LifecycleInterceptorTarget" ,      // NOI18N
+                                    interceptor.getQualifiedName().toString(), 
+                                    ((TypeElement)iBinding).getQualifiedName().toString())); 
+                        if ( description != null ){
+                            descriptions.add(description);
+                        }
+                    }
+                }
+            }
+        }
+        if (cancel.get()) {
+            return;
+        }
+                
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.STATIC ) || 
                 modifiers.contains( Modifier.PRIVATE))
@@ -92,7 +153,7 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
         if ( cancel.get() ){
             return;
         }
-        if ( hasInterceptorBindings(element, model, descriptions)){
+        if ( hasInterceptorBindings){
             if ( finalMethod ){
                 ErrorDescription description = CdiEditorAnalysisFactory
                     .createError(element, model, info ,  

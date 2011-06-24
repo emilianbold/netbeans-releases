@@ -65,7 +65,7 @@ public class CheckLinksTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
@@ -88,7 +88,7 @@ public class CheckLinksTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
@@ -110,7 +110,7 @@ public class CheckLinksTest extends TestBase {
         File f = extractString(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\">" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\">" +
             "  <checklinks checkexternal='false' basedir='" + html.getParent() + "'>" +
             "    <include name=\"" + html.getName() + "\"/>" +
@@ -135,7 +135,7 @@ public class CheckLinksTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
@@ -162,7 +162,7 @@ public class CheckLinksTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
@@ -189,7 +189,7 @@ public class CheckLinksTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
@@ -214,7 +214,7 @@ public class CheckLinksTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
@@ -237,7 +237,7 @@ public class CheckLinksTest extends TestBase {
         java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
@@ -266,7 +266,7 @@ public class CheckLinksTest extends TestBase {
         File f = extractString(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nbantext.jar}\"/>" +
             "<target name=\"all\" >" +
             "  <checklinks checkexternal='false' basedir='" + html1.getParent() + "' >" +
             "    <include name=\"" + html1.getName() + "\" />" +

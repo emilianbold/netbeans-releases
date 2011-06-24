@@ -84,6 +84,7 @@ import org.netbeans.api.actions.Viewable;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
 
@@ -190,11 +191,11 @@ public class Actions {
             }
         }
         Bridge b = new MenuBridge(item, action, popup);
+        b.prepare();
 
         if (item instanceof Actions.MenuItem) {
             ((Actions.MenuItem)item).setBridge(b);
         }
-        b.updateState(null);
         item.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
     }
 
@@ -205,7 +206,7 @@ public class Actions {
     */
     public static void connect(JCheckBoxMenuItem item, BooleanStateAction action, boolean popup) {
         Bridge b = new CheckMenuBridge(item, action, popup);
-        b.updateState(null);
+        b.prepare();
     }
 
     /** Connects buttons to action.
@@ -251,7 +252,7 @@ public class Actions {
             }
         }
         Bridge b = new ButtonBridge(button, action);
-        b.updateState(null);
+        b.prepare();
     }
 
     /** Connects buttons to action.
@@ -260,7 +261,7 @@ public class Actions {
     */
     public static void connect(AbstractButton button, BooleanStateAction action) {
         Bridge b = new BooleanButtonBridge(button, action);
-        b.updateState(null);
+        b.prepare();
     }
 
     /** Sets the text for the menu item or other subclass of AbstractButton.
@@ -273,6 +274,14 @@ public class Actions {
     */
     @Deprecated
     public static void setMenuText(AbstractButton item, String text, boolean useMnemonic) {
+        String msg = NbBundle.getMessage(Actions.class, "USE_MNEMONICS"); // NOI18N
+        if ("always".equals(msg)) { // NOI18N
+            useMnemonic = true;
+        } else if ("never".equals(msg)) { // NOI18N
+            useMnemonic = false;
+        } else {
+            assert "default".equals(msg); // NOI18N 
+        }
         if (useMnemonic) {
             Mnemonics.setLocalizedText(item, text);
         } else {
@@ -817,7 +826,7 @@ public class Actions {
         /** action to associate */
         protected Action action;
         
-        protected PropertyChangeListener listener;
+        private final PropertyChangeListener actionL;
         /** @param comp component
         * @param action the action
         */
@@ -830,13 +839,7 @@ public class Actions {
             this.comp = comp;
             this.action = action;
 
-            // visibility listener
-            listener = new VisL();
-            Bridge.this.comp.addPropertyChangeListener(listener);
-
-            if (Bridge.this.comp.isShowing()) {
-                addNotify();
-            }
+            actionL = WeakListeners.propertyChange(this, action);
 
             // associate context help, if applicable
             // [PENDING] probably belongs in ButtonBridge.updateState to make it dynamic
@@ -847,15 +850,24 @@ public class Actions {
             }
         }
 
+        protected void prepare() {
+            comp.addPropertyChangeListener(new VisL());
+            if (comp.isShowing()) {
+                addNotify();
+            } else {
+                updateState(null);
+            }
+        }
+
         /** Attaches listener to given action */
-        public void addNotify() {
-            action.addPropertyChangeListener(this);
+        final void addNotify() {
+            action.addPropertyChangeListener(actionL);
             updateState(null);
         }
 
         /** Remove the listener */
-        public void removeNotify() {
-            action.removePropertyChangeListener(this);
+        final void removeNotify() {
+            action.removePropertyChangeListener(actionL);
         }
 
         /** @param changedProperty the name of property that has changed
@@ -1156,12 +1168,6 @@ public class Actions {
             super(item, action);
             this.popup = popup;
             
-            if (item instanceof Actions.MenuItem) {
-                // addnotify/remove notify doens't make sense for menus and
-                // popups.
-                MenuBridge.this.comp.removePropertyChangeListener(listener);
-            }
-            
             if (popup) {
                 prepareMargins(item, action);
             } else {
@@ -1169,6 +1175,15 @@ public class Actions {
                 item.putClientProperty("menubridgeresizehack", this);
 
                 // #40824 hack end.
+            }
+        }
+
+        protected @Override void prepare() {
+            if (popup) {
+                // popups generally get no hierarchy events, yet we need to listen to other changes
+                addNotify();
+            } else {
+                super.prepare();
             }
         }
 
@@ -1665,9 +1680,7 @@ public class Actions {
         */
         public SubMenu(Action aAction, SubMenuModel model, boolean popup) {
             bridge = new SubMenuBridge(new JMenuItem(), this, aAction, model, popup);
-
-            // set at least the name to have reasonable bounds
-            bridge.updateState(Action.NAME);
+            bridge.prepare();
         }
         
         public JComponent[] getMenuPresenters() {

@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.profiler.j2ee.sunas;
 
+import java.util.ArrayList;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.util.Iterator;
@@ -75,7 +76,7 @@ public class SunASIntegrationPanel extends AttachWizardPanel {
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
         public Model() {
-            this.domains = new Vector();
+            this.domains = new ArrayList();
             targetPlatform = null;
         }
 
@@ -143,7 +144,7 @@ public class SunASIntegrationPanel extends AttachWizardPanel {
 
             if (((this.domain == null) || (this.domain.length() == 0)) && (this.domains.size() > 0)) {
                 this.domain = (String) this.domains.get(0);
-            } else if (this.domains.size() == 0) {
+            } else if (this.domains.isEmpty()) {
                 this.domain = null;
             }
         }
@@ -224,16 +225,16 @@ public class SunASIntegrationPanel extends AttachWizardPanel {
     public void onExit(AttachWizardContext context) {
         SunASAutoIntegrationProvider provider = (SunASAutoIntegrationProvider) getContext().getIntegrationProvider();
         boolean isModified = false;
-        if (provider.getInstallationPath() == null || provider.getDomain() == null || provider.getTargetJavaHome() == null) {
-            return;
-        }
+        if (provider.getInstallationPath() == null || provider.getDomain() == null || provider.getTargetJava() == null) {
+            isModified = true;
+        } 
 
-        if (!provider.getInstallationPath().equals(this.model.getInstallPath())) {
+        if (provider.getInstallationPath() == null || !provider.getInstallationPath().equals(this.model.getInstallPath())) {
             isModified = true;
-        } else if (!provider.getDomain().equals(this.model.getDomain())) {
+        } else if (provider.getDomain() == null || !provider.getDomain().equals(this.model.getDomain())) {
             isModified = true;
-        } else if ((provider.getTargetJavaHome() != null) && (model.getSelectedPlatform() != null)
-                       && !provider.getTargetJavaHome().equals(this.model.getSelectedPlatform().getHomePath())) {
+        } else if (provider.getTargetJavaHome() == null || ((provider.getTargetJavaHome() != null) && (model.getSelectedPlatform() != null)
+                       && !provider.getTargetJavaHome().equals(this.model.getSelectedPlatform().getHomePath()))) {
             isModified = true;
         }
 

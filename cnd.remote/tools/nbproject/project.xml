@@ -14,11 +14,26 @@
                 <sourceRootElem>.</sourceRootElem>
             </sourceRootList>
             <confList>
-                <confElem>Debug32</confElem>
-                <confElem>Debug64</confElem>
-                <confElem>Release32</confElem>
-                <confElem>Release64</confElem>
-                <confElem>Test_filedata_32</confElem>
+                <confElem>
+                    <name>Debug32</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Debug64</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Release32</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Release64</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Test_filedata_32</name>
+                    <type>0</type>
+                </confElem>
             </confList>
         </data>
     </configuration>

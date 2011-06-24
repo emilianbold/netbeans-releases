@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
@@ -101,11 +102,21 @@ public abstract class ClassIndexImpl {
     
     private State state = State.NEW;
     private final List<WeakReference<ClassIndexImplListener>> listeners = Collections.synchronizedList(new ArrayList<WeakReference<ClassIndexImplListener>> ());
-    
-    public abstract <T> void search (final String binaryName, final Set<UsageType> usageType, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
-    
-    public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
-    
+
+    public abstract <T> void search (
+            @NonNull String binaryName,
+            @NonNull Set<? extends UsageType> usageType,
+            @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
+            @NonNull Convertor<? super Document, T> convertor,
+            @NonNull Set<? super T> result) throws IOException, InterruptedException;
+
+    public abstract <T> void getDeclaredTypes (
+            @NonNull String name,
+            @NonNull ClassIndex.NameKind kind,
+            @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
+            @NonNull Convertor<? super Document, T> convertor,
+            @NonNull Set<? super T> result) throws IOException, InterruptedException;
+
     public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, Convertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException;
     
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;

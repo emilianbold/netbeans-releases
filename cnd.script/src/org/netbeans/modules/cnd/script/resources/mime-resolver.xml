@@ -44,6 +44,9 @@
             <pattern value="/bin/sh" range="40"/>
         </pattern>
         <pattern value="#!" range="2">
+            <pattern value="/sbin/sh" range="40"/>
+        </pattern>
+        <pattern value="#!" range="2">
             <pattern value="/bin/ksh" range="40"/>
         </pattern>
         <pattern value="#!" range="2">

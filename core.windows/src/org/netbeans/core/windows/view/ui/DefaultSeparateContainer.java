@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.windows.options.WinSysPrefs;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.openide.windows.WindowManager;
 
 
@@ -99,19 +100,23 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         w.setBounds(bounds);
             }
     
+    @Override
     public void requestAttention (TopComponent tc) {
         //not implemented
     }
     
+    @Override
     public void cancelRequestAttention (TopComponent tc) {
         //not implemented
     }
 
     /** */
+    @Override
     protected Component getModeComponent() {
         return getModeUIWindow();
     }
     
+    @Override
     protected Tabbed createTabbed() {
         Tabbed tabbed;
         if(getKind() == Constants.MODE_KIND_EDITOR) {
@@ -122,10 +127,12 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         return tabbed;    
     }    
     
+    @Override
     protected void updateTitle (String title) {
         getModeUIBase().updateTitle(title);
     }
     
+    @Override
     protected void updateActive (boolean active) {
         Window w = getModeUIWindow();
         if(active) {
@@ -135,14 +142,17 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         } 
     }
     
+    @Override
     public boolean isActive () {
         return getModeUIWindow().isActive();
     }
     
+    @Override
     protected boolean isAttachingPossible() {
         return false;
     }
     
+    @Override
     protected TopComponentDroppable getModeDroppable() {
         return getModeUIBase();
     }
@@ -175,40 +185,49 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         }
 
+        @Override
         public ModeView getModeView() {
             return modeBase.getModeView();
         }
 
+        @Override
         public int getKind() {
             return modeBase.getKind();
         }
 
+        @Override
         public Shape getIndicationForLocation(Point location) {
             return modeBase.getIndicationForLocation(location);
         }
 
+        @Override
         public Object getConstraintForLocation(Point location) {
             return modeBase.getConstraintForLocation(location);
         }
 
+        @Override
         public Component getDropComponent() {
             return modeBase.getDropComponent();
         }
 
+        @Override
         public ViewElement getDropViewElement() {
             return modeBase.getDropViewElement();
         }
 
-        public boolean canDrop(TopComponent transfer, Point location) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
             return modeBase.canDrop(transfer, location);
         }
 
-        public boolean supportsKind(int kind, TopComponent transfer) {
-            return modeBase.supportsKind(kind, transfer);
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
+            return modeBase.supportsKind(transfer);
         }
 
         /** Actually sets title for the frame
          */
+        @Override
         public void updateTitle(String title) {
             // extract HTML from text - Output window (and soon others) uses it
             if (BasicHTML.isHTMLString(title)) {
@@ -304,38 +323,47 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             }
         }
 
+        @Override
         public ModeView getModeView() {
             return modeBase.getModeView();
         }
 
+        @Override
         public int getKind() {
             return modeBase.getKind();
         }
 
+        @Override
         public Shape getIndicationForLocation(Point location) {
             return modeBase.getIndicationForLocation(location);
         }
 
+        @Override
         public Object getConstraintForLocation(Point location) {
             return modeBase.getConstraintForLocation(location);
         }
 
+        @Override
         public Component getDropComponent() {
             return modeBase.getDropComponent();
         }
 
+        @Override
         public ViewElement getDropViewElement() {
             return modeBase.getDropViewElement();
         }
 
-        public boolean canDrop(TopComponent transfer, Point location) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
             return modeBase.canDrop(transfer, location);
         }
 
-        public boolean supportsKind(int kind, TopComponent transfer) {
-            return modeBase.supportsKind(kind, transfer);
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
+            return modeBase.supportsKind(transfer);
         }
 
+        @Override
         public void updateTitle(String title) {
             // noop - no title for dialogs
         }
@@ -467,6 +495,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         
         
             window.addWindowStateListener(new WindowStateListener() {
+                @Override
                 public void windowStateChanged(WindowEvent evt) {
                     if (!Constants.AUTO_ICONIFY) {
                         modeView.getController().userChangedFrameStateMode(modeView, evt.getNewState());
@@ -502,36 +531,44 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             window.toFront();
         }
         
+        @Override
         public ModeView getModeView() {
             return abstractModeContainer.getModeView();
         }
         
+        @Override
         public int getKind() {
             return abstractModeContainer.getKind();
         }
 
         // TopComponentDroppable>>
+        @Override
         public Shape getIndicationForLocation(Point location) {
             return abstractModeContainer.getIndicationForLocation(location);
         }
         
+        @Override
         public Object getConstraintForLocation(Point location) {
             return abstractModeContainer.getConstraintForLocation(location);
         }
         
+        @Override
         public Component getDropComponent() {
             return abstractModeContainer.getDropComponent();
         }
         
+        @Override
         public ViewElement getDropViewElement() {
             return abstractModeContainer.getDropModeView();
         }
         
-        public boolean canDrop(TopComponent transfer, Point location) {
+        @Override
+        public boolean canDrop(TopComponentDraggable transfer, Point location) {
             return abstractModeContainer.canDrop(transfer);
         }
         
-        public boolean supportsKind(int kind, TopComponent transfer) {
+        @Override
+        public boolean supportsKind(TopComponentDraggable transfer) {
             // this is not a typo, yes it should be the same as canDrop
             return abstractModeContainer.canDrop(transfer);
             //return true;

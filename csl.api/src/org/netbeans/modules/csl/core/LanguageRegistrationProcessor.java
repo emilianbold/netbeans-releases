@@ -133,7 +133,7 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
             final LayerBuilder lb = layer(cls);
 
             for(String mimeType : mimeTypes) {
-                registerCslPlugin(lb, mimeType, cls);
+                registerCslPlugin(lb, mimeType, cls, languageRegistration.useMultiview());
                 registerTLIndexer(lb, mimeType);
 
                 // for some reason the structure scanner registration in CslJar was done always, no matter
@@ -204,9 +204,12 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
         return f;
     }
 
-    private static void registerCslPlugin(LayerBuilder b, String mimeType, TypeElement language) throws LayerGenerationException {
+    private static void registerCslPlugin(LayerBuilder b, String mimeType, TypeElement language, boolean useMultiview) throws LayerGenerationException {
         File f = b.folder("CslPlugins/" + mimeType); //NOI18N
         f.intvalue("genver", 2); //NOI18N
+        f.write();
+        
+        f.boolvalue("useMultiview", useMultiview); //NOI18N
         f.write();
         
         f = instanceFile(b, "CslPlugins/" + mimeType, "language", null, null); //NOI18N

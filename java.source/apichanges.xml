@@ -108,6 +108,32 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ClassIndex-package-scope">
+             <api name="general"/>
+             <summary>Added package search scope into <code>ClassIndex</code> to restrict search in given packages</summary>
+             <version major="0" minor="82"/>
+             <date day="22" month="6" year="2011"/>
+             <author login="tzezula"/>
+             <compatibility addition="yes"/>
+             <description>
+                 Added package search scope into <code>ClassIndex</code> to restrict search in given packages.
+             </description>
+             <class package="org.netbeans.api.java.source" name="ClassIndex"/>
+             <issue number="197194"/>
+        </change>
+        <change id="TreeUtilities.findMethodParameterSpan">
+             <api name="general"/>
+             <summary>Find span of the MethodTree#getParameters() parameter list in the source.</summary>
+             <version major="0" minor="81"/>
+             <date day="1" month="6" year="2011"/>
+             <author login="ralphbenjamin"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 <code>TreeUtilities</code> has a new <code>findMethodParameterSpan(MethodTree method)</code> method.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <issue number="199080"/>
+        </change>
         <change id="TreePathHandle-from-ElementHandle">
              <api name="general"/>
              <summary>TreePathHandle can be created from ElementHandle</summary>

@@ -321,6 +321,11 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
     }
 
+    @Override
+    public void save() {
+        unlisted.clear();
+    }
+
     private synchronized Collection<ExecutionEnvironment> clear() {
         Collection<ExecutionEnvironment> removed = new ArrayList<ExecutionEnvironment>();
         for (RemoteServerRecord record : items) {

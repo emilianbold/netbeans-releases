@@ -1142,7 +1142,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 setSize(Math.max(prefSize.width, sz.width),
                         Math.max(prefSize.height, sz.height));
             }
-
+            invalidate();
             validate();
             repaint();
         }

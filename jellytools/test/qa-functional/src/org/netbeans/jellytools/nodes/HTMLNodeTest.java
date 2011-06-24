@@ -46,7 +46,6 @@ package org.netbeans.jellytools.nodes;
 import java.awt.Toolkit;
 import java.io.IOException;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.SaveAsTemplateOperator;
@@ -54,10 +53,11 @@ import org.netbeans.jellytools.testutils.NodeUtils;
 
 /** Test of org.netbeans.jellytools.nodes.HTMLNode
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
+ * @author Adam Sotona
+ * @author Jiri Skrivanek
  */
 public class HTMLNodeTest extends JellyTestCase {
+
     public static final String[] tests = {
         "testVerifyPopup",
         "testOpen",
@@ -68,49 +68,29 @@ public class HTMLNodeTest extends JellyTestCase {
         "testSaveAsTemplate",
         "testProperties"
     };
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public HTMLNodeTest(String testName) {
         super(testName);
     }
-    
+
     /** method used for explicit testsuite definition
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new HTMLNodeTest("testVerifyPopup"));
-        suite.addTest(new HTMLNodeTest("testOpen"));
-        suite.addTest(new HTMLNodeTest("testCut"));
-        suite.addTest(new HTMLNodeTest("testCopy"));
-        suite.addTest(new HTMLNodeTest("testDelete"));
-        suite.addTest(new HTMLNodeTest("testRename"));
-        suite.addTest(new HTMLNodeTest("testSaveAsTemplate"));
-        suite.addTest(new HTMLNodeTest("testProperties"));
-        return suite;
-         */
-        return createModuleTest(HTMLNodeTest.class, 
-        tests);
+        return createModuleTest(HTMLNodeTest.class, tests);
     }
-    
-    /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
     protected static HTMLNode htmlNode = null;
-    
+
     /** Find node. */
+    @Override
     protected void setUp() throws IOException {
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
         openDataProjects("SampleProject");
-        if(htmlNode == null) {
+        if (htmlNode == null) {
             htmlNode = new HTMLNode(new SourcePackagesNode("SampleProject"),
-                                    "sample1|html.html"); // NOI18N
+                    "sample1|html.html"); // NOI18N
         }
     }
 
@@ -118,49 +98,48 @@ public class HTMLNodeTest extends JellyTestCase {
     public void testVerifyPopup() {
         htmlNode.verifyPopup();
     }
-    
+
     /** Test open */
     public void testOpen() {
         htmlNode.open();
         new EditorOperator("html").closeDiscard();  // NOI18N
     }
-    
+
     /** Test cut */
     public void testCut() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         htmlNode.cut();
         NodeUtils.testClipboard(clipboard1);
     }
-    
+
     /** Test copy */
     public void testCopy() {
         Object clipboard1 = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         htmlNode.copy();
         NodeUtils.testClipboard(clipboard1);
     }
-    
+
     /** Test delete */
     public void testDelete() {
         htmlNode.delete();
         NodeUtils.closeConfirmDeleteDialog();
     }
-    
+
     /** Test rename */
     public void testRename() {
         htmlNode.rename();
         NodeUtils.closeRenameDialog();
     }
-    
+
     /** Test properties */
     public void testProperties() {
         htmlNode.properties();
         NodeUtils.closeProperties("html"); // NOI18N
     }
-    
+
     /** Test saveAsTemplate */
     public void testSaveAsTemplate() {
         htmlNode.saveAsTemplate();
         new SaveAsTemplateOperator().close();
     }
-    
 }

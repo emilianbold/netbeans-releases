@@ -69,6 +69,10 @@ public class NbMavenProjectImplTest extends NbTestCase {
         return Level.FINE;
     }
 
+    protected @Override String logRoot() {
+        return "org.netbeans.modules.maven";
+    }
+
     public void testPackagingTypeSpecificLookup() throws Exception {
         assertLookupObject("[base, jar]", "jar");
         assertLookupObject("[base, war]", "war");

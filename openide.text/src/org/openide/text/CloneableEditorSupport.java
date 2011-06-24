@@ -103,6 +103,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakSet;
 
@@ -284,6 +285,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     */
     public CloneableEditorSupport(Env env, Lookup l) {
         super(env);
+        Parameters.notNull("l", l);
         this.lookup = l;
     }
 
@@ -1324,7 +1326,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Creates and initializes
      * new <code>CloneableEditor</code> component.
-     * Typically do not override this method.
+     * Typically do not override this method (unless you are dealing with 
+     * <a href="@org-netbeans-core-multiview@/overview-summary.html">multiviews</a>).
      * For creating your own <code>CloneableEditor</code> type component
      * override {@link #createCloneableEditor} method.
      *
@@ -1735,6 +1738,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                              if (t.getCause() instanceof UserQuestionException) {
                                                  query.e = (UserQuestionException)t.getCause();
                                                  Mutex.EVENT.readAccess(query);
+                                                 return;
+                                             }
+                                             if (t.getCause() instanceof IOException) {
+                                                 IOException ioe = (IOException)t.getCause();
+                                                 DialogDisplayer.getDefault().notify(
+                                                     new NotifyDescriptor.Message(
+                                                        ioe.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
                                                  return;
                                              }
                                              prepareDocumentRuntimeException = t;

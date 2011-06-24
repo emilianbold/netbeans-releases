@@ -98,7 +98,7 @@ public class BackoutPanel extends ChangesetPickerPanel {
         JPanel optionsPanel = new JPanel(new BorderLayout(10, 0));
         optionsPanel.add(commitLabel, BorderLayout.WEST);
         optionsPanel.add(commitMsgField, BorderLayout.CENTER);
-        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(10, 12, 10, 12));
+        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0));
         setOptionsPanel(optionsPanel, null);
     }
 }

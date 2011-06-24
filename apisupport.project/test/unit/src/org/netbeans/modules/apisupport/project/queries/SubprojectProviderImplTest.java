@@ -109,10 +109,12 @@ public class SubprojectProviderImplTest extends TestBase {
     }
     
     /** @see "#63824" */
+    /* No examples in nb.org left; should create sample projects for it:
     public void testAdHocSubprojects() throws Exception {
-        //assertDepends("mdr/module", "mdr");
+        assertDepends("mdr/module", "mdr");
         assertDepends("applemenu", "applemenu/eawtstub");
     }
+    */
     
     /** @see "#77533" */
     public void testSelfRefWithClassPathExts() throws Exception {

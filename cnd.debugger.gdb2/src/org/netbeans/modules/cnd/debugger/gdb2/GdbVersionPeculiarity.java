@@ -44,7 +44,16 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 /**
  * Contains actions which may vary in different versions of gdb
@@ -54,6 +63,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 public class GdbVersionPeculiarity {
     private final double version;
     private final Platform platform;
+    private final Set<String> features = Collections.synchronizedSet(new HashSet<String>());
 
     private GdbVersionPeculiarity(double version, Platform platform) {
         this.version = version;
@@ -101,5 +111,26 @@ public class GdbVersionPeculiarity {
 
     public boolean isSupported() {
         return (version >= 6.8) || (platform == Platform.MacOSX_x86 && version >= 6.3);
+    }
+    
+    private static final String THREAD_INFO_FEATURE = "thread-info"; //NOI18N
+    
+    public boolean supportsThreadInfo() {
+        return features.contains(THREAD_INFO_FEATURE);
+    }
+    
+    void setFeatures(MIRecord result) {
+        synchronized (features) {
+            features.clear();
+            try {
+                MITList results = result.results();
+                MIValue value = ((MIResult)results.get(0)).value();
+                for (MITListItem item : value.asList()) {
+                    features.add(((MIConst)item).value());
+                }
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
     }
 }

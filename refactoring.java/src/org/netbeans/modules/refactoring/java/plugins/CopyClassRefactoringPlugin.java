@@ -64,8 +64,10 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -186,6 +188,12 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
                 for (ModificationResult result : results) {
                     result.commit();
                 }
+                DataObject dobj = DataObject.find(newOne);
+                EditorCookie editor = dobj.getLookup().lookup(EditorCookie.class);
+                if (editor != null) {
+                    editor.open();
+                }
+
             } catch (Exception ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }

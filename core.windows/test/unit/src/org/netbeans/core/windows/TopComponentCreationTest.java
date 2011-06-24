@@ -189,19 +189,19 @@ public class TopComponentCreationTest extends NbTestCase {
      * Clean folder Windows2Local with custom data created when winsys is saved.
      */
     private void deleteLocalData () {
-        FileObject rootFolder = FileUtil.getConfigFile( PersistenceManager.ROOT_LOCAL_FOLDER );
-        if (rootFolder != null) {
-            try {
+        try {
+            FileObject rootFolder = PersistenceManager.getDefault().getRootLocalFolder();
+            if (rootFolder != null) {
                 for (FileObject fo : rootFolder.getChildren()) {
                     if (PersistenceManager.COMPS_FOLDER.equals(fo.getName())) {
                         continue; //do not delete settings files
                     }
                     fo.delete();
                 }
-            } catch (IOException exc) {
-                Logger.getLogger(this.getClass().getName()).log
-                (Level.INFO, "Cannot delete local data:", exc);
             }
+        } catch (IOException exc) {
+            Logger.getLogger(this.getClass().getName()).log
+            (Level.INFO, "Cannot delete local data:", exc);
         }
     }
     

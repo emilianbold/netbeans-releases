@@ -60,7 +60,7 @@ public class NFABasedBulkSearchTest extends BulkSearchTestPerformer {
 //
 //        return r;
 //    }
-    
+
     @Override
     protected BulkSearch createSearch() {
         return new NFABasedBulkSearch();

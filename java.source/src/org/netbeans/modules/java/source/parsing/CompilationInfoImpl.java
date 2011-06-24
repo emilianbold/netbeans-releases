@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -247,13 +248,21 @@ public final class CompilationInfoImpl {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
-        Collection<Diagnostic<? extends JavaFileObject>> errors = ((DiagnosticListenerImpl)diagnosticListener).getErrors(jfo).values();
+        Collection<Collection<Diagnostic<? extends JavaFileObject>>> errors = ((DiagnosticListenerImpl)diagnosticListener).getErrors(jfo).values();
         List<Diagnostic<? extends JavaFileObject>> partialReparseErrors = ((DiagnosticListenerImpl)diagnosticListener).partialReparseErrors;
         List<Diagnostic<? extends JavaFileObject>> affectedErrors = ((DiagnosticListenerImpl)diagnosticListener).affectedErrors;
-        List<Diagnostic> localErrors = new ArrayList<Diagnostic>(errors.size() + 
+        int errorsSize = 0;
+
+        for (Collection<Diagnostic<? extends JavaFileObject>> err : errors) {
+            errorsSize += err.size();
+        }
+
+        List<Diagnostic> localErrors = new ArrayList<Diagnostic>(errorsSize +
                 (partialReparseErrors == null ? 0 : partialReparseErrors.size()) + 
                 (affectedErrors == null ? 0 : affectedErrors.size()));
-        localErrors.addAll(errors);
+        for (Collection<Diagnostic<? extends JavaFileObject>> err : errors) {
+            localErrors.addAll(err);
+        }
         if (partialReparseErrors != null) {
             localErrors.addAll (partialReparseErrors);
         }
@@ -419,7 +428,7 @@ public final class CompilationInfoImpl {
     // Innerclasses ------------------------------------------------------------    
     static class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
         
-        private final Map<JavaFileObject, TreeMap<Integer,Diagnostic<? extends JavaFileObject>>> source2Errors;
+        private final Map<JavaFileObject, TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>> source2Errors;
         private final JavaFileObject jfo;
         private volatile List<Diagnostic<? extends JavaFileObject>> partialReparseErrors;
         private volatile List<Diagnostic<? extends JavaFileObject>> affectedErrors;
@@ -427,7 +436,7 @@ public final class CompilationInfoImpl {
         
         public DiagnosticListenerImpl(final JavaFileObject jfo) {
             this.jfo = jfo;
-            this.source2Errors = new HashMap<JavaFileObject, TreeMap<Integer, Diagnostic<? extends JavaFileObject>>>();
+            this.source2Errors = new HashMap<JavaFileObject, TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>>();
         }
         
         @Override
@@ -437,15 +446,22 @@ public final class CompilationInfoImpl {
                     partialReparseErrors.add(message);
                 }
             } else {
-                getErrors(message.getSource()).put((int) message.getPosition(), message);
+                TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors = getErrors(message.getSource());
+                Collection<Diagnostic<? extends JavaFileObject>> diags = errors.get((int) message.getPosition());
+
+                if (diags == null) {
+                    errors.put((int) message.getPosition(), diags = new ArrayList<Diagnostic<? extends JavaFileObject>>());
+                }
+                
+                diags.add(message);
             }
         }
 
-        private TreeMap<Integer,Diagnostic<? extends JavaFileObject>> getErrors(JavaFileObject file) {
-                TreeMap<Integer, Diagnostic<? extends JavaFileObject>> errors = source2Errors.get(file);
+        private TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> getErrors(JavaFileObject file) {
+                TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors = source2Errors.get(file);
 
                 if (errors == null) {
-                    source2Errors.put(file, errors = new TreeMap<Integer, Diagnostic<? extends JavaFileObject>>());
+                    source2Errors.put(file, errors = new TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>());
                 }
 
                 return errors;
@@ -458,18 +474,20 @@ public final class CompilationInfoImpl {
         final void startPartialReparse (int from, int to) {
             if (partialReparseErrors == null) {
                 partialReparseErrors = new ArrayList<Diagnostic<? extends JavaFileObject>>();
-                TreeMap<Integer, Diagnostic<? extends JavaFileObject>> errors = getErrors(jfo);
+                TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors = getErrors(jfo);
                 errors.subMap(from, to).clear();       //Remove errors in changed method durring the partial reparse
-                Map<Integer,Diagnostic<? extends JavaFileObject>> tail = errors.tailMap(to);
+                Map<Integer, Collection<Diagnostic<? extends JavaFileObject>>> tail = errors.tailMap(to);
                 this.affectedErrors = new ArrayList<Diagnostic<? extends JavaFileObject>>(tail.size());
-                for (Iterator<Map.Entry<Integer,Diagnostic<? extends JavaFileObject>>> it = tail.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<Integer,Diagnostic<? extends JavaFileObject>> e = it.next();                    
-                    final JCDiagnostic diagnostic = (JCDiagnostic)e.getValue();
+                for (Iterator<Entry<Integer,Collection<Diagnostic<? extends JavaFileObject>>>> it = tail.entrySet().iterator(); it.hasNext();) {
+                    Entry<Integer, Collection<Diagnostic<? extends JavaFileObject>>> e = it.next();
                     it.remove();
-                    if (diagnostic == null) {
-                        throw new IllegalStateException("#184910: diagnostic == null " + mapArraysToLists(Thread.getAllStackTraces())); //NOI18N
+                    for (Diagnostic<? extends JavaFileObject> d : e.getValue()) {
+                        final JCDiagnostic diagnostic = (JCDiagnostic) d;
+                        if (diagnostic == null) {
+                            throw new IllegalStateException("#184910: diagnostic == null " + mapArraysToLists(Thread.getAllStackTraces())); //NOI18N
+                        }
+                        this.affectedErrors.add(new D (diagnostic));
                     }
-                    this.affectedErrors.add(new D (diagnostic));
                 }
             }
             else {

@@ -44,7 +44,6 @@ package org.netbeans.modules.j2ee.weblogic9.deploy;
 import java.io.IOException;
 import java.lang.String;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,15 +62,11 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -257,17 +252,25 @@ public final class WebProfileDeployer extends AbstractDeployer {
                                 ObjectName appRuntime = new ObjectName(
                                         "com.bea:ServerRuntime=" + target.getName() + ",Name=" + name + ",Type=ApplicationRuntime"); // NOI18N
                                 ObjectName[] componentRuntimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
+                                boolean isApp = false;
                                 for (ObjectName n: componentRuntimes) {
                                     // ModuleURI returns just "web"
-                                    String root = (String) connection.getAttribute(n, "ContextRoot"); // NOI18N
-                                    if (root != null) {
-                                        module.setContextURL(
-                                                "http://" + getDeploymentManager().getHost() // NOI18N
-                                                + ":" + getDeploymentManager().getPort() + root); // NOI18N
-                                        break;
+                                    String type = (String) connection.getAttribute(n, "Type"); // NOI18N
+                                    if ("WebAppComponentRuntime".equals(type)) { // NOI18N
+                                        // other component runtimes such as JDBC don't have ContextRoot
+                                        isApp = true;
+                                        String root = (String) connection.getAttribute(n, "ContextRoot"); // NOI18N
+                                        if (root != null) {
+                                            module.setContextURL(
+                                                    "http://" + getDeploymentManager().getHost() // NOI18N
+                                                    + ":" + getDeploymentManager().getPort() + root); // NOI18N
+                                            break;
+                                        }
                                     }
                                 }
-                                result.put(module, state);
+                                if (isApp) {
+                                    result.put(module, state);
+                                }
                             }
                         }
                     }

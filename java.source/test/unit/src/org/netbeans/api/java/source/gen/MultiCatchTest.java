@@ -44,11 +44,14 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
@@ -120,6 +123,202 @@ public class MultiCatchTest extends GeneratorTestBase {
                 workingCopy.rewrite(method.getBody(), make.addBlockStatement(method.getBody(), tt));
             }
             
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRenameInMultiCatch() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.io.*;\n" +
+            "import java.net.*;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "        } catch (MalformedURLException | FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.io.*;\n" +
+            "import java.net.*;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "        } catch (MalformedURLException | IOException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                        if (node.getName().contentEquals("FileNotFoundException")) {
+                            workingCopy.rewrite(node, make.Identifier("IOException"));
+                        }
+                        return super.visitIdentifier(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAddLastToMultiCatch() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.io.*;\n" +
+            "import java.net.*;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "        } catch (MalformedURLException | FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.io.*;\n" +
+            "import java.net.*;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "        } catch (MalformedURLException | FileNotFoundException | IOException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitUnionType(UnionTypeTree node, Void p) {
+                        List<Tree> alternatives = new ArrayList<Tree>(node.getTypeAlternatives());
+                        alternatives.add(make.Identifier("IOException"));
+                        workingCopy.rewrite(node, make.UnionType(alternatives));
+                        return null;
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAddFirstToMultiCatch() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.io.*;\n" +
+            "import java.net.*;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "        } catch (MalformedURLException | FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.io.*;\n" +
+            "import java.net.*;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "        } catch (IOException | MalformedURLException | FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitUnionType(UnionTypeTree node, Void p) {
+                        List<Tree> alternatives = new ArrayList<Tree>(node.getTypeAlternatives());
+                        alternatives.add(0, make.Identifier("IOException"));
+                        workingCopy.rewrite(node, make.UnionType(alternatives));
+                        return null;
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAddMiddleToMultiCatch() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.io.*;\n" +
+            "import java.net.*;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "        } catch (MalformedURLException | FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.io.*;\n" +
+            "import java.net.*;\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "        } catch (MalformedURLException | IOException | FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitUnionType(UnionTypeTree node, Void p) {
+                        List<Tree> alternatives = new ArrayList<Tree>(node.getTypeAlternatives());
+                        alternatives.add(1, make.Identifier("IOException"));
+                        workingCopy.rewrite(node, make.UnionType(alternatives));
+                        return null;
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
