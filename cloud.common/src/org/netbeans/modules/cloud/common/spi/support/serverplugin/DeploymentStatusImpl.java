@@ -39,61 +39,68 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.ui;
+package org.netbeans.modules.cloud.common.spi.support.serverplugin;
 
-import java.awt.Component;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
 
 /**
  *
  */
-public class AmazonWizardPanel2 implements WizardDescriptor.Panel<WizardDescriptor> {
+public class DeploymentStatusImpl implements DeploymentStatus {
 
-    private AmazonWizardComponent2 component;
-    private List<Node> servers;
-    
-    public AmazonWizardPanel2() {
+    private CommandType command;
+    private StateType state;
+    private ActionType action;
+    private String message;
+
+    public DeploymentStatusImpl(CommandType command, StateType state, ActionType action, String message) {
+        this.command = command;
+        this.state = state;
+        this.action = action;
+        this.message = message;
     }
     
     @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new AmazonWizardComponent2(servers);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, AmazonWizardPanel.getPanelContentData());            
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1));
-        }
-        return component;
+    public StateType getState() {
+        return state;
     }
 
     @Override
-    public HelpCtx getHelp() {
-        return null;
+    public CommandType getCommand() {
+        return command;
     }
 
     @Override
-    public void readSettings(WizardDescriptor settings) {
-        servers = (List<Node>)settings.getProperty(AmazonWizardPanel.SERVERS);
+    public ActionType getAction() {
+        return action;
     }
 
     @Override
-    public void storeSettings(WizardDescriptor settings) {
+    public String getMessage() {
+        return message;
     }
 
     @Override
-    public boolean isValid() {
-        return true;
+    public boolean isCompleted() {
+        return StateType.COMPLETED.equals(state);
     }
 
     @Override
-    public void addChangeListener(ChangeListener l) {
+    public boolean isFailed() {
+        return StateType.FAILED.equals(state);
     }
 
     @Override
-    public void removeChangeListener(ChangeListener l) {
+    public boolean isRunning() {
+        return StateType.RUNNING.equals(state);
     }
 
+    @Override
+    public String toString() {
+        return "DeploymentStatusImpl{" + "command=" + command + ", state=" + state + ", action=" + action + ", message=" + message + '}';
+    }
+    
 }

@@ -62,14 +62,13 @@ public class AmazonJ2EEInstanceNode extends AbstractNode {
         super(Children.LEAF);
         this.aij = aij;
         setName(""); // NOI18N
-        setDisplayName(aij.getDisplayName()+" / "+aij.getAmazonInstance().getName());
+        setDisplayName(aij.getDisplayName());
         //setShortDescription(NbBundle.getMessage(RootNode.class, "Amazon_Node_Short_Description"));
         setIconBaseWithExtension(TOMCAT_ICON);
-        
     }
     
     void showServerType() {
-        setDisplayName(aij.getDisplayName()+" ["+aij.getContainerType()+"]");
+        setDisplayName(aij.getEnvironmentName()+" ["+aij.getApplicationName()+"]"+" on "+aij.getContainerType());
     }
 
     @Override

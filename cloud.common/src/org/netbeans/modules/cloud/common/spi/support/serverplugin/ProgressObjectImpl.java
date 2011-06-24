@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
+package org.netbeans.modules.cloud.common.spi.support.serverplugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -136,14 +136,14 @@ public class ProgressObjectImpl implements ProgressObject {
         fireChange(st);
     }
     
-    public void updateDepoymentResult(org.netbeans.modules.cloud.amazon.AmazonInstance.DeploymentStatus result, String url) {
+    public void updateDepoymentResult(org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus result, String url) {
         StateType st = StateType.FAILED;
-        if (result == org.netbeans.modules.cloud.amazon.AmazonInstance.DeploymentStatus.SUCCESS) {
+        if (result == org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus.SUCCESS) {
             st = StateType.COMPLETED;
             this.url = url;
-        } else if (result == org.netbeans.modules.cloud.amazon.AmazonInstance.DeploymentStatus.FAILED ||
-                result == org.netbeans.modules.cloud.amazon.AmazonInstance.DeploymentStatus.EXCEPTION ||
-                result == org.netbeans.modules.cloud.amazon.AmazonInstance.DeploymentStatus.UNKNOWN) {
+        } else if (result == org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus.FAILED ||
+                result == org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus.EXCEPTION ||
+                result == org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus.UNKNOWN) {
             st = StateType.FAILED;
         }
         DeploymentStatusImpl st2 = new DeploymentStatusImpl(

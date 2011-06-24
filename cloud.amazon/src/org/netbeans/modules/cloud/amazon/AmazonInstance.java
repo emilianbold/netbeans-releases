@@ -79,8 +79,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.api.server.properties.InstanceProperties;
-import org.netbeans.modules.cloud.amazon.serverplugin.ProgressObjectImpl;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
+import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -259,13 +259,6 @@ public class AmazonInstance {
         return client.createEnvironment(req).getEnvironmentId();
     }
 
-    public enum DeploymentStatus {
-        SUCCESS,
-        FAILED,
-        UNKNOWN,
-        EXCEPTION
-    }
-    
     public static Future<DeploymentStatus> deployAsync(final File f, final String applicationName, 
                          final String environmentId, final String keyId, final String key,
                          final ProgressObjectImpl po) {

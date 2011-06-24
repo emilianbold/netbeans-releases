@@ -39,31 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
+package org.netbeans.modules.cloud.oracle;
 
-import javax.enterprise.deploy.spi.Target;
+import org.netbeans.modules.cloud.oracle.ui.OracleWizardIterator;
+import org.netbeans.spi.server.ServerWizardProvider;
 
 /**
  *
  */
-public class TargetImpl implements Target {
+public class OracleServerWizardProvider implements ServerWizardProvider {
 
-    private String name;
-
-    public static final Target SOME = new TargetImpl("some-target");
-    
-    private TargetImpl(String name) {
-        this.name = name;
-    }
-    
     @Override
-    public String getName() {
-        return name;
+    public String getDisplayName() {
+        return "Oracle Cloud 9";
     }
 
     @Override
-    public String getDescription() {
-        return "target-description";
+    public org.openide.WizardDescriptor.InstantiatingIterator getInstantiatingIterator() {
+        return new OracleWizardIterator();
     }
     
 }

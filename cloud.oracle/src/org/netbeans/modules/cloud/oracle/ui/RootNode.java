@@ -39,31 +39,71 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
+package org.netbeans.modules.cloud.oracle.ui;
 
-import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  */
-public class AmazonRegistryNodeFactory implements RegistryNodeFactory {
+public class RootNode extends AbstractNode implements ChangeListener {
 
-    @Override
-    public Node getManagerNode(Lookup lookup) {
-        AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setName("manager node");
-        return an;
+    private static RootNode node;
+    
+    public static final String ORACLE_ICON = "org/netbeans/modules/cloud/oracle/ui/resources/oracle.png"; // NOI18N
+
+    private RootNodeChildren children;
+    
+    private RootNode(RootNodeChildren children) {
+        super(children);
+        this.children = children;
+        setName(""); // NOI18N
+        setDisplayName(NbBundle.getMessage(RootNode.class, "Oracle_Node_Name"));
+        setShortDescription(NbBundle.getMessage(RootNode.class, "Oracle_Node_Short_Description"));
+        setIconBaseWithExtension(ORACLE_ICON);
+        OracleInstanceManager.getDefault().addChangeListener(this);
+    }
+    
+    public static RootNode createOracleRootNode() {
+        return new RootNode(new RootNodeChildren());
     }
 
     @Override
-    public Node getTargetNode(Lookup lookup) {
-        AbstractNode an = new AbstractNode(Children.LEAF);
-        an.setName("target node");
-        return an;
+    public void stateChanged(ChangeEvent e) {
+        children.init();
+    }
+
+    
+    // TODO: add action to create a new Oracle account
+    
+    private static class RootNodeChildren extends Children.Keys<OracleInstance> {
+
+        public RootNodeChildren() {
+        }
+
+        private void init() {
+            this.setKeys(OracleInstanceManager.getDefault().getInstances());
+        }
+        
+        @Override
+        protected void addNotify() {
+            init();
+        }
+
+        @Override
+        protected Node[] createNodes(OracleInstance key) {
+            return new Node[]{new OracleInstanceNode(key)};
+        }
+
+        // TODO: add actions for: remove and configure
+
     }
     
 }

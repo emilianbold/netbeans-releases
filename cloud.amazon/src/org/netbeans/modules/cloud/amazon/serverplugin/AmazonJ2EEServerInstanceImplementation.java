@@ -59,7 +59,7 @@ public class AmazonJ2EEServerInstanceImplementation implements ServerInstanceImp
     
     @Override
     public String getDisplayName() {
-        return aij.getApplicationName() + " - " + aij.getEnvironmentName();
+        return getBasicNode().getDisplayName(); //aij.getApplicationName() + " - " + aij.getEnvironmentName();
     }
 
     @Override
