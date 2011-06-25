@@ -42,7 +42,6 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -66,13 +65,16 @@ public class MimeResolverParityTestCase extends RemoteFileTestBase {
     private String longestDirName = "";
     private long longestDirTime = -1;
     
-    public MimeResolverParityTestCase(String testName) throws IOException {
+    private static final long reportThreshold = 2000;
+    
+    public MimeResolverParityTestCase(String testName) throws Exception {
         super(testName, createLocalEnvAsRemote());
     }
 
-    private static ExecutionEnvironment createLocalEnvAsRemote() throws IOException {
+    private static ExecutionEnvironment createLocalEnvAsRemote() throws Exception {
         String mspec = "local-as-remote";
         ExecutionEnvironment env = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec);
+        assertNotNull("Can not find execution environmant for mspec==" + mspec, env);
         return env;
         
     }
@@ -105,7 +107,9 @@ public class MimeResolverParityTestCase extends RemoteFileTestBase {
             out.printf("%s %s\n", child.getPath(), mimeType);
         }
         dirTime = System.currentTimeMillis() - dirTime;
-        System.err.printf("Getting MIME types for %s took %d ms, slowest file %s - %d ms\n", baseDirFO, dirTime, maxFileName, maxFileTime);
+        if (dirTime > reportThreshold) {
+            System.err.printf("Getting MIME types for %s took %d ms, slowest file %s - %d ms\n", baseDirFO, dirTime, maxFileName, maxFileTime);
+        }
         if (dirTime > longestDirTime) {
             longestDirTime = dirTime;
             longestDirName = baseDirFO.getPath();
@@ -120,6 +124,10 @@ public class MimeResolverParityTestCase extends RemoteFileTestBase {
     }
     
     private void doTestMimeResolvers1(String baseDir, boolean recursive) throws Throwable {
+        if (!new File(baseDir).exists()) {
+            System.err.printf("File %s does not exist. Skipping text\n", baseDir);
+            return;
+        }
         try {
             System.err.printf("========== Testing MIME types in %s started\n", baseDir);
             FileObject remoteBaseDirFO = getFileObject(baseDir);
@@ -159,15 +167,19 @@ public class MimeResolverParityTestCase extends RemoteFileTestBase {
             System.err.printf("========== Testing MIME types in %s done\n", baseDir);
         }
     }
+
+    public void testMimeResolversBin() throws Throwable {
+        doTestMimeResolvers1("/bin", true);
+    }
+
+    public void testMimeResolversUsrInclude() throws Throwable {
+        doTestMimeResolvers1("/usr/include", true);
+    }
     
     public void testMimeResolversUsr() throws Throwable {
         doTestMimeResolvers1("/usr", true);
     }
 
-    public void testMimeResolversBin() throws Throwable {
-        doTestMimeResolvers1("/bin", true);
-    }
-    
     public void testMimeResolversExportHome() throws Throwable {
         doTestMimeResolvers1("/export/home", true);
     }
