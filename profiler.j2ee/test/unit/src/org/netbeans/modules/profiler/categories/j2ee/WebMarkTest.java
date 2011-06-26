@@ -44,7 +44,7 @@ package org.netbeans.modules.profiler.categories.j2ee;
 
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
-import org.netbeans.modules.profiler.categories.Category;
+import org.netbeans.modules.profiler.categorization.api.Category;
 
 
 /**
