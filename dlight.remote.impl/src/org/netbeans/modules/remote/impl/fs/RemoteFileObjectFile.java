@@ -80,6 +80,7 @@ public abstract class RemoteFileObjectFile extends RemoteFileObjectBase {
         }
         for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
             if ("org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern".equals(element.getClassName()) ||  //NOI18N
+                "org.openide.filesystems.MIMESupport".equals(element.getClassName()) && "findMIMEType".equals(element.getMethodName()) ||  //NOI18N
                 "org.openide.loaders.DefaultDataObject".equals(element.getClassName()) && "fixCookieSet".equals(element.getMethodName())) { //NOI18N
                 return true;
             }
