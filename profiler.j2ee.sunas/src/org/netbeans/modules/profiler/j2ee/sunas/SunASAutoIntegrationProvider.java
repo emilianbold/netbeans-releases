@@ -747,7 +747,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     
     private static String getAsScriptFilePath(final String installDir, final String specDir, final String scriptName,
                                               final String targetOS) {
-        final String separator = IntegrationUtils.getPathSeparator(targetOS); // NOI18N
+        final String separator = IntegrationUtils.getDirectorySeparator(targetOS); // NOI18N
         StringBuilder path = new StringBuilder();
 
         path.append(installDir);
