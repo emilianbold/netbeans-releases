@@ -47,7 +47,7 @@ import org.netbeans.modules.profiler.categorization.spi.CategoryDefinition;
 import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 
 /**
- *
+ * A category definition implemented by package matching
  * @author Jaroslav Bachorik
  */
 public class PackageCategoryDefinition extends CategoryDefinition {

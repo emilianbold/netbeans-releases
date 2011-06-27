@@ -46,7 +46,7 @@ import org.netbeans.modules.profiler.categorization.api.Category;
 import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 
 /**
- *
+ * A category definition implemented by subtype matching
  * @author Jaroslav Bachorik
  */
 public class SubtypeCategoryDefinition extends TypeCategoryDefinition {

@@ -48,11 +48,11 @@ import org.netbeans.modules.profiler.categorization.api.definitions.SingleTypeCa
 import org.netbeans.modules.profiler.categorization.api.definitions.SubtypeCategoryDefinition;
 
 /**
- *
+ * An SPI providing functionality for double dispatched category processing
  * @author Jaroslav Bachorik
  */
 public abstract class CategoryDefinitionProcessor {
-    public void process(CategoryDefinition def) {
+    final public void process(CategoryDefinition def) {
         throw new UnsupportedOperationException("Must specify a concrete org.netbeans.modules.profiler.categories.CategoryDefinition implementation");
     }
     

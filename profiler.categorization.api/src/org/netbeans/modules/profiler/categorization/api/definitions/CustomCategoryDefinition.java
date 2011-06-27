@@ -48,7 +48,8 @@ import org.netbeans.modules.profiler.categorization.spi.CategoryDefinition;
 import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 
 /**
- *
+ * A category definition for custom marked definitions.<br/>
+ * It allows for using one's own {@linkplain Marker} instance.
  * @author Jaroslav Bachorik
  */
 public class CustomCategoryDefinition extends CategoryDefinition {

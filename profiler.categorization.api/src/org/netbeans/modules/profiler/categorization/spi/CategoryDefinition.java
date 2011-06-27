@@ -42,12 +42,12 @@
 
 package org.netbeans.modules.profiler.categorization.spi;
 
-import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.modules.profiler.categorization.api.Category;
 
 /**
- *
+ * A category definition SPI intended to be used as a base class for
+ * custom category definition types
  * @author Jaroslav Bachorik
  */
 public abstract class CategoryDefinition {
@@ -57,9 +57,18 @@ public abstract class CategoryDefinition {
         this.category = category;
     }
     
-    public Mark getAssignedMark() {
+    /**
+     * @return Returns the {@linkplain Mark} assigned to this category definition
+     */
+    final public Mark getAssignedMark() {
         return category.getAssignedMark();
     }
     
+    /**
+     * Double dispatch entry - a subclass will need to implement this by<p>
+     * <code>processor.process(this)</code>
+     * </p>
+     * @param processor The {@linkplain CategoryDefinitionProcessor} instance
+     */
     public abstract void processWith(CategoryDefinitionProcessor processor);
 }

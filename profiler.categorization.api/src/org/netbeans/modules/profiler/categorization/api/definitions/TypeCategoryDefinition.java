@@ -46,7 +46,7 @@ import org.netbeans.modules.profiler.categorization.api.Category;
 import org.netbeans.modules.profiler.categorization.spi.CategoryDefinition;
 
 /**
- *
+ * A category definition implemented by multiple type matching
  * @author Jaroslav Bachorik
  */
 public abstract class TypeCategoryDefinition extends CategoryDefinition {
