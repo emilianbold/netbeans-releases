@@ -47,6 +47,7 @@ package org.netbeans.modules.mercurial.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.mercurial.ui.branch.CreateBranchAction;
 import org.netbeans.modules.mercurial.ui.branch.SwitchToBranchAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -76,9 +77,13 @@ public class BranchMenu extends DynamicMenu implements Presenter.Menu {
             org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(BranchMenu.class, "CTL_MenuItem_BranchMenu")); // NOI18N
             item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(SwitchToBranchAction.class), false);
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(CreateBranchAction.class), false);
             menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(SwitchToBranchAction.class), NbBundle.getMessage(SwitchToBranchAction.class, "CTL_PopupMenuItem_SwitchToBranch"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "CTL_PopupMenuItem_CreateBranch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;
