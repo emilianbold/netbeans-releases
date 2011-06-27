@@ -357,7 +357,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             LOG.log(Level.WARNING, "no fileobject for {0}", pom);
                         }
                     }
-                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(mdls.toArray(new POMModel[0]), names, names.PROJECT, Project.class,  configuration); //NOI18N
+                    if (names == null) { // #199698
+                        return;
+                    }
+                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(mdls.toArray(new POMModel[0]), names, names.PROJECT, Project.class,  configuration);
                     for (Project p : prjs) {
                         hold.addCut(p);
                     }
