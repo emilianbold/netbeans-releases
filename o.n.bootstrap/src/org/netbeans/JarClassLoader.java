@@ -478,6 +478,24 @@ public class JarClassLoader extends ProxyClassLoader {
                                             opened(JarClassLoader.JarSource.this, "ziperror");
                                             continue;
                                         }
+                                        File f = file;
+                                        for (;;) {
+                                            if (f == null) {
+                                                LOGGER.log(Level.INFO, "file {0} is null. # of retries {1}", new Object[] {f, retry}); // NOI18N
+                                                break;
+                                            }
+                                            if (f.exists()) {
+                                                LOGGER.log(Level.WARNING, "file {0} exists. # of retries {1}", new Object[] {f, retry}); // NOI18N
+                                                if (f.isDirectory()) {
+                                                    LOGGER.log(Level.INFO, "{0} is directory and contains: {1}", new Object[]{f, Arrays.toString(f.list())}); // NOI18N
+                                                } else {
+                                                    LOGGER.log(Level.INFO, "{0} isDirectory: {1}, isFile: {2}", new Object[]{f, f.isDirectory(), f.isFile()}); // NOI18N
+                                                }
+                                                break;
+                                            }
+                                            LOGGER.log(Level.WARNING, "{0} does not exist, # of retries {1}", new Object[] { f, retry }); // NOI18N
+                                            f = f.getParentFile();
+                                        }
                                         throw zip;
                                     }
                                 }
