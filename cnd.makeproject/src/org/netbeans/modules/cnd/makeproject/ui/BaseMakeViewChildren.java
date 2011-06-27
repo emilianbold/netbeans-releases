@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.awt.EventQueue;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.SwingUtilities;
@@ -95,7 +94,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
             //System.err.println("BaseMakeViewChildren: create wait node " + (SwingUtilities.isEventDispatchThread() ? "UI":"regular") + " thread");
             if (SwingUtilities.isEventDispatchThread()) {
                 super.addNotify();
-                setKeys(new Object[]{getWaitNode()});
+                resetKeys(Collections.singleton(getWaitNode()));
                 LOAD_NODES_RP.post(getAddNotifyRunnable(), WAIT_DELAY);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
