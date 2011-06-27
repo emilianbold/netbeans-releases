@@ -66,7 +66,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.dbschema.ColumnElement;
 import org.netbeans.modules.dbschema.TableElement;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToMany;
@@ -78,7 +77,6 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.completion.AnnotationUtils;
 import org.netbeans.modules.j2ee.persistence.editor.completion.CompletionContextResolver;
-//import org.netbeans.modules.j2ee.persistence.editor.completion.NNCompletionQuery;
 import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser;
 import org.netbeans.modules.j2ee.persistence.editor.completion.JPACompletionItem;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -245,10 +243,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         }
         Project project = FileOwnerQuery.getOwner(fo);
         if (project == null) {
-            return null;
-        }
-        J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        if (moduleProvider == null) {
             return null;
         }
         JPADataSource datasource = null;
