@@ -165,14 +165,17 @@ final public class Categorization implements Marker {
 
     public MarkMapping[] getMappings() {
         CategoryDefinitionProcessor mp = project.getLookup().lookup(CategoryDefinitionProcessor.class);
-        getRoot().accept(new Visitor<Visitable<Category>, Void, CategoryDefinitionProcessor>() {
+        if (mp != null) {
+            getRoot().accept(new Visitor<Visitable<Category>, Void, CategoryDefinitionProcessor>() {
 
-            public Void visit(Visitable<Category> visitable, CategoryDefinitionProcessor parameter) {
-                visitable.getValue().processDefinitionsWith(parameter);
-                return null;
-            }
-        }, mp);
-        return ((Marker)mp).getMappings();
+                public Void visit(Visitable<Category> visitable, CategoryDefinitionProcessor parameter) {
+                    visitable.getValue().processDefinitionsWith(parameter);
+                    return null;
+                }
+            }, mp);
+            return ((Marker)mp).getMappings();
+        }
+        return new MarkMapping[0];
     }
 
     public Mark[] getMarks() {
