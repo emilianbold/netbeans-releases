@@ -53,6 +53,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.ui.UIUtils;
 
 
@@ -97,6 +99,7 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
 
     public void setThreadsMonitoring(boolean enabled) {
         threadsMonitoringCheckbox.setSelected(enabled);
+        updateControls();
     }
 
     public boolean getThreadsMonitoring() {
@@ -137,6 +140,10 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
     }
 
     // --- Private implementation ------------------------------------------------
+    
+    private void updateControls() {
+        threadsSamplingCheckbox.setEnabled(threadsMonitoringCheckbox.isSelected());
+    }
 
     // --- UI definition ---------------------------------------------------------
     private void initComponents() {
@@ -157,6 +164,9 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(15 + threadsMonitoringCheckbox.getPreferredSize().height + 3, 30, 0, 0);
         add(threadsMonitoringCheckbox, constraints);
+        threadsMonitoringCheckbox.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) { updateControls(); }
+        });
         threadsMonitoringCheckbox.addActionListener(getSettingsChangeListener());
 
         // threadsSamplingCheckbox
