@@ -775,6 +775,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     /** Special attributes which should not be checked for weight. See RemoveWritablesTest. */
     private static final Set<String> SPECIAL_ATTR_NAMES = new HashSet<String>(Arrays.asList("removeWritables", WEIGHT_ATTRIBUTE, "java.io.File")); // NOI18N
     private final Object getAttribute(String attrName, String path) {
+        if (path.length() == 0 && attrName.indexOf('\\') >= 0) {
+            return null;
+        }
         // Look for attribute in any file system starting at the front.
         // Additionally, look for attribute in root folder, where
         // the relative path from the folder to the target file is
@@ -989,10 +992,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     private final Enumeration<String> getAttributes(String path) {
         Set<String> s = new HashSet<String>();
         FileSystem[] systems = getMultiFileSystem().getDelegates();
+        final boolean empty = path.length() == 0;
 
         // [PENDING] will not remove from the enumeration voided-out attributes
         // (though this is probably not actually necessary)
-        String prefix = (path.length() == 0) ? null : (path.replace('/', '\\') + '\\');
+        String prefix = empty ? null : (path.replace('/', '\\') + '\\');
 
         for (int i = 0; i < systems.length; i++) {
             if (systems[i] == null) {
@@ -1006,6 +1010,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                 while (e.hasMoreElements()) {
                     String attr = e.nextElement();
+                    if (empty && attr.indexOf('\\') >= 0) {
+                        continue;
+                    }
                     s.add(attr);
                 }
             }
