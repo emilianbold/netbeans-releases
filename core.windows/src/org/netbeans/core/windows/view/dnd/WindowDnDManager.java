@@ -544,6 +544,18 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     return drop;
                 }
             }
+            droppable = findSlideDroppable(viewAccessor.getSlidingModeComponent(Constants.TOP));
+            if (droppable != null) {
+                CenterSlidingDroppable drop = new CenterSlidingDroppable(viewAccessor, droppable, Constants.TOP);
+                if (drop.isWithinSlide(p)) {
+                    if( !drop.supportsKind( transfer ) ) {
+                        lastSlideDroppable = null;
+                        return null;
+                    }
+                    lastSlideDroppable = drop;
+                    return drop;
+                }
+            }
         }
         lastSlideDroppable = null;
         if (isNearEditorEdge(location, viewAccessor, transfer.getKind())) {
@@ -716,6 +728,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         if (dr != null) {
             shrinked.height = shrinked.height - dr.getBounds().height;
         }
+        dr = viewAccessor.getSlidingModeComponent(Constants.TOP);
+        if (dr != null) {
+            shrinked.y += dr.getBounds().height;
+        }
         boolean cont =  centerBounds.contains(p) && !shrinked.contains(p);
         
         return cont;
@@ -804,7 +820,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     tc = (TopComponent)tr.getTransferData(df);
                 }
 
-                return new TopComponentDraggable( tc );
+                if( null != tc )
+                    return new TopComponentDraggable( tc );
             } catch(UnsupportedFlavorException ufe) {
                 Logger.getLogger(WindowDnDManager.class.getName()).log(Level.WARNING, null, ufe);
             } catch(IOException ioe) {
@@ -1099,6 +1116,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             Component leftSlide = viewAccessor.getSlidingModeComponent(Constants.LEFT);
             Component rightSlide = viewAccessor.getSlidingModeComponent(Constants.RIGHT);
             Component bottomSlide = viewAccessor.getSlidingModeComponent(Constants.BOTTOM);
+            Component topSlide = viewAccessor.getSlidingModeComponent(Constants.TOP);
             if(null != leftSlide && p.x <  leftSlide.getBounds().width + 10) {
                 return javax.swing.JSplitPane.LEFT;
             } else if(p.y < bounds.y) {
@@ -1108,6 +1126,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 return javax.swing.JSplitPane.RIGHT;
             } else if(null != bottomSlide && p.y > bounds.height - 10 - bottomSlide.getBounds().height) {
                 return javax.swing.JSplitPane.BOTTOM;
+            } else if(null != topSlide && p.y < bounds.y + topSlide.getBounds().height + 10) {
+                return javax.swing.JSplitPane.TOP;
             }
 
             return null;
@@ -1178,6 +1198,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             Component leftSlide = viewAccessor.getSlidingModeComponent(Constants.LEFT);
             Component rightSlide = viewAccessor.getSlidingModeComponent(Constants.RIGHT);
             Component bottomSlide = viewAccessor.getSlidingModeComponent(Constants.BOTTOM);
+            Component topSlide = viewAccessor.getSlidingModeComponent(Constants.TOP);
             if(null != leftSlide && p.x <  leftSlide.getBounds().width + 10) {
                 return javax.swing.JSplitPane.LEFT;
             } else if(p.y < bounds.y) {
@@ -1187,6 +1208,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 return javax.swing.JSplitPane.RIGHT;
             } else if(null != bottomSlide && p.y > bounds.height - 10 - bottomSlide.getBounds().height) {
                 return javax.swing.JSplitPane.BOTTOM;
+            } else if(null != topSlide && p.y < bounds.y + topSlide.getBounds().height + 10) {
+                return javax.swing.JSplitPane.TOP;
             }
 
             return null;
@@ -1341,6 +1364,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 } else if (Constants.BOTTOM.equals(side)) {
                     toReturn = new Rectangle(0, - Constants.DROP_AREA_SIZE, Math.max(rect.width, Constants.DROP_AREA_SIZE), 
                                                                            Math.max(rect.height, Constants.DROP_AREA_SIZE));
+                } else if (Constants.TOP.equals(side)) {
+                    toReturn = new Rectangle(0, 0, Math.max(rect.width, Constants.DROP_AREA_SIZE), 
+                                                                           Math.max(rect.height, Constants.DROP_AREA_SIZE));
                 }
             }
             return toReturn;
@@ -1388,6 +1414,17 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                         return true;
                     }
                 }
+            }
+            else if (Constants.TOP.equals(side)) {
+                if (barLoc.x > - Constants.DROP_AREA_SIZE && barLoc.x < dim.width + Constants.DROP_AREA_SIZE) {
+                    if (isShowing && ((barLoc.y < 0 && barLoc.y > - Constants.DROP_AREA_SIZE)
+                                     || barLoc.y > 0 && barLoc.y + dim.height < Constants.DROP_AREA_SIZE)) {
+                        return true;
+                    }
+                    if (!isShowing && barLoc.y >= 0 && barLoc.y < Constants.DROP_AREA_SIZE + dim.height) {
+                        return true;
+                    }
+                }
             } 
             return false;
             
@@ -1419,12 +1456,15 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 leftTop = new Point(0, leftTop.y - 24);
                 firstDivider = new Point(leftTop);
                 secondDevider = new Point(leftTop.x + glassPane.getBounds().width, leftTop.y);
+            } else if (Constants.TOP.equals(side)) {
+                firstDivider = new Point(leftTop.x, leftTop.y+24);
+                secondDevider = new Point(leftTop.x + glassPane.getBounds().width, leftTop.y+24);
             } else {
                 firstDivider = new Point(leftTop.x + 25, leftTop.y);
                 secondDevider = new Point(leftTop.x + 25, leftTop.y + dim.height);
             }
             Rectangle rect = new Rectangle(leftTop.x, leftTop.y, Math.max(25, dim.width), Math.max(25, dim.height));
-            if (Constants.BOTTOM.equals(side)) {
+            if (Constants.BOTTOM.equals(side) || Constants.TOP.equals(side) ) {
                 // for bottom has special hack to use the whole width
                 rect.width = glassPane.getBounds().width;
             }
@@ -1452,8 +1492,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             else if (Constants.BOTTOM.equals(side)) {
                 leftTop = new Point(0, leftTop.y - 24);
             }
+            else if (Constants.TOP.equals(side)) {
+                leftTop = new Point(0, leftTop.y + 24);
+            }
             Rectangle rect = new Rectangle(leftTop.x, leftTop.y, Math.max(25, dim.width), Math.max(25, dim.height));
-            if (Constants.BOTTOM.equals(side)) {
+            if (Constants.BOTTOM.equals(side) || Constants.TOP.equals(side) ) {
                 // for bottom has special hack to use the whole width
                 rect.width = glassPane.getBounds().width;
             }
