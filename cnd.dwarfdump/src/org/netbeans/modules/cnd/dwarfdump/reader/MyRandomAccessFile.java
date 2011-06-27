@@ -106,6 +106,9 @@ public final class MyRandomAccessFile extends RandomAccessFile {
             return len;
         } else {
             long position = getFilePointer();
+            if (position >= channel.size()) {
+                throw new IOException("End of file"); //NOI18N
+            }
             bufferShift = Math.max(position - MAX_BUF_SIZE/2, 0L);
             bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
             ByteOrder order = buffer.order();
