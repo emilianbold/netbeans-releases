@@ -77,6 +77,7 @@ public class BranchMenu extends DynamicMenu implements Presenter.Menu {
             org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(BranchMenu.class, "CTL_MenuItem_BranchMenu")); // NOI18N
             item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(SwitchToBranchAction.class), false);
+            menu.add(item);
             item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(CreateBranchAction.class), false);
             menu.add(item);
