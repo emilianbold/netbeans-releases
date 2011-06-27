@@ -275,6 +275,7 @@ public class HgCommand {
 
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
     private final static String HG_BRANCHES_CMD = "branches"; // NOI18N
+    private final static String HG_BRANCH_CMD = "branch"; // NOI18N
 
     private static final String HG_NO_REPOSITORY_ERR = "There is no Mercurial repository here"; // NOI18N
     private static final String HG_NO_RESPONSE_ERR = "no suitable response from remote hg!"; // NOI18N
@@ -381,6 +382,7 @@ public class HgCommand {
 
     private static final HashSet<String> WORKING_COPY_PARENT_MODIFYING_COMMANDS = new HashSet<String>(Arrays.asList(
         HG_BACKOUT_CMD,
+        HG_BRANCH_CMD,
         HG_CLONE_CMD,
         HG_COMMIT_CMD,
         HG_CREATE_CMD,
@@ -396,6 +398,7 @@ public class HgCommand {
 
     private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(Arrays.asList(
         HG_ANNOTATE_CMD,
+        HG_BRANCH_CMD,
         HG_BRANCHES_CMD,
         HG_BUNDLE_CMD,
         HG_CAT_CMD,
@@ -2328,6 +2331,23 @@ public class HgCommand {
              }
         }
         return processBranches(list, heads);
+    }
+
+    public static void markBranch (File repository, String branchName, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_BRANCH_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(branchName);
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+            } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+            }
+        }
     }
 
     private static Boolean topoAvailable;
