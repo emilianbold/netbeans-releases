@@ -426,7 +426,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     
     /** Checks whetner the point is inside one of floating window,
      * i.e. separated modes, droppable area. The point is relative to screen. */
-    private static boolean isInFloatingFrameDroppable(Set<Component> floatingFrames, Point location, TopComponentDraggable transfer) {
+    private boolean isInFloatingFrameDroppable(Set<Component> floatingFrames, Point location, TopComponentDraggable transfer) {
         return findFloatingFrameDroppable(floatingFrames, location, transfer) != null;
     }
     
@@ -581,7 +581,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
     /** Gets droppable from separated (floating) window, specified
      * by screen location. Helper method. */
-    private static TopComponentDroppable findFloatingFrameDroppable(
+    private TopComponentDroppable findFloatingFrameDroppable(
     Set<Component> floatingFrames, Point location, TopComponentDraggable transfer) {
         for(Component comp: floatingFrames) {
             Rectangle bounds = comp.getBounds();
@@ -604,7 +604,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * method finds if there is a droppable component in the hierarchy, which
      * also contains the specified location.
      * Utilitity method. */
-    private static TopComponentDroppable findDroppable(Component comp,
+    private TopComponentDroppable findDroppable(Component comp,
                          Point location, TopComponentDraggable transfer) {
         RootPaneContainer rpc;
         if(comp instanceof RootPaneContainer) {
@@ -618,6 +618,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             }
         }
 
+        Point screenLocation = new Point( location );
+        SwingUtilities.convertPointToScreen( screenLocation, comp );
         Component contentPane = rpc.getContentPane();
         location = SwingUtilities.convertPoint(comp, location, contentPane);
         Component deepest = SwingUtilities.getDeepestComponentAt(
@@ -641,15 +643,33 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             }
         }
         
+        TopComponentDroppable res = null;
         while(deepest != null) {
             TopComponentDroppable nextDroppable = (TopComponentDroppable)SwingUtilities.getAncestorOfClass(
                     TopComponentDroppable.class, deepest);
             if(nextDroppable != null && nextDroppable.supportsKind(transfer)) {
-                return nextDroppable;
+                res = nextDroppable;
+                break;
             }
             deepest = (Component)nextDroppable;
         }
-        return null;
+        if( res instanceof ModeComponent && transfer.getKind() != Constants.MODE_KIND_EDITOR && ((ModeComponent)res).getKind() == Constants.MODE_KIND_EDITOR ) {
+            //if user is about to drop a view component/mode at the edge of editor
+            //area then make it a 'drop around editor' instead of converting
+            //that view component/mode into an editor mode
+            TopComponentDroppable editor = getEditorAreaDroppable();
+            if( editor.supportsKind( transfer ) ) {
+                Point p = new Point( screenLocation );
+                SwingUtilities.convertPointFromScreen( p, res.getDropComponent() );
+                Object side = res.getConstraintForLocation( p );
+                p = new Point( screenLocation );
+                SwingUtilities.convertPointFromScreen( p, editor.getDropComponent() );
+                if( null != side && side.equals( editor.getConstraintForLocation( p ) ) ) {
+                    res = editor;
+                }
+            }
+        }
+        return res;
     }
     
     /** Indicates whether the cursor is around center panel of main window.
@@ -984,7 +1004,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             boolean isInMainDroppable
                     = windowDnDManager.isInMainWindowDroppable(location, windowDnDManager.startingTransfer);
             boolean isInFrameDroppable
-                    = isInFloatingFrameDroppable(windowDnDManager.getFloatingFrames(), location, windowDnDManager.startingTransfer)
+                    = windowDnDManager.isInFloatingFrameDroppable(windowDnDManager.getFloatingFrames(), location, windowDnDManager.startingTransfer)
                     && windowDnDManager.startingTransfer.isUndockingEnabled();
             boolean isAroundCenterPanel
                     = isAroundCenterPanel(location);
@@ -1174,7 +1194,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         public java.awt.Shape getIndicationForLocation(Point p) {
             Rectangle bounds = getDropComponent().getBounds();
             Rectangle res = null;
-            double ratio = Constants.DROP_AROUND_RATIO;
+            double ratio = Constants.DROP_AROUND_EDITOR_RATIO;
             Object constraint = getConstraintForLocation(p);
             if(constraint == JSplitPane.LEFT) {
                 res = new Rectangle(0, 0, (int)(bounds.width * ratio) - 1, bounds.height - 1);
@@ -1191,6 +1211,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             return res;
         }
 
+        private static final int DROP_BORDER_WIDTH = 30;
         /** Implements <code>TopComponentDroppable</code>. */
         @Override
         public Object getConstraintForLocation(Point p) {
@@ -1199,16 +1220,16 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             Component rightSlide = viewAccessor.getSlidingModeComponent(Constants.RIGHT);
             Component bottomSlide = viewAccessor.getSlidingModeComponent(Constants.BOTTOM);
             Component topSlide = viewAccessor.getSlidingModeComponent(Constants.TOP);
-            if(null != leftSlide && p.x <  leftSlide.getBounds().width + 10) {
+            if(null != leftSlide && p.x <  leftSlide.getBounds().width + DROP_BORDER_WIDTH) {
                 return javax.swing.JSplitPane.LEFT;
             } else if(p.y < bounds.y) {
                 return javax.swing.JSplitPane.TOP;
             } else if(null !=rightSlide && null != leftSlide 
-                      && p.x > bounds.width - 10 - rightSlide.getBounds().width - leftSlide.getBounds().width) {
+                      && p.x > bounds.width - DROP_BORDER_WIDTH - rightSlide.getBounds().width - leftSlide.getBounds().width) {
                 return javax.swing.JSplitPane.RIGHT;
-            } else if(null != bottomSlide && p.y > bounds.height - 10 - bottomSlide.getBounds().height) {
+            } else if(null != bottomSlide && p.y > bounds.height - DROP_BORDER_WIDTH - bottomSlide.getBounds().height) {
                 return javax.swing.JSplitPane.BOTTOM;
-            } else if(null != topSlide && p.y < bounds.y + topSlide.getBounds().height + 10) {
+            } else if(null != topSlide && p.y < bounds.y + topSlide.getBounds().height + DROP_BORDER_WIDTH) {
                 return javax.swing.JSplitPane.TOP;
             }
 

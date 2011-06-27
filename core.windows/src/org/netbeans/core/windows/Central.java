@@ -2095,21 +2095,11 @@ final class Central implements ControllerHandler {
     
     @Override
     public void userDroppedTopComponents(ModeImpl mode, TopComponentDraggable draggable, String side) {
-        int newKind = mode.getKind();
-        if( draggable.getKind() != Constants.MODE_KIND_EDITOR && mode.getKind() == Constants.MODE_KIND_EDITOR ) {
-            //we're dropping view window(s) to a side of a editor mode
-            //check if the drop is within editor hierarchy (i.e. we must create 
-            //a new editor mode for the view window(s) or whether the drop is 
-            //around the whole editor area. Then we can create a new view mode.
-            SplitConstraint[] editorConstraints = getEditorAreaConstraints();
-            SplitConstraint[] attachConstraints = mode.getConstraints();
-            int a = 0;
-        }
-        ModeImpl newMode = attachModeToSide( mode, side, newKind );
+        ModeImpl newMode = attachModeToSide( mode, side, mode.getKind() );
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode( newMode, draggable.getTopComponent() );
         } else {
-            if( newKind != draggable.getKind() ) {
+            if( newMode.getKind() != draggable.getKind() ) {
                 mergeModes( draggable.getMode(), newMode, -1 );
             } else {
                 dockMode( newMode, draggable.getMode() );
