@@ -87,7 +87,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import org.openide.util.Utilities;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -398,7 +397,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 break;
             }
             if (f.exists()) {
-                LOGGER.log(Level.WARNING, "file {0} exists. # of retries {1}", new Object[]{f, retry}); // NOI18N
+                LOGGER.log(Level.INFO, "file {0} exists. # of retries {1}", new Object[]{f, retry}); // NOI18N
                 if (f.isDirectory()) {
                     LOGGER.log(Level.INFO, "{0} is directory and contains: {1}", new Object[]{f, Arrays.toString(f.list())}); // NOI18N
                 } else {
@@ -406,7 +405,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 }
                 break;
             }
-            LOGGER.log(Level.WARNING, "{0} does not exist, # of retries {1}", new Object[]{f, retry}); // NOI18N
+            LOGGER.log(Level.INFO, "{0} does not exist, # of retries {1}", new Object[]{f, retry}); // NOI18N
             f = f.getParentFile();
         }
     }
