@@ -82,7 +82,7 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Remote/Host/Actions", name = "MimeTestAction", position = 400)
 public class MimeTestAction extends SingleHostAction {
 
-    private final RequestProcessor RP = new RequestProcessor("MimeTestAction", 8);
+    private final RequestProcessor RP = new RequestProcessor("MimeTestAction", 8); // NOI18N
     private static final boolean TRACE = false;
 
     @Override
@@ -125,30 +125,30 @@ public class MimeTestAction extends SingleHostAction {
         io.select();
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
-        out.printf("Testing MIME resolvers at %s", env);
+        out.printf("Testing MIME resolvers at %s", env); // NOI18N
         FileObject[] localFileObjects = new FileObject[paths.length];
         FileObject[] remoteFileObjects = new FileObject[paths.length];
         for (int i = 0; i < paths.length; i++) {
             localFileObjects[i] = FileUtil.toFileObject(FileUtil.normalizeFile(new File(paths[i])));
             if (localFileObjects[i] == null) {
-                err.printf("Null local file object for " + paths[i]);
+                err.printf("Null local file object for " + paths[i]); // NOI18N
             }
             remoteFileObjects[i] = FileSystemProvider.getFileObject(env, paths[i]);
             if (remoteFileObjects[i] == null) {
-                err.printf("Null remote file object for " + paths[i]);
+                err.printf("Null remote file object for " + paths[i]); // NOI18N
             }
         }
         for (int i = 0; i < paths.length; i++) {
             Stat stat = new Stat();
-            out.printf("Testing directory %s\n", paths[i]);
+            out.printf("Testing directory %s\n", paths[i]); // NOI18N
             try {
                 List<Diff> diffs = new ArrayList<Diff>();
                 testMimeResolvers(localFileObjects[i], remoteFileObjects[i], out, err, stat, true, new HashSet<String>(), diffs);
                 OutputWriter w = diffs.isEmpty() ? out : err;
-                w.printf("Testing directory %s done. %d files checked. %d differences found. Time: %d ms Max. file %s %d ms\n", 
+                w.printf("Testing directory %s done. %d files checked. %d differences found. Time: %d ms Max. file %s %d ms\n", // NOI18N
                         paths[i], stat.fileCount, diffs.size(), stat.dirTime, stat.maxFileName, stat.maxFileTime);
             } catch (IOException ex) {
-                err.printf("Testing directory %s failed\n", paths[i]);
+                err.printf("Testing directory %s failed\n", paths[i]); // NOI18N
                 ex.printStackTrace(System.err);
             }
         }
@@ -184,7 +184,7 @@ public class MimeTestAction extends SingleHostAction {
         for (FileObject localChild : localChildren) {
             FileObject remoteChild = remoteFO.getFileObject(localChild.getNameExt());
             if (remoteChild == null) {
-                err.printf("Can not get remote file object for %s\n", localChild.getPath());
+                err.printf("Can not get remote file object for %s\n", localChild.getPath()); // NOI18N
                 continue;
             }
             if (localChild.isData()) {
@@ -199,7 +199,7 @@ public class MimeTestAction extends SingleHostAction {
                     maxFileName = localChild.getNameExt();
                 }
                 if (TRACE) {
-                    out.printf("%s\t\t\t LOCAL: %s REMOTE: %s\n", localChild.getPath(), localMimeType, remoteMimeType);
+                    out.printf("%s\t\t\t LOCAL: %s REMOTE: %s\n", localChild.getPath(), localMimeType, remoteMimeType); // NOI18N
                 }
                 if (!localMimeType.equals(remoteMimeType)) {
                     Diff diff = new Diff(localChild.getPath(), localMimeType, remoteMimeType);
@@ -229,7 +229,7 @@ public class MimeTestAction extends SingleHostAction {
     }        
 
     private void reportDiff(Diff diff, OutputWriter err) {
-        err.printf("MIME times differ for %s:\t\t\t LOCAL: %s REMOTE: %s\n", diff.path, diff.localMIME, diff.remoteMIME);
+        err.printf("MIME times differ for %s:\t\t\t LOCAL: %s REMOTE: %s\n", diff.path, diff.localMIME, diff.remoteMIME); // NOI18N
     }
     
     
@@ -273,7 +273,7 @@ public class MimeTestAction extends SingleHostAction {
     };
     
     private static final String DEF_PATH_KEY = "mime.test.default.path"; //NOI18N
-    private static String initialPath = NbPreferences.forModule(MimeTestAction.class).get(DEF_PATH_KEY, "/");
+    private static String initialPath = NbPreferences.forModule(MimeTestAction.class).get(DEF_PATH_KEY, "/"); // NOI18N
     
     private class Worker2 implements Runnable {
         
@@ -288,7 +288,7 @@ public class MimeTestAction extends SingleHostAction {
         @Override
         public void run() {
             JFileChooser fc = RemoteFileUtil.createFileChooser(
-                    env, "Choose directory", "Test", JFileChooser.DIRECTORIES_ONLY, null, initialPath, true);
+                    env, "Choose directory", "Test", JFileChooser.DIRECTORIES_ONLY, null, initialPath, true); // NOI18N
             fc.setMultiSelectionEnabled(true);
             int ret = fc.showOpenDialog(WindowManager.getDefault().getMainWindow());
             if (ret == JFileChooser.APPROVE_OPTION) {
@@ -313,7 +313,7 @@ public class MimeTestAction extends SingleHostAction {
         private final String[] paths;
 
         public Worker3(ExecutionEnvironment env, String localPrefix, String[] paths) {
-            super("Testing MIME resolvers at " + env + ' ' + paths[0] + (paths.length > 1 ? "..." : ""));
+            super("Testing MIME resolvers at " + env + ' ' + paths[0] + (paths.length > 1 ? "..." : "")); // NOI18N
             this.env = env;
             this.localPrefix = localPrefix;
             this.paths = paths;
