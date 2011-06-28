@@ -75,10 +75,7 @@ public class CreateBranchAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        update(HgUtils.getCurrentContext(nodes));
-    }
-    
-    public static void update(final VCSContext ctx){
+        VCSContext ctx = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
