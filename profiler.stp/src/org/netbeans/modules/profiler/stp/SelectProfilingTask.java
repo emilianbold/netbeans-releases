@@ -1014,8 +1014,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
         ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
-                    ProfilingSettingsManager.getDefault()
-                                            .storeProfilingSettings(profilingSettings.toArray(new ProfilingSettings[profilingSettings
+                    ProfilingSettingsManager.storeProfilingSettings(profilingSettings.toArray(new ProfilingSettings[profilingSettings
                                                                                                                     .size()]),
                                                                     selectedProfilingSettings, targetProject);
                 }
@@ -1086,8 +1085,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     ProfilingSettings[] profilingSettings = new ProfilingSettings[0];
                     ProfilingSettings lastSelectedSettings = null;
 
-                    ProfilingSettingsManager.ProfilingSettingsDescriptor profilingSettingsDescriptor = ProfilingSettingsManager.getDefault()
-                                                                                                                               .getProfilingSettings(project);
+                    ProfilingSettingsManager.ProfilingSettingsDescriptor profilingSettingsDescriptor = ProfilingSettingsManager.getProfilingSettings(project);
                     profilingSettings = profilingSettingsDescriptor.getProfilingSettings();
                     lastSelectedSettings = profilingSettingsDescriptor.getLastSelectedProfilingSettings();
 

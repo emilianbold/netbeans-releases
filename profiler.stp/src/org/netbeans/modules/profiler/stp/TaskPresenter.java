@@ -203,8 +203,7 @@ public class TaskPresenter implements TaskChooser.Item {
         private void createCustomSettings() {
             SelectProfilingTask.getDefault().synchronizeCurrentSettings();
 
-            ProfilingSettings newSettings = ProfilingSettingsManager.getDefault()
-                                                                    .createNewSettings(profilingSettings.get(0).getProfilingType(),
+            ProfilingSettings newSettings = ProfilingSettingsManager.createNewSettings(profilingSettings.get(0).getProfilingType(),
                                                                                        profilingSettings.toArray(new ProfilingSettings[profilingSettings
                                                                                                                                        .size()]));
 
@@ -318,8 +317,7 @@ public class TaskPresenter implements TaskChooser.Item {
             renameItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         ProfilingSettings activeSettings = profilingSettings.get(activeSettingsIndex);
-                        ProfilingSettings newSettings = ProfilingSettingsManager.getDefault()
-                                                                                .renameSettings(activeSettings,
+                        ProfilingSettings newSettings = ProfilingSettingsManager.renameSettings(activeSettings,
                                                                                                 profilingSettings.toArray(new ProfilingSettings[profilingSettings
                                                                                                                                                 .size()]));
 
@@ -344,8 +342,7 @@ public class TaskPresenter implements TaskChooser.Item {
                         SelectProfilingTask.getDefault().synchronizeCurrentSettings();
 
                         ProfilingSettings activeSettings = profilingSettings.get(activeSettingsIndex);
-                        ProfilingSettings newSettings = ProfilingSettingsManager.getDefault()
-                                                                                .createDuplicateSettings(activeSettings,
+                        ProfilingSettings newSettings = ProfilingSettingsManager.createDuplicateSettings(activeSettings,
                                                                                                          profilingSettings.toArray(new ProfilingSettings[profilingSettings
                                                                                                                                                          .size()]));
 
