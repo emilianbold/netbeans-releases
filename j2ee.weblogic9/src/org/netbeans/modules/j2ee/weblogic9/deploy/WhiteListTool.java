@@ -54,6 +54,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -76,16 +77,20 @@ public class WhiteListTool {
     }
     
     public boolean executeWithOuput(File file) {
-        String path = manager.getInstanceProperties().getProperty(WLPluginProperties.WHITE_LIST_TOOL);
-        if (path == null) {
+        // the tool is not very friendly in order to be used in-jvm so far
+        // it si configuring loggers etc.
+        File jarFo = InstalledFileLocator.getDefault().locate(
+                "modules/ext/whitelistscantool.jar", "org.netbeans.modules.libs.cloud9", false); // NOI18N
+        if (jarFo == null) {
+            LOGGER.log(Level.WARNING, "Could not invoke whitelist tool");
             return true;
         }
-        File whiteListTool = new File(path);
-        assert whiteListTool.isAbsolute();
-        
+
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
-                .addArgument("-jar").addArgument(whiteListTool.getAbsolutePath()) // NOI18N
-                .addArgument(file.getAbsolutePath()).redirectErrorStream(true);
+                .addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
+                .addArgument(file.getAbsolutePath()).redirectErrorStream(true)
+                .workingDirectory(file.getParentFile());
+
         ExecutionService service = ExecutionService.newService(builder,
                 TOOL_DESCRIPTOR, NbBundle.getMessage(WhiteListTool.class, "MSG_WhiteListOutput"));
         try {

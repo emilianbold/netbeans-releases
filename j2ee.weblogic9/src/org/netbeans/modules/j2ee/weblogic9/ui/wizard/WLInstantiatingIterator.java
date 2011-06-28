@@ -161,7 +161,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.FALSE.toString());
-        props.put(WLPluginProperties.WHITE_LIST_TOOL, whiteListTool);
         
         boolean isWebProfile = WLPluginProperties.isWebProfile(new File(serverRoot));
         if (Utilities.isMac() && !isWebProfile) {
@@ -200,7 +199,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String port;
     private String host;
     private Version serverVersion;
-    private String whiteListTool;
 
 
     /**
@@ -328,14 +326,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
     public void setServerVersion(Version serverVersion) {
         this.serverVersion = serverVersion;
-    }
-
-    public String getWhiteListTool() {
-        return whiteListTool;
-    }
-
-    public void setWhiteListTool(String whiteListTool) {
-        this.whiteListTool = whiteListTool;
     }
 
     ////////////////////////////////////////////////////////////////////////////
