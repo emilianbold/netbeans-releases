@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator;
 import org.openide.filesystems.FileObject;
@@ -111,7 +112,8 @@ public class ModifyingRefactoring extends RefactoringTestCase {
                 if(!f.exists()) fail("File "+fileName+" does not exists");
                 if(f.isDirectory()) {
                     ref("Created directory:\n");
-                    ref(fileName+"\n");
+                    String rootDir = new File(getDataDir(), "projects/RefactoringTest/src").getAbsolutePath();
+                    ref(fileName.substring(rootDir.length())+"\n");
                 } else {
                     ref("Created file:\n");
                     ref(new File(fileName));
@@ -122,7 +124,8 @@ public class ModifyingRefactoring extends RefactoringTestCase {
         for (String fileName : origFiles) {
             if(!newFiles.contains(fileName)) {
                 ref("Deleted file:\n");
-                ref(fileName);
+                String rootDir = new File(getDataDir(), "projects/RefactoringTest/src").getAbsolutePath();
+                ref(fileName.substring(rootDir.length()));
             }
         }
     }
@@ -131,10 +134,12 @@ public class ModifyingRefactoring extends RefactoringTestCase {
         RefactoringResultOperator result = RefactoringResultOperator.getPreview();
         JButtonOperator jbo = new JButtonOperator(result.getDoRefactor());
         Set<FileObject> involvedFiles = (Set<FileObject>) result.getInvolvedFiles();
-        List<String> origfiles = getFiles(new File(getDataDir(), "projects/RefactoringTest/src"));
+        List<String> origfiles = getFiles(new File(getDataDir(), "projects/RefactoringTest"));
+        new EventTool().waitNoEvent(1000);
         jbo.push();
+        new EventTool().waitNoEvent(1000);
         refModifiedFiles(involvedFiles);
-        refFileChange(origfiles, getFiles(new File(getDataDir(), "projects/RefactoringTest/src")));
+        refFileChange(origfiles, getFiles(new File(getDataDir(), "projects/RefactoringTest")));
     }
 }
 
