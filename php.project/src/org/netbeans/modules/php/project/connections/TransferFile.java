@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileObject;
@@ -68,6 +70,8 @@ import org.openide.filesystems.FileUtil;
 public final class TransferFile {
     public static final String SEPARATOR = "/"; // NOI18N
     public static final String CWD = "."; // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger(TransferFile.class.getName());
 
     private final TransferFile parent;
     private final List<TransferFile> children = new LinkedList<TransferFile>();
@@ -207,6 +211,10 @@ public final class TransferFile {
             return null;
         } else if (parentPath.equals(baseDirectory)) {
             return CWD;
+        }
+        // logging for #196588
+        if (parentPath.length() < (baseDirectory.length() + SEPARATOR.length())) {
+            LOGGER.log(Level.WARNING, "parentPath: {0}, baseDirectory: {1}", new Object[] {parentPath, baseDirectory});
         }
         // +1 => remove '/' from the beginning of the relative path
         return parentPath.substring(baseDirectory.length() + SEPARATOR.length());
