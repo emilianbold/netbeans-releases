@@ -109,18 +109,19 @@ public class MultiFileSystemGetAttrTest extends NbTestCase {
 
     public void testBackslashAttrs() throws Exception { // #199043
         FileSystem layers = FileUtil.createMemoryFileSystem();
-        FileObject physFolder = layers.getRoot().createFolder("d");
+        FileObject physFolder = FileUtil.createFolder(layers.getRoot(), "sub/dir");
         FileSystem writable = FileUtil.createMemoryFileSystem();
+        writable.getRoot().createFolder("sub");
         FileSystem sfs = new MultiFileSystem(new FileSystem[] {writable, layers});
-        FileObject virtFolder = sfs.findResource("d");
+        FileObject virtFolder = sfs.findResource("sub/dir");
         virtFolder.setAttribute("a", true);
         assertNull(physFolder.getAttribute("a"));
         assertEquals(Collections.emptyList(), Collections.list(physFolder.getAttributes()));
-        assertEquals(true, writable.getRoot().getAttribute("d\\a"));
-        assertEquals(Collections.singletonList("d\\a"), Collections.list(writable.getRoot().getAttributes()));
+        assertEquals(true, writable.getRoot().getAttribute("sub\\dir\\a"));
+        assertEquals(Collections.singletonList("sub\\dir\\a"), Collections.list(writable.getRoot().getAttributes()));
         assertEquals(true, virtFolder.getAttribute("a"));
         assertEquals(Collections.singletonList("a"), Collections.list(virtFolder.getAttributes()));
-        assertNull(sfs.getRoot().getAttribute("d\\a"));
+        assertNull(sfs.getRoot().getAttribute("sub\\dir\\a"));
         assertEquals(Collections.emptyList(), Collections.list(sfs.getRoot().getAttributes()));
     }
 
