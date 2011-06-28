@@ -53,15 +53,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -335,16 +339,49 @@ public abstract class PhpUnit extends PhpProgram {
                 .inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new OutputProcessorFactory());
         ExecutionService service = ExecutionService.newService(externalProcessBuilder, executionDescriptor, null);
-        Future<Integer> result = service.run();
+        final Future<Integer> result = service.run();
+        if (SwingUtilities.isEventDispatchThread()) {
+            if (!result.isDone()) {
+                try {
+                    // let's wait in awt to avoid flashing dialogs
+                    getResult(result, 99L);
+                } catch (TimeoutException ex) {
+                    ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                        @Override
+                        public void run() {
+                            getResult(result);
+                        }
+                    }, NbBundle.getMessage(PhpUnit.class, "LBL_ValidatingPhpUnit"));
+                }
+            }
+        }
+        getResult(result);
+
+        return version;
+    }
+
+    void getResult(Future<?> result) {
         try {
-            result.get();
+            getResult(result, null);
+        } catch (TimeoutException ex) {
+            // in fact, cannot happen since we don't use timeout
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+    }
+
+    void getResult(Future<?> result, Long timeout) throws TimeoutException {
+        try {
+            if (timeout != null) {
+                result.get(timeout, TimeUnit.MILLISECONDS);
+            } else {
+                result.get();
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {
             // ignored
             LOGGER.log(Level.INFO, null, ex);
         }
-        return version;
     }
 
     /**
