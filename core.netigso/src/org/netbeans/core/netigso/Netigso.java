@@ -116,7 +116,8 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
-            configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this));
+            configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this)); // NOI18N
+            configMap.put("felix.log.level", "4"); // NOI18N
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
             FrameworkFactory frameworkFactory = lkp.lookup(FrameworkFactory.class);
             if (frameworkFactory == null) {
