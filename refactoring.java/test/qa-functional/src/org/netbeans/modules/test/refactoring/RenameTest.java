@@ -166,7 +166,6 @@ public class RenameTest extends ModifyingRefactoring {
 
     }
 
-
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(RenameTest.class).enableModules(".*").clusters(".*"));
@@ -181,6 +180,5 @@ public class RenameTest extends ModifyingRefactoring {
         ro.getNewName().typeText(newName);
         ro.getPreview().push();
         dumpRefactoringResults();
-    }
-    
+    }    
 }
