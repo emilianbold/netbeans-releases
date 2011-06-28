@@ -512,8 +512,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             @Override
             public void run() {
                 // FIXME quick and dirty hack
-                WhiteListTool tool = new WhiteListTool(getDeploymentManager());
-                tool.executeWithOuput(file);
+                if (file.isFile()) {
+                    WhiteListTool tool = new WhiteListTool(getDeploymentManager());
+                    tool.executeWithOuput(file);
+                }
 
                 int length = getDeploymentManager().isRemote() ? parameters.length + 2 : parameters.length + 1;
                 String[] execParams = new String[length];
