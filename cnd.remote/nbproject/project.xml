@@ -347,13 +347,14 @@
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.discovery</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
+                <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
-                <friend>com.sun.tools.ide.analysis.common</friend>
-                <friend>com.sun.tools.ide.analysis.analytics</friend>
-                <friend>com.sun.tools.ide.analysis.previse</friend>
-                <friend>com.sun.tools.ide.analysis.discover</friend>
-                <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <package>org.netbeans.modules.cnd.remote.api</package>
                 <package>org.netbeans.modules.cnd.remote.mapper</package>
