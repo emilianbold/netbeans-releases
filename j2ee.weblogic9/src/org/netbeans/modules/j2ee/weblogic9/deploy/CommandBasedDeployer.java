@@ -511,6 +511,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
             @Override
             public void run() {
+                // FIXME quick and dirty hack
+                WhiteListTool tool = new WhiteListTool(getDeploymentManager());
+                tool.executeWithOuput(file);
+
                 int length = getDeploymentManager().isRemote() ? parameters.length + 2 : parameters.length + 1;
                 String[] execParams = new String[length];
                 execParams[execParams.length - 1] = file.getAbsolutePath();
@@ -572,6 +576,16 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
             @Override
             public void run() {
+                // FIXME quick and dirty hack
+                if (parameters != null && parameters.length > 1) {
+                    String name = parameters[1];
+                    if (name.endsWith(".war") || name.endsWith(".jar") // NOI18N
+                            || name.endsWith("ear")) { // NOI18N
+                        WhiteListTool tool = new WhiteListTool(getDeploymentManager());
+                        tool.executeWithOuput(new File(name));
+                    }
+                }
+
                 boolean failed = false;
                 LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (TargetModuleID module : targetModuleID) {
