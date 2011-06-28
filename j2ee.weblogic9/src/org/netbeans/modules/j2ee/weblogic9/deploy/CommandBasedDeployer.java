@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
+import org.netbeans.modules.j2ee.weblogic9.tools.WhiteListTool;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -513,8 +514,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             public void run() {
                 // FIXME quick and dirty hack
                 if (file.isFile()) {
-                    WhiteListTool tool = new WhiteListTool(getDeploymentManager());
-                    tool.executeWithOuput(file);
+                    WhiteListTool.execute(file);
                 }
 
                 int length = getDeploymentManager().isRemote() ? parameters.length + 2 : parameters.length + 1;
@@ -583,8 +583,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                     String name = parameters[1];
                     if (name.endsWith(".war") || name.endsWith(".jar") // NOI18N
                             || name.endsWith("ear")) { // NOI18N
-                        WhiteListTool tool = new WhiteListTool(getDeploymentManager());
-                        tool.executeWithOuput(new File(name));
+                        WhiteListTool.execute(new File(name));
                     }
                 }
 

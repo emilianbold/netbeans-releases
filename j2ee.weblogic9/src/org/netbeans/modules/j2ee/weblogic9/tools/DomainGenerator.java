@@ -39,23 +39,17 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.deploy;
+package org.netbeans.modules.j2ee.weblogic9.tools;
 
 import java.io.File;
-import java.util.Collection;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -63,62 +57,36 @@ import org.openide.util.Utilities;
  *
  * @author Petr Hejl
  */
-public class WhiteListTool {
-
-    private static final Logger LOGGER = Logger.getLogger(WhiteListTool.class.getName());
+// TODO so far this is used only by cloud so it might not seem logical
+// to have it here, but we will probably use it in WLS in future
+public class DomainGenerator {
 
     private static final ExecutionDescriptor TOOL_DESCRIPTOR =
             new ExecutionDescriptor().controllable(false).frontWindow(true);
 
-    private final WLDeploymentManager manager;
+    public static void generateDomain(File serverDir, File template, File domainDir)
+            throws IOException, InterruptedException, ExecutionException {
 
-    public WhiteListTool(WLDeploymentManager manager) {
-        this.manager = manager;
-    }
-    
-    public boolean executeWithOuput(File file) {
-        // the tool is not very friendly in order to be used in-jvm so far
-        // it si configuring loggers etc.
-        File jarFo = InstalledFileLocator.getDefault().locate(
-                "modules/ext/whitelistscantool.jar", "org.netbeans.modules.libs.cloud9", false); // NOI18N
-        if (jarFo == null) {
-            LOGGER.log(Level.WARNING, "Could not invoke whitelist tool");
-            return true;
+        File commonBin = new File(new File(serverDir, "common"), "bin"); // NOI18N
+        File unpack = null;
+        if (Utilities.isWindows()) {
+            unpack = new File(commonBin, "unpack.cmd"); // NOI18N
+        } else {
+            unpack = new File(commonBin, "unpack.sh"); // NOI18N
         }
-
-        ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
-                .addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
-                .addArgument(file.getAbsolutePath()).redirectErrorStream(true)
-                .workingDirectory(file.getParentFile());
+        if (!unpack.isFile()) {
+            throw new FileNotFoundException(unpack.getAbsolutePath());
+        }
+        
+        ExternalProcessBuilder builder = new ExternalProcessBuilder(unpack.getAbsolutePath())
+                .addArgument("-template=" + template.getAbsolutePath()) // NOI18N
+                .addArgument("-domain=" + domainDir.getAbsolutePath()) // NOI18N
+                .redirectErrorStream(true)
+                .workingDirectory(serverDir);
 
         ExecutionService service = ExecutionService.newService(builder,
-                TOOL_DESCRIPTOR, NbBundle.getMessage(WhiteListTool.class, "MSG_WhiteListOutput"));
-        try {
-            return service.run().get().equals(Integer.valueOf(0));
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-        // TODO handle exceptions properly
-        return false;
-    }
-    
-    // FIXME copied from CommandBasedDeployer
-    private String getJavaBinary() {
-        // TODO configurable ? or use the jdk server is running on ?
-        JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        Collection<FileObject> folders = platform.getInstallFolders();
-        String javaBinary = Utilities.isWindows() ? "java.exe" : "java"; // NOI18N
-        if (folders.size() > 0) {
-            FileObject folder = folders.iterator().next();
-            File file = FileUtil.toFile(folder);
-            if (file != null) {
-                javaBinary = file.getAbsolutePath() + File.separator
-                        + "bin" + File.separator
-                        + (Utilities.isWindows() ? "java.exe" : "java"); // NOI18N
-            }
-        }
-        return javaBinary;
+                TOOL_DESCRIPTOR, NbBundle.getMessage(WhiteListTool.class, "MSG_DomainGeneratorOutput"));
+        
+        service.run().get();
     }
 }
