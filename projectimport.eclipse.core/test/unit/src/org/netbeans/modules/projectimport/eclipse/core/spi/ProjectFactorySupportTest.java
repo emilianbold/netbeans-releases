@@ -65,8 +65,6 @@ import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterTestCase;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
 
 @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // File.mkdir
@@ -81,12 +79,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         super.setUp();
         clearWorkDir();
         System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getPath());
-        MockLookup.setInstances();
-        FileObject reg = FileUtil.getConfigFile("Services/AntBasedProjectTypes/org-netbeans-modules-java-j2seproject.instance");
-        assertNotNull("j2seproject definition is registered", reg); // NB-Core-Build #5975 starting in testTransitiveDependencies
-        Object abpt = reg.getAttribute("instanceCreate");
-        assertNotNull("j2seproject definition is well-formed", abpt); // NB-Core-Build #5317
-        MockLookup.setInstances(abpt);
+        MockLookup.setLayersAndInstances();
     }
 
     private static EclipseProject getTestableProject(int version, File proj) throws IOException {
