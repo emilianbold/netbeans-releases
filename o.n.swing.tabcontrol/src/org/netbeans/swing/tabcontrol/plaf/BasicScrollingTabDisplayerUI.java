@@ -84,7 +84,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         super(displayer);
     }
 
-    protected final TabLayoutModel createLayoutModel() {
+    protected TabLayoutModel createLayoutModel() {
         DefaultTabLayoutModel dtlm = new DefaultTabLayoutModel(
                 displayer.getModel(),
                 displayer);
