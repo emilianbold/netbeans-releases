@@ -176,7 +176,10 @@ class BaseTabLayoutModel implements TabLayoutModel {
     }
 
     public int getW(int index) {
-        return textWidth(index) + iconWidth(index) + padX;
+        int iconWidth = iconWidth(index);
+        if( 0 == iconWidth )
+            iconWidth = 5;
+        return textWidth(index) + iconWidth + padX;
     }
 
     public int indexOfPoint(int x, int y) {
