@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -341,6 +342,24 @@ public class ConfigurationMakefileWriter {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet != null) {
             String makefileWriterClassName = compilerSet.getCompilerFlavor().getToolchainDescriptor().getMakefileWriter();
+            if (makefileWriterClassName != null) {
+                Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
+                for (MakefileWriter instance : mwc) {
+                    if (makefileWriterClassName.equals(instance.getClass().getName())) {
+                        makefileWriter = instance;
+                        break;
+                    }
+                }
+                if (makefileWriter == null) {
+                    System.err.println("ERROR: class" + makefileWriterClassName + " is not found or is not instance of MakefileWriter"); // NOI18N
+                }
+            }
+        }
+        
+        if (conf.isCustomConfiguration()) {
+            MakeProjectCustomizer makeProjectCustomizer = conf.getProjectCustomizer();
+            
+            String makefileWriterClassName = makeProjectCustomizer.getMakefileWriter();
             if (makefileWriterClassName != null) {
                 Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
                 for (MakefileWriter instance : mwc) {

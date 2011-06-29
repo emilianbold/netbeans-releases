@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -1082,6 +1084,18 @@ public class MakeConfiguration extends Configuration {
         public String getName() {
             return getNames()[getValue() - offset];
         }
+    }
+    
+    public MakeProjectCustomizer getProjectCustomizer() {
+        MakeProjectCustomizer makeProjectCustomizer = null;
+        Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
+        for (MakeProjectCustomizer instance : mwc) {
+            if (getCustomizerId().equals(instance.getCustomizerId())) {
+                makeProjectCustomizer = instance;
+                break;
+            }
+        }
+        return makeProjectCustomizer;
     }
 
     /** Look up i18n strings here */

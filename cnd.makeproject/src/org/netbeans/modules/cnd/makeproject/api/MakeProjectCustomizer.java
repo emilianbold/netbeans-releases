@@ -48,4 +48,5 @@ package org.netbeans.modules.cnd.makeproject.api;
 public interface MakeProjectCustomizer {
     public String getCustomizerId();
     public String getIconPath();
+    public String getMakefileWriter();
 }
