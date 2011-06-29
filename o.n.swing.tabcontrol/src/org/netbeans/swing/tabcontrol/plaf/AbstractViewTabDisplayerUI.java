@@ -138,21 +138,13 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         ToolTipManager.sharedInstance().registerComponent(displayer);
         controller = createController();
         dataModel = displayer.getModel();
-        if (Boolean.getBoolean("winsys.non_stretching_view_tabs")) {
-            ViewTabLayoutModel2.PaddingInfo padding = new ViewTabLayoutModel2.PaddingInfo();
-            padding.iconsXPad = 5;
-            padding.txtIconsXPad = 10;
-            padding.txtPad = new Dimension(5, 2);
-            layoutModel = new ViewTabLayoutModel2(displayer, padding);
-        } else if( isUseStretchingTabs() ) {
-            layoutModel = new ViewTabLayoutModel(dataModel, c);
-        } else {
-            btnMinimizeMode = TabControlButtonFactory.createSlideGroupButton( displayer );
-            layoutModel = new NonStretchingViewTabLayoutModel(dataModel, displayer);
-            c.setLayout( new PinButtonLayout() );
-        }
         dataModel.addChangeListener (controller);
         dataModel.addComplexListDataListener(controller);
+        layoutModel = createLayoutModel();
+        if( !Boolean.getBoolean("winsys.non_stretching_view_tabs") && !isUseStretchingTabs() ) {
+            btnMinimizeMode = TabControlButtonFactory.createSlideGroupButton( displayer );
+            c.setLayout( new PinButtonLayout() );
+        }
         displayer.addPropertyChangeListener (controller);
         selectionModel.addChangeListener (controller);
         displayer.addMouseListener(controller);
@@ -166,6 +158,28 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                     dataModel.removeChangeListener( this );
             }
         });
+    }
+    
+    /**
+     * Creates model to layout the tabs out within the displayer.
+     * 
+     * @return New instance of a model to calculate tab sizes.
+     * @since 1.27
+     */
+    protected TabLayoutModel createLayoutModel() {
+        if (Boolean.getBoolean("winsys.non_stretching_view_tabs")) {
+            ViewTabLayoutModel2.PaddingInfo padding = new ViewTabLayoutModel2.PaddingInfo();
+            padding.iconsXPad = 5;
+            padding.txtIconsXPad = 10;
+            padding.txtPad = new Dimension(5, 2);
+            return new ViewTabLayoutModel2(displayer, padding);
+        } else if( isUseStretchingTabs() ) {
+            return new ViewTabLayoutModel(dataModel, displayer);
+        } else {
+            btnMinimizeMode = TabControlButtonFactory.createSlideGroupButton( displayer );
+            displayer.setLayout( new PinButtonLayout() );
+            return new NonStretchingViewTabLayoutModel(dataModel, displayer);
+        }
     }
     
     void showHideControlButtons() {
