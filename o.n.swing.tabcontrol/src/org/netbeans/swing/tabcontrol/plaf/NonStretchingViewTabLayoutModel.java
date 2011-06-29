@@ -54,10 +54,9 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.openide.awt.HtmlRenderer;
 
 /**
- * Implementation of layout model for View-type tabs, which are not scrollable
- * and are shrinking and extending their size to always cover whole tabs area.
+ * Implementation of layout model for View-type tabs, which are not scrollable.
  *
- * @author Dafe Simonek
+ * @author S. Aubrecht
  */
 final class NonStretchingViewTabLayoutModel implements TabLayoutModel {
 
@@ -71,8 +70,6 @@ final class NonStretchingViewTabLayoutModel implements TabLayoutModel {
     
     private Dimension padding = new Dimension( 5+5, 0 );
     
-    private final Object LOCK = new Object();
-
     /**
      * Creates a new instance of ViewTabLayoutModel
      */
