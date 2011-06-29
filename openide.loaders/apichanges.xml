@@ -109,6 +109,26 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="DataEditorSupport.constr3">
+          <api name="editor"/>
+          <summary>DataEditorSupport constructor with Lookup parameter</summary>
+          <version major="7" minor="28"/>
+          <date day="11" month="7" year="2011"/>
+          <author login="jtulach"/>
+          <compatibility semantic="compatible" binary="compatible" deletion="no"
+            addition="yes" modification="no" source="compatible"/>
+          <description>
+              <p>
+                  One can control what
+                  <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html">
+                  Lookup</a> will be associated with 
+                  <a href="@TOP@/org/openide/text/DataEditorSupport.html">
+                  DataEditorSupport</a>.
+              </p>
+          </description>
+          <class package="org.openide.text" name="DataEditorSupport"/>
+          <issue number="199416"/>
+      </change>      
     <change id="MultiDataObject.associateLookup">
           <api name="loaders"/>
           <summary>Simpler way to subclass MultiDataObject</summary>

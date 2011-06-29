@@ -241,7 +241,7 @@ public class GsfDataObject extends MultiDataObject {
         private Language language;
 
         public GenericEditorSupport(GsfDataObject dataObject, Language language) {
-            super(dataObject, new Environment(dataObject));
+            super(dataObject, null, new Environment(dataObject));
             setMIMEType(language.getMimeType());
             this.language = language;
         }
