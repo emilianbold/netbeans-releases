@@ -160,7 +160,7 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
         return NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Refreshing_Revisions"); //NOI18N
     }
 
-    protected RepositoryRevision getDisplayedRevision() {
+    protected HgLogMessage getDisplayedRevision() {
         return null;
     }
 
@@ -465,7 +465,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         public void perform () {
             try {
                 final DefaultListModel targetsModel = new DefaultListModel();
-                final RepositoryRevision displayedRevision = getDisplayedRevision();
+                final HgLogMessage displayedRevision = getDisplayedRevision();
                 if (displayedRevision == null) {
                     if (acceptSelection(NO_REVISION)) {
                         targetsModel.addElement(NO_REVISION);
@@ -474,7 +474,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                         targetsModel.addElement(TIP);
                     }
                 } else {
-                    targetsModel.addElement(displayedRevision.getLog());
+                    targetsModel.addElement(displayedRevision);
                 }
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -491,7 +491,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
-                            revisionsComboBox.setSelectedValue(displayedRevision.getLog(), true);
+                            revisionsComboBox.setSelectedValue(displayedRevision, true);
                             revisionsComboBox.setEnabled(false);
                             panelSearchOptions.setVisible(false);
                         }

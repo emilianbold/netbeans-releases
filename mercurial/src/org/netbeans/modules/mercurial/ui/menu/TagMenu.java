@@ -48,6 +48,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.mercurial.ui.tag.CreateTagAction;
+import org.netbeans.modules.mercurial.ui.tag.ManageTagsAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -77,8 +78,13 @@ public class TagMenu extends DynamicMenu implements Presenter.Menu {
             item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(CreateTagAction.class), false);
             menu.add(item);
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(ManageTagsAction.class), false);
+            menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "CTL_PopupMenuItem_CreateTag"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(ManageTagsAction.class), NbBundle.getMessage(ManageTagsAction.class, "CTL_PopupMenuItem_ManageTags"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;

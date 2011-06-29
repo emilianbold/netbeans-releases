@@ -44,25 +44,16 @@
 package org.netbeans.modules.mercurial.ui.tag;
 
 import java.io.File;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.util.RequestProcessor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
  * 
  */
-public class CreateTagAction extends ContextAction {
+public class ManageTagsAction extends ContextAction {
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -71,7 +62,7 @@ public class CreateTagAction extends ContextAction {
 
     @Override
     protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_CreateTag"; //NOI18N
+        return "CTL_MenuItem_ManageTags"; //NOI18N
     }
 
     @Override
@@ -81,38 +72,7 @@ public class CreateTagAction extends ContextAction {
         if (roots == null || roots.length == 0) return;
         final File repository = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
-        CreateTag createTag = new CreateTag(repository);
-        if (!createTag.showDialog()) {
-            return;
-        }
-        final String tagName = createTag.getTagName();
-        final String message = createTag.getMessage();
-        final String revision = createTag.getRevision();
-        final boolean local = createTag.isLocalTag();
-        
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            @Override
-            public void perform() {
-                OutputLogger logger = getLogger();
-                try {
-                    logger.outputInRed(NbBundle.getMessage(CreateTagAction.class, "MSG_CREATE_TITLE")); //NOI18N
-                    logger.outputInRed(NbBundle.getMessage(CreateTagAction.class, "MSG_CREATE_TITLE_SEP")); //NOI18N
-                    logger.output(NbBundle.getMessage(CreateTagAction.class, "MSG_CREATE_INFO_SEP", tagName, repository.getAbsolutePath())); //NOI18N
-                    HgCommand.createTag(repository, tagName, message, revision, local, logger);
-                    if (!local) {
-                        HgUtils.logHgLog(HgCommand.doTip(repository, logger), logger);
-                    }
-                } catch (HgException.HgCommandCanceledException ex) {
-                    // canceled by user, do nothing
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }
-                logger.outputInRed(NbBundle.getMessage(CreateTagAction.class, "MSG_CREATE_DONE")); //NOI18N
-                logger.output(""); //NOI18N
-            }
-        };
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(CreateTagAction.class, "MSG_CreateTag_Progress", tagName)); //NOI18N
+        TagManager manager = new TagManager(repository);
+        manager.showDialog();
     }
 }
