@@ -276,6 +276,10 @@ public class HgCommand {
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
     private final static String HG_BRANCHES_CMD = "branches"; // NOI18N
     private final static String HG_BRANCH_CMD = "branch"; // NOI18N
+    private final static String HG_TAG_CMD = "tag"; // NOI18N
+    private final static String HG_TAG_OPT_MESSAGE = "--message"; // NOI18N
+    private final static String HG_TAG_OPT_REVISION = "--rev"; // NOI18N
+    private final static String HG_TAG_OPT_LOCAL = "--local"; // NOI18N
 
     private static final String HG_NO_REPOSITORY_ERR = "There is no Mercurial repository here"; // NOI18N
     private static final String HG_NO_RESPONSE_ERR = "no suitable response from remote hg!"; // NOI18N
@@ -412,6 +416,7 @@ public class HgCommand {
         HG_PUSH_CMD,
         HG_RESOLVE_CMD,
         HG_STATUS_CMD,
+        HG_TAG_CMD,
         HG_TIP_CMD,
         HG_VERIFY_CMD,
         HG_VERSION_CMD,
@@ -2340,6 +2345,34 @@ public class HgCommand {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(branchName);
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+            } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+            }
+        }
+    }
+
+    public static void createTag (File repository, String tagName, String message, String revision, boolean isLocal, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_TAG_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        if (isLocal) {
+            command.add(HG_TAG_OPT_LOCAL);
+        } else if (message != null && !message.isEmpty()) {
+            command.add(HG_TAG_OPT_MESSAGE);
+            command.add(message);
+        }
+        if (revision != null && !revision.isEmpty()) {
+            command.add(HG_TAG_OPT_REVISION);
+            command.add(revision);
+        }
+
+        command.add(tagName);
         List<String> list = exec(command);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
