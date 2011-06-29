@@ -42,7 +42,6 @@
 package org.netbeans.modules.debugger.jpda.visual.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;

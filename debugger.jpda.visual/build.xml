@@ -45,4 +45,23 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="debugger.jpda.visual">
     <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="compile" depends="projectized-common.compile, -compile-debugger-remote"/>
+    
+    <target name="-compile-debugger-remote">
+        <mkdir dir="build/remoteclasses"/>
+        <nb-javac srcdir="remotesrc" destdir="build/remoteclasses" debug="true"
+                  encoding="UTF-8" deprecation="${build.compiler.deprecation}"
+                  optimize="off" source="1.2" target="1.2" includeantruntime="false">
+        </nb-javac>
+    </target>
+    
+    <target name="jar" depends="-jar-debugger-remote, projectized-common.jar" />
+    
+    <target name="-jar-debugger-remote" depends="compile">
+        <zip destfile="${build.classes.dir}/org/netbeans/modules/debugger/jpda/visual/resources/debugger-remote.zip"
+             basedir="build/remoteclasses"
+        />
+    </target>
+    
 </project>
