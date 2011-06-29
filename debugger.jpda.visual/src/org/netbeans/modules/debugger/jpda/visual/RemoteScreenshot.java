@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.debugger.jpda.visual;
 
-import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
-import com.sun.jdi.ArrayType;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
@@ -54,14 +52,12 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -91,7 +87,6 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  * Takes screenshot of a remote application.
@@ -182,6 +177,14 @@ public class RemoteScreenshot {
         try {
             
             logger.fine("RemoteScreenshot.take("+t+"), is suspended = "+t.isSuspended());
+            if (!t.isSuspended()) {
+                threadLock.unlock();
+                threadLock = null;
+                t = RemoteServices.makeAWTThreadStopOnEvent(t);
+                threadLock = ((JPDAThreadImpl) t).accessLock.writeLock();
+                threadLock.lock();
+            }
+            logger.fine("  after remote service BP hit: "+t+" is suspended = "+t.isSuspended());
             if (t.isSuspended()) {
                 /*
                  * Run following code in the target VM:
@@ -201,7 +204,7 @@ public class RemoteScreenshot {
                 
                 ThreadReference tawt = ((JPDAThreadImpl) t).getThreadReference();
                 VirtualMachine vm = tawt.virtualMachine();
-                ClassType windowClass = getClass(vm, "java.awt.Window");
+                ClassType windowClass = RemoteServices.getClass(vm, "java.awt.Window");
                 if (windowClass == null) {
                     logger.fine("No Window");
                     return NO_SCREENSHOTS;
@@ -238,12 +241,12 @@ public class RemoteScreenshot {
                     logger.severe("No getSize() method!");
                     return NO_SCREENSHOTS;
                 }
-                ClassType dimensionClass = getClass(vm, "java.awt.Dimension");
+                ClassType dimensionClass = RemoteServices.getClass(vm, "java.awt.Dimension");
                 if (dimensionClass == null) {
                     logger.severe("No Dimension");
                     return NO_SCREENSHOTS;
                 }
-                ClassType bufferedImageClass = getClass(vm, "java.awt.image.BufferedImage");
+                ClassType bufferedImageClass = RemoteServices.getClass(vm, "java.awt.image.BufferedImage");
                 if (bufferedImageClass == null) {
                     logger.severe("No BufferedImage class.");
                     return NO_SCREENSHOTS;
@@ -255,12 +258,12 @@ public class RemoteScreenshot {
                     return NO_SCREENSHOTS;
                 }
                 
-                ClassType frameClass = getClass(vm, "java.awt.Frame");
+                ClassType frameClass = RemoteServices.getClass(vm, "java.awt.Frame");
                 Method getFrameTitle = null;
                 if (frameClass != null) {
                     getFrameTitle = frameClass.concreteMethodByName("getTitle", "()Ljava/lang/String;");
                 }
-                ClassType dialogClass = getClass(vm, "java.awt.Dialog");
+                ClassType dialogClass = RemoteServices.getClass(vm, "java.awt.Dialog");
                 Method getDialogTitle = null;
                 if (dialogClass != null) {
                     getDialogTitle = dialogClass.concreteMethodByName("getTitle", "()Ljava/lang/String;");
@@ -338,7 +341,7 @@ public class RemoteScreenshot {
                         }
                     }
                     
-                    ClassType containerClass = getClass(vm, "java.awt.Container");
+                    ClassType containerClass = RemoteServices.getClass(vm, "java.awt.Container");
                     ComponentInfo componentInfo = retrieveComponentTree((JPDAThreadImpl) t, containerClass, window);
                     
                     screenshots.add(new RemoteScreenshot(title, width, height, dataArray, componentInfo));
@@ -374,33 +377,11 @@ public class RemoteScreenshot {
             if (methodInvoking) {
                 ((JPDAThreadImpl) t).notifyMethodInvokeDone();
             }
-            threadLock.unlock();
+            if (threadLock != null) {
+                threadLock.unlock();
+            }
         }
         return screenshots.toArray(new RemoteScreenshot[] {});
-    }
-    
-    private static ClassType getClass(VirtualMachine vm, String name) {
-        List<ReferenceType> classList = vm.classesByName(name);
-        ReferenceType clazz = null;
-        for (ReferenceType c : classList) {
-            if (c.classLoader() == null) {
-                clazz = c;
-                break;
-            }
-        }
-        return (ClassType) clazz;
-    }
-    
-    private static ArrayType getArrayClass(VirtualMachine vm, String name) {
-        List<ReferenceType> classList = vm.classesByName(name);
-        ReferenceType clazz = null;
-        for (ReferenceType c : classList) {
-            if (c.classLoader() == null) {
-                clazz = c;
-                break;
-            }
-        }
-        return (ArrayType) clazz;
     }
     
     private static ComponentInfo retrieveComponentTree(JPDAThreadImpl t,
@@ -411,14 +392,14 @@ public class RemoteScreenshot {
         
         ThreadReference tawt = t.getThreadReference();
         VirtualMachine vm = tawt.virtualMachine();
-        ClassType componentClass = getClass(vm, "java.awt.Component");
+        ClassType componentClass = RemoteServices.getClass(vm, "java.awt.Component");
         Method getBounds = componentClass.concreteMethodByName("getBounds", "()Ljava/awt/Rectangle;");
         Method getComponents = containerClass.concreteMethodByName("getComponents", "()[Ljava/awt/Component;");
         if (getComponents == null) {
             logger.severe("No getComponents() method!");
             return null;
         }
-        ComponentInfo ci = new ComponentInfo();
+        ComponentInfo ci = new ComponentInfo(t);
         retrieveComponents(ci, t, vm, componentClass, containerClass, window, getComponents, getBounds,
                            Integer.MIN_VALUE, Integer.MIN_VALUE, ((JPDAThreadImpl) t).getDebugger());
         ci.bounds.x = 0; // Move to the origin, we do not care where it's on the screen.
@@ -436,7 +417,7 @@ public class RemoteScreenshot {
         
         ThreadReference tawt = t.getThreadReference();
         ObjectReference rectangle = (ObjectReference) component.invokeMethod(tawt, getBounds, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        ClassType rectangleClass = getClass(vm, "java.awt.Rectangle");
+        ClassType rectangleClass = RemoteServices.getClass(vm, "java.awt.Rectangle");
         Field fx = rectangleClass.fieldByName("x");
         Field fy = rectangleClass.fieldByName("y");
         Field fwidth = rectangleClass.fieldByName("width");
@@ -460,6 +441,7 @@ public class RemoteScreenshot {
         if (name != null) {
             ci.name = name.value();
         }
+        ci.component = component;
         ci.type = component.referenceType().name();
         logger.severe("  Component '"+ci.name+"' class='"+ci.type+"' bounds = "+r);
         
@@ -499,7 +481,7 @@ public class RemoteScreenshot {
                 ComponentInfo[] cis = new ComponentInfo[components.size()];
                 int i = 0;
                 for(Value cv : components) {
-                    cis[i] = new ComponentInfo();
+                    cis[i] = new ComponentInfo(t);
                     ObjectReference c = (ObjectReference) cv;
                     retrieveComponents(cis[i], t, vm, componentClass, containerClass, c, getComponents, getBounds,
                                        shiftx, shifty, debugger);
@@ -603,13 +585,6 @@ public class RemoteScreenshot {
         @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             synchronized (valueLock) {
-                /*if (value == valueCalculating) {
-                    try {
-                        valueLock.wait();
-                    } catch (InterruptedException ex) {
-                    }
-                        return value;
-                }*/
                 if (value == null) {
                     value = valueCalculating;
                     debugger.getRequestProcessor().post(new Runnable() {
@@ -618,7 +593,6 @@ public class RemoteScreenshot {
                             String v = getValueLazy();
                             synchronized (valueLock) {
                                 value = v;
-                                //valueLock.notifyAll();
                             }
                             ci.firePropertyChange(propertyName, null, v);
                         }
@@ -626,24 +600,6 @@ public class RemoteScreenshot {
                 }
                 return value;
             }
-            /*try {
-                Value v = component.invokeMethod(tawt, getter, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                return String.valueOf(v);
-            } catch (InvalidTypeException ex) {
-                Exceptions.printStackTrace(ex);
-                return ex.getMessage();
-            } catch (ClassNotLoadedException ex) {
-                Exceptions.printStackTrace(ex);
-                return ex.getMessage();
-            } catch (IncompatibleThreadStateException ex) {
-                Exceptions.printStackTrace(ex);
-                return ex.getMessage();
-            } catch (InvocationException ex) {
-                InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, debugger);
-                Exceptions.printStackTrace(iextr);
-                Exceptions.printStackTrace(ex);
-                return ex.getMessage();
-            }*/
         }
         
         private String getValueLazy() {
@@ -777,6 +733,21 @@ public class RemoteScreenshot {
         private ComponentInfo[] subComponents;
         private List<PropertySet> propertySets = new ArrayList<PropertySet>();
         private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
+        
+        private JPDAThreadImpl thread;
+        private ObjectReference component;
+        
+        public ComponentInfo(JPDAThreadImpl t) {
+            this.thread = t;
+        }
+        
+        public JPDAThreadImpl getAWTThread() {
+            return thread;
+        }
+        
+        public ObjectReference getComponent() {
+            return component;
+        }
         
         public String getName() {
             return name;

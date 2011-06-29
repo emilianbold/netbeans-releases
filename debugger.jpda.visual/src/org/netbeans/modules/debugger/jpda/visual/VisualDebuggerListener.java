@@ -41,26 +41,106 @@
  */
 package org.netbeans.modules.debugger.jpda.visual;
 
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassObjectReference;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.InvocationException;
+import com.sun.jdi.Method;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VirtualMachine;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession", types=DebuggerManagerListener.class)
+@DebuggerServiceRegistration(path="", types=LazyDebuggerManagerListener.class)
 public class VisualDebuggerListener extends DebuggerManagerAdapter {
+    
+    private static final Logger logger = Logger.getLogger(VisualDebuggerListener.class.getName());
 
     @Override
     public void engineAdded(DebuggerEngine engine) {
         // Create a BP in AWT and when hit, inject the remote service.
+        JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+        logger.fine("engineAdded("+engine+"), debugger = "+debugger);
+        if (debugger != null) {
+            final MethodBreakpoint mb = MethodBreakpoint.create("java.awt.EventQueue", "getNextEvent");
+            mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
+            mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
+            mb.setHidden(true);
+            mb.addJPDABreakpointListener(new JPDABreakpointListener() {
+                @Override
+                public void breakpointReached(JPDABreakpointEvent event) {
+                    DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+                    initDebuggerRemoteService(event.getThread());
+                    event.resume();
+                }
+            });
+            DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+        }
     }
 
+    private void initDebuggerRemoteService(JPDAThread thread) {
+        logger.fine("initDebuggerRemoteService("+thread+")");
+        ClassObjectReference cor = null;
+        try {
+            cor = RemoteServices.uploadBasicClasses((JPDAThreadImpl) thread);
+        } catch (InvalidTypeException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotLoadedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IncompatibleThreadStateException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationException ex) {
+            final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, ((JPDAThreadImpl) thread).getDebugger());
+            iextr.getMessage();
+            iextr.getCause();
+            iextr.getStackTrace();
+            Exceptions.printStackTrace(iextr);
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        logger.fine("Uploaded class = "+cor);
+        if (cor == null) {
+            return ;
+        }
+        ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
+        VirtualMachine vm = tr.virtualMachine();
+        ClassType serviceClass = (ClassType) cor.reflectedType();//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+        
+        Method startMethod = serviceClass.concreteMethodByName("startAWTAccessLoop", "()V");
+        try {
+            serviceClass.invokeMethod(tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        logger.fine("The RemoteServiceClass is there: "+RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
+    }
+    
     @Override
     public void engineRemoved(DebuggerEngine engine) {
-        super.engineRemoved(engine);
+        // TODO: Stop the remote service.
     }
     
 }
