@@ -169,6 +169,7 @@ public class VCSClassLoadingTest extends JellyTestCase {
             String txt = null;
             if (number > 0) {
                 txt = bcHandler.reportViolations(getLog("violations_" + stage + ".xml"));
+                bcHandler.writeViolationsSnapshot(new File(getWorkDir(),"violations_" + stage + ".npss"));
             }
             if (number > allowed) {
                 fail("Too many violations. Allowed only "+allowed+" but was: "+number+":\n"+txt);
