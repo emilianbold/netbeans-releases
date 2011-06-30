@@ -41,22 +41,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.activate;
 
-package org.netbeans.modules.settings;
+import java.util.concurrent.Callable;
+import org.osgi.framework.BundleContext;
 
-import org.netbeans.modules.openide.filesystems.RecognizeInstanceFilesTest;
-
-/** Test finding services from manifest and .instance files using FolderLookup.
- * @author Jaroslav Tulach
- */
-public class RecognizeInstanceObjectsTest extends RecognizeInstanceFilesTest {
-    public RecognizeInstanceObjectsTest(String name) {
-        super(name);
-    }
-
+public class Query implements Callable<BundleContext> {
     @Override
-    protected int timeOut() {
-        return 20000;
+    public BundleContext call() throws Exception {
+        return Main.start;
     }
-
 }
+

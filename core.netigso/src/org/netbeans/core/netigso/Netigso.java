@@ -230,6 +230,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                         while (en.hasMoreElements()) {
                             URL url = (URL) en.nextElement();
                             if (url.getFile().startsWith("/META-INF")) {
+                                pkgs.add(url.getFile().substring(9));
                                 continue;
                             }
                             pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));

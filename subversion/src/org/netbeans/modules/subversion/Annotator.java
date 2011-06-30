@@ -424,9 +424,9 @@ public class Annotator {
     public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         List<Action> actions = new ArrayList<Action>(20);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance").getAttribute("instanceCreate");
+            Action a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance", Action.class);
             if(a != null) actions.add(a);
-            a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+            a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
             if(a instanceof ContextAwareAction) {
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
             }            
@@ -473,7 +473,7 @@ public class Annotator {
             Lookup context = ctx.getElements();
             boolean noneVersioned = isNothingVersioned(files);
             if (noneVersioned) {
-                Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+                Action a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
