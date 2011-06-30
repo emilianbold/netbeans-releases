@@ -55,7 +55,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.DefaultListModel;
@@ -64,10 +63,10 @@ import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
@@ -100,7 +99,7 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
     protected static final HgLogMessage NO_REVISION = new HgLogMessage(null, Collections.<String>emptyList(), null, 
             null, null, null, Long.toString(new Date().getTime()), NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Revision_Default"), //NOI18N
             null, null, null, null, null, "", ""); //NOI18N
-    private HgRevision parentRevision;
+    private HgLogMessage parentRevision;
     private boolean validSelection;
     private final Timer filterTimer;
     private HgLogMessage[] messages;
@@ -445,7 +444,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         }
         messageInfofetcher = defaultMessageInfoFetcher;
         fetchRevisionLimit = limit;
-        if (messages != null) {
+        if (limit > 0 && messages != null) {
             fetchRevisionLimit += messages.length;
         }
         filterTimer.stop();
@@ -510,16 +509,30 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         MessageInfoFetcher fetcher = getMessageInfoFetcher();
         HgLogMessage[] fetchedMessages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<File>(Arrays.asList(roots)), fetchRevisionLimit, logger);
         if (!supp.isCanceled() && fetchedMessages.length > 0) {
-            try {
-                parentRevision = HgCommand.getParent(repository, null, null);
-            } catch (HgException ex) {
-                Mercurial.LOG.log(Level.FINE, null, ex);
+            WorkingCopyInfo wcInfo = WorkingCopyInfo.getInstance(repository);
+            wcInfo.refresh();
+            HgLogMessage[] parents = wcInfo.getWorkingCopyParents();
+            if (parents.length > 0) {
+                parentRevision = parents[0];
             }
         }
 
         if (!supp.isCanceled()) {
             if( fetchedMessages == null || fetchedMessages.length == 0){
                 fetchedMessages = new HgLogMessage[] { NO_REVISION };
+            } else if (parentRevision != null && acceptSelection(parentRevision)) {
+                // parent revision should always be loaded and displaed
+                boolean containsParent = false;
+                for (HgLogMessage msg : fetchedMessages) {
+                    if (msg.getCSetShortID().equals(parentRevision.getCSetShortID())) {
+                        containsParent = true;
+                        break;
+                    }
+                }
+                if (!containsParent) {
+                    fetchedMessages = Arrays.copyOf(fetchedMessages, fetchedMessages.length + 1);
+                    fetchedMessages[fetchedMessages.length - 1] = parentRevision;
+                }
             }
             synchronized (LOCK) {
                 messages = fetchedMessages;
@@ -552,7 +565,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }
     
     protected final HgRevision getParentRevision () {
-        return parentRevision;
+        return parentRevision == null ? null : parentRevision.getHgRevision();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -594,7 +607,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                     value = message.getCSetShortID();
                 } else {
                     StringBuilder sb = new StringBuilder().append(message.getRevisionNumber());
-                    HgRevision parent = parentRevision;
+                    HgLogMessage parent = parentRevision;
                     if (parent != null && parent.getRevisionNumber().equals(message.getRevisionNumber())) {
                         sb.append(MARK_ACTIVE_HEAD);
                     }
@@ -625,7 +638,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                 if (applies(filter, message)) {
                     if (selectedRevision != null && message.getCSetShortID().equals(selectedRevision.getCSetShortID())) {
                         toSelectRevision = message;
-                    } else if (parentRevision != null && message.getCSetShortID().equals(parentRevision.getChangesetId())) {
+                    } else if (parentRevision != null && message.getCSetShortID().equals(parentRevision.getCSetShortID())) {
                         toSelectRevision = message;
                     }
                     targetsModel.addElement(message);
