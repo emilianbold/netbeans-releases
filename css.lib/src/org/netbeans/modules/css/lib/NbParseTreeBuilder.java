@@ -1,0 +1,230 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.css.lib;
+
+import java.util.Collection;
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+import org.antlr.runtime.debug.BlankDebugEventListener;
+
+import java.util.Stack;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.ProblemDescription;
+
+/**
+ * A patched version of ANLR's ParseTreeBuilder 
+ * - the parse tree doesn't contain empty rule nodes with the <epsilon> sub-node.
+ * - parsing errors are collected
+ * 
+ * @author marekfukala
+ */
+public class NbParseTreeBuilder extends BlankDebugEventListener {
+
+    private static final Object ROOT_NODE_PAYLOAD = "root"; //NOI18N
+    Stack<NbParseTree> callStack = new Stack<NbParseTree>();
+    List<Token> hiddenTokens = new ArrayList<Token>();
+    private int backtracking = 0;
+    
+    private CommonToken lastConsumedToken;
+    private Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+    private boolean resyncing;
+
+    public NbParseTreeBuilder() {
+        NbParseTree root = new NbParseTree(ROOT_NODE_PAYLOAD);
+        callStack.push(root);
+    }
+
+    public NbParseTree getTree() {
+        return callStack.elementAt(0);
+    }
+
+    /**  What kind of node to create.  You might want to override
+     *   so I factored out creation here.
+     */
+    public NbParseTree create(Object payload) {
+        return new NbParseTree(payload);
+    }
+
+    /** Backtracking or cyclic DFA, don't want to add nodes to tree */
+    @Override
+    public void enterDecision(int d, boolean couldBacktrack) {
+        backtracking++;
+    }
+
+    @Override
+    public void exitDecision(int i) {
+        backtracking--;
+    }
+
+    @Override
+    public void enterRule(String filename, String ruleName) {
+        if (backtracking > 0) {
+            return;
+        }
+        NbParseTree parentRuleNode = callStack.peek();
+        NbParseTree ruleNode = create(ruleName);
+        parentRuleNode.addChild(ruleNode);
+        ruleNode.setParent(parentRuleNode);
+        callStack.push(ruleNode);
+        
+        //set rule start offset
+        ruleNode.from = lastConsumedToken != null 
+                ? lastConsumedToken.getStartIndex() 
+                : 0 ;
+    }
+
+    @Override
+    public void exitRule(String filename, String ruleName) {
+        if (backtracking > 0) {
+            return;
+        }
+        NbParseTree ruleNode = callStack.pop();
+        if (ruleNode.getChildCount() == 0) {
+            NbParseTree parent = (NbParseTree) ruleNode.getParent();
+            if (parent != null) {
+                parent.deleteChild(ruleNode);
+            }
+        } else {
+            //set the rule end offset
+            ruleNode.to = lastConsumedToken.getStopIndex();
+        }
+    }
+
+    @Override
+    public void consumeToken(Token token) {
+        if (backtracking > 0) {
+            return;
+        }
+        NbParseTree ruleNode = callStack.peek();
+        NbParseTree elementNode = create(token);
+        elementNode.hiddenTokens = this.hiddenTokens;
+        hiddenTokens.clear();
+        ruleNode.addChild(elementNode);
+        
+        lastConsumedToken = (CommonToken)token;
+        
+        if(resyncing) {
+            System.out.println("resyncing over token " + token);
+        }
+        
+    }
+
+    @Override
+    public void consumeHiddenToken(Token token) {
+        if (backtracking > 0) {
+            return;
+        }
+        hiddenTokens.add(token);
+        
+        if(resyncing) {
+            System.out.println("resyncing over hidden token " + token);
+        }
+    }
+
+    @Override
+    public void beginResync() {
+        resyncing = true;
+    }
+
+    @Override
+    public void endResync() {
+        resyncing = false;
+    }
+    
+    @Override
+    public void recognitionException(RecognitionException e) {
+        if (backtracking > 0) {
+            return;
+        }
+        //add error node
+        NbParseTree ruleNode = callStack.peek();
+        NbParseTree errorNode = create(e);
+        ruleNode.addChild(errorNode);
+        
+        final String message;
+        final int from, to;
+        
+        if(e.token != null) {
+            //invalid token found int the stream
+            CommonToken token = (CommonToken)e.token;
+            token.getStartIndex();
+            int unexpectedTokenCode = e.getUnexpectedType();
+            CssTokenId uneexpectedToken = CssTokenId.forTokenTypeCode(unexpectedTokenCode);
+            
+            from = token.getStartIndex();
+            to = token.getStopIndex();
+            
+            if(uneexpectedToken == CssTokenId.EOF) {
+                message = String.format("Premature end of file");
+            } else {
+                message = String.format("Unexpected token '%s' found at %s:%s (offset range %s-%s).", 
+                        uneexpectedToken.name(), 
+                        e.line, 
+                        e.charPositionInLine, 
+                        token.getStartIndex(), 
+                        token.getStopIndex());
+            }            
+        } else {
+            //no token?!?!
+            from = to = ruleNode.from();
+            message = ruleNode.toString();
+        }
+        
+        //create a ParsingProblem
+        ProblemDescription pp = new ProblemDescription(
+                from, 
+                to,
+                message, 
+                ProblemDescription.Keys.PARSING.name(), 
+                ProblemDescription.Type.ERROR);
+        
+        problems.add(pp);
+    }
+
+    public Collection<ProblemDescription> getProblems() {
+        return problems;
+    }
+  
+}
