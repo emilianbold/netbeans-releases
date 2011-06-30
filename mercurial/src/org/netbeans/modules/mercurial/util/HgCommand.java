@@ -128,6 +128,7 @@ public class HgCommand {
     private static final String HG_OPT_BUNDLE = "--bundle"; // NOI18N
     private static final String HG_OPT_CWD_CMD = "--cwd"; // NOI18N
     private static final String HG_OPT_USERNAME = "--user"; // NOI18N
+    private static final String HG_OPT_CLOSE_BRANCH = "--close-branch"; // NOI18N
 
     private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
@@ -146,9 +147,7 @@ public class HgCommand {
     private static final String HG_REVERT_NOBACKUP_CMD = "--no-backup"; // NOI18N
     private static final String HG_ADD_CMD = "add"; // NOI18N
 
-    private static final String HG_BRANCH_REV_CMD = "tip"; // NOI18N
     private static final String HG_TIP_CONST = "tip"; // NOI18N
-    private static final String HG_BRANCH_INFO_TEMPLATE_CMD = "--template={branches}:{rev}:{node|short}\\n"; // NOI18N
 
     private static final String HG_CREATE_CMD = "init"; // NOI18N
     private static final String HG_CLONE_CMD = "clone"; // NOI18N
@@ -390,7 +389,6 @@ public class HgCommand {
 
     private static final HashSet<String> WORKING_COPY_PARENT_MODIFYING_COMMANDS = new HashSet<String>(Arrays.asList(
         HG_BACKOUT_CMD,
-        HG_BRANCH_CMD,
         HG_CLONE_CMD,
         HG_COMMIT_CMD,
         HG_CREATE_CMD,
@@ -2003,6 +2001,20 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCommit(File repository, List<File> commitFiles, String commitMessage, OutputLogger logger)  throws HgException {
+        doCommit(repository, commitFiles, commitMessage, false, logger);
+    }
+
+    /**
+     * Commits the cmdOutput of Locally Changed files to the mercurial Repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param List<files> of files to be committed to hg
+     * @param String for commitMessage
+     * @param closeBranch runs commit with --close-branch option
+     * @return void
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static void doCommit(File repository, List<File> commitFiles, String commitMessage, boolean closeBranch, OutputLogger logger)  throws HgException {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -2023,6 +2035,10 @@ public class HgCommand {
         if(username != null ){
             command.add(HG_OPT_USERNAME);
             command.add(username);
+        }
+        
+        if (closeBranch) {
+            command.add(HG_OPT_CLOSE_BRANCH);
         }
 
         File tempfile = null;
@@ -2334,20 +2350,19 @@ public class HgCommand {
     }
 
     /**
-     * Returns the mercurial branch info for a repository
+     * Returns the current branch for a repository
      *
      * @param File repository of the mercurial repository's root directory
-     * @return String of form :<branch>:<rev>:<shortchangeset>:
+     * @return current branch
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static String getBranchInfo(File repository) throws HgException {
+    public static String getBranch (File repository) throws HgException {
         if (repository == null) return null;
 
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
-        command.add(HG_BRANCH_REV_CMD);
-        command.add(HG_BRANCH_INFO_TEMPLATE_CMD);
+        command.add(HG_BRANCH_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
 
@@ -2385,11 +2400,12 @@ public class HgCommand {
      * Returns the info of heads in repository
      *
      * @param File repository of the mercurial repository's root directory
+     * @param onlyTopologicalHeads only topological heads, without any children
      * @return head info.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static HgLogMessage[] getHeadRevisionsInfo (File repository, OutputLogger logger) throws HgException {
-        List<String> list = getHeadInfo(repository, true, HG_LOG_BASIC_CHANGESET_NAME, true);
+    public static HgLogMessage[] getHeadRevisionsInfo (File repository, boolean onlyTopologicalHeads, OutputLogger logger) throws HgException {
+        List<String> list = getHeadInfo(repository, onlyTopologicalHeads, HG_LOG_BASIC_CHANGESET_NAME, true);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
                 handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
