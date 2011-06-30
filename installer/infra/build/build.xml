@@ -346,6 +346,7 @@
              <or>
 	         <equals arg1="${build.jdk5}" arg2="1"/>
                  <equals arg1="${build.jdk6}" arg2="1"/>
+                 <equals arg1="${build.jdk7}" arg2="1"/>
              </or>
         </condition>
         <condition property="do.build.jdk5">
@@ -353,6 +354,9 @@
         </condition>
         <condition property="do.build.jdk6">
 	     <equals arg1="${build.jdk6}" arg2="1"/>
+        </condition>
+        <condition property="do.build.jdk7">
+	     <equals arg1="${build.jdk7}" arg2="1"/>
         </condition>
         <condition property="do.build.netbeans">
 	     <equals arg1="${build.netbeans.bundles}" arg2="1"/>
@@ -799,7 +803,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nbjdk-components" if="do.build.jdk">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
-	     <param name="build.list" value="nb-base nb-javase jdk5 jdk6"/>
+	     <param name="build.list" value="nb-base nb-javase jdk5 jdk6 jdk7"/>
         </antcall>
     </target>
 
@@ -831,6 +835,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk-bundles" depends="init-jdk-bundles,init-bundled-jvms" if="do.build.jdk">	
 	<antcall target="generate-jdk5-bundles"/>
         <antcall target="generate-jdk6-bundles"/>
+        <antcall target="generate-jdk7-bundles"/>
     </target>
 
     <target name="build-core-engine">
@@ -1216,6 +1221,12 @@ jarsigner.storepass=${jarsigner.storepass}
      <target name="build-jdk6" if="do.build.jdk6">
 	<antcall target="build-jdk-product">
 	    <param name="jdk.build.file" value="build_jdk6.xml"/>
+	</antcall>
+     </target>
+
+     <target name="build-jdk7" if="do.build.jdk7">
+	<antcall target="build-jdk-product">
+	    <param name="jdk.build.file" value="build_jdk7.xml"/>
 	</antcall>
      </target>
 
@@ -2170,6 +2181,16 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
+    <target name="generate-jdk7-bundles" if="do.build.jdk7">
+        <!-- JavaSE + JDK6 bundles -->
+	<antcall target="generate-jdk-bundle-single">
+	    <param name="jdk.bundle.files.prefix"     value="jdk-7"/>
+	    <param name="jdk.full.version"            value="1.7.0.0.147"/>
+            <param name="bundled.jvm.file.prefix"     value="jre-7"/>
+	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
+	</antcall>
+    </target>
+
     <target name="generate-jdk-bundle"  depends="get-bundled-jvm">
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="${bundle.platform}" 
@@ -2197,6 +2218,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
 	</antcall>
 
+        <!-- temporary, until jre for solaris is ready
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="solaris-x86"/>
 		<param name="bundle.extension"		value=".sh"/>
@@ -2207,6 +2229,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="solaris-sparc.sh"/>
 	</antcall>
+        -->
     </target>
 
 

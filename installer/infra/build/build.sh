@@ -72,6 +72,11 @@ if [ -z "$BUILD_NBJDK6" ] ; then
     BUILD_NBJDK6=0
 fi
 
+if [ -z "$BUILD_NBJDK7" ] ; then
+    #do not build NetBeans/JDK7 bundles by default
+    BUILD_NBJDK7=0
+fi
+
 if [ -z "$EN_BUILD" ] ; then
     EN_BUILD=1
 fi
@@ -206,6 +211,7 @@ run() {
             \"-Dcvs.branch=${CVS_BRANCH}\" \
             \"-Dbuild.jdk5=${BUILD_NBJDK5}\" \
             \"-Dbuild.jdk6=${BUILD_NBJDK6}\" \
+            \"-Dbuild.jdk7=${BUILD_NBJDK7}\" \
             \"-Dbuild.jtb=${BUILD_JTB}\" \
             \"-Dbuild.mysql=${BUILD_MYSQL}\" \
             \"-Dbuild.netbeans.bundles=${BUILD_NETBEANS}\" \

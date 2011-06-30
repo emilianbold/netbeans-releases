@@ -400,6 +400,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     private boolean isJDK6U15orLater() {       
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_15"));
     }
+    private boolean isJDK7() {
+        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.7.0"));
+    }
 
     private void configureJREProductWindows(ExecutionResults results) {
         LogManager.log("... configuring JRE Product");
@@ -693,18 +696,31 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private File getJREInstallationLocationWindows() {
+        String suffix;
+        if(isJDK7()) {
+            suffix = "7";
+        } else if (isJDK6U10orLater()) {
+            suffix = "6";
+        } else {
+            suffix = getProduct().getVersion().toJdkStyle();
+        }
         return new File(parseString("$E{ProgramFiles}"),
-                "Java\\jre" + (isJDK6U10orLater() ? "6" : getProduct().getVersion().toJdkStyle()));
+                "Java\\jre" + suffix);
     }
     private File getJavaDBInstallationLocationWindows() {
         return new File(parseString(SUN_JAVADB_DEFAULT_LOCATION));
     }
     private long getJREinstallationSize() {
-        return getProduct().getVersion().getMinor()==5 ?
-            70000000L :
-            (getProduct().getVersion().getMinor()==6 ?
-                90000000L :
-                100000000L);
+        long minorVersion = getProduct().getVersion().getMinor();
+        if(minorVersion == 5) {
+            return 70000000L;
+        } else if (minorVersion == 6) {
+            return 90000000L;
+        } else if (minorVersion == 7) {
+            return 150000000L;
+        } else {
+            return 100000000L;
+        }
     }
     private long getJavaDBInstallationSize() {
         return 30000000L;
@@ -729,6 +745,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 size = 190000000L ;
             } else if(SystemUtils.isLinux()){
                 size = 200000000L ;
+            } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_SPARC)) {
+                size = 178000000L;
+            } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_X86)) {
+                size = 170000000L;
+            } else {
+                // who knows...
+                size = 180000000L;
+            }
+        } else if(getProduct().getVersion().getMinor()==7) {
+            if(SystemUtils.isWindows()) {
+                size = 190000000L ;
+            } else if(SystemUtils.isLinux()){
+                size = 250000000L ;
             } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_SPARC)) {
                 size = 178000000L;
             } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_X86)) {
