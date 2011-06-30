@@ -1469,7 +1469,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     public void evalResult(int rt, String value) {
         if (rt == RT_EVAL_REGISTER) {
-            EvalAnnotation.postResult(0, 0, 0, null, value, null, null);
+            EvalAnnotation.postResult(value.trim());
             return;
         }
         // CR 6770439, we can not guarantee there is currentEvaluationWindow
@@ -2937,7 +2937,10 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
         
         if (Disassembly.isInDisasm()) {
-            String text = EvalAnnotation.extractExpr(pos, expr);
+            String text = expr;
+            if (pos >= 0) {
+                text = EvalAnnotation.extractExpr(pos, expr);
+            }
             // probably a register - append $ at the beginning
             if (text != null && !text.isEmpty()) {
                 if (Character.isLetter(text.charAt(0))) {
