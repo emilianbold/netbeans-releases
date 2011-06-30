@@ -83,7 +83,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
-// FIXXXimport org.netbeans.modules.profiler.utils.Utilities;
 
 
 /**
