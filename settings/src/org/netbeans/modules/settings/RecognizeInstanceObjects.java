@@ -73,7 +73,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
     
     @Override
     public <T> T lookupObject(String path, Class<T> type) {
-        FileObject fo = FileUtil.getConfigFile(path);
+        FileObject fo = FileUtil.getConfigFile(path)    ;
         if (fo != null) {
             try {
                 InstanceCookie ic = DataObject.find(fo).getLookup().lookup(InstanceCookie.class);
