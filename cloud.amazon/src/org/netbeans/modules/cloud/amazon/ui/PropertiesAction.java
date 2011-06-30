@@ -55,7 +55,7 @@ public class PropertiesAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         AmazonInstance ai = activatedNodes[0].getLookup().lookup(AmazonInstance.class);
-        CommonServerUIs.showCustomizer(ai.getServerInstance());
+        CommonServerUIs.showCloudCustomizer(ai.getServerInstance());
     }
 
     @Override
