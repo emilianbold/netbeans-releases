@@ -212,7 +212,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             displayer.add( btnMinimizeMode );
     }
     
-    private static final int ICON_X_PAD = 1;
+    private static final int ICON_X_PAD = 4;
 
     /**
      * @return A component that holds all control buttons (maximize/restor, 
@@ -226,25 +226,15 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
             int width = 0;
             int height = 0;
-            //create maximize/restore button
-//            if( null != displayer.getWinsysInfo() ) {
-//                btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer );
-//                buttonsPanel.add( btnMaximizeRestore );
-//                Icon icon = btnMaximizeRestore.getIcon();
-//                btnMaximizeRestore.setBounds( 0, 0, icon.getIconWidth(), icon.getIconHeight() );
-//                width += icon.getIconWidth();
-//            }
 
+            boolean showPin = null != displayer.getContainerWinsysInfo() && isUseStretchingTabs();
             //create autohide/pin button
             btnAutoHidePin = TabControlButtonFactory.createSlidePinButton( displayer );
-            if( null != displayer.getContainerWinsysInfo() && isUseStretchingTabs() ) {
+            if( showPin ) {
                 buttonsPanel.add( btnAutoHidePin );
 
                 Icon icon = btnAutoHidePin.getIcon();
-                if( 0 != width )
-                    width += ICON_X_PAD;
-                btnAutoHidePin.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
-                width += icon.getIconWidth();
+                height = icon.getIconHeight();
             }
 
             if( null == displayer.getContainerWinsysInfo() 
@@ -252,15 +242,25 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 //create close button
                 btnClose = TabControlButtonFactory.createCloseButton( displayer );
                 buttonsPanel.add( btnClose );
-
+                
                 Icon icon = btnClose.getIcon();
-                if( 0 != width )
-                    width += ICON_X_PAD;
-                btnClose.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+                height = Math.max( height, icon.getIconHeight() );
+            }
+
+            if( showPin ) {
+                Icon icon = btnAutoHidePin.getIcon();
+                btnAutoHidePin.setBounds( width, height/2-icon.getIconHeight()/2, icon.getIconWidth(), icon.getIconHeight() );
                 width += icon.getIconWidth();
-                height = icon.getIconHeight();
             }
             
+            if( null != btnClose ) {
+                if( 0 != width )
+                    width += ICON_X_PAD;
+                Icon icon = btnClose.getIcon();
+                btnClose.setBounds( width, height/2-icon.getIconHeight()/2, icon.getIconWidth(), icon.getIconHeight() );
+                width += icon.getIconWidth();
+            }
+                
             Dimension size = new Dimension( width, height );
             buttonsPanel.setMinimumSize( size );
             buttonsPanel.setSize( size );
