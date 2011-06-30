@@ -46,11 +46,11 @@ package org.netbeans.modules.profiler.ppoints;
 //import org.netbeans.lib.profiler.client.MonitoredData;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.results.DataManagerListener;
-// FIXXX import org.netbeans.modules.profiler.NetBeansProfiler;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.lib.profiler.client.MonitoredData;
 import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.openide.util.Lookup;
 
 
@@ -131,17 +131,16 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
     }
 
     private void init() {
-// FIXXX 
-//        profiledProject = NetBeansProfiler.getDefaultNB().getProfiledProject();
-//        profilingSettings = Profiler.getDefault().getLastProfilingSettings();
-//
-//        if ((profiledProject != null) && profilingSettings.useProfilingPoints()) {
-//            gpp = ProfilingPointsManager.getDefault().createGlobalProfilingConfiguration(profiledProject, profilingSettings);
-//
-//            for (GlobalProfilingPoint pp : gpp) {
-//                scheduleProfilingPoint(pp);
-//            }
-//        }
+        profiledProject = NetBeansProfiler.getDefaultNB().getProfiledProject();
+        profilingSettings = Profiler.getDefault().getLastProfilingSettings();
+
+        if ((profiledProject != null) && profilingSettings.useProfilingPoints()) {
+            gpp = ProfilingPointsManager.getDefault().createGlobalProfilingConfiguration(profiledProject, profilingSettings);
+
+            for (GlobalProfilingPoint pp : gpp) {
+                scheduleProfilingPoint(pp);
+            }
+        }
     }
 
     private void initListeners() {

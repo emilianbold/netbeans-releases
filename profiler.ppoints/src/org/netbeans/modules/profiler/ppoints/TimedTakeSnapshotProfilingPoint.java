@@ -48,9 +48,9 @@ import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
-// FIXXXimport org.netbeans.modules.profiler.LoadedSnapshot;
-// FIXXXimport org.netbeans.modules.profiler.ProfilerControlPanel2;
-// FIXXXimport org.netbeans.modules.profiler.ResultsManager;
+import org.netbeans.modules.profiler.LoadedSnapshot;
+import org.netbeans.modules.profiler.ProfilerControlPanel2;
+import org.netbeans.modules.profiler.ResultsManager;
 import org.netbeans.modules.profiler.ppoints.ui.TimedTakeSnapshotCustomizer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.openide.filesystems.FileObject;
@@ -80,6 +80,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 // FIXXXimport org.netbeans.modules.profiler.utils.Utilities;
@@ -256,7 +257,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
                         if ((snapshotFile != null) && snapshotFile.exists()) {
                             String type = TimedTakeSnapshotProfilingPoint.this.getSnapshotType();
                             if (type.equals(TYPE_PROFDATA_KEY) || type.equals(TYPE_HEAPDUMP_KEY)) {
-// FIXXX                                ResultsManager.openSnapshot(snapshotFile);
+                                ResultsManager.getDefault().openSnapshot(snapshotFile);
                             }
                         } else {
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -550,7 +551,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
 
             if (getResetResults()) {
                 try {
-// FIXXX                    ResultsManager.getDefault().reset();
+                    ResultsManager.getDefault().reset();
                     
                     TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
 
@@ -584,14 +585,10 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
             String fileName = TAKEN_HEAPDUMP_PREFIX + System.currentTimeMillis();
             FileObject folder = getSnapshotDirectory();
 
-            //      FileObject folder = targetFolder == null ? IDEUtils.getProjectSettingsFolder(NetBeansProfiler.getDefaultNB().getProfiledProject()) : FileUtil.toFileObject(new File(targetFolder));
-// FIXXX            
-//            return FileUtil.toFile(folder).getAbsolutePath() + File.separator
-//                   + FileUtil.findFreeFileName(folder, fileName, ResultsManager.HEAPDUMP_EXTENSION) + "."
-//                   + ResultsManager.HEAPDUMP_EXTENSION; // NOI18N
+            //      FileObject folder = targetFolder == null ? IDEUtils.getProjectSettingsFolder(NetBeansProfiler.getDefaultNB().getProfiledProject()) : FileUtil.toFileObject(new File(targetFolder));            
             return FileUtil.toFile(folder).getAbsolutePath() + File.separator
-                   + FileUtil.findFreeFileName(folder, fileName, "heapdump-") + "."
-                   + "hprof"; // NOI18N
+                   + FileUtil.findFreeFileName(folder, fileName, ResultsManager.HEAPDUMP_EXTENSION) + "."  // NOI18N
+                   + ResultsManager.HEAPDUMP_EXTENSION; // NOI18N
         } catch (IOException e) {
             return null;
         }
@@ -638,7 +635,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
         }
 
         if (heapdumpTaken) {
-// FIXXX            ProfilerControlPanel2.getDefault().refreshSnapshotsList();
+            ProfilerControlPanel2.getDefault().refreshSnapshotsList();
 
             try {
                 return new File(dumpFileName).toURI().toURL().toExternalForm();
@@ -651,31 +648,29 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
             return NO_DATA_AVAILABLE_MESSAGE;
         }
     }
-// FIXXX
-//    private static LoadedSnapshot takeSnapshot() {
-//        return ResultsManager.getDefault().prepareSnapshot();
-//    }
+
+    private static LoadedSnapshot takeSnapshot() {
+        return ResultsManager.getDefault().prepareSnapshot();
+    }
 
     private String takeSnapshotHit() {
-// FIXXX        
-//        LoadedSnapshot loadedSnapshot = null;
-//        String snapshotFilename = null;
-//        loadedSnapshot = takeSnapshot();
-//
-//        if (loadedSnapshot != null) {
-//            try {
-//                FileObject snapshotDirectory = getSnapshotDirectory();
-//                FileObject profFile = snapshotDirectory.createData(ResultsManager.getDefault()
-//                                                                                 .getDefaultSnapshotFileName(loadedSnapshot),
-//                                                                   ResultsManager.SNAPSHOT_EXTENSION);
-//                ResultsManager.getDefault().saveSnapshot(loadedSnapshot, profFile); // Also updates list of snapshots in ProfilerControlPanel2
-//                snapshotFilename = FileUtil.toFile(profFile).toURI().toURL().toExternalForm();
-//            } catch (IOException e) {
-//                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-//            }
-//        }
-//
-//        return (snapshotFilename == null) ? NO_DATA_AVAILABLE_MESSAGE : snapshotFilename;
-        return NO_DATA_AVAILABLE_MESSAGE;
+        LoadedSnapshot loadedSnapshot = null;
+        String snapshotFilename = null;
+        loadedSnapshot = takeSnapshot();
+
+        if (loadedSnapshot != null) {
+            try {
+                FileObject snapshotDirectory = getSnapshotDirectory();
+                FileObject profFile = snapshotDirectory.createData(ResultsManager.getDefault()
+                                                                                 .getDefaultSnapshotFileName(loadedSnapshot),
+                                                                   ResultsManager.SNAPSHOT_EXTENSION);
+                ResultsManager.getDefault().saveSnapshot(loadedSnapshot, profFile); // Also updates list of snapshots in ProfilerControlPanel2
+                snapshotFilename = FileUtil.toFile(profFile).toURI().toURL().toExternalForm();
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            }
+        }
+
+        return (snapshotFilename == null) ? NO_DATA_AVAILABLE_MESSAGE : snapshotFilename;
     }
 }
