@@ -54,12 +54,11 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import oracle.nuviaq.api.PlatformManager;
-import oracle.nuviaq.api.PlatformManagerConnectionFactory;
-import oracle.nuviaq.api.PlatformManagerException;
+import oracle.nuviaq.api.ApplicationManager;
+import oracle.nuviaq.api.ApplicationManagerConnectionFactory;
+import oracle.nuviaq.api.ManagerException;
 import oracle.nuviaq.model.xml.ApplicationDeploymentType;
 import oracle.nuviaq.model.xml.JobType;
-import oracle.nuviaq.model.xml.PlatformDeploymentType;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
@@ -78,19 +77,23 @@ public class OracleInstance {
     private static final Logger LOG = Logger.getLogger(OracleInstance.class.getSimpleName());
     
     private final String name;
-    private final String tenantUserName;
-    private final String tenantPassword;
-    private final String urlEndpoint;
+    private String tenantUserName;
+    private String tenantPassword;
+    private String urlEndpoint;
+    private String tenantId;
+    private String serviceName;
     
     private ServerInstance serverInstance;
     
-    private PlatformManager platform;
-
-    public OracleInstance(String name, String tenantUserName, String tenantPassword, String urlEndpoint) {
+    private ApplicationManager platform;
+    
+    public OracleInstance(String name, String tenantUserName, String tenantPassword, String urlEndpoint, String tenantId, String serviceName) {
         this.name = name;
         this.tenantUserName = tenantUserName;
         this.tenantPassword = tenantPassword;
         this.urlEndpoint = urlEndpoint;
+        this.tenantId = tenantId;
+        this.serviceName = serviceName;
     }
     
 
@@ -118,41 +121,92 @@ public class OracleInstance {
         return urlEndpoint;
     }
 
-    public synchronized PlatformManager getPlatformManager() {
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setPlatform(ApplicationManager platform) {
+        this.platform = platform;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+        resetCache();
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+        resetCache();
+    }
+
+    public void setTenantPassword(String tenantPassword) {
+        this.tenantPassword = tenantPassword;
+        resetCache();
+    }
+
+    public void setTenantUserName(String tenantUserName) {
+        this.tenantUserName = tenantUserName;
+        resetCache();
+    }
+
+    public void setUrlEndpoint(String urlEndpoint) {
+        this.urlEndpoint = urlEndpoint;
+        resetCache();
+    }
+
+    private synchronized void resetCache() {
+        platform = null;
+    }
+    
+    public synchronized ApplicationManager getApplicationManager() {
         if (platform == null) {
-            try {
-                platform = PlatformManagerConnectionFactory.createServiceEndpoint(new URL(urlEndpoint), tenantUserName, tenantPassword);
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            platform = createApplicationManager(urlEndpoint, tenantUserName, tenantPassword);
         }
         return platform;
     }
     
-    public void testConnection() throws PlatformManagerException {
+    public static ApplicationManager createApplicationManager(String urlEndpoint, String tenantUserName, String tenantPassword) {
+        try {
+            String url = urlEndpoint;
+            if (!url.endsWith("/")) {
+                url += "/";
+            }
+            url += "manager/rest"; // NOI18N
+            return ApplicationManagerConnectionFactory.createServiceEndpoint(new URL(url), tenantUserName, tenantPassword);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+    
+    public void testConnection() throws ManagerException {
         assert !SwingUtilities.isEventDispatchThread();
-        getPlatformManager().listJobs();
+        getApplicationManager().listJobs();
     }
     
     public List<OracleJ2EEInstance> readJ2EEServerInstances() {
         assert !SwingUtilities.isEventDispatchThread();
         List<OracleJ2EEInstance> res = new ArrayList<OracleJ2EEInstance>();
 
-        for (PlatformDeploymentType p : getPlatformManager().listPlatformInstances()) {
-            OracleJ2EEInstance inst = new OracleJ2EEInstance(this, p.getInstanceId());
-            //inst.updateState(?????);
-            res.add(inst);
-        }
+        // used to be dynamic list; keeping as list for now:
+        OracleJ2EEInstance inst = new OracleJ2EEInstance(this, getTenantId(), getServiceName());
+        res.add(inst);
+        
         return res;
     }
-    public static Future<DeploymentStatus> deployAsync(final PlatformManager pm, final File f, 
-                         final String instanceId, 
+    public static Future<DeploymentStatus> deployAsync(final String urlEndpoint, final ApplicationManager pm, final File f, 
+                         final String tenantId, 
+                         final String serviceName, 
                          final ProgressObjectImpl po) {
         return runAsynchronously(new Callable<DeploymentStatus>() {
             @Override
             public DeploymentStatus call() throws Exception {
                 String url[] = new String[1];
-                DeploymentStatus ds = deploy(pm, f, instanceId, po, url);
+                DeploymentStatus ds = deploy(urlEndpoint, pm, f, tenantId, serviceName, po, url);
                 LOG.log(Level.INFO, "deployment result: "+ds); // NOI18N
                 po.updateDepoymentResult(ds, url[0]);
                 return ds;
@@ -160,7 +214,7 @@ public class OracleInstance {
         });
     }
     
-    public static DeploymentStatus deploy(PlatformManager pm, File f, String instanceId, 
+    public static DeploymentStatus deploy(String urlEndpoint, ApplicationManager am, File f, String tenantId, String serviceName, 
                           ProgressObjectImpl po, String[] url) {
         assert !SwingUtilities.isEventDispatchThread();
         try {
@@ -171,7 +225,9 @@ public class OracleInstance {
             String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
             ApplicationDeploymentType adt =new ApplicationDeploymentType();
-            adt.setInstanceId(instanceId);
+            
+            // XXXX: nuviaq API problem:
+            adt.setInstanceId(tenantId + "." + serviceName);
             
             // XXX: what should this be???
             //adt.setApplicationId("id"+System.currentTimeMillis());
@@ -180,7 +236,7 @@ public class OracleInstance {
             adt.setArchiveUrl(f.getName());
             
             boolean redeploy = false;
-            List<ApplicationDeploymentType> apps = pm.listApplications(instanceId);
+            List<ApplicationDeploymentType> apps = am.listApplications(tenantId, serviceName);
             for (ApplicationDeploymentType app : apps) {
                 if (app.getApplicationId().equals(appContext)) {
                     redeploy = true;
@@ -192,11 +248,11 @@ public class OracleInstance {
             JobType jt;
             if (redeploy) {
                 LOG.log(Level.INFO, "redeploying: archive="+f+" "+adt); // NOI18N
-                jt = pm.redeployApplication(is, adt);
+                jt = am.redeployApplication(is, tenantId, serviceName, adt);
                 LOG.log(Level.INFO, "redeployed as "+jt.getJobId()+" "+jt); // NOI18N
             } else {
                 LOG.log(Level.INFO, "deploying: archive="+f+" "+adt); // NOI18N
-                jt = pm.deployApplication(is, adt);
+                jt = am.deployApplication(is, tenantId, serviceName, adt);
                 LOG.log(Level.INFO, "deployed as "+jt.getJobId()+" "+jt); // NOI18N
             }
             
@@ -212,13 +268,13 @@ public class OracleInstance {
                     Exceptions.printStackTrace(ex);
                 }
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
-                JobType latestJob = pm.describeJob(jt.getJobId());
+                JobType latestJob = am.describeJob(jt.getJobId());
                 String jobStatus = latestJob.getStatus();
                 if ("Complete".equals(jobStatus)) {
                     
                     // XXX: how do I get this one:
                     
-                    url[0] = "http://localhost:7001/"+appContext+"/";
+                    url[0] = urlEndpoint+appContext+"/";
                     
                     return DeploymentStatus.SUCCESS;
                 } else if ("submitted".equalsIgnoreCase(jobStatus)) {
@@ -232,7 +288,7 @@ public class OracleInstance {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return DeploymentStatus.UNKNOWN;
-        } catch (PlatformManagerException ex) {
+        } catch (ManagerException ex) {
             Exceptions.printStackTrace(ex);
             return DeploymentStatus.UNKNOWN;
         } catch (Throwable t) {
@@ -253,14 +309,14 @@ public class OracleInstance {
     
 //    private static List<Future> tasks = new ArrayList<Future>();
 
-    public List<ApplicationDeploymentType> getApplications(String instanceID) {
+    public List<ApplicationDeploymentType> getApplications() {
         assert !SwingUtilities.isEventDispatchThread();
-        return getPlatformManager().listApplications(instanceID);
+        return getApplicationManager().listApplications(getTenantId(), getServiceName());
     }
 
     public void undeploy(ApplicationDeploymentType app) {
         assert !SwingUtilities.isEventDispatchThread();
-        getPlatformManager().undeployApplication(app.getInstanceId(), app.getApplicationId());
+        getApplicationManager().undeployApplication(getTenantId(), getServiceName(), app.getApplicationId());
     }
     
 }

@@ -48,8 +48,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import oracle.nuviaq.api.PlatformManagerException;
+import oracle.nuviaq.api.ManagerException;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.common.spi.support.ui.ServerResourceDescriptor;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
@@ -65,11 +66,13 @@ import org.openide.util.Utilities;
 /**
  *
  */
-public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor> {
+public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
 
     public static final String TENANT_USERNAME = "tenant-username"; // String
     public static final String TENANT_PASSWORD = "tenant-password"; // String
     public static final String URL_ENDPOINT = "url-endpoint"; // List<Node>
+    public static final String TENANT_ID = "tenant-id"; // List<Node>
+    public static final String SERVICE_NAME = "service-name"; // List<Node>
     
     private OracleWizardComponent component;
     private ChangeSupport listeners;
@@ -85,7 +88,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new OracleWizardComponent(this);
+            component = new OracleWizardComponent(null);
+            component.attachSingleListener(this);
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getPanelContentData());            
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(0));
         }
@@ -115,6 +119,8 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             settings.putProperty(TENANT_USERNAME, component.getUserName());
             settings.putProperty(TENANT_PASSWORD, component.getPassword());
             settings.putProperty(URL_ENDPOINT, component.getUrl());
+            settings.putProperty(TENANT_ID, component.getTenantId());
+            settings.putProperty(SERVICE_NAME, component.getServiceName());
             settings.putProperty(CloudResourcesWizardPanel.PROP_SERVER_RESOURCES, servers);
         }
     }
@@ -135,6 +141,12 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             return false;
         } else if (component.getPassword().trim().length() == 0) {
             setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingPassword"));
+            return false;
+        } else if (component.getTenantId().trim().length() == 0) {
+            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingTenantID"));
+            return false;
+        } else if (component.getServiceName().trim().length() == 0) {
+            setErrorMessage(NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingServiceName"));
             return false;
         }
         setErrorMessage("");
@@ -164,10 +176,10 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public void validate() throws WizardValidationException {
         try {
             servers = new ArrayList<ServerResourceDescriptor>();
-            OracleInstance ai = new OracleInstance("Oracle Cloud 9", component.getUserName(), component.getPassword(), component.getUrl());
+            OracleInstance ai = new OracleInstance("Oracle Cloud 9", component.getUserName(), component.getPassword(), component.getUrl(), component.getTenantId(), component.getServiceName());
             try {
                 ai.testConnection();
-            } catch (PlatformManagerException ex) {
+            } catch (ManagerException ex) {
                 LOG.log(Level.WARNING, "cannot connect to cloud 9", ex);
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection failed", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials"));
@@ -184,6 +196,11 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         } finally {
             getComponent().setCursor(null);
         }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        fireChange();
     }
     
 }

@@ -145,7 +145,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
             OracleInstance.runAsynchronously(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    List<ApplicationDeploymentType> apps = aij.getOracleInstance().getApplications(aij.getInstanceId());
+                    List<ApplicationDeploymentType> apps = aij.getOracleInstance().getApplications();
                     OracleJ2EEInstanceChildren.this.setKeys(apps);
                     return null;
                 }

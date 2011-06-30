@@ -108,7 +108,8 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
                     try {
                         InstanceProperties ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
                                 ai.getTenantUserName(), ai.getTenantPassword(), inst.getDisplayName(), new HashMap<String, String>());
-                        ip.setProperty(OracleDeploymentFactory.IP_INSTANCE_ID, inst.getInstanceId());
+                        ip.setProperty(OracleDeploymentFactory.IP_TENANT_ID, inst.getTenantId());
+                        ip.setProperty(OracleDeploymentFactory.IP_SERVICE_NAME, inst.getServiceName());
                         ip.setProperty(OracleDeploymentFactory.IP_URL_ENDPOINT, ai.getUrlEndpoint());
                         ip.setProperty(InstanceProperties.URL_ATTR, inst.getId());
                     } catch (InstanceCreationException ex) {

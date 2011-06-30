@@ -63,7 +63,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import oracle.nuviaq.api.PlatformManager;
+import oracle.nuviaq.api.ApplicationManager;
 import oracle.nuviaq.model.xml.JobType;
 import oracle.nuviaq.model.xml.LogType;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
@@ -82,14 +82,14 @@ persistenceType = TopComponent.PERSISTENCE_NEVER)
 public class LogsComponent extends TopComponent {
 
     private List<JobType> jobs;
-    private PlatformManager pm;
+    private ApplicationManager am;
     
     /** Creates new form LogsComponent */
     public LogsComponent(OracleInstance oi) {
         initComponents();
         setName(NbBundle.getMessage(LogsComponent.class, "CTL_LogsTopComponent", oi.getName()));
         setToolTipText(NbBundle.getMessage(LogsComponent.class, "HINT_LogsTopComponent"));
-        this.pm = oi.getPlatformManager();
+        this.am = oi.getApplicationManager();
 //        jobs = pm.listJobs();
 //        Collections.reverse(jobs);
         jobs = new ArrayList<JobType>();
@@ -110,7 +110,7 @@ public class LogsComponent extends TopComponent {
         OracleInstance.runAsynchronously(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final List<JobType> jobs = pm.listJobs();
+                final List<JobType> jobs = am.listJobs();
                 Collections.reverse(jobs);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -155,7 +155,7 @@ public class LogsComponent extends TopComponent {
                     sb.append("==================== Log file: "+lt.getName()+"==========================\n\n");
                     ByteArrayOutputStream os = new ByteArrayOutputStream(8000);
                     try {
-                        pm.fetchJobLog(jt.getJobId(), lt.getName(), os);
+                        am.fetchJobLog(jt.getJobId(), lt.getName(), os);
                     } catch (Throwable t) {
                         sb.append("Exception occured while retrieving the log:\n"+t.toString());
                         continue;

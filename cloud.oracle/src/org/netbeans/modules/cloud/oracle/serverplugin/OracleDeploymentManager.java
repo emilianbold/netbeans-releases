@@ -55,7 +55,7 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import oracle.nuviaq.api.PlatformManager;
+import oracle.nuviaq.api.ApplicationManager;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.TargetImpl;
@@ -68,12 +68,16 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
  */
 public class OracleDeploymentManager implements DeploymentManager2 {
 
-    private PlatformManager pm;
-    private String instanceId;
+    private ApplicationManager pm;
+    private String tenantId;
+    private String serviceName;
+    private String urlEndPoint;
 
-    public OracleDeploymentManager(PlatformManager pm, String instanceId) {
+    public OracleDeploymentManager(String urlEndPoint, ApplicationManager pm, String tenantId, String serviceName) {
         this.pm = pm;
-        this.instanceId = instanceId;
+        this.tenantId = tenantId;
+        this.serviceName = serviceName;
+        this.urlEndPoint = urlEndPoint;
     }
     
     @Override
@@ -85,7 +89,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
         ProgressObjectImpl po = new ProgressObjectImpl(new TargetModuleID[0]/* XXXXXXX */, "Distributing...");
-        Future<DeploymentStatus> task = OracleInstance.deployAsync(pm, f, instanceId, po);
+        Future<DeploymentStatus> task = OracleInstance.deployAsync(urlEndPoint, pm, f, tenantId, serviceName, po);
         return po;
     }
 
