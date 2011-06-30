@@ -17,7 +17,7 @@ enterprise/modules/ext/jsf-1_2/commons-beanutils.jar         Apache-2.0
 enterprise/modules/ext/jsf-1_2/commons-collections.jar       Apache-2.0
 enterprise/modules/ext/jsf-1_2/commons-digester.jar          Apache-2.0
 enterprise/modules/ext/jsf-1_2/commons-logging.jar           Apache-2.0
-enterprise/modules/ext/jsf-2_0                               CDDL-1.0 (see also enterprise/modules/ext/jsf-2_0/THIRDPARTYLICENSEREADME.txt)
+enterprise/modules/ext/jsf-2_1                               CDDL-1.0 (see also enterprise/modules/ext/jsf-2_1/THIRDPARTYLICENSEREADME.txt)
 enterprise/modules/ext/jstl.jar                              Apache-2.0
 enterprise/modules/ext/metro/webservices-rt.jar              CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/metro/webservices-tools.jar           CDDL-1.0, incl. Apache-2.0
@@ -52,8 +52,8 @@ harness/antlib/bindex-2.2.jar                                Apache-2.0
 ide/docs/css21-spec.zip                                      W3C
 ide/docs/html-4.01.zip                                       W3C
 ide/docs/html5doc.zip                                        HTML5DOC
-ide/modules/dict/ispell-enwl-3.1.20.zip                      BSD
-ide/modules/ext/antlr-runtime-3.1.3.jar                      BSD
+ide/modules/dict/ispell-enwl-3.1.20.zip                      BSD-ispell-enwl
+ide/modules/ext/antlr-runtime-3.1.3.jar                      BSD-antlr-runtime
 ide/modules/ext/apache-commons-codec-1.3.jar                 Apache-2.0
 ide/modules/ext/bytelist-0.1.jar                             LGPL-2.1
 ide/modules/ext/commons-httpclient-3.1.jar                   Apache-2.0
@@ -65,29 +65,29 @@ ide/modules/ext/commons-logging-api-1.1.1.jar                Apache-2.0
 ide/modules/ext/commons-net-1.4.1.jar                        Apache-2.0
 ide/modules/ext/flute-1.3.jar                                W3C
 ide/modules/ext/freemarker-2.3.8.jar                         freemarker
-ide/modules/ext/html5-datatypes.jar                          MIT
-ide/modules/ext/html5-parser.jar                             MIT
-ide/modules/ext/icu4j-4_0.jar                                MIT
+ide/modules/ext/html5-datatypes.jar                          MIT-html5-datatypes
+ide/modules/ext/html5-parser.jar                             MIT-html5-parser
+ide/modules/ext/icu4j-4_0.jar                                MIT-icu4j
 ide/modules/ext/ini4j-0.5.1.jar                              Apache-2.0
 ide/modules/ext/io-xml-util.jar                              Apache-2.0
-ide/modules/ext/iri.jar                                      BSD
-ide/modules/ext/isorelax20041111.jar                         MIT
+ide/modules/ext/iri.jar                                      BSD-iri
+ide/modules/ext/isorelax20041111.jar                         MIT-isorelax
 ide/modules/ext/jakarta-oro-2.0.8.jar                        Apache-2.0
 ide/modules/ext/jaxb/jaxb1-impl.jar                          CDDL-1.0, incl. MIT (iso-relax) and BSD (RelaxNG)
-ide/modules/ext/jing.jar                                     BSD
-ide/modules/ext/jsch-0.1.43.jar                              BSD-jsch-variant
+ide/modules/ext/jing.jar                                     BSD-jing
+ide/modules/ext/jsch-0.1.44.jar                              BSD-jsch
 ide/modules/ext/js.jar                                       MPL-1.1
-ide/modules/ext/jvyamlb-0.2.3.jar                            MIT
-ide/modules/ext/jzlib-1.0.7.jar                              BSD-jzlib-variant
+ide/modules/ext/jvyamlb-0.2.3.jar                            MIT-jvyamlb
+ide/modules/ext/jzlib-1.0.7.jar                              BSD-jzlib
 ide/modules/ext/libpam4j-1.1.jar                             MIT
 ide/modules/ext/log4j-1.2.15.jar                             Apache-2.0
 ide/modules/ext/lucene-core-3.0.3.jar                        Apache-2.0
-ide/modules/ext/non-schema.jar                               MIT
+ide/modules/ext/non-schema.jar                               MIT-non-schema
 ide/modules/ext/org.eclipse.mylyn.bugzilla.core_3.3.1.jar    EPL-v10
 ide/modules/ext/org.eclipse.mylyn.commons.core_3.3.1.jar     EPL-v10
 ide/modules/ext/org.eclipse.mylyn.commons.net_3.3.0.jar      EPL-v10
 ide/modules/ext/org.eclipse.mylyn.tasks.core_3.3.1.jar       EPL-v10
-ide/modules/ext/postgresql-8.3-603.jdbc3.jar                 BSD
+ide/modules/ext/postgresql-8.3-603.jdbc3.jar                 BSD-postgresql
 ide/modules/ext/processtreekiller-1.0.1.jar                  MIT
 ide/modules/ext/resolver-1.2.jar                             Apache-2.0
 ide/modules/ext/sac-1.3.jar                                  W3C
@@ -104,7 +104,7 @@ ide/modules/ext/svnkit-1.3.4.jar                             TMate
 ide/modules/ext/svnkit-javahl.jar                            Subversion
 ide/modules/ext/swingx-0.9.5.jar                             LGPL-2.1
 ide/modules/ext/trilead.jar                                  TRILEAD-LICENSE
-ide/modules/ext/validator.jar                                MIT
+ide/modules/ext/validator.jar                                MIT-validator
 ide/modules/ext/webserver.jar                                Apache-1.1
 ide/modules/ext/winp-1.14-patched.jar                        MIT
 ide/modules/ext/xerces-2.8.0.jar                             Apache-2.0
@@ -123,8 +123,8 @@ java/modules/ext/beansbinding-1.2.1.jar                      LGPL-2.1
 java/modules/ext/cglib-2.2.jar                               Apache-2.0
 java/modules/ext/hibernate                                   LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox.jar                        Apache-2.0
-java/modules/ext/maven/indexer-artifact-4.0.0.jar            Apache-2.0
-java/modules/ext/maven/indexer-core-4.0.0.jar                Apache-2.0
+java/modules/ext/maven/indexer-artifact-4.1.0.jar            Apache-2.0
+java/modules/ext/maven/indexer-core-4.1.0.jar                Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                          Apache-JDOM
 java/modules/ext/maven/maven-dependency-tree-1.2.jar         Apache-2.0
 java/modules/ext/spring-3.0/spring-aop-3.0.2.RELEASE.jar     Apache-2.0
@@ -868,7 +868,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ===
 ======
-========================= BSD-jsch-variant =========================
+========================= BSD-jsch =========================
 
 Copyright (c) 2002,2003,2004,2005 Atsuhiko Yamanaka, JCraft,Inc.
 All rights reserved.
@@ -1482,6 +1482,269 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+
+===
+======
+========================= MIT-html5-datatypes =========================
+
+
+Copyright (c) 2006 Henri Sivonen
+Copyright (c) 2007-2010 Mozilla Foundation
+
+Permission is hereby granted, free of charge, to any person obtaining a 
+copy of this software and associated documentation files (the "Software"), 
+to deal in the Software without restriction, including without limitation 
+the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the 
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+DEALINGS IN THE SOFTWARE.
+
+
+===
+======
+========================= MIT-html5-parser =========================
+
+
+This is for the HTML parser as a whole except the rewindable input stream,
+and the Live DOM Viewer. 
+For the copyright notices for individual files, please see individual files.
+
+/*
+ * Copyright (c) 2005, 2006, 2007 Henri Sivonen
+ * Copyright (c) 2007-2009 Mozilla Foundation
+ * Portions of comments Copyright 2004-2007 Apple Computer, Inc., Mozilla 
+ * Foundation, and Opera Software ASA.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in 
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ */
+ 
+The following license is for the rewindable input stream.
+
+/*
+ * Copyright (c) 2001-2003 Thai Open Source Software Center Ltd
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met:
+ *
+ *  * Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above 
+ *    copyright notice, this list of conditions and the following 
+ *    disclaimer in the documentation and/or other materials provided 
+ *    with the distribution.
+ *  * Neither the name of the Thai Open Source Software Center Ltd nor 
+ *    the names of its contributors may be used to endorse or promote 
+ *    products derived from this software without specific prior 
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+ * REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+The following license applies to the Live DOM Viewer:
+
+Copyright (c) 2000, 2006, 2008 Ian Hickson and various contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+===
+======
+========================= MIT-icu4j =========================
+
+
+ICU License - ICU 1.8.1 and later
+
+COPYRIGHT AND PERMISSION NOTICE
+
+Copyright (c) 1995-2008 International Business Machines Corporation and others
+
+All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, and/or sell
+copies of the Software, and to permit persons
+to whom the Software is furnished to do so, provided that the above
+copyright notice(s) and this permission notice appear in all copies
+of the Software and that both the above copyright notice(s) and this
+permission notice appear in supporting documentation.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS. IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM,
+OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER
+RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
+USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Except as contained in this notice, the name of a copyright holder shall not be
+used in advertising or otherwise to promote the sale, use or other dealings in
+this Software without prior written authorization of the copyright holder.
+
+All trademarks and registered trademarks mentioned herein are the property of their respective owners.
+
+
+===
+======
+========================= MIT-isorelax =========================
+
+
+Copyright (c) 2001-2002, SourceForge ISO-RELAX Project (ASAMI Tomoharu, Daisuke
+Okajima, Kohsuke Kawaguchi, and MURATA Makoto)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the
+Software without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+===
+======
+========================= MIT-jvyamlb =========================
+
+
+Copyright (c) 2008 Ola Bini <ola.bini@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of 
+this software and associated documentation files (the "Software"), to deal in 
+the Software without restriction, including without limitation the rights to 
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+SOFTWARE.
+
+
+===
+======
+========================= MIT-non-schema =========================
+
+
+Copyright (c) 2006 Henri Sivonen
+
+Permission is hereby granted, free of charge, to any person obtaining a 
+copy of this software and associated documentation files (the "Software"), 
+to deal in the Software without restriction, including without limitation 
+the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the 
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+DEALINGS IN THE SOFTWARE.
+
+
+===
+======
+========================= MIT-validator =========================
+
+
+Copyright (c) 2005, 2006 Henri Sivonen
+Copyright (c) 2007-2010 Mozilla Foundation
+
+Permission is hereby granted, free of charge, to any person obtaining a 
+copy of this software and associated documentation files (the "Software"), 
+to deal in the Software without restriction, including without limitation 
+the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+and/or sell copies of the Software, and to permit persons to whom the 
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+DEALINGS IN THE SOFTWARE.
 
 
 ===
@@ -2469,7 +2732,197 @@ http://public.ActiveState.com/gsar/APC/ .
 
 ===
 ======
-========================= BSD-jzlib-variant =========================
+========================= BSD-ispell-enwl ========================
+
+
+This file contains the contents of the Ispell (ver 3.1.20) word list after
+being expand from there affix compressed form used by Ispell.
+
+Ispell can be found at http://fmg-www.cs.ucla.edu/geoff/ispell.html.
+This wordlist can be found at http://wordlist.sourceforge.net/
+
+These word lists are under the same copyright as Ispell itself:
+
+  Copyright 1993, Geoff Kuenning, Granada Hills, CA
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+  3. All modifications to the source code must be clearly marked as
+     such.  Binary redistributions based on modified source code
+     must be clearly marked as modified versions in the documentation
+     and/or other materials provided with the distribution.
+  4. All advertising materials mentioning features or use of this software
+     must display the following acknowledgment:
+     This product includes software developed by Geoff Kuenning and
+     other unpaid contributors.
+  5. The name of Geoff Kuenning may not be used to endorse or promote
+     products derived from this software without specific prior
+     written permission.
+
+  THIS SOFTWARE IS PROVIDED BY GEOFF KUENNING AND CONTRIBUTORS ``AS
+  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+  FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL GEOFF
+  KUENNING OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
+
+
+===
+======
+========================= BSD-antlr-runtime =========================
+
+
+Copyright (c) 2003-2008 Terence Parr
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ 3. The name of the author may not be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+===
+======
+========================= BSD-iri =========================
+
+
+(c) Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Hewlett-Packard Development Company, LP
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. The name of the author may not be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+This product includes software developed by the
+Apache Software Foundation (http://www.apache.org/).
+
+
+===
+======
+========================= BSD-jing =========================
+
+
+Copyright (c) 2001-2003 Thai Open Source Software Center Ltd
+Copyright (c) 2008 Mozilla Foundation
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+    Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+    Neither the name of the Thai Open Source Software Center Ltd nor
+    the names of its contributors may be used to endorse or promote
+    products derived from this software without specific prior written
+    permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+===
+======
+========================= BSD-postgresql =========================
+
+
+Copyright (c) 1997-2008, PostgreSQL Global Development Group
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+3. Neither the name of the PostgreSQL Global Development Group nor the names
+   of its contributors may be used to endorse or promote products derived
+   from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+
+===
+======
+========================= BSD-jzlib =========================
 
 
 JZlib 0.0.* were released under the GNU LGPL license.  Later, we have switched 
