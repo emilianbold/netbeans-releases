@@ -46,7 +46,13 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
+@ActionID(id = "org.netbeans.modules.html.palette.HtmlPaletteCustomizerAction", category = "Tools")
+@ActionRegistration(iconInMenu = false, displayName = "#ACT_OpenHTMLCustomizer")
+@ActionReference(path = "Menu/Tools/PaletteManager", position = 200)
 public final class HtmlPaletteCustomizerAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {

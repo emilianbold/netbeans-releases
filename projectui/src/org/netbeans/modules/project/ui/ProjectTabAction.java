@@ -46,6 +46,10 @@ package org.netbeans.modules.project.ui;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -59,10 +63,20 @@ public class ProjectTabAction extends AbstractAction {
     
     private int type;
     
+    @ActionID(id = "org.netbeans.modules.project.ui.physical.tab.action", category = "Project")
+    @ActionRegistration(displayName = "#LBL_ProjectsPhysicalTabAction_Name", iconBase = "org/netbeans/modules/project/ui/resources/filesTab.png")
+    @ActionReferences(value = {
+        @ActionReference(path = "Shortcuts", name = "D-2"),
+        @ActionReference(path = "Menu/Window", position = 200)})
     public static Action projectsPhysical() {
         return new ProjectTabAction( PHYSICAL_NAME, ICON2, 0 );
     }
     
+    @ActionID(id = "org.netbeans.modules.project.ui.logical.tab.action", category = "Project")
+    @ActionRegistration(displayName = "#LBL_ProjectsLogicalTabAction_Name", iconBase = "org/netbeans/modules/project/ui/resources/projectTab.png")
+    @ActionReferences(value = {
+        @ActionReference(path = "Shortcuts", name = "D-1"),
+        @ActionReference(path = "Menu/Window", position = 100)})
     public static Action projectsLogical() {
         return new ProjectTabAction( LOGICAL_NAME, ICON1, 1 );
     }
