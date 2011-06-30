@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.debugger.common2.capture.CaptureInfo;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.Log;
+import org.netbeans.modules.cnd.debugger.dbx.RemoteSupport;
 
 
 /**
@@ -168,6 +169,23 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
         String bridgeName = host.getRemoteStudioLocation() + "/lib/dbx/xstart_bridge_svc" ; // NOI18N
 	NetAddr net_addr = svc.inet_address(false);
 
+	/* LATER CR 6795459
+	HostInfo hostInfo;
+	if (host.isRemote()) {
+	    SecurityStyle securityStyle = new SecurityStyle.Rsh();
+	    // securityStyle = RemoteSupport.securityStyle(host.getSecuritySettings());
+
+	    svc.setSecurityStyle(securityStyle);
+	    hostInfo = new HostInfo(host.getHostName(),
+				    host.getHostLogin(),
+				    securityStyle,
+				    host.getRemoteStudioLocation());
+	} else {
+	    hostInfo = null;
+	}
+	NetAddr net_addr = svc.inet_address(false, hostInfo);
+	*/
+	
 	if (Log.Start.capture_xstart) {
 	    if (!net_addr.parse(net_addr.toString())) {
 		System.out.println("Couldn't parse inet_address"); // NOI18N
