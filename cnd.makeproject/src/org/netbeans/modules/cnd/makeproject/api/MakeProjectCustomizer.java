@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+
 /**
  *
  * @author thp
@@ -49,4 +51,5 @@ public interface MakeProjectCustomizer {
     public String getCustomizerId();
     public String getIconPath();
     public String getMakefileWriter();
+    public String getOutputValue(MakeConfiguration makeConfiguration);
 }
