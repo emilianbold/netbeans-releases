@@ -45,6 +45,8 @@ package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.awt.EventQueue;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.server.CommonServerUIs;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
@@ -108,8 +110,12 @@ public final class ServerManager {
      * @since  1.28
      */
     public static String showAddServerInstanceWizard() {
+        return showAddServerInstanceWizard(Collections.<String, String>emptyMap());
+    }
+    
+    public static String showAddServerInstanceWizard(Map<String, String> props) {
         checkDispatchThread();
-        return AddServerInstanceWizard.showAddServerInstanceWizard();
+        return AddServerInstanceWizard.showAddServerInstanceWizard(props);
     }
     
     private static void checkDispatchThread() {
