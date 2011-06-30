@@ -65,7 +65,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
-ßimport org.openide.util.WeakListeners;
+import org.openide.util.WeakListeners;
 
 /**
  * @author Jan Becicka
