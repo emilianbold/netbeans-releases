@@ -39,6 +39,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="m_isBaseClassStateChanged"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_isBaseClassActionPerformed"/>
           </Events>
           <AuxValues>
@@ -71,6 +72,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="m_overridersStateChanged"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_overridersActionPerformed"/>
           </Events>
           <AuxValues>
@@ -98,6 +100,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="m_usagesStateChanged"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_usagesActionPerformed"/>
           </Events>
           <AuxValues>

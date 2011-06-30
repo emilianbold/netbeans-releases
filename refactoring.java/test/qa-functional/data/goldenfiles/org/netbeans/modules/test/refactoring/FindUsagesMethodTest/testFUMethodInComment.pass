@@ -2,6 +2,6 @@ Usages of <b>Test.method</b> [4 occurrences]
     RefactoringTest
         User.java
             <font color=#000000>*</font>&nbsp;<font color=#000000>user</font>&nbsp;<font color=#000000>of</font>&nbsp;<b>method</b>
-            <font color=#000000>t</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font>
-            <font color=#0000e6>new</font>&nbsp;<font color=#000000>Test</font><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font>
-            <font color=#000000>(</font><font color=#000000>(</font><font color=#000000>Test</font><font color=#000000>)</font><font color=#0000e6>new</font>&nbsp;<font color=#000000>Object</font><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>)</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font>
+            <font color=#000000>t</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>
+            <font color=#0000e6>new</font>&nbsp;<font color=#000000>Test</font><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>
+            <font color=#000000>(</font><font color=#000000>(</font><font color=#000000>Test</font><font color=#000000>)</font><font color=#0000e6>new</font>&nbsp;<font color=#000000>Object</font><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>)</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>

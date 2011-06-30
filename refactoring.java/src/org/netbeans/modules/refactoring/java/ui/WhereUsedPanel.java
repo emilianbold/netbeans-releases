@@ -326,6 +326,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         methodsPanel.setLayout(new java.awt.GridBagLayout());
 
         m_isBaseClass.setSelected(true);
+        m_isBaseClass.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                m_isBaseClassStateChanged(evt);
+            }
+        });
         m_isBaseClass.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 m_isBaseClassActionPerformed(evt);
@@ -349,6 +354,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         methodsPanel.add(jPanel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(m_overriders, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindOverridingMethods")); // NOI18N
+        m_overriders.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                m_overridersStateChanged(evt);
+            }
+        });
         m_overriders.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 m_overridersActionPerformed(evt);
@@ -365,6 +375,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         m_usages.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
         m_usages.setMargin(new java.awt.Insets(10, 2, 2, 2));
+        m_usages.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                m_usagesStateChanged(evt);
+            }
+        });
         m_usages.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 m_usagesActionPerformed(evt);
@@ -494,6 +509,18 @@ private void scopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     private void m_usagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_usagesActionPerformed
         parent.stateChanged(null);
     }//GEN-LAST:event_m_usagesActionPerformed
+
+private void m_isBaseClassStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_m_isBaseClassStateChanged
+        parent.stateChanged(null);
+}//GEN-LAST:event_m_isBaseClassStateChanged
+
+private void m_overridersStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_m_overridersStateChanged
+        parent.stateChanged(null);
+}//GEN-LAST:event_m_overridersStateChanged
+
+private void m_usagesStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_m_usagesStateChanged
+        parent.stateChanged(null);
+}//GEN-LAST:event_m_usagesStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup;

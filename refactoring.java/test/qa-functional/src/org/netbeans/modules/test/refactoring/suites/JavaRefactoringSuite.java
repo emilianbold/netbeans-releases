@@ -45,16 +45,18 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.FindUsagesClassTest;
 import org.netbeans.modules.test.refactoring.FindUsagesMethodTest;
+import org.netbeans.modules.test.refactoring.MoveTest;
+import org.netbeans.modules.test.refactoring.RenameTest;
 
 /**
  *
  * @author Jiri Prox Jiri.Prox@SUN.Com
  */
-public class FindUsagesSuite {
+public class JavaRefactoringSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(FindUsagesClassTest.class).addTest(FindUsagesClassTest.class).addTest(FindUsagesMethodTest.class));
+                NbModuleSuite.createConfiguration(FindUsagesClassTest.class).addTest(FindUsagesMethodTest.class).addTest(MoveTest.class).addTest(RenameTest.class));
     }
         
 }
