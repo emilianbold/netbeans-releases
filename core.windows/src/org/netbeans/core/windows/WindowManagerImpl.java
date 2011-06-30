@@ -430,6 +430,18 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
 
     /**
+     * User restored the whole mode from minimized state.
+     * @param slidingMode Sliding mode to be searched for minimized TopComponents
+     * @param modeToRestore Mode to restored from minimized state.
+     * @since 2.35
+     */
+    public void userRestoredMode( ModeImpl slidingMode, ModeImpl modeToRestore ) {
+        assertEventDispatchThread();
+        
+        getCentral().userRestoredMode( slidingMode, modeToRestore );
+    }
+
+    /**
      * User closed the whole mode.
      * @param mode 
      * @since 2.30
