@@ -138,7 +138,7 @@ public class ExportDiffAction extends ContextAction {
         if ((root == null) || root.getPath().equals(""))                //NOI18N
             return;
         final String revStr = repoRev.getLog().getRevisionNumber();
-        ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, null, fileToDiff) {
+        ExportDiff exportDiffSupport = new ExportDiff(root, repoRev.getLog(), null, fileToDiff) {
             @Override
             public void writeDiffFile (final File toFile) {
                 saveFolderToPrefs(toFile);
@@ -162,7 +162,7 @@ public class ExportDiffAction extends ContextAction {
         final File root = repoRev.getRepositoryRoot();
         if ((root == null) || root.getPath().equals(""))                //NOI18N
             return;
-        ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, roots) {
+        ExportDiff exportDiffSupport = new ExportDiff(root, repoRev.getLog(), roots) {
             @Override
             public void writeDiffFile (final File toFile) {
                 final String revStr = repoRev.getLog().getRevisionNumber();

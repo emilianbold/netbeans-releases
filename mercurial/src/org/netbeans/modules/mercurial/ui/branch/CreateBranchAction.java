@@ -48,6 +48,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
@@ -96,6 +97,7 @@ public class CreateBranchAction extends ContextAction {
                     logger.outputInRed(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_TITLE_SEP")); //NOI18N
                     logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_INFO_SEP", branchName, root.getAbsolutePath())); //NOI18N
                     HgCommand.markBranch(root, branchName, logger);
+                    WorkingCopyInfo.refreshAsync(root);
                     logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_WC_MARKED", branchName)); //NOI18N
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing

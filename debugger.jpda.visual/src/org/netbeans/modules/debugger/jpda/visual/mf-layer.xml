@@ -73,4 +73,25 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="eventsView.settings" url="resources/events.settings"/>
+        </folder>
+
+        <folder name="Modes">
+            <folder name="output">
+                <file name="events.wstcref" url="resources/events.wstcref">
+                    <attr name="position" intvalue="900"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="Groups">
+            <folder name="debugger">
+                <file name="eventsView.wstcgrp" url="resources/events.wstcgrp"/>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
