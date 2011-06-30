@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,56 +40,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.core.jaxws.actions;
 
-package org.netbeans.swing.tabcontrol;
+import java.util.Collection;
+import java.util.Map;
 
 
-/*
- * Data model of slide bar. It's the same as TabDataModel, but has
- * orientation property in addition.
+/**
+ * @author ads
  *
- * @author Dafe Simonek
  */
-public interface SlideBarDataModel extends TabDataModel {
+public interface WLPolicyClientCodeGenerator {
 
-    public static final int EAST = 1;
-    public static final int WEST = 2;
-    public static final int SOUTH = 3;
-    /**
-     * @since 1.27
-     */
-    public static final int NORTH = 4;
-
-    /** Orientation of slide bar
-     */
-    public int getOrientation ();
-
-    /** Sets orientation of slide bar, possible values are EAST, WEST, SOUTH.
-     */
-    public void setOrientation (int orientation);
-
-    /* Basic implementation of SlideBarDataModel.
-     */
-    public static class Impl extends DefaultTabDataModel implements SlideBarDataModel {
-
-        /** Holds orientation of slide bar */
-        private int orientation = EAST;
-
-        /** Constructs new data model */
-        public Impl () {
-            super();
-        }
-
-        @Override
-        public int getOrientation() {
-            return orientation;
-        }
-
-        @Override
-        public void setOrientation(int orientation) {
-            this.orientation = orientation;
-        }
-        
-    } // end of Impl
+    String getPolicyId();
     
+    String getPolicyAccessCode( Map<String,Object> context );
+    
+    Collection<String> getRequiredImports();
+    
+    Collection<String> getGeneratoinClientIds();
+    
+    String getDefaultGenerationClientId();
+    
+    void extendsProjectClasspath( Map<String,Object> context );
 }

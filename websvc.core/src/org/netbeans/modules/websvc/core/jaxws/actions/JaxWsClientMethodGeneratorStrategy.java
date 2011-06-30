@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,56 +40,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.core.jaxws.actions;
 
-package org.netbeans.swing.tabcontrol;
+import java.util.Map;
+
+import javax.swing.text.Document;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.openide.filesystems.FileObject;
 
 
-/*
- * Data model of slide bar. It's the same as TabDataModel, but has
- * orientation property in addition.
+/**
+ * @author ads
  *
- * @author Dafe Simonek
  */
-public interface SlideBarDataModel extends TabDataModel {
-
-    public static final int EAST = 1;
-    public static final int WEST = 2;
-    public static final int SOUTH = 3;
-    /**
-     * @since 1.27
-     */
-    public static final int NORTH = 4;
-
-    /** Orientation of slide bar
-     */
-    public int getOrientation ();
-
-    /** Sets orientation of slide bar, possible values are EAST, WEST, SOUTH.
-     */
-    public void setOrientation (int orientation);
-
-    /* Basic implementation of SlideBarDataModel.
-     */
-    public static class Impl extends DefaultTabDataModel implements SlideBarDataModel {
-
-        /** Holds orientation of slide bar */
-        private int orientation = EAST;
-
-        /** Constructs new data model */
-        public Impl () {
-            super();
-        }
-
-        @Override
-        public int getOrientation() {
-            return orientation;
-        }
-
-        @Override
-        public void setOrientation(int orientation) {
-            this.orientation = orientation;
-        }
-        
-    } // end of Impl
+public interface JaxWsClientMethodGeneratorStrategy {
     
+    String STRATEGY = "strategy";       // NOI18N
+    
+    
+    /**
+     * Checks is this strategy is applicable to the context given by arguments.
+     * @param client
+     * @param project
+     * @param wsdlFileObject
+     * @param wsdlUrl
+     * @param context additional context which can be initialized in this method and will be passed to the other methods
+     * @return
+     */
+    boolean isApplicable(Client client , Project project, FileObject wsdlFileObject, 
+            String wsdlUrl , Map<String,Object> context );
+    
+    void insertMethod(Document document, int pos, WsdlService service,
+            WsdlPort port, WsdlOperation operation,  FileObject wsdlFileObject, 
+            String wsdlUrl, Map<String,Object> context);
+    
+    void insertDispatchMethod(Document document, int pos, WsdlService service,
+            WsdlPort port, WsdlOperation operation,  FileObject wsdlFileObject, 
+            String wsdlUrl,  Map<String,Object> context);
+    
+
 }
