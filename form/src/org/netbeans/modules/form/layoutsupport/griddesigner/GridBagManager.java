@@ -210,13 +210,9 @@ public class GridBagManager implements GridManager {
         int oldGridHeight = info.getGridHeight(component);
         int oldXEnd = oldGridX + oldGridWidth;
         int oldYEnd = oldGridY + oldGridHeight;
-        // Keeping REMAINDER/RELATIVE size/position where it seems to be appropriate
-        if (oldGridX != gridX) {
-            setGridX(component, gridX);
-        }
-        if (oldGridY != gridY) {
-            setGridY(component, gridY);
-        }
+        // Keeping REMAINDER/RELATIVE size where it seems to be appropriate
+        setGridX(component, gridX);
+        setGridY(component, gridY);
         if ((widthAbsolute && oldGridWidth != gridWidth) || (oldXEnd != gridX + gridWidth)) {
             setGridWidth(component, gridWidth);
         }
@@ -308,17 +304,13 @@ public class GridBagManager implements GridManager {
                 int height = info.getGridHeight(component);
                 boolean widthRemainder = info.getGridWidthRemainder(component);
                 boolean widthRelative = info.getGridWidthRelative(component);
-                boolean posXRelative = info.getGridXRelative(component);
                 setGridPosition(component, newX, y, newWidth, height);
-                // Insertion of a column shouldn't override REMAINDER/RELATIVE width/position
+                // Insertion of a column shouldn't override REMAINDER/RELATIVE width
                 if (widthRemainder) {
                     setGridWidth(component, GridBagConstraints.REMAINDER);
                 }
                 if (widthRelative) {
                     setGridWidth(component, GridBagConstraints.RELATIVE);
-                }
-                if (posXRelative) {
-                    setGridX(component, GridBagConstraints.RELATIVE);
                 }
             }
         }
@@ -344,17 +336,13 @@ public class GridBagManager implements GridManager {
                     int height = info.getGridHeight(component);
                     boolean widthRemainder = info.getGridWidthRemainder(component);
                     boolean widthRelative = info.getGridWidthRelative(component);
-                    boolean posXRelative = info.getGridXRelative(component);
                     setGridPosition(component, newX, y, newWidth, height);
-                    // Deletion of a column shouldn't override REMAINDER/RELATIVE width/position
+                    // Deletion of a column shouldn't override REMAINDER/RELATIVE width
                     if (widthRemainder) {
                         setGridWidth(component, GridBagConstraints.REMAINDER);
                     }
                     if (widthRelative) {
                         setGridWidth(component, GridBagConstraints.RELATIVE);
-                    }
-                    if (posXRelative) {
-                        setGridX(component, GridBagConstraints.RELATIVE);
                     }
                 }
             } 
@@ -378,17 +366,13 @@ public class GridBagManager implements GridManager {
                 int width = info.getGridWidth(component);
                 boolean heightRemainder = info.getGridHeightRemainder(component);
                 boolean heightRelative = info.getGridHeightRelative(component);
-                boolean posYRelative = info.getGridYRelative(component);
                 setGridPosition(component, x, newY, width, newHeight);
-                // Insertion of a row shouldn't override REMAINDER/RELATIVE height/position
+                // Insertion of a row shouldn't override REMAINDER/RELATIVE height
                 if (heightRemainder) {
                     setGridHeight(component, GridBagConstraints.REMAINDER);
                 }
                 if (heightRelative) {
                     setGridHeight(component, GridBagConstraints.RELATIVE);
-                }
-                if (posYRelative) {
-                    setGridY(component, GridBagConstraints.RELATIVE);
                 }
             }
         }
@@ -414,17 +398,13 @@ public class GridBagManager implements GridManager {
                     int width = info.getGridWidth(component);
                     boolean heightRemainder = info.getGridHeightRemainder(component);
                     boolean heightRelative = info.getGridHeightRelative(component);
-                    boolean posYRelative = info.getGridYRelative(component);
                     setGridPosition(component, x, newY, width, newHeight);
-                    // Deletion of a row shouldn't override REMAINDER/RELATIVE height/position
+                    // Deletion of a row shouldn't override REMAINDER/RELATIVE height
                     if (heightRemainder) {
                         setGridHeight(component, GridBagConstraints.REMAINDER);
                     }
                     if (heightRelative) {
                         setGridHeight(component, GridBagConstraints.RELATIVE);
-                    }
-                    if (posYRelative) {
-                        setGridY(component, GridBagConstraints.RELATIVE);
                     }
                 }
             }

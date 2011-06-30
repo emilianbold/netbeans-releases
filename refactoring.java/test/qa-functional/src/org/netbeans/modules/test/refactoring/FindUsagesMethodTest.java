@@ -41,11 +41,8 @@
  */
 package org.netbeans.modules.test.refactoring;
 
-import java.awt.Component;
-import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -59,6 +56,7 @@ import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator
 /**
  *
  * @author Jiri Prox 
+ * @author Ralph Ruijs
  */
 public class FindUsagesMethodTest extends FindUsagesTestCase {
 
@@ -99,8 +97,7 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
             findUsagesClassOperator.getFindMethodUsage().setSelected(false);
             findUsagesClassOperator.getFindFromBaseClass().setSelected(false);
             new EventTool().waitNoEvent(500);
-            String text = findUsagesClassOperator.getLabel().getText();            
-            ref(text);
+            assertEquals(false, findUsagesClassOperator.getFind().isEnabled());
         } finally {
             if (findUsagesClassOperator != null)
                 findUsagesClassOperator.getCancel().push();
@@ -170,7 +167,7 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
         findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
         setBrowseChild(true);
-        RefactoringResultOperator furo = new RefactoringResultOperator();
+        RefactoringResultOperator furo = RefactoringResultOperator.getFindUsagesResult();
         JTabbedPane tabbedPane = furo.getTabbedPane();
         assertNotNull(tabbedPane);
         String title = tabbedPane.getTitleAt(tabbedPane.getTabCount()-1);
@@ -180,26 +177,6 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
 
     public void testFUConstructor() {                                
         findUsages("fumethod", "Test", 18, 13, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS);
-    }
-    
-    public void test(Component source,int level,int no) { 
-        if(level==0) System.out.println("--------------------------");
-        for(int j = 0;j<level;j++) System.out.print("  ");
-        System.out.print(no);
-        System.out.println(source.getClass().getName());
-        if(!(source instanceof JComponent)) return;                    
-        Component[] components = ((JComponent) source).getComponents();        
-        for (int i = 0; i < components.length; i++) {
-            Component component = components[i];            
-            test(component, level+1,i);
-            
-        }                                
-        if(level==0) System.out.println("--------------------------");
-    }
-    
-    
-    public static void main(String[] args) {
-        TestRunner.run(new FindUsagesMethodTest("testFUConstructor"));
     }
     
     public static Test suite() {
