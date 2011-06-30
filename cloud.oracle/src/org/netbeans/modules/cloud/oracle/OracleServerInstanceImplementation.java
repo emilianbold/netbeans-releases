@@ -43,7 +43,10 @@ package org.netbeans.modules.cloud.oracle;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.oracle.ui.OracleInstanceNode;
+import org.netbeans.modules.cloud.oracle.ui.OracleWizardComponent;
 import org.netbeans.modules.cloud.oracle.ui.RootNode;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
@@ -81,8 +84,20 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
 
     @Override
     public JComponent getCustomizer() {
-        // TODO: show customizer of AWS credentials, region, etc.
-        return new JLabel("TO BE IMPLEMENTED");
+        final OracleWizardComponent panel = new OracleWizardComponent(ai);
+        panel.attachSingleListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                ai.setServiceName(panel.getServiceName());
+                ai.setTenantId(panel.getTenantId());
+                ai.setTenantPassword(panel.getPassword());
+                ai.setTenantUserName(panel.getUserName());
+                ai.setUrlEndpoint(panel.getUrl());
+                OracleInstanceManager.getDefault().update(ai);
+            }
+        });
+        return panel;
     }
 
     @Override
@@ -94,5 +109,5 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
     public boolean isRemovable() {
         return true;
     }
-    
+
 }

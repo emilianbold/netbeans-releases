@@ -63,6 +63,8 @@ public class OracleInstanceManager {
     private static final String TENANT_PASSWORD = "tenant-password"; // NOI18N
     private static final String NAME = "name"; // NOI18N
     private static final String URL_ENDPOINT = "url-endpoint"; // NOI18N
+    private static final String TENANT_ID = "tenant-id"; // NOI18N
+    private static final String SERVICE_NAME = "service-name"; // NOI18N
     
     private static OracleInstanceManager instance;
     private List<OracleInstance> instances = new ArrayList<OracleInstance>();
@@ -110,9 +112,23 @@ public class OracleInstanceManager {
         Keyring.save(PREFIX+TENANT_PASSWORD+"."+ai.getName(), ai.getTenantPassword().toCharArray(), "Oracle Cloud 9 Password"); // NOI18N
         
         props.putString(URL_ENDPOINT, ai.getUrlEndpoint());
+        props.putString(TENANT_ID, ai.getTenantId());
+        props.putString(SERVICE_NAME, ai.getServiceName());
         props.putString(NAME, ai.getName());
     }
-    
+        
+    public void update(OracleInstance ai) {
+        for(InstanceProperties props : InstancePropertiesManager.getInstance().getProperties(ORACLE_IP_NAMESPACE)) {
+            String name = props.getString(NAME, null); // NOI18N
+            if (name.equals(ai.getName())) {
+                props.putString(URL_ENDPOINT, ai.getUrlEndpoint());
+                props.putString(TENANT_ID, ai.getTenantId());
+                props.putString(SERVICE_NAME, ai.getServiceName());
+                props.putString(NAME, ai.getName());
+                break;
+            }
+        }
+    }
     
     private static List<OracleInstance> load() {
         List<OracleInstance> result = new ArrayList<OracleInstance>();
@@ -136,7 +152,11 @@ public class OracleInstanceManager {
             }
             String password = new String(ch);
             assert password != null : "password is missing for "+name; // NOI18N
-            result.add(new OracleInstance(name, userName, password, url));
+            String tenant = props.getString(TENANT_ID, null); // NOI18N
+            assert tenant != null : "Instance without tenant ID";
+            String service = props.getString(SERVICE_NAME, null); // NOI18N
+            assert service != null : "Instance without service name";
+            result.add(new OracleInstance(name, userName, password, url, tenant, service));
         }
         return result;
     }

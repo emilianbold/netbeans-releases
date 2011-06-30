@@ -55,7 +55,7 @@ public class PropertiesAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         OracleInstance ai = activatedNodes[0].getLookup().lookup(OracleInstance.class);
-        CommonServerUIs.showCustomizer(ai.getServerInstance());
+        CommonServerUIs.showCloudCustomizer(ai.getServerInstance());
     }
 
     @Override

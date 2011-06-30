@@ -51,12 +51,14 @@ public class OracleJ2EEInstance {
    
     private OracleInstance oracleInstance;
     private InstanceState state;
-    private String instanceId;
+    private String tenantId;
+    private String serviceName;
 
-    public OracleJ2EEInstance(OracleInstance oracleInstance, String instanceId) {
+    public OracleJ2EEInstance(OracleInstance oracleInstance, String tenantId, String serviceName) {
         this.oracleInstance = oracleInstance;
         this.state = InstanceState.READY;
-        this.instanceId = instanceId;
+        this.tenantId = tenantId;
+        this.serviceName = serviceName;
     }
 
     public OracleInstance getOracleInstance() {
@@ -105,20 +107,24 @@ public class OracleJ2EEInstance {
     }
     
     public String getId() {
-        return createURL(getInstanceId(), oracleInstance.getTenantUserName());
+        return createURL(getTenantId(), getServiceName());
     }
     
-    public static String createURL(String instanceId, String tenantId) {
-        return OracleDeploymentFactory.ORACLE_URI+instanceId + "-" +tenantId;
+    public static String createURL(String tenantId, String serviceName) {
+        return OracleDeploymentFactory.ORACLE_URI+tenantId + "." +serviceName;
     }
 
-    public String getInstanceId() {
-        return instanceId;
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public String getTenantId() {
+        return tenantId;
     }
 
     @Override
     public String toString() {
-        return "OracleJ2EEInstance{" + "oracleInstance=" + oracleInstance + ", state=" + state + ", instanceId=" + instanceId + '}';
+        return "OracleJ2EEInstance{" + "oracleInstance=" + oracleInstance + ", state=" + state + ", tenantId=" + tenantId + ", serviceName=" + serviceName + '}';
     }
 
 }

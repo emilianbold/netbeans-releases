@@ -79,8 +79,12 @@ public class OracleWizardIterator implements WizardDescriptor.InstantiatingItera
         assert url != null;
         String name = (String)wizard.getProperty(PROP_DISPLAY_NAME);
         assert name != null;
+        String tenant = (String)wizard.getProperty(OracleWizardPanel.TENANT_ID);
+        assert tenant != null;
+        String service = (String)wizard.getProperty(OracleWizardPanel.SERVICE_NAME);
+        assert service != null;
         
-        OracleInstanceManager.getDefault().add(new OracleInstance(name, username, pwd, url));
+        OracleInstanceManager.getDefault().add(new OracleInstance(name, username, pwd, url, tenant, service));
         
         return Collections.emptySet();
     }

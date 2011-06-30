@@ -46,7 +46,9 @@ import java.net.URL;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import oracle.nuviaq.api.PlatformManagerConnectionFactory;
+import javax.management.ObjectInstance;
+import oracle.nuviaq.api.ApplicationManagerConnectionFactory;
+import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.Exceptions;
 
@@ -57,7 +59,8 @@ public class OracleDeploymentFactory implements DeploymentFactory {
 
     public static final String ORACLE_URI = "oracle:";  // NOI18N
 
-    public static final String IP_INSTANCE_ID = "instance-id";  // NOI18N
+    public static final String IP_TENANT_ID = "tenant-id";  // NOI18N
+    public static final String IP_SERVICE_NAME = "service-name";  // NOI18N
     public static final String IP_URL_ENDPOINT = "url-endpoint";  // NOI18N
     
     @Override
@@ -69,24 +72,22 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     public DeploymentManager getDeploymentManager(String uri, String username,
             String password) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
-        try {
-            return new OracleDeploymentManager(
-                    PlatformManagerConnectionFactory.createServiceEndpoint(
-                        new URL(props.getProperty(IP_URL_ENDPOINT)), 
-                        username,
-                        password),
-                    props.getProperty(IP_INSTANCE_ID));
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
+        return new OracleDeploymentManager(props.getProperty(IP_URL_ENDPOINT), 
+                OracleInstance.createApplicationManager(
+                    props.getProperty(IP_URL_ENDPOINT), 
+                    username,
+                    password),
+                props.getProperty(IP_TENANT_ID),
+                props.getProperty(IP_SERVICE_NAME));
     }
 
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         // XXX
         return new OracleDeploymentManager(
+                "",
                 null,
+                "",
                 "");
     }
 
