@@ -594,6 +594,9 @@ public final class EditorContextDispatcher {
                             mostRecentEditorCookieRef = new WeakReference<EditorCookie>(newEditor);
                         }
                     }
+                    if (newEditor == null) {
+                        currentOpenedPane = NO_EDITOR;
+                    }
                 }
                 if (newEditor != null) {
                     SwingUtilities.invokeLater(new Runnable() {

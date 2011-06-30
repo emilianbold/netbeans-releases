@@ -370,7 +370,7 @@ public final class Startup {
             System.err.println( "While loading: " + uiClassName ); // NOI18N
             e.printStackTrace();
         }
-        return findDefaultCustoms();
+        return null;
     }
     
     private LFCustoms findDefaultCustoms() {

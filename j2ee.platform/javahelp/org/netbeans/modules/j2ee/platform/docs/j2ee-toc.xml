@@ -19,7 +19,8 @@ Other names may be trademarks of their respective owners.
         <tocitem text="Getting Started">
             <tocitem text="Enterprise Applications" target="ent_app_process" />
             <tocitem text="Web Services" target="ws_process" />
-            <tocitem text="Web Service Clients" target="wsc_process" />
+            <tocitem text="SOAP Web Service Clients" target="wsc_process" />
+            <tocitem text="RESTful Web Service Clients" target="wsc_rest_process" />
         </tocitem>
     </tocitem>
     <tocitem text="Java Applications">

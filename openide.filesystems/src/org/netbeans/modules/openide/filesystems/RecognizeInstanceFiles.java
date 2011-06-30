@@ -71,8 +71,18 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
     private static final Logger LOG = Logger.getLogger(RecognizeInstanceFiles.class.getName());
     
     
+    @Override
     public Lookup create(String path) {
         return new OverFiles(path);
+    }        
+    @Override
+    public <T> T lookupObject(String path, Class<T> type) {
+        FileObject fo = FileUtil.getConfigFile(path);
+        if (fo != null && fo.isData()) {
+            Object res = FOItem.createInstanceFor(fo, Object.class);
+            return type.isInstance(res) ? type.cast(res) : null;
+        }
+        return null;
     }        
     
     
@@ -216,21 +226,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         public synchronized Object getInstance() {
             Object r = ref.get();
             if (r == null) {
-                r = fo.getAttribute("instanceCreate");
-                if (r == null) {
-                    try {
-                        Class<?> type = getType();
-                        if (SharedClassObject.class.isAssignableFrom(type)) {
-                            r = SharedClassObject.findObject(type.asSubclass(SharedClassObject.class), true);
-                        } else {
-                            r = type.newInstance();
-                        }
-                    } catch (InstantiationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IllegalAccessException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
+                r = createInstanceFor(fo, Object.class);
                 if (r != null) {
                     ref = new WeakReference<Object>(r);
                 }
@@ -238,13 +234,36 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             return r;
         }
 
+        static <T> T createInstanceFor(FileObject f, Class<T> resultType) {
+            Object r = f.getAttribute("instanceCreate");
+            if (r == null) {
+                try {
+                    Class<?> type = findTypeFor(f);
+                    if (SharedClassObject.class.isAssignableFrom(type)) {
+                        r = SharedClassObject.findObject(type.asSubclass(SharedClassObject.class), true);
+                    } else {
+                        r = type.newInstance();
+                    }
+                } catch (InstantiationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return resultType.isInstance(r) ? resultType.cast(r) : null;
+        }
+
         public Class<? extends Object> getType() {
+            return findTypeFor(fo);
+        }
+
+        private static Class<? extends Object> findTypeFor(FileObject f) {
             ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
             if (l == null) {
                 l = FOItem.class.getClassLoader();
             }
             try {
-                return Class.forName(getClassName(fo), false, l);
+                return Class.forName(getClassName(f), false, l);
             } catch (ClassNotFoundException ex) {
                 LOG.log(Level.INFO, ex.getMessage(), ex);
                 return Object.class;
