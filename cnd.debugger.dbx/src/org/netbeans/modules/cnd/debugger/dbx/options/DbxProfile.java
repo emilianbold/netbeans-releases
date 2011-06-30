@@ -307,13 +307,13 @@ public class DbxProfile extends DbgProfile {
 	set.setName(Catalog.get("DebuggingPerformance"));
 	set.setDisplayName(Catalog.get("DebuggingPerformance"));
 	set.setShortDescription(Catalog.get("DebuggingPerformance"));
-	set.put(DebuggerOption.STACK_VERBOSE.createNodeProp(this));
-	set.put(DebuggerOption.STACK_MAX_SIZE.createNodeProp(this));
-	set.put(DebuggerOption.OUTPUT_MAX_OBJECT_SIZE.createNodeProp(this));
+//	set.put(DebuggerOption.STACK_VERBOSE.createNodeProp(this));
+//	set.put(DebuggerOption.STACK_MAX_SIZE.createNodeProp(this));
+//	set.put(DebuggerOption.OUTPUT_MAX_OBJECT_SIZE.createNodeProp(this));
 //	set.put(DebuggerOption.RTC_USE_TRAPS.createNodeProp(this));
 	set.put(DebuggerOption.OUTPUT_AUTO_FLUSH.createNodeProp(this));
 	set.put(DebuggerOption.SYMBOL_INFO_COMPRESSION.createNodeProp(this));
-	set.put(DebuggerOption.MT_SCALABLE.createNodeProp(this));
+//	set.put(DebuggerOption.MT_SCALABLE.createNodeProp(this));
 	sheet.put(set);
 	
 	set = new Sheet.Set();

@@ -264,7 +264,7 @@ class LoadobjsPanel extends JPanel implements PropertyChangeListener, HelpCtx.Pr
 	loadobjTable.setAutoCreateColumnsFromModel(false);
 
 	TableModel tableModel =  loadobjTable.getModel();
-	((ListTableModel)tableModel).setColumnClass(Boolean.class, 1); // customize it ot checkebox
+	((ListTableModel)tableModel).setColumnClass(Boolean.class, 1); // customize column 1 to checkbox
 
 	int gridy = 0;
 
