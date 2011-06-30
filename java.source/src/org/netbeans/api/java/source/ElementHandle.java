@@ -49,6 +49,8 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
+import java.security.Signature;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -553,6 +555,11 @@ public final class ElementHandle<T extends Element> {
         @Override
         public <T extends Element> T resolve(ElementHandle<T> handle, JavacTaskImpl jti) {
             return handle.resolveImpl (jti);
+        }
+
+        @Override
+        public String[] getVMSignature(ElementHandle<?> handle) {
+            return Arrays.copyOf(handle.signatures, handle.signatures.length);
         }
     }
     

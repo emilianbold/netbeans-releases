@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,40 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.source;
 
-import com.sun.tools.javac.api.JavacTaskImpl;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.java.source.WhiteListQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class ElementHandleAccessor {
-
-    public static ElementHandleAccessor INSTANCE;
-
-    static {
-        Class c = ElementHandle.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+@ServiceProvider(service=WhiteListQueryImplementation.class, position=100)
+public class ProjectWhiteListQueryImpl implements WhiteListQueryImplementation {
+    @Override
+    public WhiteListImplementation getWhiteList(FileObject file) {
+        final Project project = FileOwnerQuery.getOwner(file);
+        if (project != null) {
+            final WhiteListQueryImplementation delegate = project.getLookup().lookup(WhiteListQueryImplementation.class);
+            if (delegate != null) {
+                return delegate.getWhiteList(file);
+            }
         }
+        return null;
     }
-
-    /** Creates a new instance of ElementHandleAccessor */
-    protected ElementHandleAccessor() {
-    }
-    
-    
-    public abstract ElementHandle create (ElementKind kind, String... descriptors);
-    
-    public abstract <T extends Element> T resolve (ElementHandle<T> handle, JavacTaskImpl jti);
-        
-    public abstract String[] getVMSignature(ElementHandle<?> handle);
 }
