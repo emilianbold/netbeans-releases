@@ -70,6 +70,7 @@ import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -91,7 +92,7 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @MultiViewElement.Registration(
         displayName = "#CTL_SourceTabCaption",
-        iconBase = "org/netbeans/modules/groovy/editor/resources/class.png",
+        iconBase = GroovySources.GROOVY_FILE_ICON_16x16,
         mimeType = "text/x-groovy",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "groovy.source",
