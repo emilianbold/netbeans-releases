@@ -189,7 +189,7 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
                     TokenSequence<?> tokenSequence = scanner.tokenSequence();
                     if (tokenSequence==null) {
                         //#199027
-                        Exceptions.printStackTrace(new NullPointerException(scanner.toString()));
+                        //inactive hierarchy, no next
                         return false;
                     }
                     TokenSequence<?> seq = tokenSequence.subSequence(startOffset, endOffset);
