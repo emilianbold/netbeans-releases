@@ -65,6 +65,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mercurial.options.AnnotationColorProvider;
+import org.netbeans.modules.mercurial.ui.add.AddAction;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
@@ -321,6 +322,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             actions.add(SystemAction.get(DiffAction.class));
             actions.add(SystemAction.get(UpdateAction.class));
             actions.add(SystemAction.get(CommitAction.class));
+            actions.add(SystemAction.get(AddAction.class));
             actions.add(null);
             actions.add(new ExportMenu());
             actions.add(SystemAction.get(ImportDiffAction.class));
@@ -370,6 +372,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"), context)); //NOI18N
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_Resolve"), context)); //NOI18N
                 if (!onlyProjects  && !onlyFolders) {
