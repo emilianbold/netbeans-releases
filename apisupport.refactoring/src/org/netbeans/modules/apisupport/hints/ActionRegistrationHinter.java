@@ -187,9 +187,9 @@ public class ActionRegistrationHinter implements Hinter {
             }
             params.put("displayName", displayName);
             params.put("iconBase", file.getAttribute("iconBase"));
-            Boolean noIconInMenu = (Boolean) file.getAttribute("noIconInMenu");
-            if (noIconInMenu != null) {
-                params.put("iconInMenu", !noIconInMenu);
+            Object noIconInMenu = file.getAttribute("noIconInMenu");
+            if (noIconInMenu instanceof Boolean) {
+                params.put("iconInMenu", !((Boolean) noIconInMenu));
             }
             params.put("asynchronous", file.getAttribute("asynchronous"));
             nue = ctx.addAnnotation(wc, nue, "org.openide.awt.ActionRegistration", params);
@@ -207,8 +207,8 @@ public class ActionRegistrationHinter implements Hinter {
                     if (!name.equals(file.getName())) {
                         arguments.add(make.Assignment(make.Identifier("name"), make.Literal(name)));
                     }
-                    Integer pos = (Integer) shadow.getAttribute("position");
-                    if (pos != null) {
+                    Object pos = shadow.getAttribute("position");
+                    if (pos instanceof Integer) {
                         arguments.add(make.Assignment(make.Identifier("position"), make.Literal(pos)));
                     }
                     // XXX maybe look for nearby separators?
