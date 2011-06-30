@@ -7,11 +7,6 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png"/>
                 <folder name="Factories">
-                    <file name="VoleDataLoader.instance">
-                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.groovy.gsp.loaders.VoleDataObject"/>
-                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
-                        <attr name="mimeType" stringvalue="text/x-gsp"/>
-                    </file>
                     <file name="org-netbeans-modules-groovy-gsp-loaders-GspDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
                         <attr name="position" intvalue="99999"/>
