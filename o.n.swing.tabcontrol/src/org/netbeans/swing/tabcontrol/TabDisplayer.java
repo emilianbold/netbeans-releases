@@ -169,6 +169,24 @@ public final class TabDisplayer extends JComponent implements Accessible {
      * clicking the Pin button on a tab.
      */
     public static final String COMMAND_ENABLE_AUTO_HIDE = TabbedContainer.COMMAND_ENABLE_AUTO_HIDE; //NOI18N
+    
+    /**
+     * Action command to slide out the whole window group.
+     * @since 1.27
+     */
+    public static final String COMMAND_MINIMIZE_GROUP = TabbedContainer.COMMAND_MINIMIZE_GROUP;
+    
+    /**
+     * Action command to restore the whole slided-out window group.
+     * @since 1.27
+     */
+    public static final String COMMAND_RESTORE_GROUP = TabbedContainer.COMMAND_RESTORE_GROUP;
+    
+    /**
+     * Action command to close the whole window group.
+     * @since 1.27
+     */
+    public static final String COMMAND_CLOSE_GROUP = TabbedContainer.COMMAND_CLOSE_GROUP;
 
     /**
      * Action command indicating that the action event signifies the user
