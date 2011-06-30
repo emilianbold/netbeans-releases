@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
@@ -170,7 +171,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
                         ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
                         javadocDoc = info.getElementUtilities().javaDocFor(e);
-                        if(javadocDoc.commentText() == null || javadocDoc.commentText().equals("")) {
+                        if(javadocDoc.commentText() == null || javadocDoc.getRawCommentText().equals("")) {
                             chkGenJavadoc.setEnabled(true);
                             chkGenJavadoc.setVisible(true);
                             chkUpdateJavadoc.setVisible(false);
