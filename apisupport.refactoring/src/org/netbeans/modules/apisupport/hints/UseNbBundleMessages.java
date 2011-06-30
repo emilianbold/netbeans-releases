@@ -42,51 +42,53 @@
 
 package org.netbeans.modules.apisupport.hints;
 
-import org.openide.loaders.DataObject;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.AnnotationTree;
-import java.io.OutputStream;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.openide.util.Exceptions;
 import java.io.IOException;
 import java.io.InputStream;
-import org.netbeans.api.java.source.GeneratorUtilities;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.CompilationUnitTree;
-import org.openide.util.Utilities;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import static org.netbeans.modules.apisupport.hints.Bundle.*;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.EditableProperties;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.apisupport.hints.Bundle.*;
+import org.openide.util.Utilities;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 
 public class UseNbBundleMessages extends AbstractHint {
 
@@ -109,8 +111,7 @@ public class UseNbBundleMessages extends AbstractHint {
     }
 
     public @Override Set<Kind> getTreeKinds() {
-        // XXX also check for e.g. displayName="#..." on registration annotations
-        return Collections.singleton(Kind.METHOD_INVOCATION);
+        return EnumSet.of(Kind.METHOD_INVOCATION, Kind.ASSIGNMENT);
     }
 
     @Messages({
@@ -123,72 +124,106 @@ public class UseNbBundleMessages extends AbstractHint {
         "UseNbBundleMessages.save_bundle=Save modifications to Bundle.properties before using this hint"
     })
     public @Override List<ErrorDescription> run(final CompilationInfo compilationInfo, final TreePath treePath) {
-        final MethodInvocationTree mit = (MethodInvocationTree) treePath.getLeaf();
-        ExpressionTree methodSelect = mit.getMethodSelect();
-        if (methodSelect.getKind() != Kind.MEMBER_SELECT) {
-            return null;
-        }
-        MemberSelectTree mst = (MemberSelectTree) methodSelect;
-        if (!mst.getIdentifier().contentEquals("getMessage")) {
-            return null;
-        }
-        TypeMirror invoker = compilationInfo.getTrees().getTypeMirror(new TreePath(treePath, mst.getExpression()));
-        if (!String.valueOf(invoker).equals("org.openide.util.NbBundle")) {
-            return null;
+        Tree tree = treePath.getLeaf();
+        int[] span;
+        final String key;
+        final FileObject src = compilationInfo.getFileObject();
+        final MethodInvocationTree mit;
+        if (tree.getKind() == Kind.METHOD_INVOCATION) {
+            mit = (MethodInvocationTree) tree;
+            ExpressionTree methodSelect = mit.getMethodSelect();
+            if (methodSelect.getKind() != Kind.MEMBER_SELECT) {
+                return null;
+            }
+            MemberSelectTree mst = (MemberSelectTree) methodSelect;
+            if (!mst.getIdentifier().contentEquals("getMessage")) {
+                return null;
+            }
+            TypeMirror invoker = compilationInfo.getTrees().getTypeMirror(new TreePath(treePath, mst.getExpression()));
+            if (!String.valueOf(invoker).equals("org.openide.util.NbBundle")) {
+                return null;
+            }
+            span = compilationInfo.getTreeUtilities().findNameSpan(mst);
+            if (span == null) {
+                return null;
+            }
+            List<? extends ExpressionTree> args = mit.getArguments();
+            if (args.size() < 2) {
+                return null; // something unexpected
+            }
+            if (args.get(0).getKind() != Kind.MEMBER_SELECT) {
+                return warning(UseNbBundleMessages_only_class_const(), span, compilationInfo);
+            }
+            MemberSelectTree thisClassMST = (MemberSelectTree) args.get(0);
+            if (!thisClassMST.getIdentifier().contentEquals("class")) {
+                return warning(UseNbBundleMessages_only_class_const(), span, compilationInfo);
+            }
+            if (thisClassMST.getExpression().getKind() != Kind.IDENTIFIER) {
+                return warning(UseNbBundleMessages_only_class_const(), span, compilationInfo);
+            }
+            if (!((IdentifierTree) thisClassMST.getExpression()).getName().contentEquals(src.getName())) {
+                return warning(UseNbBundleMessages_wrong_class_name(src.getName()), span, compilationInfo);
+            }
+            if (args.get(1).getKind() != Kind.STRING_LITERAL) {
+                return warning(UseNbBundleMessages_only_string_const(), span, compilationInfo);
+            }
+            key = ((LiteralTree) args.get(1)).getValue().toString();
+        } else {
+            if (treePath.getParentPath().getLeaf().getKind() != Kind.ANNOTATION) {
+                return null;
+            }
+            final AssignmentTree at = (AssignmentTree) tree;
+            if (at.getExpression().getKind() != Kind.STRING_LITERAL) {
+                return null;
+            }
+            String literal = ((LiteralTree) at.getExpression()).getValue().toString();
+            if (!literal.startsWith("#")) {
+                return null;
+            }
+            key = literal.substring(1);
+            // at.variable iof IdentifierTree, not VariableTree, so TreeUtilities.findNameSpan cannot be used
+            SourcePositions sp = compilationInfo.getTrees().getSourcePositions();
+            span = new int[] {(int) sp.getStartPosition(compilationInfo.getCompilationUnit(), tree), (int) sp.getEndPosition(compilationInfo.getCompilationUnit(), tree)};
+            mit = null;
         }
         if (compilationInfo.getClasspathInfo().getClassPath(PathKind.COMPILE).findResource("org/openide/util/NbBundle$Messages.class") == null) {
             // Using an older version of NbBundle.
             return null;
         }
-        int[] span = compilationInfo.getTreeUtilities().findNameSpan(mst);
-        if (span == null) {
-            return null;
-        }
-        final List<? extends ExpressionTree> args = mit.getArguments();
-        if (args.size() < 2) {
-            return null; // something unexpected
-        }
-        if (args.get(0).getKind() != Kind.MEMBER_SELECT) {
-            return warning(UseNbBundleMessages_only_class_const(), span, compilationInfo);
-        }
-        MemberSelectTree thisClassMST = (MemberSelectTree) args.get(0);
-        if (!thisClassMST.getIdentifier().contentEquals("class")) {
-            return warning(UseNbBundleMessages_only_class_const(), span, compilationInfo);
-        }
-        if (thisClassMST.getExpression().getKind() != Kind.IDENTIFIER) {
-            return warning(UseNbBundleMessages_only_class_const(), span, compilationInfo);
-        }
-        final FileObject src = compilationInfo.getFileObject();
-        if (!((IdentifierTree) thisClassMST.getExpression()).getName().contentEquals(src.getName())) {
-            return warning(UseNbBundleMessages_wrong_class_name(src.getName()), span, compilationInfo);
-        }
-        if (args.get(1).getKind() != Kind.STRING_LITERAL) {
-            return warning(UseNbBundleMessages_only_string_const(), span, compilationInfo);
-        }
-        final String key = ((LiteralTree) args.get(1)).getValue().toString();
-        String bundleResource = compilationInfo.getCompilationUnit().getPackageName().toString().replace('.', '/') + "/Bundle.properties";
-        final FileObject bundleProperties = compilationInfo.getClasspathInfo().getClassPath(PathKind.SOURCE).findResource(bundleResource);
-        if (bundleProperties == null) {
-            return warning(UseNbBundleMessages_no_such_bundle(bundleResource), span, compilationInfo);
-        }
-        final EditableProperties ep = new EditableProperties(true);
-        try {
-            if (DataObject.find(bundleProperties).isModified()) {
-                // Using EditorCookie.document is quite difficult here due to encoding issues. Keep it simple.
-                return warning(UseNbBundleMessages_save_bundle(), span, compilationInfo);
+        final boolean isAlreadyRegistered = isAlreadyRegistered(treePath, key);
+        final EditableProperties ep;
+        final FileObject bundleProperties;
+        if (isAlreadyRegistered) {
+            if (mit == null) {
+                return null; // nothing to do
+            } // else still need to convert getMessage call
+            ep = null; // unused
+            bundleProperties = null;
+        } else {
+            String bundleResource = compilationInfo.getCompilationUnit().getPackageName().toString().replace('.', '/') + "/Bundle.properties";
+            bundleProperties = compilationInfo.getClasspathInfo().getClassPath(PathKind.SOURCE).findResource(bundleResource);
+            if (bundleProperties == null) {
+                return warning(UseNbBundleMessages_no_such_bundle(bundleResource), span, compilationInfo);
             }
-            InputStream is = bundleProperties.getInputStream();
+            ep = new EditableProperties(true);
             try {
-                ep.load(is);
-            } finally {
-                is.close();
+                if (DataObject.find(bundleProperties).isModified()) {
+                    // Using EditorCookie.document is quite difficult here due to encoding issues. Keep it simple.
+                    return warning(UseNbBundleMessages_save_bundle(), span, compilationInfo);
+                }
+                InputStream is = bundleProperties.getInputStream();
+                try {
+                    ep.load(is);
+                } finally {
+                    is.close();
+                }
+            } catch (IOException x) {
+                Exceptions.printStackTrace(x);
+                return null;
             }
-        } catch (IOException x) {
-            Exceptions.printStackTrace(x);
-            return null;
-        }
-        if (!ep.containsKey(key)) {
-            return warning(UseNbBundleMessages_no_such_key(key), span, compilationInfo);
+            if (!ep.containsKey(key)) {
+                return warning(UseNbBundleMessages_no_such_key(key), span, compilationInfo);
+            }
         }
         return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new Fix() {
             public @Override String getText() {
@@ -203,38 +238,43 @@ public class UseNbBundleMessages extends AbstractHint {
                     public @Override void run(WorkingCopy wc) throws Exception {
                         wc.toPhase(JavaSource.Phase.RESOLVED);
                         TreeMaker make = wc.getTreeMaker();
-                        CompilationUnitTree cut = wc.getCompilationUnit();
-                        boolean imported = false;
-                        String importBundleStar = cut.getPackageName() + ".Bundle.*";
-                        for (ImportTree it : cut.getImports()) {
-                            if (it.isStatic() && it.getQualifiedIdentifier().toString().equals(importBundleStar)) {
-                                imported = true;
-                                break;
+                        if (mit != null) {
+                            CompilationUnitTree cut = wc.getCompilationUnit();
+                            boolean imported = false;
+                            String importBundleStar = cut.getPackageName() + ".Bundle.*";
+                            for (ImportTree it : cut.getImports()) {
+                                if (it.isStatic() && it.getQualifiedIdentifier().toString().equals(importBundleStar)) {
+                                    imported = true;
+                                    break;
+                                }
                             }
+                            if (!imported) {
+                                wc.rewrite(cut, make.addCompUnitImport(cut, make.Import(make.Identifier(importBundleStar), true)));
+                            }
+                            List<? extends ExpressionTree> args = mit.getArguments();
+                            List<? extends ExpressionTree> params;
+                            if (args.size() == 3 && args.get(2).getKind() == Kind.NEW_ARRAY) {
+                                params = ((NewArrayTree) args.get(2)).getInitializers();
+                            } else {
+                                params = args.subList(2, args.size());
+                            }
+                            wc.rewrite(mit, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(toIdentifier(key)), params));
+                        } // else annotation value, nothing to change
+                        if (!isAlreadyRegistered) {
+                            Tree enclosing = findEnclosingElement(wc, treePath);
+                            ModifiersTree modifiers;
+                            if (enclosing.getKind() == Kind.METHOD) {
+                                modifiers = ((MethodTree) enclosing).getModifiers();
+                            } else {
+                                modifiers = ((ClassTree) enclosing).getModifiers();
+                            }
+                            List<ExpressionTree> lines = new ArrayList<ExpressionTree>();
+                            for (String comment : ep.getComment(key)) {
+                                lines.add(make.Literal(comment));
+                            }
+                            lines.add(make.Literal(key + '=' + ep.remove(key)));
+                            wc.rewrite(modifiers, addMessage(wc, modifiers, lines));
                         }
-                        if (!imported) {
-                            wc.rewrite(cut, make.addCompUnitImport(cut, make.Import(make.Identifier(importBundleStar), true)));
-                        }
-                        List<? extends ExpressionTree> params;
-                        if (args.size() == 3 && args.get(2).getKind() == Kind.NEW_ARRAY) {
-                            params = ((NewArrayTree) args.get(2)).getInitializers();
-                        } else {
-                            params = args.subList(2, args.size());
-                        }
-                        wc.rewrite(mit, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(toIdentifier(key)), params));
-                        Tree enclosing = findEnclosingElement(wc, treePath);
-                        ModifiersTree modifiers;
-                        if (enclosing.getKind() == Kind.METHOD) {
-                            modifiers = ((MethodTree) enclosing).getModifiers();
-                        } else {
-                            modifiers = ((ClassTree) enclosing).getModifiers();
-                        }
-                        List<ExpressionTree> lines = new ArrayList<ExpressionTree>();
-                        for (String comment : ep.getComment(key)) {
-                            lines.add(make.Literal(comment));
-                        }
-                        lines.add(make.Literal(key + '=' + ep.remove(key)));
-                        wc.rewrite(modifiers, addMessage(wc, modifiers, lines));
                         // XXX remove NbBundle import if now unused
                     }
                     // borrowed from FindBugsHint:
@@ -304,11 +344,13 @@ public class UseNbBundleMessages extends AbstractHint {
                         return findEnclosingElement(wc, parentPath);
                     }
                 }).commit();
-                OutputStream os = bundleProperties.getOutputStream();
-                try {
-                    ep.store(os);
-                } finally {
-                    os.close();
+                if (!isAlreadyRegistered) {
+                    OutputStream os = bundleProperties.getOutputStream();
+                    try {
+                        ep.store(os);
+                    } finally {
+                        os.close();
+                    }
                 }
                 return null;
             }
@@ -335,6 +377,61 @@ public class UseNbBundleMessages extends AbstractHint {
                 return "_" + i;
             }
         }
+    }
+
+    private static boolean isAlreadyRegistered(TreePath treePath, String key) {
+        ModifiersTree modifiers;
+        Tree tree = treePath.getLeaf();
+        switch (tree.getKind()) {
+        case METHOD:
+            modifiers = ((MethodTree) tree).getModifiers();
+            break;
+        case CLASS:
+        case ENUM:
+        case INTERFACE:
+        case ANNOTATION_TYPE:
+            modifiers = ((ClassTree) tree).getModifiers();
+            break;
+        default:
+            modifiers = null;
+        }
+        if (modifiers != null) {
+            for (AnnotationTree ann : modifiers.getAnnotations()) {
+                Tree annotationType = ann.getAnnotationType();
+                if (annotationType.toString().matches("((org[.]openide[.]util[.])?NbBundle[.])?Messages")) { // XXX see above
+                    List<? extends ExpressionTree> args = ann.getArguments();
+                    if (args.size() != 1) {
+                        continue; // ?
+                    }
+                    AssignmentTree assign = (AssignmentTree) args.get(0);
+                    if (!assign.getVariable().toString().equals("value")) {
+                        continue; // ?
+                    }
+                    ExpressionTree arg = assign.getExpression();
+                    if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
+                        if (isRegistered(key, arg)) {
+                            return true;
+                        }
+                    } else if (arg.getKind() == Tree.Kind.NEW_ARRAY) {
+                        for (ExpressionTree elt : ((NewArrayTree) arg).getInitializers()) {
+                            if (isRegistered(key, elt)) {
+                                return true;
+                            }
+                        }
+                    } else {
+                        // ?
+                    }
+                }
+            }
+        }
+        TreePath parentPath = treePath.getParentPath();
+        if (parentPath == null) {
+            return false;
+        }
+        return isAlreadyRegistered(parentPath, key);
+    }
+    private static boolean isRegistered(String key, ExpressionTree expr) {
+        return expr.getKind() == Kind.STRING_LITERAL && ((LiteralTree) expr).getValue().toString().startsWith(key + "=");
     }
 
 }
