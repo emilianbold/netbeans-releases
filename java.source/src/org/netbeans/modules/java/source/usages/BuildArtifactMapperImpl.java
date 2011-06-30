@@ -593,7 +593,7 @@ public class BuildArtifactMapperImpl {
             }
             assert f.isAbsolute();
         }
-        return FileUtil.normalizeFile(f);
+        return f;
     }
     
     /**

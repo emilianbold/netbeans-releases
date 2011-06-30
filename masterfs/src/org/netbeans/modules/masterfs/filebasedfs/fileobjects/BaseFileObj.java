@@ -355,6 +355,9 @@ public abstract class BaseFileObj extends FileObject {
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
         }
+        
+        final String originalName = getName();
+        final String originalExt = getExt();
         if (Utils.equals(file2Rename, file)) {
             boolean success;
             if (handler != null) {
@@ -370,7 +373,7 @@ public abstract class BaseFileObj extends FileObject {
             }
             // just a case sensitive update of the file name
             NamingFactory.checkCaseSensitivity(fileName, file2Rename);
-            fireFileRenamedEvent(file.getName(), file2Rename.getName());
+            fireFileRenamedEvent(originalName, originalExt);
             return;
         }
         
@@ -382,8 +385,6 @@ public abstract class BaseFileObj extends FileObject {
             FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
         }
 
-        final String originalName = getName();
-        final String originalExt = getExt();
 
         //TODO: no lock used
         FileObjectFactory fs = getFactory();
