@@ -52,6 +52,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.Exceptions;
@@ -73,7 +74,10 @@ public class MagicCache {
     public synchronized byte[] get(String fileName) {
         if (cache == null) {
             cache = new HashMap<String, byte[]>();
-            readCache();
+            if (!readCache()) {
+                cache = null;
+                return null;
+            }
         }
         
         return cache.get(fileName);
@@ -93,10 +97,13 @@ public class MagicCache {
         }
     }
      
-    private void readCache() {
+    private boolean readCache() {
         File od = new File(dir.getCache(),cacheName);
         if (!od.exists()) {
             try {
+                if (!ConnectionManager.getInstance().isConnectedTo(dir.getExecutionEnvironment())) {
+                     return false;
+                }
                 updateCache();
             } catch (FileNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -148,6 +155,7 @@ public class MagicCache {
                 }
             }
         }
+        return true;
     }
     
     private void createEntry(String file, byte[] res, int pos) {
