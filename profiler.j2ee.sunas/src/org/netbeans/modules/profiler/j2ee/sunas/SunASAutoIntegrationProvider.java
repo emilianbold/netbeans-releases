@@ -57,10 +57,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -69,7 +68,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.attach.AttachWizard;
 import org.netbeans.modules.profiler.attach.providers.IDESettingsPersistor;
 import org.netbeans.modules.profiler.attach.providers.SettingsPersistor;
 import org.netbeans.modules.profiler.attach.providers.ValidationResult;
@@ -231,8 +229,8 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
 
     public final Collection getAvailableDomains(String installPath) {
         final String separator = System.getProperty("file.separator"); // NOI18N
-        final StringBuffer path = new StringBuffer();
-        final Collection availableDomains = new Vector();
+        final StringBuilder path = new StringBuilder();
+        final Collection availableDomains = new ArrayList();
 
         path.append(installPath);
 
@@ -240,7 +238,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             path.append(separator);
         }
 
-        path.append(SUNAS_8PE_DOMAINSDIR_NAME);
+        path.append(getDomainsDirPath(separator));
 
         File domainsDir = new File(path.toString());
 
@@ -252,7 +250,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             if (!((domains == null) || (domains.length == 0))) {
                 // searching for available domains with domain.xml script
                 for (int i = 0; i < domains.length; i++) {
-                    StringBuffer configPath = new StringBuffer(domains[i].getAbsolutePath());
+                    StringBuilder configPath = new StringBuilder(domains[i].getAbsolutePath());
                     configPath.append(separator).append(SUNAS_8PE_DOMAINCONFIGDIR_NAME).append(separator)
                               .append(SUNAS_8PE_DOMAINSCRIPT_NAME);
 
@@ -289,7 +287,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         // Step 1
         instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP1_MSG,
                                                   new Object[] {
-                                                      getAsEnvScriptFilePath(targetOS), getDomainScriptFilePath(targetOS),
+                                                      getAsEnvScriptFilePath(targetOS), getDomainScriptFilePath(IntegrationUtils.getDirectorySeparator(targetOS)),
                                                       getAsEnvScriptFileName(targetOS), SUNAS_8PE_DOMAINSCRIPT_NAME
                                                   }));
 
@@ -307,9 +305,11 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP3_DIRECT_MSG,
                                                       new Object[] {
                                                           SUNAS_8PE_DOMAINSCRIPT_NAME, "",
-                                                          getProfilerAgentCommandLineArgsForDomainScript(targetOS,
-                                                                                                         attachSettings.isRemote(),
-                                                                                                         attachSettings.getPort())
+                                                          getJvmOptionsElementText(
+                                                              getProfilerAgentCommandLineArgsForDomainScript(targetOS,
+                                                              attachSettings.isRemote(),
+                                                              attachSettings.getPort())
+                                                          )
                                                       })); // NOI18N
         } else {
             instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP3_DYNAMIC_MSG,
@@ -362,7 +362,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             return new ValidationResult(false, MessageFormat.format(ENTER_INSTALL_DIR_MSG, new Object[] { this.getTitle() }));
         }
 
-        String asenv = getAsScriptFilePath(path, SUNAS_8PE_CONFIGDIR_NAME, getAsEnvScriptFileName(targetOS), targetOS);
+        String asenv = getAsScriptFilePath(path, getConfigDir(targetOS), getAsEnvScriptFileName(targetOS), targetOS);
 
         if (!(new File(asenv).exists())) {
             return new ValidationResult(false,
@@ -371,6 +371,10 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         }
 
         return new ValidationResult(true);
+    }
+
+    protected String getConfigDir(String targetOS) {
+        return SUNAS_8PE_CONFIGDIR_NAME;
     }
 
     protected boolean isBackupRequired() {
@@ -447,9 +451,9 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP4_MSG,
                                                   new Object[] {
                                                       "",
-                                                      getProfilerAgentCommandLineArgsForDomainScript(targetOS,
-                                                                                                     attachSettings.isRemote(),
-                                                                                                     attachSettings.getPort())
+                                                      getJvmOptionsElementText(
+                                                          getProfilerAgentCommandLineArgsForDomainScript(targetOS, attachSettings.isRemote(), attachSettings.getPort())
+                                                      )
                                                   })); // NOI18N
 
         // Step 5
@@ -574,9 +578,9 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP6_MSG,
                                                   new Object[] {
                                                       "",
-                                                      getProfilerAgentCommandLineArgsForDomainScript(targetOS,
-                                                                                                     attachSettings.isRemote(),
-                                                                                                     attachSettings.getPort()),
+                                                      getJvmOptionsElementText(
+                                                          getProfilerAgentCommandLineArgsForDomainScript(targetOS, attachSettings.isRemote(), attachSettings.getPort())
+                                                      ),
                                                       IntegrationUtils.getRemoteAbsolutePathHint()
                                                   })); // NOI18N
 
@@ -598,8 +602,8 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     }
 
     protected String getScriptPath(final String targetOS, final boolean quoted) {
-        StringBuffer path = new StringBuffer();
-        path.append(getDomainScriptFilePath(targetOS));
+        StringBuilder path = new StringBuilder();
+        path.append(getDomainScriptFilePath(IntegrationUtils.getDirectorySeparator(targetOS)));
 
         if (quoted) {
             path.insert(0, "\"");
@@ -612,8 +616,9 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     protected abstract String getWinSpecificCommandLineArgs(String targetPlatform, boolean isRemote, int portNumber);
 
     protected void generateCommands(String targetOS, Collection commandsArray) {
+        final String separator = IntegrationUtils.getDirectorySeparator(targetOS);
         final String asadminScript = getAsAdminScriptFilePath(targetOS);
-        final String domainsDir = getInstallationPath() + IntegrationUtils.getDirectorySeparator(targetOS) + "domains"; // NOI18N
+        final String domainsDir = getInstallationPath() + separator + getDomainsDirPath(separator); // NOI18N
         final String domainName = getDomain();
 
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
@@ -663,7 +668,6 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         profilerElement.setAttribute("name", "NetBeansProfiler"); // NOI18N
 
         // Create "jvm-options" element
-        Element jvmOptionsElement = domainScriptDocument.createElement("jvm-options"); // NOI18N
         String jvmOptionsElementTextContent = getProfilerAgentCommandLineArgsForDomainScript(targetOS, false, commPort);
 
         // debugging property for agent side - wire I/O
@@ -676,9 +680,8 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             jvmOptionsElementTextContent += " -Dorg.netbeans.lib.profiler.server.ProfilerInterface.classLoadHook=true"; // NOI18N
         }
 
-        jvmOptionsElement.setTextContent(jvmOptionsElementTextContent);
-        profilerElement.appendChild(jvmOptionsElement);
-
+        insertJvmOptions(domainScriptDocument, profilerElement, jvmOptionsElementTextContent);
+        
         // Find the "java-config" element
         NodeList javaConfigNodeList = domainScriptDocument.getElementsByTagName("java-config"); // NOI18N
 
@@ -721,11 +724,29 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         // Save domain.xml
         saveDomainScriptFile(domainScriptDocument, buffer);
     }
+    
+    protected void insertJvmOptions(Document domainScriptDocument, Element profilerElement, String optionsString) {
+        insertJvmOptionsElement(domainScriptDocument, profilerElement, optionsString);
+    }
 
+    protected String getJvmOptionsElementText(String options) {
+        return createJvmOptionsElementText(options);
+    }
+    
+    final protected String createJvmOptionsElementText(String options) {
+        return "&nbsp;&nbsp;&lt;jvm-options&gt;" + options.trim() + "&lt;/jvm-options&gt;<br>"; // NOI18N
+    }
+    
+    final protected void insertJvmOptionsElement(Document domainScriptDocument, Element profilerElement, String option) {
+        Element jvmOptionsElement = domainScriptDocument.createElement("jvm-options"); // NOI18N
+        jvmOptionsElement.setTextContent(option);
+        profilerElement.appendChild(jvmOptionsElement);
+    }
+    
     private static String getAsScriptFilePath(final String installDir, final String specDir, final String scriptName,
                                               final String targetOS) {
-        final String separator = System.getProperty("file.separator"); // NOI18N
-        StringBuffer path = new StringBuffer();
+        final String separator = IntegrationUtils.getDirectorySeparator(targetOS); // NOI18N
+        StringBuilder path = new StringBuilder();
 
         path.append(installDir);
 
@@ -755,7 +776,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     }
 
     private String getAsEnvScriptFilePath(String targetOS) {
-        return getAsScriptFilePath(SUNAS_8PE_CONFIGDIR_NAME, getAsEnvScriptFileName(targetOS), targetOS);
+        return getAsScriptFilePath(getConfigDir(targetOS), getAsEnvScriptFileName(targetOS), targetOS);
     }
 
     private String getAsScriptFile(final String scriptName, final String targetOS) {
@@ -801,9 +822,16 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         return home;
     }
 
-    private String getDomainScriptDirPath(String targetOS) {
-        final String separator = IntegrationUtils.getDirectorySeparator(targetOS);
-        StringBuffer path = new StringBuffer();
+    protected String getDomainsDirPath(String separator) {
+        return SUNAS_8PE_DOMAINSDIR_NAME;
+    }
+    
+    protected boolean usesXMLDeclaration() {
+        return true;
+    }
+    
+    private String getDomainScriptDirPath(String separator) {
+        StringBuilder path = new StringBuilder();
 
         path.append(getInstallationPath());
 
@@ -811,17 +839,16 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             path.append(separator);
         }
 
-        path.append(SUNAS_8PE_DOMAINSDIR_NAME).append(separator).append(getDomain());
+        path.append(getDomainsDirPath(separator)).append(separator).append(getDomain());
         path.append(separator).append(SUNAS_8PE_DOMAINCONFIGDIR_NAME);
 
         return path.toString();
     }
 
-    private String getDomainScriptFilePath(String targetOS) {
-        final String separator = System.getProperty("file.separator"); // NOI18N
-        StringBuffer path = new StringBuffer();
+    private String getDomainScriptFilePath(String separator) {
+        StringBuilder path = new StringBuilder();
 
-        path.append(getDomainScriptDirPath(targetOS)).append(separator).append(SUNAS_8PE_DOMAINSCRIPT_NAME);
+        path.append(getDomainScriptDirPath(separator)).append(separator).append(SUNAS_8PE_DOMAINSCRIPT_NAME);
 
         return path.toString();
     }
@@ -836,8 +863,6 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     }
 
     private Document loadDomainScriptFile(StringBuffer scriptBuffer) {
-        Document document = null;
-
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             dbFactory.setValidating(false);
@@ -861,7 +886,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             StringReader scriptReader = new StringReader(scriptBuffer.toString());
             InputSource scriptSource = new InputSource(scriptReader);
 
-            return document = dBuilder.parse(scriptSource);
+            return dBuilder.parse(scriptSource);
         } catch (Exception e) {
             return null;
         }
@@ -899,9 +924,11 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes"); // NOI18N
             transformer.setOutputProperty(OutputKeys.METHOD, "xml"); // NOI18N
-            transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, scriptPublicId);
-            transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, scriptSystemId);
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no"); // NOI18N
+            if (usesXMLDeclaration()) {
+                transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, scriptPublicId);
+                transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, scriptSystemId);
+            }
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, usesXMLDeclaration() ? "no" : "yes"); // NOI18N
 
             DOMSource domSource = new DOMSource(domainScriptDocument);
             StreamResult streamResult = new StreamResult(stringWriter);

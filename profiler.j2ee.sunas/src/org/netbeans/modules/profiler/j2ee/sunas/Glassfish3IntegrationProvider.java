@@ -43,75 +43,90 @@
 
 package org.netbeans.modules.profiler.j2ee.sunas;
 
+import java.util.StringTokenizer;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
-public class SunAS8IntegrationProvider extends SunASAutoIntegrationProvider {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // <editor-fold defaultstate="collapsed" desc="Resources">
-    private static final String SUNAS_8PE_STRING = NbBundle.getMessage(SunAS8IntegrationProvider.class, "SunAS8IntegrationProvider_SunAs8PeString"); // NOI18N
-    private static final String PROFILED_SUNAS_CONSOLE_STRING = NbBundle.getMessage(SunAS8IntegrationProvider.class, "SunAS8IntegrationProvider_ProfiledSunAs8PeConsoleString"); // NOI18N
-
+public class Glassfish3IntegrationProvider extends SunASAutoIntegrationProvider {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private final String INVALID_DIR_MSG = NbBundle.getMessage(this.getClass(), "SunAS8IntegrationProvider_InvalidInstallDirMsg"); // NOI18N
-                                                                                                                                   // </editor-fold>
+    private final String APP_SERVER_CONSOLE_TITLE = NbBundle.getMessage(this.getClass(),
+                                                                        "GlassFishV3IntegraionProvider_ProfiledGlassFish3ConsoleString"); // NOI18N
+    private final String APP_SERVER_TITLE = NbBundle.getMessage(this.getClass(), "GlassFishV3IntegraionProvider_GlassFishV3String"); // NOI18N
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return SUNAS_8PE_STRING;
+        return APP_SERVER_TITLE; // NOI18N
     }
 
     protected int getAttachWizardPriority() {
-        return 22;
+        return 20;
     }
 
     protected int getMagicNumber() {
-        return 10;
-    }
-
-    protected IntegrationProvider.IntegrationHints getManualLocalDirectIntegrationStepsInstructions(String targetOS,
-                                                                                                    AttachSettings attachSettings) {
-        IntegrationProvider.IntegrationHints instructions = super.getManualLocalDirectIntegrationStepsInstructions(targetOS,
-                                                                                                                   attachSettings);
-
-        return instructions;
-    }
-
-    protected IntegrationProvider.IntegrationHints getManualLocalDynamicIntegrationStepsInstructions(String targetOS,
-                                                                                                     AttachSettings attachSettings) {
-        IntegrationProvider.IntegrationHints instructions = super.getManualLocalDynamicIntegrationStepsInstructions(targetOS,
-                                                                                                                    attachSettings);
-
-        return instructions;
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="Manual integration">
-    protected IntegrationProvider.IntegrationHints getManualRemoteIntegrationStepsInstructions(String targetOS,
-                                                                                               AttachSettings attachSettings) {
-        IntegrationProvider.IntegrationHints instructions = super.getManualRemoteIntegrationStepsInstructions(targetOS,
-                                                                                                              attachSettings);
-
-        return instructions;
+        return 30;
     }
 
     protected String getWinConsoleString() {
-        return PROFILED_SUNAS_CONSOLE_STRING;
+        return APP_SERVER_CONSOLE_TITLE; // NOI18N
     }
 
-    // </editor-fold>
     protected String getWinSpecificCommandLineArgs(String targetOS, boolean isRemote, int portNumber) {
-        return "-agentpath:" + IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote)
+        return "\"-agentpath:" + IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote)
                + IntegrationUtils.getDirectorySeparator(targetOS) + IntegrationUtils.getProfilerAgentLibraryFile(targetOS) + "=" //NOI18N
-               + "\"" + IntegrationUtils.getLibsDir(targetOS, isRemote) + "\"" + "," + portNumber; //NOI18N
+               + "\\\"" + IntegrationUtils.getLibsDir(targetOS, isRemote) + "\\\"" + "," + portNumber + "\""; //NOI18N
     }
+
+    @Override
+    protected String getConfigDir(String targetOS) {
+        return "glassfish" + IntegrationUtils.getDirectorySeparator(targetOS) + super.getConfigDir(targetOS);
+    }
+
+    @Override
+    protected String getDomainsDirPath(String separator) {
+        return "glassfish" + separator + super.getDomainsDirPath(separator);
+    }
+
+    @Override
+    protected boolean usesXMLDeclaration() {
+        return false;
+    }
+
+    @Override
+    protected void insertJvmOptions(Document domainScriptDocument, Element profilerElement, String optionsString) {
+        StringTokenizer tk = new StringTokenizer(optionsString);
+        
+        while (tk.hasMoreTokens()) {
+            String option = tk.nextToken();
+            if (option.trim().isEmpty()) continue;
+            
+            insertJvmOptionsElement(domainScriptDocument, profilerElement, option);
+        }
+    }
+
+    @Override
+    protected String getJvmOptionsElementText(String options) {
+        StringBuilder sb = new StringBuilder();
+        StringTokenizer tk = new StringTokenizer(options);
+        
+        while (tk.hasMoreTokens()) {
+            String option = tk.nextToken();
+            if (option.trim().isEmpty()) continue;
+            
+            sb.append(createJvmOptionsElementText(option));
+        }
+        
+        return sb.toString();
+    }
+    
+    
 }
