@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.WindowManager;
 
 /**
@@ -61,6 +62,7 @@ import org.openide.windows.WindowManager;
 @ActionID(id = "org.netbeans.modules.applemenu.MinimizeWindowAction", category = "Window")
 @ActionRegistration(displayName = "#MSG_MinimizeWindowAction")
 @ActionReference(path = "Shortcuts", name = "M-M")
+@Messages("MSG_MinimizeWindowAction=&Minimize Window")
 public final class MinimizeWindowAction implements ActionListener {
     public void actionPerformed(ActionEvent arg0) {
         WindowManager.getDefault().getMainWindow().setExtendedState(Frame.ICONIFIED);

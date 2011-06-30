@@ -49,10 +49,12 @@ import java.util.logging.Logger;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
 @ActionID(id = "org.netbeans.modules.html.palette.HtmlPaletteCustomizerAction", category = "Tools")
 @ActionRegistration(iconInMenu = false, displayName = "#ACT_OpenHTMLCustomizer")
 @ActionReference(path = "Menu/Tools/PaletteManager", position = 200)
+@Messages("ACT_OpenHTMLCustomizer=&HTML/JSP Code Clips")
 public final class HtmlPaletteCustomizerAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
