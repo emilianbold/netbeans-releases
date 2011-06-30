@@ -41,7 +41,7 @@
  */
 package org.netbeans.editor.ext.html.parser.spi;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 
@@ -59,6 +59,6 @@ public abstract class UndeclaredContentResolver {
      * @param the html source which is being processed
      * @return a map of namespace to prefix collection
      */
-    public abstract Map<String, Collection<String>> getUndeclaredNamespaces(HtmlSource source);
+    public abstract Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source);
     
 }

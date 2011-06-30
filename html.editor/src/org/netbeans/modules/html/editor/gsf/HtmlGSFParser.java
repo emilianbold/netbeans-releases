@@ -81,8 +81,8 @@ public class HtmlGSFParser extends Parser {
         }
 
         @Override
-        public Map<String, Collection<String>> getUndeclaredNamespaces(HtmlSource source) {
-            Map<String, Collection<String>> aggregated = new HashMap<String, Collection<String>>();
+        public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+            Map<String, List<String>> aggregated = new HashMap<String, List<String>>();
             for(UndeclaredContentResolver resolver : resolvers) {
                 aggregated.putAll(resolver.getUndeclaredNamespaces(source));
             }

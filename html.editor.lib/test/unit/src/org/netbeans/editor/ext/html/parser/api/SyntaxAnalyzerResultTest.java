@@ -44,6 +44,7 @@ package org.netbeans.editor.ext.html.parser.api;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
@@ -303,8 +304,8 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         UndeclaredContentResolver resolver = new UndeclaredContentResolver() {
 
             @Override
-            public Map<String, Collection<String>> getUndeclaredNamespaces(HtmlSource source) {
-                return Collections.singletonMap("my_ns", (Collection<String>)Collections.singleton("x"));
+            public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                return Collections.singletonMap("my_ns", (List<String>)Collections.singletonList("x"));
             }
         };
         
