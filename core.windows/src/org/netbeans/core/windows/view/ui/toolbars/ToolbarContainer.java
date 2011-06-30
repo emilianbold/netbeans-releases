@@ -144,7 +144,9 @@ final class ToolbarContainer extends JPanel {
                     : BorderFactory.createEmptyBorder()); //NOI18N
 
         } else if( !"Aqua".equals(lAndF) && !"GTK".equals(lAndF) ){ //NOI18N
-            Border b = UIManager.getBorder ("ToolBar.border"); //NOI18N
+            Border b = UIManager.getBorder ("Nb.ToolBar.border"); //NOI18N
+            if( null == b )
+                b = UIManager.getBorder ("ToolBar.border"); //NOI18N
 
             if( b==null || b instanceof javax.swing.plaf.metal.MetalBorders.ToolBarBorder )
                 b = BorderFactory.createEtchedBorder( EtchedBorder.LOWERED );

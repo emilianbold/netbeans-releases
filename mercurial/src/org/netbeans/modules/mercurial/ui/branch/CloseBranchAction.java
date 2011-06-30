@@ -43,26 +43,29 @@
  */
 package org.netbeans.modules.mercurial.ui.branch;
 
+import java.awt.EventQueue;
 import java.io.File;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.commit.CommitAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
-/**
- * 
- */
-public class CreateBranchAction extends ContextAction {
+public class CloseBranchAction extends ContextAction {
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -71,7 +74,7 @@ public class CreateBranchAction extends ContextAction {
 
     @Override
     protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_CreateBranch"; // NOI18N
+        return "CTL_MenuItem_CloseBranch"; //NOI18N
     }
 
     @Override
@@ -81,34 +84,68 @@ public class CreateBranchAction extends ContextAction {
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
-        CreateBranch createBranch = new CreateBranch();
-        if (!createBranch.showDialog()) {
-            return;
-        }
-        final String branchName = createBranch.getBranchName();
-        
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+        final RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
-                OutputLogger logger = getLogger();
+                setDisplayName(NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.Progress.preparing")); //NOI18N
                 try {
-                    logger.outputInRed(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_TITLE")); //NOI18N
-                    logger.outputInRed(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_TITLE_SEP")); //NOI18N
-                    logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_INFO_SEP", branchName, root.getAbsolutePath())); //NOI18N
-                    HgCommand.markBranch(root, branchName, logger);
-                    WorkingCopyInfo.refreshAsync(root);
-                    logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_WC_MARKED", branchName)); //NOI18N
+                    final String branchName = HgCommand.getBranch(root);
+                    if (branchName.equals(HgBranch.DEFAULT_NAME)) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.error.defaultBranch"), NotifyDescriptor.ERROR_MESSAGE); //NOI18N
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                        return;
+                    }
+                    int numberOfHeads = getBranchHeadCount(branchName);
+                    if (numberOfHeads == 0) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.error.branchClosed", //NOI18N
+                                new Object[] { branchName }), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                        return;
+                    } else if (numberOfHeads > 1) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.error.moreHeads", //NOI18N
+                                new Object[] { branchName, numberOfHeads }), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                        return;
+                    } else if (!isCanceled()) {
+                        final VCSContext ctx = VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed((Object[]) roots)) {
+                            @Override
+                            public String getDisplayName () {
+                                return root.getName();
+                            }
+                        }});
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                SystemAction.get(CommitAction.class).closeBranch(branchName, ctx, 
+                                        NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.commit.title", new Object[] { branchName, Utils.getContextDisplayName(ctx) })); //NOI18N
+                            }
+                        });
+                    }
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }
-                logger.outputInRed(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_DONE")); // NOI18N
-                logger.output(""); // NOI18N
+            }
+
+            private int getBranchHeadCount (String branchName) throws HgException {
+                HgLogMessage[] messages = HgCommand.getHeadRevisionsInfo(root, false, getLogger());
+                int headsInBranch = 0;
+                for (HgLogMessage message : messages) {
+                    if (message.getBranches().length == 0 && branchName.equals(HgBranch.DEFAULT_NAME)) {
+                        ++headsInBranch;
+                    }
+                    for (String b : message.getBranches()) {
+                        if (b.equals(branchName)) {
+                            ++headsInBranch;
+                        }
+                    }
+                }
+                return headsInBranch;
             }
         };
-        support.start(rp, root, org.openide.util.NbBundle.getMessage(CreateBranchAction.class, "MSG_CreateBranch_Progress", branchName)); //NOI18N
+        support.start(rp, root, NbBundle.getMessage(CloseBranchAction.class, "MSG_CloseBranch.Progress")); //NOI18N
     }
 }

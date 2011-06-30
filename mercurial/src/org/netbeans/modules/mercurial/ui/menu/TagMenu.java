@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,55 +41,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.ui.update;
 
-import java.awt.BorderLayout;
-import java.io.File;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
-import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
+package org.netbeans.modules.mercurial.ui.menu;
+
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.netbeans.modules.mercurial.ui.tag.CreateTagAction;
+import org.netbeans.modules.mercurial.ui.tag.ManageTagsAction;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.awt.Actions;
+import org.openide.util.Lookup;
+import org.openide.util.actions.Presenter;
 
 /**
+ * Container menu for Tag actions.
  *
- * @author  Padraig O'Briain
+ * @author Maros Sandor
  */
-public class UpdatePanel extends ChangesetPickerPanel {
+public class TagMenu extends DynamicMenu implements Presenter.Menu {
+    private final Lookup lkp;
 
-    private JCheckBox forcedUpdateChxBox;
-    private final HgLogMessage fixedRevision;
-
-    /** Creates new form ReverModificationsPanel */
-    public UpdatePanel(File repo, HgLogMessage fixedRevision) {
-        super(repo, null);
-        this.fixedRevision = fixedRevision;
-        initComponents();
-        loadRevisions();
-    }
-
-    public boolean isForcedUpdateRequested() {
-        return forcedUpdateChxBox.isSelected();
+    public TagMenu (Lookup lkp) {
+        super(NbBundle.getMessage(TagMenu.class, "CTL_MenuItem_TagMenu")); //NOI18N
+        this.lkp = lkp;
     }
 
     @Override
-    protected HgLogMessage getDisplayedRevision () {
-        return fixedRevision;
+    protected JMenu createMenu() {
+        JMenu menu = new JMenu(this);
+        JMenuItem item;
+        if (lkp == null) {
+            org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(TagMenu.class, "CTL_MenuItem_TagMenu")); // NOI18N
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(CreateTagAction.class), false);
+            menu.add(item);
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(ManageTagsAction.class), false);
+            menu.add(item);
+        } else {
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "CTL_PopupMenuItem_CreateTag"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(ManageTagsAction.class), NbBundle.getMessage(ManageTagsAction.class, "CTL_PopupMenuItem_ManageTags"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        }        
+        return menu;
     }
 
     @Override
-    protected String getRefreshLabel() {
-        return NbBundle.getMessage(UpdatePanel.class, "MSG_Refreshing_Update_Versions"); //NOI18N
-    }
-
-    private void initComponents() {
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "UpdatePanel.infoLabel.text")); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "UpdatePanel.infoLabel2.text")); // NOI18N
-        forcedUpdateChxBox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(forcedUpdateChxBox, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.forcedUpdateChxBox.text")); // NOI18N
-        JPanel optionsPanel = new JPanel(new BorderLayout());
-        optionsPanel.add(forcedUpdateChxBox, BorderLayout.NORTH);
-        optionsPanel.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0));
-        setOptionsPanel(optionsPanel, null);
+    public JMenuItem getMenuPresenter() {
+        JMenu menu = createMenu();
+        menu.setText(NbBundle.getMessage(TagMenu.class, "CTL_MenuItem_TagMenu.popupName")); //NOI18N
+        enableMenu(menu);
+        return menu;
     }
 }

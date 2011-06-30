@@ -41,28 +41,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.ui.branch;
+package org.netbeans.modules.mercurial.ui.tag;
 
 import java.io.File;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.util.RequestProcessor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
  * 
  */
-public class CreateBranchAction extends ContextAction {
+public class ManageTagsAction extends ContextAction {
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -71,7 +62,7 @@ public class CreateBranchAction extends ContextAction {
 
     @Override
     protected String getBaseName(Node[] nodes) {
-        return "CTL_MenuItem_CreateBranch"; // NOI18N
+        return "CTL_MenuItem_ManageTags"; //NOI18N
     }
 
     @Override
@@ -79,36 +70,9 @@ public class CreateBranchAction extends ContextAction {
         VCSContext ctx = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+        final File repository = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
-        CreateBranch createBranch = new CreateBranch();
-        if (!createBranch.showDialog()) {
-            return;
-        }
-        final String branchName = createBranch.getBranchName();
-        
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-        HgProgressSupport support = new HgProgressSupport() {
-            @Override
-            public void perform() {
-                OutputLogger logger = getLogger();
-                try {
-                    logger.outputInRed(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_TITLE")); //NOI18N
-                    logger.outputInRed(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_TITLE_SEP")); //NOI18N
-                    logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_INFO_SEP", branchName, root.getAbsolutePath())); //NOI18N
-                    HgCommand.markBranch(root, branchName, logger);
-                    WorkingCopyInfo.refreshAsync(root);
-                    logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_WC_MARKED", branchName)); //NOI18N
-                } catch (HgException.HgCommandCanceledException ex) {
-                    // canceled by user, do nothing
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }
-                logger.outputInRed(NbBundle.getMessage(CreateBranchAction.class, "MSG_CREATE_DONE")); // NOI18N
-                logger.output(""); // NOI18N
-            }
-        };
-        support.start(rp, root, org.openide.util.NbBundle.getMessage(CreateBranchAction.class, "MSG_CreateBranch_Progress", branchName)); //NOI18N
+        TagManager manager = new TagManager(repository);
+        manager.showDialog();
     }
 }

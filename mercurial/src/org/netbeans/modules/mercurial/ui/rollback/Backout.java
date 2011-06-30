@@ -51,7 +51,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import java.io.File;
-import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 
 /**
  *
@@ -63,15 +63,13 @@ public class Backout implements PropertyChangeListener {
     private JButton okButton;
     private JButton cancelButton;
     private File repository;
-    private RepositoryRevision repoRev;
     
     /** Creates a new instance of Backout */
-    public Backout(File repository, RepositoryRevision repoRev) {
+    public Backout(File repository, HgLogMessage repoRev) {
         this (repository, null, repoRev);
     }
 
-    public Backout(File repository, String defaultRevision, RepositoryRevision repoRev) {
-        this.repoRev = repoRev;
+    public Backout(File repository, String defaultRevision, HgLogMessage repoRev) {
         this.repository = repository;
         panel = new BackoutPanel(repository, repoRev);
         okButton = new JButton();

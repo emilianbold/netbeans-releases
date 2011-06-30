@@ -45,20 +45,12 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.Component;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import org.netbeans.swing.tabcontrol.TabData;
@@ -66,6 +58,7 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabListPopupAction;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.openide.util.ImageUtilities;
 
 /**
  * A factory to create tab control buttons.
@@ -75,15 +68,11 @@ import org.netbeans.swing.tabcontrol.event.TabActionEvent;
  */
 public class TabControlButtonFactory {
     
-    private static IconLoader iconCache;
-    
     private TabControlButtonFactory() {
     }
     
     public static Icon getIcon( String iconPath ) {
-        if( null == iconCache )
-            iconCache = new IconLoader();
-        return iconCache.obtainIcon( iconPath );
+        return ImageUtilities.loadImageIcon( iconPath, true );
     }
     
     /**
@@ -474,53 +463,6 @@ public class TabControlButtonFactory {
                 return getPressedIcon();
             
             return super.getIcon();
-        }
-    }
-
-
-    /**
-     * Loader for icons. Caches loaded icons using hash map.
-     */
-    final private static class IconLoader {
-        /* mapping <String, Icon> from resource paths to icon objects, used as cache */
-        private Map<String,Icon> paths2Icons;
-
-        /**
-         * Finds and returns icon instance from cache, if present. Otherwise
-         * loads icon using given resource path and stores icon into cache for
-         * next access.
-         *
-         * @return icon image
-         */
-        public Icon obtainIcon(String iconPath) {
-            if (paths2Icons == null) {
-                paths2Icons = new HashMap<String,Icon>(6);
-            }
-            Icon icon = paths2Icons.get(iconPath);
-            if (icon == null) {
-                // not yet in cache, load and store
-                Image image = loadImage(iconPath);
-                if (image == null) {
-                    throw new IllegalArgumentException("Icon with resource path: "
-                                                       + iconPath
-                                                       + " can't be loaded, probably wrong path.");
-                }
-                icon = new ImageIcon(image);
-                paths2Icons.put(iconPath, icon);
-            }
-            return icon;
-        }
-
-    } // end of IconLoader
-
-    private static Image loadImage(String path) {
-        try {
-            URL url = TabControlButtonFactory.class.getResource("/"+path);
-            return ImageIO.read(url);
-        } catch (Exception e) {
-            Logger.getLogger(TabControlButtonFactory.class.getName()).
-                    log(Level.WARNING, "Cannot load image", e);
-            return null;
         }
     }
 }
