@@ -48,17 +48,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonView;
-import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
+import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.openide.util.Utilities;
 
 /**
@@ -87,75 +88,50 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         properties.putProperty(name, o);
     }
     
-    public String getDisplayName() {
-        String name = properties.getProperty(JOB_DISPLAY_NAME, String.class);
-        return name != null ? name : getName();
+    @NonNull public String getDisplayName() {
+        return properties.getProperty(JOB_DISPLAY_NAME, String.class, getName());
     }
     
-    public String getName() {
+    @NonNull public String getName() {
         return properties.getProperty(JOB_NAME, String.class);
     }
     
-    public String getUrl() {
+    @NonNull public String getUrl() {
         String url = properties.getProperty(JOB_URL, String.class);
         assert url.endsWith("/") : url;
         return url;
     }
     
-    public Color getColor() {
-        return properties.getProperty(JOB_COLOR, Color.class);
+    @NonNull public Color getColor() {
+        return properties.getProperty(JOB_COLOR, Color.class, Color.grey);
     }
     
     public boolean isInQueue() {
-        try {
-            return properties.getProperty(JOB_IN_QUEUE, Boolean.class);
-        } catch (NullPointerException x) {
-            return false;
-        }
+        return properties.getProperty(JOB_IN_QUEUE, Boolean.class, false);
     }
     
     public boolean isBuildable() {
-        return properties.getProperty(JOB_BUILDABLE, Boolean.class);
+        return properties.getProperty(JOB_BUILDABLE, Boolean.class, false);
     }
     
     public int getLastBuild() {
-        try {
-            return properties.getProperty(JOB_LAST_BUILD, Integer.class);
-        } catch (NullPointerException e) {
-            return -1;
-        }
+        return properties.getProperty(JOB_LAST_BUILD, Integer.class, -1);
     }
     
     public int getLastStableBuild() {
-        try {
-            return properties.getProperty(JOB_LAST_STABLE_BUILD, Integer.class);
-        } catch (NullPointerException e) {
-            return -1;
-        }
+        return properties.getProperty(JOB_LAST_STABLE_BUILD, Integer.class, -1);
     }
     
     public int getLastSuccessfulBuild() {
-        try {
-            return properties.getProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.class);
-        } catch (NullPointerException e) {
-            return -1;
-        }
+        return properties.getProperty(JOB_LAST_SUCCESSFUL_BUILD, Integer.class, -1);
     }
     
     public int getLastFailedBuild() {
-        try {
-            return properties.getProperty(JOB_LAST_FAILED_BUILD, Integer.class);
-        } catch (NullPointerException e) {
-            return -1;
-        }
+        return properties.getProperty(JOB_LAST_FAILED_BUILD, Integer.class, -1);
     }
     
     public int getLastCompletedBuild() {
-        try {
-            return properties.getProperty(JOB_LAST_COMPLETED_BUILD, Integer.class);
-        } catch (NullPointerException e) {
-            return -1;
-        }
+        return properties.getProperty(JOB_LAST_COMPLETED_BUILD, Integer.class, -1);
     }
 
     public Collection<HudsonView> getViews() {

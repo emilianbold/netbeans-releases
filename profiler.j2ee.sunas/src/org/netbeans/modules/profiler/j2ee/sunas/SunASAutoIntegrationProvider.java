@@ -60,8 +60,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -70,7 +68,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.attach.AttachWizard;
 import org.netbeans.modules.profiler.attach.providers.IDESettingsPersistor;
 import org.netbeans.modules.profiler.attach.providers.SettingsPersistor;
 import org.netbeans.modules.profiler.attach.providers.ValidationResult;
@@ -619,8 +616,9 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     protected abstract String getWinSpecificCommandLineArgs(String targetPlatform, boolean isRemote, int portNumber);
 
     protected void generateCommands(String targetOS, Collection commandsArray) {
+        final String separator = IntegrationUtils.getDirectorySeparator(targetOS);
         final String asadminScript = getAsAdminScriptFilePath(targetOS);
-        final String domainsDir = getInstallationPath() + IntegrationUtils.getDirectorySeparator(targetOS) + "domains"; // NOI18N
+        final String domainsDir = getInstallationPath() + separator + getDomainsDirPath(separator); // NOI18N
         final String domainName = getDomain();
 
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
@@ -747,7 +745,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     
     private static String getAsScriptFilePath(final String installDir, final String specDir, final String scriptName,
                                               final String targetOS) {
-        final String separator = IntegrationUtils.getPathSeparator(targetOS); // NOI18N
+        final String separator = IntegrationUtils.getDirectorySeparator(targetOS); // NOI18N
         StringBuilder path = new StringBuilder();
 
         path.append(installDir);

@@ -43,9 +43,12 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import java.io.File;
 import java.util.List;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
@@ -59,6 +62,7 @@ import org.openide.util.NbBundle;
  */
 public class LogAction extends SearchHistoryAction {
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Log";                                      //NOI18N
     }
@@ -69,20 +73,42 @@ public class LogAction extends SearchHistoryAction {
         openHistory(context, NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
     }
 
-    private void openHistory(VCSContext context, final String title) {
-        File repositoryRoot = getRepositoryRoot(context);
-        File[] files = getFiles(context, repositoryRoot);
-        if (files == null) {
-            return;
-        }
-        outputSearchContextTab(repositoryRoot, files, "MSG_Log_Title");
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(files);
-        tc.setDisplayName(title);
-        tc.open();
-        tc.requestActive();
-        if (files != null && (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files))) {
-            tc.search();
-        }
+    private void openHistory (final VCSContext context, final String title) {
+        Utils.postParallel(new Runnable() {
+            @Override
+            public void run () {
+                File repositoryRoot = getRepositoryRoot(context);
+                final File[] files = getFiles(context, repositoryRoot);
+                if (files == null) {
+                    return;
+                }
+                outputSearchContextTab(repositoryRoot, files, "MSG_Log_Title");
+                final boolean startSearch = files != null && (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files));
+                final String branchName;
+                HgLogMessage[] parents = WorkingCopyInfo.getInstance(repositoryRoot).getWorkingCopyParents();
+                if (parents.length == 1) {
+                    if (parents[0].getBranches().length > 0) {
+                        branchName = parents[0].getBranches()[0];
+                    } else {
+                        branchName = HgBranch.DEFAULT_NAME;
+                    }
+                } else {
+                    branchName = ""; //NOI18N
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(files, branchName);
+                        tc.setDisplayName(title);
+                        tc.open();
+                        tc.requestActive();
+                        if (startSearch) {
+                            tc.search();
+                        }
+                    }
+                });
+            }
+        }, 0);
     }
 
     /**

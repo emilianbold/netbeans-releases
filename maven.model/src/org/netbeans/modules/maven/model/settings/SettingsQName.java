@@ -66,11 +66,9 @@ public final class SettingsQName {
     }
 
     private final QName qName;
-    private boolean ns;
 
-    SettingsQName(QName name, boolean ns) {
+    SettingsQName(QName name) {
         qName = name;
-        this.ns = ns;
     }
     
     public QName getQName() {
@@ -79,10 +77,6 @@ public final class SettingsQName {
 
     public String getName() {
         return qName.getLocalPart();
-    }
-    
-    public String getQualifiedName() {
-        return (ns ? "" : (qName.getPrefix() + ":")) + qName.getLocalPart();      // NOI18N
     }
     
 }

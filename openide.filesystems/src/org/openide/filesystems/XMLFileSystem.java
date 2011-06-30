@@ -132,13 +132,14 @@ import org.xml.sax.helpers.DefaultHandler;
  * &lt; !ATTLIST attr charvalue CDATA #IMPLIED&gt;
  * &lt; !ATTLIST attr stringvalue CDATA #IMPLIED&gt;
  * &lt; !ATTLIST attr methodvalue CDATA #IMPLIED&gt;
+ * &lt; !ATTLIST attr newvalue CDATA #IMPLIED&gt;
  * &lt; !ATTLIST attr serialvalue CDATA #IMPLIED&gt;
  * &lt; !ATTLIST attr urlvalue CDATA #IMPLIED&gt;
  * &lt; !ATTLIST attr bundlevalue CDATA #IMPLIED&gt; &lt;!-- since version 7.10 --&gt;
  * </PRE>
  *
  * <p>
- * The methodvalue attribute can be in form of <code>pgk1.pkg2.ClassName.methodName</code>
+ * The <em>methodvalue</em> attribute can be in form of <code>pgk1.pkg2.ClassName.methodName</code>
  * which should point to existing class with static method usually having no, one
  * or two arguments. This method does not need to be public or in public class, if 
  * the filesystem has permissions to call the method. The method can take one
@@ -151,6 +152,13 @@ import org.xml.sax.helpers.DefaultHandler;
  * static Value methodName(Map<String,Object> attrs, String attrName); // since 7.0
  * </pre>
  * where <code>Value</code> can be any java type.
+ * <p>
+ * The <em>newvalue</em> should identify (using fully qualified name) a class
+ * with a no-arguments constructor. The constructor does not need to be public,
+ * just the filesystem has to have a permission to invoke it. 
+ * <div class="nonnormative">
+ * Existing implementations of filesystems that read XML layers, do not cache
+ * instances returned from <em>newvalue</em> attributes and always return new ones.</div>
  *
  * <p>
  * If you are interested just in the Class of an attribute, but
