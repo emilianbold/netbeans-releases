@@ -664,10 +664,9 @@ public final class AntActions {
 
                             if (javaVersion.equals(CommonConstants.JDK_15_STRING)) {
                                 // JDK 1.5 used
-                                props.setProperty("profiler.info.jvmargs.agent",
-                                                  IDEUtils.getAntProfilerStartArgument15(ss
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 .getPortNo(),
-                                                                                         ss.getSystemArchitecture()) //NOI18N
+                                props.setProperty("profiler.info.jvmargs.agent", // NOI18N
+                                                  IDEUtils.getAntProfilerStartArgument15(ss.getPortNo(),
+                                                                                         ss.getSystemArchitecture())
                                 );
 
                                 if (platform.getPlatformJDKMinor() >= 7) {
@@ -677,17 +676,15 @@ public final class AntActions {
                                 }
                             } else if (javaVersion.equals(CommonConstants.JDK_16_STRING)) {
                                 // JDK 1.6 used
-                                props.setProperty("profiler.info.jvmargs.agent",
-                                                  IDEUtils.getAntProfilerStartArgument16(ss
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              .getPortNo(),
-                                                                                         ss.getSystemArchitecture()) //NOI18N
+                                props.setProperty("profiler.info.jvmargs.agent", // NOI18N
+                                                  IDEUtils.getAntProfilerStartArgument16(ss.getPortNo(),
+                                                                                         ss.getSystemArchitecture())
                                 );
                                 activateOOMProtection(gps, props, project);
                             } else if (javaVersion.equals(CommonConstants.JDK_17_STRING)) {
-                                props.setProperty("profiler.info.jvmargs.agent",
-                                                  IDEUtils.getAntProfilerStartArgument17(ss
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     .getPortNo(),
-                                                                                         ss.getSystemArchitecture()) //NOI18N
+                                props.setProperty("profiler.info.jvmargs.agent", // NOI18N
+                                                  IDEUtils.getAntProfilerStartArgument17(ss.getPortNo(),
+                                                                                         ss.getSystemArchitecture())
                                 );
                                 activateOOMProtection(gps, props, project);
                             } else {
