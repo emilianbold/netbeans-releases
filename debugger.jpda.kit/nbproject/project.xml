@@ -51,38 +51,10 @@ made subject to such option by the copyright holder.
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.kit</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.api.debugger.jpda</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.debugger.jpda</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.debugger.jpda.ant</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.debugger.jpda.projects</code-name-base>
-                    <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.debugger.jpda.ui</code-name-base>
-                    <build-prerequisite/>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
