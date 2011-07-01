@@ -125,8 +125,8 @@ is the proper place.
       <class package="org.netbeans.swing.tabcontrol" name="WinsysInfoForTabbedContainer"/>
       <class package="org.netbeans.swing.tabcontrol" name="SlideBarDataModel"/>
       <class package="org.netbeans.swing.tabcontrol" name="TabbedContainer"/>
-      <class package="org.netbeans.swing.tabcontrol" name="TabbedDisplayer"/>
-      <class package="org.netbeans.swing.tabcontrol" name="TabbedDisplayerUI"/>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayer"/>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayerUI"/>
       <class package="org.netbeans.swing.tabcontrol.event" name="TabActionEvent"/>
       <class package="org.netbeans.swing.tabcontrol.plaf" name="AbstractViewTabDisplayerUI"/>
       <class package="org.netbeans.swing.tabcontrol.plaf" name="TabControlButton"/>
