@@ -41,16 +41,14 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.tools;
 
-import org.netbeans.modules.libs.cloud9.api.WhiteListTool;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -79,9 +77,15 @@ public class DomainGenerator {
             throw new FileNotFoundException(unpack.getAbsolutePath());
         }
         
+        File mwHome = WLPluginProperties.getMiddlewareHome(serverDir);
+        if (mwHome == null) {
+            throw new FileNotFoundException("Middleware home not found");
+        }
+        
         ExternalProcessBuilder builder = new ExternalProcessBuilder(unpack.getAbsolutePath())
                 .addArgument("-template=" + template.getAbsolutePath()) // NOI18N
                 .addArgument("-domain=" + domainDir.getAbsolutePath()) // NOI18N
+                .addEnvironmentVariable("MW_HOME", mwHome.getAbsolutePath()) // NOI18N
                 .redirectErrorStream(true)
                 .workingDirectory(serverDir);
 

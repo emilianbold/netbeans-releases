@@ -90,17 +90,10 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         if (component == null) {
             component = new OracleWizardComponent(null);
             component.attachSingleListener(this);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getPanelContentData());            
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, OracleWizardIterator.getPanelContentData());            
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(0));
         }
         return component;
-    }
-
-    static String[] getPanelContentData() {
-        return new String[] {
-                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Oracle"),
-                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Resources")
-            };
     }
     
     @Override
@@ -177,22 +170,22 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         try {
             servers = new ArrayList<ServerResourceDescriptor>();
             OracleInstance ai = new OracleInstance("Oracle Cloud 9", component.getUserName(), component.getPassword(), component.getUrl(), component.getTenantId(), component.getServiceName());
-            try {
-                ai.testConnection();
-            } catch (ManagerException ex) {
-                LOG.log(Level.WARNING, "cannot connect to cloud 9", ex);
-                throw new WizardValidationException((JComponent)getComponent(), 
-                        "connection failed", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials"));
-            } catch (Throwable t) {
-                LOG.log(Level.WARNING, "cannot connect", t);
-                throw new WizardValidationException((JComponent)getComponent(), 
-                        "connection exception", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong"));
-            }
-            List<OracleJ2EEInstance> instances = ai.readJ2EEServerInstances();
-            for (OracleJ2EEInstance inst : instances) {
-                OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(inst);
-                servers.add(new ServerResourceDescriptor("Server", n.getDisplayName(), "", ImageUtilities.image2Icon(n.getIcon(BeanInfo.ICON_COLOR_16x16))));
-            }
+//            try {
+//                ai.testConnection();
+//            } catch (ManagerException ex) {
+//                LOG.log(Level.WARNING, "cannot connect to cloud 9", ex);
+//                throw new WizardValidationException((JComponent)getComponent(), 
+//                        "connection failed", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials"));
+//            } catch (Throwable t) {
+//                LOG.log(Level.WARNING, "cannot connect", t);
+//                throw new WizardValidationException((JComponent)getComponent(), 
+//                        "connection exception", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong"));
+//            }
+//            List<OracleJ2EEInstance> instances = ai.readJ2EEServerInstances();
+//            for (OracleJ2EEInstance inst : instances) {
+//                OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(inst);
+//                servers.add(new ServerResourceDescriptor("Server", n.getDisplayName(), "", ImageUtilities.image2Icon(n.getIcon(BeanInfo.ICON_COLOR_16x16))));
+//            }
         } finally {
             getComponent().setCursor(null);
         }

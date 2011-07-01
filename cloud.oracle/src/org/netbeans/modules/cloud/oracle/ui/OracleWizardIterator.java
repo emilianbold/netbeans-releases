@@ -41,27 +41,38 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
+import org.netbeans.modules.j2ee.weblogic9.tools.DomainGenerator;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  */
-public class OracleWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor>{
 
-    private ChangeSupport listeners;
+    private static final String LOCAL_DOMAIN_DIR = "JavaEE/Cloud9";
+
+    private final ChangeSupport listeners;
     private WizardDescriptor wizard;
     private OracleWizardPanel panel;
-    private CloudResourcesWizardPanel panel2;
-    boolean first = true;
+    private LocalInstancePanel panel2;
+    private CloudResourcesWizardPanel panel3;
+    private int count = 0;
 
     public OracleWizardIterator() {
         listeners = new ChangeSupport(this);
@@ -84,6 +95,42 @@ public class OracleWizardIterator implements WizardDescriptor.InstantiatingItera
         String service = (String)wizard.getProperty(OracleWizardPanel.SERVICE_NAME);
         assert service != null;
         
+        String serverDir = (String)wizard.getProperty(LocalInstancePanel.LOCAL_SERVER);
+
+        if (serverDir != null) {
+            File jarFo = InstalledFileLocator.getDefault().locate(
+                    "modules/ext/cloud_10.3.6.0.jar", "org.netbeans.modules.libs.cloud9", false); // NOI18N
+            if (jarFo == null) {
+                throw new IOException("Could not find domain template");
+            }
+            FileObject configRoot = FileUtil.getConfigRoot();
+            FileObject domainDirParent = FileUtil.createFolder(
+                    configRoot, LOCAL_DOMAIN_DIR);
+
+            FileObject domainDir = null;
+            int i = 0;
+            while (domainDir == null) {
+                i++;
+                String domainName = FileUtil.findFreeFolderName(domainDirParent,
+                        "Cloud9Domain"); // NOI18N
+                try {
+                    domainDir = domainDirParent.createFolder(domainName);
+                } catch (IOException ex) {
+                    if (i > 10) {
+                        throw ex;
+                    }
+                }
+            }
+            try {
+                DomainGenerator.generateDomain(new File(serverDir),
+                        jarFo, FileUtil.toFile(domainDir));
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                throw new IOException(ex.getCause());
+            }
+        }
+        
         OracleInstanceManager.getDefault().add(new OracleInstance(name, username, pwd, url, tenant, service));
         
         return Collections.emptySet();
@@ -97,23 +144,39 @@ public class OracleWizardIterator implements WizardDescriptor.InstantiatingItera
     @Override
     public void uninitialize(WizardDescriptor wizard) {
         panel = null;
+        panel2 = null;
+        panel3 = null;
     }
 
     @Override
     public Panel current() {
-        if (first) {
-            if (panel == null) {
-                panel = new OracleWizardPanel();
-            }
-            return panel;
-        } else {
-            if (panel2 == null) {
-                panel2 = new CloudResourcesWizardPanel(OracleWizardPanel.getPanelContentData()[0]);
-            }
-            return panel2;
+        switch (count) {
+            case 0:
+                if (panel == null) {
+                    panel = new OracleWizardPanel();
+                }
+                return panel;
+            case 1:
+                if (panel2 == null) {
+                    panel2 = new LocalInstancePanel();
+                }
+                return panel2;
+            default:
+                if (panel3 == null) {
+                    panel3 = new CloudResourcesWizardPanel(getPanelContentData(), 2);
+                }
+                return panel3;
         }
     }
 
+    static String[] getPanelContentData() {
+        return new String[] {
+                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Oracle"),
+                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Local"),
+                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Resources")
+            };
+    }
+    
     @Override
     public String name() {
         return "Oracle Cloud 9";
@@ -121,22 +184,22 @@ public class OracleWizardIterator implements WizardDescriptor.InstantiatingItera
 
     @Override
     public boolean hasNext() {
-        return first;
+        return count < 2;
     }
 
     @Override
     public boolean hasPrevious() {
-        return !first;
+        return count > 0;
     }
 
     @Override
     public void nextPanel() {
-        first = false;
+        count++;
     }
 
     @Override
     public void previousPanel() {
-        first = true;
+        count--;
     }
 
     @Override

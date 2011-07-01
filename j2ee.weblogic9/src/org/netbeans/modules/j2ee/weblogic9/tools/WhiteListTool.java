@@ -39,12 +39,11 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.libs.cloud9.api;
+package org.netbeans.modules.j2ee.weblogic9.tools;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;

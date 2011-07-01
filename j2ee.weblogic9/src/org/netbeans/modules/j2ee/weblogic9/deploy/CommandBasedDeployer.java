@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
-import org.netbeans.modules.libs.cloud9.api.WhiteListTool;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -88,6 +87,7 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLApplicationModule;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
+import org.netbeans.modules.j2ee.weblogic9.tools.WhiteListTool;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

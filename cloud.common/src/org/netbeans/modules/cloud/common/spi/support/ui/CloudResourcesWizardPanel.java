@@ -57,25 +57,22 @@ public class CloudResourcesWizardPanel implements WizardDescriptor.Panel<WizardD
     
     public static final String PROP_SERVER_RESOURCES = "server-resources";
     
-    private String firstPanelName;
+    private final String[] names;
     
-    public CloudResourcesWizardPanel(String firstPanelName) {
-        this.firstPanelName = firstPanelName;
+    private final int step;
+    
+    public CloudResourcesWizardPanel(String[] names, int step) {
+        this.names = names;
+        this.step = step;
     }
     
     @Override
     public Component getComponent() {
         if (component == null) {
             component = new CloudResourcesWizardComponent(resources);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, 
-                    new String[] {firstPanelName, "Cloud Resources"}
-                    );
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1));
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names);
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(step));
         }
-        return component;
-    }
-
-    private CloudResourcesWizardComponent getComponentImpl() {
         return component;
     }
     
