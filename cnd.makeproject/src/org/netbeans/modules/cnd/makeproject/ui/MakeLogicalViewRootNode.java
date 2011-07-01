@@ -416,7 +416,10 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
             if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
                 standardActions = getAdditionalDiskFolderActions();
-            } else {
+            } else if (active.isCustomConfiguration() && active.getProjectCustomizer().getActions() != null) {
+                return active.getProjectCustomizer().getActions();
+            }
+            else {
                 standardActions = getAdditionalLogicalFolderActions();
             }
             actions.addAll(Arrays.asList(standardActions));
