@@ -312,7 +312,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            Action a = (Action) FileUtil.getConfigFile("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance").getAttribute("instanceCreate");
+            Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
             if(a instanceof ContextAwareAction) {
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
             }            
@@ -331,7 +331,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             if (!noneVersioned) {
                 actions.add(SystemAction.get(CloneAction.class));
             }
-            a = (Action) FileUtil.getConfigFile("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance").getAttribute("instanceCreate");
+            a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
             if(a != null) actions.add(a);
 
             actions.add(SystemAction.get(FetchAction.class));
@@ -363,7 +363,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+                Action a = (Action) FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
