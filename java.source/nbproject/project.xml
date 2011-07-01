@@ -591,6 +591,8 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.api.java.source</package>
                 <package>org.netbeans.api.java.source.support</package>
                 <package>org.netbeans.spi.java.loaders</package>
+                <package>org.netbeans.spi.java.source</package>
+                <package>org.netbeans.spi.java.source.support</package>
             </public-packages>
         </data>
     </configuration>
