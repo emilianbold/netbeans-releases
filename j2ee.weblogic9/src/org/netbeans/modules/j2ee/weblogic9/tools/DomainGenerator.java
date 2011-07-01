@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.tools;
 
+import org.netbeans.modules.libs.cloud9.api.WhiteListTool;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

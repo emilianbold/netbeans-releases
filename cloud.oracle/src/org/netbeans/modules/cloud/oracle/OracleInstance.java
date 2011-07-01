@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.cloud.oracle;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -59,13 +62,23 @@ import oracle.nuviaq.api.ApplicationManagerConnectionFactory;
 import oracle.nuviaq.api.ManagerException;
 import oracle.nuviaq.model.xml.ApplicationDeploymentType;
 import oracle.nuviaq.model.xml.JobType;
+import oracle.nuviaq.model.xml.LogType;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
+import org.netbeans.modules.libs.cloud9.api.WhiteListTool;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * Describes single Amazon account.
@@ -217,11 +230,28 @@ public class OracleInstance {
     public static DeploymentStatus deploy(String urlEndpoint, ApplicationManager am, File f, String tenantId, String serviceName, 
                           ProgressObjectImpl po, String[] url) {
         assert !SwingUtilities.isEventDispatchThread();
+        OutputWriter ow = null;
+        OutputWriter owe = null;
         try {
+            assert f.exists() : "archive does not exist: "+f;
+            if (po != null) {
+                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_WHITELIST_APP"));
+            }
+            String name = "";
+            Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
+            if (p != null) {
+                name = ProjectUtils.getInformation(p).getDisplayName();
+            }
+            String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", name);
+            WhiteListTool.execute(f, tabName);
+            
+            InputOutput io = IOProvider.getDefault().getIO(tabName, false);
+            ow = io.getOut();
+            owe = io.getErr();
             if (po != null) {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
+                ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
             }
-            assert f.exists() : "archive does not exist: "+f;
             String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
             ApplicationDeploymentType adt =new ApplicationDeploymentType();
@@ -258,11 +288,14 @@ public class OracleInstance {
             
             if (po != null) {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
+                ow.print(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
             }
             
+            int numberOfJobsToIgnore = -1;
             while (true) {
                 try {
                     // let's wait
+                    ow.print(".");
                     Thread.sleep(5000);
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
@@ -270,31 +303,77 @@ public class OracleInstance {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
                 JobType latestJob = am.describeJob(jt.getJobId());
                 String jobStatus = latestJob.getStatus();
+                numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
                 if ("Complete".equals(jobStatus)) {
                     
                     // XXX: how do I get this one:
                     
                     url[0] = urlEndpoint+appContext+"/";
-                    
+
+                    ow.println();
+                    ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_OK", url[0]));
                     return DeploymentStatus.SUCCESS;
                 } else if ("submitted".equalsIgnoreCase(jobStatus)) {
                     // let's wait longer
                 } else if ("running".equalsIgnoreCase(jobStatus)) {
                     // let's wait longer
                 } else if ("failed".equalsIgnoreCase(jobStatus)) {
+                    ow.println();
+                    ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_Deployment_FAILED"));
                     return DeploymentStatus.FAILED;
                 }
             }
         } catch (IOException ex) {
+            if (owe != null) {
+                owe.print(ex.toString());
+            }
             Exceptions.printStackTrace(ex);
             return DeploymentStatus.UNKNOWN;
         } catch (ManagerException ex) {
+            if (owe != null) {
+                owe.print(ex.toString());
+            }
             Exceptions.printStackTrace(ex);
             return DeploymentStatus.UNKNOWN;
         } catch (Throwable t) {
+            if (owe != null) {
+                owe.print(t.toString());
+            }
             Exceptions.printStackTrace(t);
             return DeploymentStatus.UNKNOWN;
+        } finally {
+            if (ow != null) {
+                ow.close();
+            }
+            if (owe != null) {
+                owe.close();
+            }
         }
+    }
+    
+    private static int dumpLog(ApplicationManager am, OutputWriter ow, OutputWriter owe, JobType latestJob, int numberOfJobsToIgnore) {
+        int i = 0;
+        for (LogType lt : latestJob.getLogs().getLogs()) {
+            i++;
+            if (numberOfJobsToIgnore > 0) {
+                numberOfJobsToIgnore--;
+                continue;
+            }
+            ow.println("\n==================== Log file: "+lt.getName()+"==========================\n");
+            ByteArrayOutputStream os = new ByteArrayOutputStream(8000);
+            try {
+                am.fetchJobLog(latestJob.getJobId(), lt.getName(), os);
+            } catch (Throwable t) {
+                owe.println("Exception occured while retrieving the log:\n"+t.toString());
+                continue;
+            }
+            try {
+                ow.println(os.toString(Charset.defaultCharset().name()));
+            } catch (UnsupportedEncodingException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return i;
     }
     
     public static <T> Future<T> runAsynchronously(Callable<T> callable) {

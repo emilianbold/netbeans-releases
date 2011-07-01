@@ -39,9 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.tools;
+package org.netbeans.modules.libs.cloud9.api;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -54,8 +57,12 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -69,6 +76,10 @@ public class WhiteListTool {
             new ExecutionDescriptor().controllable(false).frontWindow(true);
     
     public static boolean execute(File file) {
+        return execute(file, NbBundle.getMessage(WhiteListTool.class, "MSG_WhiteListOutput"));
+    }
+    
+    public static boolean execute(File file, String displayName) {
         // the tool is not very friendly in order to be used in-jvm so far
         // it si configuring loggers etc.
         File jarFo = InstalledFileLocator.getDefault().locate(
@@ -78,15 +89,54 @@ public class WhiteListTool {
             return true;
         }
 
+        File tempFile;
+        try {
+            tempFile = File.createTempFile("whitelist-", ".log");
+        } catch (IOException ex) {
+            tempFile = null;
+        }
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
                 .addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
-                .addArgument(file.getAbsolutePath()).redirectErrorStream(true)
+                .addArgument(file.getAbsolutePath())
+                .addArgument("-l").addArgument(tempFile.getAbsolutePath()) // NOI18N
+                .redirectErrorStream(true)
                 .workingDirectory(file.getParentFile());
 
         ExecutionService service = ExecutionService.newService(builder,
-                TOOL_DESCRIPTOR, NbBundle.getMessage(WhiteListTool.class, "MSG_WhiteListOutput"));
+                TOOL_DESCRIPTOR, displayName);
         try {
-            return service.run().get().equals(Integer.valueOf(0));
+            boolean res = service.run().get().equals(Integer.valueOf(0));
+            InputOutput io = IOProvider.getDefault().getIO(displayName, false);
+            if (!io.isClosed()) {
+                OutputWriter ow = null;
+                FileReader fr = null;
+                try {
+                    ow = io.getOut();
+                    fr = new FileReader(tempFile);
+                    for (;;) {
+                        int ch = fr.read();
+                        if (ch == -1) {
+                            break;
+                        }
+                        ow.print((char)ch);
+                    }
+                } catch (IOException e) {
+                    
+                } finally {
+                    if (ow != null) {
+                        ow.close();
+                    }
+                    if (fr != null) {
+                        try {
+                            fr.close();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+            tempFile.deleteOnExit();
+            return res;
         } catch (InterruptedException ex) {
             LOGGER.log(Level.INFO, null, ex);
             Thread.currentThread().interrupt();
