@@ -84,8 +84,7 @@ import org.openide.util.Lookup;
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="text.history", 
         mimeType="",
-        position=Integer.MAX_VALUE - 1 // Integer.MAX_VALUE generates no position attr in layer => 
-                                       // o.n.core.validation.ValidateLayerConsistencyTest.testFolderOrdering fails
+        position=1000000 // lets leave some space in case somebody really wants to be the last
 )
 final public class LocalHistoryTopComponent extends TopComponent implements MultiViewElement {
 
