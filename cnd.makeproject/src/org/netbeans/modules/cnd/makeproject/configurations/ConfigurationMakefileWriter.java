@@ -356,9 +356,8 @@ public class ConfigurationMakefileWriter {
             }
         }
         
-        if (conf.isCustomConfiguration()) {
+        if (conf.isCustomConfiguration() && conf.getProjectCustomizer().getMakefileWriter() != null) {
             MakeProjectCustomizer makeProjectCustomizer = conf.getProjectCustomizer();
-            
             String makefileWriterClassName = makeProjectCustomizer.getMakefileWriter();
             if (makefileWriterClassName != null) {
                 Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
