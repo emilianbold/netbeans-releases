@@ -60,10 +60,6 @@ public class CloudResourcesWizardPanel implements WizardDescriptor.Panel<WizardD
     private final String[] names;
     
     private final int step;
-    
-    public CloudResourcesWizardPanel(String firstPanelName) {
-		this(new String[] {firstPanelName}, 1);
-    }
 	
     public CloudResourcesWizardPanel(String[] names, int step) {
         this.names = names;

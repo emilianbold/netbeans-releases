@@ -102,7 +102,7 @@ public class AmazonWizardIterator implements WizardDescriptor.InstantiatingItera
             return panel;
         } else {
             if (panel2 == null) {
-                panel2 = new CloudResourcesWizardPanel(AmazonWizardPanel.getPanelContentData()[0]);
+                panel2 = new CloudResourcesWizardPanel(AmazonWizardPanel.getPanelContentData(), 1);
             }
             return panel2;
         }
