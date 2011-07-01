@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
@@ -68,6 +70,8 @@ public final class AmazonJ2EEServerInstanceProvider implements ServerInstancePro
     private ChangeSupport listeners;
     private List<ServerInstance> instances;
     private static AmazonJ2EEServerInstanceProvider instance;
+    
+    private static Logger LOG = Logger.getLogger(AmazonJ2EEServerInstanceProvider.class.getName());
     
     private AmazonJ2EEServerInstanceProvider() {
         listeners = new ChangeSupport(this);
@@ -129,7 +133,17 @@ public final class AmazonJ2EEServerInstanceProvider implements ServerInstancePro
         return AmazonInstance.runAsynchronously(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                refreshServersSynchronously();
+                try {
+                    refreshServersSynchronously();
+                    
+                    // TODO: set state of all amazon cloud instances to be in OK mode
+                    
+                } catch (RuntimeException e) {
+                    LOG.log(Level.INFO, "refreshServers failed. perhaps AWS is not accessible?", e);
+                    
+                    // TODO: set state of all amazon cloud instances to be in ERROR mode
+                    
+                }
                 return null;
             }
         });

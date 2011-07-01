@@ -146,7 +146,7 @@ public class AmazonInstance {
         assert !SwingUtilities.isEventDispatchThread();
         List<AmazonJ2EEInstance> res = new ArrayList<AmazonJ2EEInstance>();
 
-        try {
+//        try {
             LOG.log(Level.INFO, "read AWS environments"); // NOI18N
             AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
             for (EnvironmentDescription ed : client.describeEnvironments().getEnvironments()) {
@@ -157,9 +157,9 @@ public class AmazonInstance {
                 res.add(inst);
             }
             LOG.log(Level.INFO, "environments available: "+res); // NOI18N
-        } catch (AmazonClientException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+//        } catch (AmazonClientException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
         
 // fake it:
 //        res.add(new AmazonJ2EEInstance(this, "app", "env"));
