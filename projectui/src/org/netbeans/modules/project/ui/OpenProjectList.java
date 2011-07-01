@@ -45,7 +45,6 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,7 +54,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.Collator;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,8 +83,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JDialog;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
@@ -908,12 +904,12 @@ public final class OpenProjectList {
         });
     }
     
-    public void setMainProject( final Project mainProject ) {
-        LOGGER.finer("Setting main project: " + mainProject); // NOI18N
+    public void setMainProject( final Project project ) {
+        LOGGER.finer("Setting main project: " + project); // NOI18N
         logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public @Override Void run() {
-            Project main = mainProject;
+            Project main = project;
             if (main != null && !openProjects.contains(main)) {
                 //#139965 the project passed in here can be different from the current one.
                 // eg when the ManProjectAction shows a list of opened projects, it lists the "non-loaded skeletons"
@@ -938,7 +934,7 @@ public final class OpenProjectList {
                         }
                         if (fail) {
                             logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                            IllegalArgumentException x = new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                            IllegalArgumentException x = new IllegalArgumentException("Project " + ProjectUtils.getInformation(project).getDisplayName() + " is not open and cannot be set as main.");
                             Exceptions.attachSeverity(x, Level.INFO);
                             throw x;
                         }
@@ -948,7 +944,7 @@ public final class OpenProjectList {
                 }
             }
         
-            OpenProjectList.this.mainProject = main;
+            mainProject = main;
             saveMainProject(main);
             return null;
         }
@@ -1148,7 +1144,7 @@ public final class OpenProjectList {
         }
         if (System.getProperty("test.whitelist.stage") == null) { // NOI18N
             // disable warming up of templates when running ide.kit/test/whitelist
-            prepareTemplates(null, null, null, null, p, p.getLookup());
+            prepareTemplates(p, p.getLookup());
         }
         return ok;
     }
@@ -1164,29 +1160,27 @@ public final class OpenProjectList {
             }
         }
     }
-    
-    public static boolean prepareTemplates(
-            JMenu menuItem, ActionListener menuListener,
-            MessageFormat templateName, String propertyName,
-            Project project, Lookup lookup) {
+
+    /** @see #prepareTemplates */
+    public static final class TemplateItem {
+        public final DataObject template;
+        public final String displayName;
+        public final Icon icon;
+        TemplateItem(DataObject template, String displayName, Icon icon) {
+            this.template = template;
+            this.displayName = displayName;
+            this.icon = icon;
+        }
+    }
+    public static List<TemplateItem> prepareTemplates(Project project, Lookup lookup) {
         // check the action context for recommmended/privileged templates..
         PrivilegedTemplates privs = lookup.lookup(PrivilegedTemplates.class);
-        boolean itemAdded = false;
+        final List<TemplateItem> items = new ArrayList<TemplateItem>();
         for (DataObject template : OpenProjectList.getDefault().getTemplatesLRU(project, privs)) {
             Node delegate = template.getNodeDelegate();
-            Icon icon = ImageUtilities.image2Icon(delegate.getIcon(BeanInfo.ICON_COLOR_16x16));
-            String displayName = delegate.getDisplayName();
-            if (templateName != null) {
-                JMenuItem item = new JMenuItem(
-                        templateName.format(new Object[]{displayName}),
-                        icon);
-                item.addActionListener(menuListener);
-                item.putClientProperty(propertyName, template);
-                menuItem.add(item);
-            } // else being warmed up from notifyOpened
-            itemAdded = true;
+            items.add(new TemplateItem(template, delegate.getDisplayName(), ImageUtilities.image2Icon(delegate.getIcon(BeanInfo.ICON_COLOR_16x16))));
         }
-        return itemAdded;
+        return items;
     }
 
     private boolean doOpenProject(final @NonNull Project p) {
