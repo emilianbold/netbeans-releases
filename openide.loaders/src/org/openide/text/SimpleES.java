@@ -49,6 +49,7 @@ import java.util.concurrent.Callable;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
@@ -57,6 +58,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiDataObject.Entry;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.windows.CloneableOpenSupport;
@@ -67,7 +69,8 @@ import org.openide.windows.CloneableOpenSupport;
  * @author Jaroslav Tulach
  */
 final class SimpleES extends DataEditorSupport 
-implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie {
+implements OpenCookie, EditCookie, EditorCookie.Observable, 
+PrintCookie, CloseCookie, SaveAsCapable, LineCookie {
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
