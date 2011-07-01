@@ -203,7 +203,7 @@ public class ProjectTab extends TopComponent
     }
 
     /**
-     * Update display to reflect {@link org.netbeans.modules.project.ui.groups.Group#getActiveGroup}.
+     * Update display to reflect {@link Group#getActiveGroup}.
      * @param group current group, or null
      */
     public void setGroup(Group g) {
@@ -736,7 +736,7 @@ public class ProjectTab extends TopComponent
                 try {
                     n = NodeOp.findPath(rootNode, sp);
                 } catch (NodeNotFoundException e) {
-                    LOG.log(Level.FINE, "got {0}", e);
+                    LOG.log(Level.FINE, "got {0}", e.toString());
                     n = e.getClosestNode();
                 }
                 if (n == null) { // #54832: it seems that sometimes we get unparented node

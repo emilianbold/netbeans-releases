@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -159,7 +160,9 @@ public class WorkingCopyInfo {
             for (HgLogMessage newParent : parents) {
                 boolean contains = false;
                 for (HgLogMessage oldParent : oldParents) {
-                    if (oldParent.getCSetShortID().equals(newParent.getCSetShortID())) {
+                    if (oldParent.getCSetShortID().equals(newParent.getCSetShortID())
+                            && oldParent.getTags().length == newParent.getTags().length
+                            && new HashSet<String>(Arrays.asList(oldParent.getTags())).equals(new HashSet<String>(Arrays.asList(newParent.getTags())))) {
                         contains = true;
                         break;
                     }

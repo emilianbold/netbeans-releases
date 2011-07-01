@@ -54,6 +54,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.JPopupMenu;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
@@ -167,11 +169,19 @@ public class ScreenshotComponent extends TopComponent {
             }
 
             @Override
-            public void mousePressed(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    selectComponentAt(e.getX(), e.getY());
+                    showPopupMenu(e.getX(), e.getY());
+                }
+            }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 selectComponentAt(e.getX(), e.getY());
+                if (e.isPopupTrigger()) {
+                    showPopupMenu(e.getX(), e.getY());
+                }
             }
 
             @Override
@@ -179,6 +189,15 @@ public class ScreenshotComponent extends TopComponent {
 
             @Override
             public void mouseExited(MouseEvent e) {}
+            
+            private void showPopupMenu(int x, int y) {
+                Node[] activatedNodes = getActivatedNodes();
+                if (activatedNodes.length == 1) {
+                    JPopupMenu contextMenu = activatedNodes[0].getContextMenu();
+                    contextMenu.show(ScreenshotComponent.this, x, y);
+                    //showPopup(e.getX(), e.getY(), activatedNodes[0].getActions(true));
+                }
+            }
             
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -215,6 +234,9 @@ public class ScreenshotComponent extends TopComponent {
                     }
                     selection = ci.getWindowBounds();
                     if (oldSelection != null) {
+                        if (oldSelection.equals(selection)) {
+                            return ; // already selected
+                        }
                         repaint(oldSelection.x, oldSelection.y, oldSelection.width + 3, oldSelection.height + 3);
                     }
                     repaint(selection.x, selection.y, selection.width + 3, selection.height + 3);
@@ -235,6 +257,17 @@ public class ScreenshotComponent extends TopComponent {
                 } catch (PropertyVetoException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            }
+
+            private void showPopup(int x, int y, Action[] actions) {
+                if (actions.length == 0) {
+                    return ;
+                }
+                JPopupMenu menu = new JPopupMenu();
+                for (Action a : actions) {
+                    
+                }
+                menu.show(canvas, x, y);
             }
 
         }

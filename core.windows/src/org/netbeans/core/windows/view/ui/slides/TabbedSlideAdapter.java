@@ -62,6 +62,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SingleSelectionModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
@@ -95,12 +96,15 @@ public final class TabbedSlideAdapter implements Tabbed {
     private List<ActionListener> actionListeners;
     private final ChangeSupport cs = new ChangeSupport(this);
     
+    private final ModeImpl slidingMode;
+    
     /** Creates a new instance of SlideBarTabs */
     public TabbedSlideAdapter(String side) {
         dataModel = new SlideBarDataModel.Impl();
         setSide(side);
         selModel = new DefaultSingleSelectionModel();
         slideBar = new SlideBar(this, (SlideBarDataModel)dataModel, selModel);
+        slidingMode = findSlidingMode();
     }
     
     @Override
@@ -122,6 +126,8 @@ public final class TabbedSlideAdapter implements Tabbed {
             orientation = SlideBarDataModel.EAST;
         } else if (Constants.BOTTOM.equals(side)) {
             orientation = SlideBarDataModel.SOUTH;
+        } else if (Constants.TOP.equals(side)) {
+            orientation = SlideBarDataModel.NORTH;
         }
         ((SlideBarDataModel)dataModel).setOrientation(orientation);
     }
@@ -317,7 +323,7 @@ public final class TabbedSlideAdapter implements Tabbed {
         if (getTabCount() != 0) {
             if (nextTab == 0) {
                 Rectangle rect = getTabBounds(0);
-                if (sbdm.getOrientation() == SlideBarDataModel.SOUTH) {
+                if (isHorizontal()) {
                     rect.x = 0;
                     rect.width = rect.width / 2;
                 } else {
@@ -329,7 +335,7 @@ public final class TabbedSlideAdapter implements Tabbed {
                 Rectangle rect1 = getTabBounds(nextTab - 1);
                 Rectangle rect2 = getTabBounds(nextTab);
                 Rectangle result = new Rectangle();
-                if (sbdm.getOrientation() == SlideBarDataModel.SOUTH) {
+                if (isHorizontal()) {
                     result.y = rect1.y;
                     result.height = rect1.height;
                     result.x = rect1.x + (rect1.width / 2);
@@ -343,7 +349,7 @@ public final class TabbedSlideAdapter implements Tabbed {
                 return result;
             } else if (nextTab == getTabCount()) {
                 Rectangle rect = getTabBounds(getTabCount() - 1);
-                if (sbdm.getOrientation() == SlideBarDataModel.SOUTH) {
+                if (isHorizontal()) {
                     rect.x = rect.x + rect.width;
                 } else {
                     rect.y = rect.y + rect.height;
@@ -351,8 +357,7 @@ public final class TabbedSlideAdapter implements Tabbed {
                 return rect;
             }
         } 
-        Rectangle rect = slideBar.getBounds();
-        if (sbdm.getOrientation() == SlideBarDataModel.SOUTH) {
+        if (isHorizontal()) {
             return new Rectangle(10, 0, 50, 20);
         }
         return new Rectangle(0, 10, 20, 50);
@@ -443,6 +448,35 @@ public final class TabbedSlideAdapter implements Tabbed {
         Rectangle res = slideBar.getBounds();
         res.setLocation( 0, 0 );
         return res;
+    }
+    
+    final ModeImpl getSlidingMode() {
+        return slidingMode;
+    }
+    
+    private ModeImpl findSlidingMode() {
+        String modeName;
+        switch( ((SlideBarDataModel)dataModel).getOrientation() ) {
+            case SlideBarDataModel.EAST:
+                modeName = "rightSlidingSide"; //NOI18N
+                break;
+            case SlideBarDataModel.SOUTH:
+                modeName = "bottomSlidingSide"; //NOI18N
+                break;
+            case SlideBarDataModel.NORTH:
+                modeName = "topSlidingSide"; //NOI18N
+                break;
+            case SlideBarDataModel.WEST:
+            default:
+                modeName = "leftSlidingSide"; //NOI18N
+        }
+        return ( ModeImpl ) WindowManagerImpl.getInstance().findMode( modeName );
+    }
+
+    
+    final boolean isHorizontal() {
+        return ((SlideBarDataModel)dataModel).getOrientation() == SlideBarDataModel.SOUTH 
+                || ((SlideBarDataModel)dataModel).getOrientation() == SlideBarDataModel.NORTH;
     }
 }
 

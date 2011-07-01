@@ -406,10 +406,6 @@ final class MIMESupport extends Object {
                 }
                 InputStream is = fileObj.getInputStream();
 
-                if (!(is instanceof BufferedInputStream)) {
-                    is = new BufferedInputStream(is);
-                }
-
                 fixIt = new CachedInputStream(is);
             }
 

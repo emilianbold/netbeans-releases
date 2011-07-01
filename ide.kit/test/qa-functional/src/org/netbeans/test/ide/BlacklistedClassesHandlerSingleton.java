@@ -400,6 +400,9 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 ThreadInfo[] threads = threadBean.dumpAllThreads(false, false);
                                 for (ThreadInfo ti : threads) {
                                     if (ti.getThreadId() == Thread.currentThread().getId()) {
+                                        StackTraceElement fakeEl = new StackTraceElement(className, "<loaded>", null, -1);
+                                        
+                                        ti.getStackTrace()[0] = fakeEl;
                                         samples.writeSample(new ThreadInfo[] {ti}, start*1000000L + violation * 10000000L, -1);
                                         break;
                             }

@@ -407,7 +407,7 @@ public class HtmlCompletionQuery extends UserTask {
             }
 
             //extensions
-            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText, itemText);
+            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, documentItemOffset - 1, preText, itemText, node);
             for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
                 result.addAll(e.completeOpenTags(context));
             }
@@ -438,7 +438,7 @@ public class HtmlCompletionQuery extends UserTask {
             }
 
             //extensions
-            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "", "");
+            HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, offset - 1, "", "", node);
             for (HtmlExtension e : HtmlExtension.getRegisteredExtensions(sourceMimetype)) {
                 Collection<CompletionItem> items = e.completeOpenTags(context);
                 result.addAll(items);
