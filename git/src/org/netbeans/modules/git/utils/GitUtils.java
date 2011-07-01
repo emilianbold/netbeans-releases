@@ -135,7 +135,7 @@ public final class GitUtils {
 
     /**
      * Returns the administrative git folder for the given repository and normalizes the file
-     * @param repositoryRoot root of the repository
+     * @param repositoryRoot normalized root of the repository
      * @return administrative git folder
      */
     public static File getGitFolderForRoot (File repositoryRoot) {
