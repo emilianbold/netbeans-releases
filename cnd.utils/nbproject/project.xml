@@ -107,6 +107,7 @@
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.componentproject</friend>
                 <friend>com.sun.tools.tuxedo.ubb</friend>
+                <friend>com.sun.tools.tuxedo.suites</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
                 <friend>org.netbeans.modules.cnd.api.project</friend>
