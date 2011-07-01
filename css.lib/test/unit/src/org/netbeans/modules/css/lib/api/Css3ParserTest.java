@@ -61,6 +61,8 @@ import org.openide.filesystems.FileObject;
  */
 public class Css3ParserTest extends CslTestBase {
 
+    private static final String bodysetPath = "styleSheet/bodylist/bodyset/";
+    
     public Css3ParserTest(String testName) {
         super(testName);
     }
@@ -78,52 +80,50 @@ public class Css3ParserTest extends CslTestBase {
         CssParserResult.IN_UNIT_TESTS = true;
     }
     
-    public void testError1() throws ParseException, BadLocationException {
-        String code = "myns|h1  color: red; }";
+    public void testErrorRecoveryInRule() throws ParseException, BadLocationException {
+        //resync the parser to the last right curly bracket
+        String code = "myns|h1  color: red; } h2 { color: blue; }";
         
-//        String code = "myns|h1 { color: red; }";
-//        String code = "*|h1 { color: red; }";
-//        String code = "*|* { color: red; }";
         CssParserResult res = parse(code);
         dumpResult(res);
+        
+        //this case recovers badly so far - the myns|h1 and h2 are joined into a single ruleset
     }
 
-    public void testErrorInsideDeclaration() throws ParseException, BadLocationException {
+    public void testErrorRecoveryInsideDeclaration() throws ParseException, BadLocationException {
         //recovery inside declaration rule, resyncing to next semicolon or right curly brace
         String code = "a {\n"
-                        + " background: red; \n"
                         + " s  red; \n"
+                        + " background: red; \n"
                       + "}";
         
         CssParserResult res = parse(code);
-        System.out.println(code);
-        System.out.println("-----------------");
-        dumpResult(res);
+        //dumpResult(res);
         
-        code = "a {\n"
-                        + " background: red; \n"
-                        + " s  red \n"
-                      + "}";
+        //the background: red; declaration is properly parsed even if the previous declaration is broken
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
         
-        res = parse(code);
-        System.out.println(code);
-        System.out.println("-----------------");
-        dumpResult(res);
     }
     
-    public void testErrorBeforeDeclaration() throws ParseException, BadLocationException {
-        //the parser won't enter declaration rule so the recovery needs to be in the outer level
+    public void testErrorRecoveryGargabeBeforeDeclaration() throws ParseException, BadLocationException {
+        //recovery before entering declaration rule, the Parser.syncToIdent() is used to skip until ident is found
         String code = "a {\n"
+                        + " @ color: red; \n"
                         + " background: red; \n"
-                        + " : red; \n"
                       + "}";
         
         CssParserResult res = parse(code);
-        System.out.println(code);
-        System.out.println("-----------------");
-        dumpResult(res);
+        //dumpResult(res);
+        
+        //the garbage char @ is skipped by Parser.syncToIdent()
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
+        
     }
-   
+    
     public void testValidCode() throws ParseException, BadLocationException {
         String code = "a {\n"
                         + "color : black; \n"
@@ -131,20 +131,44 @@ public class Css3ParserTest extends CslTestBase {
                       + "}";
         
         CssParserResult res = parse(code);
-        System.out.println(code);
-        System.out.println("-----------------");
-        dumpResult(res);
+        //dumpResult(res);
+        
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
     }
    
-    public void testNamespaces() throws ParseException, BadLocationException {
-        assertResultOK(parse("myns|h1 { color: red; }"));
-        assertResultOK(parse("*|h1 { color: red; }"));
-        assertResultOK(parse("*|* { color: red; }"));
+    public void testNamespacesInSelector() throws ParseException, BadLocationException {
+        CssParserResult res = assertResultOK(parse("myns|h1 { color: red; }"));
+        //dumpResult(res);
+        
+        String typeSelectorPath = "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/";
+        
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + typeSelectorPath + "namespacePrefix/myns"));
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + typeSelectorPath + "elementName/h1"));        
+        
+        res = assertResultOK(parse("*|h1 { color: red; }"));
+        //dumpResult(res);
+        
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + typeSelectorPath + "namespacePrefix/*"));
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + typeSelectorPath + "elementName/h1"));
+        
+        res = assertResultOK(parse("*|* { color: red; }"));
+        //dumpResult(res);
+        
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + typeSelectorPath + "namespacePrefix/*"));
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                bodysetPath + typeSelectorPath + "elementName/*"));
     }
         
     public void testNetbeans_Css() throws ParseException, BadLocationException {
-        CssParserResult result = assertResult(parse(getTestFile("testfiles/netbeans.css3")), 2);
-//        NodeUtil.dumpTree(result.getParseTree());
+        assertResult(parse(getTestFile("testfiles/netbeans.css3")), 2);
     }
 
     private CssParserResult assertResultOK(CssParserResult result) {

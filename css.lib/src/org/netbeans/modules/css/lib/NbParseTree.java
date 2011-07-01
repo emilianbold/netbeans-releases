@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib;
 
+import java.lang.annotation.ElementType;
 import java.util.Collections;
 import java.util.List;
 import org.antlr.runtime.CommonToken;
@@ -115,6 +116,7 @@ public class NbParseTree extends ParseTree implements Node {
     }
 
     @Override
+    @SuppressWarnings(value="unchecked") //antlr 3.3 does not use generics
     public List<Node> children() {
         List ch = getChildren();
         return ch == null 

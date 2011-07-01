@@ -42,6 +42,8 @@
 package org.netbeans.modules.css.lib.api;
 
 import java.io.PrintWriter;
+import java.util.Locale;
+import java.util.StringTokenizer;
 
 /**
  *
@@ -51,6 +53,53 @@ public class NodeUtil {
 
     private static final String INDENT = "    ";
 
+    
+    public static Node query(Node base, String path) {
+        return query(base, path, false);
+    }
+
+    /** find an Node according to the given tree path
+     * example of path: declaration/property|1/color -- find a second color property  (index from zero)
+     */
+    public static Node query(Node base, String path, boolean caseInsensitive) {
+        StringTokenizer st = new StringTokenizer(path, "/");
+        Node found = base;
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            int indexDelim = token.indexOf('|');
+
+            String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
+            if (caseInsensitive) {
+                nodeName = nodeName.toLowerCase(Locale.ENGLISH);
+            }
+            String sindex = indexDelim >= 0 ? token.substring(indexDelim + 1, token.length()) : "0";
+            int index = Integer.parseInt(sindex);
+
+            int count = 0;
+            Node foundLocal = null;
+            for (Node child : found.children()) {
+                String childName = child.name();
+                if ((caseInsensitive ? childName = childName.toLowerCase(Locale.ENGLISH) : childName).equals(nodeName) && count++ == index) {
+                    foundLocal = child;
+                    break;
+                }
+            }
+            if (foundLocal != null) {
+                found = foundLocal;
+
+                if (!st.hasMoreTokens()) {
+                    //last token, we may return
+                    assert found.name().equals(nodeName);
+                    return found;
+                }
+
+            } else {
+                return null; //no found
+            }
+        }
+
+        return null;
+    }
     
     public static void dumpTree(Node node) {
         PrintWriter pw = new PrintWriter(System.out);

@@ -43,8 +43,6 @@ package org.netbeans.modules.css.lib.nbparser;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.modules.css.lib.ExtCss3Lexer;
 import org.netbeans.modules.css.lib.ExtCss3Parser;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -54,8 +52,6 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
-import org.netbeans.modules.css.lib.Css3Lexer;
-import org.netbeans.modules.css.lib.Css3Parser;
 import org.netbeans.modules.css.lib.NbParseTree;
 import org.netbeans.modules.css.lib.NbParseTreeBuilder;
 import org.netbeans.modules.css.lib.api.ProblemDescription;

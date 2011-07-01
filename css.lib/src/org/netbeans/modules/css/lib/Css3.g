@@ -319,22 +319,25 @@ pseudo
 
 declaration
     : 
-    syncToIdent
+    syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
     property COLON expr prio?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
-        consumeUntil(input, BitSet.of(SEMI, RBRACE));
+        //recovery: if an mismatched token occures inside a declaration is found,
+        //then skip all tokens until an end of the rule is found represented by right curly brace
+        consumeUntil(input, BitSet.of(SEMI, RBRACE)); 
     }
-    
-    syncToIdent
+
+//recovery: syncs the parser to the first identifier in the token input stream
+//since the rule matches epsilon it will always be entered
+syncToIdent
     @init {
         syncToSet(BitSet.of(IDENT));
     }
     	:	
     	//match nothing so the rule is always entered
     	;
-    
     
 prio
     : IMPORTANT_SYM
