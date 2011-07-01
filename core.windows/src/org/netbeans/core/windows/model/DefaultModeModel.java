@@ -47,14 +47,21 @@ package org.netbeans.core.windows.model;
 
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.netbeans.core.windows.Constants;
 
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.SplitConstraint;
+import org.netbeans.core.windows.Switches;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.windows.TopComponent;
 
 
@@ -147,6 +154,7 @@ final class DefaultModeModel implements ModeModel {
     public void addOpenedTopComponent(TopComponent tc) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.addOpenedTopComponent(tc);
+            sortOpenedTopComponents();
         }
     }
     
@@ -154,7 +162,48 @@ final class DefaultModeModel implements ModeModel {
     public void insertOpenedTopComponent(TopComponent tc, int index) {
         synchronized(LOCK_TOPCOMPONENTS) {
             topComponentSubModel.insertOpenedTopComponent(tc, index);
+            sortOpenedTopComponents();
         }
+    }
+    
+    private void sortOpenedTopComponents() {
+        if( getKind() != Constants.MODE_KIND_SLIDING )
+            return;
+        if( !Switches.isModeSlidingEnabled() )
+            return;
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        List<TopComponent> opened = topComponentSubModel.getOpenedTopComponents();
+        final List<String> prevModes = new ArrayList<String>( opened.size() );
+        final Map<TopComponent, String> tc2modeName = new HashMap<TopComponent, String>( opened.size() );
+        for( TopComponent tc : opened ) {
+            String tcId = wm.findTopComponentID( tc );
+            if( null == tcId )
+                continue;
+            ModeImpl prevMode = getTopComponentPreviousMode( tcId );
+            if( null == prevMode )
+                continue;
+            if( !prevModes.contains( prevMode.getName() ) )
+                prevModes.add( prevMode.getName() );
+            tc2modeName.put( tc, prevMode.getName() );
+        }
+        
+        if( prevModes.isEmpty() )
+            return; //nothing to sort by (shouldn't really happen)
+        
+        Collections.sort( opened, new Comparator<TopComponent>() {
+            @Override
+            public int compare( TopComponent o1, TopComponent o2 ) {
+                String mode1 = tc2modeName.get( o1 );
+                String mode2 = tc2modeName.get( o2 );
+                if( null == mode1 && null != mode2 ) {
+                    return 1;
+                } else if( null != mode1 && null == mode2 ) {
+                    return -1;
+                }
+                return prevModes.indexOf( mode1 ) - prevModes.indexOf( mode2 );
+            }
+        });
+        topComponentSubModel.setOpenedTopComponents( opened );
     }
     
     @Override
@@ -393,6 +442,7 @@ final class DefaultModeModel implements ModeModel {
     public void setTopComponentPreviousMode(String tcID, ModeImpl mode, int prevIndex) {
         synchronized(LOCK_TC_CONTEXTS) {
             getContextSubModel().setTopComponentPreviousMode(tcID, mode, prevIndex);
+            sortOpenedTopComponents();
         }
     }
     

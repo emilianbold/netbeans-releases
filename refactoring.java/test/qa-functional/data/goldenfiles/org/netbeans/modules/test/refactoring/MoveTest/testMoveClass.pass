@@ -1,0 +1,79 @@
+==>Reference
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package moveSource;
+
+import modeDest.Move;
+
+/**
+ *
+ * @author Jiri Prox <Jiri Prox@Sun.COM>
+ */
+public class Reference {
+
+
+    public void test() {
+        Move m = new Move();
+        modeDest.Move a;        
+    }
+}
+==>StatRef
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package moveSource;
+
+
+import static modeDest.Move.statMethod;
+/**
+ *
+ * @author Jiri Prox <Jiri Prox@Sun.COM>
+ */
+public class StatRef {
+
+    public void test() {
+        statMethod();
+    }
+
+    public static void statRef() {
+        
+    }
+
+}
+Created directory:
+/modeDest
+Created file:
+==>Move.java
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package modeDest;
+
+import moveSource.Reference;
+import moveSource.StatRef;
+
+/**
+ *
+ * @author Jiri Prox <Jiri Prox@Sun.COM>
+ */
+public class Move {
+
+    public void method() {
+        Reference r;
+        StatRef sr;
+
+    }
+
+    public static void statMethod() {
+        
+    }
+}
+Deleted file:
+/moveSource/Move.java
