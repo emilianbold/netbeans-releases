@@ -88,7 +88,7 @@ public class SyntaxAnalyzerResult {
     //ns URI to AstNode map
     private Map<String, ParseResult> embeddedCodeParseResults;
     //ns URI to PREFIX map
-    private Map<String, List<String>> namespaces;
+    private Map<String, Collection<String>> namespaces;
 
     private ParseResult undeclaredEmbeddedCodeParseResult;
 
@@ -491,7 +491,7 @@ public class SyntaxAnalyzerResult {
     // URI to prefix map
     @Deprecated
     public Map<String, String> getDeclaredNamespaces() {
-        Map<String, List<String>> all = getAllDeclaredNamespaces();
+        Map<String, Collection<String>> all = getAllDeclaredNamespaces();
         Map<String, String> firstPrefixOnly = new HashMap<String, String>();
         for (String namespace : all.keySet()) {
             Collection<String> prefixes = all.get(namespace);
@@ -545,9 +545,9 @@ public class SyntaxAnalyzerResult {
      * @return map of namespace URI to a List of prefixes. The prefixes in the list
      * are sorted according to their occurrences in the document.
      */
-    public synchronized Map<String, List<String>> getAllDeclaredNamespaces() {
+    public synchronized Map<String, Collection<String>> getAllDeclaredNamespaces() {
         if (namespaces == null) {
-            this.namespaces = new HashMap<String, List<String>>();
+            this.namespaces = new HashMap<String, Collection<String>>();
 
             //add the artificial namespaces to prefix map to the physically declared results
             if(resolver != null) {
@@ -565,7 +565,7 @@ public class SyntaxAnalyzerResult {
                             String value = attr.getValue();
                             //do not overwrite already existing entry
                             String key = dequote(value);
-                            List<String> prefixes = namespaces.get(key);
+                            Collection<String> prefixes = namespaces.get(key);
                             if (prefixes == null) {
                                 prefixes = new LinkedList<String>();
                                 prefixes.add(nsPrefix);
