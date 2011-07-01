@@ -98,6 +98,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
@@ -244,6 +245,10 @@ public class SourceUtils {
 	}
 		
 	return (TypeElement)ec;
+    }
+
+    public static String[] getJVMSignature(final ElementHandle<?> handle) {
+        return ElementHandleAccessor.INSTANCE.getVMSignature(handle);
     }
     
     /**Resolve full qualified name in the given context. Adds import statement as necessary.

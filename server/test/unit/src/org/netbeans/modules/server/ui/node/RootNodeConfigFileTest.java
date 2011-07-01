@@ -49,6 +49,7 @@ import java.util.Arrays;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.server.ServerRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -107,13 +108,13 @@ public class RootNodeConfigFileTest extends NbTestCase {
 
             private void check1() {
                 try {
-                    RootNode.enableActionsOnExpand();
+                    RootNode.enableActionsOnExpand(ServerRegistry.getInstance());
                     assertEquals("No action called", 0, a.cnt);
                     assertEquals("No action called2", 0, b.cnt);
 
                     FileObject huk = FileUtil.createData(FileUtil.getConfigRoot(), "Kuk/Buk/Huk.instance");
 
-                    RootNode.enableActionsOnExpand();
+                    RootNode.enableActionsOnExpand(ServerRegistry.getInstance());
                     assertEquals("CntAction called", 1, a.cnt);
                     assertEquals("No Myaction", 0, b.cnt);
                 } catch (Throwable ex) {

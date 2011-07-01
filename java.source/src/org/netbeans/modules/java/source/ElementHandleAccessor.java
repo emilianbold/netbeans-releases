@@ -75,5 +75,5 @@ public abstract class ElementHandleAccessor {
     
     public abstract <T extends Element> T resolve (ElementHandle<T> handle, JavacTaskImpl jti);
         
-    
+    public abstract String[] getVMSignature(ElementHandle<?> handle);
 }
