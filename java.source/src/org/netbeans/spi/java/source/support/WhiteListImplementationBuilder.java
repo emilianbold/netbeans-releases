@@ -68,17 +68,22 @@ public final class WhiteListImplementationBuilder {
         this.model = new Model();
     }
 
-    public void addInvocableClass(@NonNull final String classBinaryName) {
+    @NonNull
+    public WhiteListImplementationBuilder addInvocableClass(@NonNull final String classBinaryName) {
         Parameters.notNull("classBinaryName", classBinaryName); //NOI18N
         model.addClass(classBinaryName, INVOKE);
+        return this;
     }
 
-    public void addSubclassableClass(@NonNull final String classBinaryName) {
+    @NonNull
+    public WhiteListImplementationBuilder addSubclassableClass(@NonNull final String classBinaryName) {
         Parameters.notNull("classBinaryName", classBinaryName); //NOI18N
         model.addClass(classBinaryName, OVERRIDE);
+        return this;
     }
 
-    public void addInvocableMethod(
+    @NonNull
+    public WhiteListImplementationBuilder addInvocableMethod(
             @NonNull final String classBinaryName,
             @NonNull final String methodName,
             @NonNull final String... argumentTypes) {
@@ -86,11 +91,12 @@ public final class WhiteListImplementationBuilder {
         Parameters.notNull("methodName", methodName);   //NOI18N
         Parameters.notNull("argumentTypes", argumentTypes); //NOI18N
         model.addMethod(classBinaryName, methodName, argumentTypes, INVOKE);
+        return this;
     }
 
 
-
-    public void addOverridableMethod(
+    @NonNull
+    public WhiteListImplementationBuilder addOverridableMethod(
             @NonNull final String classBinaryName,
             @NonNull final String methodName,
             @NonNull final String... argumentTypes) {
@@ -98,6 +104,7 @@ public final class WhiteListImplementationBuilder {
         Parameters.notNull("methodName", methodName);   //NOI18N
         Parameters.notNull("argumentTypes", argumentTypes); //NOI18N
         model.addMethod(classBinaryName, methodName, argumentTypes, OVERRIDE);
+        return this;
     }
 
     @NonNull
