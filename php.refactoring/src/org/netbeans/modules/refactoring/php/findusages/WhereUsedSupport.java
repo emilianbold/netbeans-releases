@@ -294,8 +294,8 @@ public final class WhereUsedSupport {
 
             @Override
             public int compare(WhereUsedElement o1, WhereUsedElement o2) {
-                String path1 = o1.getFile().getPath();
-                String path2 = o2.getFile().getPath();
+                String path1 = o1.getFile() != null ? o1.getFile().getPath() : ""; //NOI18N
+                String path2 = o2.getFile() != null ? o2.getFile().getPath() : ""; //NOI18N
                 int retval = path1.compareTo(path2);
                 if (retval == 0) {
                     int offset1 = o1.getPosition().getBegin().getOffset();

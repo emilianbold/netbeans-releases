@@ -45,10 +45,6 @@
 package org.netbeans.modules.mercurial.ui.log;
 
 import javax.swing.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -123,19 +119,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         tfLimit.setEnabled(false);
     }
     
-    private Date parseDate(String s) {
-        if (s == null) return null;
-        for (int i = 0; i < SearchExecutor.dateFormats.length; i++) {
-            DateFormat dateformat = SearchExecutor.dateFormats[i];
-            try {
-                return dateformat.parse(s);
-            } catch (ParseException e) {
-                // try the next one
-            }
-        }
-        return null;
-    }
-    
     public String getCommitMessage() {
         String s = tfCommitMessage.getText().trim();
         return s.length() > 0 ? s : null;
@@ -165,10 +148,20 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         if (username == null) username = ""; // NOI18N
         tfUsername.setText(username);
     }
+
+    public String getBranch () {
+        return tfBranch.getText().trim();
+    }
     
+    public void setBranch (String branchName) {
+        tfBranch.setText(branchName);
+    }
+    
+    @Override
     public void addNotify() {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 tfCommitMessage.requestFocusInWindow();
             }
@@ -193,121 +186,141 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         toLabel = new javax.swing.JLabel();
         toInfoLabel = new javax.swing.JLabel();
         toLabel1 = new javax.swing.JLabel();
+        toLabel2 = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
-        setLayout(new java.awt.GridBagLayout());
 
         commitMessageLabel.setLabelFor(tfCommitMessage);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(commitMessageLabel, bundle.getString("CTL_UseCommitMessage")); // NOI18N
         commitMessageLabel.setToolTipText(bundle.getString("TT_CommitMessage")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(commitMessageLabel, gridBagConstraints);
-        commitMessageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_UseCommitMessage")); // NOI18N
 
         tfCommitMessage.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        add(tfCommitMessage, gridBagConstraints);
 
         usernameLabel.setLabelFor(tfUsername);
         org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, bundle.getString("CTL_UseUsername")); // NOI18N
         usernameLabel.setToolTipText(bundle.getString("TT_Username")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(usernameLabel, gridBagConstraints);
 
         tfUsername.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 4, 0, 0);
-        add(tfUsername, gridBagConstraints);
 
         fromLabel.setLabelFor(tfFrom);
         org.openide.awt.Mnemonics.setLocalizedText(fromLabel, bundle.getString("CTL_UseFrom")); // NOI18N
         fromLabel.setToolTipText(bundle.getString("TT_From")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(fromLabel, gridBagConstraints);
 
         tfFrom.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(tfFrom, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(fromInfoLabel, bundle.getString("CTL_FromToHint")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 4);
-        add(fromInfoLabel, gridBagConstraints);
 
         toLabel.setLabelFor(tfTo);
         org.openide.awt.Mnemonics.setLocalizedText(toLabel, bundle.getString("CTL_UseTo")); // NOI18N
         toLabel.setToolTipText(bundle.getString("TT_To")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(toLabel, gridBagConstraints);
 
         tfTo.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(tfTo, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(toInfoLabel, bundle.getString("CTL_FromToHint")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
-        gridBagConstraints.insets = new java.awt.Insets(3, 2, 0, 4);
-        add(toInfoLabel, gridBagConstraints);
 
         toLabel1.setLabelFor(tfLimit);
         org.openide.awt.Mnemonics.setLocalizedText(toLabel1, bundle.getString("CTL_UseLimit")); // NOI18N
         toLabel1.setToolTipText(bundle.getString("TT_Limit")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
-        add(toLabel1, gridBagConstraints);
 
         tfLimit.setColumns(10);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(tfLimit, gridBagConstraints);
+        tfLimit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tfLimitActionPerformed(evt);
+            }
+        });
+
+        toLabel2.setLabelFor(tfBranch);
+        org.openide.awt.Mnemonics.setLocalizedText(toLabel2, bundle.getString("CTL_UseBranch")); // NOI18N
+        toLabel2.setToolTipText(bundle.getString("TT_Branch")); // NOI18N
+
+        tfBranch.setColumns(10);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnSelectBranch, org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_SelectBranch")); // NOI18N
+        btnSelectBranch.setToolTipText(org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "TT_SelectBranch")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(fromLabel)
+            .add(commitMessageLabel)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(usernameLabel)
+                    .add(toLabel)
+                    .add(toLabel2)
+                    .add(toLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, tfUsername, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, tfCommitMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 528, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(tfTo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                            .add(tfFrom, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(tfBranch, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(btnSelectBranch)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, fromInfoLabel)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, toInfoLabel)))
+                    .add(layout.createSequentialGroup()
+                        .add(tfLimit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(2, 2, 2)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(commitMessageLabel)
+                    .add(tfCommitMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(8, 8, 8)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(usernameLabel)
+                    .add(tfUsername, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(fromLabel)
+                        .add(2, 2, 2))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(fromInfoLabel)
+                        .add(tfFrom, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(tfTo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(toInfoLabel))
+                    .add(toLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(btnSelectBranch)
+                    .add(tfBranch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(toLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(toLabel1)
+                    .add(tfLimit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        commitMessageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_UseCommitMessage")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+private void tfLimitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfLimitActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_tfLimitActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JButton btnSelectBranch = new javax.swing.JButton();
     private javax.swing.JLabel commitMessageLabel;
     private javax.swing.JLabel fromInfoLabel;
     private javax.swing.JLabel fromLabel;
+    final javax.swing.JTextField tfBranch = new javax.swing.JTextField();
     private javax.swing.JTextField tfCommitMessage;
     final javax.swing.JTextField tfFrom = new javax.swing.JTextField();
     final javax.swing.JTextField tfLimit = new javax.swing.JTextField();
@@ -316,6 +329,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     private javax.swing.JLabel toInfoLabel;
     private javax.swing.JLabel toLabel;
     private javax.swing.JLabel toLabel1;
+    private javax.swing.JLabel toLabel2;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
     

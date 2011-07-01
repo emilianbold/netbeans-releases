@@ -49,6 +49,25 @@ made subject to such option by the copyright holder.
     <apidef name="plaf">Look And Feel Customization</apidef>
 </apidefs>
 <changes>
+    <change id="branding.of.lfcustoms">
+        <api name="plaf"/>
+        <summary>It is now possible to customize application-specific UIManager keys and values.</summary>
+        <version major="1" minor="22"/>
+        <date day="30" month="6" year="2011"/>
+        <author login="saubrecht"/>
+        <compatibility
+            addition="yes"
+            binary="compatible" deletion="no" deprecation="no"
+            modification="no" semantic="compatible" source="compatible"
+        />
+        <description>
+            <p>
+            Read more about the
+            <a href="architecture-summary.html#property-LookAndFeelCustomsClassName">look and feel Customs branding property</a>.
+            </p>
+        </description>
+        <class package="org.netbeans.swing.plaf" name="Startup"/>
+    </change>
     <change id="branding.of.laf">
         <api name="plaf"/>
         <summary>It is now possible to brand name of Look And Feel</summary>

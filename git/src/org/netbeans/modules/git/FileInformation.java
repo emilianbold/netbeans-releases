@@ -107,8 +107,9 @@ public class FileInformation extends VCSFileInformation {
                 s.add(Status.NEW_HEAD_WORKING_TREE);
             }
             // correction
-            if (s.size() == 1 && s.contains(Status.MODIFIED_INDEX_WORKING_TREE)) {
-                // does not make sense, file is modified between index and wt but otherwise up to date
+            if (s.size() == 1 && (s.contains(Status.MODIFIED_INDEX_WORKING_TREE)
+                    || s.contains(Status.MODIFIED_HEAD_INDEX))) {
+                // does not make sense, file is modified between index and wt (or head and index) but otherwise up to date
                 // let's assume it's modified also between head and wt
                 Git.STATUS_LOG.log(Level.WARNING, "inconsistent status found for {0}: {1}", new Object[] { status.getFile(), s }); //NOI18N
                 s.add(Status.MODIFIED_HEAD_WORKING_TREE);

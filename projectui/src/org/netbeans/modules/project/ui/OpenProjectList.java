@@ -98,6 +98,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.netbeans.modules.project.ui.groups.Group;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -313,6 +314,7 @@ public final class OpenProjectList {
                     }
                     updateGlobalState();
                     ProjectsRootNode.checkNoLazyNode();
+                    Group.projectsLoaded();
                     return;
                 case 2:
                     // finished, oK
@@ -1266,7 +1268,7 @@ public final class OpenProjectList {
             OpenProjectListSettings.getInstance().setMainProjectURL( mainRoot );
         }
         catch ( FileStateInvalidException e ) {
-            OpenProjectListSettings.getInstance().setMainProjectURL( null );
+            OpenProjectListSettings.getInstance().setMainProjectURL((String) null);
         }
     }
         
