@@ -486,26 +486,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 return ActionUtils.createDefaultPopupActions( mode );
             return null;
         }
-        boolean isDocked = WindowManagerImpl.getInstance().isDocked(getTopComponentAt(tabIndex));
-        boolean slidingEnabled = true;
-        TabData td = getModel().getTab(tabIndex);
-        if( td.getComponent() instanceof TopComponent ) {
-            slidingEnabled = Switches.isSlidingEnabled((TopComponent)td.getComponent());
-        }
-        // no auto hide for editors and floating views
-        if (TabbedContainer.TYPE_EDITOR == getType() || !isDocked 
-                || !Switches.isTopComponentSlidingEnabled() || !slidingEnabled) {
-            return defaultActions;
-        }
-        int actionCount = defaultActions.length;
-        Action[] result = new Action[actionCount + 1];
-        System.arraycopy(defaultActions, 0, result, 0, actionCount);
-        // #82052: undock action as last item, auto hide as first before last
-        if (actionCount > 0) {
-            result[actionCount] = result[actionCount - 1];
-            result[actionCount - 1] = new ActionUtils.AutoHideWindowAction(this, tabIndex, false);
-        }
-        return result;
+        return defaultActions;
     }
     
     private ModeImpl getModeImpl() {

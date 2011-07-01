@@ -57,6 +57,7 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -72,6 +73,8 @@ implements PropertyChangeListener {
         putValue(NAME, NbBundle.getMessage(CloseModeAction.class, "CTL_MinimizeModeAction"));
         TopComponent.getRegistry().addPropertyChangeListener(
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+        WindowManager.getDefault().addPropertyChangeListener(
+            WeakListeners.propertyChange(this, WindowManager.getDefault()));
         if (SwingUtilities.isEventDispatchThread()) {
             updateEnabled();
         } else {
@@ -114,7 +117,8 @@ implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+        if(TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())
+                || WindowManager.PROP_MODES.equals(evt.getPropertyName()) ) {
             updateEnabled();
         }
     }
