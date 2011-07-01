@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.git;
 
-import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
@@ -219,6 +220,29 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
     }
 
+    public void testExternalCommit () throws Exception {
+        waitForInitialScan();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
+        getClient(repositoryLocation).commit(new File[] { modifiedFile }, "initial add", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        write(modifiedFile, "modification");
+        getClient(repositoryLocation).add(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        // must run an external status since it somehow either modifies the index or sorts it or whatever
+        runExternally(repositoryLocation, Arrays.asList(new String[] { "git", "status" } ));
+        Thread.sleep(1000);
+        waitForRefresh();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.MODIFIED_HEAD_INDEX));
+
+        // now try an external commit, it should not modify the index in any way
+        long indexTS = new File(new File(repositoryLocation, ".git"), "index").lastModified();
+        runExternally(repositoryLocation, Arrays.asList(new String[] { "git", "commit", "-m", "commit message" } ));
+        // index stays the same
+        assertEquals(indexTS, new File(new File(repositoryLocation, ".git"), "index").lastModified());
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.MODIFIED_HEAD_INDEX));
+        // the cache should still be refreshed
+        waitForRefresh();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.UPTODATE));
+    }
+
     private void waitForRefresh () throws Exception {
         InterceptorRefreshHandler handler = new InterceptorRefreshHandler();
         Git.STATUS_LOG.addHandler(handler);
@@ -230,7 +254,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
             }
         }
         if (!handler.refreshed) {
-            fail("cache not refresh");
+            fail("cache not refreshed");
         }
         Git.STATUS_LOG.removeHandler(handler);
     }
