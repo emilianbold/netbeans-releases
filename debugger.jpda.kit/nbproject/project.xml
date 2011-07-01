@@ -61,7 +61,6 @@ made subject to such option by the copyright holder.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.debugger.jpda.visual</code-name-base>
-                    <build-prerequisite/>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
