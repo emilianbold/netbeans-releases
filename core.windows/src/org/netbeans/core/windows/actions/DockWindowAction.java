@@ -55,30 +55,30 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * Action perform undock either of given or active top component.
- * Undock means that TopCompoment is moved to new, separate floating window,
+ * Action to dock either given or active top component.
+ * Dock means move into main window area.
  *
  */
-public final class UndockWindowAction extends AbstractAction {
+public final class DockWindowAction extends AbstractAction {
 
     private final TopComponent tc;
 
     /**
-     * Creates instance of action to Undock currently active top
+     * Creates instance of action to Dock currently active top
      * component in the system. For use in main menu.
      */
-    public UndockWindowAction () {
+    public DockWindowAction () {
         this.tc = null;
-        putValue(Action.NAME, NbBundle.getMessage(DockWindowAction.class, "CTL_UndockWindowAction")); //NOI18N
+        putValue(Action.NAME, NbBundle.getMessage(DockWindowAction.class, "CTL_UndockWindowAction_Dock")); //NOI18N
     }
 
     /**
-     * Undock of given TopComponent.
+     * Dock of given TopComponent.
      * For use in the context menus.
      */
-    public UndockWindowAction (TopComponent tc) {
+    public DockWindowAction (TopComponent tc) {
         this.tc = tc;
-        putValue(Action.NAME, NbBundle.getMessage(DockWindowAction.class, "CTL_UndockWindowAction")); //NOI18N
+        putValue(Action.NAME, NbBundle.getMessage(DockWindowAction.class, "CTL_UndockWindowAction_Dock")); //NOI18N
     }
     
     @Override
@@ -89,8 +89,8 @@ public final class UndockWindowAction extends AbstractAction {
         boolean isDocked = wmi.isDocked(contextTC);
         ModeImpl mode = (ModeImpl)wmi.findMode(contextTC);
 
-        if (isDocked) {
-            wmi.userUndockedTopComponent(contextTC, mode);
+        if (!isDocked) {
+            wmi.userDockedTopComponent(contextTC, mode);
         }
     }
     
@@ -123,7 +123,7 @@ public final class UndockWindowAction extends AbstractAction {
         if( res ) {
             res &= Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(context);
             if( res ) {
-                res &= WindowManagerImpl.getInstance().isDocked( context );
+                res &= !WindowManagerImpl.getInstance().isDocked( context );
             }
         }
         return res;

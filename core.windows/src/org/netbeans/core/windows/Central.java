@@ -2214,6 +2214,8 @@ final class Central implements ControllerHandler {
         }
         model.setModeConstraints( mode, new SplitConstraint[0] );
         updateViewAfterDnD(false);
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     /**
@@ -2278,6 +2280,8 @@ final class Central implements ControllerHandler {
         updateViewAfterDnD(false);
         if( null != selectedTC )
             selectedTC.requestActive();
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
     
     /**
@@ -2461,6 +2465,8 @@ final class Central implements ControllerHandler {
         ModeImpl newMode = createFloatingMode( bounds, modeKind );
         moveTopComponentIntoMode( newMode, tc );
         updateViewAfterDnD(false);
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     @Override
@@ -2496,6 +2502,8 @@ final class Central implements ControllerHandler {
         }
         moveTopComponentIntoMode(dockTo, tc, dockIndex);
         updateViewAfterDnD(false);
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     private ModeImpl findJoinedMode( int modeKind, SplitConstraint[] constraints ) {
