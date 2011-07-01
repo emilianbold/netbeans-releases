@@ -169,7 +169,8 @@ public class MaximizeWindowAction extends AbstractAction {
         TopComponent active = getTCToWorkWith();
         boolean maximize;
         ModeImpl activeMode = (ModeImpl)wm.findMode(active);
-        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)) {
+        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)
+                || activeMode.getState() == Constants.MODE_STATE_SEPARATED ) {
             String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
             putValue(Action.NAME, label);
             setEnabled(false);

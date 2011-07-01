@@ -46,7 +46,6 @@
 package org.netbeans.core.windows.actions;
 
 
-import java.awt.Container;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.IOException;
@@ -58,6 +57,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.SaveAction;
 import org.openide.awt.Actions;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
@@ -81,52 +81,117 @@ public abstract class ActionUtils {
     public static Action[] createDefaultPopupActions(TopComponent tc) {
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
         int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
+        boolean isEditor = tcTracker.isEditorTopComponent( tc );
         
         List<Action> actions = new ArrayList<Action>();
         if(kind == Constants.MODE_KIND_EDITOR) {
+            //close window
+            if( Switches.isClosingEnabled(tc)) {
+                if( (isEditor && Switches.isEditorTopComponentClosingEnabled()) 
+                        || (!isEditor && Switches.isViewTopComponentClosingEnabled()) ) {
+                    actions.add(new CloseWindowAction(tc));
+                }
+            }
             if( Switches.isEditorTopComponentClosingEnabled() ) {
+                //close all
                 actions.add(new CloseAllDocumentsAction(true));
+                //close all but this
                 CloseAllButThisAction allBut = new CloseAllButThisAction(tc, true);
                 if (mode != null && mode.getOpenedTopComponents().size() == 1) {
                     allBut.setEnabled(false);
                 }
                 actions.add(allBut);
-                actions.add(null); // Separator
             }
-            actions.add(new SaveDocumentAction(tc));
-            actions.add(new CloneDocumentAction(tc));
+            
             actions.add(null); // Separator
-            if( Switches.isEditorTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
-                actions.add(new CloseWindowAction(tc));
-            }
+            
+            //maximize window
             if( Switches.isTopComponentMaximizationEnabled() && Switches.isMaximizationEnabled(tc)) {
                 actions.add(new MaximizeWindowAction(tc));
             }
+            //undock window
             if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
-            if( Switches.isEditorModeUndockingEnabled() )
+            //undock group
+            if( Switches.isEditorModeUndockingEnabled() && isEditor )
                 actions.add( new UndockModeAction( mode) );
-        } else if (kind == Constants.MODE_KIND_VIEW) {
-            if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
-                actions.add(new CloseWindowAction(tc));
+            //dock window
+            if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
+                actions.add(new DockWindowAction(tc));
             }
+            //dock group
+            if( Switches.isEditorModeUndockingEnabled() && isEditor )
+                actions.add( new DockModeAction( mode) );
+
+            if( isEditor ) {
+                actions.add( null ); // Separator
+
+                actions.add(new SaveDocumentAction(tc));
+                actions.add(new CloneDocumentAction(tc));
+
+                //TODO new tab group
+                //TODO collapse tab group
+            }
+        } else if (kind == Constants.MODE_KIND_VIEW) {
+            //close window
+            if( Switches.isClosingEnabled(tc)) {
+                if( (isEditor && Switches.isEditorTopComponentClosingEnabled()) 
+                        || (!isEditor && Switches.isViewTopComponentClosingEnabled()) ) {
+                    actions.add(new CloseWindowAction(tc));
+                }
+            }
+            //close other
+            CloseAllButThisAction allBut = new CloseAllButThisAction(tc, true);
+            if (mode != null && mode.getOpenedTopComponents().size() == 1) {
+                allBut.setEnabled(false);
+            }
+            actions.add(allBut);
+            //close group
             if( Switches.isModeClosingEnabled() ) {
                 actions.add(new CloseModeAction(mode));
             }
-            // #82053: don't include maximize action for floating (separate) views
-            if (mode.getState() == Constants.MODE_STATE_JOINED
-                    && Switches.isTopComponentMaximizationEnabled()
+            
+            actions.add( null ); //separator
+            
+            //maximize window
+            if (Switches.isTopComponentMaximizationEnabled()
                     && Switches.isMaximizationEnabled(tc)) {
                 actions.add(new MaximizeWindowAction(tc));
             }
+            
+            //minimize window
+            if( Switches.isTopComponentSlidingEnabled() && Switches.isSlidingEnabled( tc ) )
+                actions.add( createMinimizeWindowAction( tc ) );
+            
+            //minimize group
+            if( Switches.isModeSlidingEnabled() )
+                actions.add( new MinimizeModeAction( mode) );
+
+            //undock window
             if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
             }
+            //undock group
             if( Switches.isViewModeUndockingEnabled() )
                 actions.add( new UndockModeAction( mode) );
-            if( Switches.isModeSlidingEnabled() )
-                actions.add( new MinimizeModeAction( mode) );
+        
+            //dock window
+            if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
+                actions.add(new DockWindowAction(tc));
+            }
+            //dock group
+            if( Switches.isViewModeUndockingEnabled() )
+                actions.add( new DockModeAction( mode) );
+            
+            if( isEditor ) {
+                actions.add( null ); // Separator
+
+                actions.add(new SaveDocumentAction(tc));
+                actions.add(new CloneDocumentAction(tc));
+            }
+
         } else if (kind == Constants.MODE_KIND_SLIDING) {
             if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
                 actions.add(new CloseWindowAction(tc));
@@ -154,43 +219,70 @@ public abstract class ActionUtils {
         List<Action> actions = new ArrayList<Action>();
         if(kind == Constants.MODE_KIND_EDITOR) {
             if( Switches.isEditorTopComponentClosingEnabled() ) {
+                actions.add(createDisabledAction("CTL_CloseWindowAction"));
                 actions.add(new CloseAllDocumentsAction(true));
                 actions.add(createDisabledAction("CTL_CloseAllButThisAction")); //NOI18N
                 actions.add(null); // Separator
             }
             actions.add(createDisabledAction("LBL_SaveDocumentAction"));
             actions.add(createDisabledAction("CTL_CloneDocumentAction"));
+            
             actions.add(null); // Separator
-            if( Switches.isEditorTopComponentClosingEnabled() ) {
-                actions.add(createDisabledAction("CTL_CloseWindowAction"));
-            }
+
+            //maximize window
             if( Switches.isTopComponentMaximizationEnabled() ) {
                 actions.add(createDisabledAction("CTL_MaximizeWindowAction"));
             }
+            //float window
             if( Switches.isTopComponentUndockingEnabled()) {
                 actions.add(createDisabledAction("CTL_UndockWindowAction"));
             }
+            //float group
+            if( Switches.isEditorModeUndockingEnabled()) {
+                actions.add(new UndockModeAction(mode));
+            }
+            //dock window
+            if( Switches.isTopComponentUndockingEnabled()) {
+                actions.add(createDisabledAction("CTL_UndockWindowAction_Dock"));
+            }
+            //dock group
             if( Switches.isEditorModeUndockingEnabled() )
-                actions.add( new UndockModeAction( mode) );
+                actions.add( new DockModeAction( mode) );
         } else if (kind == Constants.MODE_KIND_VIEW) {
+            //close window
             if( Switches.isViewTopComponentClosingEnabled() ) {
                 actions.add(createDisabledAction("CTL_CloseWindowAction"));
             }
+            //close other
+            if( Switches.isViewTopComponentClosingEnabled() ) {
+                actions.add(createDisabledAction("CTL_CloseAllButThisAction"));
+            }
+            //close group
             if( Switches.isModeClosingEnabled() ) {
                 actions.add(new CloseModeAction(mode));
             }
-            // #82053: don't include maximize action for floating (separate) views
-            if (mode.getState() == Constants.MODE_STATE_JOINED
-                    && Switches.isTopComponentMaximizationEnabled() ) {
+            
+            actions.add( null ); //separator
+            
+            // maximize window
+            if (Switches.isTopComponentMaximizationEnabled() ) {
                 actions.add(createDisabledAction("CTL_MaximizeWindowAction"));
             }
+            //minimize window
+            if (Switches.isTopComponentSlidingEnabled() ) {
+                actions.add(createDisabledAction("LBL_AutoHideWindowAction"));
+            }
+            //minimize group
+            if( Switches.isModeSlidingEnabled() )
+                actions.add( new MinimizeModeAction( mode) );
+            //float window
             if( Switches.isTopComponentUndockingEnabled() ) {
                 actions.add(createDisabledAction("CTL_UndockWindowAction"));
             }
+            //float group
             if( Switches.isViewModeUndockingEnabled() )
                 actions.add( new UndockModeAction( mode) );
-            if( Switches.isModeSlidingEnabled() )
-                actions.add( new MinimizeModeAction( mode) );
+            
         } else if (kind == Constants.MODE_KIND_SLIDING) {
             if( Switches.isViewTopComponentClosingEnabled() ) {
                 actions.add(createDisabledAction("CTL_CloseWindowAction"));
@@ -212,13 +304,15 @@ public abstract class ActionUtils {
         return res;
     }
 
-    /**** PENDING remove during merge, TabbedListener removed, instead drive directly */
-    private static Container slidingContext;
-    
-    public static void setSlidingContext (Container slidingContext) {
-        ActionUtils.slidingContext = slidingContext;
+    private static Action createMinimizeWindowAction( TopComponent tc ) {
+        SlideController slideController = ( SlideController ) SwingUtilities.getAncestorOfClass( SlideController.class, tc );
+        ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+        int tabIndex = mode.getOpenedTopComponents().indexOf( tc );
+        boolean initialState = WindowManagerImpl.getInstance().isTopComponentMinimized( tc );
+        Action res = new AutoHideWindowAction( slideController, tabIndex, initialState );
+        res.setEnabled( mode.getState() == Constants.MODE_STATE_JOINED );
+        return res;
     }
-    /******** end of PENDING **********/
     
     /** Auto-hide toggle action */
     public static final class AutoHideWindowAction extends AbstractAction implements Presenter.Popup {
@@ -246,6 +340,7 @@ public abstract class ActionUtils {
         /** Chnage boolean state and delegate event to winsys through
          * SlideController (implemented by SlideBar component)
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
             // update state and menu item
             state = !state;
@@ -254,6 +349,7 @@ public abstract class ActionUtils {
             slideController.userToggledAutoHide(tabIndex, state);
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             return getMenuItem();
         }
@@ -261,7 +357,7 @@ public abstract class ActionUtils {
         private JCheckBoxMenuItem getMenuItem() {
             if (menuItem == null) {
                 menuItem = new JCheckBoxMenuItem("", state);
-                Actions.setMenuText(menuItem, (String)getValue(Action.NAME), false);
+                Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
                 //#45940 - hardwiring the shortcut UI since the actual shortcut processignb is also
                 // hardwired in AbstractTabViewDisplayerUI class.
                 // later this should be probably made customizable?
@@ -289,6 +385,7 @@ public abstract class ActionUtils {
             return null;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                     NbBundle.getMessage(ActionUtils.class, "LBL_WindowTransparencyHint"), NotifyDescriptor.INFORMATION_MESSAGE)); //NOI18N
@@ -311,11 +408,13 @@ public abstract class ActionUtils {
             setEnabled(getSaveCookie(tc) != null);
         }
         
+        @Override
         public void actionPerformed(ActionEvent evt) {
             saveDocument(tc);
         }
 
         /** Keep accelerator key in sync with org.openide.actions.SaveAction */
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (Action.ACCELERATOR_KEY.equals(evt.getPropertyName())) {
                 putValue(Action.ACCELERATOR_KEY, saveAction.getValue(Action.ACCELERATOR_KEY));
@@ -332,6 +431,7 @@ public abstract class ActionUtils {
             setEnabled(tc instanceof TopComponent.Cloneable);
         }
         
+        @Override
         public void actionPerformed(ActionEvent evt) {
             cloneWindow(tc);
         }

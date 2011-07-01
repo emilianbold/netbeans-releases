@@ -47,50 +47,49 @@ package org.netbeans.core.windows.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
- * Action perform undock either of given or active top component.
- * Undock means that TopCompoment is moved to new, separate floating window,
- *
+ * Action perform dock, either of given or active Mode.
+ * Dock means move into main window area.
+ * 
+ * @author S. Aubrecht
+ * @since 2.30
  */
-public final class UndockWindowAction extends AbstractAction {
+public final class DockModeAction extends AbstractAction {
 
-    private final TopComponent tc;
+    private final ModeImpl mode;
 
     /**
-     * Creates instance of action to Undock currently active top
+     * Creates instance of action to Dock the whole mode of currently active top
      * component in the system. For use in main menu.
      */
-    public UndockWindowAction () {
-        this.tc = null;
-        putValue(Action.NAME, NbBundle.getMessage(DockWindowAction.class, "CTL_UndockWindowAction")); //NOI18N
+    public DockModeAction () {
+        this.mode = null;
+        putValue(Action.NAME, NbBundle.getMessage(DockModeAction.class, "CTL_UndockModeAction_Dock")); //NOI18N
     }
 
     /**
-     * Undock of given TopComponent.
+     * Undock/Dock of given Mode.
      * For use in the context menus.
      */
-    public UndockWindowAction (TopComponent tc) {
-        this.tc = tc;
-        putValue(Action.NAME, NbBundle.getMessage(DockWindowAction.class, "CTL_UndockWindowAction")); //NOI18N
+    public DockModeAction (ModeImpl mode) {
+        this.mode = mode;
+        putValue(Action.NAME, NbBundle.getMessage(DockModeAction.class, "CTL_UndockModeAction_Dock")); //NOI18N
     }
     
     @Override
     public void actionPerformed (ActionEvent e) {
-        // contextTC shound never be null thanks to isEnabled impl
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
-        TopComponent contextTC = getTC2WorkWith();
-        boolean isDocked = wmi.isDocked(contextTC);
-        ModeImpl mode = (ModeImpl)wmi.findMode(contextTC);
+        ModeImpl contextMode = getMode2WorkWith();
+        boolean isDocked = contextMode.getState() == Constants.MODE_STATE_JOINED;
 
-        if (isDocked) {
-            wmi.userUndockedTopComponent(contextTC, mode);
+        if (!isDocked) {
+            wmi.userDockedMode(contextMode);
         }
     }
     
@@ -99,7 +98,7 @@ public final class UndockWindowAction extends AbstractAction {
     @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionUtils.putSharedAccelerator("UndockWindowAction", newValue); //NOI18N
+            ActionUtils.putSharedAccelerator("UndockModeAction", newValue); //NOI18N
         } else {
             super.putValue(key, newValue);
         }
@@ -110,7 +109,7 @@ public final class UndockWindowAction extends AbstractAction {
     @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            return ActionUtils.getSharedAccelerator("UndockWindowAction"); //NOI18N
+            return ActionUtils.getSharedAccelerator("UndockModeAction"); //NOI18N
         } else {
             return super.getValue(key);
         }
@@ -118,21 +117,22 @@ public final class UndockWindowAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-        TopComponent context = getTC2WorkWith();
-        boolean res = null != context;
-        if( res ) {
-            res &= Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(context);
-            if( res ) {
-                res &= WindowManagerImpl.getInstance().isDocked( context );
-            }
-        }
-        return res;
+        ModeImpl contextMode = getMode2WorkWith();
+        if( null == contextMode )
+            return false;
+        boolean docked = contextMode.getState() == Constants.MODE_STATE_JOINED;
+        if( docked )
+            return false;
+        if( contextMode.getKind() == Constants.MODE_KIND_EDITOR )
+            return Switches.isEditorModeUndockingEnabled();
+        return contextMode.getKind() == Constants.MODE_KIND_VIEW && Switches.isViewModeUndockingEnabled();
     }
 
-    private TopComponent getTC2WorkWith () {
-        if (tc != null) {
-            return tc;
+    private ModeImpl getMode2WorkWith () {
+        if (mode != null) {
+            return mode;
         }
-        return WindowManager.getDefault().getRegistry().getActivated();
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        return ( ModeImpl ) wm.findMode( wm.getRegistry().getActivated() );
     }
 }

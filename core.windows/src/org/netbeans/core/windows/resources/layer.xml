@@ -87,9 +87,11 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
             <file name="org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
             <file name="org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-DockWindowAction.instance"/>
             <file name="org-netbeans-core-windows-actions-CloseModeAction.instance"/>
             <file name="org-netbeans-core-windows-actions-MinimizeModeAction.instance"/>
             <file name="org-netbeans-core-windows-actions-UndockModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-DockModeAction.instance"/>
         </folder>
     </folder>
     
