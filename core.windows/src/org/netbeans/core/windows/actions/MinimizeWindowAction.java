@@ -48,113 +48,100 @@ package org.netbeans.core.windows.actions;
 
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.Constants;
 
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.ui.slides.SlideController;
+import org.openide.windows.WindowManager;
 
 
 /**
- * @author   Tim Boudreau
+ * Minimize active TopComponent.
+ * 
+ * @author S. Aubrecht
+ * @since 2.30
  */
-public class CloseAllButThisAction extends AbstractAction
-implements PropertyChangeListener, Runnable {
-    
-    /** TopComponent to exclude or null for global version of action */
-    private TopComponent tc;
+public final class MinimizeWindowAction extends AbstractAction
+implements PropertyChangeListener {
 
-    /** context flag - when true, close only in active mode, otherwise in 
-     * whole window system.
-     */
-    private boolean isContext;
-
-    public CloseAllButThisAction() {
-        this.isContext = false;
-        putValue(NAME, NbBundle.getMessage(CloseAllButThisAction.class,
-            "CTL_CloseAllButThisAction_MainMenu")); //NOI18N
-
+    public MinimizeWindowAction() {
+        putValue(NAME, NbBundle.getMessage(CloseModeAction.class, "CTL_MinimizeWindowAction"));
         TopComponent.getRegistry().addPropertyChangeListener(
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));
-        updateEnabled();
-    }
-    
-    public CloseAllButThisAction(TopComponent topComp, boolean isContext) {
-        tc = topComp;
-        this.isContext = isContext;
-        //Include the name in the label for the popup menu - it may be clicked over
-        //a component that is not selected
-        putValue(Action.NAME, NbBundle.getMessage(CloseAllButThisAction.class,
-            "CTL_CloseAllButThisAction")); //NOI18N
-        
-    }
-
-    /** Perform the action. Sets/unsets maximzed mode. */
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-        TopComponent topC = obtainTC();
-        if(topC != null) {
-            ActionUtils.closeAllExcept(topC, isContext);
-        }
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        String propName = evt.getPropertyName();
-        if(TopComponent.Registry.PROP_ACTIVATED.equals(propName) ||
-                TopComponent.Registry.PROP_OPENED.equals(propName)) {
-            updateEnabled();
-        }
-    }
-    
-    private void updateEnabled() {
-        Mutex.EVENT.readAccess(this);
-    }
-    
-    public void run() {
-        TopComponent tc = obtainTC();
-        WindowManagerImpl wmi = WindowManagerImpl.getInstance();
-        ModeImpl mode = (ModeImpl)wmi.findMode(tc);
-        
-        boolean areOtherDocs;
-        if (isContext) {
-            areOtherDocs = mode.getOpenedTopComponents().size() > 1;
+        WindowManager.getDefault().addPropertyChangeListener(
+            WeakListeners.propertyChange(this, WindowManager.getDefault()));
+        if (SwingUtilities.isEventDispatchThread()) {
+            setEnabled( checkEnabled() );
         } else {
-            areOtherDocs = wmi.getEditorTopComponents().length > 1;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setEnabled( checkEnabled() );
+                }
+            });
         }
-        
-        setEnabled(mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR
-                    && areOtherDocs && Switches.isEditorTopComponentClosingEnabled());
     }
     
-    private TopComponent obtainTC () {
-        return tc == null ? TopComponent.getRegistry().getActivated() : tc;
+    @Override
+    public void actionPerformed(java.awt.event.ActionEvent ev) {
+        TopComponent context = TopComponent.getRegistry().getActivated();
+        if( null == context )
+            return;
+        Action a = ActionUtils.createMinimizeWindowAction( context );
+        if( a.isEnabled() )
+            a.actionPerformed( ev );
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())
+                || WindowManager.PROP_MODES.equals(evt.getPropertyName()) ) {
+            setEnabled( checkEnabled() );
+        }
     }
     
-    /** Overriden to share accelerator with 
-     * org.netbeans.core.windows.actions.ActionUtils.CloseWindowAction
-     */ 
+    private boolean checkEnabled() {
+        TopComponent context = TopComponent.getRegistry().getActivated();
+        if( null == context ) {
+            return false;
+        }
+        SlideController slideController = ( SlideController ) SwingUtilities.getAncestorOfClass( SlideController.class, context );
+        if( null == slideController )
+            return false;
+        ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( context );
+        if( null == mode )
+            return false;
+        if( WindowManagerImpl.getInstance().isTopComponentMinimized( context ) )
+            return false;
+        if( mode.getState() != Constants.MODE_STATE_JOINED )
+            return false;
+        if( mode.getKind() != Constants.MODE_KIND_VIEW )
+            return false;
+        return Switches.isTopComponentSlidingEnabled() && Switches.isSlidingEnabled( context );
+    }
+    
+    @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionUtils.putSharedAccelerator("CloseAllButThis", newValue); //NOI18N
+            ActionUtils.putSharedAccelerator("MinimizeWindow", newValue); //NOI18N
         } else {
             super.putValue(key, newValue);
         }
     }
     
-    /** Overriden to share accelerator with 
-     * org.netbeans.core.windows.actions.ActionUtils.CloseWindowAction
-     */ 
+    @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            return ActionUtils.getSharedAccelerator("CloseAllButThis"); //NOI18N
+            return ActionUtils.getSharedAccelerator("MinimizeWindow"); //NOI18N
         } else {
             return super.getValue(key);
         }
     }
-
 }
 

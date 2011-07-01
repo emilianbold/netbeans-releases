@@ -304,7 +304,7 @@ public abstract class ActionUtils {
         return res;
     }
 
-    private static Action createMinimizeWindowAction( TopComponent tc ) {
+    static Action createMinimizeWindowAction( TopComponent tc ) {
         SlideController slideController = ( SlideController ) SwingUtilities.getAncestorOfClass( SlideController.class, tc );
         ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
         int tabIndex = mode.getOpenedTopComponents().indexOf( tc );

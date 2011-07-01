@@ -48,7 +48,6 @@ package org.netbeans.core.windows.actions;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.openide.awt.Actions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -61,6 +60,7 @@ import org.netbeans.core.windows.Switches;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import org.openide.util.Mutex;
+import org.openide.windows.WindowManager;
 
 
 /** An action that can toggle maximized window system mode for specific window.
@@ -71,14 +71,15 @@ public class MaximizeWindowAction extends AbstractAction {
 
     private final PropertyChangeListener propListener;
     private Reference<TopComponent> topComponent;
-    private boolean isPopup;
     
     public MaximizeWindowAction() {
         propListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if(WindowManagerImpl.PROP_MAXIMIZED_MODE.equals(propName)
                 || WindowManagerImpl.PROP_EDITOR_AREA_STATE.equals(evt.getPropertyName())
+                || WindowManager.PROP_MODES.equals(evt.getPropertyName())
                 || WindowManagerImpl.PROP_ACTIVE_MODE.equals(evt.getPropertyName())) {
                     updateState();
                 }
@@ -105,11 +106,11 @@ public class MaximizeWindowAction extends AbstractAction {
     public MaximizeWindowAction (TopComponent tc) {
         topComponent = new WeakReference<TopComponent>(tc);
         propListener = null;
-        isPopup = true;
         updateState();
     }
     
     /** Perform the action. Sets/unsets maximzed mode. */
+    @Override
     public void actionPerformed (java.awt.event.ActionEvent ev) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent curTC = getTCToWorkWith();
@@ -156,6 +157,7 @@ public class MaximizeWindowAction extends AbstractAction {
      */
     private void updateState() {
         Mutex.EVENT.readAccess( new Runnable() {
+            @Override
             public void run() {
                 doUpdateState();
             }
@@ -221,6 +223,7 @@ public class MaximizeWindowAction extends AbstractAction {
 
     /** Overriden to share accelerator between instances of this action.
      */ 
+    @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
             return ActionUtils.getSharedAccelerator("MaximizeWindow");
