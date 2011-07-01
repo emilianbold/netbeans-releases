@@ -90,20 +90,22 @@ public abstract class Constants {
     
     /** How many pixels is necessary to drag to start the DnD. */ 
     public static final int DRAG_GESTURE_START_DISTANCE = 10;
-    /** What time inmilliseconds is necessary to hold dragging mouse button for 
+    /** What time in milliseconds is necessary to hold dragging mouse button for 
      & DnD to be started */
     public static final int DRAG_GESTURE_START_TIME = 200;
     
     // DnD drop ratios.
     /** How big portion of the original mode has to be taken (range from 0.0 to 1.0). */
-    public static final double DROP_TO_SIDE_RATIO = 0.25D;
+    public static final double DROP_TO_SIDE_RATIO = 0.5D;
+    /** How big portion of the editor area has to be taken (range from 0.0 to 1.0). */
+    public static final double DROP_AROUND_EDITOR_RATIO = 0.25D;
     /** How big portion should take the new mode from each one (between which is dropped) (range from 0.0 to 1.0). */
     public static final double DROP_BETWEEN_RATIO = 1.0D/3;
     /** How big portion of entire area should take the dropped mode (range from 0.0 to 1.0). */
     public static final double DROP_AROUND_RATIO = 0.25D;
     
     // XXX
-    /** Size of new separated mode when creting during DnD (separeted mode). */
+    /** Size of new separated mode when creating during DnD (separated mode). */
     public static final Dimension DROP_NEW_MODE_SIZE = new Dimension(300, 200);
 
     

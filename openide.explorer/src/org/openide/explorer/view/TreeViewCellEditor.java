@@ -134,23 +134,7 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
 
             if ((n != null) && n.canRename()) {
                 String newStr = (String) getCellEditorValue();
-
-                try {
-                    // bugfix #21589 don't update name if there is not any change
-                    if (!n.getName().equals(newStr)) {
-                        n.setName(newStr);
-                    }
-                } catch (IllegalArgumentException exc) {
-                    boolean needToAnnotate = Exceptions.findLocalizedMessage(exc) == null;
-
-                    // annotate new localized message only if there is no localized message yet
-                    if (needToAnnotate) {
-                        String msg = NbBundle.getMessage(TreeViewCellEditor.class, "RenameFailed", n.getName(), newStr);
-                        Exceptions.attachLocalizedMessage(exc, msg);
-                    }
-
-                    Exceptions.printStackTrace(exc);
-                }
+                ViewUtil.nodeRename(n, newStr);
             }
         }
     }

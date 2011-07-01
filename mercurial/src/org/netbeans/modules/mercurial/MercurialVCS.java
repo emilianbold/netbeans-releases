@@ -149,8 +149,6 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
             Mercurial.LOG.fine("cleaning unversioned parents cache");   //NOI18N
             Mercurial.getInstance().clearAncestorCaches();
             fireVersionedFilesChanged();
-        } else if (event.getPropertyName().equals(MercurialAnnotator.PROP_ICON_BADGE_CHANGED)) {
-            fireStatusChanged((Set<File>) event.getNewValue());
         }
     }
 

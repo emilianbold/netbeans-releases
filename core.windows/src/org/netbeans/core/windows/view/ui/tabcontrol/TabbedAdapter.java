@@ -581,6 +581,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 result = TabDisplayer.ORIENTATION_EAST;
             } else if (side.equals(Constants.BOTTOM)) {
                 result = TabDisplayer.ORIENTATION_SOUTH;
+            } else if (side.equals(Constants.TOP)) {
+                result = TabDisplayer.ORIENTATION_NORTH;
             } else {
                 result = TabDisplayer.ORIENTATION_CENTER;
             }
@@ -626,6 +628,11 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         public boolean isTopComponentSlidingEnabled(TopComponent tc) {
             return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_SLIDING_DISABLED))
                     && isTopComponentSlidingEnabled();
+        }
+
+        @Override
+        public boolean isModeSlidingEnabled() {
+            return Switches.isModeSlidingEnabled();
         }
     } // end of LocInfo
 

@@ -148,6 +148,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
+                <friend>org.netbeans.modules.maven.checkstyle</friend>
                 <friend>org.netbeans.modules.maven.coverage</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
                 <friend>org.netbeans.modules.maven.graph</friend>

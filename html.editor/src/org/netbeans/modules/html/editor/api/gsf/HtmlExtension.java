@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.editor.api.gsf;
 
 import java.util.ArrayList;
@@ -51,6 +50,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.Error;
@@ -66,57 +67,81 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  *
  * @author marekfukala
  */
-public abstract class HtmlExtension {
+public class HtmlExtension {
 
     private static final Map<String, Collection<HtmlExtension>> EXTENSIONS = new HashMap<String, Collection<HtmlExtension>>();
-    
+
     /** register a new extension to the html support. The mimeType applies to source mimetype, not embedded mimetype!
      * TODO use mimelookup
      */
     public static void register(String mimeType, HtmlExtension extension) {
         synchronized (EXTENSIONS) {
             Collection<HtmlExtension> existing = EXTENSIONS.get(mimeType);
-            if(existing == null) {
+            if (existing == null) {
                 existing = new ArrayList<HtmlExtension>();
                 EXTENSIONS.put(mimeType, existing);
             }
             existing.add(extension);
         }
     }
-    
+
     public static Collection<HtmlExtension> getRegisteredExtensions(String mimeType) {
         Collection<HtmlExtension> exts = EXTENSIONS.get(mimeType);
         return exts != null ? exts : Collections.<HtmlExtension>emptyList();
     }
 
     //highlighting
-    public abstract Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event);
+    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
+        return Collections.emptyMap();
+    }
 
     //completion
-    public abstract List<CompletionItem> completeOpenTags(CompletionContext context);
+    public List<CompletionItem> completeOpenTags(CompletionContext context) {
+        return Collections.emptyList();
+    }
 
-    public abstract List<CompletionItem> completeAttributes(CompletionContext context);
+    public List<CompletionItem> completeAttributes(CompletionContext context) {
+        return Collections.emptyList();
+    }
 
-    public abstract List<CompletionItem> completeAttributeValue(CompletionContext context);
+    public List<CompletionItem> completeAttributeValue(CompletionContext context) {
+        return Collections.emptyList();
+    }
 
     //hyperlinking
-    public abstract OffsetRange getReferenceSpan(Document doc, int caretOffset);
+    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
+        return OffsetRange.NONE;
+    }
 
-    public abstract DeclarationLocation findDeclaration(ParserResult info, int caretOffset);
+    public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
+        return null;
+    }
 
     //errors, hints
-    public abstract void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled);
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        //no-op
+    }
 
-    public abstract void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> hints, int start, int end);
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> hints, int start, int end) {
+        //no-op
+    }
+
+    /**
+     * This method allows the extension to bind some prefixed html source 
+     * elements and attributes to an physically undeclared namespace.
+     * 
+     * @return an instance of undeclared content resolver
+     */
+    public UndeclaredContentResolver getUndeclaredContentResolver() {
+        return null;
+    }
 
     //--------------------
-
     public static class CompletionContext {
 
         private HtmlParserResult result;
         private int originalOffset;
         private int ccItemStartOffset;
-
         private int astoffset;
         private String preText;
         private String itemText;
@@ -131,7 +156,7 @@ public abstract class HtmlExtension {
         public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode) {
             this(result, originalOffset, astoffset, ccItemStartOffset, preText, itemText, currentNode, null, false);
         }
-        
+
         public CompletionContext(HtmlParserResult result, int originalOffset, int astoffset, int ccItemStartOffset, String preText, String itemText, AstNode currentNode, String attributeName, boolean valueQuoted) {
             this.result = result;
             this.originalOffset = originalOffset;
@@ -164,7 +189,7 @@ public abstract class HtmlExtension {
         public int getCCItemStartOffset() {
             return ccItemStartOffset;
         }
-        
+
         public HtmlParserResult getResult() {
             return result;
         }
@@ -180,8 +205,5 @@ public abstract class HtmlExtension {
         public boolean isValueQuoted() {
             return valueQuoted;
         }
-
     }
-
-
 }
