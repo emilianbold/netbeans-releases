@@ -228,6 +228,12 @@
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>com.sun.tools.tuxedo.componentproject</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
+                <friend>com.sun.tools.tuxedo.model</friend>
+                <friend>com.sun.tools.tuxedo.model.impl</friend>
+                <friend>com.sun.tools.tuxedo.debug</friend>
+                <friend>com.sun.tools.tuxedo.utils</friend>
+                <friend>com.sun.tools.tuxedo.runtime</friend>
+                <friend>com.sun.tools.tuxedo.options</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
