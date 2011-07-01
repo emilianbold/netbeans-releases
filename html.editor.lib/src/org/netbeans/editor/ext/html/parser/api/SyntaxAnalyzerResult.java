@@ -64,6 +64,7 @@ import org.netbeans.editor.ext.html.parser.SyntaxElement.Declaration;
 import org.netbeans.editor.ext.html.parser.XmlSyntaxTreeBuilder;
 import org.netbeans.editor.ext.html.parser.spi.DefaultParseResult;
 import org.netbeans.editor.ext.html.parser.spi.EmptyResult;
+import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -92,9 +93,16 @@ public class SyntaxAnalyzerResult {
     private ParseResult undeclaredEmbeddedCodeParseResult;
 
     private Set<String> allPrefixes;
+    
+    private UndeclaredContentResolver resolver;
 
     public SyntaxAnalyzerResult(SyntaxAnalyzer source) {
+        this(source, null);
+    }
+    
+    public SyntaxAnalyzerResult(SyntaxAnalyzer source, UndeclaredContentResolver resolver) {
         this.analyzer = source;
+        this.resolver = resolver;
     }
 
     public HtmlSource getSource() {
@@ -486,9 +494,9 @@ public class SyntaxAnalyzerResult {
         Map<String, List<String>> all = getAllDeclaredNamespaces();
         Map<String, String> firstPrefixOnly = new HashMap<String, String>();
         for (String namespace : all.keySet()) {
-            List<String> prefixes = all.get(namespace);
+            Collection<String> prefixes = all.get(namespace);
             if (prefixes != null && prefixes.size() > 0) {
-                firstPrefixOnly.put(namespace, prefixes.get(0));
+                firstPrefixOnly.put(namespace, prefixes.iterator().next());
             }
         }
         return firstPrefixOnly;
@@ -503,7 +511,7 @@ public class SyntaxAnalyzerResult {
     
     private Set<String> findAllDeclaredPrefixes() {
        HashSet<String> all = new HashSet<String>();
-        for(List<String> prefixes : getAllDeclaredNamespaces().values()) {
+        for(Collection<String> prefixes : getAllDeclaredNamespaces().values()) {
             all.addAll(prefixes);
         }
         return all;
@@ -540,6 +548,12 @@ public class SyntaxAnalyzerResult {
     public synchronized Map<String, List<String>> getAllDeclaredNamespaces() {
         if (namespaces == null) {
             this.namespaces = new HashMap<String, List<String>>();
+
+            //add the artificial namespaces to prefix map to the physically declared results
+            if(resolver != null) {
+                namespaces.putAll(resolver.getUndeclaredNamespaces(getSource()));
+            }
+            
             for (SyntaxElement se : getElements().items()) {
                 if (se.type() == SyntaxElement.TYPE_TAG) {
                     SyntaxElement.Tag tag = (SyntaxElement.Tag) se;

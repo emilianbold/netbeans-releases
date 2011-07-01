@@ -173,7 +173,6 @@ public class Mercurial {
 
     void attachListeners(MercurialVCS mvcs) {
         fileStatusCache.addPropertyChangeListener(mvcs);
-        mercurialAnnotator.addPropertyChangeListener(mvcs);
         addPropertyChangeListener(mvcs);
     }
 
@@ -377,6 +376,10 @@ public class Mercurial {
 
     public void refreshAllAnnotations() {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, null);
+    }
+
+    public void refreshAnnotations (Set<File> files) {
+        support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, files);
     }
 
     public void changesetChanged(File repository) {

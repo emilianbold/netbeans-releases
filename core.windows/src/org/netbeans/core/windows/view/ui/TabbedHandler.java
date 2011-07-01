@@ -67,6 +67,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.AWTEventListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.slides.SlideBar;
@@ -288,6 +289,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     
     ///////////////////
     // ChangeListener
+    @Override
     public void stateChanged(ChangeEvent evt) {
         if(ignoreChange || evt.getSource() != tabbed) {
             return;
@@ -312,6 +314,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
         return tabbed.getTabBounds(tabIndex);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e instanceof TabActionEvent) {
             TabActionEvent tae = (TabActionEvent) e;
@@ -353,6 +356,35 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
 
                     modeView.getController().userEnabledAutoHide(modeView, tc);
                     modeView.getController().userTriggeredSlideIntoEdge(modeView, operation);
+                }
+            } else if (TabbedContainer.COMMAND_MINIMIZE_GROUP.equals(cmd)) {
+                if( Switches.isModeSlidingEnabled() ) {
+                    TopComponent tc = tabbed.getTopComponentAt(0);
+                    WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                    ModeImpl mode = ( ModeImpl ) wm.findMode( tc );
+                    if( null != mode ) {
+                        wm.userMinimizedMode( mode );
+                    }
+                }
+            } else if (TabbedContainer.COMMAND_RESTORE_GROUP.equals(cmd)) {
+                String nameOfModeToRestore = tae.getGroupName();
+                if( null != nameOfModeToRestore ) {
+                    TopComponent tc = tabbed.getTopComponentAt(0);
+                    WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                    ModeImpl slidingMode = ( ModeImpl ) wm.findMode( tc );
+                    ModeImpl modeToRestore = ( ModeImpl ) wm.findMode( nameOfModeToRestore );
+                    if( null != modeToRestore && null != slidingMode ) {
+                        wm.userRestoredMode( slidingMode, modeToRestore );
+                    }
+                }
+            } else if (TabbedContainer.COMMAND_CLOSE_GROUP.equals(cmd)) {
+                if( Switches.isModeClosingEnabled() ) {
+                    TopComponent tc = tabbed.getTopComponentAt(0);
+                    WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                    ModeImpl mode = ( ModeImpl ) wm.findMode( tc );
+                    if( null != mode ) {
+                        wm.userClosedMode( mode );
+                    }
                 }
             }
         } else if (e instanceof SlideBarActionEvent) {
@@ -448,6 +480,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     /** Well, we can't totally get rid of AWT event listeners - this is what
      * keeps track of the activated mode. */
     private static class ActivationManager implements AWTEventListener {
+        @Override
         public void eventDispatched(AWTEvent e) {
             if(e.getID() == MouseEvent.MOUSE_PRESSED) {
                 handleActivation((MouseEvent) e);
@@ -523,30 +556,37 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             disable = disableActivation;
         }
         
+        @Override
         public Component getComponent() {
             return original.getComponent();
         }
 
+        @Override
         public Rectangle getFinishBounds() {
             return original.getFinishBounds();
         }
 
+        @Override
         public String getSide() {
             return original.getSide();
         }
 
+        @Override
         public Rectangle getStartBounds() {
             return original.getStartBounds();
         }
 
+        @Override
         public int getType() {
             return original.getType();
         }
 
+        @Override
         public void prepareEffect() {
             original.prepareEffect();
         }
 
+        @Override
         public boolean requestsActivation() {
             if (disable) {
                 return false;
@@ -554,14 +594,17 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             return original.requestsActivation();
         }
 
+        @Override
         public void run(JLayeredPane pane, Integer layer) {
             original.run(pane, layer);
         }
 
+        @Override
         public void setFinishBounds(Rectangle bounds) {
             original.setFinishBounds(bounds);
         }
 
+        @Override
         public void setStartBounds(Rectangle bounds) {
             original.setStartBounds(bounds);
         }

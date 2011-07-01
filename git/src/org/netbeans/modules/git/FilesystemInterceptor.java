@@ -568,7 +568,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                             }
                         });
                     }
-                    Git.STATUS_LOG.fine("refreshAdminFolderTimestamp: " + indexFile.getAbsolutePath() + " no longer exists"); //NOI18N
+                    Git.STATUS_LOG.log(Level.FINE, "refreshAdminFolderTimestamp: {0} no longer exists", indexFile.getAbsolutePath()); //NOI18N
                     remove = true;
                 }
                 if (remove) {
@@ -593,7 +593,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                 if (repositoryRoot != null) {
                     if (addSeenRoot(repositoryRoot, file)) {
                         // this means the repository has not yet been scanned, so scan it
-                        Git.STATUS_LOG.fine("initializeFiles: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath()); //NOI18N
+                        Git.STATUS_LOG.log(Level.FINE, "initializeFiles: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getAbsolutePath(), file.getAbsolutePath()}); //NOI18N
                         reScheduleRefresh(4000, Collections.singleton(file));
                         synchronized (indexFiles) {
                             File indexFile = FileUtil.normalizeFile(new File(GitUtils.getGitFolderForRoot(repositoryRoot), INDEX_FILE_NAME));
@@ -614,7 +614,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             long lastModified = 0;
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
                 File indexFile = FileUtil.normalizeFile(new File(gitFolder, INDEX_FILE_NAME));
-                Git.STATUS_LOG.finer("refreshAdminFolder: special FS event handling for " + indexFile.getAbsolutePath()); //NOI18N
+                Git.STATUS_LOG.log(Level.FINER, "refreshAdminFolder: special FS event handling for {0}", indexFile.getAbsolutePath()); //NOI18N
                 lastModified = indexFile.lastModified();
                 Long lastCachedModified = null;
                 synchronized (indexFiles) {
@@ -627,7 +627,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                 if (lastCachedModified == null) {
                     File repository = gitFolder.getParentFile();
                     RepositoryInfo.refreshAsync(repository);
-                    Git.STATUS_LOG.fine("refreshAdminFolder: planning repository scan for " + repository.getAbsolutePath()); //NOI18N
+                    Git.STATUS_LOG.log(Level.FINE, "refreshAdminFolder: planning repository scan for {0}", repository.getAbsolutePath()); //NOI18N
                     reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
                     refreshOpenFiles(repository);
                 }

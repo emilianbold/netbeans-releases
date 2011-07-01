@@ -80,21 +80,18 @@ public class SwitchToBranchAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        update(HgUtils.getCurrentContext(nodes));
-    }
-    
-    public static void update(final VCSContext ctx){
+        final VCSContext ctx = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
-        final BranchSelector update = new BranchSelector(root);
+        final BranchSelector switchBranch = new BranchSelector(root);
         JCheckBox forcedUpdateChxBox = new JCheckBox();
         org.openide.awt.Mnemonics.setLocalizedText(forcedUpdateChxBox, org.openide.util.NbBundle.getMessage(SwitchToBranchAction.class, "SwitchTo.forcedUpdateChxBox.text")); // NOI18N
         JPanel optionsPanel = new JPanel(new BorderLayout());
         optionsPanel.add(forcedUpdateChxBox, BorderLayout.NORTH);
         optionsPanel.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0));
-        update.setOptionsPanel(optionsPanel, null);
+        switchBranch.setOptionsPanel(optionsPanel, null);
         
         JButton okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(BranchSelector.class, "CTL_SwitchToForm_Action_SwitchTo")); // NOI18N
@@ -102,11 +99,11 @@ public class SwitchToBranchAction extends ContextAction {
         okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BranchSelector.class, "ACSN_SwitchToForm_Action_SwitchTo")); // NOI18N
         okButton.setEnabled(false);
         
-        if (!update.showDialog(okButton, org.openide.util.NbBundle.getMessage(BranchSelector.class, "CTL_SwitchToDialog", root.getName()), //NOI18N
+        if (!switchBranch.showDialog(okButton, org.openide.util.NbBundle.getMessage(BranchSelector.class, "CTL_SwitchToDialog", root.getName()), //NOI18N
                 org.openide.util.NbBundle.getMessage(SwitchToBranchAction.class, "SwitchToPanel.infoLabel.text"))) { //NOI18N
             return;
         }
-        final String revStr = update.getBranchName();
+        final String revStr = switchBranch.getBranchName();
         if (revStr == null) {
             return;
         }

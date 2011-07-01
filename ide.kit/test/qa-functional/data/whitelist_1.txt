@@ -1,3 +1,16 @@
+#199644
+org.netbeans.modules.cnd.api.project.NativeProjectRegistry
+org.netbeans.modules.cnd.apt.debug.APTTraceFlags
+org.netbeans.modules.cnd.debugger.common2.DbgGuiModule
+org.netbeans.modules.cnd.debugger.common2.debugger.StateListener
+org.netbeans.modules.cnd.debugger.common2.debugger.actions.Catalog
+org.netbeans.modules.cnd.debugger.common2.debugger.actions.RerunAction
+org.netbeans.modules.cnd.debugger.common2.debugger.actions.RunToFunctionAction
+org.netbeans.modules.cnd.modelimpl.Installer
+org.netbeans.modules.cnd.modelimpl.debug.TraceFlags
+org.netbeans.modules.cnd.modelimpl.platform.ModelSupport
+org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$ModifiedObjectsChangeListener
+
 #179838
 org.apache.derby.jdbc.AutoloadedDriver
 org.h2.Driver

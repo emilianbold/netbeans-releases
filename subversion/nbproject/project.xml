@@ -214,7 +214,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.19</specification-version>
+                        <specification-version>7.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
