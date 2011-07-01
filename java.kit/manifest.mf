@@ -3,6 +3,6 @@ OpenIDE-Module: org.netbeans.modules.java.kit
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/kit/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.15
 OpenIDE-Module-Recommends: org.netbeans.modules.profiler,
- org.netbeans.modules.debugger.jpda.visual
+ org.netbeans.modules.debugger.jpda.kit
 OpenIDE-Module-Layer: org/netbeans/modules/java/kit/layer.xml
 
