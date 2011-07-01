@@ -174,7 +174,7 @@ class IssueStorage {
         }
     }
 
-    public void storeIssue(String nameSpace, IssueEntry entry) throws IOException {
+    void storeIssue(String nameSpace, IssueEntry entry) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start storing issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
         InputStream is = null;
@@ -213,7 +213,7 @@ class IssueStorage {
         }
     }
 
-    public void readIssue(String nameSpace, IssueEntry entry) throws IOException {
+    void readIssue(String nameSpace, IssueEntry entry) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
         DataInputStream is = null;
@@ -262,7 +262,7 @@ class IssueStorage {
         }
     }
 
-    public List<String> readQuery(String nameSpace, String queryName) throws IOException {
+    List<String> readQuery(String nameSpace, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
 
@@ -313,7 +313,7 @@ class IssueStorage {
         return file.lastModified();
     }
 
-    public Map<String, Long> readArchivedQueryIssues(String nameSpace, String queryName) throws IOException {
+    Map<String, Long> readArchivedQueryIssues(String nameSpace, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading archived query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         long now = System.currentTimeMillis();
@@ -372,7 +372,7 @@ class IssueStorage {
         return ids;
     }
 
-    public void removeQuery(String nameSpace, String queryName) throws IOException {
+    void removeQuery(String nameSpace, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start removing query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         FileLock lock = null;
