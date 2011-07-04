@@ -48,10 +48,12 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelConfigureProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -197,5 +199,10 @@ public final class CommonUtilities {
             default:
                 return "LD_LIBRARY_PATH"; // NOI18N
         }
+    }
+    
+    public static WizardDescriptor.Panel<WizardDescriptor> 
+            createConfigureProjectPanel(String name, int type, String wizardTitle, String wizardACSD, boolean fullRemote) {
+        return new PanelConfigureProject(name, type, wizardTitle, wizardACSD, fullRemote);
     }
 }
