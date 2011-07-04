@@ -136,7 +136,6 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
 
         buttonGroup1.add(internalDiff);
         org.openide.awt.Mnemonics.setLocalizedText(internalDiff, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jRadioButton1.text")); // NOI18N
-        internalDiff.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         internalDiff.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(ignoreWhitespace, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jCheckBox1.text")); // NOI18N
@@ -147,7 +146,6 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
 
         buttonGroup1.add(externalDiff);
         org.openide.awt.Mnemonics.setLocalizedText(externalDiff, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jRadioButton2.text")); // NOI18N
-        externalDiff.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         externalDiff.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jLabel1.setLabelFor(externalCommand);
@@ -162,45 +160,45 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(internalDiff)
-                .add(33, 33, 33)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(ignoreAllWhitespace)
-                    .add(ignoreWhitespace)
-                    .add(ignoreCase))
-                .add(185, 185, 185))
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jLabel1)
-                    .add(externalDiff))
-                .add(31, 31, 31)
-                .add(externalCommand, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(browseCommand))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(internalDiff)
+                .addGap(33, 33, 33)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ignoreAllWhitespace)
+                    .addComponent(ignoreWhitespace)
+                    .addComponent(ignoreCase))
+                .addGap(185, 185, 185))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1)
+                    .addComponent(externalDiff))
+                .addGap(31, 31, 31)
+                .addComponent(externalCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(browseCommand))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(internalDiff)
-                    .add(ignoreWhitespace))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ignoreAllWhitespace)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ignoreCase)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(externalDiff)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(browseCommand)
-                    .add(externalCommand, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(internalDiff)
+                    .addComponent(ignoreWhitespace))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ignoreAllWhitespace)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ignoreCase)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(externalDiff)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(browseCommand)
+                    .addComponent(externalCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

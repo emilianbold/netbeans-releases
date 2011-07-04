@@ -144,41 +144,41 @@ public class JpaControllerSetupPanelVisual extends javax.swing.JPanel implements
 
         packageComboBox.setEditable(true);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel4)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(projectLabel)
-                            .add(locationLabel)
-                            .add(packageLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, locationComboBox, 0, 552, Short.MAX_VALUE)
-                            .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
-                            .add(packageComboBox, 0, 552, Short.MAX_VALUE))))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(projectLabel)
+                            .addComponent(locationLabel)
+                            .addComponent(packageLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 552, Short.MAX_VALUE)
+                            .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
+                            .addComponent(packageComboBox, 0, 552, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jLabel4)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectLabel)
-                    .add(projectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(locationLabel)
-                    .add(locationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(packageLabel)
-                    .add(packageComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel4)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(projectLabel)
+                    .addComponent(projectTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(locationLabel)
+                    .addComponent(locationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(packageLabel)
+                    .addComponent(packageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(148, Short.MAX_VALUE))
         );
 
@@ -186,13 +186,13 @@ public class JpaControllerSetupPanelVisual extends javax.swing.JPanel implements
         jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "MSG_Jpa_Controller_Location")); // NOI18N
         projectLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "LBL_Project")); // NOI18N
         projectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "LBL_Project")); // NOI18N
-        projectTextField.getAccessibleContext().setAccessibleDescription("null");
+        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "ACSD_Project")); // NOI18N
         locationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "LBL_SrcLocation")); // NOI18N
         locationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "LBL_SrcLocation")); // NOI18N
-        locationComboBox.getAccessibleContext().setAccessibleDescription("null");
+        locationComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "ACSD_Location")); // NOI18N
         packageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "LBL_Package")); // NOI18N
         packageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "LBL_Package")); // NOI18N
-        packageComboBox.getAccessibleContext().setAccessibleDescription("null");
+        packageComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "ACSD_Package")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed

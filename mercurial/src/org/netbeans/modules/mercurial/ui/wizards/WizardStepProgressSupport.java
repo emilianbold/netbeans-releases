@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.mercurial.ui.wizards;
 
+import javax.swing.LayoutStyle;
+import javax.swing.GroupLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Box;
@@ -54,13 +56,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  *
@@ -106,7 +106,7 @@ public abstract class WizardStepProgressSupport extends HgProgressSupport implem
         progressLine = new JPanel();
         progressLine.add(progressBar);
         progressLine.add(Box.createHorizontalStrut(
-                                LayoutStyle.getSharedInstance()
+                                LayoutStyle.getInstance()
                                 .getPreferredGap(progressBar,
                                                  stopButton,
                                                  RELATED,
@@ -120,13 +120,13 @@ public abstract class WizardStepProgressSupport extends HgProgressSupport implem
 
         layout.setHorizontalGroup(
                 layout.createParallelGroup(LEADING)
-                .add(progressLabel)
-                .add(progressLine));
+                .addComponent(progressLabel)
+                .addComponent(progressLine));
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
-                .add(progressLabel)
+                .addComponent(progressLabel)
                 .addPreferredGap(RELATED)
-                .add(progressLine));
+                .addComponent(progressLine));
         panel.setLayout(layout);
 
         layout.setHonorsVisibility(false);   //hiding should not affect prefsize
