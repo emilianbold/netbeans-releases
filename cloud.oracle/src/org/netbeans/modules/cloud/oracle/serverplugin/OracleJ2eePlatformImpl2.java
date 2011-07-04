@@ -158,7 +158,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
 
     @Override
     public Set getSupportedJavaPlatformVersions() {
-        return new HashSet<String>(Arrays.asList(new String[] {"1.6","1.5"}));
+        return new HashSet<String>(Arrays.asList(new String[] {"1.6"}));
     }
 
     @Override
