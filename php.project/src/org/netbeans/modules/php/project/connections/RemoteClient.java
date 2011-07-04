@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.connections;
 
+import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import java.io.File;
 import java.io.FileInputStream;
