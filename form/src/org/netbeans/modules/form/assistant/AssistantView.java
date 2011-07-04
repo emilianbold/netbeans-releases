@@ -51,9 +51,6 @@ import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import javax.swing.*;
 
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
-
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -99,18 +96,18 @@ public class AssistantView extends JPanel {
         setLayout(layout);
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
-                .add(12)
-                .add(messageLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(panel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .add(12));
+                .addGap(12)
+                .addComponent(messageLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(panel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(12));
         layout.setVerticalGroup(
             layout.createSequentialGroup()
-                .add(2)
-                .add(layout.createParallelGroup(GroupLayout.CENTER)
-                    .add(messageLabel, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
-                    .add(panel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .add(2));
+                .addGap(2)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                    .addComponent(messageLabel, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(panel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(2));
     }
 
     private class Listener implements ActionListener, PropertyChangeListener {

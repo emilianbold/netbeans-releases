@@ -579,7 +579,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             RepositoryInfo info = RepositoryInfo.getInstance(gitFolder.getParentFile());
             if (info != null) {
                 info.refresh();
-                info.getActiveBranch();
+                activeBranch = info.getActiveBranch();
             }
             File refFile = headFile;
             if (activeBranch != null && !GitBranch.NO_BRANCH.equals(activeBranch.getName())) {

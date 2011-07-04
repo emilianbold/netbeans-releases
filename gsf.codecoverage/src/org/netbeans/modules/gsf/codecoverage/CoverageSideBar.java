@@ -47,15 +47,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.SideBarFactory;
@@ -255,39 +255,39 @@ public class CoverageSideBar extends javax.swing.JPanel {
             }
         });
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(label)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(coverageBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.RELATED, 86, Short.MAX_VALUE)
-                .add(warningsLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(testButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(allTestsButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(clearButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(reportButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(jButton1))
+                .addComponent(label)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(coverageBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, 86, Short.MAX_VALUE)
+                .addComponent(warningsLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(testButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(allTestsButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(clearButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(reportButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jButton1))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                .add(label)
-                .add(coverageBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .add(jButton1)
-                .add(reportButton)
-                .add(clearButton)
-                .add(allTestsButton)
-                .add(testButton)
-                .add(warningsLabel))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                .addComponent(label)
+                .addComponent(coverageBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton1)
+                .addComponent(reportButton)
+                .addComponent(clearButton)
+                .addComponent(allTestsButton)
+                .addComponent(testButton)
+                .addComponent(warningsLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
