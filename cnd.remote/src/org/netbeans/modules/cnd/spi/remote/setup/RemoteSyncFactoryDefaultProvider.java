@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.spi.remote.setup;
 
-package org.netbeans.modules.cnd.makeproject;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.filesystems.FileObject;
 
 /**
- * Utility class for misc make project related functions
+ * See #199750 - "Sharing" is not default value of "Synchronization" property of Host dialog for solstudio
  * @author Vladimir Kvashin
  */
-public class MakeProjectUtils {
-
-    private MakeProjectUtils() {
-    }
-
-    public static ExecutionEnvironment getSourceFileSystemHost(Project project) {
-        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
-        if (project != null) {
-            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            if (remoteProject != null) {
-                env = remoteProject.getSourceFileSystemHost();
-            }
-        }
-        return env;
-    }
-    
-    public static boolean canChangeHost(Project project, MakeConfiguration mk) {
-        return isFullRemote(project) ? FullRemoteExtension.canChangeHost(mk) : true;
-    }
-
-    private static boolean isFullRemote(Project project) {
-        if (project != null) {
-            FileObject dir = project.getProjectDirectory();
-            if (dir != null) { // paranoia
-                ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
-                if (env != null && env.isRemote()) {
-                    return true;
-                }
-            }            
-            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            if (remoteProject != null) {
-                return remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES;
-            }
-        }
-        return false;
-    }
+public interface RemoteSyncFactoryDefaultProvider {
+    /**
+     * Returns default sync factory for the given host
+     * @param env specifies host. Host must be CONNECTED
+     * @return 
+     */
+    public RemoteSyncFactory getDefaultFactory(ExecutionEnvironment env);
 }
