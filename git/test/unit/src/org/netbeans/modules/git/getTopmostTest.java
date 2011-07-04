@@ -48,7 +48,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  *
@@ -227,6 +227,44 @@ public class getTopmostTest extends NbTestCase {
         // test
         File tm1 = mvcs.getTopmostManagedAncestor(getTempDir());
         assertNull(tm1);
+    }
+
+    public void testExcludeUserDir () throws Exception {
+        Field f = Utils.class.getDeclaredField("unversionedFolders");
+        f.setAccessible(true);
+        f.set(Utils.class, null);
+        File userDir = new File(getWorkDir(), "repoFolder");
+        // completely ignore userdir being a repo root
+        System.setProperty("netbeans.user", userDir.getAbsolutePath());
+        File dotGitUserDir = createFolder(userDir.getParentFile(), ".git");
+        File r1 = createFolder(userDir, "r1");
+        File dotGitR1 = createFolder(r1, ".git");
+        File r1f1 = createFile(r1, "f1");
+        
+        // test
+        assertEquals(userDir.getParentFile(), Git.getInstance().getRepositoryRoot(userDir.getParentFile()));
+        assertNull(Git.getInstance().getRepositoryRoot(userDir));
+        assertNull(Git.getInstance().getRepositoryRoot(r1));
+        assertNull(Git.getInstance().getRepositoryRoot(r1f1));
+
+        Git.getInstance().clearAncestorCaches();
+        f.set(Utils.class, null);
+        // version also the userdir
+        System.setProperty("versioning.netbeans.user.versioned", "true");
+        assertEquals(r1, Git.getInstance().getRepositoryRoot(r1));
+        assertEquals(r1, Git.getInstance().getRepositoryRoot(r1f1));
+        
+        f.set(Utils.class, null);
+        System.setProperty("versioning.netbeans.user.versioned", "false");
+        // ignore userdir being a subfolder under a repo root
+        File r1fld1 = createFolder(r1, "folder1");
+        File r1fld1f1 = createFile(r1fld1, "f1");
+        System.setProperty("netbeans.user", r1fld1.getAbsolutePath());
+        Git.getInstance().clearAncestorCaches();
+        assertEquals(r1, Git.getInstance().getRepositoryRoot(r1));
+        assertEquals(r1, Git.getInstance().getRepositoryRoot(r1f1));
+        assertNull(Git.getInstance().getRepositoryRoot(r1fld1));
+        assertNull(Git.getInstance().getRepositoryRoot(r1fld1f1));
     }
 
     private void clearCachedValues() throws Exception {

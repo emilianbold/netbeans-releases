@@ -65,7 +65,6 @@ import java.util.HashSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.regex.Pattern;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -91,6 +90,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
@@ -288,7 +288,7 @@ public class HgUtils {
     }
 
     public static JComponent addContainerBorder(JComponent comp) {
-        final LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        final LayoutStyle layoutStyle = LayoutStyle.getInstance();
 
         JPanel panel = new JPanel();
         panel.add(comp);
