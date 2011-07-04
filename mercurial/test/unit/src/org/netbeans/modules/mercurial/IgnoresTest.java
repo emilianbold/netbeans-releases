@@ -65,7 +65,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author tomas
  */
-public class IgnoresTest extends AbstractHgTest {
+public class IgnoresTest extends AbstractHgTestCase {
 
     public IgnoresTest(String arg0) {
         super(arg0);

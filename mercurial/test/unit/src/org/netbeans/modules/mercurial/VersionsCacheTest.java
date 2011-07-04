@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.util.Utils;
  *
  * @author ondra
  */
-public class VersionsCacheTest extends AbstractHgTest {
+public class VersionsCacheTest extends AbstractHgTestCase {
 
     private File workdir;
 

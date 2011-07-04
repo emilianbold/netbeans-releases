@@ -57,7 +57,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author ondra
  */
-public class FileStatusCacheTest extends AbstractHgTest {
+public class FileStatusCacheTest extends AbstractHgTestCase {
 
     private File workdir;
 
