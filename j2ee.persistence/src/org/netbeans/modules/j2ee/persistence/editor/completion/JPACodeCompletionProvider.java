@@ -88,7 +88,7 @@ import org.openide.util.NbBundle;
  * see NNCompletionProvider and NNCompletionQuery as nb 5.5 precursors for this class 
  * @author sp153251
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class)//NOI18N
+//@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class)//NOI18N
 public class JPACodeCompletionProvider implements CompletionProvider {
 
     @Override
