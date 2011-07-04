@@ -141,7 +141,7 @@ public final class WhiteListImplementationBuilder {
     }
 
     private static final class Model {
-        private static final String DEF_NAMES = SimpleNames.class.getName();
+        private static final String DEF_NAMES = PackedNames.class.getName();
         private final Names names;
         private final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>> root =
                 new IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>>();
@@ -375,7 +375,6 @@ public final class WhiteListImplementationBuilder {
         private static final int DEF_INIT_BYTES = 1<<16;
 
         private final int hashMask;
-        private int counter = Integer.MIN_VALUE;
         private Entry[] slots;
         private byte[] storage;
         private int pos;
@@ -406,11 +405,11 @@ public final class WhiteListImplementationBuilder {
                     storage = tmpStorage;
                 }
                 System.arraycopy(sbytes, 0, storage, pos, sbytes.length);
-                entry = new Entry(counter++ ,pos, sbytes.length, slots[hc]);
+                entry = new Entry(pos, sbytes.length, slots[hc]);
                 slots[hc] = entry;
-                pos+=sbytes.length;
+                pos+= sbytes.length == 0 ? 1 : sbytes.length;
             }
-            return entry.id;
+            return entry.pos;
         }
 
         @Override
@@ -422,7 +421,7 @@ public final class WhiteListImplementationBuilder {
             while (entry != null && !contentEquals(entry,sbytes)) {
                 entry = entry.next;
             }
-            return entry == null ? null : entry.id;
+            return entry == null ? null : entry.pos;
         }
 
         private boolean contentEquals(
@@ -450,18 +449,14 @@ public final class WhiteListImplementationBuilder {
         }
 
         private static class Entry {
-
-            private int id;     //Todo: may be removed and replaced by pos, but requires padding for empty string
             private int pos;
             private int length;
             private Entry next;
 
             private Entry(
-                final int id,
                 final int pos,
                 final int length,
                 @NullAllowed final Entry next) {
-                this.id = id;
                 this.pos = pos;
                 this.length = length;
                 this.next = next;
