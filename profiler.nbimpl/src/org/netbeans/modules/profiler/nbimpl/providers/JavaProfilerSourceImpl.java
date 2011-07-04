@@ -291,8 +291,8 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     }
 
     @Override
-    public ClassInfo getTopLevelClass(FileObject fo) {
-        final ClassInfo[] result = new ClassInfo[1];
+    public Set<ClassInfo> getClasses(FileObject fo) {
+        final Set<ClassInfo> result = new HashSet<ClassInfo>();
 
         JavaSource js = JavaSource.forFileObject(fo);
 
@@ -313,27 +313,38 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                         return;
                     }
 
-                    TreePathScanner<ClassInfo, Void> scanner = new TreePathScanner<ClassInfo, Void>() {
+                    TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
 
-                        public ClassInfo visitClass(ClassTree node, Void p) {
+                        public Void visitClass(ClassTree node, Void p) {
                             try {
                                 TypeElement te = (TypeElement)controller.getTrees().getElement(getCurrentPath());
-                                return new ClassInfoImpl(te.getSimpleName().toString(), te.getQualifiedName().toString(), ElementUtilities.getBinaryName(te));
+                                result.add(new ClassInfoImpl(te.getSimpleName().toString(), te.getQualifiedName().toString(), ElementUtilities.getBinaryName(te)));
                             } catch (NullPointerException e) {
                                 ProfilerLogger.log(e);
-                                return null;
                             }
+                            return null;
                         }
                     };
 
-                    result[0] = scanner.scan(controller.getCompilationUnit(), null);
+                    scanner.scan(controller.getCompilationUnit(), null);
                 }
             }, true);
         } catch (IOException ex) {
             ProfilerLogger.log(ex);
         }
 
-        return result[0];
+        return result;
+    }    
+    
+    @Override
+    public ClassInfo getTopLevelClass(FileObject fo) {
+        String fName = fo.getName();
+        for(ClassInfo ci : getClasses(fo)) {
+            if (ci.getSimpleName().equals(fName)) {
+                return ci;
+            }
+        }
+        return null;
     }
 
     @Override

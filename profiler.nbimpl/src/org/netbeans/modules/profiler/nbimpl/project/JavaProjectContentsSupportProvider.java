@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.profiler.nbimpl.project;
 
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
@@ -85,15 +86,18 @@ public class JavaProjectContentsSupportProvider extends ProjectContentsSupportPr
         if (profiledClassFile == null) {
             return ProjectUtilities.getProjectDefaultRoots(project, packages);
         } else {
-            // Profile Single, provide correct root methods
-            // FIXME
             JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
-            String profiledClass = src != null ? src.getTopLevelClass().getQualifiedName() : null;
-            if (profiledClass != null) {
-                return new SourceCodeSelection[] { new SourceCodeSelection(profiledClass, "<all>", "") }; // NOI18N // Covers all innerclasses incl. anonymous innerclasses
-            } else {
-                return null;
+            if (src != null) {
+                Set<JavaProfilerSource.ClassInfo> clzs = src.getClasses();
+                SourceCodeSelection[] rslt = new SourceCodeSelection[clzs.size()];
+                
+                int index = 0;
+                for(JavaProfilerSource.ClassInfo ci : clzs) {
+                    rslt[index++] = new SourceCodeSelection(ci.getQualifiedName(), "<all>", ""); // NOI18N
+                }
+                return rslt;
             }
+            return null;
         }
     }
     
