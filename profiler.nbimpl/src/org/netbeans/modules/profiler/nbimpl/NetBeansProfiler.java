@@ -69,10 +69,10 @@ import org.openide.util.lookup.ServiceProvider;
 public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProfiler {
 
     // remembered values for rerun and modify actions
-    private ProfilerControlPanel2Support actionSupport = new ProfilerControlPanel2Support();
+    private ProfilerControlPanel2Support actionSupport;
 
     public void runTarget(FileObject buildScriptFO, String target, Properties props) {
-        actionSupport.setAll(buildScriptFO, target, props);
+        getActionSupport().setAll(buildScriptFO, target, props);
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -124,25 +124,26 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
 
     @Override
     public boolean rerunAvailable() {
-        return actionSupport.isActionAvailable();
+        return getActionSupport().isActionAvailable();
     }
 
     @Override
     public boolean modifyAvailable() {
-        return getProfilingMode()==MODE_ATTACH||actionSupport.isActionAvailable();
+        return getProfilingMode()==MODE_ATTACH || getActionSupport().isActionAvailable();
     }
 
     @Override
     public void rerunLastProfiling() {
-        if (actionSupport.getTarget()!=null) {
-            doRunTarget(actionSupport.getScript(), actionSupport.getTarget(), actionSupport.getProperties());
+        String target = getActionSupport().getTarget();
+        if (target!=null) {
+            doRunTarget(getActionSupport().getScript(), target, getActionSupport().getProperties());
         }
     }
 
     @Override
     public boolean attachToApp(ProfilingSettings profilingSettings, AttachSettings attachSettings) {
         // clear rerun
-        actionSupport.nullAll();
+        getActionSupport().nullAll();
         CommonUtils.runInEventDispatchThread(new Runnable() {
             @Override
             public void run() {
@@ -154,14 +155,16 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
 
     @Override
     public void modifyCurrentProfiling(ProfilingSettings profilingSettings) {
-        if (actionSupport.getProperties()!=null) {
-            profilingSettings.store(actionSupport.getProperties()); // Fix for http://www.netbeans.org/issues/show_bug.cgi?id=95651, update settings for ReRun
+        Properties properties = getActionSupport().getProperties();
+        
+        if (properties!=null) {
+            profilingSettings.store(properties); // Fix for http://www.netbeans.org/issues/show_bug.cgi?id=95651, update settings for ReRun
         }
         super.modifyCurrentProfiling(profilingSettings);
     }
 
     Properties getCurrentProfilingProperties() {
-        return actionSupport.getProperties();
+        return getActionSupport().getProperties();
     }
 
     @Override
@@ -184,5 +187,12 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
                 }
             }
         }
+    }
+
+    private synchronized ProfilerControlPanel2Support getActionSupport() {
+        if (actionSupport == null) {
+            actionSupport = new ProfilerControlPanel2Support();
+        }
+        return actionSupport;
     }
 }
