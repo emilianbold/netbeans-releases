@@ -110,8 +110,17 @@ public class LogsComponent extends TopComponent {
         OracleInstance.runAsynchronously(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final List<JobType> jobs = am.listJobs();
-                Collections.reverse(jobs);
+                final List<JobType> jobs_ = am.listJobs();
+                Collections.reverse(jobs_);
+                final List<JobType> jobs = new ArrayList<JobType>();
+                int i = 0;
+                for (JobType jt: jobs_) {
+                    jobs.add(jt);
+                    i++;
+                    if (i > 50) {
+                        break;
+                    }
+                }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
