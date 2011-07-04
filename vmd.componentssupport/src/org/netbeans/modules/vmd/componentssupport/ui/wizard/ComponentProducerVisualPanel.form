@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -19,7 +19,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -56,40 +56,35 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="myValidityPanel" alignment="0" max="32767" attributes="0"/>
+                      <Component id="myCPAddLibDependencyChk" alignment="0" min="-2" max="-2" attributes="1"/>
+                      <Component id="myLibNamePanel" alignment="0" max="32767" attributes="1"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="myCPAddLibDependencyChk" alignment="0" min="-2" max="-2" attributes="1"/>
-                              <Component id="myLibNamePanel" alignment="0" max="32767" attributes="1"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="myCPPaletteDispNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="myCPPaletteTooltipLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="myCPPaletteCategoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="myCPSmallIconPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="myCPLargeIconPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="myCPClassNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="myCPPaletteDispNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="myCPPaletteTooltipLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="myCPPaletteCategoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="myCPSmallIconPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="myCPLargeIconPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="myCPClassNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="myCPClassName" alignment="0" pref="315" max="32767" attributes="0"/>
+                              <Component id="myCPPaletteTooltip" pref="315" max="32767" attributes="0"/>
+                              <Component id="myCPPaletteDispName" alignment="0" pref="315" max="32767" attributes="0"/>
+                              <Component id="myCPPaletteCategoryCombo" alignment="0" min="-2" pref="182" max="-2" attributes="0"/>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Component id="myCPLargeIconPath" alignment="1" pref="222" max="32767" attributes="0"/>
+                                      <Component id="myCPSmallIconPath" alignment="1" pref="222" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="myCPClassName" alignment="0" pref="295" max="32767" attributes="0"/>
-                                      <Component id="myCPPaletteTooltip" pref="295" max="32767" attributes="0"/>
-                                      <Component id="myCPPaletteDispName" alignment="0" pref="295" max="32767" attributes="0"/>
-                                      <Component id="myCPPaletteCategoryCombo" alignment="0" min="-2" pref="182" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Group type="103" groupAlignment="1" attributes="0">
-                                              <Component id="myCPLargeIconPath" alignment="1" pref="222" max="32767" attributes="0"/>
-                                              <Component id="myCPSmallIconPath" alignment="1" pref="222" max="32767" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="myCPSmallIconPathButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                                              <Component id="myCPLargeIconPathButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                      </Group>
+                                      <Component id="myCPSmallIconPathButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                      <Component id="myCPLargeIconPathButton" alignment="1" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -360,7 +355,7 @@
                       <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                       <Component id="myCPLibNameLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="myCPLibName" pref="287" max="32767" attributes="0"/>
+                      <Component id="myCPLibName" pref="327" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -422,7 +417,7 @@
                           <Component id="myCPValidPlatformRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="myCPValidCustomRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="241" max="32767" attributes="0"/>
+                      <EmptySpace pref="260" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

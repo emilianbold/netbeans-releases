@@ -140,7 +140,7 @@ class ConfirmDeletionPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName("null");
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConfirmDeletionPanel.class, "jLabel1.AccessibleContext.accessibleName")); // NOI18N
 
         jScrollPane1.setViewportView(selected);
         selected.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConfirmDeletionPanel.class, "ACSN_Selected")); // NOI18N
