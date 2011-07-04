@@ -51,6 +51,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.css.lib.TokenNode;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -143,6 +144,28 @@ public class Css3ParserTest extends CslTestBase {
                 bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
+    }
+    
+    public void testParseTreeOffsets() throws ParseException, BadLocationException {
+        String code = "/* comment */ body { color: red; }";
+        //             01234567890123456789
+        //             0         1
+        
+        CssParserResult res = parse(code);
+        dumpResult(res);
+        
+        Node aNode = NodeUtil.query(res.getParseTree(), 
+                bodysetPath + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/elementName/body");
+        
+        assertNotNull(aNode);
+        assertTrue(aNode instanceof TokenNode);
+        
+        assertEquals("body", aNode.name());
+        assertEquals(NodeType.leaf, aNode.type());
+        
+        assertEquals("body".length(), aNode.name().length());
+        assertEquals(14, aNode.from());
+        assertEquals(18, aNode.to());
     }
    
     public void testNamespacesInSelector() throws ParseException, BadLocationException {

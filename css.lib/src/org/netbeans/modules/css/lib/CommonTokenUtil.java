@@ -42,38 +42,24 @@
 package org.netbeans.modules.css.lib;
 
 import org.antlr.runtime.CommonToken;
-import org.netbeans.modules.css.lib.api.NodeType;
 
 /**
  *
  * @author marekfukala
  */
-public class TokenNode extends AbstractParseTreeNode {
+public class CommonTokenUtil {
     
-    private CommonToken token;
-
-    public TokenNode(CommonToken token) {
-        this.token = token;
-    }
-
-    @Override
-    public NodeType type() {
-        return NodeType.leaf;
-    }
-
-    @Override
-    public int from() {
-        return CommonTokenUtil.getCommonTokenOffsetRange(token)[0];
-    }
-
-    @Override
-    public int to() {
-        return CommonTokenUtil.getCommonTokenOffsetRange(token)[1];
-    }
-
-    @Override
-    public String name() {
-        return token.getText();
+    /** 
+     * Returns a pointer to the start and end of the token image in the underlaying stream.
+     * The token.getStopIndex() points to the last character of the token which is a bit confusing.
+     * 
+     * Use this method to get CommonToken's boundaries instead of using the getStart/StopIndex methods.
+     * 
+     * @return two members array - arr[0] is the start offset, arr[1] is the end offset
+     */
+    public static int[] getCommonTokenOffsetRange(CommonToken token) {
+        return new int[]{token.getStartIndex(), token.getStopIndex() + 1};
+        
     }
     
 }

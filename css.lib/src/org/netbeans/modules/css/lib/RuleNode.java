@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib;
 
+import org.antlr.runtime.CommonToken;
 import org.netbeans.modules.css.lib.api.NodeType;
 
 /**
@@ -50,29 +51,41 @@ import org.netbeans.modules.css.lib.api.NodeType;
 public class RuleNode extends AbstractParseTreeNode {
     
     private NodeType rule;
-    private int from, to;
+    private CommonToken first, last;
     
     RuleNode(NodeType rule) {
         this.rule = rule;
     }
     
     //used by NbParseTreeBuilder
-    void setFrom(int from) {
-        this.from = from;
+    void setFirstToken(CommonToken token) {
+        assert token != null : "Attempting to set null first token in rule " + name();
+        this.first = token;
     }
     
-    void setTo(int to) {
-        this.to = to;
+    void setLastToken(CommonToken token) {
+        assert token != null : "Attempting to set null last token in rule " + name();
+        this.last = token;
+    }
+
+    CommonToken getFirstToken() {
+        return first;
+    }
+
+    CommonToken getLastToken() {
+        return last;
     }
     
     @Override
     public int from() {
-        return from;
+        assert first != null : "Called RuleNode.from() before setting first token!" ; //NOI18N
+        return CommonTokenUtil.getCommonTokenOffsetRange(first)[0];
     }
 
     @Override
     public int to() {
-        return to;
+        assert last != null : "Called RuleNode.to() before setting last token!" ; //NOI18N
+        return CommonTokenUtil.getCommonTokenOffsetRange(last)[1];
     }
 
     @Override

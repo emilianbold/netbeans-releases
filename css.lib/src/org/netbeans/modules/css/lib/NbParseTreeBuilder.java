@@ -63,17 +63,17 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
  */
 public class NbParseTreeBuilder extends BlankDebugEventListener {
 
-    private static final Object ROOT_NODE_PAYLOAD = "root"; //NOI18N
     Stack<RuleNode> callStack = new Stack<RuleNode>();
-    List<Token> hiddenTokens = new ArrayList<Token>();
+    List<CommonToken> hiddenTokens = new ArrayList<CommonToken>();
     private int backtracking = 0;
     
     private CommonToken lastConsumedToken;
     private Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
     private boolean resyncing;
-
+    
+    
     public NbParseTreeBuilder() {
-        callStack.push(new RuleNode(NodeType.root));
+        callStack.push(new RootNode());
     }
 
     public AbstractParseTreeNode getTree() {
@@ -101,11 +101,6 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         parentRuleNode.addChild(ruleNode);
         ruleNode.setParent(parentRuleNode);
         callStack.push(ruleNode);
-        
-        //set rule start offset
-        ruleNode.setFrom(lastConsumedToken != null 
-                ? lastConsumedToken.getStartIndex() 
-                : 0);
     }
 
     @Override
@@ -121,10 +116,10 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             }
         } else {
             //set the rule end offset
-            ruleNode.setTo(lastConsumedToken.getStopIndex());
+            ruleNode.setLastToken(lastConsumedToken);
         }
     }
-
+    
     @Override
     public void consumeToken(Token token) {
         if (backtracking > 0) {
@@ -133,10 +128,24 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         lastConsumedToken = (CommonToken)token;
         
         RuleNode ruleNode = callStack.peek();
-        TokenNode elementNode = new TokenNode(lastConsumedToken);
+        TokenNode elementNode = new TokenNode((CommonToken)token);
         elementNode.hiddenTokens = this.hiddenTokens;
         hiddenTokens.clear();
         ruleNode.addChild(elementNode);
+        
+        //set first token for all RuleNode-s in the stack without the first token set
+        while(true) {
+            CommonToken bound = ruleNode.getFirstToken();
+            if(bound != null) {
+                break;
+            }
+            ruleNode.setFirstToken(lastConsumedToken);
+            ruleNode = (RuleNode)ruleNode.getParent();
+            if(ruleNode == null) {
+                break;
+            }
+        }
+        
         
         if(resyncing) {
             System.out.println("resyncing over token " + token);
@@ -149,7 +158,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
-        hiddenTokens.add(token);
+        hiddenTokens.add((CommonToken)token);
         
         if(resyncing) {
             System.out.println("resyncing over hidden token " + token);
@@ -183,8 +192,9 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             int unexpectedTokenCode = e.getUnexpectedType();
             CssTokenId uneexpectedToken = CssTokenId.forTokenTypeCode(unexpectedTokenCode);
             
-            from = token.getStartIndex();
-            to = token.getStopIndex();
+            int[] range = CommonTokenUtil.getCommonTokenOffsetRange(token);
+            from = range[0];
+            to = range[1];
             
             if(uneexpectedToken == CssTokenId.EOF) {
                 message = String.format("Premature end of file");
@@ -193,8 +203,8 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
                         uneexpectedToken.name(), 
                         e.line, 
                         e.charPositionInLine, 
-                        token.getStartIndex(), 
-                        token.getStopIndex());
+                        from, 
+                        to);
             }            
         } else {
             //no token?!?!

@@ -41,39 +41,30 @@
  */
 package org.netbeans.modules.css.lib;
 
-import org.antlr.runtime.CommonToken;
+import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 
 /**
  *
  * @author marekfukala
  */
-public class TokenNode extends AbstractParseTreeNode {
+public class RootNode extends RuleNode {
+
+    public RootNode() {
+        super(NodeType.root);
+    }
     
-    private CommonToken token;
-
-    public TokenNode(CommonToken token) {
-        this.token = token;
-    }
-
-    @Override
-    public NodeType type() {
-        return NodeType.leaf;
-    }
-
     @Override
     public int from() {
-        return CommonTokenUtil.getCommonTokenOffsetRange(token)[0];
+        List<Node> ch = children();
+        return ch.isEmpty() ? 0 : ch.get(0).from();
     }
 
     @Override
     public int to() {
-        return CommonTokenUtil.getCommonTokenOffsetRange(token)[1];
-    }
-
-    @Override
-    public String name() {
-        return token.getText();
+        List<Node> ch = children();
+        return ch.isEmpty() ? 0 : ch.get(ch.size() - 1).to();
     }
     
 }
