@@ -219,7 +219,7 @@ public class CCParser {
                     CC newNN = new CC(nnName, attrs, nnstart, nnend);
                     return newNN;
                 }
-                ts.moveNext();
+                if(!ts.moveNext()) break;
                 titk = ts.token();//get next token
                 
             } while(titk != null);
@@ -268,10 +268,6 @@ public class CCParser {
         
         return -1;
     }
-    
-//    private static void debug(Object message) {
-//        System.out.println(message.toString());
-//    }
     
     public class NNAttr {
         private String name;
