@@ -441,7 +441,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected final boolean isBlackListed(final ElementHandle<?> handle) {
             if (isBlackListed == null) {
                 //TODO: canSubclass
-                isBlackListed = !whiteList.canInvoke(handle);
+                isBlackListed = whiteList != null ? !whiteList.canInvoke(handle) : false;
             }
             return isBlackListed;
         }
