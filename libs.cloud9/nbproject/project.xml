@@ -68,6 +68,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.84</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.websvc.restlib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -123,10 +131,15 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <package>oracle.nuviaq.api</package>
                 <package>oracle.nuviaq.model.xml</package>
+                <package>org.netbeans.modules.libs.cloud9.api</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/nuviaq-api.jar</runtime-relative-path>
                 <binary-origin>external/nuviaq-api.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/whitelistscantool.jar</runtime-relative-path>
+                <binary-origin>external/whitelistscantool.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
