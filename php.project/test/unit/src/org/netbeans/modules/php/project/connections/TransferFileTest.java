@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.project.connections;
 
 import java.io.File;
+import java.util.Date;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
 /**
  * @author Tomas Mysik
@@ -53,7 +55,7 @@ public class TransferFileTest extends NbTestCase {
         super(name);
     }
 
-    public void testTransferFilePaths() {
+    public void testLocalTransferFilePaths() {
         TransferFile file = TransferFile.fromFile(null, new File("/a/b/c"), "/a");
         assertEquals("c", file.getName());
         assertEquals("b/c", file.getRelativePath());
@@ -76,6 +78,16 @@ public class TransferFileTest extends NbTestCase {
         assertEquals(null, file.getParentRelativePath());
     }
 
+    public void testRemoteTransferFilePaths() {
+        TransferFile file = TransferFile.fromRemoteFile(null,
+                new RemoteFileImpl("readme.txt", "/pub/myproject/tests/info", true),
+                "/pub/myproject",
+                "/pub/myproject/tests/info");
+        assertEquals("readme.txt", file.getName());
+        assertEquals("tests/info/readme.txt", file.getRelativePath());
+        assertEquals("tests/info", file.getParentRelativePath());
+    }
+
     public void testTransferFileRelations() {
         TransferFile projectRoot = TransferFile.fromFile(null, new File("/a"), "/a");
         assertNull(projectRoot.getParent());
@@ -96,4 +108,56 @@ public class TransferFileTest extends NbTestCase {
         assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().contains(child1));
         assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().contains(child2));
     }
+
+
+    private final class RemoteFileImpl implements RemoteFile {
+
+        private final String name;
+        private final String parentDirectory;
+        private final boolean file;
+
+
+        public RemoteFileImpl(String name, String parentDirectory, boolean file) {
+            this.name = name;
+            this.parentDirectory = parentDirectory;
+            this.file = file;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getParentDirectory() {
+            return parentDirectory;
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return !file;
+        }
+
+        @Override
+        public boolean isFile() {
+            return file;
+        }
+
+        @Override
+        public boolean isLink() {
+            return false;
+        }
+
+        @Override
+        public long getSize() {
+            return 999;
+        }
+
+        @Override
+        public long getTimestamp() {
+            return new Date().getTime();
+        }
+
+    }
+
 }
