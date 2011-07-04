@@ -97,6 +97,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private static final RequestProcessor   rp = new RequestProcessor("SubversionView", 1, true);  // NOI18N
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
+    private final ModeKeeper modeKeeper;
 
     /**
      * Creates a new Synchronize Panel managed by the given versioning system.
@@ -110,7 +111,8 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         explorerManager = new ExplorerManager ();
         displayStatuses = FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE;
         noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
-        syncTable = new SyncTable();
+        modeKeeper = new ModeKeeper();
+        syncTable = new SyncTable(modeKeeper);
 
         initComponents();
         setComponentsState();
@@ -469,17 +471,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
-            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
+            modeKeeper.setMode(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Local")); // NOI18N
         }
         else if (tgbRemote.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
-            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
+            modeKeeper.setMode(Setup.DIFFTYPE_REMOTE);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Remote")); // NOI18N
         }
         else if (tgbAll.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
-            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
+            modeKeeper.setMode(Setup.DIFFTYPE_ALL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
         }
     }
@@ -757,6 +759,22 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             finished = flag;
         }
 
+    }
+
+    static class ModeKeeper {
+        private int mode;
+
+        private ModeKeeper () {
+        }
+
+        void storeMode () {
+            SvnModuleConfig.getDefault().setLastUsedModificationContext(mode);
+        }
+
+        private void setMode (int mode) {
+            this.mode = mode;
+            storeMode();
+        }
     }
 
     /** This method is called from within the constructor to
