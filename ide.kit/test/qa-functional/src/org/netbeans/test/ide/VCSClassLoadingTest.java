@@ -77,7 +77,7 @@ public class VCSClassLoadingTest extends JellyTestCase {
     private static final String ZIP = ".zip";
     private static final String BIGLIST = "biglist";
     private static final String FS = File.separator;
-    private static final String PATH = new WhitelistTest("Dummy").getDataDir()+FS;
+    private static final String PATH = new VCSClassLoadingTest("Dummy").getDataDir()+FS;
     private static final String TMP = System.getProperty("java.io.tmpdir");
 
     public VCSClassLoadingTest(String testName)

@@ -260,7 +260,9 @@ public class CCParser {
                     return ts.offset();
                 }
             }
-            ts.movePrevious();
+            if (!ts.movePrevious()) {
+                break;
+            }
             titk = ts.token();
         }
         
