@@ -132,6 +132,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     private static final Comparator NodeComparator = new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
             Node.Property p1 = (Node.Property) o1;
             Node.Property p2 = (Node.Property) o2;
@@ -177,6 +178,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
         table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
             }
@@ -188,6 +190,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 int width = table.getWidth();
                 if (tableColumns.length == 3) {
@@ -211,13 +214,16 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         });
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
     }
 
@@ -309,6 +315,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             super(name, String.class, displayName, shortDescription);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
@@ -331,6 +338,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             }
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 // invoke later so the selection on the table will be set first
                 if (table.isShowing()) {
@@ -397,7 +405,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         menu.addSeparator();
         String label;
         ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
-        if (exclude.getActionStatus(null) == exclude.INCLUDING) {
+        if (exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING) {
             label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_IncludeInCommit"); // NOI18N
         } else {
             label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_ExcludeFromCommit"); // NOI18N
@@ -457,24 +465,29 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         return actionsLoc.getString(key);
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if (e.isPopupTrigger()) {
             showPopup(e);
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (e.isPopupTrigger()) {
             showPopup(e);
         }
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = table.rowAtPoint(e.getPoint());
@@ -488,6 +501,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         } 
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         List<SyncFileNode> selectedNodes = new ArrayList<SyncFileNode>();
         ListSelectionModel selectionModel = table.getSelectionModel();
@@ -505,13 +519,14 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             }
         }
         // this method may be called outside of AWT if a node fires change events from some other thread, see #79174
-        final Node [] nodes = selectedNodes.toArray(new Node[selectedNodes.size()]);
+        final Node [] nodeArray = selectedNodes.toArray(new Node[selectedNodes.size()]);
         if (SwingUtilities.isEventDispatchThread()) {
-            tc.setActivatedNodes(nodes);
+            tc.setActivatedNodes(nodeArray);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
-                    tc.setActivatedNodes(nodes);
+                    tc.setActivatedNodes(nodeArray);
                 }
             });
         }
@@ -521,6 +536,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer;
             int modelColumnIndex = table.convertColumnIndexToModel(column);
