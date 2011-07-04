@@ -844,7 +844,7 @@ class RfsLocalController extends NamedRunnable {
                         return;
                 }
             } else {
-                if (info.state == FileState.UNCONTROLLED) {
+                if (info != null && info.state == FileState.UNCONTROLLED) {
                     newState = FileState.UNCONTROLLED;
                 } else {
                     newState = FileState.INEXISTENT;
