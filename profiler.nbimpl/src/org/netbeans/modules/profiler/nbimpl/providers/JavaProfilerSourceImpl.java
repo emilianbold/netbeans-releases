@@ -87,6 +87,7 @@ import org.netbeans.modules.profiler.api.java.JavaProfilerSource.MethodInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.spi.java.AbstractJavaProfilerSource;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -711,7 +712,8 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     private static boolean isJunit3TestSuite(FileObject fo) {
         final boolean[] rslt = new boolean[]{false};
         SourceGroup sg = SourceGroupModifier.createSourceGroup(FileOwnerQuery.getOwner(fo), JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
-        if (sg.contains(fo)) {
+        if (FileUtil.getRelativePath(sg.getRootFolder(), fo) != null && // need to check for this first otherwise i will get IAE
+            sg.contains(fo)) {
             JavaSource js = JavaSource.forFileObject(fo);
             if (js == null) {
                 return false;
