@@ -97,7 +97,7 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
         
         String serverDir = (String)wizard.getProperty(LocalInstancePanel.LOCAL_SERVER);
 
-        if (serverDir != null) {
+        if (serverDir != null && serverDir.trim().length() > 0) {
             File jarFo = InstalledFileLocator.getDefault().locate(
                     "modules/ext/cloud_10.3.6.0.jar", "org.netbeans.modules.libs.cloud9", false); // NOI18N
             if (jarFo == null) {
