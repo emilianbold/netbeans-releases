@@ -95,7 +95,7 @@ public class WebUrlHyperlinkSupport {
         private static final String RESERVED = GEN_DELIMS + SUB_DELIMS;
         private static final String PUNCT_CHARS = ".,:;()[]{}";         //NOI18N
         private static final String[] SUPPORTED_SCHEMES
-                                      = new String[] {"http", "https"}; //NOI18N
+                                      = new String[] {"http", "https", "mailto"}; //NOI18N
 
         private static final int LOWER_A = 'a';     //automatic conversion to int
         private static final int LOWER_F = 'a';     //automatic conversion to int
@@ -758,7 +758,7 @@ public class WebUrlHyperlinkSupport {
 
             if (wasValidUri) {
                 assert (start != -1);
-                if (authorityStart != -1) {
+                if (authorityStart != -1 || text.subSequence(start, length).toString().startsWith("mailto")) {
                     checkAndStoreResult(start, length, bracketsDepth);
                 }
             }
@@ -792,11 +792,11 @@ public class WebUrlHyperlinkSupport {
                 if (!uri.isAbsolute()) {
                     return false;
                 }
-                if (uri.isOpaque()) {
+                String scheme = uri.getScheme();
+                if (uri.isOpaque() && !scheme.equals("mailto")) {
                     return false;
                 }
-                String scheme = uri.getScheme();
-                if (!scheme.equals("http") && !scheme.equals("https")) {//NOI18N
+                if (!scheme.equals("http") && !scheme.equals("https") && !scheme.equals("mailto")) {//NOI18N
                     return false;
                 }
                 uri.toURL();             //just a check
