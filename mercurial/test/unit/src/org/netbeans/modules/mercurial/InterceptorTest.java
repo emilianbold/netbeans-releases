@@ -64,7 +64,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author tomas
  */
-public class InterceptorTest extends AbstractHgTest {
+public class InterceptorTest extends AbstractHgTestCase {
 
     public InterceptorTest(String arg0) {
         super(arg0);

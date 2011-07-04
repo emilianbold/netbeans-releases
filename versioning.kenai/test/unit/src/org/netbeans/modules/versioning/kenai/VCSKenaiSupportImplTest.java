@@ -92,7 +92,7 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        System.setProperty("netbeans.user", getDataDir().getAbsolutePath());
         try {
             System.setProperty("kenai.com.url","https://testkenai.com");
             kenai = KenaiManager.getDefault().createKenai("testkenai","https://testkenai.com");
