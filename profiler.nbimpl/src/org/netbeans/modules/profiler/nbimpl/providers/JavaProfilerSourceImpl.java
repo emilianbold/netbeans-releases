@@ -68,6 +68,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -75,7 +76,11 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource.ClassInfo;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource.MethodInfo;
@@ -152,9 +157,11 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
         }        
     }
     
+    private static final String JUNIT_SUITE = "junit.framework.TestSuite"; // NOI18N
+    private static final String JUNIT_TEST = "junit.framework.Test"; // NOI18N
     private static final String[] APPLET_CLASSES = new String[]{"java.applet.Applet", "javax.swing.JApplet"}; // NOI18N
-    private static final String[] TEST_CLASSES = new String[]{"junit.framework.TestCase", "junit.framework.TestSuite"}; // NOI18N
-    private static final String[] TEST_ANNOTATIONS = new String[]{"org.junit.Test", "org.testng.annotations.Test"}; // NOI18N
+    private static final String[] TEST_CLASSES = new String[]{JUNIT_SUITE, JUNIT_TEST};
+    private static final String[] TEST_ANNOTATIONS = new String[]{"org.junit.Test", "org.junit.runners.Suite", "org.testng.annotations.Test"}; // NOI18N
     
     @Override
     public ClassInfo getEnclosingClass(FileObject fo, final int position) {
@@ -536,7 +543,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
 
     @Override
     public boolean isTest(FileObject fo) {
-        return (hasAnnotation(fo, TEST_ANNOTATIONS, false) || isInstanceOf(fo, TEST_CLASSES, false)); // NOI18N
+        return (hasAnnotation(fo, TEST_ANNOTATIONS, false) || isInstanceOf(fo, TEST_CLASSES, false)) || isJunit3TestSuite(fo); // NOI18N
     }
 
     @Override
@@ -699,5 +706,50 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
         }
 
         return true;
+    }
+    
+    private static boolean isJunit3TestSuite(FileObject fo) {
+        final boolean[] rslt = new boolean[]{false};
+        SourceGroup sg = SourceGroupModifier.createSourceGroup(FileOwnerQuery.getOwner(fo), JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
+        if (sg.contains(fo)) {
+            JavaSource js = JavaSource.forFileObject(fo);
+            if (js == null) {
+                return false;
+            }
+            try {
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
+
+                    public void cancel() {
+                        // do nothing
+                    }
+
+                    public void run(final CompilationController cc) throws Exception {
+                        cc.toPhase(Phase.ELEMENTS_RESOLVED);
+
+                        TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
+                            @Override
+                            public Void visitMethod(MethodTree node, Void p) {
+                                Element e = cc.getTrees().getElement(getCurrentPath());
+                                if (e.getKind() == ElementKind.METHOD) {
+                                    ExecutableElement ee = (ExecutableElement)e;
+                                    if (ee.getSimpleName().contentEquals("suite") && // NOI18N
+                                        (ee.getReturnType().toString().equals(JUNIT_TEST) ||
+                                         ee.getReturnType().toString().equals(JUNIT_SUITE))) {
+                                        rslt[0] |= true;
+                                    }
+                                }
+                                return super.visitMethod(node, p);
+                            }
+                        };
+                        scanner.scan(cc.getCompilationUnit(), null);
+                    }
+                }, true);
+                return rslt[0];
+            } catch (IOException ioex) {
+                ProfilerLogger.log(ioex);
+                return false;
+            }
+        }
+        return rslt[0];
     }
 }
