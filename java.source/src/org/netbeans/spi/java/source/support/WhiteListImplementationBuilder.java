@@ -140,8 +140,7 @@ public final class WhiteListImplementationBuilder {
     }
 
     private static final class Model {
-        private int counter = 0;
-        private final Map<String,Integer> names = new HashMap<String, Integer>();   //Todo: Replace by NameTbl
+        private final Names names = new SimpleNames();
         private final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>> root =
                 new IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>>();
 
@@ -150,9 +149,9 @@ public final class WhiteListImplementationBuilder {
                 @NonNull final String binaryName,
                 final byte mode) {
             final String[] pkgNamePair = splitName(binaryName,'/');
-            final Integer pkgId = putName(FileObjects.convertFolder2Package(pkgNamePair[0]));
+            final Integer pkgId = names.putName(FileObjects.convertFolder2Package(pkgNamePair[0]));
             @SuppressWarnings("RedundantStringConstructorCall")
-            final Integer clsId = putName(new String(pkgNamePair[1]));
+            final Integer clsId = names.putName(new String(pkgNamePair[1]));
             final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>> pkgNode =
                 root.putIfAbsent(pkgId, new IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>());
             final IntermediateCacheNode<IntermediateCacheNode<CacheNode>> clsNode =
@@ -166,11 +165,11 @@ public final class WhiteListImplementationBuilder {
                 @NonNull final String[] argTypes,
                 @NonNull final byte mode) {
             final String[] pkgNamePair = splitName(clsBinaryName,'/');
-            final Integer pkgId = putName(FileObjects.convertFolder2Package(pkgNamePair[0]));
+            final Integer pkgId = names.putName(FileObjects.convertFolder2Package(pkgNamePair[0]));
             @SuppressWarnings("RedundantStringConstructorCall")
-            final Integer clsId = putName(new String(pkgNamePair[1]));
-            final Integer methodNameId = putName(methodName);
-            final Integer metodSigId = putName(vmSignature(argTypes));
+            final Integer clsId = names.putName(new String(pkgNamePair[1]));
+            final Integer methodNameId = names.putName(methodName);
+            final Integer metodSigId = names.putName(vmSignature(argTypes));
             final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>> pkgNode =
                 root.putIfAbsent(pkgId, new IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>());
             final IntermediateCacheNode<IntermediateCacheNode<CacheNode>> clsNode =
@@ -187,8 +186,8 @@ public final class WhiteListImplementationBuilder {
                 final byte mode) {
             final String[] vmSignatures = SourceUtils.getJVMSignature(element);
             final String[] pkgNamePair = splitName(vmSignatures[0],'.');  //NOI18N
-            final Integer pkgId = getName(pkgNamePair[0]);
-            final Integer clsId = getName(pkgNamePair[1]);
+            final Integer pkgId = names.getName(pkgNamePair[0]);
+            final Integer clsId = names.getName(pkgNamePair[1]);
             final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>> pkgNode = root.get(pkgId);
             if (pkgNode == null) {
                 return false;
@@ -202,8 +201,8 @@ public final class WhiteListImplementationBuilder {
             }
             if (element.getKind() == ElementKind.METHOD ||
                 element.getKind() == ElementKind.CONSTRUCTOR) {
-                final Integer methodNameId = getName(vmSignatures[1]);
-                final Integer methodSigId = getName(paramsOnly(vmSignatures[2]));
+                final Integer methodNameId = names.getName(vmSignatures[1]);
+                final Integer methodSigId = names.getName(paramsOnly(vmSignatures[2]));
                 final IntermediateCacheNode<CacheNode> methodNameNode = clsNode.get(methodNameId);
                 if (methodNameNode == null) {
                     return false;
@@ -279,23 +278,6 @@ public final class WhiteListImplementationBuilder {
         }
 
         @NonNull
-        private Integer putName(@NonNull final String name) {
-            assert name != null;
-            Integer result = names.get(name);
-            if (result == null) {
-                result = counter++;
-                names.put(name, result);
-            }
-            return result;
-        }
-
-        @CheckForNull
-        private Integer getName(@NonNull final String name) {
-            assert name != null;
-            return names.get(name);
-        }
-
-        @NonNull
         private String vmSignature(
                 @NonNull final String[] types) {
             final StringBuilder sb = new StringBuilder();
@@ -336,6 +318,39 @@ public final class WhiteListImplementationBuilder {
                 sb.append(type);
                 sb.append(';'); //NOI18N
             }
+        }
+    }
+
+    private static interface Names {
+        @NonNull
+        Integer putName(@NonNull String name);
+
+        @CheckForNull
+        Integer getName(@NonNull String name);
+    }
+
+    private static class SimpleNames implements Names {
+
+        private final Map<String,Integer> names = new HashMap<String, Integer>();
+        private int counter = Integer.MIN_VALUE;
+
+        @Override
+        @NonNull
+        public Integer putName(@NonNull final String name) {
+            assert name != null;
+            Integer result = names.get(name);
+            if (result == null) {
+                result = counter++;
+                names.put(name, result);
+            }
+            return result;
+        }
+
+        @Override
+        @CheckForNull
+        public Integer getName(@NonNull final String name) {
+            assert name != null;
+            return names.get(name);
         }
     }
 }
