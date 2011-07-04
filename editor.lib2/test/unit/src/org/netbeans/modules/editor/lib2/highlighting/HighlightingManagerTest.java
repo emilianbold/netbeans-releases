@@ -667,6 +667,7 @@ public class HighlightingManagerTest extends NbTestCase {
         
         // reset hard references
         pane = null;
+        hm = null;
         hc = null;
         
         assertGC("JEP has not been GCed", refPane);
