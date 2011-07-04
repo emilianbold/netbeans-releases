@@ -65,5 +65,10 @@ public class TargetImpl implements Target {
     public String getDescription() {
         return "target-description";
     }
+
+    @Override
+    public String toString() {
+        return "cloud-deployment"; // XXX these seems to be printed into output window during build
+    }
     
 }
