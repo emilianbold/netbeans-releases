@@ -141,10 +141,22 @@ public final class WhiteListImplementationBuilder {
     }
 
     private static final class Model {
-        private final Names names = new SimpleNames();
+        private static final String DEF_NAMES = SimpleNames.class.getName();
+        private final Names names;
         private final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>> root =
                 new IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>>();
 
+        private Model() {
+                try {
+                    names  = (Names) Class.forName(System.getProperty("WhiteListBuilder.names", DEF_NAMES)).newInstance();  //NOI18N
+                } catch (InstantiationException ex) {
+                    throw new IllegalStateException("Cannot instantiate names", ex);    //NOI18N
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException("Cannot instantiate names", ex);    //NOI18N
+                } catch (ClassNotFoundException ex) {
+                    throw new IllegalStateException("Cannot instantiate names", ex);    //NOI18N
+                }
+        }
 
         void addClass(
                 @NonNull final String binaryName,
@@ -331,7 +343,7 @@ public final class WhiteListImplementationBuilder {
     }
 
     //@NotThreadSafe
-    private static class SimpleNames implements Names {
+    static class SimpleNames implements Names {
 
         private final Map<String,Integer> names = new HashMap<String, Integer>();
         private int counter = Integer.MIN_VALUE;
@@ -357,16 +369,27 @@ public final class WhiteListImplementationBuilder {
     }
 
     //@NotThreadSafe
-    private static class PackedNames implements Names {
+    static class PackedNames implements Names {
+
+        private static final int DEF_SLOTS = 1<<10;
+        private static final int DEF_INIT_BYTES = 1<<16;
+
+        private final int hashMask;
         private int counter = Integer.MIN_VALUE;
         private Entry[] slots;
         private byte[] storage;
         private int pos;
 
+        PackedNames() {
+            slots = new Entry[DEF_SLOTS];
+            hashMask = slots.length - 1;
+            storage = new byte[DEF_INIT_BYTES];
+        }
+
         @Override
         public Integer putName(@NonNull final String name) {
             assert name != null;
-            final int hc = name.hashCode() % slots.length;
+            final int hc = name.hashCode() & hashMask;
             final byte[] sbytes = decode(name);
             Entry entry = slots[hc];
             while (entry != null && !contentEquals(entry,sbytes)) {
@@ -393,7 +416,7 @@ public final class WhiteListImplementationBuilder {
         @Override
         public Integer getName(@NonNull final String name) {
             assert name != null;
-            final int hc = name.hashCode() % slots.length;
+            final int hc = name.hashCode() & hashMask;
             final byte[] sbytes = decode(name);
             Entry entry = slots[hc];
             while (entry != null && !contentEquals(entry,sbytes)) {
