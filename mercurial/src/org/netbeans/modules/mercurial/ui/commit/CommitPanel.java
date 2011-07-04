@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
+import javax.swing.LayoutStyle;
 import javax.swing.Icon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +55,6 @@ import org.netbeans.modules.versioning.util.TemplateSelector;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.Box;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -114,7 +114,7 @@ import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  *
@@ -382,14 +382,13 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         Mnemonics.setLocalizedText(hooksSectionButton, getMessage("LBL_Advanced")); // NOI18N
 
         Mnemonics.setLocalizedText(jLabel2, "jLabel2");
-        Mnemonics.setLocalizedText(cbAllFiles, getMessage("CTL_CommitForm_cbAllFiles.text")); //NOI18N
 
         JPanel topPanel = new VerticallyNonResizingPanel();
         topPanel.setLayout(new BoxLayout(topPanel, X_AXIS));
         topPanel.add(jLabel1);
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(recentLink);
-        topPanel.add(makeHorizontalStrut(recentLink, templateLink, RELATED));
+        topPanel.add(makeHorizontalStrut(recentLink, templateLink, LayoutStyle.ComponentPlacement.RELATED));
         topPanel.add(templateLink);
         jLabel1.setAlignmentY(BOTTOM_ALIGNMENT);
         recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
@@ -405,19 +404,19 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
         basePanel.setLayout(new BoxLayout(basePanel, Y_AXIS));
         basePanel.add(topPanel);
-        basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
+        basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(jScrollPane1);
-        basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, RELATED));
+        basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, LayoutStyle.ComponentPlacement.RELATED));
         filesSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesSectionButton.getMaximumSize().height));
         basePanel.add(filesSectionButton);
-        basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, RELATED));
+        basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(filesSectionPanel2);
-        basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, RELATED));
+        basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, LayoutStyle.ComponentPlacement.RELATED));
         hooksSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, hooksSectionButton.getMaximumSize().height));
         basePanel.add(hooksSectionButton);
-        basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, RELATED));
+        basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(hookSectionPanel);
-        basePanel.add(makeVerticalStrut(hookSectionPanel, jLabel2, RELATED));
+        basePanel.add(makeVerticalStrut(hookSectionPanel, jLabel2, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(bottomPanel);
         setLayout(new BoxLayout(this, Y_AXIS));
         add(basePanel);
@@ -459,8 +458,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private Component makeVerticalStrut(JComponent compA,
                                         JComponent compB,
-                                        int relatedUnrelated) {
-        int height = LayoutStyle.getSharedInstance().getPreferredGap(
+                                        LayoutStyle.ComponentPlacement relatedUnrelated) {
+        int height = LayoutStyle.getInstance().getPreferredGap(
                             compA,
                             compB,
                             relatedUnrelated,
@@ -471,8 +470,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private Component makeHorizontalStrut(JComponent compA,
                                           JComponent compB,
-                                          int relatedUnrelated) {
-        int width = LayoutStyle.getSharedInstance().getPreferredGap(
+                                          LayoutStyle.ComponentPlacement relatedUnrelated) {
+        int width = LayoutStyle.getInstance().getPreferredGap(
                             compA,
                             compB,
                             relatedUnrelated,
@@ -490,7 +489,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private int getContainerGap(int direction) {
-        return LayoutStyle.getSharedInstance().getContainerGap(this,
+        return LayoutStyle.getInstance().getContainerGap(this,
                                                                direction,
                                                                null);
     }
