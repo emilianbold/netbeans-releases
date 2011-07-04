@@ -39,46 +39,45 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.whitelist;
+package org.netbeans.modules.libs.cloud9;
 
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.libs.cloud9.api.WhiteListQuerySupport;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation;
-import org.netbeans.spi.java.source.support.WhiteListImplementationBuilder;
-import org.openide.filesystems.FileObject;
 
-/**
- *
- */
-public class WhiteListQueryImpl implements WhiteListQueryImplementation {
+import java.util.List;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.DefaultHandler2;
 
-    @Override
-    public WhiteListImplementation getWhiteList(FileObject file) {
-        
-        return WhiteListQuerySupport.createBuilder();
-        
-//        WhiteListImplementationBuilder builder = WhiteListImplementationBuilder.create();
-//        builder.addInvocableClass("java/lang/Object");
-//        builder.addInvocableClass("java/lang/Class");
-//        builder.addInvocableClass("java/lang/Exception");
-//        builder.addInvocableClass("java/lang/String");
-//        builder.addSubclassableClass("java/lang/Object");
-//        builder.addSubclassableClass("java/lang/Exception");
-//        builder.addInvocableMethod("java/io/File", "renameTo", "java/io/File");
-//        return builder.build();
-        
-        
-//        return new WhiteListImplementation() {
-//
-//            @Override
-//            public boolean canInvoke(ElementHandle<?> element) {
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean canOverride(ElementHandle<?> element) {
-//                return true;
-//            }
-//        };
+public class WhiteListPackageImportHandler extends DefaultHandler2 {
+
+    private String startElement = null;
+    private String fileName;
+    private List<String> otherFiles;
+
+    public WhiteListPackageImportHandler(List<String> otherFiles) {
+        this.otherFiles = otherFiles;
+    }
+    
+    public void endDocument() throws SAXException {
+    }
+
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        startElement = qName;
+        if ("Import".equals(qName)) {
+            fileName = "";
+        }
+    }
+
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        String value = new String(ch, start, length);
+        if ("Import".equals(startElement)) {
+            fileName += value;
+        }
+    }
+
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        startElement = null;
+        if ("Import".equals(qName)) {
+            otherFiles.add(fileName);
+        }
     }
 }

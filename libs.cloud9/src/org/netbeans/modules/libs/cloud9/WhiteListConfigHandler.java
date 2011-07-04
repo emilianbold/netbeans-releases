@@ -43,6 +43,7 @@ package org.netbeans.modules.libs.cloud9;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -54,6 +55,11 @@ class WhiteListConfigHandler extends DefaultHandler2 {
     private String configStartElement = null;
     private DefaultHandler handler = null;
     private static HashMap<String, DefaultHandler> handlers = new HashMap<String, DefaultHandler>();
+    private List<String> otherFiles;
+
+    public WhiteListConfigHandler(List<String> otherFiles) {
+        this.otherFiles = otherFiles;
+    }
 
     public void startDocument()
             throws SAXException {
@@ -109,7 +115,9 @@ class WhiteListConfigHandler extends DefaultHandler2 {
             new WhiteListClassHandler(WhiteListClassHandler.Type.Extendable,
                 "ExtendableClassName", "Method", "OverrideMethodName", "Parameters"));
         handlers.put("WhitelistInstantiateableClass", 
-            new WhiteListClassHandler(WhiteListClassHandler.Type.Class,
+            new WhiteListClassHandler(WhiteListClassHandler.Type.Instantiable,
                 "InstantiateableClassName", "Constructor", null, "Parameters"));
+        handlers.put("ListOfPackageImport", 
+            new WhiteListPackageImportHandler(otherFiles));
     }
 }
