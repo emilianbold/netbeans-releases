@@ -53,6 +53,8 @@ import java.util.logging.Logger;
 /**
  * Cache containing paragraph-view references of lines where text layouts
  * are actively held.
+ * <br/>
+ * This class is not multi-thread safe.
  * 
  * @author Miloslav Metelka
  */
@@ -63,11 +65,11 @@ public final class TextLayoutCache {
     private static final Logger LOG = Logger.getLogger(TextLayoutCache.class.getName());
 
     /**
-     * Cache text layouts for the following count of paragraph views.
+     * Cache text layouts for the following number of paragraph views.
      * These should be both visible lines and possibly lines where model-to-view
      * translations are being done.
      */
-    private static final int MAX_SIZE = 200;
+    private static final int DEFAULT_CAPACITY = 300;
 
     private final Map<ParagraphView, Entry> paragraph2entry = new HashMap<ParagraphView, Entry>();
 
@@ -80,6 +82,8 @@ public final class TextLayoutCache {
      * Least recently used entry.
      */
     private Entry tail;
+    
+    private int capacity = DEFAULT_CAPACITY;
 
     public TextLayoutCache() {
     }
@@ -89,16 +93,25 @@ public final class TextLayoutCache {
      * when all children are released (no release of individual entries performed). 
      *
      */
-    synchronized void clear() {
+    void clear() {
         paragraph2entry.clear();
         head = tail = null;
     }
     
-    synchronized int size() {
+    int size() {
         return paragraph2entry.size();
     }
+    
+    /**
+     * Possibly increase the capacity.
+     *
+     * @param capacity 
+     */
+    void ensureCapacity(int capacity) {
+        this.capacity = Math.max(this.capacity, capacity);
+    }
 
-    synchronized boolean contains(ParagraphView paragraphView) {
+    boolean contains(ParagraphView paragraphView) {
         assert (paragraphView != null);
         Entry entry = paragraph2entry.get(paragraphView);
         return (entry != null);
@@ -111,33 +124,37 @@ public final class TextLayoutCache {
      * @param childView non-null view which is a child of paragraph view.
      * @return text layout or null if it could not be created.
      */
-    synchronized void activate(ParagraphView paragraphView) {
+    void activate(ParagraphView paragraphView) {
         assert (paragraphView != null);
         Entry entry = paragraph2entry.get(paragraphView);
         if (entry == null) {
             entry = new Entry(paragraphView);
             paragraph2entry.put(paragraphView, entry);
-            if (paragraph2entry.size() >= MAX_SIZE) { // Cache full => remove LRU
-                Entry lru = paragraph2entry.remove(tail.paragraphView);
-                assert (lru == tail);
-                removeChainEntry(lru);
+            if (paragraph2entry.size() >= capacity) { // Cache full => remove LRU
+                Entry tailEntry = paragraph2entry.remove(tail.paragraphView);
+                assert (tailEntry == tail);
+                removeChainEntry(tailEntry);
+                tailEntry.release();
             }
             addChainEntryFirst(entry);
         }
         if (head != entry) { // Possibly move entry to head
-            removeChainEntry(entry);
+            removeChainEntry(entry); // Do not release text layouts
             addChainEntryFirst(entry);
         }
     }
 
-    synchronized void remove(ParagraphView paragraphView) {
+    void remove(ParagraphView paragraphView, boolean clearTextLayouts) {
         Entry entry = paragraph2entry.remove(paragraphView);
         if (entry != null) {
             removeChainEntry(entry);
+            if (clearTextLayouts) {
+                entry.release();
+            }
         }
     }
     
-    synchronized String findIntegrityError() {
+    String findIntegrityError() {
         int cnt = 0;
         HashSet<Entry> entries = new HashSet<Entry>(paragraph2entry.values());
         Entry entry = head;
@@ -185,7 +202,6 @@ public final class TextLayoutCache {
             tail = entry.previous;
         }
         entry.previous = entry.next = null;
-        entry.release();
     }
 
     private static final class Entry {
@@ -198,8 +214,6 @@ public final class TextLayoutCache {
 
         Entry(ParagraphView paragraphView) {
             this.paragraphView = paragraphView;
-            int viewCount = paragraphView.getViewCount();
-            assert (viewCount > 0);
         }
 
         void release() {

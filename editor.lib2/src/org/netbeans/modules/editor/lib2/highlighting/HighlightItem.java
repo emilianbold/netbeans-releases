@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,69 +34,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.lib2.view;
+package org.netbeans.modules.editor.lib2.highlighting;
+
+import javax.swing.text.AttributeSet;
 
 /**
- * Information about a single visual line in a wrapped paragraph.
- * 
+ * Immutable single item for highlighting without a specified start (it's derived from end of previous item).
+ *
  * @author Miloslav Metelka
  */
-
-final class WrapLine {
-
-    /**
-     * Start view of this line that was obtained by breaking a view
-     * at (viewIndex - 1). It may be null if this line starts at view boundary
-     * with a view at viewIndex.
-     */
-    EditorView startPart;
-
-    /**
-     * Ending view of this line that was obtained by breaking a view
-     * at endViewIndex.
-     * It may be null if the line ends at view boundary.
-     */
-    EditorView endPart;
-
-    /*
-     * X corresponding to the start view on the line (right next to startViewPart).
-     * If there's an existing startViewPart then the value is its width otherwise
-     * it's value is zero.
-     */
-    float firstViewX;
-
-    /**
-     * Index of a first view located at this line.
-     * <br/>
-     * Logically if there's a non-null startViewPart then it comes from view
-     * at (startViewIndex - 1).
-     */
-    int firstViewIndex;
-
-    /**
-     * Index that follows last view located at this line.
-     * <br/>
-     * It should be >= startViewIndex.
-     */
-    int endViewIndex;
-
-    WrapLine() {
-        // Leave startViewIndex == endViewIndex which means no full views
-    }
-
-    boolean hasFullViews() {
-        return firstViewIndex != endViewIndex;
-    }
+public final class HighlightItem {
     
+    /** End offset of the highlight. Start offset is derived from end of previous item. */
+    private final int endOffset; // 8 + 4 = 12 bytes
+
+    /** Attributes of highlight. Null for no highlight in the particular area. */
+    private final AttributeSet attrs; // 12 + 4 = 16 bytes
+
+    public HighlightItem(int endOffset, AttributeSet attrs) {
+        this.endOffset = endOffset;
+        this.attrs = attrs;
+    }
+  
+    /**
+     * End offset of the highlighting item.
+     * 
+     * @return end offset of the highlight
+     */
+    public int getEndOffset() {
+        return endOffset;
+    }
+
+    /**
+     * Attributes of the highlight.
+     *
+     * @return attributes or null if this area has no highlighting.
+     */
+    public AttributeSet getAttributes() {
+        return attrs;
+    }
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("startPart=").append(startPart); // NOI18N
-        sb.append(" [").append(firstViewIndex).append(",").append(endViewIndex).append("]"); // NOI18N
-        sb.append(" endPart=").append(endPart); // NOI18N
-        return sb.toString();
+        return "<?," + endOffset + ">: " + attrs; // NOI18N
+    }
+
+    public String toString(int startOffset) {
+        return "<" + startOffset + "," + endOffset + ">: " + attrs; // NOI18N
     }
 
 }

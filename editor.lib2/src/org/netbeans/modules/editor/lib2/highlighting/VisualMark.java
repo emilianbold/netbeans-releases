@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,69 +34,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.editor.lib2.view;
+package org.netbeans.modules.editor.lib2.highlighting;
 
 /**
- * Information about a single visual line in a wrapped paragraph.
- * 
+ * Visual mark encapsulates y-coordinate offset together with an object
+ * that provides an offset (assumed that it's tracked as a SWing position).
+ * <br/>
+ * The y-coordinate is tracked as a raw value that must first be preprocessed
+ * by {@link VisualMarkVector}.
+ *
  * @author Miloslav Metelka
  */
-
-final class WrapLine {
-
-    /**
-     * Start view of this line that was obtained by breaking a view
-     * at (viewIndex - 1). It may be null if this line starts at view boundary
-     * with a view at viewIndex.
-     */
-    EditorView startPart;
-
-    /**
-     * Ending view of this line that was obtained by breaking a view
-     * at endViewIndex.
-     * It may be null if the line ends at view boundary.
-     */
-    EditorView endPart;
-
-    /*
-     * X corresponding to the start view on the line (right next to startViewPart).
-     * If there's an existing startViewPart then the value is its width otherwise
-     * it's value is zero.
-     */
-    float firstViewX;
-
-    /**
-     * Index of a first view located at this line.
-     * <br/>
-     * Logically if there's a non-null startViewPart then it comes from view
-     * at (startViewIndex - 1).
-     */
-    int firstViewIndex;
-
-    /**
-     * Index that follows last view located at this line.
-     * <br/>
-     * It should be >= startViewIndex.
-     */
-    int endViewIndex;
-
-    WrapLine() {
-        // Leave startViewIndex == endViewIndex which means no full views
-    }
-
-    boolean hasFullViews() {
-        return firstViewIndex != endViewIndex;
+public abstract class VisualMark {
+    
+    private double rawY;
+    
+    private final VisualMarkVector<?> markVector;
+    
+    protected VisualMark(VisualMarkVector<?> markVector) {
+        this.markVector = markVector;
     }
     
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("startPart=").append(startPart); // NOI18N
-        sb.append(" [").append(firstViewIndex).append(",").append(endViewIndex).append("]"); // NOI18N
-        sb.append(" endPart=").append(endPart); // NOI18N
-        return sb.toString();
+    /**
+     * Get offset of this visual mark.
+     * <br/>
+     * It's assumed that the offset is tracked as a Swing position.
+     *
+     * @return &gt;=0 offset of this mark.
+     */
+    public abstract int getOffset();
+    
+    /**
+     * Get y-coordinate offset of this mark.
+     *
+     * @return y of this mark.
+     */
+    public final double getY() {
+        return markVector.raw2Y(rawY);
     }
-
+    
+    protected final VisualMarkVector<?> markVector() {
+        return markVector;
+    }
+    
+    double rawY() {
+        return rawY;
+    }
+    
+    void setRawY(double rawY) {
+        this.rawY = rawY;
+    }
+    
 }
