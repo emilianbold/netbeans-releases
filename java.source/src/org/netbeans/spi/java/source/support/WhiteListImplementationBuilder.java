@@ -41,6 +41,7 @@
  */
 package org.netbeans.spi.java.source.support;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.ElementKind;
@@ -329,6 +330,7 @@ public final class WhiteListImplementationBuilder {
         Integer getName(@NonNull String name);
     }
 
+    //@NotThreadSafe
     private static class SimpleNames implements Names {
 
         private final Map<String,Integer> names = new HashMap<String, Integer>();
@@ -351,6 +353,96 @@ public final class WhiteListImplementationBuilder {
         public Integer getName(@NonNull final String name) {
             assert name != null;
             return names.get(name);
+        }
+    }
+
+    //@NotThreadSafe
+    private static class PackedNames implements Names {
+        private int counter = Integer.MIN_VALUE;
+        private Entry[] slots;
+        private byte[] storage;
+        private int pos;
+
+        @Override
+        public Integer putName(@NonNull final String name) {
+            assert name != null;
+            final int hc = name.hashCode() % slots.length;
+            final byte[] sbytes = decode(name);
+            Entry entry = slots[hc];
+            while (entry != null && !contentEquals(entry,sbytes)) {
+                entry = entry.next;
+            }
+            if (entry == null) {
+                if (storage.length < pos+sbytes.length) {
+                    int newStorSize = storage.length;
+                    while (newStorSize < pos+sbytes.length) {
+                        newStorSize<<=1;
+                    }
+                    final byte[] tmpStorage = new byte[newStorSize];
+                    System.arraycopy(storage, 0, tmpStorage, 0, storage.length);
+                    storage = tmpStorage;
+                }
+                System.arraycopy(sbytes, 0, storage, pos, sbytes.length);
+                entry = new Entry(counter++ ,pos, sbytes.length, slots[hc]);
+                slots[hc] = entry;
+                pos+=sbytes.length;
+            }
+            return entry.id;
+        }
+
+        @Override
+        public Integer getName(@NonNull final String name) {
+            assert name != null;
+            final int hc = name.hashCode() % slots.length;
+            final byte[] sbytes = decode(name);
+            Entry entry = slots[hc];
+            while (entry != null && !contentEquals(entry,sbytes)) {
+                entry = entry.next;
+            }
+            return entry == null ? null : entry.id;
+        }
+
+        private boolean contentEquals(
+            @NonNull final Entry entry,
+            @NonNull final byte[] content) {
+            assert entry != null;
+            assert content != null;
+            if (entry.length != content.length) {
+                return false;
+            }
+            for (int i=0; i< entry.length; i++) {
+                if (content[i] != storage[entry.pos+i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private byte[] decode(String str) {
+            try {
+                return str.getBytes("UTF-8");   //NOI18N
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("No UTF-8 supported");  //Should never happen
+            }
+        }
+
+        private static class Entry {
+
+            private int id;     //Todo: may be removed and replaced by pos, but requires padding for empty string
+            private int pos;
+            private int length;
+            private Entry next;
+
+            private Entry(
+                final int id,
+                final int pos,
+                final int length,
+                @NullAllowed final Entry next) {
+                this.id = id;
+                this.pos = pos;
+                this.length = length;
+                this.next = next;
+            }
         }
     }
 }
