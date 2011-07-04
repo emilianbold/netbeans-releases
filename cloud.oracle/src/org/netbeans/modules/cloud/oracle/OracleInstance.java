@@ -242,7 +242,9 @@ public class OracleInstance {
                 name = ProjectUtils.getInformation(p).getDisplayName();
             }
             String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", name);
-            WhiteListTool.execute(f, tabName);
+            if (!WhiteListTool.execute(f, tabName)) {
+//                return DeploymentStatus.FAILED;
+            }
             
             InputOutput io = IOProvider.getDefault().getIO(tabName, false);
             ow = io.getOut();
