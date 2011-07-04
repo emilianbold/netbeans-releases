@@ -70,10 +70,10 @@ abstract public class ProjectNode extends ContainerNode {
     @Override
     public Collection<SourceCodeSelection> getRootMethods(boolean all) {
         Collection<SourceCodeSelection> roots = new ArrayList<SourceCodeSelection>();
-        Enumeration children = children();
+        Enumeration childEnum = children();
 
-        while (children.hasMoreElements()) {
-            roots.addAll(((SelectorNode) children.nextElement()).getRootMethods(all));
+        while (childEnum.hasMoreElements()) {
+            roots.addAll(((SelectorNode) childEnum.nextElement()).getRootMethods(all));
         }
 
         return roots;
