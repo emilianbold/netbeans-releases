@@ -220,26 +220,26 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
     }
 
-//    public void testExternalCommit () throws Exception {
-//        waitForInitialScan();
-//        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
-//        getClient(repositoryLocation).commit(new File[] { modifiedFile }, "initial add", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-//        write(modifiedFile, "modification");
-//        getClient(repositoryLocation).add(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-//        // must run an external status since it somehow either modifies the index or sorts it or whatever
-//        runExternally(repositoryLocation, Arrays.asList(new String[] { "git", "status" } ));
-//        Thread.sleep(1000);
-//        waitForRefresh();
-//        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.MODIFIED_HEAD_INDEX));
-//
-//        // now try an external commit, it should not modify the index in any way
-//        runExternally(repositoryLocation, Arrays.asList(new String[] { "git", "commit", "-m", "commit message" } ));
-//        // index stays the same
-//        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.MODIFIED_HEAD_INDEX));
-//        // the cache should still be refreshed
-//        waitForRefresh();
-//        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.UPTODATE));
-//    }
+    public void testExternalCommit () throws Exception {
+        waitForInitialScan();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
+        getClient(repositoryLocation).commit(new File[] { modifiedFile }, "initial add", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        write(modifiedFile, "modification");
+        getClient(repositoryLocation).add(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        // must run an external status since it somehow either modifies the index or sorts it or whatever
+        runExternally(repositoryLocation, Arrays.asList(new String[] { "git", "status" } ));
+        Thread.sleep(1000);
+        waitForRefresh();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.MODIFIED_HEAD_INDEX));
+
+        // now try an external commit, it should not modify the index in any way
+        runExternally(repositoryLocation, Arrays.asList(new String[] { "git", "commit", "-m", "commit message" } ));
+        // index stays the same
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.MODIFIED_HEAD_INDEX));
+        // the cache should still be refreshed
+        waitForRefresh();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.UPTODATE));
+    }
 
     private void waitForRefresh () throws Exception {
         InterceptorRefreshHandler handler = new InterceptorRefreshHandler();
