@@ -52,7 +52,7 @@ public class WhiteListClassHandler extends DefaultHandler2 {
     private String startElement = null;
     private String methodName;
     private String parameter;
-    
+
     public enum Type {
         Class,
         Extendable,
@@ -111,28 +111,28 @@ public class WhiteListClassHandler extends DefaultHandler2 {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         startElement = null;
         if (methodBlockNameTag.equals(qName)) {
-            if (!("()".equalsIgnoreCase(parameter))) {
-                parameter = parameter.replace("(", "");
-                parameter = parameter.replace(")", "");
+            String args[] = new String[0];
+            if (!("()".equals(parameter))) {
+                parameter = parameter.substring(1, parameter.length()-1);
+                args = parameter.split(", ");
             }
-            
-            
-            
-            /// XXXX: 
-            
-            // below className, methodName and parameter needs to be converted into proper format
-            
             switch (type) {
                 case Class:
-                    WhiteListConfigReader.getBuilder().addInvocableMethod(className, methodName, parameter);
+                    WhiteListConfigReader.getBuilder().addInvocableMethod(className, methodName, args);
+                    invocableMethodCount++;
                     break;
                 case Extendable:
-                    WhiteListConfigReader.getBuilder().addOverridableMethod(className, methodName, parameter);
+                    WhiteListConfigReader.getBuilder().addOverridableMethod(className, methodName, args);
+                    overridableMethodCount++;
                     break;
                 case Instantiable:
-                    WhiteListConfigReader.getBuilder().addInvocableMethod(className, className/* XXXX or init()*/, parameter);
+                    WhiteListConfigReader.getBuilder().addInvocableMethod(className, "<init>", args);
+                    invocableMethodCount++;
                     break;
             }
         }
     }
+ 
+    public static int invocableMethodCount = 0;
+    public static int overridableMethodCount = 0;
 }

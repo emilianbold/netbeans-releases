@@ -43,6 +43,10 @@ package org.netbeans.modules.libs.cloud9;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,17 +54,22 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.java.source.WhiteListQueryImplementation.WhiteListImplementation;
 import org.netbeans.spi.java.source.support.WhiteListImplementationBuilder;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public final class WhiteListConfigReader {
 
-    public final static String CONFIG_RESOURCE = "/oracle/hostedcode/common/whitelist/configuration/resource/whitelistconfiguration.io.xml";
+    public final static String CONFIG_ROOT = "/oracle/hostedcode/common/whitelist/configuration/resource/";
+    public final static String CONFIG_FILE = "whitelistconfiguration.xml";
 
+    private static final Logger LOG = Logger.getLogger(WhiteListConfigReader.class.getName());
+    
     private static WhiteListImplementationBuilder builder;
     
     synchronized static WhiteListImplementationBuilder getBuilder() {
@@ -74,34 +83,73 @@ public final class WhiteListConfigReader {
 
     public synchronized static WhiteListImplementation getDefault() {
         if (reader == null) {
-            try {
-                
-                // XXX: read XMLs in separate thread:
-                
-                
-                readXMLs();
-            } catch (ParserConfigurationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SAXException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            reader = getBuilder().build();
+            
+            // XXX: whitelist files are read in separate thread; negative
+            // side effect is that first code completio will not contain
+            // any whitelisting
+            
+            reader = new WhiteListImplementation() {
+                @Override
+                public boolean canInvoke(ElementHandle<?> element) {
+                    return true;
+                }
+
+                @Override
+                public boolean canOverride(ElementHandle<?> element) {
+                    return true;
+                }
+            };
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        readXMLs();
+                    } catch (ParserConfigurationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (SAXException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    setRealReader(getBuilder().build());
+                }
+            });
         }
         return reader;
     }
     
-    public static void readXMLs() throws ParserConfigurationException, SAXException, IOException {
-        InputStream inputStream = WhiteListConfigReader.class.getResourceAsStream(CONFIG_RESOURCE);
-
+    private synchronized static void setRealReader(WhiteListImplementation w) {
+        reader = w;
+    }
+    
+    private static void readXMLs() throws ParserConfigurationException, SAXException, IOException {
+        long l = System.currentTimeMillis();
         SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setValidating(false);
-
         SAXParser saxParser = factory.newSAXParser();
-
-        WhiteListConfigHandler handler = new WhiteListConfigHandler();
-
+        List<String> otherFiles = new ArrayList<String>();
+        WhiteListConfigHandler handler = new WhiteListConfigHandler(otherFiles);
+        LOG.log(Level.INFO, "Loading of whitelists:");
+        InputStream is = getInputStream(CONFIG_FILE);
+        LOG.log(Level.INFO, "   "+CONFIG_FILE);
+        readSingleXML(saxParser, is, handler);
+        for (String anotherFile : otherFiles) {
+            LOG.log(Level.INFO, "   "+anotherFile);
+            is = getInputStream(anotherFile);
+            readSingleXML(saxParser, is, handler);
+        }
+        LOG.log(Level.INFO, "   Loading took "+((System.currentTimeMillis()-l))+
+                " ms (in "+(otherFiles.size()+1)+" files)");
+        LOG.log(Level.INFO, "   "+WhiteListClassHandler.invocableMethodCount+" invocable methods registered");
+        LOG.log(Level.INFO, "   "+WhiteListClassHandler.overridableMethodCount+" overridable methods registered");
+    }
+    
+    private static InputStream getInputStream(String fileName) {
+        return WhiteListConfigReader.class.getResourceAsStream(CONFIG_ROOT+fileName);
+    }
+    
+    private static void readSingleXML(SAXParser saxParser, InputStream inputStream, WhiteListConfigHandler handler) throws IOException, SAXException {
         try {
             SAXSource source = new SAXSource(new InputSource(inputStream));
             saxParser.parse(inputStream, handler);
