@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.gsf;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
@@ -50,8 +51,12 @@ import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.ASCII_CharStream;
 import java.io.StringReader;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.LexerUtils;
+import org.netbeans.modules.css.lib.api.CssParserFactory;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.parser.CssParser;
 import org.netbeans.modules.css.parser.CssParserConstants;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
@@ -60,13 +65,16 @@ import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.parser.Token;
 import org.netbeans.modules.css.parser.TokenMgrError;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.web.common.api.Constants;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,7 +84,10 @@ import org.openide.util.NbBundle;
 public class CssGSFParser extends Parser {
 
     private final CssParser PARSER = new CssParser();
-    private CssParserResult lastResult = null;
+    
+    private CssParserResult lastResult;
+    private org.netbeans.modules.css.lib.api.CssParserResult lastCss3Result;
+    
     private static final String PARSE_ERROR_KEY = "parse_error";
 
     private static final int SEARCH_LIMIT = 10; //magic number :-)
@@ -89,11 +100,21 @@ public class CssGSFParser extends Parser {
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) {
         List<ParseException> parseExceptions = new ArrayList<ParseException>(1);
         SimpleNode root = null;
+        
+        org.netbeans.modules.css.lib.api.CssParserResult css3result = null; 
         try {
             PARSER.errors().clear();
             PARSER.ReInit(new ASCII_CharStream(new StringReader(snapshot.getText().toString())));
             root = PARSER.styleSheet();
             parseExceptions = PARSER.errors();
+            
+            //css3
+            Parser css3Parser = CssParserFactory.getDefault().createParser(null);
+            css3Parser.parse(snapshot, null, null);
+            css3result = (org.netbeans.modules.css.lib.api.CssParserResult)css3Parser.getResult(null);
+            
+        } catch (org.netbeans.modules.parsing.spi.ParseException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (ParseException pe) {
             parseExceptions.add(pe);
         } catch (TokenMgrError tme) {
@@ -103,7 +124,12 @@ public class CssGSFParser extends Parser {
         List<Error> errors = new ArrayList<Error>();
         errors.addAll(errors(parseExceptions, snapshot, root)); //parser errors
         
-        this.lastResult = new CssParserResult(this, snapshot, root, errors);
+        this.lastResult = new CssParserResult(
+                this, 
+                snapshot, 
+                root, 
+                css3result.getParseTree(), 
+                Css3Utils.getCslErrorForCss3ProblemDescription(snapshot.getSource().getFileObject(), css3result.getDiagnostics()));
     }
 
         @Override

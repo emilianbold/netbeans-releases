@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.css.lib.api;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
@@ -85,7 +88,7 @@ public class Css3ParserTest extends CslTestBase {
         String code = "myns|h1  color: red; } h2 { color: blue; }";
         
         CssParserResult res = parse(code);
-        dumpResult(res);
+//        dumpResult(res);
         
         //this case recovers badly so far - the myns|h1 and h2 are joined into a single ruleset
     }
@@ -104,6 +107,7 @@ public class Css3ParserTest extends CslTestBase {
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
         
+//        dumpResult(res);
     }
     
     public void testErrorRecoveryGargabeBeforeDeclaration() throws ParseException, BadLocationException {
@@ -128,10 +132,12 @@ public class Css3ParserTest extends CslTestBase {
         String code = "a {\n"
                         + "color : black; \n"
                         + "background: red; \n"
-                      + "}";
+                      + "}\n\n"
+                +      ".class { }\n"
+                +      "#id { }";
         
         CssParserResult res = parse(code);
-        //dumpResult(res);
+//        dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
@@ -167,8 +173,8 @@ public class Css3ParserTest extends CslTestBase {
                 bodysetPath + typeSelectorPath + "elementName/*"));
     }
         
-    public void testNetbeans_Css() throws ParseException, BadLocationException {
-        assertResult(parse(getTestFile("testfiles/netbeans.css3")), 2);
+    public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
+        assertResult(parse(getTestFile("testfiles/netbeans.css")), 2);
     }
 
     private CssParserResult assertResultOK(CssParserResult result) {
@@ -185,15 +191,24 @@ public class Css3ParserTest extends CslTestBase {
     
     private CssParserResult parse(String code) throws ParseException, BadLocationException {
         Document doc = new PlainDocument();
-        doc.putProperty("mimeType", "text/css3");
+        doc.putProperty("mimeType", "text/x-css");
         doc.insertString(0, code, null);
         Source source = Source.create(doc);
         return parse(source);
     }
     
-    private CssParserResult parse(FileObject file) throws ParseException, BadLocationException {
-        Source source = Source.create(file);
-        return parse(source);
+    private CssParserResult parse(FileObject file) throws ParseException, BadLocationException, IOException {
+        //no loader here so we need to create the swing document
+        BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), "UTF-8"));
+        StringBuilder builder = new StringBuilder();
+        
+        char[] buffer = new char[8096];
+        int read = 0;
+        while((read = reader.read(buffer)) > 0) {
+            builder.append(buffer, 0, read);
+        }
+        reader.close();
+        return parse(builder.toString());
     }
    
     private CssParserResult parse(Source source) throws ParseException {

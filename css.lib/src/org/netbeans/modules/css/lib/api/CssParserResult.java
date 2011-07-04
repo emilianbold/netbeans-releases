@@ -44,7 +44,7 @@ package org.netbeans.modules.css.lib.api;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.css.lib.NbParseTree;
+import org.netbeans.modules.css.lib.AbstractParseTreeNode;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 
@@ -56,10 +56,10 @@ public class CssParserResult extends Parser.Result {
 
     static boolean IN_UNIT_TESTS = false;
     
-    private NbParseTree parseTree;
-    private Collection<ProblemDescription> diagnostics;
+    private AbstractParseTreeNode parseTree;
+    private List<ProblemDescription> diagnostics;
     
-    public CssParserResult(Snapshot snapshot, NbParseTree parseTree, Collection<ProblemDescription> diagnostics) {
+    public CssParserResult(Snapshot snapshot, AbstractParseTreeNode parseTree, List<ProblemDescription> diagnostics) {
         super(snapshot);
         assert parseTree != null;
         this.parseTree = parseTree;
@@ -82,7 +82,7 @@ public class CssParserResult extends Parser.Result {
         return parseTree;
     }
     
-    public Collection<ProblemDescription> getDiagnostics() {
+    public List<ProblemDescription> getDiagnostics() {
         return diagnostics;
     }
 }

@@ -39,93 +39,57 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib;
+package org.netbeans.modules.css.editor;
 
-import java.lang.annotation.ElementType;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.tree.ParseTree;
-import org.antlr.runtime.tree.Tree;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.css.lib.api.ProblemDescription;
+import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Utility methods to be refactored out later.
+ * 
+ * 
  * @author marekfukala
  */
-public class NbParseTree extends ParseTree implements Node {
-
-    Tree parent;
-    
-    public int from, to;
-    
-    public NbParseTree(Object label) {
-        super(label);
-    }
-
-    public boolean deleteChild(NbParseTree node) {
-        if (children == null) {
-            return false;
+public final class Css3Utils {
+   
+    public static List<Error> getCslErrorForCss3ProblemDescription(FileObject file, List<ProblemDescription> pds) {
+        List<Error> errors = new ArrayList<Error>();
+        for(ProblemDescription pd : pds) {
+            errors.add(getCslErrorForCss3ProblemDescription(file, pd));
         }
-        int childIndex = children.indexOf(node);
-        if (childIndex == -1) {
-            return false; //no such node
-        }
-
-        return super.deleteChild(childIndex) != null;
-    }
-
-    /** BaseTree doesn't track parent pointers. */
-    @Override
-    public Tree getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(Tree t) {
-        this.parent = t;
-    }
-
-    @Override
-    public int from() {
-        return getCommonToken() != null ? getCommonToken().getStartIndex() : from;
-    }
-
-    @Override
-    public int to() {
-        return getCommonToken() != null ? getCommonToken().getStopIndex() : to;
-    }
-
-    @Override
-    public String name() {
-        return getText();
-    }
-
-    @Override
-    public NodeType type() {
-        return NodeType.valueOf(getText());
+        return errors;
     }
     
-    private CommonToken getCommonToken() {
-        if(payload instanceof CommonToken) {
-            return (CommonToken)payload;
-        } else {
-            return null;
+    private static Error getCslErrorForCss3ProblemDescription(FileObject file, ProblemDescription pd) {
+        return new DefaultError(
+                pd.getKey(), 
+                pd.getDescription(), 
+                pd.getDescription(), 
+                file, 
+                pd.getFrom(), 
+                pd.getTo(),
+                getCslSeverityForCss3ProblemType(pd.getType()));
+    }
+
+    public static Severity getCslSeverityForCss3ProblemType(ProblemDescription.Type problemType) {
+        switch(problemType) {
+            case ERROR:
+                return Severity.ERROR;
+            case FATAL:
+                    return Severity.FATAL;
+            case INFO:
+                    return Severity.INFO;
+            case WARNING:
+                return Severity.WARNING;
         }
+        
+        return Severity.ERROR;
     }
-
-    @Override
-    @SuppressWarnings(value="unchecked") //antlr 3.3 does not use generics
-    public List<Node> children() {
-        List ch = getChildren();
-        return ch == null 
-                ? Collections.<Node>emptyList() 
-                : ch;
-    }
-
-    @Override
-    public Node parent() {
-        return (Node)getParent();
-    }
+    
 }

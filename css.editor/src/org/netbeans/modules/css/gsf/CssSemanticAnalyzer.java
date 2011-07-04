@@ -48,9 +48,9 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.NodeVisitor;
-import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -83,7 +83,7 @@ public class CssSemanticAnalyzer extends  SemanticAnalyzer {
         
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
 
-        SimpleNode root = ((CssParserResult) result).root();
+        Node root = ((CssParserResult) result).css3root();
         final Snapshot snapshot = result.getSnapshot();
         
         if(root == null) {
@@ -97,35 +97,36 @@ public class CssSemanticAnalyzer extends  SemanticAnalyzer {
             //XXX using the ColoringAttributes.YYY java specific codes should
             //be changed to something more meaningful
             
-            public void visit(SimpleNode node) {
-                if (node.kind() == CssParserTreeConstants.JJTELEMENTNAME || node.kind() == CssParserTreeConstants.JJT_CLASS || node.kind() == CssParserTreeConstants.JJTPSEUDO || node.kind() == CssParserTreeConstants.JJTHASH || node.kind() == CssParserTreeConstants.JJTATTRIB) {
-                    int dso = snapshot.getOriginalOffset(node.startOffset());
+            public boolean visit(Node node) {
+                if (node.type() == NodeType.elementName || node.type() == NodeType.elementSubsequent) {
+                    //selector name
+                    int dso = snapshot.getOriginalOffset(node.from());
                     if(dso == -1) {
                         //try next offset - for virtually created class and id
                         //selectors the . an # prefix are virtual code and is not
                         //a part of the source document, try to highlight just
                         //the class or id name
-                        dso = snapshot.getOriginalOffset(node.startOffset() + 1);
+                        dso = snapshot.getOriginalOffset(node.to() + 1);
                     }
 
-                    int deo =snapshot.getOriginalOffset(node.endOffset());
+                    int deo =snapshot.getOriginalOffset(node.to());
                     //filter out generated and inlined style definitions - they have just virtual selector which
                     //is mapped to empty string
                     if(dso >= 0 && deo >= 0) {
                         OffsetRange range = new OffsetRange(dso, deo);
                         highlights.put(range, ColoringAttributes.METHOD_SET);
                     }
-                } else if (node.kind() == CssParserTreeConstants.JJTPROPERTY) {
-                    int dso = snapshot.getOriginalOffset(node.startOffset());
-                    int deo =snapshot.getOriginalOffset(node.endOffset());
+                } else if (node.type() == NodeType.property) {
+                    int dso = snapshot.getOriginalOffset(node.from());
+                    int deo =snapshot.getOriginalOffset(node.to());
 
                     if (dso >= 0 && deo >= 0) { //filter virtual nodes
                         //check vendor speficic property
                         OffsetRange range = new OffsetRange(dso, deo);
 
-                        String propertyName = node.image().trim();
+                        String propertyName = node.name().trim();
                         if(CssGSFParser.containsGeneratedCode(propertyName)) {
-                            return;
+                            return false;
                         }
                         
                         if (CssAnalyser.isVendorSpecificProperty(propertyName)) {
@@ -136,10 +137,12 @@ public class CssSemanticAnalyzer extends  SemanticAnalyzer {
                         }
                     }
                 }
+                return false;
             }
+            
         };
 
-        root.visitChildren(visitor);
+        NodeVisitor.visitChildren(root, visitor);
 
         semanticHighlights = highlights;
 

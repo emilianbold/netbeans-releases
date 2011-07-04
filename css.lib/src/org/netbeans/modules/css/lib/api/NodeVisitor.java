@@ -39,35 +39,40 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.temporary;
+package org.netbeans.modules.css.lib.api;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import java.util.List;
 
-public class Css3DataObject extends MultiDataObject {
-
-    public Css3DataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+/**
+ *
+ * @author marekfukala
+ */
+public abstract class NodeVisitor {
+    
+    /**
+     * Performs the given node visit.
+     * @param node
+     * @return true if the visiting process should be interrupted
+     */
+    public abstract boolean visit(Node node);
+    
+    public static Node visitChildren(Node node, NodeVisitor visitor) {
+        List<Node> children = node.children();
+        if (children != null) {
+            for (Node child : children) {
+                if(visitor.visit(child)) {
+                    return child; //visiting stopped by the visitor
+                }
+                //recursion
+                Node breakNode = visitChildren(child, visitor); 
+                if(breakNode != null) {
+                    return breakNode;
+                }
+            }
+        }
+        return null;
+        
     }
-
-    @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
+    
+    
 }

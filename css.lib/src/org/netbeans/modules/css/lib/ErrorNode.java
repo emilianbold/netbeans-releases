@@ -39,74 +39,49 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.nbparser;
+package org.netbeans.modules.css.lib;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.css.lib.ExtCss3Lexer;
-import org.netbeans.modules.css.lib.ExtCss3Parser;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import javax.swing.event.ChangeListener;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.TokenStream;
-import org.netbeans.modules.css.lib.AbstractParseTreeNode;
-import org.netbeans.modules.css.lib.NbParseTreeBuilder;
+import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 /**
  *
  * @author marekfukala
  */
-public class CssParser extends Parser {
+public class ErrorNode extends AbstractParseTreeNode {
+    
+    private RecognitionException re;
+    private ProblemDescription problem;
 
-    private CssParserResult result;
+    public ErrorNode(RecognitionException re, ProblemDescription problem) {
+        this.re = re;
+        this.problem = problem;
+    }
+
+    @Override
+    public NodeType type() {
+        return NodeType.error;
+    }
+
+    public ProblemDescription getProblemDescription() {
+        return problem;
+    }
     
     @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        try {
-            String source = snapshot.getText().toString();
-            CharStream charstream = new ANTLRStringStream(source);
-            
-            ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
-            TokenStream tokenstream = new CommonTokenStream(lexer);
-            NbParseTreeBuilder builder = new NbParseTreeBuilder();
-            ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder);
-            parser.styleSheet();
-
-            AbstractParseTreeNode tree = builder.getTree();
-            List<ProblemDescription> problems = new ArrayList<ProblemDescription>();
-            //add lexer issues
-            problems.addAll(lexer.getProblems());
-            //add parser issues
-            problems.addAll(builder.getProblems());
-            
-            result = new CssParserResult(snapshot, tree, problems);
-        } catch (RecognitionException ex) {
-            throw new ParseException(String.format("Error parsing %s snapshot.", snapshot), ex);
-        }
+    public int from() {
+        return problem.getFrom();
     }
 
     @Override
-    public Result getResult(Task task) throws ParseException {
-        return result;
+    public int to() {
+        return problem.getTo();
     }
 
     @Override
-    public void addChangeListener(ChangeListener changeListener) {
-        //no-op
+    public String name() {
+        return re.toString();
     }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-        //no-op
-    }
+    
     
 }

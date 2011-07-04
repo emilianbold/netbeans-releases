@@ -51,6 +51,7 @@ import java.util.Stack;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 
 /**
@@ -63,7 +64,7 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
 public class NbParseTreeBuilder extends BlankDebugEventListener {
 
     private static final Object ROOT_NODE_PAYLOAD = "root"; //NOI18N
-    Stack<NbParseTree> callStack = new Stack<NbParseTree>();
+    Stack<RuleNode> callStack = new Stack<RuleNode>();
     List<Token> hiddenTokens = new ArrayList<Token>();
     private int backtracking = 0;
     
@@ -72,19 +73,11 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     private boolean resyncing;
 
     public NbParseTreeBuilder() {
-        NbParseTree root = new NbParseTree(ROOT_NODE_PAYLOAD);
-        callStack.push(root);
+        callStack.push(new RuleNode(NodeType.root));
     }
 
-    public NbParseTree getTree() {
+    public AbstractParseTreeNode getTree() {
         return callStack.elementAt(0);
-    }
-
-    /**  What kind of node to create.  You might want to override
-     *   so I factored out creation here.
-     */
-    public NbParseTree create(Object payload) {
-        return new NbParseTree(payload);
     }
 
     /** Backtracking or cyclic DFA, don't want to add nodes to tree */
@@ -103,16 +96,16 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
-        NbParseTree parentRuleNode = callStack.peek();
-        NbParseTree ruleNode = create(ruleName);
+        AbstractParseTreeNode parentRuleNode = callStack.peek();
+        RuleNode ruleNode = new RuleNode(NodeType.valueOf(ruleName));
         parentRuleNode.addChild(ruleNode);
         ruleNode.setParent(parentRuleNode);
         callStack.push(ruleNode);
         
         //set rule start offset
-        ruleNode.from = lastConsumedToken != null 
+        ruleNode.setFrom(lastConsumedToken != null 
                 ? lastConsumedToken.getStartIndex() 
-                : 0 ;
+                : 0);
     }
 
     @Override
@@ -120,15 +113,15 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
-        NbParseTree ruleNode = callStack.pop();
+        RuleNode ruleNode = callStack.pop();
         if (ruleNode.getChildCount() == 0) {
-            NbParseTree parent = (NbParseTree) ruleNode.getParent();
+            RuleNode parent = (RuleNode) ruleNode.getParent();
             if (parent != null) {
                 parent.deleteChild(ruleNode);
             }
         } else {
             //set the rule end offset
-            ruleNode.to = lastConsumedToken.getStopIndex();
+            ruleNode.setTo(lastConsumedToken.getStopIndex());
         }
     }
 
@@ -137,13 +130,13 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
-        NbParseTree ruleNode = callStack.peek();
-        NbParseTree elementNode = create(token);
+        lastConsumedToken = (CommonToken)token;
+        
+        RuleNode ruleNode = callStack.peek();
+        TokenNode elementNode = new TokenNode(lastConsumedToken);
         elementNode.hiddenTokens = this.hiddenTokens;
         hiddenTokens.clear();
         ruleNode.addChild(elementNode);
-        
-        lastConsumedToken = (CommonToken)token;
         
         if(resyncing) {
             System.out.println("resyncing over token " + token);
@@ -179,9 +172,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             return;
         }
         //add error node
-        NbParseTree ruleNode = callStack.peek();
-        NbParseTree errorNode = create(e);
-        ruleNode.addChild(errorNode);
+        RuleNode ruleNode = callStack.peek();
         
         final String message;
         final int from, to;
@@ -189,7 +180,6 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if(e.token != null) {
             //invalid token found int the stream
             CommonToken token = (CommonToken)e.token;
-            token.getStartIndex();
             int unexpectedTokenCode = e.getUnexpectedType();
             CssTokenId uneexpectedToken = CssTokenId.forTokenTypeCode(unexpectedTokenCode);
             
@@ -221,6 +211,10 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
                 ProblemDescription.Type.ERROR);
         
         problems.add(pp);
+        
+        //create an error node and add it to the parse tree
+        ErrorNode errorNode = new ErrorNode(e, pp);
+        ruleNode.addChild(errorNode);
     }
 
     public Collection<ProblemDescription> getProblems() {

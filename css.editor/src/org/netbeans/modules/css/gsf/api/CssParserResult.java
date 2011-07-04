@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.gsf.CssAnalyser;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -59,6 +60,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 public class CssParserResult extends ParserResult {
 
     private SimpleNode root;
+    private Node css3root; //temp
     private final List<Error> errors = new ArrayList<Error>();
     
     private AtomicBoolean analyzerErrorsComputed = new AtomicBoolean(false);
@@ -66,8 +68,13 @@ public class CssParserResult extends ParserResult {
     private boolean invalidated = false;
     
     public CssParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> parserErrors) {
+        this(parser, snapshot, root, null, parserErrors);
+    }
+    
+    public CssParserResult(Parser parser, Snapshot snapshot, SimpleNode root, Node css3root, List<Error> parserErrors) {
         super(snapshot);
         this.root = root;
+        this.css3root = css3root;
         errors.addAll(parserErrors);
     }
     
@@ -77,7 +84,15 @@ public class CssParserResult extends ParserResult {
         }
         return root;
     }
+    
+    public Node css3root() {
+        if(invalidated) {
+            throw new IllegalStateException("The CssParserResult already invalidated!"); //NOI18N
+        }
+        return css3root;
+    }
 
+    
     @Override
     public List<? extends Error> getDiagnostics() {
         if(invalidated) {
@@ -93,6 +108,10 @@ public class CssParserResult extends ParserResult {
     
     @Override
     protected void invalidate() {
+        //the result invalidation must be disabled since some GSF features uses the result outside 
+        //the parsing task! This should be fixed.
+        
+//        invalidated = true; 
     }
     
 }

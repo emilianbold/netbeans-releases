@@ -92,7 +92,7 @@ public class CssLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language getLexerLanguage() {
-        return CssTokenId.language();
+        return org.netbeans.modules.css.lib.api.CssTokenId.language();
     }
 
     @Override

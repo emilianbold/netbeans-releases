@@ -125,6 +125,9 @@ public class NodeUtil {
     private static void treeToString(Node tree, PrintWriter b)  {
         b.print(tree.name());
         b.print(' ');
+        b.print('[');
+        b.print(tree.type().name());
+        b.print(']');
         b.print('(');
         b.print(Integer.toString(tree.from()));
         b.print('-');
