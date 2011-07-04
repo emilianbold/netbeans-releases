@@ -43,26 +43,24 @@ package org.netbeans.modules.cloud.oracle.serverplugin;
 
 import java.awt.Image;
 import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.cloud.oracle.whitelist.WhiteListQueryImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -164,6 +162,13 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
     @Override
     public org.netbeans.api.java.platform.JavaPlatform getJavaPlatform() {
         return JavaPlatformManager.getDefault().getDefaultPlatform();
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return LookupProviderSupport.createCompositeLookup(
+                Lookups.fixed(new WhiteListQueryImpl()), 
+                "J2EE/DeploymentPlugins/Oracle Cloud 9/Lookup"); //NOI18N
     }
     
 }
