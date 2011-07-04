@@ -129,7 +129,7 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(fileNameText);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WebXmlVisualPanel1.class, "LBL_Name")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WebFragmentXmlVisualPanel1.class, "LBL_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -138,7 +138,7 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setLabelFor(projectText);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(WebXmlVisualPanel1.class, "LBL_Project")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(WebFragmentXmlVisualPanel1.class, "LBL_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -148,7 +148,7 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
         add(jLabel2, gridBagConstraints);
 
         jLabel3.setLabelFor(locationText);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(WebXmlVisualPanel1.class, "LBL_Location")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(WebFragmentXmlVisualPanel1.class, "LBL_Location")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -158,7 +158,7 @@ public final class WebFragmentXmlVisualPanel1 extends JPanel {
         add(jLabel3, gridBagConstraints);
 
         jLabel4.setLabelFor(createdFileText);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(WebXmlVisualPanel1.class, "LBL_CreatedFile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(WebFragmentXmlVisualPanel1.class, "LBL_CreatedFile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
