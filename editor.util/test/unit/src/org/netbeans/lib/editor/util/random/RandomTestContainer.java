@@ -471,13 +471,9 @@ public final class RandomTestContainer extends PropertyProvider {
         }
 
         public StringBuilder logOpBuilder() {
-            StringBuilder sb;
+            StringBuilder sb = new StringBuilder(100);;
             if (isLogOp()) {
-                sb = new StringBuilder(100);
                 sb.append("TESTOP[").append(opCount()).append("]: ");
-                return sb;
-            } else {
-                sb = null;
             }
             return sb;
         }

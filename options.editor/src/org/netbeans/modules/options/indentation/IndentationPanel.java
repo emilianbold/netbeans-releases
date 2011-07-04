@@ -100,8 +100,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
 
-    private final boolean lineWrapOn;
-
     private final MimePath mimePath;
     private final CustomizerSelector.PreferencesFactory prefsFactory;
     private final Preferences allLangPrefs;
@@ -114,18 +112,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
      */
     @SuppressWarnings("LeakingThisInConstructor")
     public IndentationPanel(MimePath mimePath, CustomizerSelector.PreferencesFactory prefsFactory, Preferences prefs, Preferences allLangPrefs, PreviewProvider preview) {
-        boolean lwo;
-        try {
-            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-            Class clazz = cl.loadClass("org.netbeans.modules.editor.lib2.highlighting.HighlightingManager"); //NOI18N
-            Field field = clazz.getField("LINEWRAP_ENABLED"); //NOI18N
-            lwo = (Boolean) field.get(null);
-        } catch (Exception e) {
-            LOG.log(Level.INFO, null, e);
-            lwo = false;
-        }
-        lineWrapOn = lwo;
-
         this.mimePath = mimePath;
         this.prefsFactory = prefsFactory;
         this.prefs = prefs;
@@ -170,11 +156,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sTabSize.setModel(new SpinnerNumberModel(4, 1, 50, 1));
         sRightMargin.setModel(new SpinnerNumberModel(120, 0, 200, 10));
         cboLineWrap.setRenderer(new LineWrapRenderer(cboLineWrap.getRenderer()));
-        if (lineWrapOn) {
-            cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none", "words", "chars" })); //NOI18N
-        } else {
-            cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none" })); //NOI18N
-        }
+        cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none", "words", "chars" })); //NOI18N
 
         // initialize controls
         if (showOverrideGlobalOptions &&
@@ -191,12 +173,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sNumberOfSpacesPerIndent.addChangeListener(this);
         sTabSize.addChangeListener(this);
         sRightMargin.addChangeListener(this);
-        if (lineWrapOn) {
-            cboLineWrap.addActionListener(this);
-        } else {
-            ((ControlledComboBox) cboLineWrap).setEnabledInternal(false);
-            ((ControlledLabel) lLineWrap).setEnabledInternal(false);
-        }
+        cboLineWrap.addActionListener(this);
     }
 
     public PreviewProvider getPreviewProvider() {
@@ -301,7 +278,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             needsRefresh = true;
         }
 
-        if (lineWrapOn && (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key))) {
+        if (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key)) {
             String nue = prefs.get(SimpleValueNames.TEXT_LINE_WRAP, getDef(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
             if (nue != cboLineWrap.getSelectedItem()) {
                 cboLineWrap.setSelectedItem(nue);
@@ -322,9 +299,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                     prefs.putInt(SimpleValueNames.SPACES_PER_TAB, allLangPrefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4));
                     prefs.putInt(SimpleValueNames.TAB_SIZE, allLangPrefs.getInt(SimpleValueNames.TAB_SIZE, 4));
                     prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, allLangPrefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
-                    if (lineWrapOn) {
-                        prefs.put(SimpleValueNames.TEXT_LINE_WRAP, allLangPrefs.get(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
-                    }
+                    prefs.put(SimpleValueNames.TEXT_LINE_WRAP, allLangPrefs.get(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
                 }
                 
                 needsRefresh = true;
@@ -335,10 +310,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 ((ControlledSpinner) sTabSize).setEnabledInternal(nue);
                 ((ControlledLabel) lRightMargin).setEnabledInternal(nue);
                 ((ControlledSpinner) sRightMargin).setEnabledInternal(nue);
-                if (lineWrapOn) {
-                    ((ControlledLabel) lLineWrap).setEnabledInternal(nue);
-                    ((ControlledComboBox) cboLineWrap).setEnabledInternal(nue);
-                }
+                ((ControlledLabel) lLineWrap).setEnabledInternal(nue);
+                ((ControlledComboBox) cboLineWrap).setEnabledInternal(nue);
             }
         }
 
@@ -389,7 +362,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, allLangPrefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
         }
 
-        if (lineWrapOn && (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key))) {
+        if ((key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key))) {
             prefs.put(SimpleValueNames.TEXT_LINE_WRAP, allLangPrefs.get(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
         }
     }
@@ -565,7 +538,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.SPACES_PER_TAB, mimeType) ||
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TAB_SIZE, mimeType) ||
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LIMIT_WIDTH, mimeType) ||
-            (lineWrapOn && prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LINE_WRAP, mimeType));
+            prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LINE_WRAP, mimeType);
     }
 
     private boolean getDefBoolean(String key, boolean def) {

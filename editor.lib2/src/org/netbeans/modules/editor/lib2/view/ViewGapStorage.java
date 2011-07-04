@@ -45,64 +45,74 @@
 package org.netbeans.modules.editor.lib2.view;
 
 /**
- * Information about a single visual line in a wrapped paragraph.
+ * Gap storage speeds up operations when a number of children views exceeds
+ * certain number.
  * 
  * @author Miloslav Metelka
  */
 
-final class WrapLine {
+final class ViewGapStorage {
 
     /**
-     * Start view of this line that was obtained by breaking a view
-     * at (viewIndex - 1). It may be null if this line starts at view boundary
-     * with a view at viewIndex.
+     * Number of child views above which they will start to be managed
+     * in a gap-storage way upon modification.
+     * Below the threshold the views are updated without gap creation.
      */
-    EditorView startPart;
+    static final int GAP_STORAGE_THRESHOLD = 20;
 
     /**
-     * Ending view of this line that was obtained by breaking a view
-     * at endViewIndex.
-     * It may be null if the line ends at view boundary.
+     * Length of the visual gap in child view infos along their major axis.
      */
-    EditorView endPart;
+    static final double INITIAL_VISUAL_GAP_LENGTH = (1L << 40);
 
-    /*
-     * X corresponding to the start view on the line (right next to startViewPart).
-     * If there's an existing startViewPart then the value is its width otherwise
-     * it's value is zero.
-     */
-    float firstViewX;
+    static final int INITIAL_OFFSET_GAP_LENGTH = (Integer.MAX_VALUE >>> 1);
 
     /**
-     * Index of a first view located at this line.
+     * Start of the visual gap in child views along their major axis.
      * <br/>
-     * Logically if there's a non-null startViewPart then it comes from view
-     * at (startViewIndex - 1).
+     * Place it above end of all views initially.
      */
-    int firstViewIndex;
+    double visualGapStart; // 8-super + 8 = 16 bytes
 
-    /**
-     * Index that follows last view located at this line.
-     * <br/>
-     * It should be >= startViewIndex.
-     */
-    int endViewIndex;
-
-    WrapLine() {
-        // Leave startViewIndex == endViewIndex which means no full views
-    }
-
-    boolean hasFullViews() {
-        return firstViewIndex != endViewIndex;
-    }
+    double visualGapLength; // 16 + 8 = 24 bytes
     
+    /**
+     * Index where the visual gap is located in children views.
+     * This is to help to avoid checking of above/below gap members
+     * when doing many single-view span updates.
+     */
+    int visualGapIndex; // 24 + 4 = 28 bytes
+
+    /**
+     * Start of the offset gap used for managing end offsets of HighlightsView views.
+     * It is not used for paragraph views.
+     * <br/>
+     * Place it above end of all views initially.
+     */
+    int offsetGapStart; // 28 + 4 = 32 bytes
+
+    int offsetGapLength; // 32 + 4 = 36 bytes
+    
+    void initVisualGap(int visualGapIndex, double visualGapStart) {
+        this.visualGapIndex = visualGapIndex;
+        this.visualGapStart = visualGapStart;
+        this.visualGapLength = INITIAL_VISUAL_GAP_LENGTH;
+    }
+
+    void initOffsetGap(int offsetGapStart) {
+        this.offsetGapStart = offsetGapStart;
+        this.offsetGapLength = INITIAL_OFFSET_GAP_LENGTH;
+    }
+
+    StringBuilder appendInfo(StringBuilder sb) {
+        sb.append("<").append(offsetGapStart).append("|").append(offsetGapLength);
+        sb.append(", vis<").append(visualGapStart).append("|").append(visualGapLength);
+        return sb;
+    }
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("startPart=").append(startPart); // NOI18N
-        sb.append(" [").append(firstViewIndex).append(",").append(endViewIndex).append("]"); // NOI18N
-        sb.append(" endPart=").append(endPart); // NOI18N
-        return sb.toString();
+        return appendInfo(new StringBuilder(100)).toString();
     }
 
 }
