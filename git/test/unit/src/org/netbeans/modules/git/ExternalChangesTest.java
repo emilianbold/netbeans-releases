@@ -49,15 +49,16 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.test.MockLookup;
 
 /**
  * @author ondra
@@ -75,7 +76,9 @@ public class ExternalChangesTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setLayersAndInstances();
+        MockServices.setServices(new Class[] {
+            VersioningAnnotationProvider.class,
+            GitVCS.class});
         
         System.setProperty("versioning.git.handleExternalEvents", "true");
         // create
