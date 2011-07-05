@@ -213,12 +213,13 @@ public class OracleInstance {
     public static Future<DeploymentStatus> deployAsync(final String urlEndpoint, final ApplicationManager pm, final File f, 
                          final String tenantId, 
                          final String serviceName, 
-                         final ProgressObjectImpl po) {
+                         final ProgressObjectImpl po,
+                         final String cloudInstanceName) {
         return runAsynchronously(new Callable<DeploymentStatus>() {
             @Override
             public DeploymentStatus call() throws Exception {
                 String url[] = new String[1];
-                DeploymentStatus ds = deploy(urlEndpoint, pm, f, tenantId, serviceName, po, url);
+                DeploymentStatus ds = deploy(urlEndpoint, pm, f, tenantId, serviceName, po, url, cloudInstanceName);
                 LOG.log(Level.INFO, "deployment result: "+ds); // NOI18N
                 po.updateDepoymentResult(ds, url[0]);
                 return ds;
@@ -227,7 +228,7 @@ public class OracleInstance {
     }
     
     public static DeploymentStatus deploy(String urlEndpoint, ApplicationManager am, File f, String tenantId, String serviceName, 
-                          ProgressObjectImpl po, String[] url) {
+                          ProgressObjectImpl po, String[] url, String cloudInstanceName) {
         assert !SwingUtilities.isEventDispatchThread();
         OutputWriter ow = null;
         OutputWriter owe = null;
@@ -241,7 +242,7 @@ public class OracleInstance {
             if (p != null) {
                 name = ProjectUtils.getInformation(p).getDisplayName();
             }
-            String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", name);
+            String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", cloudInstanceName, name);
             if (!WhiteListTool.execute(f, tabName)) {
 //                return DeploymentStatus.FAILED;
             }

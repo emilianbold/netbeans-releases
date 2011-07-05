@@ -78,7 +78,8 @@ public class OracleDeploymentFactory implements DeploymentFactory {
                     username,
                     password),
                 props.getProperty(IP_TENANT_ID),
-                props.getProperty(IP_SERVICE_NAME));
+                props.getProperty(IP_SERVICE_NAME),
+                props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR));
     }
 
     @Override
@@ -87,6 +88,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
         return new OracleDeploymentManager(
                 "",
                 null,
+                "",
                 "",
                 "");
     }

@@ -107,11 +107,11 @@ public class OracleJ2EEInstance {
     }
     
     public String getId() {
-        return createURL(getTenantId(), getServiceName());
+        return createURL(getOracleInstance().getName(), getTenantId(), getServiceName());
     }
     
-    public static String createURL(String tenantId, String serviceName) {
-        return OracleDeploymentFactory.ORACLE_URI+tenantId + "." +serviceName;
+    public static String createURL(String cloudInstance, String tenantId, String serviceName) {
+        return OracleDeploymentFactory.ORACLE_URI+cloudInstance + "." + tenantId + "." +serviceName;
     }
 
     public String getServiceName() {

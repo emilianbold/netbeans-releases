@@ -72,12 +72,14 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     private String tenantId;
     private String serviceName;
     private String urlEndPoint;
+    private String cloudInstanceName;
 
-    public OracleDeploymentManager(String urlEndPoint, ApplicationManager pm, String tenantId, String serviceName) {
+    public OracleDeploymentManager(String urlEndPoint, ApplicationManager pm, String tenantId, String serviceName, String cloudInstanceName) {
         this.pm = pm;
         this.tenantId = tenantId;
         this.serviceName = serviceName;
         this.urlEndPoint = urlEndPoint;
+        this.cloudInstanceName = cloudInstanceName;
     }
     
     @Override
@@ -89,7 +91,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
         ProgressObjectImpl po = new ProgressObjectImpl(new TargetModuleID[0]/* XXXXXXX */, "Distributing...");
-        Future<DeploymentStatus> task = OracleInstance.deployAsync(urlEndPoint, pm, f, tenantId, serviceName, po);
+        Future<DeploymentStatus> task = OracleInstance.deployAsync(urlEndPoint, pm, f, tenantId, serviceName, po, cloudInstanceName);
         return po;
     }
 

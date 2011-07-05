@@ -167,8 +167,11 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
     @Override
     public Lookup getLookup() {
         return LookupProviderSupport.createCompositeLookup(
-                Lookups.fixed(new WhiteListQueryImpl()), 
+                Lookups.fixed(new WhiteListQueryImpl(), new Marker()), 
                 "J2EE/DeploymentPlugins/Oracle Cloud 9/Lookup"); //NOI18N
+    }
+    
+    public static final class Marker {
     }
     
 }
