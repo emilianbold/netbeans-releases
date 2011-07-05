@@ -48,21 +48,33 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -76,6 +88,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
@@ -99,6 +112,8 @@ public class CommentsPanel extends JPanel {
     private MouseMotionListener motionListener;
     private NewCommentHandler newCommentHandler;
 
+    private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
+    
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
         motionListener = new MouseMotionAdapter() {
@@ -142,6 +157,7 @@ public class CommentsPanel extends JPanel {
     public void setIssue(NbJiraIssue issue) {
         removeAll();
         this.issue = issue;
+        initCollapsedComments();
         GroupLayout layout = new GroupLayout(this);
         GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.LEADING);
         layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -161,11 +177,26 @@ public class CommentsPanel extends JPanel {
         }
         String description = issue.getFieldValue(NbJiraIssue.IssueField.DESCRIPTION);
         String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
-        addSection(layout, description, reporter, creationTxt, horizontalGroup, verticalGroup, true);
+        addSection(
+                layout, 
+                new Long(0),    
+                description, 
+                reporter, 
+                creationTxt, 
+                horizontalGroup, 
+                verticalGroup, 
+                true);
         for (NbJiraIssue.Comment comment : issue.getComments()) {
             Date date = comment.getWhen();
             String when = (date == null) ? "" : format.format(date); // NOI18N
-            addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
+            addSection(
+                    layout, 
+                    comment.getNumber(),
+                    comment.getText(), 
+                    comment.getWho(), 
+                    when, 
+                    horizontalGroup, 
+                    verticalGroup, false);
         }
         verticalGroup.addContainerGap();
         setLayout(layout);
@@ -175,10 +206,11 @@ public class CommentsPanel extends JPanel {
         newCommentHandler = handler;
     }
 
-    private void addSection(GroupLayout layout, String text, String author, String dateTimeString,
+    private void addSection(GroupLayout layout, Long number, String text, String author, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         JTextPane textPane = new JTextPane();
-        JLabel leftLabel = new JLabel();
+        JPanel headerPanel = new JPanel();
+        JLabel leftLabel = new ExpandLabel(textPane, headerPanel, number);
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
         String leftTxt;
         if (description) {
@@ -204,32 +236,19 @@ public class CommentsPanel extends JPanel {
         replyButton.addActionListener(getReplyListener());
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
+        
+        setupHeaderPanel(headerPanel, leftLabel, replyButton, rightLabel, stateLabel);
         setupTextPane(textPane, text);
 
         // Layout
-        GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
-            .add(leftLabel, 0, 0, Short.MAX_VALUE)
-            .addPreferredGap(LayoutStyle.RELATED)
-            .add(replyButton)
-            .addPreferredGap(LayoutStyle.RELATED)
-            .add(rightLabel);
-        if (stateLabel != null) {
-            hGroup.addPreferredGap(LayoutStyle.RELATED);
-            hGroup.add(stateLabel);
-        }
-        horizontalGroup.add(hGroup)
-        .add(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+        horizontalGroup
+            .add(headerPanel)
+            .add(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         if (!description) {
             verticalGroup.addPreferredGap(LayoutStyle.UNRELATED);
         }
-        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-            .add(leftLabel)
-            .add(replyButton)
-            .add(rightLabel);
-        if (stateLabel != null) {
-            vGroup.add(stateLabel);
-        }
-        verticalGroup.add(vGroup)
+        verticalGroup
+            .add(headerPanel)
             .add(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
@@ -273,6 +292,31 @@ public class CommentsPanel extends JPanel {
         textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
+    }
+
+    private void setupHeaderPanel(JPanel headerPanel, JLabel leftLabel, LinkButton replyButton, JLabel rightLabel, JLabel stateLabel) {
+        headerPanel.setOpaque(false);
+        GroupLayout layout = new org.jdesktop.layout.GroupLayout(headerPanel);
+        headerPanel.setLayout(layout);
+        GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
+            .add(leftLabel, 0, 0, Short.MAX_VALUE)
+            .addPreferredGap(LayoutStyle.RELATED)
+            .add(replyButton)
+            .addPreferredGap(LayoutStyle.RELATED)
+            .add(rightLabel);
+        if (stateLabel != null) {
+            hGroup.addPreferredGap(LayoutStyle.RELATED);
+            hGroup.add(stateLabel);
+        }
+        layout.setHorizontalGroup(hGroup);
+        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+            .add(leftLabel)
+            .add(replyButton)
+            .add(rightLabel);
+        if (stateLabel != null) {
+            vGroup.add(stateLabel);
+        }
+        layout.setVerticalGroup(vGroup);
     }
 
     private ActionListener replyListener;
@@ -322,4 +366,118 @@ public class CommentsPanel extends JPanel {
         void append(String text);
     }
 
+    private final JPopupMenu expandPopup = new ExpandPopupMenu();
+    private Set<ExpandLabel> expandLabels = new HashSet<ExpandLabel>();
+    
+    private class ExpandPopupMenu extends JPopupMenu {
+        public ExpandPopupMenu() {
+            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_ExpandAll")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (ExpandLabel l : expandLabels) {
+                        l.setState(false);
+                    }
+                }
+            }));
+            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_CollapseAll")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (ExpandLabel l : expandLabels) {
+                        l.setState(true);
+                    }
+                }
+            }));
+        }
+    }    
+
+    private void commentCollapsed(Long number) {
+        collapsedComments.add(number);
+    }
+
+    private Set<Long> touchedCommenst = Collections.synchronizedSet(new HashSet<Long>());
+    private void commentExpanded(Long number) {
+        if(collapsedComments.remove(number)) {
+            touchedCommenst.add(number);
+        }
+    }
+
+    private boolean isCollapsed(Long number) {
+        return collapsedComments.contains(number);
+    }
+    
+    private void initCollapsedComments() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getRepository().getUrl(), issue.getID());
+                for (Long l : s) {
+                    if(!touchedCommenst.contains(l)) {
+                        collapsedComments.add(l);
+                    }
+                }
+            }
+        });
+    }
+    
+    void storeSettings() {
+        IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
+    }    
+    
+    private class ExpandLabel extends JLabel implements MouseListener {
+        private final JTextPane textPane;
+        private final JPanel headerPanel;
+        private final Long number;
+        private final Icon ei;
+        private final Icon ci;
+        
+        private Border border;
+
+        public ExpandLabel(JTextPane textPane, JPanel headerPanel, Long number) {
+            this.textPane = textPane;
+            this.headerPanel = headerPanel;
+            this.number = number;
+
+            border = headerPanel.getBorder(); 
+            
+            JTree tv = new JTree();
+            BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
+            ei = tvui.getExpandedIcon();
+            ci = tvui.getCollapsedIcon();
+            
+            addMouseListener(this);
+            setComponentPopupMenu(expandPopup);
+            setState(isCollapsed(number));
+            expandLabels.add(this);
+        }
+        
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                setState(!isCollapsed(number)); 
+            } 
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {}
+        @Override
+        public void mouseReleased(MouseEvent e) {}
+        @Override
+        public void mouseEntered(MouseEvent e) {}
+        @Override
+        public void mouseExited(MouseEvent e) {}
+        
+        private void setState(boolean collapsed) {
+            if(collapsed) {
+                textPane.setVisible(false);
+                setIcon(ci);
+                headerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")));
+                commentCollapsed(number);
+            } else {
+                textPane.setVisible(true);
+                setIcon(ei);
+                headerPanel.setBorder(border);
+                commentExpanded(number);
+            }           
+        }
+    }    
 }

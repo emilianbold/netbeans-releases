@@ -205,8 +205,8 @@
                                           <Component id="dependsOnWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  </Group>
                               </Group>
+                          </Group>
                           <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="summaryField" pref="530" max="32767" attributes="0"/>

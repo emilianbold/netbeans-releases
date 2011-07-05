@@ -2382,6 +2382,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
+    void closed() {
+        if(issue != null) {
+            commentsPanel.storeSettings();
+        }
+    }
+
     class CancelHighlightListener implements DocumentListener, ActionListener, ListSelectionListener {
         private JLabel label;
 
