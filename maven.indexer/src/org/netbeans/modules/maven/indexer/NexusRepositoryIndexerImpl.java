@@ -106,6 +106,10 @@ import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.creator.AbstractIndexCreator;
 import org.apache.maven.index.SearchEngine;
 import org.apache.maven.index.context.IndexCreator;
+import org.apache.maven.index.creator.JarFileContentsIndexCreator;
+import org.apache.maven.index.creator.MavenArchetypeArtifactInfoIndexCreator;
+import org.apache.maven.index.creator.MavenPluginArtifactInfoIndexCreator;
+import org.apache.maven.index.creator.MinimalArtifactInfoIndexCreator;
 import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
@@ -277,7 +281,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     LOGGER.log(Level.FINE, "Local context changed: {0}, unload/load", info.getId());
                     unloadIndexingContext(info);
                 } else {
-                    LOGGER.log(Level.FINE, "Skipping Context: {0}, already loaded.", info.getId());
+                    LOGGER.log(Level.FINER, "Skipping Context: {0}, already loaded.", info.getId());
                     break LOAD; // XXX does it suffice to just return here, or is code after block needed?
                 }
             }
@@ -292,7 +296,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
                 List<IndexCreator> creators = new ArrayList<IndexCreator>();
                 try {
-                    creators.addAll(embedder.lookupList(IndexCreator.class));
+                    // XXX MINDEXER-34: maven-plugin must follow min, so using embedder.lookupList(IndexCreator.class) does not work
+                    for (String id : new String[] {MinimalArtifactInfoIndexCreator.ID, MavenPluginArtifactInfoIndexCreator.ID, MavenArchetypeArtifactInfoIndexCreator.ID, JarFileContentsIndexCreator.ID}) {
+                        creators.add(embedder.lookup(IndexCreator.class, id));
+                    }
                 } catch (ComponentLookupException x) {
                     throw new IOException(x);
                 }
@@ -310,6 +317,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             info.isRemoteDownloadable() ? info.getRepositoryUrl() : null, // repositoryUrl
                             info.isRemoteDownloadable() ? indexUpdateUrl : null,
                             creators);
+                    LOGGER.log(Level.FINE, "using index creators: {0}", creators);
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, "Found a broken index at " + loc.getAbsolutePath(), ex);
                     FileUtils.deleteDirectory(loc);
@@ -1265,7 +1273,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 MavenProject mp = load(ai);
                 if (mp != null) {
                     List<Dependency> dependencies = mp.getDependencies();
-                    LOGGER.log(Level.FINE, "Successfully loaded project model from repository for {0} with {1} dependencies", new Object[] {ai, dependencies.size()});
+                    LOGGER.log(Level.FINER, "Successfully loaded project model from repository for {0} with {1} dependencies", new Object[] {ai, dependencies.size()});
                     dependenciesByArtifact.put(ai, dependencies);
                 }
             } catch (InvalidArtifactRTException ex) {
@@ -1312,12 +1320,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (res.getProject() != null) {
                     return res.getProject();
                 } else {
-                    LOGGER.log(Level.FINE, "No project model from repository for {0}: {1}", new Object[] {ai, res.getProblems()});
+                    LOGGER.log(Level.FINER, "No project model from repository for {0}: {1}", new Object[] {ai, res.getProblems()});
                 }
             } catch (ProjectBuildingException ex) {
-                LOGGER.log(Level.FINE, "Failed to load project model from repository for {0}: {1}", new Object[] {ai, ex});
+                LOGGER.log(Level.FINER, "Failed to load project model from repository for {0}: {1}", new Object[] {ai, ex});
             } catch (Exception exception) {
-                LOGGER.log(Level.FINE, "Failed to load project model from repository for " + ai, exception);
+                LOGGER.log(Level.FINER, "Failed to load project model from repository for " + ai, exception);
             }
             return null;
         }
