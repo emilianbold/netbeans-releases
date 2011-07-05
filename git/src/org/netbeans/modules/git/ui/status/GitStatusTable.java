@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.git.ui.status;
 
+import org.netbeans.modules.git.ui.status.VersioningPanelController.ModeKeeper;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.util.EnumSet;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -64,6 +67,7 @@ import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -77,9 +81,11 @@ import org.openide.util.actions.SystemAction;
  * @author Maros Sandor
  */
 class GitStatusTable extends VCSStatusTable<GitStatusNode> {
+    private final ModeKeeper modeKeeper;
 
-    public GitStatusTable (VCSStatusTableModel<GitStatusNode> model) {
+    public GitStatusTable (VCSStatusTableModel<GitStatusNode> model, VersioningPanelController.ModeKeeper modeKeeper) {
         super(model);
+        this.modeKeeper = modeKeeper;
         setDefaultRenderer(new SyncTableCellRenderer());
     }
 
@@ -101,7 +107,13 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
         menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"))); //NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName")) { //NOI18N
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                modeKeeper.storeMode();
+                super.actionPerformed(e);
+            }
+        });
         Mnemonics.setLocalizedText(item, item.getText());
 
         GitStatusNode[] selectedNodes = getSelectedNodes();
@@ -131,6 +143,17 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
             Mnemonics.setLocalizedText(item, item.getText());
         }
         return menu;
+    }
+
+    @Override
+    protected void mouseClicked (VCSStatusNode node) {
+        Action action = node.getPreferredAction();
+        if (action != null && action.isEnabled()) {
+            if (action instanceof DiffAction) {
+                modeKeeper.storeMode();
+            }
+            action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
+        }
     }
 
     private class SyncTableCellRenderer extends DefaultTableCellRenderer {
