@@ -796,7 +796,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // #110085: some more unwanted ones...
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.templates"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.libs.jsr223"); // NOI18N
-        DISABLED_PLATFORM_MODULES.add("javax.swing"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.jdesktop.layout"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.openide.options"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.api.visual"); // NOI18N
         
@@ -1734,6 +1734,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             UniverseModule dep = modules.get(cnb);
             if (dep == null) {
+                if (cnb.equals("org.netbeans.libs.junit4")) {
+                    // E.g. from some test pseudomodule. Just ignore this; tests can usually be run anyway.
+                    continue;
+                }
                 FixInfo.putUnfixable(fi, new String[] {"ERR_no_dep", mdn, mc, cnb});
                 return true;
             }
