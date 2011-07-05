@@ -49,7 +49,6 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 
 /**
  * Builds an annotations tree containg NN name and attribs map. Supports nested annotations.
@@ -69,11 +68,9 @@ public class CCParser {
     private static final int EQ = 6; //@Table(name=
     private static final int ATTRVALUE = 7; //@Table(name="hello" || @Table(name=@
     
-    private final BaseDocument doc;
     private final CompilationController controller;
 
-    CCParser(BaseDocument baseDocument, CompilationController controller) {
-        this.doc = baseDocument;
+    CCParser(CompilationController controller) {
         this.controller = controller;
     }
     
@@ -88,7 +85,6 @@ public class CCParser {
     
     /** very simple annotations parser */
     private CC parseAnnotationOnOffset(int offset) {
-            int parentCount = -1;
             int state = INIT;
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             ts.moveStart();
@@ -131,7 +127,6 @@ public class CCParser {
                             case IDENTIFIER:
                                 state = NNNAME;
                                 nnName = titk.text().toString();
-//                                debug("parsing annotation " + nnName);
                                 break;
                             default:
                                 state = ERROR;
@@ -204,7 +199,6 @@ public class CCParser {
                                 continue; //next loop
                             default:
                                 //ERROR => recover
-//                                debug("found uncompleted attribute " + currAttrName);
                                 //set the start offset of the value to the offset of the equator + 1
                                 attrs.add(new NNAttr(currAttrName, "", eqOffset + 1, false));
                                 state = INNN;
@@ -212,7 +206,6 @@ public class CCParser {
                         }
                 }
                 
-                //if(state == ERROR) return null;
                 if(state == ERROR) {
                     //return what we parser so far to be error recovery as much as possible
                     nnend = ts.offset() + titk.text().toString().length();
@@ -357,6 +350,7 @@ public class CCParser {
             return endOffset;
         }
         
+        @Override
         public String toString() {
             //just debug purposes -> no need for superb performance
             String text = "@" + getName() + " [" + getStartOffset() + " - " + getEndOffset() + "](";
@@ -369,7 +363,5 @@ public class CCParser {
             text+=")";
             return text;
         }
-        
     }
-    
 }
