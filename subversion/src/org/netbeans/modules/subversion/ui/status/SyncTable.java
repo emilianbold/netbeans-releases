@@ -90,6 +90,7 @@ import java.util.*;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
+import org.netbeans.modules.subversion.ui.status.VersioningPanel.ModeKeeper;
 import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -152,8 +153,10 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             }
         }
     };
+    private final ModeKeeper modeKeeper;
     
-    public SyncTable() {
+    public SyncTable (ModeKeeper modeKeeper) {
+        this.modeKeeper = modeKeeper;
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
@@ -381,7 +384,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         item = menu.add(new OpenInEditorAction());
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
-        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff"))); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff")) { //NOI18N
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                modeKeeper.storeMode();
+                super.actionPerformed(e);
+            }
+        });
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(UpdateAction.class), actionString("CTL_PopupMenuItem_Update"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
@@ -496,6 +505,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             Action action = nodes[row].getPreferredAction();
             if (action == null || !action.isEnabled()) action = new OpenInEditorAction();
             if (action.isEnabled()) {
+                if (action instanceof DiffAction) {
+                    modeKeeper.storeMode();
+                }
                 action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
         } 
