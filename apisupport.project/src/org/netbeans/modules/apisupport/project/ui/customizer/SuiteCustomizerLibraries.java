@@ -1734,6 +1734,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             UniverseModule dep = modules.get(cnb);
             if (dep == null) {
+                if (cnb.equals("org.netbeans.libs.junit4")) {
+                    // E.g. from some test pseudomodule. Just ignore this; tests can usually be run anyway.
+                    continue;
+                }
                 FixInfo.putUnfixable(fi, new String[] {"ERR_no_dep", mdn, mc, cnb});
                 return true;
             }
