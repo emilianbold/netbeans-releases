@@ -796,7 +796,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // #110085: some more unwanted ones...
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.templates"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.libs.jsr223"); // NOI18N
-        DISABLED_PLATFORM_MODULES.add("javax.swing"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.jdesktop.layout"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.openide.options"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.api.visual"); // NOI18N
         
