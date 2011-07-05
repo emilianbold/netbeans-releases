@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.j2ee.persistence.editor.completion.db;
 
-import com.sun.source.tree.ExpressionTree;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -72,7 +71,6 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToMany;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.SecondaryTable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.completion.AnnotationUtils;
@@ -407,6 +405,7 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
                             }
                         }
                     }
+//TODO: isn't implemented in model yet, need investigation
 //                    SecondaryTable[] stables = entity.getSecondaryTable();
 //                    if(stables != null) {
 //                        for(int idx = 0; idx < stables.length; idx++) {
@@ -725,44 +724,10 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
             return dbconn.getSchema();
         }
     }
-    
-//    private String getAnnotationTypeName(JCExpression exp) {
-//        assert exp != null;
-//        
-//        String result = null;
-//        
-//        if (exp.getParameterCount() < 1) {
-//            return result;
-//        }
-//        JCExpression variable = exp.getParameter(0);
-//        if (variable.getExpID() == JCExpression.VARIABLE) {
-//            //just @Table (without package specification)
-//            return variable.getTokenText(0);
-//        }
-//        
-//        if(variable.getExpID() == JCExpression.DOT) {
-//            //@javax.persistence.Table (with package specification)
-//            StringBuffer sb = new StringBuffer();
-//            for(int i = 0; i < variable.getParameterCount(); i++) {
-//                JCExpression subExp = variable.getParameter(i);
-//                sb.append(subExp.getTokenText(0));
-//                if(i < variable.getParameterCount() - 1) {
-//                    sb.append('.');
-//                }
-//            }
-//            return sb.toString();
-//        }
-//        
-//        // XXX this does not count with an annotation type written like "javax.persistence.Table"
-//        // should try to resolve the annotation type
-//        
-//        return result;
-//    }
 
     private Set getMappingEntityTableNames(String javaClass) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
-    
     
     private static final class ResultItemsFilterList extends ArrayList {
         private JPACodeCompletionProvider.Context ctx;

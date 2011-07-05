@@ -329,7 +329,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                 this.emaps = PersistenceUtils.getEntityMappings(documentFO);
             }
 
-            this.CCParser = new CCParser(getBaseDocument(), controller);
+            this.CCParser = new CCParser(controller);
         }
 
         /** Must be run under MDR transaction! */
@@ -411,7 +411,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             String type = null;
             String genericType = null;
             String propertyName = null;
-            CCParser nnp = new CCParser(getBaseDocument(), controller); //helper parser
+            CCParser nnp = new CCParser(controller); //helper parser
 
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             ts.move(getCompletionOffset() + 1);
