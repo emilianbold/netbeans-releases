@@ -107,7 +107,6 @@ public abstract class JPACompletionItem implements CompletionItem {
                 doc.insertString(offset, text, null);
             } catch (BadLocationException e) {
                 // Can't update
-                e.printStackTrace();
             } finally {
                 doc.atomicUnlock();
             }
@@ -192,22 +191,27 @@ public abstract class JPACompletionItem implements CompletionItem {
         return "\"" + s + "\"";
     }
     
+    @Override
     public CharSequence getSortText() {
         return getItemText();
     }
     
+    @Override
     public CharSequence getInsertPrefix() {
         return getItemText();
     }
 
+    @Override
     public CompletionTask createDocumentationTask() {
         return null;
     }
     
+    @Override
     public CompletionTask createToolTipTask() {
         return null;
     }
 
+    @Override
     public boolean instantSubstitution(JTextComponent c) {
         Completion completion = Completion.get();
         completion.hideCompletion();
@@ -216,6 +220,7 @@ public abstract class JPACompletionItem implements CompletionItem {
         return true;
     }
 
+    @Override
     public void defaultAction(JTextComponent component) {
         Completion completion = Completion.get();
         completion.hideCompletion();
@@ -257,6 +262,7 @@ public abstract class JPACompletionItem implements CompletionItem {
             return quote;
         }
         
+        @Override
         public String getItemText() {
             if (quote) {
                 return quoteText(name);
@@ -265,6 +271,7 @@ public abstract class JPACompletionItem implements CompletionItem {
             }
         }
         
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (paintComponent == null) {
                 paintComponent = new CCPaintComponent.DBElementPaintComponent();
@@ -292,14 +299,17 @@ public abstract class JPACompletionItem implements CompletionItem {
             super(name, quote, substituteOffset);
         }
         
+        @Override
         public String getTypeName() {
             return "Persistence Unit";
         }
         
+        @Override
         public int getSortPriority() {
             return 100;
         }
         
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (paintComponent == null) {
                 paintComponent = new CCPaintComponent.PersistenceUnitElementPaintComponent();
@@ -319,14 +329,17 @@ public abstract class JPACompletionItem implements CompletionItem {
             super(name, quote, substituteOffset);
         }
         
+        @Override
         public String getTypeName() {
             return "Persistence Unit";
         }
         
+        @Override
         public int getSortPriority() {
             return 100;
         }
         
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (paintComponent == null) {
                 paintComponent = new CCPaintComponent.EntityPropertyElementPaintComponent();
@@ -344,10 +357,12 @@ public abstract class JPACompletionItem implements CompletionItem {
             super(name, quote, substituteOffset);
         }
         
+        @Override
         public String getTypeName() {
             return "Catalog";
         }
         
+        @Override
         public int getSortPriority() {
             return 100;
         }
@@ -359,10 +374,12 @@ public abstract class JPACompletionItem implements CompletionItem {
             super(name, quote, substituteOffset);
         }
         
+        @Override
         public String getTypeName() {
             return "Schema";
         }
         
+        @Override
         public int getSortPriority() {
             return 100;
         }
@@ -376,14 +393,17 @@ public abstract class JPACompletionItem implements CompletionItem {
             super(name, quote, substituteOffset);
         }
         
+        @Override
         public String getTypeName() {
             return "Table";
         }
         
+        @Override
         public int getSortPriority() {
             return 100;
         }
         
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (paintComponent == null) {
                 paintComponent = new CCPaintComponent.TableElementPaintComponent();
@@ -393,6 +413,7 @@ public abstract class JPACompletionItem implements CompletionItem {
             return paintComponent;
         }
         
+        @Override
         public Object getAssociatedObject() {
             return this;
         }
@@ -409,18 +430,22 @@ public abstract class JPACompletionItem implements CompletionItem {
             this.tableName = tableName;
         }
         
+        @Override
         public String getTypeName() {
             return "Column";
         }
         
+        @Override
         public int getSortPriority() {
             return 100;
         }
         
+        @Override
         public String getItemText() {
             return "\"" + getName() + "\""; // NOI18N
         }
         
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (paintComponent == null) {
                 paintComponent = new CCPaintComponent.ColumnElementPaintComponent();
@@ -430,6 +455,7 @@ public abstract class JPACompletionItem implements CompletionItem {
             return paintComponent;
         }
         
+        @Override
         public Object getAssociatedObject() {
             return this;
         }
@@ -445,19 +471,23 @@ public abstract class JPACompletionItem implements CompletionItem {
             this.dbconn = dbconn;
         }
         
+        @Override
         public int getSortPriority() {
             return 1;
         }
         
+        @Override
         public String getItemText() {
             return "";
         }
 
+        @Override
         public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
             ConnectionManager.getDefault().showConnectionDialog(dbconn);
             return false;
         }
         
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (paintComponent == null) {
                 paintComponent = new CCPaintComponent.NoConnectionItemPaintComponent();
@@ -471,5 +501,4 @@ public abstract class JPACompletionItem implements CompletionItem {
         }
         
     }
-    
 }
