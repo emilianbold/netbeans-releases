@@ -144,7 +144,7 @@ public class ListTableModel extends AbstractTableModel {
 	} else {
 	    if (column1Class == Boolean.class) {
 		Boolean b = Boolean.valueOf(column1.get(rowIndex));
-		return b.booleanValue();
+		return b == null ? false : b.booleanValue();
 	    } else
 		// Currently we have only String and Boolean
 		// can be extended to other column type
@@ -158,7 +158,7 @@ public class ListTableModel extends AbstractTableModel {
 	if (columnIndex == 0) {
 	    column0.set(rowIndex, (String)value);
 	} else {
-	    if (column1Class == Boolean.class) {
+	    if (column1Class == Boolean.class && (value instanceof Boolean)) {
 		column1.set(rowIndex, ((Boolean)value).toString());
 	    } else
 		// Currently we have only String and Boolean
