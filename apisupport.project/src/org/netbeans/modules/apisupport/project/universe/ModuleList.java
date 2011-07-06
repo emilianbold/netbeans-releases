@@ -394,7 +394,7 @@ public final class ModuleList {
                 String[] pieces = cp.trim().split(" +");
                 exts = new File[pieces.length];
                 for (int l = 0; l < pieces.length; l++) {
-                    exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+                    exts[l] = FileUtil.normalizeFile(new File(dir, pieces[l].replace('/', File.separatorChar)));
                 }
             }
             ModuleEntry entry = (ci == null || ci.isPlatformCluster()) ? new BinaryEntry(codenamebase, m, exts, nbDestDir != null ? nbDestDir : cluster, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies()) : new BinaryClusterEntry(codenamebase, m, exts, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies(), ci.getSourceRoots(), ci.getJavadocRoots());
