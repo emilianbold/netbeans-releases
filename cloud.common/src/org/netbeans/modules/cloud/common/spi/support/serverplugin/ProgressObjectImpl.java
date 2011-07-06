@@ -73,10 +73,10 @@ public class ProgressObjectImpl implements ProgressObject {
     
     private String url;
     
-    public ProgressObjectImpl(TargetModuleID[] moduleIDs, String message) {
+    public ProgressObjectImpl(TargetModuleID[] moduleIDs, String message, boolean completed) {
         this.moduleIDs = moduleIDs;
         setStatus(new DeploymentStatusImpl(
-            CommandType.DISTRIBUTE, StateType.COMPLETED, ActionType.EXECUTE, message));
+            CommandType.DISTRIBUTE, completed ? StateType.COMPLETED : StateType.RUNNING, ActionType.EXECUTE, message));
     }
     
     @Override

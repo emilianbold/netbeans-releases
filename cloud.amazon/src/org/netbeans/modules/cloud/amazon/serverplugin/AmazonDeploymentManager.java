@@ -89,7 +89,7 @@ public class AmazonDeploymentManager implements DeploymentManager2 {
     @Override
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
-        ProgressObjectImpl po = new ProgressObjectImpl(new TargetModuleID[0]/* XXXXXXX */, "Distributing...");
+        ProgressObjectImpl po = new ProgressObjectImpl(new TargetModuleID[0]/* XXXXXXX */, "Distributing...", false);
         Future<DeploymentStatus> task = AmazonInstance.deployAsync(f, appName, envID, keyId, key, po);
         return po;
     }
@@ -136,12 +136,12 @@ public class AmazonDeploymentManager implements DeploymentManager2 {
 
     @Override
     public ProgressObject start(TargetModuleID[] tmids) throws IllegalStateException {
-        return new ProgressObjectImpl(tmids, "Starting...");
+        return new ProgressObjectImpl(tmids, "Starting...", true);
     }
 
     @Override
     public ProgressObject stop(TargetModuleID[] tmids) throws IllegalStateException {
-        return new ProgressObjectImpl(tmids, "Stopping...");
+        return new ProgressObjectImpl(tmids, "Stopping...", true);
     }
 
     @Override
