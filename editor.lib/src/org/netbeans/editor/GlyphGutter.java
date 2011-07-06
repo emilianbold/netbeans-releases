@@ -610,6 +610,10 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         JTextComponent component = eui.getComponent();
         if (component!=null){
             BaseTextUI textUI = (BaseTextUI)component.getUI();
+            if (textUI == null) {
+                // #199901
+                return;
+            }
             try{
                 Element rootElem = component.getDocument().getDefaultRootElement();
                 if (line >= rootElem.getElementCount()) { // #42504
