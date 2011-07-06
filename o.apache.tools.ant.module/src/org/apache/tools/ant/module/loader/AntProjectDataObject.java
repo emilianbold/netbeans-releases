@@ -57,13 +57,16 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 public class AntProjectDataObject extends MultiDataObject implements PropertyChangeListener {
 
-    public AntProjectDataObject(FileObject pf, AntProjectDataLoader loader) throws DataObjectExistsException, IOException {
+    public static final String MIME_TYPE = "text/x-ant+xml"; // NOI18N
+
+    public AntProjectDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add (new AntProjectDataEditor (this));
