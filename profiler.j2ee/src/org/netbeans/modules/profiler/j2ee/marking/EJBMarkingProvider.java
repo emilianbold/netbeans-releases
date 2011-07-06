@@ -43,8 +43,8 @@
 package org.netbeans.modules.profiler.j2ee.marking;
 
 import javax.lang.model.element.ExecutableElement;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.Mark;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -52,7 +52,7 @@ import org.netbeans.lib.profiler.marker.Mark;
  */
 public class EJBMarkingProvider extends BaseEJBMarkingProvider {
 
-    public EJBMarkingProvider(Project project, Mark assignedMark) {
+    public EJBMarkingProvider(Lookup.Provider project, Mark assignedMark) {
         super(project, assignedMark);
     }
 
