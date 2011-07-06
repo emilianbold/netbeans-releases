@@ -200,9 +200,4 @@ public final class CommonUtilities {
                 return "LD_LIBRARY_PATH"; // NOI18N
         }
     }
-    
-    public static WizardDescriptor.Panel<WizardDescriptor> 
-            createConfigureProjectPanel(String name, int type, String wizardTitle, String wizardACSD, boolean fullRemote) {
-        return new PanelConfigureProject(name, type, wizardTitle, wizardACSD, fullRemote);
-    }
 }

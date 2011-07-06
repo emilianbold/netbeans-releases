@@ -234,6 +234,7 @@
                 <friend>com.sun.tools.tuxedo.utils</friend>
                 <friend>com.sun.tools.tuxedo.runtime</friend>
                 <friend>com.sun.tools.tuxedo.options</friend>
+                <friend>com.sun.tools.tuxedo.suites</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
