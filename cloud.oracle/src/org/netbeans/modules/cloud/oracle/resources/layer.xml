@@ -84,11 +84,20 @@
         </folder>
     </folder>
     
+    <folder name="Actions">
+        <folder name="Project">
+            <file name="WhiteListAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction.actionFactory"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Projects">
         <folder name="org-netbeans-modules-web-project">
             <folder name="Actions">
-                <file name="WhiteListAction.instance">
+                <file name="WhiteListAction.shadow">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction.actionFactory"/>
+                    <attr name="originalFile" stringvalue="Actions/Project/WhiteListAction.instance"/>
                     <attr name="position" intvalue="2889"/>
                 </file>
             </folder>
