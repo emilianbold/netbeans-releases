@@ -53,11 +53,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.weblogic9.tools.WhiteListTool;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -78,11 +81,18 @@ public class WhiteListAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         //project.getLookup().lookup(ActionProvider.class).invokeAction(ActionProvider.COMMAND_REBUILD, Lookup.EMPTY);
         // will not work with Maven but hopefully this action is just temporary solution:
-        FileObject fo = project.getLookup().lookup(AntArtifactProvider.class).getBuildArtifacts()[0].getArtifactFiles()[0];
-        if (fo == null) {
+        final FileObject fo[] = project.getLookup().lookup(AntArtifactProvider.class).getBuildArtifacts()[0].getArtifactFiles();
+        if (fo == null || fo.length == 0) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("[temporary] Could you build your WAR first please?? Thanks."));
             return;
         }
-        WhiteListTool.execute(FileUtil.toFile(fo));
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                WhiteListTool.execute(FileUtil.toFile(fo[0]));
+            }
+        });
     }
     
     
