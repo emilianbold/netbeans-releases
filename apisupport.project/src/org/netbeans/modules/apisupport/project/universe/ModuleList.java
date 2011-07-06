@@ -65,6 +65,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -371,7 +372,7 @@ public final class ModuleList {
     }
 
     private static void scanJars(
-        File dir, ClusterInfo ci, File nbDestDir, File cluster,
+        File dir, ClusterInfo ci, @NullAllowed File nbDestDir, File cluster,
         Map<String, ModuleEntry> entries, boolean registerEntry,
         File... jars
     ) throws IOException {
@@ -396,7 +397,7 @@ public final class ModuleList {
                     exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
                 }
             }
-            ModuleEntry entry = (ci == null || ci.isPlatformCluster()) ? new BinaryEntry(codenamebase, m, exts, nbDestDir, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies()) : new BinaryClusterEntry(codenamebase, m, exts, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies(), ci.getSourceRoots(), ci.getJavadocRoots());
+            ModuleEntry entry = (ci == null || ci.isPlatformCluster()) ? new BinaryEntry(codenamebase, m, exts, nbDestDir != null ? nbDestDir : cluster, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies()) : new BinaryClusterEntry(codenamebase, m, exts, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies(), ci.getSourceRoots(), ci.getJavadocRoots());
             ModuleEntry prev = entries.get(codenamebase);
             if (prev != null) {
                 LOG.log(Level.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
@@ -901,7 +902,7 @@ public final class ModuleList {
      * @param ci Cluster info, passed when scanning external cluster, may be <tt>null</tt>
      * @throws java.io.IOException
      */
-    public static ModuleList scanCluster(File cluster, File nbDestDir, boolean registerEntry, ClusterInfo ci) throws IOException {
+    public static ModuleList scanCluster(File cluster, @NullAllowed File nbDestDir, boolean registerEntry, ClusterInfo ci) throws IOException {
         Map<String, ModuleEntry> entries = new HashMap<String, ModuleEntry>();
         for (String moduleDir : MODULE_DIRS) {
             File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
