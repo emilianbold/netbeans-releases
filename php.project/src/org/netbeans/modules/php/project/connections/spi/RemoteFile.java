@@ -55,6 +55,12 @@ public interface RemoteFile {
     String getName();
 
     /**
+     * Return path of parent directory.
+     * @return path of parent directory.
+     */
+    String getParentDirectory();
+
+    /**
      * Return <code>true</code> if the remote file is directory, <code>false</code> otherwise.
      * @return <code>true</code> if the remote file is directory, <code>false</code> otherwise.
      * @see #isFile()
