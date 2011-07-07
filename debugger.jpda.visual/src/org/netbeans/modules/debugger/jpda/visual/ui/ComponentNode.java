@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.ui;
 
-import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
+import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -88,120 +87,13 @@ public class ComponentNode extends AbstractNode {
 
     @Override
     public SystemAction[] getActions() {
-        //return super.getActions();
-        return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class) };
+        return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
+                                    ShowListenersAction.get(ShowListenersAction.class) };
     }
 
     @Override
     public PropertySet[] getPropertySets() {
         return ci.getPropertySets();
-        /*
-        return new PropertySet[] { new PropertySet("main", "Main", "The main properties") {
-
-            @Override
-            public Property<?>[] getProperties() {
-                return new Property[] {
-                    new Property(String.class) {
-
-                        @Override
-                        public String getName() {
-                            return "name";
-                        }
-
-                        @Override
-                        public String getDisplayName() {
-                            return "Component Name";
-                        }
-
-                        @Override
-                        public boolean canRead() {
-                            return true;
-                        }
-
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            return ci.getName();
-                        }
-
-                        @Override
-                        public boolean canWrite() {
-                            return false;
-                        }
-
-                        @Override
-                        public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                            throw new UnsupportedOperationException("Not supported.");
-                        }
-                    },
-                    new Property(String.class) {
-
-                        @Override
-                        public String getName() {
-                            return "type";
-                        }
-
-                        @Override
-                        public String getDisplayName() {
-                            return "Component Type";
-                        }
-
-                        @Override
-                        public boolean canRead() {
-                            return true;
-                        }
-
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            return ci.getType();
-                        }
-
-                        @Override
-                        public boolean canWrite() {
-                            return false;
-                        }
-
-                        @Override
-                        public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                            throw new UnsupportedOperationException("Not supported.");
-                        }
-                    },
-                    new Property(String.class) {
-
-                        @Override
-                        public String getName() {
-                            return "bounds";
-                        }
-
-                        @Override
-                        public String getDisplayName() {
-                            return "Component Bounds";
-                        }
-
-                        @Override
-                        public boolean canRead() {
-                            return true;
-                        }
-
-                        @Override
-                        public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                            Rectangle r = ci.getWindowBounds();
-                            return "[x=" + r.x + ",y=" + r.y + ",width=" + r.width + ",height=" + r.height + "]";
-                        }
-
-                        @Override
-                        public boolean canWrite() {
-                            return false;
-                        }
-
-                        @Override
-                        public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                            throw new UnsupportedOperationException("Not supported.");
-                        }
-                    },
-                };
-            }
-        }};
-         */
     }
     
     ComponentNode findNodeFor(ComponentInfo ci) {

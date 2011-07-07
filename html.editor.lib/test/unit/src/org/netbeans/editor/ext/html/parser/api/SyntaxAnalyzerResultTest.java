@@ -42,12 +42,16 @@
 
 package org.netbeans.editor.ext.html.parser.api;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.spi.EmptyResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.ParseResult;
+import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
 import org.netbeans.editor.ext.html.test.TestBase;
 
 /**
@@ -291,6 +295,37 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         assertNotNull(presult);
         assertTrue(presult instanceof EmptyResult);
         assertNotNull(presult.root()); //at least the default root node must be present
+
+    }
+    
+    public void testUndeclaredContentResolver() throws ParseException {
+        String code = "<body><x:mytag><y:notmine/></x:mytag></body>";
+
+        UndeclaredContentResolver resolver = new UndeclaredContentResolver() {
+
+            @Override
+            public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                return Collections.singletonMap("my_ns", (List<String>)Collections.singletonList("x"));
+            }
+        };
+        
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze(resolver);
+
+        assertTrue(result.getDeclaredNamespaces().containsKey("my_ns"));
+        assertTrue(result.getDeclaredNamespaces().containsValue("x"));
+        
+        //test that the physically undeclared but resolved by UCR code doesn't 
+        //fall to the "unknown content" category
+        AstNode undeclaredContentRoot = result.parseUndeclaredEmbeddedCode().root();
+        assertEquals(1, undeclaredContentRoot.children().size());
+        assertNotNull(AstNodeUtils.query(undeclaredContentRoot, "y:notmine"));
+        
+        ParseResult presult = result.parseEmbeddedCode("my_ns");
+        AstNode my_ns_root = presult.root();
+        assertNotNull(my_ns_root);
+        
+        assertNotNull(AstNodeUtils.query(my_ns_root, "x:mytag"));
 
     }
 

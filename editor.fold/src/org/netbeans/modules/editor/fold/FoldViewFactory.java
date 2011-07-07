@@ -46,10 +46,9 @@ package org.netbeans.modules.editor.fold;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
@@ -90,11 +89,11 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     private boolean viewFoldsExpanded;
 
-    public FoldViewFactory(JTextComponent component) {
-        super(component);
-        foldHierarchy = FoldHierarchy.get(component);
+    public FoldViewFactory(View documentView) {
+        super(documentView);
+        foldHierarchy = FoldHierarchy.get(textComponent());
         foldHierarchy.addFoldHierarchyListener(this);
-        viewFoldsExpanded = Boolean.TRUE.equals(component.getClientProperty(VIEW_FOLDS_EXPANDED_PROPERTY));
+        viewFoldsExpanded = Boolean.TRUE.equals(textComponent().getClientProperty(VIEW_FOLDS_EXPANDED_PROPERTY));
     }
 
     @Override
@@ -151,7 +150,7 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     }
 
     @Override
-    public void finish() {
+    public void finishCreation() {
         fold = null;
         collapsedFoldIterator = null;
         if (foldHierarchyLocked) {
@@ -170,8 +169,8 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     public static final class FoldFactory implements EditorViewFactory.Factory {
 
         @Override
-        public EditorViewFactory createEditorViewFactory(JTextComponent component) {
-            return new FoldViewFactory(component);
+        public EditorViewFactory createEditorViewFactory(View documentView) {
+            return new FoldViewFactory(documentView);
         }
 
         @Override

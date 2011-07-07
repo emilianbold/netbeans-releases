@@ -53,8 +53,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -71,7 +71,7 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
 
     public AntProjectDataEditor (AntProjectDataObject obj) {
         super (obj, new AntEnv (obj));
-        setMIMEType(AntProjectDataLoader.REQUIRED_MIME);
+        setMIMEType(AntProjectDataObject.MIME_TYPE);
     }
 
     @Override

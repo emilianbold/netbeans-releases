@@ -58,15 +58,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.jdesktop.layout</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -507,19 +498,19 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
-		    <test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                     </test-dependency>
-                   <test-dependency>
-                       <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
-                       <recursive/>
-                       <compile-dependency/>
-                   </test-dependency>
-                   <test-dependency>
-                       <code-name-base>org.netbeans.modules.glassfish.javaee</code-name-base>
-                       <recursive/>
-                       <compile-dependency/>
-                   </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.glassfish.javaee</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.rest</code-name-base>
                         <recursive/>

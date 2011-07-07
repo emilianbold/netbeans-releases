@@ -96,6 +96,7 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
+import org.netbeans.modules.mercurial.ui.tag.HgTag;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -127,6 +128,7 @@ public class HgCommand {
     private static final String HG_OPT_BUNDLE = "--bundle"; // NOI18N
     private static final String HG_OPT_CWD_CMD = "--cwd"; // NOI18N
     private static final String HG_OPT_USERNAME = "--user"; // NOI18N
+    private static final String HG_OPT_CLOSE_BRANCH = "--close-branch"; // NOI18N
 
     private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
@@ -145,8 +147,7 @@ public class HgCommand {
     private static final String HG_REVERT_NOBACKUP_CMD = "--no-backup"; // NOI18N
     private static final String HG_ADD_CMD = "add"; // NOI18N
 
-    private static final String HG_BRANCH_REV_CMD = "tip"; // NOI18N
-    private static final String HG_BRANCH_INFO_TEMPLATE_CMD = "--template={branches}:{rev}:{node|short}\\n"; // NOI18N
+    private static final String HG_TIP_CONST = "tip"; // NOI18N
 
     private static final String HG_CREATE_CMD = "init"; // NOI18N
     private static final String HG_CLONE_CMD = "clone"; // NOI18N
@@ -275,6 +276,13 @@ public class HgCommand {
 
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
     private final static String HG_BRANCHES_CMD = "branches"; // NOI18N
+    private final static String HG_BRANCH_CMD = "branch"; // NOI18N
+    private final static String HG_TAG_CMD = "tag"; // NOI18N
+    private final static String HG_TAG_OPT_MESSAGE = "--message"; // NOI18N
+    private final static String HG_TAG_OPT_REMOVE = "--remove"; // NOI18N
+    private final static String HG_TAG_OPT_REVISION = "--rev"; // NOI18N
+    private final static String HG_TAG_OPT_LOCAL = "--local"; // NOI18N
+    private final static String HG_TAGS_CMD = "tags"; // NOI18N
 
     private static final String HG_NO_REPOSITORY_ERR = "There is no Mercurial repository here"; // NOI18N
     private static final String HG_NO_RESPONSE_ERR = "no suitable response from remote hg!"; // NOI18N
@@ -390,12 +398,14 @@ public class HgCommand {
         HG_PULL_CMD,
         HG_ROLLBACK_CMD,
         HG_STRIP_CMD,
+        HG_TAG_CMD,
         HG_UNBUNDLE_CMD,
         HG_UPDATE_ALL_CMD
     ));
 
     private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(Arrays.asList(
         HG_ANNOTATE_CMD,
+        HG_BRANCH_CMD,
         HG_BRANCHES_CMD,
         HG_BUNDLE_CMD,
         HG_CAT_CMD,
@@ -409,6 +419,8 @@ public class HgCommand {
         HG_PUSH_CMD,
         HG_RESOLVE_CMD,
         HG_STATUS_CMD,
+        HG_TAG_CMD,
+        HG_TAGS_CMD,
         HG_TIP_CMD,
         HG_VERIFY_CMD,
         HG_VERSION_CMD,
@@ -1091,6 +1103,67 @@ public class HgCommand {
         return branches.toArray(new HgBranch[branches.size()]);
     }
 
+    private static HgTag[] processTags (List<String> lines, File repository, OutputLogger logger) throws HgException {
+        class TagInfo {
+            String name;
+            String revNumber;
+            String changeSetId;
+            boolean local;
+
+            private TagInfo (String tagName, String revNumber, String changeSetId, boolean local) {
+                this.name = tagName;
+                this.revNumber = revNumber;
+                this.changeSetId = changeSetId;
+                this.local = local;
+            }
+        }
+        List<HgTag> tags = new ArrayList<HgTag>();
+        Pattern p = Pattern.compile("^(.+)(\\b\\d+):(\\S+)(.*)$"); //NOI18N
+        List<TagInfo> tagInfos = new ArrayList<TagInfo>(lines.size());
+        List<String> revisions = new ArrayList<String>(lines.size());
+        for (String line : lines) {
+            Matcher m = p.matcher(line);
+            if (!m.matches()) {
+                Mercurial.LOG.log(Level.WARNING, "HgCommand.processTags(): Failed when matching: {0}", new Object[] { line }); //NOI18N
+            } else {
+                String tagName = m.group(1).trim();
+                String revNumber = m.group(2).trim();
+                String changeSetId = m.group(3).trim();
+                String status = m.group(4).trim().toLowerCase();
+                boolean local = false;
+                if (status.contains("local")) { //NOI18N
+                    local = true;
+                }
+                tagInfos.add(new TagInfo(tagName, revNumber, changeSetId, local));
+                revisions.add(revNumber);
+            }
+        }
+        List<String> list = doLog(repository, revisions, -1, logger);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+             }
+        }
+        List<HgLogMessage> messages = processLogMessages(repository, null, list, false);
+        for (TagInfo t : tagInfos) {
+            HgLogMessage info = null;
+            for (HgLogMessage head : messages) {
+                if (head.getRevisionNumber().equals(t.revNumber) || head.getCSetShortID().equals(t.changeSetId)) {
+                    info = head;
+                }
+            }
+            if (info == null) {
+                Mercurial.LOG.log(Level.WARNING, "HgCommand.processTags(): Failed when pairing tag with commit info : {0}:{1}:{2}\n{3}", //NOI18N
+                        new Object[] { t.name, t.revNumber, t.changeSetId, messages });
+            } else {
+                tags.add(new HgTag(t.name, info, t.local, !HG_TIP_CONST.equals(t.name)));
+            }
+        }
+        return tags.toArray(new HgTag[tags.size()]);
+    }
+
     public static HgLogMessage[] getIncomingMessages(final File root, String toRevision, boolean bShowMerges,  OutputLogger logger) {
         List<HgLogMessage> messages = Collections.<HgLogMessage>emptyList();
 
@@ -1259,6 +1332,35 @@ public class HgCommand {
      */
     private static List<String> doLog(File repository, List<File> files,
             String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, List<String> branchNames, OutputLogger logger) throws HgException {
+        List<String> constraints = new LinkedList<String>();
+        String dateStr = handleRevDates(from, to);
+        if (dateStr != null) {
+            constraints.add(HG_FLAG_DATE_CMD);
+            constraints.add(dateStr);
+        }
+        String revStr = handleRevNumbers(from, to, headRev);
+        if (revStr == null) {
+            // from is probably higher than head revision, it's useless to run the command
+            return Collections.emptyList();
+        }
+        if (dateStr == null) {
+            constraints.add(HG_FLAG_REV_CMD);
+            constraints.add(revStr);
+        }
+        return doLog(repository, files, constraints, bShowMerges, bGetFileInfo, limit, branchNames, logger);
+    }
+
+    private static List<String> doLog(File repository, List<String> revisions, int limit, OutputLogger logger) throws HgException {
+        List<String> constraints = new LinkedList<String>();
+        for (String rev : revisions) {
+            constraints.add(HG_FLAG_REV_CMD);
+            constraints.add(rev);
+        }
+        return doLog(repository, null, constraints, true, false, limit, Collections.<String>emptyList(), logger);
+    }
+
+    private static List<String> doLog(File repository, List<File> files,
+            List<String> revisionConstraints, boolean bShowMerges, boolean bGetFileInfo, int limit, List<String> branchNames, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
 
@@ -1293,25 +1395,13 @@ public class HgCommand {
             command.add(HG_LOG_DEBUG_CMD);
         }
 
-        String dateStr = handleRevDates(from, to);
-        if(dateStr != null){
-            command.add(HG_FLAG_DATE_CMD);
-            command.add(dateStr);
-        }
-        String revStr = handleRevNumbers(from, to, headRev);
-        if(dateStr == null && revStr != null){
-            command.add(HG_FLAG_REV_CMD);
-            command.add(revStr);
+        for (String rc : revisionConstraints) {
+            command.add(rc);
         }
         
         for (String branch : branchNames) {
             command.add(HG_PARAM_BRANCH);
             command.add(branch);
-        }
-
-        if (revStr == null) {
-            // from is probably higher than head revision, it's useless to run the command
-            return Collections.emptyList();
         }
 
         File tempFolder = Utils.getTempFolder(false);
@@ -1911,6 +2001,20 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCommit(File repository, List<File> commitFiles, String commitMessage, OutputLogger logger)  throws HgException {
+        doCommit(repository, commitFiles, commitMessage, false, logger);
+    }
+
+    /**
+     * Commits the cmdOutput of Locally Changed files to the mercurial Repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param List<files> of files to be committed to hg
+     * @param String for commitMessage
+     * @param closeBranch runs commit with --close-branch option
+     * @return void
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static void doCommit(File repository, List<File> commitFiles, String commitMessage, boolean closeBranch, OutputLogger logger)  throws HgException {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -1931,6 +2035,10 @@ public class HgCommand {
         if(username != null ){
             command.add(HG_OPT_USERNAME);
             command.add(username);
+        }
+        
+        if (closeBranch) {
+            command.add(HG_OPT_CLOSE_BRANCH);
         }
 
         File tempfile = null;
@@ -2242,20 +2350,19 @@ public class HgCommand {
     }
 
     /**
-     * Returns the mercurial branch info for a repository
+     * Returns the current branch for a repository
      *
      * @param File repository of the mercurial repository's root directory
-     * @return String of form :<branch>:<rev>:<shortchangeset>:
+     * @return current branch
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static String getBranchInfo(File repository) throws HgException {
+    public static String getBranch (File repository) throws HgException {
         if (repository == null) return null;
 
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
-        command.add(HG_BRANCH_REV_CMD);
-        command.add(HG_BRANCH_INFO_TEMPLATE_CMD);
+        command.add(HG_BRANCH_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
 
@@ -2293,11 +2400,12 @@ public class HgCommand {
      * Returns the info of heads in repository
      *
      * @param File repository of the mercurial repository's root directory
+     * @param onlyTopologicalHeads only topological heads, without any children
      * @return head info.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static HgLogMessage[] getHeadRevisionsInfo (File repository, OutputLogger logger) throws HgException {
-        List<String> list = getHeadInfo(repository, true, HG_LOG_BASIC_CHANGESET_NAME, true);
+    public static HgLogMessage[] getHeadRevisionsInfo (File repository, boolean onlyTopologicalHeads, OutputLogger logger) throws HgException {
+        List<String> list = getHeadInfo(repository, onlyTopologicalHeads, HG_LOG_BASIC_CHANGESET_NAME, true);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
                 handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
@@ -2328,6 +2436,88 @@ public class HgCommand {
              }
         }
         return processBranches(list, heads);
+    }
+
+    public static void markBranch (File repository, String branchName, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_BRANCH_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(branchName);
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+            } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+            }
+        }
+    }
+
+    public static HgTag[] getTags (File repository, OutputLogger logger) throws HgException {
+        List<String> list = getTags(repository);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+             }
+        }
+        return processTags(list, repository, logger);
+    }
+
+    public static void createTag (File repository, String tagName, String message, String revision, boolean isLocal, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_TAG_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        if (isLocal) {
+            command.add(HG_TAG_OPT_LOCAL);
+        } else if (message != null && !message.isEmpty()) {
+            command.add(HG_TAG_OPT_MESSAGE);
+            command.add(message);
+        }
+        if (revision != null && !revision.isEmpty()) {
+            command.add(HG_TAG_OPT_REVISION);
+            command.add(revision);
+        }
+
+        command.add(tagName);
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+            } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+            }
+        }
+    }
+
+    public static void removeTag (File repository, String tagName, boolean isLocal, String message, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_TAG_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        if (isLocal) {
+            command.add(HG_TAG_OPT_LOCAL);
+        } else if (message != null && !message.isEmpty()) {
+            command.add(HG_TAG_OPT_MESSAGE);
+            command.add(message);
+        }
+        command.add(HG_TAG_OPT_REMOVE);
+
+        command.add(tagName);
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+            } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+            }
+        }
     }
 
     private static Boolean topoAvailable;
@@ -2379,6 +2569,19 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_BRANCHES_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        return exec(command);
+    }
+
+    private static List<String> getTags (File repository) throws HgException {
+        if (repository == null) return null;
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_TAGS_CMD);
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         return exec(command);

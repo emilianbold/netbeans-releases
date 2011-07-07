@@ -77,6 +77,8 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
 
     private static final Logger LOG = Logger.getLogger(CaretBasedBlockHighlighting.class.getName());
     
+    private boolean inited;
+    
     private final MimePath mimePath;
     private final JTextComponent component;
     private Caret caret;
@@ -101,6 +103,9 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         
         // Hook up the component
         this.component = component;
+    }
+    
+    private void init() {
         this.component.addPropertyChangeListener(WeakListeners.propertyChange(this, this.component));
 
         // Hook up the caret
@@ -119,6 +124,11 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     // ------------------------------------------------
     
     public final HighlightsSequence getHighlights(int startOffset, int endOffset) {
+        if (!inited) {
+            inited = true;
+            init();
+        }
+
         if (currentLineStart != null && currentLineEnd != null &&
             endOffset >= currentLineStart.getOffset() && startOffset <= currentLineEnd.getOffset())
         {

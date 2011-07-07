@@ -42,7 +42,7 @@
 package org.netbeans.modules.editor.lib2.view;
 
 import java.util.List;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
 
 /**
  *
@@ -56,9 +56,9 @@ final class TestHighlightsViewFactory extends EditorViewFactory {
     
     TestHighlight highlight;
 
-    TestHighlightsViewFactory(JTextComponent component) {
-        super(component);
-        TestRootView testRootView = (TestRootView) component.getClientProperty(TestRootView.class);
+    TestHighlightsViewFactory(View documentView) {
+        super(documentView);
+        TestRootView testRootView = (TestRootView) textComponent().getClientProperty(TestRootView.class);
         testRootView.updateFactory(this);
     }
 
@@ -104,7 +104,7 @@ final class TestHighlightsViewFactory extends EditorViewFactory {
     }
 
     @Override
-    public void finish() {
+    public void finishCreation() {
         highlight = null;
         highlightIndex = 0;
     }
@@ -112,8 +112,8 @@ final class TestHighlightsViewFactory extends EditorViewFactory {
     static final class FactoryImpl implements EditorViewFactory.Factory {
 
         @Override
-        public EditorViewFactory createEditorViewFactory(JTextComponent component) {
-            return new TestHighlightsViewFactory(component);
+        public EditorViewFactory createEditorViewFactory(View documentView) {
+            return new TestHighlightsViewFactory(documentView);
         }
 
         @Override

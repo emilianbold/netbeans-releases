@@ -91,7 +91,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
     private final HgFolderEventsHandler hgFolderEventsHandler;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
-    private static final File userDir = System.getProperty("netbeans.user", "").isEmpty() ? null : new File(System.getProperty("netbeans.user")); //NOI18N;
     private final Mercurial hg;
 
     MercurialInterceptor(Mercurial hg, FileStatusCache cache) {
@@ -148,9 +147,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public boolean beforeMove(File from, File to) {
         Mercurial.LOG.log(Level.FINE, "beforeMove {0}->{1}", new Object[]{from, to});
-        if (isUnderIgnoredUserDir(from)) {
-            return false;
-        }
         if (from == null || to == null || to.exists()) return true;
         
         if (hg.isManaged(from)) {
@@ -230,9 +226,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public boolean beforeCopy (File from, File to) {
         Mercurial.LOG.log(Level.FINE, "beforeCopy {0}->{1}", new Object[]{from, to});
-        if (isUnderIgnoredUserDir(to)) {
-            return false;
-        }
         if (from == null || to == null || to.exists()) return true;
 
         return hg.isManaged(from) && hg.isManaged(to);
@@ -280,9 +273,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public boolean beforeCreate(final File file, boolean isDirectory) {
         Mercurial.LOG.log(Level.FINE, "beforeCreate {0} {1}", new Object[]{file, isDirectory});
-        if (isUnderIgnoredUserDir(file)) {
-            return false;
-        }
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
             File root = hg.getRepositoryRoot(file);
@@ -416,10 +406,6 @@ public class MercurialInterceptor extends VCSInterceptor {
      */
     Set<File> getSeenRoots (File repositoryRoot) {
         return hgFolderEventsHandler.getSeenRoots(repositoryRoot);
-    }
-
-    private boolean isUnderIgnoredUserDir (File file) {
-        return userDir != null && Utils.isAncestorOrEqual(userDir, file) && HgUtils.isIgnored(file, false);
     }
 
     private class RefreshTask implements Runnable {

@@ -357,7 +357,16 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         removed.removeAll(newParameters);
                         comment = updateJavadoc((ExecutableElement) el, removed, paramInfos);
                         GeneratorUtilities.get(workingCopy).copyComments(current, nju, true);
-                        make.removeComment(nju, 0, true);
+                        List<Comment> comments = workingCopy.getTreeUtilities().getComments(nju, true);
+                        if(comments.isEmpty()) {
+                            comment = null;
+                        } else {
+                            if(comments.get(0).isDocComment()) {
+                                make.removeComment(nju, 0, true);
+                            } else {
+                                comment = null;
+                            }
+                        }
                         break;
                     case GENERATE:
                         comment = generateJavadoc(newParameters, current);

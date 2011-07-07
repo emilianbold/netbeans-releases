@@ -234,15 +234,15 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
         jInternalFrame1.setVisible(true);
 
-        org.jdesktop.layout.GroupLayout jInternalFrame1Layout = new org.jdesktop.layout.GroupLayout(jInternalFrame1.getContentPane());
+        javax.swing.GroupLayout jInternalFrame1Layout = new javax.swing.GroupLayout(jInternalFrame1.getContentPane());
         jInternalFrame1.getContentPane().setLayout(jInternalFrame1Layout);
         jInternalFrame1Layout.setHorizontalGroup(
-            jInternalFrame1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
+            jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jInternalFrame1Layout.setVerticalGroup(
-            jInternalFrame1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
+            jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(sessionTypeLabel, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_SessionType")); // NOI18N
@@ -282,75 +282,75 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         scheduleScrollPane.setViewportView(scheduleTextArea);
         scheduleTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Schedule")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout schedulePanelLayout = new org.jdesktop.layout.GroupLayout(schedulePanel);
+        javax.swing.GroupLayout schedulePanelLayout = new javax.swing.GroupLayout(schedulePanel);
         schedulePanel.setLayout(schedulePanelLayout);
         schedulePanelLayout.setHorizontalGroup(
-            schedulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(schedulePanelLayout.createSequentialGroup()
+            schedulePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(schedulePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(schedulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(scheduleScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
-                    .add(schedulePanelLayout.createSequentialGroup()
-                        .add(scheduleLabel)
+                .addGroup(schedulePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scheduleScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .addGroup(schedulePanelLayout.createSequentialGroup()
+                        .addComponent(scheduleLabel)
                         .addContainerGap(206, Short.MAX_VALUE))))
         );
         schedulePanelLayout.setVerticalGroup(
-            schedulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(schedulePanelLayout.createSequentialGroup()
-                .add(scheduleLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scheduleScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            schedulePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(schedulePanelLayout.createSequentialGroup()
+                .addComponent(scheduleLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scheduleScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
         scheduleLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Schedule")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(sessionTypeLabel)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(sessionTypeLabel)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(statelessButton))
-            .add(layout.createSequentialGroup()
+                .addComponent(statelessButton))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(statefulButton))
-            .add(layout.createSequentialGroup()
+                .addComponent(statefulButton))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(singletonButton))
-            .add(interfaceLabel)
-            .add(layout.createSequentialGroup()
+                .addComponent(singletonButton))
+            .addComponent(interfaceLabel)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(remoteCheckBox)
-                    .add(localCheckBox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(inProjectCombo, 0, 234, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(remoteCheckBox)
+                    .addComponent(localCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(inProjectCombo, 0, 244, Short.MAX_VALUE)
                 .addContainerGap())
-            .add(schedulePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(schedulePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(sessionTypeLabel)
-                .add(0, 0, 0)
-                .add(statelessButton)
-                .add(0, 0, 0)
-                .add(statefulButton)
-                .add(0, 0, 0)
-                .add(singletonButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(interfaceLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(localCheckBox)
-                        .add(2, 2, 2)
-                        .add(remoteCheckBox))
-                    .add(inProjectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(schedulePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(sessionTypeLabel)
+                .addGap(0, 0, 0)
+                .addComponent(statelessButton)
+                .addGap(0, 0, 0)
+                .addComponent(statefulButton)
+                .addGap(0, 0, 0)
+                .addComponent(singletonButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(interfaceLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(localCheckBox)
+                        .addGap(2, 2, 2)
+                        .addComponent(remoteCheckBox))
+                    .addComponent(inProjectCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(schedulePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle"); // NOI18N

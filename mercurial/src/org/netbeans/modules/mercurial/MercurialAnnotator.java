@@ -65,6 +65,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mercurial.options.AnnotationColorProvider;
+import org.netbeans.modules.mercurial.ui.add.AddAction;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
@@ -76,6 +77,7 @@ import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.menu.BranchMenu;
+import org.netbeans.modules.mercurial.ui.menu.TagMenu;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
 import org.netbeans.modules.mercurial.ui.pull.FetchAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
@@ -310,7 +312,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            Action a = (Action) FileUtil.getConfigFile("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance").getAttribute("instanceCreate");
+            Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
             if(a instanceof ContextAwareAction) {
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
             }            
@@ -320,6 +322,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             actions.add(SystemAction.get(DiffAction.class));
             actions.add(SystemAction.get(UpdateAction.class));
             actions.add(SystemAction.get(CommitAction.class));
+            actions.add(SystemAction.get(AddAction.class));
             actions.add(null);
             actions.add(new ExportMenu());
             actions.add(SystemAction.get(ImportDiffAction.class));
@@ -328,7 +331,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             if (!noneVersioned) {
                 actions.add(SystemAction.get(CloneAction.class));
             }
-            a = (Action) FileUtil.getConfigFile("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance").getAttribute("instanceCreate");
+            a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
             if(a != null) actions.add(a);
 
             actions.add(SystemAction.get(FetchAction.class));
@@ -354,12 +357,13 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             }
             actions.add(null);
             actions.add(new BranchMenu(null));
+            actions.add(new TagMenu(null));
             actions.add(null);
             actions.add(SystemAction.get(PropertiesAction.class));
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+                Action a = (Action) FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
@@ -368,6 +372,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"), context)); //NOI18N
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_Resolve"), context)); //NOI18N
                 if (!onlyProjects  && !onlyFolders) {
@@ -396,6 +401,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(null);
                 actions.add(new ShareMenu());
                 actions.add(new BranchMenu(context));
+                actions.add(new TagMenu(context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }

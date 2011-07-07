@@ -204,6 +204,10 @@ public class OpenProjectListSettings {
     public void setOpenProjectsURLs( List<URL> list ) {
         setURLList( OPEN_PROJECTS_URLS, list);
     }
+    public void setOpenProjectsURLsAsStrings(List<String> list) {
+        setStringList(OPEN_PROJECTS_URLS, list);
+    }
+
     public List<String> getOpenProjectsDisplayNames() {
         return getStringList(OPEN_PROJECTS_DISPLAY_NAMES);
     }
@@ -252,7 +256,10 @@ public class OpenProjectListSettings {
     }
     
     public void setMainProjectURL( URL mainProjectURL ) {
-        putProperty( MAIN_PROJECT_URL, mainProjectURL != null ? mainProjectURL.toString() : null, true );
+        setMainProjectURL(mainProjectURL != null ? mainProjectURL.toString() : null);
+    }
+    public void setMainProjectURL(String mainProjectURL) {
+        putProperty(MAIN_PROJECT_URL, mainProjectURL, true);
     }
     
     public String getLastOpenProjectDir() {

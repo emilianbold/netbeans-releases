@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.test.refactoring.operators;
 
+import java.awt.Component;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;

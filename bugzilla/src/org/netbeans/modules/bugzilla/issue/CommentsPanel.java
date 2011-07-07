@@ -67,6 +67,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -74,6 +75,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
@@ -85,8 +87,6 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -192,14 +192,14 @@ public class CommentsPanel extends JPanel {
         this.attachments = attachments;
         this.attachmentIds = getAttachmentIds(attachments);
         GroupLayout layout = new GroupLayout(this);
-        GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.LEADING);
+        GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         layout.setHorizontalGroup(layout.createSequentialGroup()
             .addContainerGap()
-            .add(horizontalGroup)
+            .addGroup(horizontalGroup)
             .addContainerGap());
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
         verticalGroup.addContainerGap();
-        layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(verticalGroup));
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(verticalGroup));
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
         String creationTxt = issue.getFieldValue(IssueField.CREATION);
         try {
@@ -285,29 +285,29 @@ public class CommentsPanel extends JPanel {
 
         // Layout
         GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
-            .add(leftLabel, 0, 0, Short.MAX_VALUE)
-            .addPreferredGap(LayoutStyle.RELATED)
-            .add(replyButton)
-            .addPreferredGap(LayoutStyle.RELATED)
-            .add(rightLabel);
+            .addComponent(leftLabel, 0, 0, Short.MAX_VALUE)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(replyButton)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(rightLabel);
         if (stateLabel != null) {
-            hGroup.addPreferredGap(LayoutStyle.RELATED);
-            hGroup.add(stateLabel);
+            hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+            hGroup.addComponent(stateLabel);
         }
-        horizontalGroup.add(hGroup)
-            .add(pane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+        horizontalGroup.addGroup(hGroup)
+            .addComponent(pane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         if (!description) {
-            verticalGroup.addPreferredGap(LayoutStyle.UNRELATED);
+            verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED);
         }
-        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-            .add(leftLabel)
-            .add(replyButton)
-            .add(rightLabel);
+        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+            .addComponent(leftLabel)
+            .addComponent(replyButton)
+            .addComponent(rightLabel);
         if (stateLabel != null) {
-            vGroup.add(stateLabel);
+            vGroup.addComponent(stateLabel);
         }
-        verticalGroup.add(vGroup)
-            .add(pane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+        verticalGroup.addGroup(vGroup)
+            .addComponent(pane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
     private void setupTextPane(JTextPane textPane, String comment) {
