@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.php.project.connections.TransferFile;
 
 public final class TransferInfo {
 

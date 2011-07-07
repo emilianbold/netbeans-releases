@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections;
+package org.netbeans.modules.php.project.connections.transfer;
 
 import java.io.File;
 import java.util.Date;
@@ -56,41 +56,50 @@ public class TransferFileTest extends NbTestCase {
     }
 
     public void testLocalTransferFilePaths() {
-        TransferFile file = TransferFile.fromFile(null, new File("/a/b/c"), "/a");
-        assertEquals("c", file.getName());
-        assertEquals("b/c", file.getRelativePath());
-        assertEquals("b", file.getParentRelativePath());
+        TransferFile parent1 = TransferFile.fromFile(null, new File("/a/b"), "/a");
+        TransferFile file1 = TransferFile.fromFile(parent1, new File("/a/b/c"), "/a");
+        assertEquals("c", file1.getName());
+        assertEquals("b/c", file1.getRemotePath());
+        assertEquals("b", file1.getParent().getRemotePath());
+        assertEquals("/tmp/b/c", file1.resolveLocalFile(new File("/tmp")).getAbsolutePath());
 
         TransferFile file2 = TransferFile.fromFile(null, new File("/a/b/c"), "/a/b");
-        assertFalse(file.equals(file2));
+        assertFalse(file1.equals(file2));
 
         TransferFile file3 = TransferFile.fromFile(null, new File("/0/1/2/b/c"), "/0/1/2");
-        assertTrue(file.equals(file3));
+        assertTrue(file1.equals(file3));
 
-        file = TransferFile.fromFile(null, new File("/a/b"), "/a");
-        assertEquals("b", file.getName());
-        assertEquals("b", file.getRelativePath());
-        assertEquals(TransferFile.CWD, file.getParentRelativePath());
+        TransferFile file4 = TransferFile.fromFile(null, new File("/a/b"), "/a");
+        assertEquals("b", file4.getName());
+        assertEquals("b", file4.getRemotePath());
 
-        file = TransferFile.fromFile(null, new File("/a"), "/a");
-        assertEquals("a", file.getName());
-        assertSame(TransferFile.CWD, file.getRelativePath());
-        assertEquals(null, file.getParentRelativePath());
+        TransferFile file5 = TransferFile.fromFile(null, new File("/a"), "/a");
+        assertEquals("a", file5.getName());
+        assertTrue(file5.isProjectRoot());
+        assertSame(TransferFile.REMOTE_PROJECT_ROOT, file5.getRemotePath());
+        try {
+            assertEquals(null, file5.getParent().getRemotePath());
+            fail("Should not get here");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
     }
 
     public void testRemoteTransferFilePaths() {
-        TransferFile file = TransferFile.fromRemoteFile(null,
+        TransferFile parent = TransferFile.fromRemoteFile(null,
+                new RemoteFileImpl("info", "/pub/myproject/tests", true),
+                "/pub/myproject");
+        TransferFile file = TransferFile.fromRemoteFile(parent,
                 new RemoteFileImpl("readme.txt", "/pub/myproject/tests/info", true),
-                "/pub/myproject",
-                "/pub/myproject/tests/info");
+                "/pub/myproject");
         assertEquals("readme.txt", file.getName());
-        assertEquals("tests/info/readme.txt", file.getRelativePath());
-        assertEquals("tests/info", file.getParentRelativePath());
+        assertEquals("tests/info/readme.txt", file.getRemotePath());
+        assertEquals("tests/info", file.getParent().getRemotePath());
+        assertEquals("/tmp/tests/info/readme.txt", file.resolveLocalFile(new File("/tmp")).getAbsolutePath());
     }
 
     public void testTransferFileRelations() {
         TransferFile projectRoot = TransferFile.fromFile(null, new File("/a"), "/a");
-        assertNull(projectRoot.getParent());
         assertTrue(projectRoot.isRoot());
         assertTrue(projectRoot.isProjectRoot());
         assertFalse(projectRoot.getChildren().toString(), projectRoot.hasChildren());

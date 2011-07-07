@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.php.project.connections;
 
-import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -67,8 +65,11 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -140,21 +141,21 @@ public final class RemoteClient implements Cancellable {
         StringBuilder baseDirBuffer = new StringBuilder(configuration.getInitialDirectory());
         String additionalInitialSubdirectory = properties.getAdditionalInitialSubdirectory();
         if (StringUtils.hasText(additionalInitialSubdirectory)) {
-            if (!additionalInitialSubdirectory.startsWith(TransferFile.SEPARATOR)) {
-                throw new IllegalArgumentException("additionalInitialSubdirectory must start with " + TransferFile.SEPARATOR);
+            if (!additionalInitialSubdirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
+                throw new IllegalArgumentException("additionalInitialSubdirectory must start with " + TransferFile.REMOTE_PATH_SEPARATOR);
             }
             baseDirBuffer.append(additionalInitialSubdirectory);
         }
         String baseDir = baseDirBuffer.toString();
         // #150646 - should not happen now, likely older nb project metadata
         if (baseDir.length() > 1
-                && baseDir.endsWith(TransferFile.SEPARATOR)) {
+                && baseDir.endsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
             baseDir = baseDir.substring(0, baseDir.length() - 1);
         }
 
-        baseRemoteDirectory = baseDir.replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
+        baseRemoteDirectory = baseDir.replaceAll(TransferFile.REMOTE_PATH_SEPARATOR + "{2,}", TransferFile.REMOTE_PATH_SEPARATOR); // NOI18N
 
-        assert baseRemoteDirectory.startsWith(TransferFile.SEPARATOR) : "base directory must start with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
+        assert baseRemoteDirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR) : "base directory must start with " + TransferFile.REMOTE_PATH_SEPARATOR + ": " + baseRemoteDirectory;
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("Remote client created with configuration: %s, advanced properties: %s, base remote directory: %s",
@@ -210,7 +211,7 @@ public final class RemoteClient implements Cancellable {
 
         LOGGER.fine(String.format("Checking whether file %s exists", file));
         cdBaseRemoteDirectory();
-        boolean exists = remoteClient.exists(file.getParentRelativePath(), file.getName());
+        boolean exists = remoteClient.exists(file.getParent().getRemotePath(), file.getName());
         LOGGER.fine(String.format("Exists: %b", exists));
         return exists;
     }
@@ -220,7 +221,7 @@ public final class RemoteClient implements Cancellable {
 
         LOGGER.fine(String.format("Moving file from %s to %s", from, to));
         cdBaseRemoteDirectory();
-        boolean success = remoteClient.rename(from.getRelativePath(), to.getRelativePath());
+        boolean success = remoteClient.rename(from.getRemotePath(), to.getRemotePath());
         LOGGER.fine(String.format("Success: %b", success));
         return success;
     }
@@ -332,21 +333,21 @@ public final class RemoteClient implements Cancellable {
 
     private void uploadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
         if (file.isLink()) {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRelativePath()));
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
         } else if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Uploading directory: {0}", file);
             }
             // in fact, useless but probably expected
-            cdBaseRemoteDirectory(file.getRelativePath(), true);
+            cdBaseRemoteDirectory(file.getRemotePath(), true);
             transferSucceeded(transferInfo, file);
         } else if (file.isFile()) {
             // file => simply upload it
 
-            assert file.getParentRelativePath() != null : "Must be underneath base remote directory! [" + file + "]";
-            if (!cdBaseRemoteDirectory(file.getParentRelativePath(), true)) {
-                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getParentRelativePath()));
+            assert file.getParent().getRemotePath() != null : "Must be underneath base remote directory! [" + file + "]";
+            if (!cdBaseRemoteDirectory(file.getParent().getRemotePath(), true)) {
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getParent().getRemotePath()));
                 return;
             }
 
@@ -370,22 +371,22 @@ public final class RemoteClient implements Cancellable {
             }
 
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Uploading file {0} => {1}", new Object[] {fileName, remoteClient.printWorkingDirectory() + TransferFile.SEPARATOR + tmpFileName});
+                LOGGER.log(Level.FINE, "Uploading file {0} => {1}", new Object[] {fileName, remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + tmpFileName});
             }
             // XXX lock the file?
-            InputStream is = new FileInputStream(new File(baseLocalDir, file.getRelativePath(true)));
+            InputStream is = new FileInputStream(new File(baseLocalDir, file.getLocalPath()));
             boolean success = false;
             try {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
                     if (remoteClient.storeFile(tmpFileName, is)) {
                         success = true;
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            String f = file.getRelativePath() + (properties.isUploadDirectly() ? "" : REMOTE_TMP_NEW_SUFFIX);
+                            String f = file.getRemotePath() + (properties.isUploadDirectly() ? "" : REMOTE_TMP_NEW_SUFFIX);
                             LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, f));
                         }
                         break;
                     } else if (LOGGER.isLoggable(Level.FINE)) {
-                        String f = file.getRelativePath() + (properties.isUploadDirectly() ? "" : REMOTE_TMP_NEW_SUFFIX);
+                        String f = file.getRemotePath() + (properties.isUploadDirectly() ? "" : REMOTE_TMP_NEW_SUFFIX);
                         LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, f));
                     }
                 }
@@ -421,12 +422,12 @@ public final class RemoteClient implements Cancellable {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.UPLOAD, fileName));
                     boolean deleted = remoteClient.deleteFile(tmpFileName);
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRelativePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
+                        LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRemotePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
                     }
                 }
             }
         } else {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRelativePath()));
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRemotePath()));
         }
     }
 
@@ -500,15 +501,7 @@ public final class RemoteClient implements Cancellable {
         for (File f : filesToDownload) {
             if (isVisible(f)) {
                 LOGGER.log(Level.FINE, "File {0} added to download queue", f);
-
-                TransferFile tf = null;
-                if (f.exists()) {
-                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath);
-                } else {
-                    // assume folder for non-existing file => recursive fetch
-                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath, true);
-                }
-                queue.offer(tf);
+                queue.offer(TransferFile.fromFile(null, f, baseLocalAbsolutePath));
             } else {
                 LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", f);
             }
@@ -533,22 +526,21 @@ public final class RemoteClient implements Cancellable {
 
             if (file.isDirectory()) {
                 try {
-                    if (!cdBaseRemoteDirectory(file.getRelativePath(), false)) {
-                        LOGGER.log(Level.FINE, "Remote directory {0} cannot be entered or does not exist => ignoring", file.getRelativePath());
+                    if (!cdBaseRemoteDirectory(file.getRemotePath(), false)) {
+                        LOGGER.log(Level.FINE, "Remote directory {0} cannot be entered or does not exist => ignoring", file.getRemotePath());
                         // XXX maybe return somehow ignored files as well?
                         continue;
                     }
-                    String relPath = getRemoteRelativePath(file);
                     for (RemoteFile child : remoteClient.listFiles()) {
                         if (isVisible(getLocalFile(baseLocalDir, file, child))) {
                             LOGGER.log(Level.FINE, "File {0} added to download queue", child);
-                            queue.offer(TransferFile.fromRemoteFile(file, child, baseRemoteDirectory, relPath));
+                            queue.offer(TransferFile.fromRemoteFile(file, child, baseRemoteDirectory));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", child);
                         }
                     }
                 } catch (RemoteException exc) {
-                    LOGGER.log(Level.FINE, "Remote directory {0}/* cannot be entered or does not exist => ignoring", file.getRelativePath());
+                    LOGGER.log(Level.FINE, "Remote directory {0}/* cannot be entered or does not exist => ignoring", file.getRemotePath());
                     // XXX maybe return somehow ignored files as well?
                 }
             }
@@ -612,15 +604,15 @@ public final class RemoteClient implements Cancellable {
     private void downloadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
         File localFile = getLocalFile(baseLocalDir, file);
         if (file.isLink()) {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRelativePath()));
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
         } else if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Downloading directory: {0}", file);
             }
-            if (!cdBaseRemoteDirectory(file.getRelativePath(), false)) {
-                LOGGER.log(Level.FINE, "Remote directory {0} does not exist => ignoring", file.getRelativePath());
-                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getRelativePath()));
+            if (!cdBaseRemoteDirectory(file.getRemotePath(), false)) {
+                LOGGER.log(Level.FINE, "Remote directory {0} does not exist => ignoring", file.getRemotePath());
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getRemotePath()));
                 return;
             }
             // in fact, useless but probably expected
@@ -656,12 +648,12 @@ public final class RemoteClient implements Cancellable {
 
             File tmpLocalFile = new File(localFile.getAbsolutePath() + LOCAL_TMP_NEW_SUFFIX);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Downloading {0} => {1}", new Object[] {file.getRelativePath(), tmpLocalFile.getAbsolutePath()});
+                LOGGER.log(Level.FINE, "Downloading {0} => {1}", new Object[] {file.getRemotePath(), tmpLocalFile.getAbsolutePath()});
             }
 
-            if (!cdBaseRemoteDirectory(file.getParentRelativePath(), false)) {
-                LOGGER.log(Level.FINE, "Remote directory {0} does not exist => ignoring file {1}", new Object[] {file.getParentRelativePath(), file.getRelativePath()});
-                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getParentRelativePath()));
+            if (!cdBaseRemoteDirectory(file.getParent().getRemotePath(), false)) {
+                LOGGER.log(Level.FINE, "Remote directory {0} does not exist => ignoring file {1}", new Object[] {file.getParent().getRemotePath(), file.getRemotePath()});
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getParent().getRemotePath()));
                 return;
             }
 
@@ -673,11 +665,11 @@ public final class RemoteClient implements Cancellable {
                     if (remoteClient.retrieveFile(file.getName(), os)) {
                         success = true;
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("The %d. attempt to download '%s' was successful", i, file.getRelativePath()));
+                            LOGGER.fine(String.format("The %d. attempt to download '%s' was successful", i, file.getRemotePath()));
                         }
                         break;
                     } else if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("The %d. attempt to download '%s' was NOT successful", i, file.getRelativePath()));
+                        LOGGER.fine(String.format("The %d. attempt to download '%s' was NOT successful", i, file.getRemotePath()));
                     }
                 }
             } finally {
@@ -708,7 +700,7 @@ public final class RemoteClient implements Cancellable {
                 }
             }
         } else {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRelativePath()));
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRemotePath()));
         }
     }
 
@@ -776,12 +768,11 @@ public final class RemoteClient implements Cancellable {
     }
 
     private File getLocalFile(File localFile, TransferFile transferFile) {
-        if (transferFile.getRelativePath() == TransferFile.CWD) {
-            return localFile;
+        File newFile = transferFile.resolveLocalFile(localFile);
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
+        if (fo != null) {
+            fo.refresh();
         }
-        File newFile = new File(localFile, transferFile.getRelativePath(true));
-        FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
-        if (FO != null) FO.refresh();
         return newFile;
     }
 
@@ -864,7 +855,7 @@ public final class RemoteClient implements Cancellable {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Deleting directory: {0}", file);
             }
-            success = remoteClient.deleteDirectory(file.getRelativePath());
+            success = remoteClient.deleteDirectory(file.getRemotePath());
             LOGGER.log(Level.FINE, "Folder deleted: {0}", success);
         } else {
             // file => simply delete it
@@ -872,7 +863,7 @@ public final class RemoteClient implements Cancellable {
                 LOGGER.log(Level.FINE, "Deleting file: {0}", file);
             }
 
-            success = remoteClient.deleteFile(file.getRelativePath());
+            success = remoteClient.deleteFile(file.getRemotePath());
             LOGGER.log(Level.FINE, "File deleted: {0}", success);
         }
 
@@ -880,12 +871,12 @@ public final class RemoteClient implements Cancellable {
             transferSucceeded(transferInfo, file);
         } else {
             String msg = null;
-            if (!remoteClient.exists(file.getParentRelativePath(), file.getName())) {
+            if (!remoteClient.exists(file.getParent().getRemotePath(), file.getName())) {
                 msg = NbBundle.getMessage(RemoteClient.class, "MSG_FileNotExists", file.getName());
             } else {
                 // maybe non empty dir?
                 if (file.isDirectory()
-                        && cdBaseRemoteDirectory(file.getParentRelativePath(), false)
+                        && cdBaseRemoteDirectory(file.getParent().getRemotePath(), false)
                         && remoteClient.listFiles().size() > 0) {
                     msg = NbBundle.getMessage(RemoteClient.class, "MSG_FolderNotEmpty", file.getName());
                 } else {
@@ -976,11 +967,11 @@ public final class RemoteClient implements Cancellable {
     }
 
     private boolean cdBaseRemoteDirectory(String subdirectory, boolean create) throws RemoteException {
-        assert subdirectory == null || !subdirectory.startsWith(TransferFile.SEPARATOR) : "Subdirectory must be null or relative [" + subdirectory + "]" ;
+        assert subdirectory == null || !subdirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR) : "Subdirectory must be null or relative [" + subdirectory + "]" ;
 
         String path = baseRemoteDirectory;
-        if (subdirectory != null && !subdirectory.equals(TransferFile.CWD)) {
-            path = baseRemoteDirectory + TransferFile.SEPARATOR + subdirectory;
+        if (subdirectory != null && !subdirectory.equals(TransferFile.REMOTE_PROJECT_ROOT)) {
+            path = baseRemoteDirectory + TransferFile.REMOTE_PATH_SEPARATOR + subdirectory;
         }
         return cdRemoteDirectory(path, create);
     }
@@ -1000,13 +991,13 @@ public final class RemoteClient implements Cancellable {
      */
     private boolean createAndCdRemoteDirectory(String filePath) throws RemoteException {
         LOGGER.log(Level.FINE, "Creating file path {0}", filePath);
-        if (filePath.startsWith(TransferFile.SEPARATOR)) {
+        if (filePath.startsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
             // enter root directory
-            if (!remoteClient.changeWorkingDirectory(TransferFile.SEPARATOR)) {
+            if (!remoteClient.changeWorkingDirectory(TransferFile.REMOTE_PATH_SEPARATOR)) {
                 throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", "/"), remoteClient.getReplyString());
             }
         }
-        for (String dir : filePath.split(TransferFile.SEPARATOR)) {
+        for (String dir : filePath.split(TransferFile.REMOTE_PATH_SEPARATOR)) {
             if (dir.length() == 0) {
                 // handle paths like "a//b///c/d" (dir can be "")
                 continue;
@@ -1015,12 +1006,12 @@ public final class RemoteClient implements Cancellable {
                 if (!remoteClient.makeDirectory(dir)) {
                     // XXX check 52x codes
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Cannot create directory: {0}", remoteClient.printWorkingDirectory() + TransferFile.SEPARATOR + dir);
+                        LOGGER.log(Level.FINE, "Cannot create directory: {0}", remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
                     }
                     throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDirectory", dir), remoteClient.getReplyString());
                 } else if (!remoteClient.changeWorkingDirectory(dir)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Cannot enter directory: {0}", remoteClient.printWorkingDirectory() + TransferFile.SEPARATOR + dir);
+                        LOGGER.log(Level.FINE, "Cannot enter directory: {0}", remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
                     }
                     return false;
                     // XXX
@@ -1128,9 +1119,9 @@ public final class RemoteClient implements Cancellable {
 
     private String getRemoteRelativePath(TransferFile file) {
         StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
-        if (file.getRelativePath() != TransferFile.CWD) {
-            relativePath.append(TransferFile.SEPARATOR);
-            relativePath.append(file.getRelativePath());
+        if (file.getRemotePath() != TransferFile.REMOTE_PROJECT_ROOT) {
+            relativePath.append(TransferFile.REMOTE_PATH_SEPARATOR);
+            relativePath.append(file.getRemotePath());
         }
         return relativePath.toString();
     }
@@ -1149,10 +1140,10 @@ public final class RemoteClient implements Cancellable {
         // we need to get longest paths first to be able to delete directories properly
         //  (e.g. to have [a/b, a] and not [a, a/b])
         Set<TransferFile> dirs = new TreeSet<TransferFile>(new Comparator<TransferFile>() {
-            private final String SEPARATOR = Pattern.quote(TransferFile.SEPARATOR);
+            private final String SEPARATOR = Pattern.quote(TransferFile.REMOTE_PATH_SEPARATOR);
             @Override
             public int compare(TransferFile o1, TransferFile o2) {
-                int cmp = o2.getRelativePath().split(SEPARATOR).length - o1.getRelativePath().split(SEPARATOR).length;
+                int cmp = o2.getRemotePath().split(SEPARATOR).length - o1.getRemotePath().split(SEPARATOR).length;
                 // do not miss any item
                 return cmp != 0 ? cmp : 1;
             }

@@ -53,9 +53,9 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
-import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
@@ -300,7 +300,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
         File sourceFile = FileUtil.toFile(source);
         TransferFile toTransferFile = TransferFile.fromFileObject(null, source, baseDirectory);
         TransferFile fromTransferFile = TransferFile.fromFile(null, new File(sourceFile.getParentFile(), oldName), baseDirectory);
-        LOGGER.log(Level.FINE, "Renaming file {0} -> {1} for project {2}", new Object[] {fromTransferFile.getRelativePath(), toTransferFile.getRelativePath(), project.getName()});
+        LOGGER.log(Level.FINE, "Renaming file {0} -> {1} for project {2}", new Object[] {fromTransferFile.getRemotePath(), toTransferFile.getRemotePath(), project.getName()});
         if (client.exists(fromTransferFile)) {
             if (client.rename(fromTransferFile, toTransferFile)) {
                 LOGGER.fine("\t-> success");
@@ -320,7 +320,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
         Boolean success = null;
         Set<TransferFile> transferFiles = client.prepareDelete(getSources(), source);
         for (TransferFile file : transferFiles) {
-            LOGGER.log(Level.FINE, "Deleting remote file {0}", file.getRelativePath());
+            LOGGER.log(Level.FINE, "Deleting remote file {0}", file.getRemotePath());
             if (!client.exists(file)) {
                 LOGGER.fine("\t-> does not exist -> ignoring");
             } else {
