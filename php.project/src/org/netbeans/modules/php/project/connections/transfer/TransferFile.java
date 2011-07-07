@@ -330,6 +330,10 @@ public abstract class TransferFile {
 
     /**
      * Return {@code true} if the file is symbolic link.
+     * <p>
+     * <i>Warning:</i> does not resolve symlinks for local files
+     * due to {@link org.netbeans.modules.php.api.util.FileUtils#isDirectoryLink(File) performance}
+     * reasons.
      * @return {@code true} if the file is symbolic link
      */
     public abstract boolean isLink();
