@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor>{
 
-    private static final String LOCAL_DOMAIN_DIR = "JavaEE/Cloud9";
+    private static final String LOCAL_DOMAIN_DIR = "JavaEE/Cloud9"; // NOI18N
 
     private final ChangeSupport listeners;
     private WizardDescriptor wizard;
@@ -138,9 +138,10 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
             }
         }
         
-        OracleInstanceManager.getDefault().add(new OracleInstance(name, username, pwd, url, tenant, service));
+        OracleInstance instance = new OracleInstance(name, username, pwd, url, tenant, service);
+        OracleInstanceManager.getDefault().add(instance);
         
-        return Collections.emptySet();
+        return Collections.singleton(instance.getServerInstance());
     }
 
     private InstanceProperties registerLocalInstance(String serverPath,
