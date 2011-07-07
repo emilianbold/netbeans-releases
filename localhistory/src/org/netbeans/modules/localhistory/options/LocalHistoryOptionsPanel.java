@@ -62,25 +62,24 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-
-        jLabel1.setLabelFor(daysTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel1.text")); // NOI18N
+        daysLabel1.setLabelFor(daysTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(daysLabel1, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysLabel1.text")); // NOI18N
 
         daysTextField.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(daysLabel2, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysLabel2.text")); // NOI18N
 
         warningLabel.setForeground(java.awt.Color.red);
-        warningLabel.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.warningLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.warningLabel.text")); // NOI18N
 
-        noLabelCleanupCheckBox.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.noLabelCleanupCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(noLabelCleanupCheckBox, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.noLabelCleanupCheckBox.text")); // NOI18N
         noLabelCleanupCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 noLabelCleanupCheckBoxActionPerformed(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(keepForeverCheckBox, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.keepForeverCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -89,26 +88,30 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
+                        .add(daysLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(daysTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(10, 10, 10)
-                        .add(jLabel3))
-                    .add(warningLabel)
-                    .add(noLabelCleanupCheckBox))
-                .addContainerGap(76, Short.MAX_VALUE))
+                        .add(daysLabel2))
+                    .add(noLabelCleanupCheckBox)
+                    .add(keepForeverCheckBox)
+                    .add(warningLabel))
+                .addContainerGap(96, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(daysLabel1)
                     .add(daysTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel3))
+                    .add(daysLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(noLabelCleanupCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 36, Short.MAX_VALUE)
-                .add(warningLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(keepForeverCheckBox)
+                .add(18, 18, 18)
+                .add(warningLabel)
+                .addContainerGap(63, Short.MAX_VALUE))
         );
 
         daysTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSN_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
@@ -121,9 +124,10 @@ private void noLabelCleanupCheckBoxActionPerformed(java.awt.event.ActionEvent ev
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JLabel daysLabel1 = new javax.swing.JLabel();
+    final javax.swing.JLabel daysLabel2 = new javax.swing.JLabel();
     final javax.swing.JTextField daysTextField = new javax.swing.JTextField();
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
+    final javax.swing.JCheckBox keepForeverCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox noLabelCleanupCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel warningLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
