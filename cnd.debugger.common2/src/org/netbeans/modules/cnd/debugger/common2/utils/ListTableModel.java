@@ -142,7 +142,13 @@ public class ListTableModel extends AbstractTableModel {
 	if (columnIndex == 0) {
 	    return column0.get(rowIndex);
 	} else {
-	    return column1.get(rowIndex);
+	    if (column1Class == Boolean.class) {
+		Boolean b = Boolean.valueOf(column1.get(rowIndex));
+		return b == null ? false : b.booleanValue();
+	    } else
+		// Currently we have only String and Boolean
+		// can be extended to other column type
+		return column1.get(rowIndex);
 	}
     }
 
@@ -152,7 +158,12 @@ public class ListTableModel extends AbstractTableModel {
 	if (columnIndex == 0) {
 	    column0.set(rowIndex, (String)value);
 	} else {
-	    column1.set(rowIndex, (String)value);
+	    if (column1Class == Boolean.class && (value instanceof Boolean)) {
+		column1.set(rowIndex, ((Boolean)value).toString());
+	    } else
+		// Currently we have only String and Boolean
+		// can be extended to other column type
+		column1.set(rowIndex, (String)value);
 	}
     }
 
