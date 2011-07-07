@@ -51,20 +51,28 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * File to be transfered to/from remote server. It is able to resolve different relative paths
- * against some base directory. This is useful e.g. while uploading:
+ * File to be transfered to/from remote server.
+ *
+ * It is able to resolve remote and local paths against some base directory.
+ * This is useful e.g. while uploading:
  * <pre>
- * /home/test/Project1/web/test.php => /pub/Project1/web/test.php,
+ * C:\home\test\Project1\web\test.php => /pub/Project1/web/test.php,
  * </pre>
- * then for base path "/home/test/Project1" the relative path would be "web/test.php".
+ * then for base path "C:\home\test\Project1" the remote path would be "web/test.php" and
+ * local path "web\test.php" ("web/test.php" for *nix).
  * <p>
- * Instances can be neither directories nor files; this applies for {@link #fromPath(java.lang.String)}.
- * <p>
- * Path separator is always {@value #REMOTE_PATH_SEPARATOR}, for all platforms.
+ * Path separator for local path is OS-dependent, for remote path it is always
+ * {@value #REMOTE_PATH_SEPARATOR}, for all platforms.
  */
 public abstract class TransferFile {
 
+    /**
+     * Remote path separator ({@value #REMOTE_PATH_SEPARATOR}).
+     */
     public static final String REMOTE_PATH_SEPARATOR = "/"; // NOI18N
+    /**
+     * Remote project root path ({@value #REMOTE_PROJECT_ROOT}).
+     */
     public static final String REMOTE_PROJECT_ROOT = "."; // NOI18N
 
     protected final String baseDirectory;
@@ -81,6 +89,10 @@ public abstract class TransferFile {
 
     /**
      * Implementation for {@link FileObject}.
+     * @param parent parent remote file, can be {@code null}
+     * @param fo local file object to be used
+     * @param baseDirectory base directory local and remote paths are resolved to
+     * @return new remote file for the given parameters
      */
     public static TransferFile fromFileObject(TransferFile parent, FileObject fo, String baseDirectory) {
         assert fo != null;
@@ -92,6 +104,10 @@ public abstract class TransferFile {
      * Implementation for {@link File}.
      * <p>
      * The given file will be normalized.
+     * @param parent parent remote file, can be {@code null}
+     * @param file local file to be used
+     * @param baseDirectory base directory local and remote paths are resolved to
+     * @return new remote file for the given parameters
      */
     public static TransferFile fromFile(TransferFile parent, File file, String baseDirectory) {
         TransferFile transferFile = new LocalTransferFile(FileUtil.normalizeFile(file), parent, baseDirectory);
@@ -103,6 +119,10 @@ public abstract class TransferFile {
 
     /**
      * Implementation for {@link RemoteFile}.
+     * @param parent parent remote file, can be {@code null}
+     * @param remoteFile remote file to be used
+     * @param baseDirectory base directory local and remote paths are resolved to
+     * @return new remote file for the given parameters
      */
     public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, String baseDirectory) {
         TransferFile transferFile = new RemoteTransferFile(remoteFile, parent, baseDirectory);
@@ -112,18 +132,44 @@ public abstract class TransferFile {
         return transferFile;
     }
 
+    /**
+     * Return {@code true} if the transfer file has {@link #getChildren() children}.
+     * @return {@code true} if the transfer file has {@link #getChildren() children}
+     * @see #getChildren()
+     */
     public final boolean hasChildren() {
         return !children.isEmpty();
     }
 
-    public final boolean hasParent() {
-        return parent != null;
-    }
-
+    /**
+     * Get children files.
+     * @return children files
+     */
     public final List<TransferFile> getChildren() {
         return new ArrayList<TransferFile>(children);
     }
 
+    /**
+     * Check whether the remote file has a parent file.
+     * <p>
+     * THis can be {@code false} for {@link #isRoot() root},
+     * for {@link #isProjectRoot() project root} or simply if
+     * the parent file was not specified when this remote file
+     * was created.
+     * @return {@code true} if the file has parent remote file
+     * @see #getParent()
+     * @see #isRoot()
+     * @see #isProjectRoot()
+     */
+    public final boolean hasParent() {
+        return parent != null;
+    }
+
+    /**
+     * Get parent remote file or {@code null} if there's none.
+     * @return parent remote file or {@code null} if there's none
+     * @see #hasParent()
+     */
     public final TransferFile getParent() {
         if (isProjectRoot()) {
             throw new IllegalStateException("Cannot get parent on project root.");
@@ -131,12 +177,17 @@ public abstract class TransferFile {
         return parent;
     }
 
+    /**
+     * Get base directory local and remote paths are resolved to.
+     * @return base directory local and remote paths are resolved to
+     */
     public final String getBaseDirectory() {
         return baseDirectory;
     }
 
     /**
-     * @return
+     * Return {@code true} if the remote file does not parent remote file.
+     * @return {@code true} if the remote file does not parent remote file
      */
     public boolean isRoot() {
         if (isProjectRoot()) {
@@ -146,25 +197,32 @@ public abstract class TransferFile {
     }
 
     /**
-     * rel path equals REMOTE_PROJECT_ROOT
-     * @return
+     * Return {@code true} if the remote file is the project root.
+     * <p>
+     * It means that the remote (and local too!) path equals {@link #REMOTE_PROJECT_ROOT}.
+     * @return {@code true} if the remote file is the project root
      */
     public boolean isProjectRoot() {
-        return REMOTE_PROJECT_ROOT.equals(getRemotePath());
+        return REMOTE_PROJECT_ROOT == getRemotePath();
     }
 
+    /**
+     * Get simple name of the remote file.
+     * @return simple name of the remote file
+     */
     public abstract String getName();
 
     /**
-     * Get platform independent relative path or {@value #REMOTE_PROJECT_ROOT} if absolute path equals relative path.
-     * @see #REMOTE_PROJECT_ROOT
+     * Get remote (platform independent) path or {@value #REMOTE_PROJECT_ROOT}
+     * if the file is {@link #isProjectRoot() project root}.
+     * @see #isProjectRoot()
      */
     public abstract String getRemotePath();
 
     /**
-     * Get relative path or {@value #REMOTE_PROJECT_ROOT} if absolute path equals relative path.
-     * @param platformDependent <code>true</code> for platform dependent relative path
-     * @see #REMOTE_PROJECT_ROOT
+     * Get local (platform dependent) path or {@value #REMOTE_PROJECT_ROOT}
+     * if the file is {@link #isProjectRoot() project root}.
+     * @see #isProjectRoot()
      */
     public final String getLocalPath() {
         String remotePath = getRemotePath();
@@ -174,6 +232,11 @@ public abstract class TransferFile {
         return remotePath.replace(REMOTE_PATH_SEPARATOR, File.separator);
     }
 
+    /**
+     * Resolve local file for the given directory.
+     * @param directory directory (does not need to exist) to be used as a parent
+     * @return resolved local file
+     */
     public File resolveLocalFile(File directory) {
         if (directory == null) {
             throw new NullPointerException();
@@ -188,8 +251,8 @@ public abstract class TransferFile {
     }
 
     /**
-     * Get the size of the file in bytes. For directory it is always 0 (zero).
-     * @return get the size of the file in bytes.
+     * Get the size of the file in <b>bytes</b>. For directory it is always 0 (zero).
+     * @return get the size of the file in bytes
      */
     public final long getSize() {
         if (size == null) {
@@ -206,14 +269,27 @@ public abstract class TransferFile {
 
     protected abstract long getSizeImpl();
 
+    /**
+     * Return {@code true} if the file is directory.
+     * @return {@code true} if the file is directory
+     */
     public abstract boolean isDirectory();
 
+    /**
+     * Return {@code true} if the file is file.
+     * @return {@code true} if the file is file
+     */
     public abstract boolean isFile();
 
+    /**
+     * Return {@code true} if the file is symbolic link.
+     * @return {@code true} if the file is symbolic link
+     */
     public abstract boolean isLink();
 
     /**
-     * @return timestamp <b>in seconds</b> of the file last modification or <code>-1</code> if not known.
+     * Get timestamp <b>in seconds</b> of the file last modification or <code>-1</code> if not known.
+     * @return timestamp <b>in seconds</b> of the file last modification or <code>-1</code> if not known
      * @see #touch()
      */
     public final long getTimestamp() {
@@ -223,10 +299,6 @@ public abstract class TransferFile {
         return timestamp;
     }
 
-    /**
-     * @return timestamp <b>in seconds</b> of the file last modification or <code>-1</code> if not known.
-     * @see #touch()
-     */
     protected abstract long getTimestampImpl();
 
     /**

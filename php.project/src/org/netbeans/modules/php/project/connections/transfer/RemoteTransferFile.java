@@ -59,14 +59,14 @@ final class RemoteTransferFile extends TransferFile {
             throw new NullPointerException("Remote file cannot be null");
         }
         if (!baseDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
-            throw new IllegalArgumentException("Base directory must start with '" + REMOTE_PATH_SEPARATOR + "' [" + baseDirectory + "]");
+            throw new IllegalArgumentException("Base directory '" + baseDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
         String parentDirectory = file.getParentDirectory();
         if (!parentDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
-            throw new IllegalArgumentException("Parent directory must start with '" + REMOTE_PATH_SEPARATOR + "' [" + parentDirectory + "]");
+            throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
         if (!parentDirectory.startsWith(baseDirectory)) {
-            throw new IllegalArgumentException("Parent directory must be underneath base directory [" + parentDirectory + " => " + baseDirectory + "]");
+            throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must be underneath base directory '" + baseDirectory + "'");
         }
     }
 

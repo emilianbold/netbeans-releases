@@ -61,7 +61,7 @@ final class LocalTransferFile extends TransferFile {
             throw new NullPointerException("Local file cannot be null");
         }
         if (!file.getAbsolutePath().startsWith(baseDirectory)) {
-            throw new IllegalArgumentException("File must be underneath base directory [" + file.getAbsolutePath() + " => " + baseDirectory + "]");
+            throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' must be underneath base directory '" + baseDirectory + "'");
         }
     }
 
@@ -70,7 +70,6 @@ final class LocalTransferFile extends TransferFile {
         return file.getName();
     }
 
-    // XXX
     @Override
     public String getRemotePath() {
         String absolutePath = file.getAbsolutePath();
