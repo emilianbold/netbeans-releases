@@ -383,6 +383,9 @@ public abstract class TransferFile {
                 + ", remotePath: " + getRemotePath() // NOI18N
                 + ", baseDirectory: " + getBaseDirectory() // NOI18N
                 + ", hasParent: " + hasParent() // NOI18N
+                + ", isFile: " + isFile() // NOI18N
+                + ", isDirectory: " + isDirectory() // NOI18N
+                + ", isLink: " + isLink() // NOI18N
                 + "]"; // NOI18N
     }
 
