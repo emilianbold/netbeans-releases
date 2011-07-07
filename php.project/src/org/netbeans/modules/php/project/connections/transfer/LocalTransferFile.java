@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.connections.transfer;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 
 /**
@@ -118,7 +119,7 @@ final class LocalTransferFile extends TransferFile {
 
     @Override
     public boolean isLink() {
-        return PhpProjectUtils.isLink(file);
+        return FileUtils.isDirectoryLink(file);
     }
 
     @Override
