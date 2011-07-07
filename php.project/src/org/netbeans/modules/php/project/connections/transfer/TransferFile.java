@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -218,6 +219,27 @@ public abstract class TransferFile {
      * @see #isProjectRoot()
      */
     public abstract String getRemotePath();
+
+    /**
+     * Get remote (platform independent) path of the parent file
+     * or throws an exception if the file is {@link #isProjectRoot() project root}.
+     * <p>
+     * This method can be used to get parent directory even if {@link #getParent() parent}
+     * is not set.
+     * @return remote path of the parent file
+     * @see #getRemotePath()
+     */
+    public final String getParentRemotePath() {
+        if (getParent() != null) {
+            return getParent().getRemotePath();
+        }
+        List<String> fragments = new ArrayList<String>(StringUtils.explode(getRemotePath(), REMOTE_PATH_SEPARATOR));
+        fragments.remove(fragments.size() - 1);
+        if (fragments.isEmpty()) {
+            return REMOTE_PROJECT_ROOT;
+        }
+        return StringUtils.implode(fragments, REMOTE_PATH_SEPARATOR);
+    }
 
     /**
      * Get local (platform dependent) path or {@value #REMOTE_PROJECT_ROOT}

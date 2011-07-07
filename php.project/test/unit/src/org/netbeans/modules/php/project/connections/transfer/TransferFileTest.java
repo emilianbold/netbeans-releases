@@ -118,6 +118,21 @@ public class TransferFileTest extends NbTestCase {
         assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().contains(child2));
     }
 
+    public void testParentRemotePath() {
+        TransferFile projectRoot = TransferFile.fromFile(null, new File("/a"), "/a");
+        TransferFile childWithParent = TransferFile.fromFile(projectRoot, new File("/a/b"), "/a");
+        TransferFile childWithoutParent = TransferFile.fromFile(null, new File("/a/b"), "/a");
+
+        assertEquals(projectRoot.getRemotePath(), childWithParent.getParentRemotePath());
+        assertEquals(projectRoot.getRemotePath(), childWithoutParent.getParentRemotePath());
+
+        TransferFile grandchildWithParent = TransferFile.fromFile(childWithParent, new File("/a/b/c"), "/a");
+        TransferFile grandchildWithoutParent = TransferFile.fromFile(null, new File("/a/b/c"), "/a");
+
+        assertEquals(childWithParent.getRemotePath(), grandchildWithParent.getParentRemotePath());
+        assertEquals(childWithParent.getRemotePath(), grandchildWithoutParent.getParentRemotePath());
+    }
+
 
     private final class RemoteFileImpl implements RemoteFile {
 
