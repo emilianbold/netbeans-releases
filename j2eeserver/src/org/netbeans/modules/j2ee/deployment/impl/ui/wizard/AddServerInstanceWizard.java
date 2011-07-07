@@ -46,10 +46,10 @@ package org.netbeans.modules.j2ee.deployment.impl.ui.wizard;
 
 import java.awt.Dialog;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -83,12 +83,15 @@ public class AddServerInstanceWizard extends WizardDescriptor {
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.j2ee.deployment"); // NOI18N
 
-    private AddServerInstanceWizard() {
+    private AddServerInstanceWizard(Map<String, String> props) {
         this(new AddServerInstanceWizardIterator());
         
         putProperty(PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
         putProperty(PROP_CONTENT_DISPLAYED, Boolean.TRUE);
         putProperty(PROP_CONTENT_NUMBERED, Boolean.TRUE);
+        for (Entry<String, String> entry : props.entrySet()) {
+            putProperty(entry.getKey(), entry.getValue());
+        }
         
         setTitle(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_Title"));
         setTitleFormat(new MessageFormat(NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_TitleFormat")));
@@ -102,7 +105,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
     }
     
     
-    public static String showAddServerInstanceWizard() {
+    public static String showAddServerInstanceWizard(Map<String, String> props) {
         Collection<Server> allServers = ServerRegistry.getInstance().getServers();
         for (java.util.Iterator<Server> it = allServers.iterator(); it.hasNext();) {
             Server server = it.next();
@@ -129,7 +132,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
             return null;
         }
             
-        AddServerInstanceWizard wizard = new AddServerInstanceWizard();
+        AddServerInstanceWizard wizard = new AddServerInstanceWizard(props);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);
         try {
             dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerInstanceWizard.class, "ACSD_Add_Server_Instance"));
@@ -212,7 +215,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         }
     }
     
-    private static class AddServerInstanceWizardIterator implements WizardDescriptor.InstantiatingIterator {
+    private static class AddServerInstanceWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
         private AddServerInstanceWizard wd;
         public boolean showingChooser;
         private WizardDescriptor.InstantiatingIterator iterator;
