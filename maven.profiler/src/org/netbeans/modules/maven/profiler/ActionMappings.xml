@@ -82,16 +82,27 @@ made subject to such option by the copyright holder.
         <actionName>profile</actionName>
         <packagings>
             <packaging>nbm</packaging>
-            <packaging>nbm-application</packaging>
         </packagings>
         <goals>
             <goal>nbm:cluster</goal>
             <goal>nbm:run-ide</goal>
         </goals>
         <properties>
-            <!-- XXX should this use netbeans.run.params.ide instead? -->
-            <netbeans.run.params>${profiler.args} -classpath %classpath ${packageClassName}</netbeans.run.params>
-            <exec.executable>${profiler.java}</exec.executable>
+            <netbeans.run.params.ide>${profiler.args.prefixed} ${profiler.jdkhome.opt}</netbeans.run.params.ide>
+            <profiler.action>profile</profiler.action>
+        </properties>
+    </action>
+    <action>
+        <actionName>profile</actionName>
+        <packagings>
+            <packaging>nbm-application</packaging>
+        </packagings>
+        <goals>
+            <goal>install</goal>
+            <goal>nbm:run-platform</goal>
+        </goals>
+        <properties>
+            <netbeans.run.params.ide>${profiler.args.prefixed} ${profiler.jdkhome.opt}</netbeans.run.params.ide>
             <profiler.action>profile</profiler.action>
         </properties>
     </action>

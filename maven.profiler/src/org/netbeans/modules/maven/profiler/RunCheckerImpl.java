@@ -68,8 +68,10 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     
 //    private static final String EXEC_ARGS = "exec.args"; // NOI18N
     private static final String PROFILER_ARGS = "${profiler.args}"; // NOI18N
+    private static final String PROFILER_ARGS_PREFIXED = "${profiler.args.prefixed}"; // NOI18N
 //    private static final String EXEC_EXECUTABLE = "exec.executable"; // NOI18N
     private static final String PROFILER_JAVA = "${profiler.java}"; // NOI18N
+    private static final String PROFILER_JDKHOME_OPT = "${profiler.jdkhome.opt}"; // NOI18N
     
     private Project project;
 
@@ -99,10 +101,28 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
                             + " " + agentArg); // NOI18N
                     configProperties.setProperty(key, value.trim());
                 }
+                if (value.contains(PROFILER_ARGS_PREFIXED)) {
+                    String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
+                    value = value.replace(PROFILER_ARGS_PREFIXED,
+                            (sessionProperties.getProperty("profiler.info.jvmargs") + " " + agentArg).trim().replaceAll("^|(?<= +)(?! )", "-J"));
+                    configProperties.setProperty(key, value);
+                }
                 if (value.contains(PROFILER_JAVA)) {
                     String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
                     value = value.replace(PROFILER_JAVA,
                             (profilerJava != null && new File(profilerJava).isFile()) ? profilerJava : "java"); // NOI18N
+                    configProperties.setProperty(key, value.trim());
+                }
+                if (value.contains(PROFILER_JDKHOME_OPT)) {
+                    String opt = "";
+                    String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
+                    if (profilerJava != null) {
+                        File binJava = new File(profilerJava);
+                        if (binJava.isFile() && binJava.getName().matches("java([.]exe)?") && binJava.getParentFile().getName().equals("bin")) {
+                            opt = "--jdkhome " + binJava.getParentFile().getParent();
+                        }
+                    }
+                    value = value.replace(PROFILER_JDKHOME_OPT, opt);
                     configProperties.setProperty(key, value.trim());
                 }
             }
