@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -316,12 +317,21 @@ class FilesystemInterceptor extends VCSInterceptor {
      * Refreshes cached modification timestamp of the metadata for the given repository
      * @param repository
      */
-    void refreshMetadataTimestamp (File repository) {
+    void refreshMetadataTimestamp (final File repository) {
         assert repository != null;
         if (repository == null) {
             return;
         }
-        gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+        if (EventQueue.isDispatchThread()) {
+            Git.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run () {
+                    gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+                }
+            });
+        } else {
+            gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+        }
     }
 
     private class RefreshTask implements Runnable {
