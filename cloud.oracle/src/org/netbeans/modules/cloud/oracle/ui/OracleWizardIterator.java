@@ -44,13 +44,18 @@ package org.netbeans.modules.cloud.oracle.ui;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.tools.DomainGenerator;
+import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -122,8 +127,10 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
                 }
             }
             try {
+                File domainFile = FileUtil.toFile(domainDir);
                 DomainGenerator.generateDomain(new File(serverDir),
-                        jarFo, FileUtil.toFile(domainDir));
+                        jarFo, domainFile);
+                registerLocalInstance(serverDir, domainFile.getAbsolutePath(), name);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
@@ -134,6 +141,51 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
         OracleInstanceManager.getDefault().add(new OracleInstance(name, username, pwd, url, tenant, service));
         
         return Collections.emptySet();
+    }
+
+    private InstanceProperties registerLocalInstance(String serverPath,
+            String domainPath, String cloudDisplayName) throws IOException {
+
+        Properties properties = WLPluginProperties.getDomainProperties(domainPath);
+        if (properties.isEmpty()) {
+            // TODO should we emit some warning ?
+            return null;
+        }
+
+        String displayName = cloudDisplayName + " " // NOI18N
+                + NbBundle.getMessage(OracleWizardIterator.class, "LBL_Name_Local_Suffix");
+        String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
+        String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
+        String host = properties.getProperty(WLPluginProperties.HOST_ATTR);
+        String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
+
+        if ((name != null) && (!name.equals(""))) { // NOI18N
+            // address and port have minOccurs=0 and are missing in 90
+            // examples server
+            port = (port == null || port.equals("")) // NOI18N
+            ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
+                    : port;
+            host = (host == null || host.equals("")) ? "localhost" // NOI18N
+                    : host;
+
+            WLInstantiatingIterator iterator = new WLInstantiatingIterator();
+            iterator.setUrl(getUrl(serverPath, domainPath, host, port));
+            iterator.setHost(host);
+            iterator.setPort(port);
+            iterator.setServerRoot(serverPath);
+            iterator.setDomainRoot(domainPath);
+            iterator.setDomainName(domainName);
+
+            return iterator.instantiate(displayName);
+        }
+        return null;
+    }
+
+    //FIXME copied from ServerPropertieVisual of j2ee.weblogic9
+    private String getUrl(String serverPath, String domainPath, String host, String port) {
+        return WLDeploymentFactory.URI_PREFIX + host
+                + ":" + port + ":" + serverPath // NOI18N;
+                + ":" + domainPath; // NOI18N;
     }
 
     @Override
