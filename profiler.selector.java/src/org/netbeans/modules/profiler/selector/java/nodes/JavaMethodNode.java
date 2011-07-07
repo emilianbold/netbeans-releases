@@ -56,7 +56,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
 import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.selector.spi.nodes.MethodNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.MethodsNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.Modifier;
@@ -67,7 +67,6 @@ import org.netbeans.modules.profiler.selector.spi.nodes.Modifier;
  */
 public class JavaMethodNode extends MethodNode {
 
-    private ClasspathInfo cpInfo;
     private SourceCodeSelection signature;
     private Set<Modifier> modifiers;
 
@@ -75,7 +74,6 @@ public class JavaMethodNode extends MethodNode {
     
     public JavaMethodNode(ClasspathInfo cpInfo, final ExecutableElement method, MethodsNode parent) {
         super(method.getSimpleName().toString(), parent);
-        this.cpInfo = cpInfo;
 
         final String[] signatureString = new String[1];
         JavaSource js = JavaSource.create(cpInfo, new org.openide.filesystems.FileObject[0]);
@@ -88,7 +86,7 @@ public class JavaMethodNode extends MethodNode {
 
                 public void run(CompilationController controller)
                         throws Exception {
-                    signatureString[0] = SourceUtils.getVMMethodSignature(method, controller);
+                    signatureString[0] = ElementUtilitiesEx.getBinaryName(method, controller);
                 }
             }, true);
         } catch (IOException ex) {

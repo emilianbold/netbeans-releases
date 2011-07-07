@@ -55,7 +55,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.selector.java.nodes.JavaPackageNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.PackageNode;
 
@@ -74,15 +74,12 @@ class ProjectPackages extends SelectorChildren<ContainerNode> {
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private final ProjectPackages.PackageType packageType;
     private final Set<SearchScope> scope = new HashSet<SearchScope>();
     private final boolean subprojects;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ProjectPackages(final ProjectPackages.PackageType type, final boolean includeSubprojects) {
-        this.packageType = type;
-
         switch (type) {
             case Source:
                 scope.add(SearchScope.SOURCE);
@@ -104,7 +101,7 @@ class ProjectPackages extends SelectorChildren<ContainerNode> {
 
         Project project = parent.getLookup().lookup(Project.class);
 
-        ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project, subprojects, scope.contains(SearchScope.SOURCE),
+        ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project, subprojects, scope.contains(SearchScope.SOURCE),
                                                                  scope.contains(SearchScope.DEPENDENCIES));
         // #170201: A misconfigured(?) project can have no source roots defined, returning NULL as its ClasspathInfo
         // ignore such a project
