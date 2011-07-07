@@ -87,6 +87,7 @@
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
+                <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.dlight.accessor</friend>
                 <friend>com.sun.tools.dlight.amp</friend>
