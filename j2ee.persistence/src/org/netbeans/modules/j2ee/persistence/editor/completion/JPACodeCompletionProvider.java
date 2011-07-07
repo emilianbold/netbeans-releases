@@ -45,6 +45,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +56,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
@@ -73,6 +75,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -212,6 +215,75 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return new Task();
         }
 
+        @Override
+        protected boolean canFilter(JTextComponent component) {
+            return false;
+//            filterPrefix = null;
+//            int newOffset = component.getSelectionStart();
+//            if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
+//                int offset = Math.min(anchorOffset, caretOffset);
+//                if (offset > -1) {
+//                    if (newOffset < offset)
+//                        return true;
+//                    if (newOffset >= caretOffset) {
+//                        try {
+//                            String prefix = component.getDocument().getText(offset, newOffset - offset);
+//                            filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
+//                            if (filterPrefix == null) {
+//                            } else if (filterPrefix.length() == 0) {
+//                                anchorOffset = newOffset;
+//                            }
+//                        } catch (BadLocationException e) {}
+//                        return true;
+//                    }
+//                }
+//                return false;
+//            } else if (queryType == TOOLTIP_QUERY_TYPE) {
+//                try {
+//                    if (newOffset == caretOffset)
+//                        filterPrefix = EMPTY;
+//                    else if (newOffset - caretOffset > 0)
+//                        filterPrefix = component.getDocument().getText(caretOffset, newOffset - caretOffset);
+//                    else if (newOffset - caretOffset < 0)
+//                        filterPrefix = newOffset > toolTipOffset ? component.getDocument().getText(newOffset, caretOffset - newOffset) : null;
+//                } catch (BadLocationException ex) {}
+//                return (filterPrefix != null && filterPrefix.indexOf(',') == -1 && filterPrefix.indexOf('(') == -1 && filterPrefix.indexOf(')') == -1); // NOI18N
+//            }
+//            return false;
+        }
+        
+        @Override
+        protected void filter(CompletionResultSet resultSet) {
+            try {
+                if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
+                    if (results != null) {
+                        if (filterPrefix != null) {
+                            resultSet.addAllItems(getFilteredData(results, filterPrefix));
+                            resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
+                        } else {
+                            Completion.get().hideDocumentation();
+                            Completion.get().hideCompletion();
+                        }
+                    }
+                } 
+                resultSet.setAnchorOffset(anchorOffset);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            resultSet.finish();
+        }
+        private Collection getFilteredData(Collection<JPACompletionItem> data, String prefix) {
+            if (prefix.length() == 0)
+                return data;
+            List ret = new ArrayList();
+            boolean camelCase = isCamelCasePrefix(prefix);
+            for (Iterator<JPACompletionItem> it = data.iterator(); it.hasNext();) {
+                CompletionItem itm = it.next();
+                if (itm.getInsertPrefix().toString().startsWith(prefix))
+                    ret.add(itm);
+            }
+            return ret;
+        }
         private void run(CompilationController controller) {
             String filter = null;
             int startOffset = caretOffset;
@@ -295,7 +367,22 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         TreePath path = controller.getTreeUtilities().pathFor(offset);
         return path;
     }
-
+    private static boolean isJavaIdentifierPart(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            if (!(Character.isJavaIdentifierPart(text.charAt(i))))
+                return false;
+        }
+        return true;
+    }
+    private static boolean isCamelCasePrefix(String prefix) {
+        if (prefix == null || prefix.length() < 2 || prefix.charAt(0) == '"')
+            return false;
+        for (int i = 1; i < prefix.length(); i++) {
+            if (Character.isUpperCase(prefix.charAt(i)))
+                    return true;                
+        }
+        return false;
+    }
     public final class Context {
 
         /** Text component */
@@ -481,4 +568,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return null;
         }
     }
+    
+    private static final String EMPTY = ""; //NOI18N
 }
