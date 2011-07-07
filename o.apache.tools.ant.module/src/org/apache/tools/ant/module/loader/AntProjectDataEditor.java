@@ -48,6 +48,7 @@ import java.io.IOException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -59,6 +60,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -70,8 +72,12 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
     private boolean addedChangeListener = false;
 
     public AntProjectDataEditor (AntProjectDataObject obj) {
-        super (obj, new AntEnv (obj));
+        super(obj, null, new AntEnv(obj));
         setMIMEType(AntProjectDataObject.MIME_TYPE);
+    }
+
+    @Override protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(AntProjectDataObject.MIME_TYPE, getDataObject());
     }
 
     @Override
