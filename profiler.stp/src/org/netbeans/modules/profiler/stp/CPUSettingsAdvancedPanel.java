@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.profiler.stp;
 
+import java.awt.BorderLayout;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
@@ -74,6 +75,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 
@@ -153,6 +155,10 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
                                                                               "StpExactTimingTooltip"); // NOI18N
     private static final String STP_SAMPLEDTIMING_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
                                                                                 "StpSampledTimingTooltip"); // NOI18N
+    private static final String STP_SAMPLING_FREQUENCY_LABEL = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
+                                                                                "StpSamplingFrequencyLabel"); // NOI18N
+    private static final String STP_SAMPLING_FREQUENCY_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
+                                                                                "StpSamplingFrequencyTooltip"); // NOI18N
     private static final String STP_SLEEPWAIT_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpSleepWaitTooltip"); // NOI18N
     private static final String STP_FRAMEWORK_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpFrameworkTooltip"); // NOI18N
     private static final String STP_SPAWNED_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpSpawnedTooltip"); // NOI18N
@@ -192,17 +198,22 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     private JLabel javaPlatformLabel;
     private JLabel methodsTrackingLabel;
     private JLabel sampledTimingLabel;
+    private JLabel samplingFrequencyLabel;
+    private JLabel samplingFrequencyUnitsLabel;
     private JLabel vmArgumentsLabel;
     private JLabel workingDirectoryLabel;
     private JPanel globalSettingsPanel;
 
     // --- UI components declaration ---------------------------------------------
     private JPanel settingsPanel;
+    private JPanel samplSettingsPanel;
+    private JPanel instrSettingsPanel;
     private JPanel threadsSettingsPanel;
     private JRadioButton exactTimingRadio;
     private JRadioButton sampledTimingRadio;
     private JSpinner limitThreadsSpinner;
     private JSpinner sampledTimingSpinner;
+    private JSpinner samplingFrequencySpinner;
     private JTextField vmArgumentsTextField;
     private JTextField workingDirectoryTextField;
     private WeakReference<JFileChooser> workingDirectoryChooserReference;
@@ -216,6 +227,16 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
+    
+    public void setProfilingType(int profilingType) {
+        if (profilingType == ProfilingSettings.PROFILE_CPU_SAMPLING) {
+            settingsPanel.removeAll();
+            settingsPanel.add(samplSettingsPanel);
+        } else {
+            settingsPanel.removeAll();
+            settingsPanel.add(instrSettingsPanel);
+        }
+    }
 
     public void setCPUProfilingType(int type) { // CommonConstants.INSTR_RECURSIVE_FULL or SAMPLED
         exactTimingRadio.setSelected(type == CommonConstants.CPU_INSTR_FULL);
@@ -229,6 +250,14 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         } else {
             return CommonConstants.CPU_INSTR_SAMPLED;
         }
+    }
+    
+    public void setSamplingFrequency(int samplingFrequency) {
+        samplingFrequencySpinner.setValue(Integer.valueOf(samplingFrequency));
+    }
+    
+    public int getSamplingFrequency() {
+        return ((Integer) samplingFrequencySpinner.getValue()).intValue();
     }
 
     public void setEntireAppDefaults(boolean isPreset) {
@@ -451,6 +480,9 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         instrumentMethodInvokeCheckbox.setEnabled(false);
         instrumentGettersSettersCheckbox.setEnabled(false);
         instrumentEmptyMethodsCheckbox.setEnabled(false);
+        samplingFrequencyLabel.setEnabled(false);
+        samplingFrequencyUnitsLabel.setEnabled(false);
+        samplingFrequencySpinner.setEnabled(false);
 
         threadsSettingsPanel.setEnabled(false);
         threadsMonitoringCheckbox.setEnabled(false);
@@ -485,6 +517,9 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         instrumentMethodInvokeCheckbox.setEnabled(true);
         instrumentGettersSettersCheckbox.setEnabled(true);
         instrumentEmptyMethodsCheckbox.setEnabled(true);
+        samplingFrequencyLabel.setEnabled(true);
+        samplingFrequencyUnitsLabel.setEnabled(true);
+        samplingFrequencySpinner.setEnabled(true);
 
         threadsSettingsPanel.setEnabled(true);
         threadsMonitoringCheckbox.setEnabled(true);
@@ -553,9 +588,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         ButtonGroup methodsTrackingRadiosGroup = new ButtonGroup();
 
         // settingsPanel
-        settingsPanel = new JPanel(new GridBagLayout());
+        settingsPanel = new JPanel(new BorderLayout());
         settingsPanel.setOpaque(false);
-        settingsPanel.setBorder(BorderFactory.createTitledBorder(SETTINGS_CAPTION));
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -564,6 +598,93 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.anchor = GridBagConstraints.NORTHWEST;
         constraints.insets = new Insets(0, 5, 10, 5);
         add(settingsPanel, constraints);
+        
+        // samplSettingsPanel
+        samplSettingsPanel = new JPanel(new GridBagLayout());
+        samplSettingsPanel.setOpaque(false);
+        samplSettingsPanel.setBorder(BorderFactory.createTitledBorder(SETTINGS_CAPTION));
+//        settingsPanel.add(samplSettingsPanel, "SAMPL");
+        
+        // samplingFrequencyContainer - definition
+        JPanel samplingFrequencyContainer = new JPanel(new GridBagLayout());
+
+        // samplingFrequencyLabel
+        samplingFrequencyLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(samplingFrequencyLabel, STP_SAMPLING_FREQUENCY_LABEL);
+        samplingFrequencyLabel.setToolTipText(STP_SAMPLING_FREQUENCY_TOOLTIP);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 0, 0, 5);
+        samplingFrequencyContainer.add(samplingFrequencyLabel, constraints);
+
+        // samplingFrequencySpinner
+        samplingFrequencySpinner = new JExtendedSpinner(new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1)) {
+                public Dimension getPreferredSize() {
+                    return new Dimension(55, getDefaultSpinnerHeight());
+                }
+
+                public Dimension getMinimumSize() {
+                    return getPreferredSize();
+                }
+            };
+        samplingFrequencySpinner.setToolTipText(STP_SAMPLING_FREQUENCY_TOOLTIP);
+        samplingFrequencySpinner.addChangeListener(getSettingsChangeListener());
+        constraints = new GridBagConstraints();
+        constraints.gridx = 1;
+        constraints.gridy = 0;
+        constraints.gridwidth = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 0, 0, 0);
+        samplingFrequencyContainer.add(samplingFrequencySpinner, constraints);
+
+        // sampledTimingLabel
+        samplingFrequencyUnitsLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(samplingFrequencyUnitsLabel, "&ms"); // NOI18N
+        samplingFrequencyUnitsLabel.setLabelFor(samplingFrequencySpinner);
+        samplingFrequencyUnitsLabel.setToolTipText(STP_SAMPLING_FREQUENCY_TOOLTIP);
+        samplingFrequencyUnitsLabel.setOpaque(false);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 2;
+        constraints.gridy = 0;
+        constraints.weightx = 1;
+        constraints.gridwidth = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 5, 0, 0);
+        samplingFrequencyContainer.add(samplingFrequencyUnitsLabel, constraints);
+
+        // sampledTimingContainer - customization
+        samplingFrequencyContainer.setOpaque(false);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(2, 7, 8, 0);
+        samplSettingsPanel.add(samplingFrequencyContainer, constraints);
+        
+        // fillerPanel
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 3;
+        constraints.weightx = 1;
+        constraints.weighty = 1;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
+        constraints.insets = new Insets(0, 0, 0, 0);
+        samplSettingsPanel.add(UIUtils.createFillerPanel(), constraints);
+        
+        // instrSettingsPanel
+        instrSettingsPanel = new JPanel(new GridBagLayout());
+        instrSettingsPanel.setOpaque(false);
+        instrSettingsPanel.setBorder(BorderFactory.createTitledBorder(SETTINGS_CAPTION));
 
         // methodsTrackingLabel
         methodsTrackingLabel = new JLabel(METHODS_TRACKING_LABEL_TEXT);
@@ -576,7 +697,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(2, 7, 0, 0);
-        settingsPanel.add(methodsTrackingLabel, constraints);
+        instrSettingsPanel.add(methodsTrackingLabel, constraints);
 
         // exactTimingRadio
         exactTimingRadio = new JRadioButton();
@@ -592,7 +713,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(5, 19, 0, 0);
-        settingsPanel.add(exactTimingRadio, constraints);
+        instrSettingsPanel.add(exactTimingRadio, constraints);
 
         // sampledTimingContainer - definition
         JPanel sampledTimingContainer = new JPanel(new GridBagLayout());
@@ -630,6 +751,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
                     return getPreferredSize();
                 }
             };
+        sampledTimingSpinner.setToolTipText(STP_SAMPLEDTIMING_TOOLTIP);
         sampledTimingSpinner.addChangeListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -644,7 +766,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         sampledTimingLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(sampledTimingLabel, "&ms"); // NOI18N
         sampledTimingLabel.setLabelFor(sampledTimingSpinner);
-        sampledTimingSpinner.setToolTipText(STP_SAMPLEDTIMING_TOOLTIP);
+        sampledTimingLabel.setToolTipText(STP_SAMPLEDTIMING_TOOLTIP);
         sampledTimingLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -665,7 +787,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(1, 19, 5, 0);
-        settingsPanel.add(sampledTimingContainer, constraints);
+        instrSettingsPanel.add(sampledTimingContainer, constraints);
 
         // excludeTimeCheckbox
         excludeTimeCheckbox = new JCheckBox();
@@ -680,7 +802,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(5, 7, 0, 0);
-        settingsPanel.add(excludeTimeCheckbox, constraints);
+        instrSettingsPanel.add(excludeTimeCheckbox, constraints);
 
         // profileFrameworkCheckbox
         profileFrameworkCheckbox = new JCheckBox();
@@ -700,7 +822,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(5, 7, 0, 0);
-        settingsPanel.add(profileFrameworkCheckbox, constraints);
+        instrSettingsPanel.add(profileFrameworkCheckbox, constraints);
 
         // profileSpawnedThreadsCheckbox
         profileSpawnedThreadsCheckbox = new JCheckBox();
@@ -715,7 +837,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(5, 7, 0, 0);
-        settingsPanel.add(profileSpawnedThreadsCheckbox, constraints);
+        instrSettingsPanel.add(profileSpawnedThreadsCheckbox, constraints);
 
         // limitThreadsContainer - definition
         JPanel limitThreadsContainer = new JPanel(new GridBagLayout());
@@ -771,7 +893,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(5, 7, 0, 0);
-        settingsPanel.add(limitThreadsContainer, constraints);
+        instrSettingsPanel.add(limitThreadsContainer, constraints);
 
         // useCPUTimerCheckbox
         useCPUTimerCheckbox = new JCheckBox();
@@ -786,7 +908,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(5, 7, 0, 0);
-        settingsPanel.add(useCPUTimerCheckbox, constraints);
+        instrSettingsPanel.add(useCPUTimerCheckbox, constraints);
 
         // instrumentationSchemeContainer - definition
         JPanel instrumentationSchemeContainer = new JPanel(new GridBagLayout());
@@ -835,7 +957,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(5, 7, 2, 0);
-        settingsPanel.add(instrumentationSchemeContainer, constraints);
+        instrSettingsPanel.add(instrumentationSchemeContainer, constraints);
 
         // instrumentLabel
         instrumentLabel = new JLabel(INSTRUMENT_LABEL_TEXT);
@@ -847,7 +969,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(5, 7, 0, 0);
-        settingsPanel.add(instrumentLabel, constraints);
+        instrSettingsPanel.add(instrumentLabel, constraints);
 
         // instrumentMethodInvokeCheckbox
         instrumentMethodInvokeCheckbox = new JCheckBox();
@@ -862,7 +984,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(2, 19, 0, 0);
-        settingsPanel.add(instrumentMethodInvokeCheckbox, constraints);
+        instrSettingsPanel.add(instrumentMethodInvokeCheckbox, constraints);
 
         // instrumentGettersSettersCheckbox
         instrumentGettersSettersCheckbox = new JCheckBox();
@@ -877,7 +999,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(1, 19, 0, 0);
-        settingsPanel.add(instrumentGettersSettersCheckbox, constraints);
+        instrSettingsPanel.add(instrumentGettersSettersCheckbox, constraints);
 
         // instrumentEmptyMethodsCheckbox
         instrumentEmptyMethodsCheckbox = new JCheckBox();
@@ -892,7 +1014,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(1, 19, 3, 0);
-        settingsPanel.add(instrumentEmptyMethodsCheckbox, constraints);
+        instrSettingsPanel.add(instrumentEmptyMethodsCheckbox, constraints);
 
         // threadsSettingsPanel
         threadsSettingsPanel = new JPanel(new GridBagLayout());

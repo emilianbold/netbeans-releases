@@ -79,6 +79,8 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilingRoots;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
 import org.netbeans.modules.profiler.stp.ui.FilterSetsPanel;
 import org.netbeans.modules.profiler.stp.ui.GlobalFiltersPanel;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
@@ -87,6 +89,7 @@ import org.netbeans.modules.profiler.stp.ui.QuickFilterPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -104,16 +107,20 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
                                                                       "CPUSettingsBasicPanel_OneRootString"); // NOI18N
     private static final String MORE_ROOTS_STRING = NbBundle.getMessage(CPUSettingsBasicPanel.class,
                                                                         "CPUSettingsBasicPanel_MoreRootsString"); // NOI18N
+    private static final String DEFAULT_ROOTS_STRING = NbBundle.getMessage(CPUSettingsBasicPanel.class,
+                                                                      "CPUSettingsBasicPanel_DefaultRootsString"); // NOI18N
+    private static final String CUSTOM_ROOTS_STRING = NbBundle.getMessage(CPUSettingsBasicPanel.class,
+                                                                        "CPUSettingsBasicPanel_CustomRootsString"); // NOI18N
     private static final String QUICK_FILTER_DIALOG_CAPTION = NbBundle.getMessage(CPUSettingsBasicPanel.class,
                                                                                   "CPUSettingsBasicPanel_QuickFilterDialogCaption"); // NOI18N
     private static final String FILTER_SETS_DIALOG_CAPTION = NbBundle.getMessage(CPUSettingsBasicPanel.class,
                                                                                  "CPUSettingsBasicPanel_FilterSetsDialogCaption"); // NOI18N
     private static final String GLOBAL_FILTERS_DIALOG_CAPTION = NbBundle.getMessage(CPUSettingsBasicPanel.class,
                                                                                     "CPUSettingsBasicPanel_GlobalFiltersDialogCaption"); // NOI18N
-    private static final String ENTIRE_APP_RADIO_TEXT = NbBundle.getMessage(CPUSettingsBasicPanel.class,
-                                                                            "CPUSettingsBasicPanel_EntireAppRadioText"); // NOI18N
-    private static final String PART_APP_RADIO_TEXT = NbBundle.getMessage(CPUSettingsBasicPanel.class,
-                                                                          "CPUSettingsBasicPanel_PartAppRadioText"); // NOI18N
+    private static final String SAMPLE_APP_RADIO_TEXT = NbBundle.getMessage(CPUSettingsBasicPanel.class,
+                                                                            "CPUSettingsBasicPanel_SampleAppRadioText"); // NOI18N
+    private static final String PROFILE_APP_RADIO_TEXT = NbBundle.getMessage(CPUSettingsBasicPanel.class,
+                                                                          "CPUSettingsBasicPanel_ProfileAppRadioText"); // NOI18N
     private static final String STOPWATCH_RADIO_TEXT = NbBundle.getMessage(CPUSettingsBasicPanel.class,
                                                                            "CPUSettingsBasicPanel_StopwatchRadioText"); // NOI18N
     private static final String FILTER_LABEL_TEXT = NbBundle.getMessage(CPUSettingsBasicPanel.class,
@@ -130,8 +137,8 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
                                                                       "CPUSettingsBasicPanel_ShowPpsString"); // NOI18N
     private static final String EDIT_GLOBAL_FILTER_STRING = NbBundle.getMessage(CPUSettingsBasicPanel.class,
                                                                                 "CPUSettingsBasicPanel_EditGlobalFilterString"); // NOI18N
-    private static final String STP_ENTIREAPP_TOOLTIP = NbBundle.getMessage(CPUSettingsBasicPanel.class, "StpEntireAppTooltip"); // NOI18N
-    private static final String STP_PARTAPP_TOOLTIP = NbBundle.getMessage(CPUSettingsBasicPanel.class, "StpPartAppTooltip"); // NOI18N
+    private static final String STP_SAMPLEAPP_TOOLTIP = NbBundle.getMessage(CPUSettingsBasicPanel.class, "StpSampleAppTooltip"); // NOI18N
+    private static final String STP_PROFILEAPP_TOOLTIP = NbBundle.getMessage(CPUSettingsBasicPanel.class, "StpProfileAppTooltip"); // NOI18N
     private static final String STP_FILTER_TOOLTIP = NbBundle.getMessage(CPUSettingsBasicPanel.class, "StpFilterTooltip"); // NOI18N
     private static final String STP_SHOWFILTER_TOOLTIP = NbBundle.getMessage(CPUSettingsBasicPanel.class, "StpShowFilterTooltip"); // NOI18N
     private static final String STP_EDITFILTER_TOOLTIP = NbBundle.getMessage(CPUSettingsBasicPanel.class, "StpEditFilterTooltip"); // NOI18N
@@ -160,8 +167,8 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     private JLabel filterLabel;
 
     // --- UI components declaration ---------------------------------------------
-    private JRadioButton entireAppRadio;
-    private JRadioButton partOfAppRadio;
+    private JRadioButton sampleAppRadio;
+    private JRadioButton profileAppRadio;
     private JRadioButton stopwatchRadio;
     private List<SimpleFilter> preferredInstrFilters;
     private Object selectedInstrumentationFilter = SimpleFilter.NO_FILTER;
@@ -208,18 +215,18 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     public void setProfilingType(int profilingType) {
-        entireAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE);
-        partOfAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_PART);
+        sampleAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_SAMPLING);
+        profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE ||
+                                       profilingType == ProfilingSettings.PROFILE_CPU_PART);
         stopwatchRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_STOPWATCH);
     }
 
     public int getProfilingType() {
-        if (entireAppRadio.isSelected()) {
-            return ProfilingSettings.PROFILE_CPU_ENTIRE;
-        }
-
-        if (partOfAppRadio.isSelected()) {
-            return ProfilingSettings.PROFILE_CPU_PART;
+        if (sampleAppRadio.isSelected()) {
+            return ProfilingSettings.PROFILE_CPU_SAMPLING;
+        } else if (profileAppRadio.isSelected()) {
+            return rootMethods.length == 0 ? ProfilingSettings.PROFILE_CPU_ENTIRE :
+                                             ProfilingSettings.PROFILE_CPU_PART;
         } else {
             return ProfilingSettings.PROFILE_CPU_STOPWATCH;
         }
@@ -313,18 +320,18 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         ButtonGroup cpuModeRadios = new ButtonGroup();
 
         // entireAppRadio
-        entireAppRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(entireAppRadio, ENTIRE_APP_RADIO_TEXT);
-        entireAppRadio.setToolTipText(STP_ENTIREAPP_TOOLTIP);
-        entireAppRadio.setOpaque(false);
-        entireAppRadio.setSelected(true);
-        cpuModeRadios.add(entireAppRadio);
-        entireAppRadio.addChangeListener(new ChangeListener() {
+        sampleAppRadio = new JRadioButton();
+        org.openide.awt.Mnemonics.setLocalizedText(sampleAppRadio, SAMPLE_APP_RADIO_TEXT);
+        sampleAppRadio.setToolTipText(STP_SAMPLEAPP_TOOLTIP);
+        sampleAppRadio.setOpaque(false);
+        sampleAppRadio.setSelected(true);
+        cpuModeRadios.add(sampleAppRadio);
+        sampleAppRadio.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     updateControls();
                 }
             });
-        entireAppRadio.addActionListener(getSettingsChangeListener());
+        sampleAppRadio.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -332,30 +339,30 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(15, 30, 0, 0);
-        add(entireAppRadio, constraints);
+        add(sampleAppRadio, constraints);
 
         // partOfAppContainer - definition
         JPanel partOfAppContainer = new JPanel(new GridBagLayout()) {
             public Dimension getPreferredSize() {
                 return new Dimension(super.getPreferredSize().width,
-                                     Math.max(partOfAppRadio.getPreferredSize().height,
+                                     Math.max(profileAppRadio.getPreferredSize().height,
                                               partOfAppHintLink.getPreferredSize().height));
             }
         };
 
         // partOfAppRadio
-        partOfAppRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(partOfAppRadio, PART_APP_RADIO_TEXT);
-        partOfAppRadio.setToolTipText(STP_PARTAPP_TOOLTIP);
-        partOfAppRadio.setOpaque(false);
-        partOfAppRadio.setSelected(true);
-        cpuModeRadios.add(partOfAppRadio);
-        partOfAppRadio.addChangeListener(new ChangeListener() {
+        profileAppRadio = new JRadioButton();
+        org.openide.awt.Mnemonics.setLocalizedText(profileAppRadio, PROFILE_APP_RADIO_TEXT);
+        profileAppRadio.setToolTipText(STP_PROFILEAPP_TOOLTIP);
+        profileAppRadio.setOpaque(false);
+        profileAppRadio.setSelected(true);
+        cpuModeRadios.add(profileAppRadio);
+        profileAppRadio.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     updateControls();
                 }
             });
-        partOfAppRadio.addActionListener(getSettingsChangeListener());
+        profileAppRadio.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -363,7 +370,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(0, 0, 0, 0);
-        partOfAppContainer.add(partOfAppRadio, constraints);
+        partOfAppContainer.add(profileAppRadio, constraints);
 
         // partOfAppHintLink
         Color linkColor = Color.RED;
@@ -736,11 +743,26 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     private void performRootMethodsAction() {
-        ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(rootMethods, project);
-        if (roots != null) {
-            rootMethods = roots;
-            updateControls();
-        }
+//        JOptionPane.showMessageDialog(null, Arrays.toString(rootMethods));
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+//                if (defaultRootMethods == null)
+//                    // TODO: provide FileObject if defined!
+//                    // TODO: include also subprojects according to the selected filter!
+//                    defaultRootMethods = ProjectContentsSupport.get(project).getProfilingRoots(null, false);
+//                if (rootMethods.length == 0)
+//                    rootMethods = defaultRootMethods;
+                ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(
+                        rootMethods.length == 0 ? ProjectContentsSupport.get(project).
+                        getProfilingRoots(null, ProjectUtilities.hasSubprojects(project)) :
+                        rootMethods, project);
+//                JOptionPane.showMessageDialog(null, Arrays.toString(roots));
+                if (roots != null) {
+                    rootMethods = roots;
+                    updateControls();
+                }
+            }
+        });
     }
 
     private void performShowFilterAction() {
@@ -835,41 +857,59 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
 
     private void updateControls() {
         // TODO: cleanup!!!
-        partOfAppHintLink.setVisible(partOfAppRadio.isSelected());
+        partOfAppHintLink.setVisible(profileAppRadio.isSelected());
         stopwatchHintLink.setVisible(stopwatchRadio.isSelected());
 
         boolean rootMethodsSubmitOK = true;
         boolean quickFilterSubmitOK = true;
 
-        if (partOfAppRadio.isSelected()) {
+        if (profileAppRadio.isSelected()) {
             Color linkColor = Color.RED;
             String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
             String textColorText = "rgb(" + Color.GRAY.getRed() + "," + Color.GRAY.getGreen() + "," + Color.GRAY.getBlue() + ")"; //NOI18N
             String labelText = ""; // NOI18N
             String labelFocusedText = ""; // NOI18N
 
-            if (rootMethods.length == 0) {
-                labelText = "<nobr>" + MessageFormat.format(NO_ROOTS_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
+////            if (rootMethods.length == 0) {
+////                labelText = "<nobr>" + MessageFormat.format(NO_ROOTS_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
+////                labelFocusedText = "<nobr>"
+////                                   + MessageFormat.format(NO_ROOTS_STRING,
+////                                                          new Object[] { textColorText, "color=\"" + colorText + "\"" })
+////                                   + "</nobr>"; //NOI18N
+////                rootMethodsSubmitOK = false;
+//            } else if (rootMethods.length == 1) {
+//                labelText = "<nobr>" + MessageFormat.format(ONE_ROOT_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
+//                labelFocusedText = "<nobr>"
+//                                   + MessageFormat.format(ONE_ROOT_STRING,
+//                                                          new Object[] { textColorText, "color=\"" + colorText + "\"" })
+//                                   + "</nobr>"; //NOI18N
+//                rootMethodsSubmitOK = true;
+//            } else {
+//                labelText = "<nobr>"
+//                            + MessageFormat.format(MORE_ROOTS_STRING, new Object[] { textColorText, rootMethods.length, "" })
+//                            + "</nobr>"; //NOI18N
+//                labelFocusedText = "<nobr>"
+//                                   + MessageFormat.format(MORE_ROOTS_STRING,
+//                                                          new Object[] {
+//                                                              textColorText, rootMethods.length, "color=\"" + colorText + "\""
+//                                                          }) + "</nobr>"; //NOI18N
+//                rootMethodsSubmitOK = true;
+//            }
+            /*} else*/ if (rootMethods.length == 0) {
+                labelText = "<nobr>" + MessageFormat.format(DEFAULT_ROOTS_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
                 labelFocusedText = "<nobr>"
-                                   + MessageFormat.format(NO_ROOTS_STRING,
-                                                          new Object[] { textColorText, "color=\"" + colorText + "\"" })
-                                   + "</nobr>"; //NOI18N
-                rootMethodsSubmitOK = false;
-            } else if (rootMethods.length == 1) {
-                labelText = "<nobr>" + MessageFormat.format(ONE_ROOT_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
-                labelFocusedText = "<nobr>"
-                                   + MessageFormat.format(ONE_ROOT_STRING,
+                                   + MessageFormat.format(DEFAULT_ROOTS_STRING,
                                                           new Object[] { textColorText, "color=\"" + colorText + "\"" })
                                    + "</nobr>"; //NOI18N
                 rootMethodsSubmitOK = true;
             } else {
                 labelText = "<nobr>"
-                            + MessageFormat.format(MORE_ROOTS_STRING, new Object[] { textColorText, rootMethods.length, "" })
+                            + MessageFormat.format(CUSTOM_ROOTS_STRING, new Object[] { textColorText, rootMethods.length, "" })
                             + "</nobr>"; //NOI18N
                 labelFocusedText = "<nobr>"
-                                   + MessageFormat.format(MORE_ROOTS_STRING,
+                                   + MessageFormat.format(CUSTOM_ROOTS_STRING,
                                                           new Object[] {
-                                                              textColorText, rootMethods.length, "color=\"" + colorText + "\""
+                                                              textColorText, "color=\"" + colorText + "\""
                                                           }) + "</nobr>"; //NOI18N
                 rootMethodsSubmitOK = true;
             }
@@ -917,7 +957,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
             lastProfilingPointsState = false;
         }
     }
-
+    
     private void updateEnabling() {
         profilingPointsLink.setEnabled(profilingPointsCheckbox.isSelected() && profilingPointsCheckbox.isEnabled());
     }

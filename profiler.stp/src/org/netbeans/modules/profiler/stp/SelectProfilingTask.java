@@ -79,7 +79,6 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilingSettingsManager;
@@ -600,7 +599,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         if (configurator != null) {
             synchronizeCurrentSettings();
 
-            ProfilingSettings settings = configurator.createFinalSettings();
+//            ProfilingSettings settings = configurator.createFinalSettings();
 
             final ProgressHandle pHandle = ProgressHandleFactory.createHandle(INIT_SESSION_STRING);
             pHandle.setInitialDelay(0);
@@ -608,28 +607,30 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             
             try {
 
-                if (project != null) {
+//                if (project != null) {
 // FIXXX                     
-                    boolean rootMethodsPending = settings.instrRootMethodsPending;
-                    boolean predefinedFilterPending = predefinedInstrFilterKeys.contains(settings.getSelectedInstrumentationFilter());
-
-                    if (rootMethodsPending || predefinedFilterPending) {
-                        // Lazily compute default root methods
-                        if (rootMethodsPending) {
-                            if (settings.getProfileUnderlyingFramework())
-                                settings.setInstrumentationRootMethods(new ClientUtils.SourceCodeSelection[0]);
-                            else
-                                settings.setInstrumentationRootMethods(ProjectContentsSupport.get(project).getProfilingRoots(profiledFile, false)); // TODO: true/false based on selected filter
-                        }
-
-                        // Lazily compute instrumentation filters
-                        if (predefinedFilterPending) {
-                            settings.setSelectedInstrumentationFilter(getResolvedPredefinedFilter((SimpleFilter) settings.getSelectedInstrumentationFilter()));
-                        }
-                    }
-                }
+//                    boolean rootMethodsPending = settings.instrRootMethodsPending;
+//                    boolean predefinedFilterPending = predefinedInstrFilterKeys.contains(settings.getSelectedInstrumentationFilter());
+//
+//                    if (rootMethodsPending || predefinedFilterPending) {
+//                        // Lazily compute default root methods
+//                        if (rootMethodsPending) {
+//                            if (settings.getProfileUnderlyingFramework())
+//                                settings.setInstrumentationRootMethods(new ClientUtils.SourceCodeSelection[0]);
+//                            else
+//                                settings.setInstrumentationRootMethods(ProjectContentsSupport.get(project).getProfilingRoots(profiledFile, false)); // TODO: true/false based on selected filter
+//                        }
+//
+//                        // Lazily compute instrumentation filters
+//                        if (predefinedFilterPending) {
+//                            settings.setSelectedInstrumentationFilter(getResolvedPredefinedFilter((SimpleFilter) settings.getSelectedInstrumentationFilter()));
+//                        }
+//                    }
+//                }
                 
-                return settings;
+//                return settings;
+                
+                return configurator.createFinalSettings();
             
             } finally {
                 SwingUtilities.invokeLater(new Runnable() { // use SwingUtilities to give the UI some time when result is computed too soon

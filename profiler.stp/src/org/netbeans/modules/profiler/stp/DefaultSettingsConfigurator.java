@@ -53,7 +53,10 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.lib.profiler.common.filters.SimpleFilter;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
+import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
 import org.openide.util.Lookup;
 
 
@@ -150,7 +153,9 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
                 advancedSettingsPanel.enableAll();
             }
 
+            advancedSettingsPanel.setProfilingType(settings.getProfilingType());
             advancedSettingsPanel.setCPUProfilingType(settings.getCPUProfilingType());
+            advancedSettingsPanel.setSamplingFrequency(settings.getSamplingFrequency());
             advancedSettingsPanel.setSamplingInterval(settings.getSamplingInterval());
             advancedSettingsPanel.setExcludeThreadTime(settings.getExcludeWaitTime());
             advancedSettingsPanel.setProfileSpawnedThreads(settings.getInstrumentSpawnedThreads());
@@ -193,12 +198,13 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             // basicSettingsPanel
             finalSettings.setProfilingType(basicSettingsPanel.getProfilingType());
-
-            finalSettings.setSelectedInstrumentationFilter(basicSettingsPanel.getInstrumentationFilter());
+//            finalSettings.setInstrumentationRootMethods(basicSettingsPanel.getRootMethods());
+//            finalSettings.setSelectedInstrumentationFilter(basicSettingsPanel.getInstrumentationFilter());
             finalSettings.setUseProfilingPoints(basicSettingsPanel.getUseProfilingPoints());
 
             // advancedSettingsPanel
             finalSettings.setCPUProfilingType(advancedSettingsPanel.getCPUProfilingType());
+            finalSettings.setSamplingFrequency(advancedSettingsPanel.getSamplingFrequency());
             finalSettings.setSamplingInterval(advancedSettingsPanel.getSamplingInterval());
             finalSettings.setExcludeWaitTime(advancedSettingsPanel.getExcludeThreadTime());
             finalSettings.setProfileUnderlyingFramework(advancedSettingsPanel.getProfileFramework());
@@ -216,14 +222,29 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             finalSettings.setWorkingDir(advancedSettingsPanel.getWorkingDirectory());
             finalSettings.setJavaPlatformName(advancedSettingsPanel.getJavaPlatformName());
             finalSettings.setJVMArgs(advancedSettingsPanel.getVMArguments());
-
+            
             // generated settings
-            if (finalSettings.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE) {
+//            ClientUtils.SourceCodeSelection[] emptyRoots = new ClientUtils.SourceCodeSelection[0];
+            if (finalSettings.getProfileUnderlyingFramework()) {
                 finalSettings.setInstrumentationRootMethods(new ClientUtils.SourceCodeSelection[0]);
-                finalSettings.instrRootMethodsPending = true;
+            } else if (finalSettings.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE) {
+                finalSettings.setInstrumentationRootMethods(ProjectContentsSupport.get(project).
+                        getProfilingRoots(profiledFile, ProjectUtilities.hasSubprojects(project)));
             } else {
                 finalSettings.setInstrumentationRootMethods(basicSettingsPanel.getRootMethods());
             }
+            
+            finalSettings.setSelectedInstrumentationFilter(SelectProfilingTask.getDefault().
+                    getResolvedPredefinedFilter((SimpleFilter)basicSettingsPanel.getInstrumentationFilter()));
+            
+
+//            // generated settings
+//            if (finalSettings.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE) {
+//                finalSettings.setInstrumentationRootMethods(new ClientUtils.SourceCodeSelection[0]);
+//                finalSettings.instrRootMethodsPending = true;
+//            } else {
+//                finalSettings.setInstrumentationRootMethods(basicSettingsPanel.getRootMethods());
+//            }
 
             return finalSettings;
         }
@@ -254,6 +275,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             } else {
                 advancedSettingsPanel.setPartOfAppDefaults(isPreset);
             }
+            advancedSettingsPanel.setProfilingType(basicSettingsPanel.getProfilingType());
 
             //      }
         }
@@ -270,6 +292,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             // advancedSettingsPanel
             settings.setCPUProfilingType(advancedSettingsPanel.getCPUProfilingType());
+            settings.setSamplingFrequency(advancedSettingsPanel.getSamplingFrequency());
             settings.setSamplingInterval(advancedSettingsPanel.getSamplingInterval());
             settings.setExcludeWaitTime(advancedSettingsPanel.getExcludeThreadTime());
             settings.setProfileUnderlyingFramework(advancedSettingsPanel.getProfileFramework());
