@@ -342,11 +342,6 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         } else {
             // fold spans multiple lines
             infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed()));
-
-            if (!f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
-                int y2 = btui.getYFromPos(lineStartOffset2);
-                infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h));
-            }
         }
 
         if (!f.isCollapsed()) {
@@ -370,6 +365,16 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     return false;
                 }
             }
+        }
+
+        // Handle end mark after possible inner folds were processed because
+        // otherwise if there would be two nested folds both ending at the same line
+        // then the end mark for outer one would be replaced by an end mark for inner one
+        // (same key in infos map) and the painting code would continue to paint line marking a fold
+        // until next fold is reached (or end of doc).
+        if (lineStartOffset1 != lineStartOffset2 && !f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
+            int y2 = btui.getYFromPos(lineStartOffset2);
+            infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h));
         }
 
         return true;
@@ -528,6 +533,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             int plusGap = (int)Math.round(markSize / 3.8); // distance between mark rectangle vertical side and start/end of minus sign
             int lineX = markX + halfMarkSize; // x position of the centre of mark
 
+            LOG.fine("CFSBar: PAINT START ------\n");
             PaintInfo previousInfo = null;
             for(PaintInfo paintInfo : ps) {
                 boolean isFolded = paintInfo.isCollapsed();
@@ -538,12 +544,16 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
 
                 if (previousInfo == null) {
                     if (paintInfo.getInnerLevel() > 0 || paintOperation == PAINT_END_MARK) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("prevInfo=NULL; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                        }
                         g.drawLine(lineX, clip.y, lineX, y);
                     }
                 } else {
                     if (previousInfo.getInnerLevel() > 0 ||
                         (previousInfo.getPaintOperation() == PAINT_MARK && !previousInfo.isCollapsed()))
                     {
+                        // Draw middle vertical line
                         g.drawLine(lineX, previousInfo.getPaintY() + previousInfo.getPaintHeight(), lineX, y);
                     }
                 }
@@ -552,9 +562,15 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     g.drawRect(markX, markY, markSize, markSize);
                     g.drawLine(plusGap + markX, markY + halfMarkSize, markSize + markX - plusGap, markY + halfMarkSize);
                     if (isFolded) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("PAINT_(SINGLE_)MARK: folded; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                        }
                         g.drawLine(lineX, markY + plusGap, lineX, markY + markSize - plusGap);
                     } else {
                         if (paintOperation != SINGLE_PAINT_MARK) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("PAINT_(SINGLE_)MARK: non-single; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                            }
                             g.drawLine(lineX, markY + markSize, lineX, y + height);
                         }
                     }
@@ -567,12 +583,21 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     visibleMarks.add(new Mark(markX, markY, markSize, isFolded));
 
                 } else if (paintOperation == PAINT_LINE) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("PAINT_LINE: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                    }
                     g.drawLine(lineX, y, lineX, y + height );
 
                 } else if (paintOperation == PAINT_END_MARK) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("PAINT_END_MARK: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                    }
                     g.drawLine(lineX, y, lineX, y + height / 2);
                     g.drawLine(lineX, y + height / 2, lineX + halfMarkSize, y + height / 2);
                     if (paintInfo.getInnerLevel() > 0) {//[PENDING]
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("  PAINT middle-line\n"); // NOI18N
+                        }
                         g.drawLine(lineX, y + height / 2, lineX, y + height);
                     }
                 }
@@ -590,6 +615,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         } catch (BadLocationException ble) {
             LOG.log(Level.WARNING, null, ble);
         } finally {
+            LOG.fine("CFSBar: PAINT END ------\n\n");
             adoc.readUnlock();
         }
     }
@@ -667,16 +693,16 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         public @Override String toString(){
             StringBuffer sb = new StringBuffer("");
             if (paintOperation == PAINT_NOOP){
-                sb.append("PAINT_NOOP\n"); // NOI18N
+                sb.append("PAINT_NOOP"); // NOI18N
             }else if (paintOperation == PAINT_MARK){
-                sb.append("PAINT_MARK\n"); // NOI18N
+                sb.append("PAINT_MARK"); // NOI18N
             }else if (paintOperation == PAINT_LINE){
-                sb.append("PAINT_LINE\n"); // NOI18N
+                sb.append("PAINT_LINE"); // NOI18N
             }else if (paintOperation == PAINT_END_MARK) {
-                sb.append("PAINT_END_MARK\n"); // NOI18N
+                sb.append("PAINT_END_MARK"); // NOI18N
             }
-            sb.append("level:"+innerLevel); // NOI18N
-            sb.append("\ncollapsedFold:"+isCollapsed); // NOI18N
+            sb.append(",L:").append(innerLevel); // NOI18N
+            sb.append(',').append(isCollapsed ? "C" : "E"); // NOI18N
             return sb.toString();
         }
     }
