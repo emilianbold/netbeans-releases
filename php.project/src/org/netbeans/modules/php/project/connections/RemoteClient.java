@@ -716,9 +716,10 @@ public final class RemoteClient implements Cancellable {
 
                 if (!target.exists()) {
                     try {
-                        foTarget = foSource.getParent().createData(foSource.getName());
+                        // both files are in the same directory...
+                        foTarget = foSource.getParent().createData(target.getName());
                     } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "Error while creating local file", ex);
+                        LOGGER.log(Level.WARNING, "Error while creating local file '" + target + "'", ex);
                         moved.getAndSet(false);
                         return;
                     }
@@ -743,7 +744,6 @@ public final class RemoteClient implements Cancellable {
                             out = foTarget.getOutputStream(lock);
                             try {
                                 FileUtil.copy(in, out);
-                                foSource.delete();
                                 moved.getAndSet(true);
                             } finally {
                                 out.close();
@@ -757,6 +757,15 @@ public final class RemoteClient implements Cancellable {
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Error while moving local file", ex);
                     moved.getAndSet(false);
+                } finally {
+                    try {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("Deleting source file %s", tmpLocalFileName));
+                        }
+                        foSource.delete();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING, "Cannot delete file '" + foSource + "'", ex);
+                    }
                 }
 
                 if (LOGGER.isLoggable(Level.FINE)) {
