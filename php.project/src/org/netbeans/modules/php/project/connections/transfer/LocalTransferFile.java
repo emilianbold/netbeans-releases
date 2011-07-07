@@ -51,17 +51,22 @@ import org.netbeans.modules.php.project.util.PhpProjectUtils;
 final class LocalTransferFile extends TransferFile {
 
     private final File file;
+    private final boolean forceDirectory;
 
 
-    LocalTransferFile(File file, TransferFile parent, String baseDirectory) {
+    LocalTransferFile(File file, TransferFile parent, String baseDirectory, boolean forceDirectory) {
         super(parent, baseDirectory);
         this.file = file;
+        this.forceDirectory = forceDirectory;
 
         if (file == null) {
             throw new NullPointerException("Local file cannot be null");
         }
         if (!file.getAbsolutePath().startsWith(baseDirectory)) {
             throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' must be underneath base directory '" + baseDirectory + "'");
+        }
+        if (forceDirectory && file.isFile()) {
+            throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' can't be forced as a directory since it is a file");
         }
     }
 
@@ -90,17 +95,25 @@ final class LocalTransferFile extends TransferFile {
 
     @Override
     public boolean isDirectory() {
-        if (!file.exists()) {
-            // assume folder for non-existing file => recursive fetch
-            // (happens e.g. for the 1st download from remote server to _empty_ project directory)
-            return true;
+        if (file.exists()) {
+            boolean directory = file.isDirectory();
+            if (!directory && forceDirectory) {
+                assert false : "File forced as directory but is regular existing file";
+            }
+            return directory;
         }
-        return file.isDirectory();
+        return forceDirectory;
     }
 
     @Override
     public boolean isFile() {
-        return file.isFile();
+        if (file.exists()) {
+            if (forceDirectory) {
+                assert false : "File forced as directory but is regular existing file";
+            }
+            return file.isFile();
+        }
+        return !forceDirectory;
     }
 
     @Override

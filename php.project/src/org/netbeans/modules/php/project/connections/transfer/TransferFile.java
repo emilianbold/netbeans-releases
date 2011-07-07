@@ -98,24 +98,41 @@ public abstract class TransferFile {
     public static TransferFile fromFileObject(TransferFile parent, FileObject fo, String baseDirectory) {
         assert fo != null;
 
-        return fromFile(parent, FileUtil.toFile(fo), baseDirectory);
+        return fromFile(parent, FileUtil.toFile(fo), baseDirectory, fo.isFolder());
     }
 
     /**
-     * Implementation for {@link File}.
+     * Implementation for {@link File} (can be file or directory).
+     * <p>
+     * Suitable for most cases. Non-existing files are considered to be {@link File#isFile() files}.
      * <p>
      * The given file will be normalized.
      * @param parent parent remote file, can be {@code null}
      * @param file local file to be used
      * @param baseDirectory base directory local and remote paths are resolved to
      * @return new remote file for the given parameters
+     * @see #fromDirectory(TransferFile, File, String)
      */
     public static TransferFile fromFile(TransferFile parent, File file, String baseDirectory) {
-        TransferFile transferFile = new LocalTransferFile(FileUtil.normalizeFile(file), parent, baseDirectory);
-        if (parent != null) {
-            parent.addChild(transferFile);
-        }
-        return transferFile;
+        return fromFile(parent, file, baseDirectory, false);
+    }
+
+    /**
+     * Implementation for {@link File directory} (it means
+     * that the provided file <b>cannot</b> be a regular file).
+     * <p>
+     * Suitable for special cases when the given {@code file} should be considered
+     * to be a directory (applies e.g. for non-existing files).
+     * <p>
+     * The given file will be normalized.
+     * @param parent parent remote file, can be {@code null}
+     * @param file local file to be used
+     * @param baseDirectory base directory local and remote paths are resolved to
+     * @return new remote file for the given parameters
+     * @see #fromFile(TransferFile, File, String)
+     */
+    public static TransferFile fromDirectory(TransferFile parent, File file, String baseDirectory) {
+        return fromFile(parent, file, baseDirectory, true);
     }
 
     /**
@@ -127,6 +144,14 @@ public abstract class TransferFile {
      */
     public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, String baseDirectory) {
         TransferFile transferFile = new RemoteTransferFile(remoteFile, parent, baseDirectory);
+        if (parent != null) {
+            parent.addChild(transferFile);
+        }
+        return transferFile;
+    }
+
+    private static TransferFile fromFile(TransferFile parent, File file, String baseDirectory, boolean forceDirectory) {
+        TransferFile transferFile = new LocalTransferFile(FileUtil.normalizeFile(file), parent, baseDirectory, forceDirectory);
         if (parent != null) {
             parent.addChild(transferFile);
         }

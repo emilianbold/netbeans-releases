@@ -501,7 +501,14 @@ public final class RemoteClient implements Cancellable {
         for (File f : filesToDownload) {
             if (isVisible(f)) {
                 LOGGER.log(Level.FINE, "File {0} added to download queue", f);
-                queue.offer(TransferFile.fromFile(null, f, baseLocalAbsolutePath));
+                TransferFile tf;
+                if (f.exists()) {
+                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath);
+                } else {
+                    // assume folder for non-existing file => recursive fetch
+                    tf = TransferFile.fromDirectory(null, f, baseLocalAbsolutePath);
+                }
+                queue.offer(tf);
             } else {
                 LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", f);
             }
