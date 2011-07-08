@@ -534,12 +534,13 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             int lineX = markX + halfMarkSize; // x position of the centre of mark
 
             LOG.fine("CFSBar: PAINT START ------\n");
+            int descent = g.getFontMetrics(defFont).getDescent();
             PaintInfo previousInfo = null;
             for(PaintInfo paintInfo : ps) {
                 boolean isFolded = paintInfo.isCollapsed();
                 int y = paintInfo.getPaintY();
                 int height = paintInfo.getPaintHeight();
-                int markY = y + g.getFontMetrics(defFont).getDescent(); // y position of mark rectangle
+                int markY = y + descent; // y position of mark rectangle
                 int paintOperation = paintInfo.getPaintOperation();
 
                 if (previousInfo == null) {
@@ -554,22 +555,41 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                         (previousInfo.getPaintOperation() == PAINT_MARK && !previousInfo.isCollapsed()))
                     {
                         // Draw middle vertical line
-                        g.drawLine(lineX, previousInfo.getPaintY() + previousInfo.getPaintHeight(), lineX, y);
+                        int prevY = previousInfo.getPaintY();
+                        if (y == prevY) { // Draw vertical but skip mark
+                            g.drawLine(lineX, prevY, lineX, prevY + descent);
+                            if (paintInfo.getInnerLevel() > 0) {
+                                g.drawLine(lineX, prevY + descent + markSize, lineX, prevY + height);
+                            } else {
+                                // Need to explicitly clear the previously drawn line under the mark
+                                Color origColor = g.getColor();
+                                g.setColor(backColor);
+                                try {
+                                    // Add one extra pixel to not clear rectangle around '+' sign
+                                    g.drawLine(lineX, prevY + descent + markSize + 1, lineX, prevY + height);
+                                } finally {
+                                    g.setColor(origColor);
+                                }
+                            }
+                        } else {
+                            g.drawLine(lineX, prevY + previousInfo.getPaintHeight(), lineX, y);
+                        }
                     }
                 }
 
                 if (paintOperation == PAINT_MARK || paintOperation == SINGLE_PAINT_MARK) {
                     g.drawRect(markX, markY, markSize, markSize);
                     g.drawLine(plusGap + markX, markY + halfMarkSize, markSize + markX - plusGap, markY + halfMarkSize);
+                    String opStr = (paintOperation == PAINT_MARK) ? "PAINT_MARK" : "SINGLE_PAINT_MARK"; // NOI18N
                     if (isFolded) {
                         if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("PAINT_(SINGLE_)MARK: folded; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                            LOG.fine(opStr + ": folded; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                         }
                         g.drawLine(lineX, markY + plusGap, lineX, markY + markSize - plusGap);
                     } else {
                         if (paintOperation != SINGLE_PAINT_MARK) {
                             if (LOG.isLoggable(Level.FINE)) {
-                                LOG.fine("PAINT_(SINGLE_)MARK: non-single; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
+                                LOG.fine(opStr + ": non-single; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                             }
                             g.drawLine(lineX, markY + markSize, lineX, y + height);
                         }
@@ -577,6 +597,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     if (paintInfo.getInnerLevel() > 0) { //[PENDING]
                         g.drawLine(lineX, y, lineX, markY);
                         if (paintOperation != CodeFoldingSideBar.SINGLE_PAINT_MARK) {
+                            // This is an error in case there's a next paint info at the same y which is an end mark
+                            // for this mark (it must be cleared explicitly).
                             g.drawLine(lineX, markY + markSize, lineX, y + height);
                         }
                     }
@@ -592,13 +614,15 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.fine("PAINT_END_MARK: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                     }
-                    g.drawLine(lineX, y, lineX, y + height / 2);
-                    g.drawLine(lineX, y + height / 2, lineX + halfMarkSize, y + height / 2);
-                    if (paintInfo.getInnerLevel() > 0) {//[PENDING]
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("  PAINT middle-line\n"); // NOI18N
+                    if (previousInfo == null || y != previousInfo.getPaintY()) {
+                        g.drawLine(lineX, y, lineX, y + height / 2);
+                        g.drawLine(lineX, y + height / 2, lineX + halfMarkSize, y + height / 2);
+                        if (paintInfo.getInnerLevel() > 0) {//[PENDING]
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("  PAINT middle-line\n"); // NOI18N
+                            }
+                            g.drawLine(lineX, y + height / 2, lineX, y + height);
                         }
-                        g.drawLine(lineX, y + height / 2, lineX, y + height);
                     }
                 }
 
