@@ -133,7 +133,7 @@ public final class Utils {
     /**
      * Keeps track about already logged metrics events
      */
-    private static Set<String> metrics = new HashSet<String>(3);
+    private static final Set<String> metrics = new HashSet<String>(3);
 
     private static File[] getUnversionedFolders () {
         if (unversionedFolders == null) {
@@ -484,7 +484,7 @@ public final class Utils {
                 flat.add(files[i]);
             }
         }
-        if (flat.size() == 0) {
+        if (flat.isEmpty()) {
             return new File[][] { new File[0], files };
         } else {
             Set<File> allFiles = new HashSet<File>(Arrays.asList(files));
@@ -550,12 +550,13 @@ public final class Utils {
     public static Reader getDocumentReader(final Document doc) {
         final String[] str = new String[1];
         Runnable run = new Runnable() {
+            @Override
             public void run () {
                 try {
                     str[0] = doc.getText(0, doc.getLength());
                 } catch (javax.swing.text.BadLocationException e) {
                     // impossible
-                    e.printStackTrace();
+                    LOG.log(Level.INFO, null, e);
                 }
             }
         };
@@ -1154,49 +1155,62 @@ public final class Utils {
             this.file = file;
         }
 
+        @Override
         public InputStream inputStream() throws IOException {
             return file.getInputStream();
         }
 
+        @Override
         public OutputStream outputStream() throws IOException {
             throw new IOException();
         }
 
+        @Override
         public Date getTime() {
             return file.lastModified();
         }
 
+        @Override
         public String getMimeType() {
             return file.getMIMEType();
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
         }
 
+        @Override
         public void addVetoableChangeListener(VetoableChangeListener l) {
         }
 
+        @Override
         public void removeVetoableChangeListener(VetoableChangeListener l) {
         }
 
+        @Override
         public boolean isValid() {
             return file.isValid();
         }
 
+        @Override
         public boolean isModified() {
             return false;
         }
 
+        @Override
         public void markModified() throws IOException {
             throw new IOException();
         }
 
+        @Override
         public void unmarkModified() {
         }
 
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return null;
         }
@@ -1218,22 +1232,27 @@ public final class Utils {
             kit.read(new InputStreamReader(stream, charset), doc, 0);
         }
 
+        @Override
         protected String messageSave() {
             return name;
         }
 
+        @Override
         protected String messageName() {
             return name;
         }
 
+        @Override
         protected String messageToolTip() {
             return name;
         }
 
+        @Override
         protected String messageOpening() {
             return name;
         }
 
+        @Override
         protected String messageOpened() {
             return name;
         }
@@ -1286,6 +1305,7 @@ public final class Utils {
     }
 
     private static class LogTask implements Runnable {
+        @Override
         public void run() {
             File[] folders;
             synchronized (foldersToCheck) {
