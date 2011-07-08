@@ -40,11 +40,10 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.indexer.api;
+package org.netbeans.modules.maven.indexer;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -53,11 +52,14 @@ import org.apache.maven.index.ArtifactInfo;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.openide.util.test.TestFileUtils;
 
-public class RepositoryQueriesTest extends NbTestCase {
+public class NexusRepositoryIndexerImplTest extends NbTestCase {
 
-    public RepositoryQueriesTest(String n) {
+    public NexusRepositoryIndexerImplTest(String n) {
         super(n);
     }
 
@@ -65,6 +67,7 @@ public class RepositoryQueriesTest extends NbTestCase {
     private MavenEmbedder embedder;
     private ArtifactInstaller artifactInstaller;
     private RepositoryInfo info;
+    private NexusRepositoryIndexerImpl nrii;
     
     @SuppressWarnings("deprecation") // no documented replacement
     @Override protected void setUp() throws Exception {
@@ -77,6 +80,7 @@ public class RepositoryQueriesTest extends NbTestCase {
         artifactInstaller = embedder.lookupComponent(ArtifactInstaller.class);
         info = new RepositoryInfo("test", RepositoryPreferences.TYPE_NEXUS, "Test", repo.getAbsolutePath(), null);
         RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
+        nrii = new NexusRepositoryIndexerImpl();
     }
 
     @Override protected Level logLevel() {
@@ -94,7 +98,7 @@ public class RepositoryQueriesTest extends NbTestCase {
 
     public void testFilterGroupIds() throws Exception {
         install(File.createTempFile("whatever", ".txt", getWorkDir()), "test", "spin", "1.1", "txt");
-        assertEquals(Collections.singleton("test"), RepositoryQueries.filterGroupIds("", info));
+        assertEquals(Collections.singleton("test"), nrii.filterGroupIds("", Collections.singletonList(info)));
     }
 
     public void testFind() throws Exception {
@@ -110,7 +114,7 @@ public class RepositoryQueriesTest extends NbTestCase {
         qf.setValue("stuff");
         qf.setOccur(QueryField.OCCUR_MUST);
         qf.setMatch(QueryField.MATCH_EXACT);
-        assertEquals("[test:plugin:0:test]", RepositoryQueries.find(Collections.singletonList(qf), info).toString());
+        assertEquals("[test:plugin:0:test]", nrii.find(Collections.singletonList(qf), Collections.singletonList(info)).toString());
     }
     
 }
