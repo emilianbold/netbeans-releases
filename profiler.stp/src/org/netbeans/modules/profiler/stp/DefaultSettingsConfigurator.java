@@ -123,9 +123,8 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
                 return 0f;
             }
 
-            synchronizeBasicAdvancedPanels();
-//JOptionPane.showMessageDialog(null, pss.getClass().getName() + "\n\n" + pss.getProfilingOverhead(createFinalSettings()));
-            return pss.getProfilingOverhead(createFinalSettings());
+            synchronizeSettings();
+            return pss.getProfilingOverhead(settings);
         }
 
         public void setSettings(ProfilingSettings settings) {
@@ -377,9 +376,8 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
                 return 0f;
             }
 
-            synchronizeBasicAdvancedPanels();
-
-            return pss.getProfilingOverhead(createFinalSettings());
+            synchronizeSettings();
+            return pss.getProfilingOverhead(settings);
         }
 
         public void setSettings(ProfilingSettings settings) {
@@ -568,9 +566,8 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
                 return 0f;
             }
 
-            synchronizeBasicAdvancedPanels();
-
-            return pss.getProfilingOverhead(createFinalSettings());
+            synchronizeSettings();
+            return pss.getProfilingOverhead(settings);
         }
 
         public void setSettings(ProfilingSettings settings) {
