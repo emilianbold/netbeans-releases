@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.smarty;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
@@ -150,7 +151,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
             if (fs.isFound()) {
                 return true;
             } else {
-                ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     @Override
                     public void run() {
                         FileObject sourceDirectory = phpModule.getSourceDirectory();
@@ -159,8 +160,8 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
                             fs.setFound(true);
                         }
                     }
-                }, NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "MSG_SearchingForSmartyExt"));
-                
+                }, NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "MSG_SearchingForSmartyExt"), 
+                   new AtomicBoolean(false), false, 1000, 10000);
             }
             return fs.isFound();
         } finally {
