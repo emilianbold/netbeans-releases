@@ -234,8 +234,13 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
                 finalSettings.setInstrumentationRootMethods(basicSettingsPanel.getRootMethods());
             }
             
-            finalSettings.setSelectedInstrumentationFilter(SelectProfilingTask.getDefault().
-                    getResolvedPredefinedFilter((SimpleFilter)basicSettingsPanel.getInstrumentationFilter()));
+            Object selectedFilter = basicSettingsPanel.getInstrumentationFilter();
+            if (SelectProfilingTask.getDefault().isPredefinedFilter(selectedFilter)) {
+                 finalSettings.setSelectedInstrumentationFilter(SelectProfilingTask.getDefault().
+                    getResolvedPredefinedFilter((SimpleFilter)selectedFilter));
+            } else {
+                finalSettings.setSelectedInstrumentationFilter(selectedFilter);
+            }
             
 
 //            // generated settings
