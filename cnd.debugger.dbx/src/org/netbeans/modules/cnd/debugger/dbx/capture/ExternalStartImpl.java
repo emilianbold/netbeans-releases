@@ -167,13 +167,10 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
 
 	// construct command for starting Xbridge server
         String bridgeName = host.getRemoteStudioLocation() + "/lib/dbx/xstart_bridge_svc" ; // NOI18N
-	NetAddr net_addr = svc.inet_address(false);
-
-	/* LATER CR 6795459
 	HostInfo hostInfo;
 	if (host.isRemote()) {
-	    SecurityStyle securityStyle = new SecurityStyle.Rsh();
-	    // securityStyle = RemoteSupport.securityStyle(host.getSecuritySettings());
+	    SecurityStyle securityStyle;
+	    securityStyle = RemoteSupport.securityStyle(host.getSecuritySettings());
 
 	    svc.setSecurityStyle(securityStyle);
 	    hostInfo = new HostInfo(host.getHostName(),
@@ -184,7 +181,6 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
 	    hostInfo = null;
 	}
 	NetAddr net_addr = svc.inet_address(false, hostInfo);
-	*/
 	
 	if (Log.Start.capture_xstart) {
 	    if (!net_addr.parse(net_addr.toString())) {
