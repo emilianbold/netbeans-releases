@@ -244,9 +244,9 @@
                 <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
+                <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
-                <friend>com.sun.tools.tuxedo.componentproject</friend>
-                <friend>com.sun.tools.tuxedo.suites</friend>
                 <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>
