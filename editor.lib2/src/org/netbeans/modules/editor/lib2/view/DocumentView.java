@@ -830,6 +830,9 @@ public final class DocumentView extends EditorView
         if (lock()) {
             try {
                 checkDocumentLockedIfLogging(); // Should only be called with read-locked document
+                if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
+                    ViewHierarchy.CHANGE_LOG.fine("OFFSET-REPAINT: <" + startOffset + "," + endOffset + ">\n");
+                }
                 if (isActive() && startOffset < endOffset) {
                     Rectangle2D repaintRect;
                     Rectangle2D.Double docViewRect = getAllocation();
@@ -848,7 +851,8 @@ public final class DocumentView extends EditorView
                         }
                     } else { // Spans paragraphs
                         docViewRect.y = getY(pViewIndex);
-                        docViewRect.height = getY(getViewIndex(endOffset)) - docViewRect.y;
+                        int endIndex = getViewIndex(endOffset) + 1;
+                        docViewRect.height = getY(endIndex) - docViewRect.y;
                         extendToVisibleWidth(docViewRect);
                         repaintRect = docViewRect;
                     }
