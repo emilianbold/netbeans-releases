@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking;
+package org.netbeans.modules.bugtracking.util;
 
 import java.util.List;
 import junit.framework.TestCase;
