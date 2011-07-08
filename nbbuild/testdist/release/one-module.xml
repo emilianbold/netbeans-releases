@@ -118,6 +118,7 @@ made subject to such option by the copyright holder.
             <classpath refid="test.cp"/>
             <syspropertyset refid="test.properties"/>
             <sysproperty key="nbjunit.workdir" path="${nbjunit.workdir}"/>
+            <sysproperty key="nbjunit.hard.timeout" value="${test.timeout}"/>
             <jvmarg line="${test.run.args}"/>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
