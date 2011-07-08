@@ -89,7 +89,8 @@ public class ProfilerTypeUtilsImpl implements ProfilerTypeUtilsProvider {
     @Override
     public Collection<String> getMainClasses(Provider project) {
         List<String> classNames = new ArrayList<String>();
-        FileObject[] srcRoots = ProjectUtilities.getSourceRoots(project, false);
+        Project nbproject = project.getLookup().lookup(Project.class);
+        FileObject[] srcRoots = ProjectUtilities.getSourceRoots(nbproject, false);
         for(ElementHandle<TypeElement> handle : SourceUtils.getMainClasses(srcRoots)) {
             classNames.add(handle.getQualifiedName());
         }
