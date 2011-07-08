@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.index.ArtifactInfo;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -69,14 +69,13 @@ public class NexusRepositoryIndexerImplTest extends NbTestCase {
     private RepositoryInfo info;
     private NexusRepositoryIndexerImpl nrii;
     
-    @SuppressWarnings("deprecation") // no documented replacement
     @Override protected void setUp() throws Exception {
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
         File repo = new File(getWorkDir(), "repo");
-        defaultArtifactRepository = new org.apache.maven.artifact.repository.DefaultArtifactRepository("test", repo.toURI().toString(), new DefaultRepositoryLayout());
         embedder = EmbedderFactory.getProjectEmbedder();
-        embedder.setUpLegacySupport();
+        defaultArtifactRepository = embedder.lookupComponent(ArtifactRepositoryFactory.class).createArtifactRepository("test", repo.toURI().toString(), "default", null, null);
+        embedder.setUpLegacySupport(); // XXX could use org.sonatype.aether.RepositorySystem to avoid maven-compat
         artifactInstaller = embedder.lookupComponent(ArtifactInstaller.class);
         info = new RepositoryInfo("test", RepositoryPreferences.TYPE_NEXUS, "Test", repo.getAbsolutePath(), null);
         RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
@@ -91,9 +90,8 @@ public class NexusRepositoryIndexerImplTest extends NbTestCase {
         return "org.netbeans.modules.maven.indexer";
     }
 
-    @SuppressWarnings("deprecation") // no documented replacement
     private void install(File f, String groupId, String artifactId, String version, String packaging) throws Exception {
-        artifactInstaller.install(f, embedder.lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class).createBuildArtifact(groupId, artifactId, version, packaging), defaultArtifactRepository);
+        artifactInstaller.install(f, embedder.createArtifact(groupId, artifactId, version, packaging), defaultArtifactRepository);
     }
 
     public void testFilterGroupIds() throws Exception {
