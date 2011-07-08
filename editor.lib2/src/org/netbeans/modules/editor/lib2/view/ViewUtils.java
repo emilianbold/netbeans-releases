@@ -420,7 +420,7 @@ public final class ViewUtils {
      * @param logger
      * @param msg message to log
      */
-    static void log(Logger logger, String msg) {
+    public static void log(Logger logger, String msg) {
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.INFO, "Cause of " + msg, new Exception());
         } else {

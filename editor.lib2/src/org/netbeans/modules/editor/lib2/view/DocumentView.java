@@ -1290,10 +1290,6 @@ public final class DocumentView extends EditorView
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         if (lock()) {
             try {
-                if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE)) {
-                    ViewHierarchy.PAINT_LOG.log(Level.FINE, "ViewHierarchy paint: clip=" + clipBounds + // NOI18N
-                            "\n", new Exception()); // NOI18N
-                }
                 checkDocumentLockedIfLogging();
                 checkViewsInited();
                 if (isActive()) {

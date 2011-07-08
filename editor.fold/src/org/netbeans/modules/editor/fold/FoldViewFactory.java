@@ -46,8 +46,8 @@ package org.netbeans.modules.editor.fold;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -56,6 +56,7 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.netbeans.modules.editor.lib2.view.EditorViewFactory;
+import org.netbeans.modules.editor.lib2.view.ViewUtils;
 
 /**
  * View factory creating views for collapsed folds.
@@ -63,12 +64,16 @@ import org.netbeans.modules.editor.lib2.view.EditorViewFactory;
  * @author Miloslav Metelka
  */
 
+@SuppressWarnings("ClassWithMultipleLoggers")
 public final class FoldViewFactory extends EditorViewFactory implements FoldHierarchyListener {
 
     /**
      * Component's client property which can be set to view folds expanded for tooltip fold preview.
      */
     static final String VIEW_FOLDS_EXPANDED_PROPERTY = "view-folds-expanded"; // NOI18N
+
+    // -J-Dorg.netbeans.editor.view.change.level=FINE
+    static final Logger CHANGE_LOG = Logger.getLogger("org.netbeans.editor.view.change");
 
     // -J-Dorg.netbeans.modules.editor.fold.FoldViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(FoldViewFactory.class.getName());
@@ -162,8 +167,13 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
         // For fold state changes use a higher priority
         int priority = (evt.getFoldStateChangeCount() > 0) ? 1 : 0;
-        fireEvent(Collections.singletonList(EditorViewFactory.createChange(
-                evt.getAffectedStartOffset(), evt.getAffectedEndOffset())), priority);
+        int startOffset = evt.getAffectedStartOffset();
+        int endOffset = evt.getAffectedEndOffset();
+        if (CHANGE_LOG.isLoggable(Level.FINE)) {
+            ViewUtils.log(CHANGE_LOG, "CHANGE in FoldViewFactory: <" + // NOI18N
+                    startOffset + "," + endOffset + ">\n"); // NOI18N
+        }
+        fireEvent(Collections.singletonList(EditorViewFactory.createChange(startOffset, endOffset)), priority);
     }
 
     public static final class FoldFactory implements EditorViewFactory.Factory {

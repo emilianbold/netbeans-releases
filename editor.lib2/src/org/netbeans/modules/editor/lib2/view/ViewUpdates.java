@@ -358,9 +358,6 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 startOffset = Math.min(startOffset, docTextLen);
                 endOffset = Math.min(endOffset, docTextLen);
                 rebuildRegion = OffsetRegion.union(rebuildRegion, doc, startOffset, endOffset, false);
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("ViewUpdates.viewFactoryChanged: <" + startOffset + "," + endOffset + ">\n"); // NOI18N
-                }
             }
         }
 

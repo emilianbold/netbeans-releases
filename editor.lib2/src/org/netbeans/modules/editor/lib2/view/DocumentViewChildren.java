@@ -402,14 +402,21 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     }
 
     protected void paint(DocumentView docView, Graphics2D g, Shape docViewAlloc, Rectangle clipBounds) {
-        if (size() > 0 && !clipBounds.isEmpty()) {
+        if (size() > 0) {
             double startY = clipBounds.y;
             double endY = clipBounds.getMaxY();
             int startIndex;
             int endIndex;
+            if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE)) {
+                ViewHierarchy.PAINT_LOG.fine("\nDocumentViewChildren.paint(): START clipBounds: " + clipBounds + "\n"); // NOI18N
+            }
             do {
                 startIndex = viewIndexAtY(startY, docViewAlloc);
                 endIndex = viewIndexAtY(endY, docViewAlloc) + 1;
+                if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE)) {
+                    ViewHierarchy.PAINT_LOG.fine("  paint:docView:[" + startIndex + "," + endIndex + // NOI18N
+                            "] for y:<" + startY + "," + endY + ">\n"); // NOI18N
+                }
                 // Ensure valid children
                 // Possibly build extra 5 lines in each direction to speed up possible scrolling
                 // If there was any update then recompute indices since rebuilding might change vertical spans
@@ -419,7 +426,6 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             // Text layout cache must be able to contain TLs for all painted views.
             // Otherwise firstly processed views would start to forget their TLs because of tlCache.activate()
             TextLayoutCache tlCache = docView.getTextLayoutCache();
-            double y = startY;
             tlCache.ensureCapacity(endIndex - startIndex);
             endIndex = size(); // will likely be lowered inside the loop
             for (int i = startIndex; i < endIndex; i++) {
@@ -434,11 +440,11 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 }
                 tlCache.activate(pView);
                 Shape childAlloc = getChildAllocation(docView, i, docViewAlloc);
-                if (pView.children.ensureYMeasured(pView, endY, ViewUtils.shapeAsRect(childAlloc))) {
+                Rectangle2D childRect = ViewUtils.shapeAsRect(childAlloc);
+                if (pView.children.ensureYMeasured(pView, endY, childRect)) {
                     checkChildrenSpanChange(docView, i);
                 }
-                y += pView.getHeight();
-                if (y > endY) { // I
+                if (childRect.getMaxY() >= endY) { // Recompute of children height may make painting endIndex lower
                     endIndex = i + 1;
                     break;
                 }
@@ -485,6 +491,10 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             for (int i = startIndex; i < endIndex; i++) {
                 ParagraphView pView = get(i);
                 Shape childAlloc = getChildAllocation(docView, i, docViewAlloc);
+                if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE)) {
+                    ViewHierarchy.PAINT_LOG.fine("    pView[" + i + "]: pAlloc=" + // NOI18N
+                            ViewUtils.toString(childAlloc) + "\n"); // NOI18N
+                }
                 pView.paint(g, childAlloc, clipBounds);
             }
             viewPaintHighlights = null;

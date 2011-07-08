@@ -273,6 +273,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             }
 
             if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
+                if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
+                    ViewUtils.log(ViewHierarchy.CHANGE_LOG, "CHANGE in HighlightsViewFactory: <" + // NOI18N
+                            startOffset + "," + endOffset + ">\n"); // NOI18N
+                }
                 fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
             }
 

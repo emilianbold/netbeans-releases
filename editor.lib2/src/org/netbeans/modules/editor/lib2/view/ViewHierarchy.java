@@ -102,6 +102,12 @@ public final class ViewHierarchy {
     /**
      * Logger tracking all view factory changes that cause either rebuild of the views
      * or offset repaints.
+     * <br/>
+     * FINE reports which factory reported a change and an offset range of that change.
+     * <br/>
+     * FINER reports additional detailed information about the change.
+     * <br/>
+     * FINEST reports stacktrace where a particular span change request originated.
      */
     static final Logger CHANGE_LOG = Logger.getLogger("org.netbeans.editor.view.change"); // -J-Dorg.netbeans.editor.view.change.level=FINE
     
@@ -117,7 +123,9 @@ public final class ViewHierarchy {
     
     /**
      * Logger for span change requests on the views and underlying text component.
+     * <br/>
      * FINE reports span change descriptions
+     * <br/>
      * FINEST reports stacktrace where a particular span change request originated.
      */
     static final Logger SPAN_LOG = Logger.getLogger("org.netbeans.editor.view.span"); // -J-Dorg.netbeans.editor.view.span.level=FINE
@@ -126,6 +134,7 @@ public final class ViewHierarchy {
      * Logger for repaint requests of the underlying text component.
      * <br/>
      * FINE reports repaint request's coordinates
+     * <br/>
      * FINEST reports stacktrace where a particular repaint request originated.
      */
     static final Logger REPAINT_LOG = Logger.getLogger("org.netbeans.editor.view.repaint"); // -J-Dorg.netbeans.editor.view.repaint.level=FINE
