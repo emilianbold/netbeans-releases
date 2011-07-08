@@ -2182,7 +2182,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="generate-jdk7-bundles" if="do.build.jdk7">
-        <!-- JavaSE + JDK6 bundles -->
+        <!-- JavaSE + JDK7 bundles -->
 	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-7"/>
 	    <param name="jdk.full.version"            value="1.7.0.0.147"/>
@@ -2216,9 +2216,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.platform"           value="linux"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
-	</antcall>
-
-        <!-- temporary, until jre for solaris is ready
+	</antcall>       
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="solaris-x86"/>
 		<param name="bundle.extension"		value=".sh"/>
@@ -2229,7 +2227,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="solaris-sparc.sh"/>
 	</antcall>
-        -->
+
     </target>
 
 

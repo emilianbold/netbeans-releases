@@ -755,13 +755,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
         } else if(getProduct().getVersion().getMinor()==7) {
             if(SystemUtils.isWindows()) {
-                size = 190000000L ;
+                size = 257000000L ;
             } else if(SystemUtils.isLinux()){
-                size = 250000000L ;
+                size = 235000000L ;
             } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_SPARC)) {
-                size = 178000000L;
+                size = 244000000L;
             } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_X86)) {
-                size = 170000000L;
+                size = 245000000L;
             } else {
                 // who knows...
                 size = 180000000L;
