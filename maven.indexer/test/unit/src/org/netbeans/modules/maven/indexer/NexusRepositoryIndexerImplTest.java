@@ -40,24 +40,26 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.indexer.api;
+package org.netbeans.modules.maven.indexer;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
+import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.index.ArtifactInfo;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.openide.util.test.TestFileUtils;
 
-public class RepositoryQueriesTest extends NbTestCase {
+public class NexusRepositoryIndexerImplTest extends NbTestCase {
 
-    public RepositoryQueriesTest(String n) {
+    public NexusRepositoryIndexerImplTest(String n) {
         super(n);
     }
 
@@ -65,18 +67,19 @@ public class RepositoryQueriesTest extends NbTestCase {
     private MavenEmbedder embedder;
     private ArtifactInstaller artifactInstaller;
     private RepositoryInfo info;
+    private NexusRepositoryIndexerImpl nrii;
     
-    @SuppressWarnings("deprecation") // no documented replacement
     @Override protected void setUp() throws Exception {
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
         File repo = new File(getWorkDir(), "repo");
-        defaultArtifactRepository = new org.apache.maven.artifact.repository.DefaultArtifactRepository("test", repo.toURI().toString(), new DefaultRepositoryLayout());
         embedder = EmbedderFactory.getProjectEmbedder();
-        embedder.setUpLegacySupport();
+        defaultArtifactRepository = embedder.lookupComponent(ArtifactRepositoryFactory.class).createArtifactRepository("test", repo.toURI().toString(), "default", null, null);
+        embedder.setUpLegacySupport(); // XXX could use org.sonatype.aether.RepositorySystem to avoid maven-compat
         artifactInstaller = embedder.lookupComponent(ArtifactInstaller.class);
         info = new RepositoryInfo("test", RepositoryPreferences.TYPE_NEXUS, "Test", repo.getAbsolutePath(), null);
         RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
+        nrii = new NexusRepositoryIndexerImpl();
     }
 
     @Override protected Level logLevel() {
@@ -87,14 +90,13 @@ public class RepositoryQueriesTest extends NbTestCase {
         return "org.netbeans.modules.maven.indexer";
     }
 
-    @SuppressWarnings("deprecation") // no documented replacement
     private void install(File f, String groupId, String artifactId, String version, String packaging) throws Exception {
-        artifactInstaller.install(f, embedder.lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class).createBuildArtifact(groupId, artifactId, version, packaging), defaultArtifactRepository);
+        artifactInstaller.install(f, embedder.createArtifact(groupId, artifactId, version, packaging), defaultArtifactRepository);
     }
 
     public void testFilterGroupIds() throws Exception {
         install(File.createTempFile("whatever", ".txt", getWorkDir()), "test", "spin", "1.1", "txt");
-        assertEquals(Collections.singleton("test"), RepositoryQueries.filterGroupIds("", info));
+        assertEquals(Collections.singleton("test"), nrii.filterGroupIds("", Collections.singletonList(info)));
     }
 
     public void testFind() throws Exception {
@@ -110,7 +112,7 @@ public class RepositoryQueriesTest extends NbTestCase {
         qf.setValue("stuff");
         qf.setOccur(QueryField.OCCUR_MUST);
         qf.setMatch(QueryField.MATCH_EXACT);
-        assertEquals("[test:plugin:0:test]", RepositoryQueries.find(Collections.singletonList(qf), info).toString());
+        assertEquals("[test:plugin:0:test]", nrii.find(Collections.singletonList(qf), Collections.singletonList(info)).toString());
     }
     
 }

@@ -489,6 +489,10 @@ made subject to such option by the copyright holder.
                         <propertyref name="build.test.@{test.type}.work.dir"/>
                         <mapper type="glob" from="build.test.@{test.type}.work.dir" to="nbjunit.workdir"/>
                     </propertyset>
+                    <propertyset>
+                        <propertyref name="test.timeout"/>
+                        <mapper type="glob" from="test.timeout" to="nbjunit.hard.timeout"/>
+                    </propertyset>
                 </propertyset>
                 <condition property="exists.test.@{test.type}.src.dir">
                     <and>
