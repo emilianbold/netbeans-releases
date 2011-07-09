@@ -51,7 +51,7 @@ import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.openide.ErrorManager;
@@ -73,7 +73,9 @@ import java.util.*;
 import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.openide.util.Lookup;
 
 
 /**
@@ -176,6 +178,11 @@ public class WebProjectUtils {
         return basefiles;
     }
 
+    public static boolean isWebProject(Lookup.Provider p) {
+        assert p != null;
+        return p.getLookup().lookup(WebModule.class) != null;
+    }
+    
     public static ArrayList[] getFilterClasses(Document deploymentDescriptorDocument) {
         ArrayList mappedFilters = new ArrayList();
         ArrayList notMappedFilters = new ArrayList();
@@ -220,7 +227,9 @@ public class WebProjectUtils {
     }
 
     public static boolean isHttpServlet(FileObject fo) {
-        return SourceUtils.isInstanceOf(fo, "javax.servlet.http.HttpServlet"); // NOI18N
+        // FIXME pass in the JavaProfilerSource instead
+        JavaProfilerSource src = JavaProfilerSource.createFrom(fo);
+        return src != null && src.isInstanceOf("javax.servlet.http.HttpServlet"); // NOI18N
     }
 
     public static boolean isJSP(FileObject fo) {
@@ -406,7 +415,12 @@ public class WebProjectUtils {
     }
 
     public static String getServletMapping(FileObject servletFO, Document deploymentDescriptorDocument) {
-        String servletClassName = SourceUtils.getToplevelClassName(servletFO);
+        // FIXME - pass in JavaProfilerSource param
+        JavaProfilerSource src = JavaProfilerSource.createFrom(servletFO);
+        if (src == null) {
+            return null;
+        }
+        String servletClassName = src.getTopLevelClass().getVMName();
 
         if ((servletClassName == null) || (deploymentDescriptorDocument == null)) {
             return null;
