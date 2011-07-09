@@ -81,6 +81,7 @@ public class ProjectGenerator {
         private Iterator<SourceFolderInfo> sourceFolders;
         private String sourceFoldersFilter;
         private Iterator<String> importantFileItems;
+        private Iterator<LogicalFolderInfo> logicalFolderItems;
         private Iterator<SourceFolderInfo> testFolders;
         private String mainFile;
         private String hostUID;
@@ -337,6 +338,20 @@ public class ProjectGenerator {
 
         public boolean isMakefileProject() {
             return configurations[0].isMakefileConfiguration();
+        }
+
+        /**
+         * @return the sourceFileItems
+         */
+        public Iterator<LogicalFolderInfo> getLogicalFolderItems() {
+            return logicalFolderItems;
+        }
+
+        /**
+         * @param sourceFileItems the sourceFileItems to set
+         */
+        public void setLogicalFolderItems(Iterator<LogicalFolderInfo> logicalFolderItems) {
+            this.logicalFolderItems = logicalFolderItems;
         }
 
     }
