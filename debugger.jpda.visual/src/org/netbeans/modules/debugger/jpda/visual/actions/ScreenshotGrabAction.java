@@ -54,6 +54,8 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.RetrievalException;
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -103,6 +105,7 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
     
     @Override
     public void run() {
+        String msg = null;
         try {
             final RemoteScreenshot[] screenshots = RemoteScreenshot.takeCurrent();
             for (int i = 0; i < screenshots.length; i++) {
@@ -116,8 +119,18 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
                     }
                 });
             }
+            if (screenshots.length == 0) {
+                msg = NbBundle.getMessage(ScreenshotGrabAction.class, "MSG_NoScreenshots");
+            }
         } catch (RetrievalException ex) {
-            Exceptions.printStackTrace(ex);
+            msg = ex.getLocalizedMessage();
+            if (ex.getCause() != null) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (msg != null) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
+            DialogDisplayer.getDefault().notify(nd);
         }
     }
 
