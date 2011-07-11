@@ -5656,5 +5656,6 @@ org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI$PinButtonLayout
 org.netbeans.swing.tabcontrol.plaf.MetalSlidingButtonUI
 org.netbeans.swing.tabcontrol.plaf.NonStretchingViewTabLayoutModel
 org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory$SlideGroupButton
+org.netbeans.modules.profiler.ProfilerControlPanel2Support
 
 
