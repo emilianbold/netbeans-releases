@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 /**
@@ -53,5 +54,5 @@ public interface MakeProjectCustomizer {
     public String getIconPath();
     public String getMakefileWriter();
     public String getOutputValue(MakeConfiguration makeConfiguration);
-    public Action[] getActions();
+    public Action[] getActions(Project project);
 }
