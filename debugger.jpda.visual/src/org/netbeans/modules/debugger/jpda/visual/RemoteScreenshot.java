@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -87,6 +88,7 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Takes screenshot of a remote application.
@@ -131,10 +133,12 @@ public class RemoteScreenshot {
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine != null) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            logger.severe("Debugger = "+debugger);
+            logger.fine("Debugger = "+debugger);
             if (debugger != null) {
                 List<JPDAThread> allThreads = debugger.getThreadsCollector().getAllThreads();
-                logger.severe("Threads = "+allThreads);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("Threads = "+allThreads);
+                }
                 for (JPDAThread t : allThreads) {
                     if (t.getName().startsWith(AWTThreadName)) {
                         //try {
@@ -214,8 +218,9 @@ public class RemoteScreenshot {
                 if (getWindows == null) {
                     getWindows = windowClass.concreteMethodByName("getWindows", "()[Ljava/awt/Window;");
                     if (getWindows == null) {
-                        logger.severe("No getWindows() method!");
-                        return NO_SCREENSHOTS;
+                        logger.fine("No getWindows() method!");
+                        String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getWindows()");
+                        throw new RetrievalException(msg);
                     }
                 }
                 
@@ -224,38 +229,44 @@ public class RemoteScreenshot {
                 
                 ArrayReference windowsArray = (ArrayReference) ((ClassType) windowClass).invokeMethod(tawt, getWindows, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 List<Value> windows = windowsArray.getValues();
-                logger.severe("Have "+windows.size()+" window(s).");
+                logger.fine("Have "+windows.size()+" window(s).");
                 
                 Method isVisible = windowClass.concreteMethodByName("isVisible", "()Z");
                 if (isVisible == null) {
-                    logger.severe("No isVisible() method!");
-                    return NO_SCREENSHOTS;
+                    logger.fine("No isVisible() method!");
+                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.isVisible()");
+                    throw new RetrievalException(msg);
                 }
                 Method getOwner = windowClass.concreteMethodByName("getOwner", "()Ljava/awt/Window;");
                 if (getOwner == null) {
-                    logger.severe("No getOwner() method!");
-                    return NO_SCREENSHOTS;
+                    logger.fine("No getOwner() method!");
+                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getOwner()");
+                    throw new RetrievalException(msg);
                 }
                 Method getSize = windowClass.concreteMethodByName("getSize", "()Ljava/awt/Dimension;");
                 if (getSize == null) {
-                    logger.severe("No getSize() method!");
-                    return NO_SCREENSHOTS;
+                    logger.fine("No getSize() method!");
+                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getSize()");
+                    throw new RetrievalException(msg);
                 }
                 ClassType dimensionClass = RemoteServices.getClass(vm, "java.awt.Dimension");
                 if (dimensionClass == null) {
-                    logger.severe("No Dimension");
-                    return NO_SCREENSHOTS;
+                    logger.fine("No Dimension");
+                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.Dimension");
+                    throw new RetrievalException(msg);
                 }
                 ClassType bufferedImageClass = RemoteServices.getClass(vm, "java.awt.image.BufferedImage");
                 if (bufferedImageClass == null) {
-                    logger.severe("No BufferedImage class.");
-                    return NO_SCREENSHOTS;
+                    logger.fine("No BufferedImage class.");
+                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.image.BufferedImage");
+                    throw new RetrievalException(msg);
                 }
                 Method bufferedImageConstructor = bufferedImageClass.concreteMethodByName("<init>", "(III)V");
                 Method createGraphics = bufferedImageClass.concreteMethodByName("createGraphics", "()Ljava/awt/Graphics2D;");
                 if (createGraphics == null) {
-                    logger.severe("createGraphics() method is not found!");
-                    return NO_SCREENSHOTS;
+                    logger.fine("createGraphics() method is not found!");
+                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.image.BufferedImage.createGraphics()");
+                    throw new RetrievalException(msg);
                 }
                 
                 ClassType frameClass = RemoteServices.getClass(vm, "java.awt.Frame");
@@ -276,7 +287,8 @@ public class RemoteScreenshot {
                     BooleanValue visible = (BooleanValue) window.invokeMethod(tawt, isVisible, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                     if (!visible.value()) {
                         // Ignore windows that are not visible.
-                        continue;
+                        // TODO: mark them as not visible.
+                        //continue;
                     }
                     Object owner = window.invokeMethod(tawt, getOwner, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                     if (owner != null) {
@@ -291,7 +303,7 @@ public class RemoteScreenshot {
                     field = dimensionClass.fieldByName("height");
                     IntegerValue heightValue = (IntegerValue) sizeDimension.getValue(field);
                     int height = heightValue.value();
-                    logger.severe("The size is "+width+" x "+height+"");
+                    logger.fine("The size is "+width+" x "+height+"");
                     
                     List<? extends Value> args = Arrays.asList(widthValue, heightValue, vm.mirrorOf(BufferedImage.TYPE_INT_ARGB));
                     ObjectReference bufferedImage = bufferedImageClass.newInstance(tawt, bufferedImageConstructor, args, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -316,7 +328,7 @@ public class RemoteScreenshot {
                     IntegerValue zero = vm.mirrorOf(0);
                     ArrayReference data = (ArrayReference) raster.invokeMethod(tawt, getDataElements, Arrays.asList(zero, zero, widthValue, heightValue, null), ObjectReference.INVOKE_SINGLE_THREADED);
                     
-                    logger.severe("Image data length = "+data.length());
+                    logger.fine("Image data length = "+data.length());
                     
                     List<Value> dataValues = data.getValues();
                     int[] dataArray = new int[data.length()];
@@ -396,8 +408,9 @@ public class RemoteScreenshot {
         Method getBounds = componentClass.concreteMethodByName("getBounds", "()Ljava/awt/Rectangle;");
         Method getComponents = containerClass.concreteMethodByName("getComponents", "()[Ljava/awt/Component;");
         if (getComponents == null) {
-            logger.severe("No getComponents() method!");
-            return null;
+            logger.fine("No getComponents() method!");
+            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Container.getComponents()");
+            throw new RetrievalException(msg);
         }
         ComponentInfo ci = new ComponentInfo(t);
         retrieveComponents(ci, t, vm, componentClass, containerClass, window, getComponents, getBounds,
@@ -443,7 +456,7 @@ public class RemoteScreenshot {
         }
         ci.component = component;
         ci.type = component.referenceType().name();
-        logger.severe("  Component '"+ci.name+"' class='"+ci.type+"' bounds = "+r);
+        logger.fine("  Component '"+ci.name+"' class='"+ci.type+"' bounds = "+r);
         
         ci.addPropertySet(new PropertySet("main", "Main", "The main properties") {
             @Override
@@ -476,7 +489,7 @@ public class RemoteScreenshot {
         if (isInstanceOfClass((ClassType) component.referenceType(), containerClass)) {
             ArrayReference componentsArray = (ArrayReference) component.invokeMethod(tawt, getComponents, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
             List<Value> components = componentsArray.getValues();
-            logger.severe("Have "+components.size()+" component(s).");
+            logger.fine("Have "+components.size()+" component(s).");
             if (components.size() > 0) {
                 ComponentInfo[] cis = new ComponentInfo[components.size()];
                 int i = 0;
