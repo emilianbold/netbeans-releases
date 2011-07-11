@@ -534,18 +534,18 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         File repo = null;        
         String folderAnotation = ""; //NOI18N
         File root = null; 
+        boolean isRepoRoot = false;
         if(rootFiles.size() == 1) {
-            for (File file : rootFiles) {
-                repo = Mercurial.getInstance().getRepositoryRoot(file);
-                if(repo == null) {
-                    Mercurial.LOG.log(Level.WARNING, "Couldn''t find repository root for file {0}", file);
-                } else {
-                    root = file;
-                    break;
-                }
+            File file = rootFiles.iterator().next();
+            repo = Mercurial.getInstance().getRepositoryRoot(file);
+            if(repo == null) {
+                Mercurial.LOG.log(Level.WARNING, "Couldn''t find repository root for file {0}", file);
+            } else {
+                root = file;
+                isRepoRoot = repo.equals(root);
             }
             // repo = null iff the file' status is actually unversioned, but cache has not yet have the right value
-            if (repo == null || !repo.getAbsolutePath().equals(root.getAbsolutePath())) {
+            if (repo == null || !isRepoRoot) {
                 // not from repo root => do not annnotate with folder name 
                 return uptodateFormat.format(new Object [] { nameHtml, ""});
             }             
@@ -558,7 +558,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                     parentFile = file.getParentFile();
                 } else {
                     File p = file.getParentFile();
-                    if(p == null || !parentFile.getAbsolutePath().equals(p.getAbsolutePath())) {
+                    if(p == null || !parentFile.equals(p)) {
                         // not comming from the same parent => do not annnotate with folder name
                         return uptodateFormat.format(new Object [] { nameHtml, ""});
                     }
@@ -568,18 +568,16 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 repo = Mercurial.getInstance().getRepositoryRoot(file);
                 if(repo == null) {
                     Mercurial.LOG.log(Level.WARNING, "Couldn''t find repository root for file {0}", file);
-                } else if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
-                    // not from repo root => do not annnotate with folder name 
-                    return uptodateFormat.format(new Object [] { nameHtml, ""});
                 } else {
                     root = file;
                     break;
                 }
             }
+            isRepoRoot = parentFile != null && parentFile.equals(repo);
         }
 
         if (annotationsVisible && repo != null) {
-            if (!repo.getName().equals(name)) {
+            if (isRepoRoot && !repo.getName().equals(name)) {
                 folderAnotation = repo.getName();
             }
             WorkingCopyInfo info = WorkingCopyInfo.getInstance(repo);
