@@ -330,15 +330,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         catch (IOException ex) {
             PersistenceException pe = new PersistenceException(ex,
                     FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
-//                                          ex, "Cannot open form file"); // NOI18N
-//            annotateException(ex, FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
             throw pe;
         }
         catch (org.xml.sax.SAXException ex) {
             PersistenceException pe = new PersistenceException(ex,
                     FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
-//                                          ex, "Invalid XML in form file"); // NOI18N
-//            annotateException(ex, FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
             throw pe;
         }
 
@@ -346,10 +342,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (mainElement == null || !XML_FORM.equals(mainElement.getTagName())) {
             PersistenceException ex = new PersistenceException(
                     FormUtils.getBundleString("MSG_ERR_MissingMainElement")); // NOI18N
-//                            "Missing expected main XML element"); // NOI18N
-//            annotateException(ex, ErrorManager.ERROR,
-//                    FormUtils.getBundleString("MSG_ERR_MissingMainElement") // NOI18N
-//                    );
             throw ex;
         }
 
@@ -359,14 +351,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
             PersistenceException ex = new PersistenceException(
                     FormUtils.getFormattedBundleString(
                         "FMT_ERR_UnsupportedVersion", new Object[] { versionString }));// NOI18N
-                        
-//                                     "Unsupported form version"); // NOI18N
-//            annotateException(ex,
-//                    ErrorManager.ERROR,
-//                    FormUtils.getFormattedBundleString(
-//                        "FMT_ERR_UnsupportedVersion", // NOI18N
-//                        new Object[] { versionString })
-//                    );
             throw ex;
         }
         formModel.setCurrentVersionLevel(FormModel.FormVersion.BASIC);
@@ -492,12 +476,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 PersistenceException ex;
                 if (formBaseClassEx != null) {
                     ex = new PersistenceException(formBaseClassEx, annotation);
-//                                                  "Invalid form base class"); // NOI18N
-//                    annotateException(formBaseClassEx, annotation);
                 }
                 else {
-                    ex = new PersistenceException(annotation); //"Invalid form base class"); // NOI18N
-//                    annotateException(ex, ErrorManager.ERROR, annotation);
+                    ex = new PersistenceException(annotation);
                 }
                 throw ex;
             }
@@ -3030,11 +3011,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
             PersistenceException ex = new PersistenceException(
                     FormUtils.getFormattedBundleString(
                          "FMT_ERR_SaveToReadOnly", new Object[] { formFile.getNameExt() }));// NOI18N
-//                                 "Tried to save read-only form"); // NOI18N
-//            String msg = FormUtils.getFormattedBundleString(
-//                             "FMT_ERR_SaveToReadOnly", // NOI18N
-//                             new Object[] { formFile.getNameExt() });
-//            annotateException(ex, ErrorManager.ERROR, msg);
             throw ex;
         }
 
