@@ -39,18 +39,80 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.form;
+package org.apache.tools.ant.module.bridge.impl;
 
-import javax.swing.text.Document;
-import org.netbeans.api.editor.guards.GuardedSectionManager;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.taskdefs.Input;
+import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.Reference;
 
 /**
- *
- * @author Tomas Pavek
+ * Permit secure handlers.
  */
-public interface EditorSupport {
-    Document getDocument();
-    GuardedSectionManager getGuardedSectionManager();
-    void markModified();
-    Object getJavaContext();
+public class InputOverride extends Input {
+    
+    private boolean secure;
+
+    @Override public Handler createHandler() {
+        return new HandlerImpl();
+    }
+
+    @Override public void execute() throws BuildException {
+        if (secure) {
+            NbInputHandler handler = (NbInputHandler) getProject().getInputHandler();
+            handler.secure = true;
+            try {
+                super.execute();
+            } finally {
+                handler.secure = false;
+            }
+        } else {
+            super.execute();
+        }
+    }
+
+    public class HandlerImpl extends Handler {
+
+        private Handler delegate;
+
+        private Handler delegate() {
+            if (delegate == null) {
+                delegate = InputOverride.super.createHandler();
+                delegate.setProject(getProject());
+            }
+            return delegate;
+        }
+
+        @Override public void setType(HandlerType type) {
+            if (type.getValue().equals("secure")) {
+                secure = true;
+            } else if (type.getValue().equals("default")) {
+                // ignore handler entirely
+            } else {
+                delegate().setType(type);
+            }
+        }
+
+        @Override public void setRefid(String refid) {
+            delegate().setRefid(refid);
+        }
+
+        @Override public void setClassname(String classname) {
+            delegate().setClassname(classname);
+        }
+
+        @Override public void setClasspath(Path classpath) {
+            delegate().setClasspath(classpath);
+        }
+
+        @Override public void setClasspathRef(Reference r) {
+            delegate().setClasspathRef(r);
+        }
+
+        @Override public void setLoaderRef(Reference r) {
+            delegate().setLoaderRef(r);
+        }
+
+    }
+
 }

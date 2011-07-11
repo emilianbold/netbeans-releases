@@ -366,7 +366,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = (Action) FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
+                Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            

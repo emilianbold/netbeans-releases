@@ -95,6 +95,7 @@ public class IssueController extends BugtrackingController {
         BugzillaIssue issue = issuePanel.getIssue();
         if (issue != null) {
             issue.closed();
+            issuePanel.closed();
         }
     }
 
