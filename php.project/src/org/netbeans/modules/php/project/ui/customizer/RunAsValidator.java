@@ -50,7 +50,7 @@ import java.net.URL;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -150,8 +150,8 @@ public final class RunAsValidator {
 
         if (!StringUtils.hasText(uploadDirectory)) {
             return NbBundle.getMessage(RunAsValidator.class, "MSG_MissingUploadDirectory");
-        } else if (!uploadDirectory.startsWith(TransferFile.SEPARATOR)) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryStart", TransferFile.SEPARATOR);
+        } else if (!uploadDirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryStart", TransferFile.REMOTE_PATH_SEPARATOR);
         } else if (uploadDirectory.contains(INVALID_SEPARATOR)) {
             return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryContent", INVALID_SEPARATOR);
         }
@@ -167,13 +167,13 @@ public final class RunAsValidator {
     public static String sanitizeUploadDirectory(String uploadDirectory, boolean allowEmpty) {
         if (StringUtils.hasText(uploadDirectory)) {
             while (uploadDirectory.length() > 1
-                    && uploadDirectory.endsWith(TransferFile.SEPARATOR)) {
+                    && uploadDirectory.endsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
                 uploadDirectory = uploadDirectory.substring(0, uploadDirectory.length() - 1);
             }
         } else if (!allowEmpty) {
-            uploadDirectory = TransferFile.SEPARATOR;
+            uploadDirectory = TransferFile.REMOTE_PATH_SEPARATOR;
         }
-        if (allowEmpty && TransferFile.SEPARATOR.equals(uploadDirectory)) {
+        if (allowEmpty && TransferFile.REMOTE_PATH_SEPARATOR.equals(uploadDirectory)) {
             uploadDirectory = ""; // NOI18N
         }
         return uploadDirectory;

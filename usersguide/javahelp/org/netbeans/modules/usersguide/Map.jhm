@@ -32,6 +32,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="files.runtime" url="files/files_runtime.html" />
 <mapID target="files.about-encoding" url="files/file_encoding.html" />
 <mapID target="find_regexp" url="files/find_regexp.html" />
+<mapID target="files.tasklist" url="files/files_tasklist.html" />
 
 
 
@@ -169,6 +170,7 @@ Other names may be trademarks of their respective owners.
 
 <!--Task List window -->
 <mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="files/tasklist-csh.html" />
+
 
 
 

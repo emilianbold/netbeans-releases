@@ -70,9 +70,9 @@ import org.openide.filesystems.URLMapperTestHidden;
 /**
  * @author Tomas Stupka
  */
-public class MercurialFileSystemTest extends FileSystemFactoryHid {
+public class MercurialFileSystemTestCase extends FileSystemFactoryHid {
         
-    public MercurialFileSystemTest(Test test) {
+    public MercurialFileSystemTestCase(Test test) {
         super(test);
     }
     
@@ -101,7 +101,7 @@ public class MercurialFileSystemTest extends FileSystemFactoryHid {
         // XXX fails
 //        suite.addTest(new FileUtilTestHidden("testIsParentOf"));                
 //        suite.addTest(new BaseFileObjectTestHid("testRootToFileObject"));                                
-        return new MercurialFileSystemTest(suite);
+        return new MercurialFileSystemTestCase(suite);
     }
     
     private File getWorkDir() {

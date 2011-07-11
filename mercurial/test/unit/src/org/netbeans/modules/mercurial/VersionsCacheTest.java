@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.util.Utils;
  *
  * @author ondra
  */
-public class VersionsCacheTest extends AbstractHgTest {
+public class VersionsCacheTest extends AbstractHgTestCase {
 
     private File workdir;
 
@@ -72,7 +72,7 @@ public class VersionsCacheTest extends AbstractHgTest {
     
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
         // create
         workdir = getWorkTreeDir();

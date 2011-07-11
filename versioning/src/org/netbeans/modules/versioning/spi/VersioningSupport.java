@@ -48,8 +48,6 @@ import org.netbeans.modules.versioning.FlatFolder;
 import org.openide.util.NbPreferences;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.prefs.Preferences;
 
 /**

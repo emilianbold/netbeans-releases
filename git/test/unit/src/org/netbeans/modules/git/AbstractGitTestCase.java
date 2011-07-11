@@ -77,7 +77,9 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
+        File userdir = new File(getWorkDir().getParentFile(), "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         super.setUp();
         repositoryLocation = new File(getWorkDir(), "work");
         clearWorkDir();

@@ -78,7 +78,6 @@ import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -269,16 +268,13 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         synchronized (helper2Project) {
             helper2Project.put(helper, new WeakReference<Project>(project));
         }
-        List<Reference<AntProjectHelper>> l;
         synchronized (AntBasedProjectFactorySingleton.class) {
-            l = type2Projects.get(provider);
+            List<Reference<AntProjectHelper>> l = type2Projects.get(provider);
             if (l == null) {
                 type2Projects.put(provider, l = new ArrayList<Reference<AntProjectHelper>>());
             }
+            l.add(new WeakReference<AntProjectHelper>(helper));
         }
-        
-        l.add(new WeakReference<AntProjectHelper>(helper));
-        
         return project;
     }
 

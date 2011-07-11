@@ -263,7 +263,7 @@ public class BinaryAnalyser {
                     if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {
                         writer.clear();
                         Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                        cont = new FileObjectContinuation (todo, ctx);
+                        cont = new FileObjectContinuation (todo, rootFo, ctx);
                         return cont.execute();
                     }
                 }
@@ -296,7 +296,7 @@ public class BinaryAnalyser {
             if (rootFo != null) {
                 writer.clear();
                 Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                cont = new FileObjectContinuation (todo, ctx);
+                cont = new FileObjectContinuation (todo, rootFo, ctx);
                 return cont.execute();
             }
             else {
@@ -959,13 +959,14 @@ public class BinaryAnalyser {
     private class FileObjectContinuation extends  Continuation {
 
         private final Enumeration<? extends FileObject> todo;
-        private FileObject root;
+        private final FileObject root;
         private final Context ctx;
 
-        public FileObjectContinuation (final @NonNull Enumeration<? extends FileObject> todo, final @NonNull Context ctx) {
+        public FileObjectContinuation (final @NonNull Enumeration<? extends FileObject> todo, final @NonNull FileObject root, final @NonNull Context ctx) {
             assert todo != null;
             assert ctx != null;
             this.todo = todo;
+            this.root = root;
             this.ctx = ctx;
             markChanged();  //Always dirty, created only for dirty root
         }

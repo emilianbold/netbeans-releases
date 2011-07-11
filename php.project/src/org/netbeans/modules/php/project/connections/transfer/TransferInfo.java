@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.connections;
+package org.netbeans.modules.php.project.connections.transfer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,6 +58,7 @@ public final class TransferInfo {
     // file, reason
     private final Map<TransferFile, String> ignored = new HashMap<TransferFile, String>();
     private long runtime;
+
 
     public Set<TransferFile> getTransfered() {
         return Collections.unmodifiableSet(transfered);
@@ -111,28 +112,28 @@ public final class TransferInfo {
         return !ignored.isEmpty();
     }
 
-    void addTransfered(TransferFile transferFile) {
+    public void addTransfered(TransferFile transferFile) {
         assert !failed.containsKey(transferFile) && !ignored.containsKey(transferFile);
         transfered.add(transferFile);
     }
 
-    void addFailed(TransferFile transferFile, String reason) {
+    public void addFailed(TransferFile transferFile, String reason) {
         assert !transfered.contains(transferFile) && !ignored.containsKey(transferFile) && !partiallyFailed.containsKey(transferFile);
         failed.put(transferFile, reason);
     }
 
-    void addPartiallyFailed(TransferFile transferFile, String reason) {
+    public void addPartiallyFailed(TransferFile transferFile, String reason) {
         // can be in transfered
         assert !failed.containsKey(transferFile) && !ignored.containsKey(transferFile);
         partiallyFailed.put(transferFile, reason);
     }
 
-    void addIgnored(TransferFile transferFile, String reason) {
+    public void addIgnored(TransferFile transferFile, String reason) {
         assert !transfered.contains(transferFile) && !failed.containsKey(transferFile) && !partiallyFailed.containsKey(transferFile);
         ignored.put(transferFile, reason);
     }
 
-    void setRuntime(long runtime) {
+    public void setRuntime(long runtime) {
         this.runtime = runtime;
     }
 
@@ -153,4 +154,5 @@ public final class TransferInfo {
         sb.append(" ms]"); // NOI18N
         return sb.toString();
     }
+
 }

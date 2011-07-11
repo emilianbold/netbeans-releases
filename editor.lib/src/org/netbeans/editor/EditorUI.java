@@ -91,12 +91,9 @@ import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib.EditorExtPackageAccessor;
 import org.netbeans.modules.editor.lib.drawing.DrawLayerList;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
-import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.EditorUiAccessor;
-import org.netbeans.modules.editor.lib.drawing.HighlightingDrawLayer;
-import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.openide.util.WeakListeners;
 
 /**
@@ -144,8 +141,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     /* package */ static final Insets NULL_INSETS = new Insets(0, 0, 0, 0);
     
     private static final Insets DEFAULT_INSETS = new Insets(0, 2, 0, 0);    
-
-    private static final Dimension NULL_DIMENSION = new Dimension(0, 0);
 
     /** Default margin on the left and right side of the line number */
     public static final Insets defaultLineNumberMargin = new Insets(0, 3, 0, 3);
@@ -237,10 +232,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
     int textLimitWidth;
 
-//    private Rectangle lastExtentBounds = new Rectangle();
-
-    private Dimension componentSizeIncrement = new Dimension();
-
     private Abbrev abbrev;
 
     private WordMatch wordMatch;
@@ -318,9 +309,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         listener.preferenceChange(null);
         setLineNumberEnabled(lineNumberEnabled);
         updateLineNumberWidth(0);
-        // when printing there is no JTextComponent and EditorUI us not installed/uninstalled
-        // hence we have to hookup the huighlighting layers here
-        HighlightingDrawLayer.hookUp(this);
     }
     
     /**
@@ -369,9 +357,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
         renderingHints = (Map<?, ?>) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
 
-        // Initialize draw layers
-        HighlightingDrawLayer.hookUp(this);
-
         synchronized (getComponentLock()) {
             this.component = c;
             
@@ -399,10 +384,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         prefs.addPreferenceChangeListener(weakPrefsListener);
         listener.preferenceChange(null);
         
-        if (!BaseKit.LINEWRAP_ENABLED) {
-            // fix for issue #16352
-            getDefaultColoring().apply(component);
-        }
         if (!GraphicsEnvironment.isHeadless()) {
             // enable drag and drop feature
             component.setDragEnabled(true);
@@ -767,54 +748,52 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             }
         }
 
-        if (HighlightingManager.LINEWRAP_ENABLED) {
-            final View rootView = Utilities.getDocumentView(component);
-            final int[] wrapMaxHeight = new int[] { -1 };
-            if (rootView != null) {
-                Utilities.runViewHierarchyTransaction(component, true, new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i = 0; i < 1 /*rootView.getViewCount()*/; i++) { // scan just first line for now
-                            View view = rootView.getView(i);
-                            if (view == null) { // seen in tests
-                                break;
-                            }
+        final View rootView = Utilities.getDocumentView(component);
+        final int[] wrapMaxHeight = new int[] { -1 };
+        if (rootView != null) {
+            Utilities.runViewHierarchyTransaction(component, true, new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 1 /*rootView.getViewCount()*/; i++) { // scan just first line for now
+                        View view = rootView.getView(i);
+                        if (view == null) { // seen in tests
+                            break;
+                        }
 
-                            int offset = view.getStartOffset();
-                            Rectangle r = null;
+                        int offset = view.getStartOffset();
+                        Rectangle r = null;
 
-                            try {
-                                r = component.getUI().modelToView(component, offset);
-                            } catch (BadLocationException ble) {
-                                LOG.log(Level.INFO, null, ble);
-                            }
+                        try {
+                            r = component.getUI().modelToView(component, offset);
+                        } catch (BadLocationException ble) {
+                            LOG.log(Level.INFO, null, ble);
+                        }
 
-                            if (r == null) {
-                                break;
-                            }
+                        if (r == null) {
+                            break;
+                        }
 
-                            if (LOG.isLoggable(Level.FINE)) {
-                                if (wrapMaxHeight[0] < r.getHeight()) {
-                                    try {
-                                        LOG.fine("Updating maxHeight from " //NOI18N
-                                                + wrapMaxHeight + " to " + r.getHeight() // NOI18N
-                                                + ", line=" + i // NOI18N
-                                                + ", text=" + component.getDocument().getText(offset, view.getEndOffset() - offset) //NOI18N
-                                                );
-                                    } catch (BadLocationException ble) {
-                                        LOG.log(Level.FINE, null, ble);
-                                    }
+                        if (LOG.isLoggable(Level.FINE)) {
+                            if (wrapMaxHeight[0] < r.getHeight()) {
+                                try {
+                                    LOG.fine("Updating maxHeight from " //NOI18N
+                                            + wrapMaxHeight + " to " + r.getHeight() // NOI18N
+                                            + ", line=" + i // NOI18N
+                                            + ", text=" + component.getDocument().getText(offset, view.getEndOffset() - offset) //NOI18N
+                                            );
+                                } catch (BadLocationException ble) {
+                                    LOG.log(Level.FINE, null, ble);
                                 }
                             }
-
-                            wrapMaxHeight[0] = Math.max(wrapMaxHeight[0], (int) r.getHeight());
                         }
+
+                        wrapMaxHeight[0] = Math.max(wrapMaxHeight[0], (int) r.getHeight());
                     }
-                });
-            }
-            if (wrapMaxHeight[0] > 0) {
-                maxHeight = wrapMaxHeight[0];
-            }
+                }
+            });
+        }
+        if (wrapMaxHeight[0] > 0) {
+            maxHeight = wrapMaxHeight[0];
         }
         
         if (maxAscent > 0) {
@@ -845,10 +824,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         Insets margin = value != null ? SettingsConversions.parseInsets(value) : null;
         component.setMargin(margin != null ? margin : NULL_INSETS);
 
-        if (!BaseKit.LINEWRAP_ENABLED) {
-            // Apply the default coloring to the component
-            getDefaultColoring().apply(component);
-        }
         lineNumberDigitWidth = computeLineNumberDigitWidth();
 
         // Update line height
@@ -1657,12 +1632,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                         String value = prefs.get(SimpleValueNames.SCROLL_FIND_INSETS, null);
                         Insets insets = value != null ? SettingsConversions.parseInsets(value) : null;
                         scrollFindInsets = insets != null ? insets : EditorPreferencesDefaults.defaultScrollFindInsets;
-                    }
-
-                    if (settingName == null || EditorPreferencesKeys.COMPONENT_SIZE_INCREMENT.equals(settingName)) { //NOI18N
-                        String value = prefs.get(EditorPreferencesKeys.COMPONENT_SIZE_INCREMENT, null); //NOI18N
-                        Dimension increment = value != null ? SettingsConversions.parseDimension(value) : null;
-                        componentSizeIncrement = increment != null ? increment : EditorPreferencesDefaults.defaultComponentSizeIncrement;
                     }
 
                     Utilities.runInEventDispatchThread(new Runnable() {

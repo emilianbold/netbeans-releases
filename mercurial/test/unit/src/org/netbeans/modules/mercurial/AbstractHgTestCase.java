@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomas
  */
-public abstract class AbstractHgTest extends NbTestCase {
+public abstract class AbstractHgTestCase extends NbTestCase {
 
     protected static final OutputLogger NULL_LOGGER = OutputLogger.getLogger(null);
 
@@ -74,7 +74,7 @@ public abstract class AbstractHgTest extends NbTestCase {
 //    private File workDir;
 //    private File wc;
 
-    public AbstractHgTest(String arg0) {
+    public AbstractHgTestCase(String arg0) {
         super(arg0);
     }
 

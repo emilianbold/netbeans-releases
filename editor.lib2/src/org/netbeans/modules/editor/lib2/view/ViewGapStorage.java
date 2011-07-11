@@ -42,60 +42,77 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.apache.tools.ant.module.loader;
-
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.editor.lib2.view;
 
 /**
- * Recognizes Ant project files according to XML signature.
+ * Gap storage speeds up operations when a number of children views exceeds
+ * certain number.
+ * 
+ * @author Miloslav Metelka
  */
-public class AntProjectDataLoader extends UniFileLoader {
 
-    public static final String REQUIRED_MIME = "text/x-ant+xml"; // NOI18N
-    private static final String KNOWN_ANT_FILENAME = "build.xml"; // NOI18N
+final class ViewGapStorage {
 
-    private static final long serialVersionUID = 3642056255958054115L;
+    /**
+     * Number of child views above which they will start to be managed
+     * in a gap-storage way upon modification.
+     * Below the threshold the views are updated without gap creation.
+     */
+    static final int GAP_STORAGE_THRESHOLD = 20;
 
-    public AntProjectDataLoader () {
-        super ("org.apache.tools.ant.module.loader.AntProjectDataObject"); // NOI18N
+    /**
+     * Length of the visual gap in child view infos along their major axis.
+     */
+    static final double INITIAL_VISUAL_GAP_LENGTH = (1L << 40);
+
+    static final int INITIAL_OFFSET_GAP_LENGTH = (Integer.MAX_VALUE >>> 1);
+
+    /**
+     * Start of the visual gap in child views along their major axis.
+     * <br/>
+     * Place it above end of all views initially.
+     */
+    double visualGapStart; // 8-super + 8 = 16 bytes
+
+    double visualGapLength; // 16 + 8 = 24 bytes
+    
+    /**
+     * Index where the visual gap is located in children views.
+     * This is to help to avoid checking of above/below gap members
+     * when doing many single-view span updates.
+     */
+    int visualGapIndex; // 24 + 4 = 28 bytes
+
+    /**
+     * Start of the offset gap used for managing end offsets of HighlightsView views.
+     * It is not used for paragraph views.
+     * <br/>
+     * Place it above end of all views initially.
+     */
+    int offsetGapStart; // 28 + 4 = 32 bytes
+
+    int offsetGapLength; // 32 + 4 = 36 bytes
+    
+    void initVisualGap(int visualGapIndex, double visualGapStart) {
+        this.visualGapIndex = visualGapIndex;
+        this.visualGapStart = visualGapStart;
+        this.visualGapLength = INITIAL_VISUAL_GAP_LENGTH;
+    }
+
+    void initOffsetGap(int offsetGapStart) {
+        this.offsetGapStart = offsetGapStart;
+        this.offsetGapLength = INITIAL_OFFSET_GAP_LENGTH;
+    }
+
+    StringBuilder appendInfo(StringBuilder sb) {
+        sb.append("<").append(offsetGapStart).append("|").append(offsetGapLength);
+        sb.append(", vis<").append(visualGapStart).append("|").append(visualGapLength);
+        return sb;
     }
 
     @Override
-    protected String defaultDisplayName () {
-        return NbBundle.getMessage (AntProjectDataLoader.class, "LBL_loader_name");
-    }
-
-    @Override
-    protected void initialize () {
-        super.initialize ();
-        getExtensions().addMimeType(REQUIRED_MIME);
-    }
-
-    @Override
-    protected FileObject findPrimaryFile(FileObject fo) {
-        FileObject prim = super.findPrimaryFile(fo);
-        if (prim == null && fo.getNameExt().equals(KNOWN_ANT_FILENAME)) {
-            // XXX hack for #43871.
-            // Does not set the MIME type correctly, but at least should be
-            // possible to run targets, etc.
-            prim = fo;
-        }
-        return prim;
-    }
-
-    @Override
-    protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new AntProjectDataObject(primaryFile, this);
-    }
-
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions"; // NOI18N
+    public String toString() {
+        return appendInfo(new StringBuilder(100)).toString();
     }
 
 }
