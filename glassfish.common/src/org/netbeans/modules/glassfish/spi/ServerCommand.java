@@ -203,7 +203,7 @@ public abstract class ServerCommand {
         Manifest m = new Manifest();
         m.read(in);
         String outputCode = m.getMainAttributes().getValue("exit-code"); // NOI18N
-        if(outputCode.equalsIgnoreCase("Success")) { // NOI18N
+        if(!outputCode.equalsIgnoreCase("failure")) { // NOI18N
             readManifest(m);
             result = true;
         } else {
