@@ -128,7 +128,6 @@ public abstract class ActionUtils {
             if( isEditor ) {
                 actions.add( null ); // Separator
 
-                actions.add(new SaveDocumentAction(tc));
                 actions.add(new CloneDocumentAction(tc));
 
                 //TODO new tab group
@@ -142,12 +141,6 @@ public abstract class ActionUtils {
                     actions.add(new CloseWindowAction(tc));
                 }
             }
-            //close other
-            CloseAllButThisAction allBut = new CloseAllButThisAction(tc, true);
-            if (mode != null && mode.getOpenedTopComponents().size() == 1) {
-                allBut.setEnabled(false);
-            }
-            actions.add(allBut);
             //close group
             if( Switches.isModeClosingEnabled() ) {
                 actions.add(new CloseModeAction(mode));
@@ -224,7 +217,6 @@ public abstract class ActionUtils {
                 actions.add(createDisabledAction("CTL_CloseAllButThisAction")); //NOI18N
                 actions.add(null); // Separator
             }
-            actions.add(createDisabledAction("LBL_SaveDocumentAction"));
             actions.add(createDisabledAction("CTL_CloneDocumentAction"));
             
             actions.add(null); // Separator
@@ -252,10 +244,6 @@ public abstract class ActionUtils {
             //close window
             if( Switches.isViewTopComponentClosingEnabled() ) {
                 actions.add(createDisabledAction("CTL_CloseWindowAction"));
-            }
-            //close other
-            if( Switches.isViewTopComponentClosingEnabled() ) {
-                actions.add(createDisabledAction("CTL_CloseAllButThisAction"));
             }
             //close group
             if( Switches.isModeClosingEnabled() ) {
