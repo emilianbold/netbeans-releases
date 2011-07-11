@@ -95,13 +95,13 @@ import org.openide.util.lookup.Lookups;
  * @author Maros Sandor
  */
 public class Annotator {
-    private static String badgeModified = "org/netbeans/modules/subversion/resources/icons/modified-badge.png";
-    private static String badgeConflicts = "org/netbeans/modules/subversion/resources/icons/conflicts-badge.png";
+    private static final String badgeModified = "org/netbeans/modules/subversion/resources/icons/modified-badge.png"; //NOI18N
+    private static final String badgeConflicts = "org/netbeans/modules/subversion/resources/icons/conflicts-badge.png"; //NOI18N
 
-    private static String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
-            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally");
-    private static String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
-            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts");
+    private static final String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;" //NOI18N
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally"); //NOI18N
+    private static final String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;" //NOI18N
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts"); //NOI18N
 
     private static final int STATUS_TEXT_ANNOTABLE = FileInformation.STATUS_NOTVERSIONED_EXCLUDED |
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_UPTODATE |
