@@ -56,14 +56,12 @@ import org.netbeans.core.windows.view.ui.slides.SlideController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.SaveAction;
-import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -79,7 +77,7 @@ public abstract class ActionUtils {
     private ActionUtils() {}
     
     public static Action[] createDefaultPopupActions(TopComponent tc) {
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
+        ModeImpl mode = findMode(tc);
         int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
         TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         boolean isEditor = tcTracker.isEditorTopComponent( tc );
@@ -181,21 +179,58 @@ public abstract class ActionUtils {
             if( isEditor ) {
                 actions.add( null ); // Separator
 
-                actions.add(new SaveDocumentAction(tc));
                 actions.add(new CloneDocumentAction(tc));
             }
 
         } else if (kind == Constants.MODE_KIND_SLIDING) {
-            if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
-                actions.add(new CloseWindowAction(tc));
+            //close window
+            if( Switches.isClosingEnabled(tc)) {
+                if( (isEditor && Switches.isEditorTopComponentClosingEnabled()) 
+                        || (!isEditor && Switches.isViewTopComponentClosingEnabled()) ) {
+                    actions.add(new CloseWindowAction(tc));
+                }
             }
-            if (mode.getState() == Constants.MODE_STATE_JOINED
-                    && Switches.isTopComponentMaximizationEnabled()
+            //close group
+            if( Switches.isModeClosingEnabled() ) {
+                actions.add(new CloseModeAction(mode));
+            }
+            
+            actions.add( null ); //separator
+            
+            //maximize window
+            if (Switches.isTopComponentMaximizationEnabled()
                     && Switches.isMaximizationEnabled(tc)) {
                 actions.add(new MaximizeWindowAction(tc));
             }
+            
+            //minimize window
+            if( Switches.isTopComponentSlidingEnabled() && Switches.isSlidingEnabled( tc ) )
+                actions.add(createDisabledAction("CTL_MinimizeWindowAction"));
+            
+            //minimize group
+            if( Switches.isModeSlidingEnabled() )
+                actions.add(createDisabledAction("CTL_MinimizeModeAction"));
+
+            //undock window
             if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
+            }
+            //undock group
+            if( Switches.isViewModeUndockingEnabled() )
+                actions.add(createDisabledAction("CTL_UndockModeAction"));
+        
+            //dock window
+            if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
+                actions.add(new DockWindowAction(tc));
+            }
+            //dock group
+            if( Switches.isViewModeUndockingEnabled() )
+                actions.add( new DockModeAction( mode) );
+            
+            if( isEditor ) {
+                actions.add( null ); // Separator
+
+                actions.add(new CloneDocumentAction(tc));
             }
         }
         
@@ -294,11 +329,11 @@ public abstract class ActionUtils {
 
     static Action createMinimizeWindowAction( TopComponent tc ) {
         SlideController slideController = ( SlideController ) SwingUtilities.getAncestorOfClass( SlideController.class, tc );
-        ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
-        int tabIndex = mode.getOpenedTopComponents().indexOf( tc );
+        ModeImpl mode = findMode( tc );
+        int tabIndex = null == mode ? -1 : mode.getOpenedTopComponents().indexOf( tc );
         boolean initialState = WindowManagerImpl.getInstance().isTopComponentMinimized( tc );
         Action res = new AutoHideWindowAction( slideController, tabIndex, initialState );
-        res.setEnabled( mode.getState() == Constants.MODE_STATE_JOINED );
+        res.setEnabled( null != mode && mode.getState() == Constants.MODE_STATE_JOINED );
         return res;
     }
     
@@ -490,8 +525,7 @@ public abstract class ActionUtils {
     /** Returns List of opened top components in mode of given TopComponent.
      */
     private static List<TopComponent> getOpened (TopComponent tc) {
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        ModeImpl mode = (ModeImpl) wm.findMode(tc);
+        ModeImpl mode = findMode(tc);
         List<TopComponent> tcs = new ArrayList<TopComponent>();
         if (mode != null) {
                 tcs.addAll(mode.getOpenedTopComponents());
@@ -528,7 +562,7 @@ public abstract class ActionUtils {
         if(tc instanceof TopComponent.Cloneable) {
             TopComponent clone = ((TopComponent.Cloneable)tc).cloneComponent();
             int openIndex = -1;
-            Mode m = WindowManager.getDefault().findMode(tc);
+            Mode m = findMode(tc);
             if( null != m ) {
                 TopComponent[] tcs = m.getTopComponents();
                 for( int i=0; i<tcs.length; i++ ) {
@@ -576,5 +610,17 @@ public abstract class ActionUtils {
         }
     }
     // Utility methods <<
+    
+    static ModeImpl findMode( TopComponent tc ) {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        ModeImpl mode = (ModeImpl)wm.findMode(tc);
+        if( null == mode ) {
+            //maybe it's multiview element
+            TopComponent multiviewParent = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, tc);
+            if( null != multiviewParent )
+                mode = (ModeImpl)wm.findMode(multiviewParent);
+        }
+        return mode;
+    }
 }
 
