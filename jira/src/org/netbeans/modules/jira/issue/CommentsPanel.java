@@ -179,20 +179,15 @@ public class CommentsPanel extends JPanel {
         JPanel headerPanel = new JPanel();
         JLabel leftLabel = new ExpandLabel(textPane, headerPanel, number);
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
-        String leftTxt;
+        String leftTxt = "";
         if (description) {
             String leftFormat = bundle.getString("CommentsPanel.leftLabel.format"); // NOI18N
             String summary = TextUtils.escapeForHTMLLabel(issue.getSummary());
             leftTxt = MessageFormat.format(leftFormat, summary);
-        } else {
-            leftTxt = bundle.getString("CommentsPanel.leftLabel.text"); // NOI18N
-        }
+        } 
+        leftTxt += " " + author + " " + dateTimeString;
         leftLabel.setText(leftTxt);
-        JLabel rightLabel = new JLabel();
-        String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
-        String rightTxt = MessageFormat.format(rightFormat, dateTimeString, author);
-        rightLabel.setText(rightTxt);
-        rightLabel.setLabelFor(textPane);
+        leftLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
@@ -204,7 +199,7 @@ public class CommentsPanel extends JPanel {
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
         
-        setupHeaderPanel(headerPanel, leftLabel, replyButton, rightLabel, stateLabel);
+        setupHeaderPanel(headerPanel, leftLabel, replyButton, stateLabel);
         setupTextPane(textPane, text);
         
         // Layout
@@ -239,28 +234,25 @@ public class CommentsPanel extends JPanel {
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
-    private void setupHeaderPanel(JPanel headerPanel, JLabel leftLabel, LinkButton replyButton, JLabel rightLabel, JLabel stateLabel) {
+    private void setupHeaderPanel(JPanel headerPanel, JLabel leftLabel, LinkButton replyButton, JLabel stateLabel) {
         headerPanel.setOpaque(false);
         GroupLayout layout = new GroupLayout(headerPanel);
         headerPanel.setLayout(layout);
         GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
             .addComponent(leftLabel, 0, 0, Short.MAX_VALUE)
             .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(replyButton)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(rightLabel);
+            .addComponent(replyButton);
         if (stateLabel != null) {
             hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
             hGroup.addComponent(stateLabel);
         }
         layout.setHorizontalGroup(hGroup);
         GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-            .addComponent(leftLabel)
-            .addComponent(replyButton)
-            .addComponent(rightLabel);
+            .addComponent(leftLabel);
         if (stateLabel != null) {
             vGroup.addComponent(stateLabel);
         }
+        vGroup.addComponent(replyButton);
         layout.setVerticalGroup(vGroup);
     }
 

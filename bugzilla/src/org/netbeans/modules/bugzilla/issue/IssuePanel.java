@@ -87,6 +87,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -483,12 +484,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             headerField.setPreferredSize(new Dimension(0, dim.height));
             reloadField(force, summaryField, IssueField.SUMMARY, summaryWarning, summaryLabel);
             reloadField(force, productCombo, IssueField.PRODUCT, productWarning, productLabel);
-            reloadField(force, productField, IssueField.PRODUCT, null, null);
+            reloadField(force, productField, IssueField.PRODUCT, null, (String) null);
             reloadField(force, componentCombo, IssueField.COMPONENT, componentWarning, componentLabel);
             reloadField(force, versionCombo, IssueField.VERSION, versionWarning, versionLabel);
             reloadField(force, platformCombo, IssueField.PLATFORM, platformWarning, platformLabel);
             reloadField(force, osCombo, IssueField.OS, osWarning, platformLabel);
-            reloadField(force, resolutionField, IssueField.RESOLUTION, null, null); // Must be before statusCombo
+            reloadField(force, resolutionField, IssueField.RESOLUTION, null, (String) null); // Must be before statusCombo
             String status = reloadField(force, statusCombo, IssueField.STATUS, statusWarning, statusLabel);
             initStatusCombo(status);
             reloadField(force, resolutionCombo, IssueField.RESOLUTION, resolutionWarning, resolutionLabel);
@@ -511,7 +512,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (usingTargetMilestones) {
                 reloadField(force, targetMilestoneCombo, IssueField.MILESTONE, milestoneWarning, targetMilestoneLabel);
             }
-            reloadField(force, urlField, IssueField.URL, urlWarning, urlLabel);
+            reloadField(force, urlField, IssueField.URL, urlWarning, fieldName(urlLabel));
             reloadField(force, statusWhiteboardField, IssueField.WHITEBOARD, statusWhiteboardWarning, statusWhiteboardLabel);
             reloadField(force, keywordsField, IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
 
@@ -614,6 +615,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private String reloadField(boolean force, JComponent component, IssueField field, JLabel warningLabel, JLabel fieldLabel) {
+        return reloadField(force, component, field, warningLabel, fieldName(fieldLabel));
+    }
+    
+    private String reloadField(boolean force, JComponent component, IssueField field, JLabel warningLabel, String fieldName) {
         String currentValue = null;
         boolean isNew = issue.getTaskData().isNew();
         if (!force) {
@@ -675,7 +680,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             } else {
                 if (!isNew && valueModifiedByServer && (warningLabel != null)) {
                     warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
-                    String fieldName = fieldName(fieldLabel);
                     String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedWarning"); // NOI18N
                     String message = MessageFormat.format(messageFormat, fieldName, currentValue, newValue);
                     fieldWarnings.add(message);
@@ -686,7 +690,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         } else {
             if (!isNew && valueModifiedByServer && (warningLabel != null)) {
                 warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/error.gif", true)); // NOI18N
-                String fieldName = fieldName(fieldLabel);
                 String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedError"); // NOI18N
                 String message = MessageFormat.format(messageFormat, fieldName, newValue);
                 fieldErrors.add(message);
@@ -716,8 +719,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return value.equals(combo.getSelectedItem());
     }
 
-    private String fieldName(JLabel fieldLabel) {
-        String txt = fieldLabel.getText().trim();
+    private String fieldName(JComponent fieldLabel) {
+        assert fieldLabel instanceof JLabel || fieldLabel instanceof JButton;
+        String txt = "";
+        if(fieldLabel instanceof JLabel) {
+            txt = ((JLabel) fieldLabel).getText().trim();
+            
+        } else if(fieldLabel instanceof JButton) {
+            txt = ((JButton) fieldLabel).getText().trim();
+        } else {
+            return null;
+        }
         if (txt.endsWith(":")) { // NOI18N
             txt = txt.substring(0, txt.length()-1);
         }
@@ -897,7 +909,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void updateFieldStatus(IssueField field, JLabel label) {
+    private void updateFieldStatus(IssueField field, JComponent label) {
+        assert label instanceof JButton || label instanceof JLabel;
         boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
@@ -905,7 +918,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void cancelHighlight(JLabel label) {
+    private void cancelHighlight(JComponent label) {
         if (!reloading) {
             label.setOpaque(false);
             label.getParent().repaint();
@@ -1394,7 +1407,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         priorityWarning = new javax.swing.JLabel();
         targetMilestoneLabel = new javax.swing.JLabel();
         qaContactField = new javax.swing.JTextField();
-        urlLabel = new javax.swing.JLabel();
+        urlLabel = new org.netbeans.modules.bugtracking.util.LinkButton();
         keywordsField = new javax.swing.JTextField();
         urlField = new javax.swing.JTextField();
         statusWhiteboardLabel = new javax.swing.JLabel();
@@ -1577,8 +1590,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         targetMilestoneLabel.setLabelFor(targetMilestoneCombo);
         org.openide.awt.Mnemonics.setLocalizedText(targetMilestoneLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.targetMilestoneLabel.text")); // NOI18N
 
-        urlLabel.setLabelFor(urlField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.urlLabel.text")); // NOI18N
+        urlLabel.addActionListener(formListener);
 
         keywordsField.setColumns(15);
 
@@ -1634,7 +1647,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(urlLabel)
+                            .addComponent(urlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(componentLabel)
                             .addComponent(productLabel)
                             .addComponent(versionLabel)
@@ -1844,7 +1857,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(duplicateButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(urlLabel)
+                    .addComponent(urlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(urlField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(urlWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(dependsLabel)
@@ -2001,6 +2014,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == urlLabel) {
+                IssuePanel.this.urlButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -2480,6 +2496,30 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }//GEN-LAST:event_showInBrowserButtonActionPerformed
 
+private void urlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_urlButtonActionPerformed
+    String urlString = urlField.getText();
+    if(urlString.isEmpty()) {
+        return;
+    }
+    URL url = null;
+    try {
+        url = new URL(urlString);
+    } catch (MalformedURLException muex) {
+        if(issue != null) {
+            String repoUrlString = issue.getRepository().getUrl();
+            urlString = repoUrlString + (repoUrlString.endsWith("/") ? "" : "/") + urlString; // NOI18N
+            try {
+                url = new URL(urlString);
+            } catch (MalformedURLException ex) {
+                Bugzilla.LOG.log(Level.INFO, "Unable to open " + urlString, muex); // NOI18N
+            }
+        }
+    }
+    if(url != null) {
+        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+    }
+}//GEN-LAST:event_urlButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
@@ -2573,7 +2613,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel targetMilestoneLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton tasklistButton;
     private javax.swing.JTextField urlField;
-    private javax.swing.JLabel urlLabel;
+    private org.netbeans.modules.bugtracking.util.LinkButton urlLabel;
     private javax.swing.JLabel urlWarning;
     private javax.swing.JComboBox versionCombo;
     private javax.swing.JLabel versionLabel;
@@ -2707,9 +2747,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
     
     class CancelHighlightDocumentListener implements DocumentListener {
-        private JLabel label;
+        private JComponent label;
         
-        CancelHighlightDocumentListener(JLabel label) {
+        CancelHighlightDocumentListener(JComponent label) {
             this.label = label;
         }
 
