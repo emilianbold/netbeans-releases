@@ -51,7 +51,7 @@ import org.netbeans.modules.bugtracking.util.StackTraceSupport.StackTracePositio
  *
  * @author tomas
  */
-public class StackTraceFinderTest extends TestCase {
+public class StackTraceSupportTest extends TestCase {
 
     public void testStackTrace() {
         String prefix = "simply something \n";

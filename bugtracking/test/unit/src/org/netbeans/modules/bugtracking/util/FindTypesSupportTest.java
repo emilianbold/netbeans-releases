@@ -49,7 +49,7 @@ import junit.framework.TestCase;
  *
  * @author tomas
  */
-public class TypeLinkTest extends TestCase {
+public class FindTypesSupportTest extends TestCase {
 
     public void testIsCamelCase() {
         String str = "Camel";
