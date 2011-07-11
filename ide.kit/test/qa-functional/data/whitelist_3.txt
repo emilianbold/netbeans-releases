@@ -1846,4 +1846,8 @@ org.netbeans.modules.classfile.PrimitiveElementValue
 org.netbeans.modules.project.libraries.Util
 org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation
 org.netbeans.spi.java.project.support.ui.Bundle
+org.netbeans.modules.parsing.impl.TaskProcessor$Sampler
+org.netbeans.modules.parsing.lucene.IndexDocumentImpl
+org.netbeans.modules.parsing.lucene.support.IndexDocument
+org.netbeans.modules.parsing.spi.indexing.support.IndexDocument
 
