@@ -45,21 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Debug">
-            <file name="org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.instance"/>
-        </folder>
-    </folder>
-    
-    <!-- Main menu -->
-    <folder name="Menu">
-        <folder name="RunProject">
-            <file name="org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.instance"/>
-                <attr name="position" intvalue="1850"/>
-            </file>
-        </folder>
-    </folder>
     
     <folder name="Navigator">
         <folder name="Panels">
@@ -81,7 +66,7 @@ made subject to such option by the copyright holder.
 
         <folder name="Modes">
             <folder name="output">
-                <file name="events.wstcref" url="resources/events.wstcref">
+                <file name="eventsView.wstcref" url="resources/events.wstcref">
                     <attr name="position" intvalue="900"/>
                 </file>
             </folder>

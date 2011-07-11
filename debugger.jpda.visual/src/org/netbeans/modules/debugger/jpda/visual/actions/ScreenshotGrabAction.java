@@ -54,6 +54,9 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.RetrievalException;
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -64,6 +67,9 @@ import org.openide.util.actions.Presenter;
  * 
  * @author Martin Entlicher
  */
+@ActionID(id = "org.netbeans.modules.debugger.jpda.visual.actions.ScreenshotGrabAction", category = "Debug")
+@ActionRegistration(displayName = "CTL_ScreenshotGrabAction")
+@ActionReference(path = "Menu/RunProject", position = 1850)
 public class ScreenshotGrabAction extends AbstractAction implements Runnable, Presenter.Popup, Presenter.Menu {
     
     private static boolean isVisualDBG = Boolean.getBoolean("visualDebugger");
