@@ -59,7 +59,9 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.core.windows.Switches;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Mutex;
+import org.openide.util.actions.Presenter;
 import org.openide.windows.WindowManager;
 
 
@@ -67,12 +69,17 @@ import org.openide.windows.WindowManager;
  *
  * @author   Peter Zavadsky
  */
-public class MaximizeWindowAction extends AbstractAction {
+public final class MaximizeWindowAction extends AbstractAction implements Presenter.Popup, Presenter.Menu {
 
     private final PropertyChangeListener propListener;
     private Reference<TopComponent> topComponent;
     
+    private JCheckBoxMenuItem menuItem;
+    private boolean state = true;
+    
     public MaximizeWindowAction() {
+        String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
+        putValue(Action.NAME, label);
         propListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -104,6 +111,8 @@ public class MaximizeWindowAction extends AbstractAction {
      * see #38801 for details
      */
     public MaximizeWindowAction (TopComponent tc) {
+        String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
+        putValue(Action.NAME, label);
         topComponent = new WeakReference<TopComponent>(tc);
         propListener = null;
         updateState();
@@ -112,6 +121,9 @@ public class MaximizeWindowAction extends AbstractAction {
     /** Perform the action. Sets/unsets maximzed mode. */
     @Override
     public void actionPerformed (java.awt.event.ActionEvent ev) {
+        state = !state;
+        getMenuItem().setSelected(state);
+        
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent curTC = getTCToWorkWith();
         
@@ -173,8 +185,8 @@ public class MaximizeWindowAction extends AbstractAction {
         ModeImpl activeMode = (ModeImpl)wm.findMode(active);
         if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)
                 || activeMode.getState() == Constants.MODE_STATE_SEPARATED ) {
-            String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
-            putValue(Action.NAME, label);
+            getMenuPresenter().setSelected( false );
+            getPopupPresenter().setSelected( false );
             setEnabled(false);
             return;
         }
@@ -189,13 +201,9 @@ public class MaximizeWindowAction extends AbstractAction {
             maximize = null != active && !wm.isTopComponentMaximizedWhenSlidedIn( wm.findTopComponentID( active ) );
         }
 
-        String label;
-        if(maximize) {
-            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction");
-        } else {
-            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction");
-        }
-        putValue(Action.NAME, label);
+        state = !maximize;
+        getMenuPresenter().setSelected( state );
+        getPopupPresenter().setSelected( state );
         
         setEnabled(activeMode != null /*&& activeMode.getKind() != Constants.MODE_KIND_SLIDING*/);
     }
@@ -230,6 +238,25 @@ public class MaximizeWindowAction extends AbstractAction {
         } else {
             return super.getValue(key);
         }
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        return getMenuItem();
+    }
+
+    @Override
+    public JMenuItem getMenuPresenter() {
+        return getMenuItem();
+    }
+    
+    private JMenuItem getMenuItem() {
+        if (menuItem == null) {
+            menuItem = new JCheckBoxMenuItem( this );
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+            menuItem.setState( state );
+        }
+        return menuItem;
     }
     
 }
