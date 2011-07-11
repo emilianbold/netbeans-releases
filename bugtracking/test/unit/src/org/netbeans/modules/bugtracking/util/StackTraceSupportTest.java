@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking;
+package org.netbeans.modules.bugtracking.util;
 
 import java.util.List;
 import junit.framework.TestCase;
@@ -51,7 +51,7 @@ import org.netbeans.modules.bugtracking.util.StackTraceSupport.StackTracePositio
  *
  * @author tomas
  */
-public class StackTraceFinderTest extends TestCase {
+public class StackTraceSupportTest extends TestCase {
 
     public void testStackTrace() {
         String prefix = "simply something \n";

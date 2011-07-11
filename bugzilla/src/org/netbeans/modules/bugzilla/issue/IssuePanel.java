@@ -52,9 +52,11 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
@@ -68,6 +70,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -125,6 +128,8 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -139,6 +144,7 @@ import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -2694,6 +2700,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             new Object[] {System.getProperty("netbeans.buildnumber")});                         // NOI18N
     }
 
+    void closed() {
+        if(issue != null) {
+            commentsPanel.storeSettings();
+        }
+    }
+    
     class CancelHighlightDocumentListener implements DocumentListener {
         private JLabel label;
         
