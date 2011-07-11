@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-Localization: org/netbeans/modules/css/module/Bundle
-Bundle-Name: %OpenIDE-Module-Name
-Bundle-SymbolicName: org.netbeans.modules.css.module
-Bundle-Version: 1.0
-OpenIDE-Module-Layer: org/netbeans/modules/css/module/layer.xml
-
