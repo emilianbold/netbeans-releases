@@ -2,6 +2,23 @@
 
 #include whitelist_bug_195029.txt
 
+#200047
+org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase
+org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper
+org.netbeans.modules.cnd.api.project.NativeProjectType
+org.netbeans.modules.cnd.asm.core.assistance.CodeHighlightFactory
+org.netbeans.modules.cnd.editor.cplusplus.CppDTIFactory
+org.netbeans.modules.cnd.editor.cplusplus.CppTBIFactory
+org.netbeans.modules.cnd.editor.cplusplus.CppTTIFactory
+org.netbeans.modules.cnd.editor.fortran.FortranTTIFactory
+org.netbeans.modules.cnd.highlight.CppHighlightsLayerFactory
+org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton
+org.netbeans.modules.cnd.makeproject.MakeProjectFileOwnerQuery
+org.netbeans.modules.cnd.makeproject.MakeProjectPaths
+org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl
+org.netbeans.modules.cnd.utils.CndUtils
+org.netbeans.modules.cnd.utils.MIMENames
+
 #200043
 org.netbeans.core.windows.services.DialogDisplayerImpl$1AWTQuery
 org.netbeans.modules.java.project.BrokenReferencesModel$BrokenProject
