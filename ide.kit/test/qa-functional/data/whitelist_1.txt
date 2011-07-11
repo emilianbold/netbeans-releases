@@ -5625,3 +5625,25 @@ sun.reflect.SerializationConstructorAccessorImpl
 org.netbeans.core.windows.TopComponentTracker
 org.netbeans.core.windows.persistence.RoleFileSystem
 org.netbeans.modules.settings.convertors.XMLSettingsSupport$SpecialObjectInputStream
+
+
+# OK on July 11, 2011
+com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl
+com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver
+com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl
+com.sun.org.apache.xerces.internal.impl.dtd.XMLDTDValidator
+com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser
+com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser
+com.sun.org.apache.xerces.internal.parsers.AbstractXMLDocumentParser
+com.sun.org.apache.xerces.internal.parsers.XML11Configuration
+com.sun.org.apache.xerces.internal.parsers.XMLParser
+javax.swing.plaf.ButtonUI
+javax.swing.plaf.basic.BasicToggleButtonUI
+javax.swing.plaf.metal.MetalToggleButtonUI
+org.netbeans.swing.tabcontrol.SlidingButtonUI
+org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI$PinButtonLayout
+org.netbeans.swing.tabcontrol.plaf.MetalSlidingButtonUI
+org.netbeans.swing.tabcontrol.plaf.NonStretchingViewTabLayoutModel
+org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory$SlideGroupButton
+
+
