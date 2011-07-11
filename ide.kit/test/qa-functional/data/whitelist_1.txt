@@ -9,6 +9,11 @@ org.netbeans.spi.project.libraries.NamedLibraryImplementation
 org.netbeans.modules.project.libraries.Util
 org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation
 
+# 200037
+org.netbeans.modules.mercurial.MercurialInterceptor$HgFolderEventsHandler
+org.netbeans.modules.mercurial.MercurialInterceptor$LockedRepositoryRefreshTask
+org.netbeans.modules.mercurial.kenai.HgKenaiAccessor
+org.netbeans.modules.mercurial.kenai.KenaiNotificationListener
 
 #199644
 org.netbeans.modules.cnd.api.project.NativeProjectRegistry
