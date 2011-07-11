@@ -42,13 +42,11 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.DateFormat;
@@ -82,14 +80,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicTreeUI;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import javax.swing.text.Element;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
@@ -210,21 +202,16 @@ public class CommentsPanel extends JPanel {
         JPanel headerPanel = new JPanel();
         JLabel leftLabel = new ExpandLabel(textPane, headerPanel, number);
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
-        String leftTxt;
+        String leftTxt = "";
         if (description) {
             String leftFormat = bundle.getString("CommentsPanel.leftLabel.format"); // NOI18N
             String summary = TextUtils.escapeForHTMLLabel(issue.getSummary());
             leftTxt = MessageFormat.format(leftFormat, summary);
-        } else {
-            leftTxt = bundle.getString("CommentsPanel.leftLabel.text"); // NOI18N
-        }
-        leftLabel.setText(leftTxt);
-        JLabel rightLabel = new JLabel();
-        String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
+        } 
         String authorTxt = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
-        String rightTxt = MessageFormat.format(rightFormat, dateTimeString, authorTxt);
-        rightLabel.setText(rightTxt);
-        rightLabel.setLabelFor(textPane);
+        leftTxt += " " + authorTxt + " " + dateTimeString;
+        leftLabel.setText(leftTxt);
+        leftLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             int index = author.indexOf('@');
@@ -238,7 +225,7 @@ public class CommentsPanel extends JPanel {
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
 
-        setupHeaderPanel(headerPanel, leftLabel, replyButton, rightLabel, stateLabel);
+        setupHeaderPanel(headerPanel, leftLabel, replyButton, stateLabel);
         setupTextPane(textPane, text);
 
         // Issue 172653 - JTextPane too big
@@ -303,28 +290,25 @@ public class CommentsPanel extends JPanel {
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
-    private void setupHeaderPanel(JPanel headerPanel, JLabel leftLabel, LinkButton replyButton, JLabel rightLabel, JLabel stateLabel) {
+    private void setupHeaderPanel(JPanel headerPanel, JLabel leftLabel, LinkButton replyButton, JLabel stateLabel) {
         headerPanel.setOpaque(false);
         GroupLayout layout = new GroupLayout(headerPanel);
         headerPanel.setLayout(layout);
         GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
             .addComponent(leftLabel, 0, 0, Short.MAX_VALUE)
             .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(replyButton)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(rightLabel);
+            .addComponent(replyButton);
         if (stateLabel != null) {
             hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
             hGroup.addComponent(stateLabel);
         }
         layout.setHorizontalGroup(hGroup);
         GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-            .addComponent(leftLabel)
-            .addComponent(replyButton)
-            .addComponent(rightLabel);
+            .addComponent(leftLabel);
         if (stateLabel != null) {
             vGroup.addComponent(stateLabel);
         }
+        vGroup.addComponent(replyButton);
         layout.setVerticalGroup(vGroup);
     }
 
