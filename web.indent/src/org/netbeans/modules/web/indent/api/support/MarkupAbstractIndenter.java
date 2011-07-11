@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.formatting.api.support;
+package org.netbeans.modules.web.indent.api.support;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,10 +54,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.css.formatting.api.LexUtilities;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.indent.api.LexUtilities;
 
 /**
  * Implementation of AbstractIndenter for tag based languages.
@@ -370,7 +370,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         ListIterator<MarkupItem> it = fileStack.listIterator(index);
         while (it.hasNext()) {
             MarkupItem im = it.next();
-            sb.append(im.toString()+" ");
+            sb.append(im.toString()).append(" ");
         }
         return sb.toString();
     }
@@ -562,7 +562,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
 
         if (context.getNextLineStartOffset() != -1) {
             getIndentFromState(preliminaryNextLineIndent, false, context.getNextLineStartOffset());
-            if (preliminaryNextLineIndent.size() == 0) {
+            if (preliminaryNextLineIndent.isEmpty()) {
                 preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
             }
         }

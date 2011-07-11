@@ -53,7 +53,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
-import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.test.TestBase2;

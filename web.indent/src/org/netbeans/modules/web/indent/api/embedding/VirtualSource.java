@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.spi.DefaultError;
-import org.netbeans.modules.css.lib.api.ProblemDescription;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.web.indent.api.embedding;
+
+import javax.swing.text.Document;
 
 /**
- * Utility methods to be refactored out later.
+ * Virtual source generated for a language from a document. The purpose of virtual
+ * source is to extract individual parts of given language from a document
+ * and amend such a source to be syntactically correct as much as possible.
  * 
- * 
- * @author marekfukala
+ * @since org.netbeans.modules.css.editor/1 1.3
  */
-public final class Css3Utils {
-   
-    public static List<Error> getCslErrorForCss3ProblemDescription(FileObject file, List<ProblemDescription> pds) {
-        List<Error> errors = new ArrayList<Error>();
-        for(ProblemDescription pd : pds) {
-            errors.add(getCslErrorForCss3ProblemDescription(file, pd));
-        }
-        return errors;
-    }
-    
-    private static Error getCslErrorForCss3ProblemDescription(FileObject file, ProblemDescription pd) {
-        return new DefaultError(
-                pd.getKey(), 
-                pd.getDescription(), 
-                pd.getDescription(), 
-                file, 
-                pd.getFrom(), 
-                pd.getTo(),
-                getCslSeverityForCss3ProblemType(pd.getType()));
-    }
+public interface VirtualSource {
 
-    public static Severity getCslSeverityForCss3ProblemType(ProblemDescription.Type problemType) {
-        switch(problemType) {
-            case ERROR:
-                return Severity.ERROR;
-            case FATAL:
-                    return Severity.FATAL;
-            case INFO:
-                    return Severity.INFO;
-            case WARNING:
-                return Severity.WARNING;
-        }
+    /**
+     * Returns text for given start and end offset from virtual source.
+     * @param startOffset start offset
+     * @param endOffset end offset
+     * @return text lying within given range or null if there is none
+     */
+    String getSource(int startOffset, int endOffset);
+
+    /**
+     * Factory creating virtual source of given mime from a document.
+     */
+    public interface Factory {
+
+        /**
+         * Create virtual source of specified MIME type from given document.
+         * @param doc document to extract virtual source from
+         * @param mimeOfInterest MIME type which should be extracted from document
+         * @return instance of virtual source or null factory does not know
+         *  how to extract requested MIME type from given document
+         */
+        VirtualSource createVirtualSource(Document doc, String mimeOfInterest);
         
-        return Severity.ERROR;
     }
-    
 }

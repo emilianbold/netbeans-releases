@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.formatting.api;
+package org.netbeans.modules.web.indent.api;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,9 +55,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence.TokenSequenceWrapper;
-import org.netbeans.modules.css.formatting.api.embedding.VirtualSource;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence.TokenSequenceWrapper;
+import org.netbeans.modules.web.indent.api.embedding.VirtualSource;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -66,7 +66,7 @@ import org.openide.util.Exceptions;
  *
  * @since org.netbeans.modules.css.editor/1 1.3
  */
-public class LexUtilities {
+public final class LexUtilities {
 
     private LexUtilities(){};
 
@@ -118,7 +118,7 @@ public class LexUtilities {
     public static Language<? extends TokenId> getLanguage(TokenHierarchy<BaseDocument> th, int offset) {
         List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
 
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             return null;
         }
         return list.get(list.size()-1).language();
@@ -276,6 +276,7 @@ public class LexUtilities {
             }
         }
         Collections.sort(tss, new Comparator<TokenSequence<T1>>() {
+            @Override
             public int compare(TokenSequence<T1> o1, TokenSequence<T1> o2) {
                 assert o1.offset() != o2.offset(); // should never have two equal TokenSequence
                 return o1.offset() - o2.offset();
@@ -325,7 +326,7 @@ public class LexUtilities {
     public static <T1 extends TokenId> List<JoinedTokenSequence.CodeBlock<T1>> createCodeBlocks(
             BaseDocument doc, Language<T1> language, VirtualSource virtualSource) throws BadLocationException {
         List<TokenSequence<T1>> tss = LexUtilities.getEmbeddedTokenSequences(doc, language, 0, doc.getLength());
-        if (tss.size() == 0) {
+        if (tss.isEmpty()) {
             return null;
         }
         return LexUtilities.calculateCodeBlock(tss, virtualSource);

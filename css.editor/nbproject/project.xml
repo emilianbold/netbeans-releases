@@ -157,6 +157,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -322,12 +330,7 @@
                 <friend>org.netbeans.modules.php.smarty</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.css.editor.model</package>
-                <package>org.netbeans.modules.css.formatting.api</package>
-                <package>org.netbeans.modules.css.formatting.api.embedding</package>
-                <package>org.netbeans.modules.css.formatting.api.support</package>
                 <package>org.netbeans.modules.css.gsf.api</package>
-                <package>org.netbeans.modules.css.lexer.api</package>
-                <package>org.netbeans.modules.css.parser</package>
                 <package>org.netbeans.modules.css.refactoring.api</package>
             </friend-packages>
         </data>

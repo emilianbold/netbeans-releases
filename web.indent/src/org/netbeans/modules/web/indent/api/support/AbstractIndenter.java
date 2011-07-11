@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.formatting.api.support;
+package org.netbeans.modules.web.indent.api.support;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,11 +63,11 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.css.formatting.api.LexUtilities;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.css.formatting.api.embedding.VirtualSource;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.embedding.VirtualSource;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -416,7 +416,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
         }
 
-        if (indentedLines.size() == 0) {
+        if (indentedLines.isEmpty()) {
             return;
         }
         applyIndents(indentedLines, lineStart, lineEnd);
@@ -452,6 +452,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         Comparator<ForeignLanguageBlock> c = new Comparator<ForeignLanguageBlock>() {
+            @Override
             public int compare(ForeignLanguageBlock o1, ForeignLanguageBlock o2) {
                 int res = o1.startLine - o2.startLine;
                 if (res == 0) {
@@ -471,7 +472,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     }
 
     private void addBlockAndMergeIfNeeded(List<ForeignLanguageBlock> newBlocks, ForeignLanguageBlock toAdd) {
-        if (newBlocks.size() == 0) {
+        if (newBlocks.isEmpty()) {
             newBlocks.add(toAdd);
             return;
         }
@@ -515,7 +516,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             }
             if (cmds.size() != l.lineIndent.size()) {
                 l.lineIndent = cmds;
-                if (cmds.size() == 0) {
+                if (cmds.isEmpty()) {
                     cmds.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, l.offset));
                 }
             }
@@ -560,7 +561,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             all = mergeProcessedIndentedLines(all, l);
         }
 
-        if (all.size() == 0) {
+        if (all.isEmpty()) {
             return all;
         }
         // eliminate foreign language groups which have a formatter:
@@ -593,7 +594,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     }
                 }
                 l.lineIndent = kept;
-                if (l.lineIndent.size() == 0) {
+                if (l.lineIndent.isEmpty()) {
                     l.lineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, l.offset));
                 }
                 if (removed.size() > 0) {
@@ -661,11 +662,11 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
 
     private void addLanguageEndLine(List<Line> lines) throws BadLocationException {
         // check what last line of language suggests about next line:
-        if (lines.size() == 0) {
+        if (lines.isEmpty()) {
             return;
         }
         Line lastLine = lines.get(lines.size()-1);
-        if (lastLine.preliminaryNextLineIndent.size() == 0) {
+        if (lastLine.preliminaryNextLineIndent.isEmpty()) {
             return;
         }
         int lineIndex = lastLine.index+1;
@@ -755,6 +756,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
      */
     private void applyStoredCommads(List<Line> all, List<LineCommandsPair> pairs) throws BadLocationException {
         Comparator<LineCommandsPair> c = new Comparator<LineCommandsPair>() {
+            @Override
             public int compare(LineCommandsPair o1, LineCommandsPair o2) {
                 return o1.line - o2.line;
             }
@@ -802,7 +804,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 List<IndentCommand> commands = new ArrayList<IndentCommand>(pair.commands);
                 for (IndentCommand ic : l.lineIndent) {
                     if (ic.getType() != IndentCommand.Type.NO_CHANGE ||
-                            (ic.getType() == IndentCommand.Type.NO_CHANGE && commands.size() == 0)) {
+                            (ic.getType() == IndentCommand.Type.NO_CHANGE && commands.isEmpty())) {
                         commands.add(ic);
                     }
                 }
@@ -883,12 +885,12 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                         firstContinue = true;
                     }
                     if (ic.getType() != IndentCommand.Type.NO_CHANGE || 
-                            (ic.getType() == IndentCommand.Type.NO_CHANGE && commands.size() == 0)) {
+                            (ic.getType() == IndentCommand.Type.NO_CHANGE && commands.isEmpty())) {
                         commands.add(ic);
                     }
                 }
             }
-            if (commands.size() == 0) {
+            if (commands.isEmpty()) {
                 IndentCommand ic2 = new IndentCommand(IndentCommand.Type.NO_CHANGE, l.lineStartOffset);
                 if (inContinue) {
                     ic2.setWasContinue();
@@ -1578,6 +1580,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             final int lineStart, final int lineEnd) throws BadLocationException {
         final BadLocationException ex[] = new BadLocationException[1];
         getDocument().runAtomic(new Runnable() {
+            @Override
             public void run() {
                 try {
                     applyIndents0(indentedLines, lineStart, lineEnd);
@@ -2051,7 +2054,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         }
 
         public boolean isEmpty() {
-            return ranges.size() == 0;
+            return ranges.isEmpty();
         }
 
         public String dump() {
@@ -2060,7 +2063,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 if (sb.length() > 0) {
                     sb.append(',');
                 }
-                sb.append("["+or.start+"-"+or.end+"]");
+                sb.append("[").append(or.start).append("-").append(or.end).append("]");
             }
             return sb.toString();
         }

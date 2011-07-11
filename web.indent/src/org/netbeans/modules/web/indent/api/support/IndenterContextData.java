@@ -40,10 +40,10 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.formatting.api.support;
+package org.netbeans.modules.web.indent.api.support;
 
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
 
 /**
  *

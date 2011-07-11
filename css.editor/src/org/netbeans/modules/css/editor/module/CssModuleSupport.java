@@ -39,56 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor;
+package org.netbeans.modules.css.editor.module;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.spi.DefaultError;
-import org.netbeans.modules.css.lib.api.ProblemDescription;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.openide.util.Lookup;
 
 /**
- * Utility methods to be refactored out later.
- * 
- * 
+ *
  * @author marekfukala
  */
-public final class Css3Utils {
-   
-    public static List<Error> getCslErrorForCss3ProblemDescription(FileObject file, List<ProblemDescription> pds) {
-        List<Error> errors = new ArrayList<Error>();
-        for(ProblemDescription pd : pds) {
-            errors.add(getCslErrorForCss3ProblemDescription(file, pd));
-        }
-        return errors;
-    }
+public class CssModuleSupport {
     
-    private static Error getCslErrorForCss3ProblemDescription(FileObject file, ProblemDescription pd) {
-        return new DefaultError(
-                pd.getKey(), 
-                pd.getDescription(), 
-                pd.getDescription(), 
-                file, 
-                pd.getFrom(), 
-                pd.getTo(),
-                getCslSeverityForCss3ProblemType(pd.getType()));
-    }
-
-    public static Severity getCslSeverityForCss3ProblemType(ProblemDescription.Type problemType) {
-        switch(problemType) {
-            case ERROR:
-                return Severity.ERROR;
-            case FATAL:
-                    return Severity.FATAL;
-            case INFO:
-                    return Severity.INFO;
-            case WARNING:
-                return Severity.WARNING;
-        }
-        
-        return Severity.ERROR;
+    public static Collection<? extends CssModule> getModules() {
+        return Lookup.getDefault().lookupAll(CssModule.class);
     }
     
 }

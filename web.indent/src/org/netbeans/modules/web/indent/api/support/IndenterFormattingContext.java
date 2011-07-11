@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.formatting.api.support;
+package org.netbeans.modules.web.indent.api.support;
 
 import java.util.ArrayList;
 import java.util.List;

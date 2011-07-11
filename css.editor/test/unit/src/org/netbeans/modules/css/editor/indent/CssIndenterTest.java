@@ -58,7 +58,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.netbeans.modules.css.gsf.CssBracketCompleter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;

@@ -14,7 +14,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.formatting.api.embedding;
+package org.netbeans.modules.web.indent.api.embedding;
 
 import java.util.ArrayList;
 import java.util.List;

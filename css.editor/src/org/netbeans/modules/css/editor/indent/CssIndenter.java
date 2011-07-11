@@ -50,11 +50,11 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
-import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
-import org.netbeans.modules.css.formatting.api.support.IndentCommand;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.css.formatting.api.LexUtilities;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
+import org.netbeans.modules.web.indent.api.support.IndenterContextData;
+import org.netbeans.modules.web.indent.api.support.IndentCommand;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.editor.indent.spi.Context;
 
@@ -345,7 +345,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
         if (context.getNextLineStartOffset() != -1) {
             getIndentFromState(preliminaryNextLineIndent, false, context.getNextLineStartOffset());
-            if (preliminaryNextLineIndent.size() == 0) {
+            if (preliminaryNextLineIndent.isEmpty()) {
                 preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
             }
         }
