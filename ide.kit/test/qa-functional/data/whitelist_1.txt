@@ -15,6 +15,14 @@ org.netbeans.modules.mercurial.MercurialInterceptor$LockedRepositoryRefreshTask
 org.netbeans.modules.mercurial.kenai.HgKenaiAccessor
 org.netbeans.modules.mercurial.kenai.KenaiNotificationListener
 
+#200038
+org.netbeans.modules.csl.core.AbstractTaskFactory
+org.netbeans.modules.csl.editor.fold.GsfFoldScheduler
+org.netbeans.modules.csl.editor.fold.GsfFoldScheduler$AListener
+org.netbeans.modules.csl.navigation.CSLNavigatorScheduler
+org.netbeans.modules.csl.navigation.CSLNavigatorScheduler$AListener
+org.netbeans.modules.csl.navigation.ClassMemberNavigatorSourceFactory
+
 #199644
 org.netbeans.modules.cnd.api.project.NativeProjectRegistry
 org.netbeans.modules.cnd.apt.debug.APTTraceFlags
