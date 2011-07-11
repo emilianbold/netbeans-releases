@@ -271,7 +271,6 @@ public class CommentsPanel extends JPanel {
         HyperlinkSupport.getInstance().registerForURLs(textPane);
         HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
         
-        textPane.setBackground(new Color(0xf3f6fd));
         StyledDocument doc = textPane.getStyledDocument();
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {
