@@ -317,49 +317,52 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
             }            
             if(a != null) actions.add(a);
-            actions.add(null);
-            actions.add(SystemAction.get(StatusAction.class));
-            actions.add(SystemAction.get(DiffAction.class));
-            actions.add(SystemAction.get(UpdateAction.class));
-            actions.add(SystemAction.get(CommitAction.class));
-            actions.add(SystemAction.get(AddAction.class));
-            actions.add(null);
-            actions.add(new ExportMenu());
-            actions.add(SystemAction.get(ImportDiffAction.class));
+            if (noneVersioned) {
+                a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
+                if(a != null) actions.add(a);
+            } else {
+                actions.add(null);
+                actions.add(SystemAction.get(StatusAction.class));
+                actions.add(SystemAction.get(DiffAction.class));
+                actions.add(SystemAction.get(UpdateAction.class));
+                actions.add(SystemAction.get(CommitAction.class));
+                actions.add(SystemAction.get(AddAction.class));
+                actions.add(null);
+                actions.add(new ExportMenu());
+                actions.add(SystemAction.get(ImportDiffAction.class));
 
-            actions.add(null);
-            if (!noneVersioned) {
+                actions.add(null);
                 actions.add(SystemAction.get(CloneAction.class));
-            }
-            a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
-            if(a != null) actions.add(a);
+                a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
+                if(a != null) actions.add(a);
 
-            actions.add(SystemAction.get(FetchAction.class));
-            actions.add(new ShareMenu());
-            actions.add(new MergeMenu(false));
-            actions.add(null);
-            actions.add(SystemAction.get(LogAction.class));
-            if (!onlyProjects  && !onlyFolders) {
-                AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
-                if (tempA.visible(nodes)) {
-                    actions.add(new ShowMenu(true, true));
-                } else {
-                    actions.add(new ShowMenu(true, false));
+                actions.add(SystemAction.get(FetchAction.class));
+                actions.add(new ShareMenu());
+                actions.add(new MergeMenu(false));
+                actions.add(null);
+                actions.add(SystemAction.get(LogAction.class));
+                if (!onlyProjects  && !onlyFolders) {
+                    AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
+                    if (tempA.visible(nodes)) {
+                        actions.add(new ShowMenu(true, true));
+                    } else {
+                        actions.add(new ShowMenu(true, false));
+                    }
+                }else{
+                    actions.add(new ShowMenu(false, false));
                 }
-            }else{
-                actions.add(new ShowMenu(false, false));
+                actions.add(null);
+                actions.add(SystemAction.get(RevertModificationsAction.class));
+                actions.add(new RecoverMenu());
+                if (!onlyProjects) {
+                    actions.add(SystemAction.get(IgnoreAction.class));
+                }
+                actions.add(null);
+                actions.add(new BranchMenu(null));
+                actions.add(new TagMenu(null));
+                actions.add(null);
+                actions.add(SystemAction.get(PropertiesAction.class));
             }
-            actions.add(null);
-            actions.add(SystemAction.get(RevertModificationsAction.class));
-            actions.add(new RecoverMenu());
-            if (!onlyProjects) {
-                actions.add(SystemAction.get(IgnoreAction.class));
-            }
-            actions.add(null);
-            actions.add(new BranchMenu(null));
-            actions.add(new TagMenu(null));
-            actions.add(null);
-            actions.add(SystemAction.get(PropertiesAction.class));
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
