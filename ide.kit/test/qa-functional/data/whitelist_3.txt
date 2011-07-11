@@ -2,6 +2,17 @@
 
 #include whitelist_bug_195029.txt
 
+#
+org.netbeans.modules.bugtracking.spi.IssueProvider
+org.netbeans.modules.bugtracking.spi.IssueProvider$LazyIssue
+org.netbeans.modules.bugtracking.tasklist.TaskListProvider
+org.netbeans.modules.bugtracking.tasklist.TaskListProvider$RefreshTask
+org.netbeans.modules.bugzilla.Bugzilla
+org.netbeans.modules.bugzilla.BugzillaConfig
+org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider
+org.netbeans.modules.bugzilla.util.BugzillaUtil
+
+
 #186869
 org.netbeans.modules.javacard.api.JavacardPlatformChildren
 org.netbeans.modules.javacard.common.Utils
