@@ -5665,5 +5665,6 @@ org.netbeans.swing.tabcontrol.plaf.MetalSlidingButtonUI
 org.netbeans.swing.tabcontrol.plaf.NonStretchingViewTabLayoutModel
 org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory$SlideGroupButton
 org.netbeans.modules.profiler.ProfilerControlPanel2Support
-
-
+org.netbeans.api.debugger.PathLookup$PathLookupResult
+org.netbeans.api.debugger.PathLookup$PathLookupResult$PathLookupListener
+org.netbeans.modules.debugger.ui.actions.DebugMainProjectAction$AttachHistorySupport
