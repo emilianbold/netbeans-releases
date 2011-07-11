@@ -132,20 +132,18 @@ org.netbeans.modules.j2ee.persistenceapi.FileChangeSupportListener
 org.netbeans.modules.j2ee.persistenceapi.PersistenceScopeAccessor
 org.netbeans.modules.j2ee.persistenceapi.PersistenceScopesAccessor
 
-# Bug 177841
-# j2ee deployment plugins loaded even when j2se project and no server installed
-javax.enterprise.deploy.shared.factories.DeploymentFactoryManager
-javax.enterprise.deploy.spi.DeploymentManager
-javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
+#IZ 200049
+org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider
+org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory
+org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
+org.netbeans.modules.glassfish.spi.ServerUtilities
 org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment
 org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule
 org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule$Type
-org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener
 org.netbeans.modules.j2ee.deployment.impl.Server
 org.netbeans.modules.j2ee.deployment.impl.ServerRegistry
 org.netbeans.modules.j2ee.deployment.impl.ServerRegistry$InstanceInstallListener
 org.netbeans.modules.j2ee.deployment.impl.ServerRegistry$PluginInstallListener
-org.netbeans.modules.j2ee.deployment.impl.gen.nbd.CommonBean
 org.netbeans.modules.j2ee.deployment.impl.gen.nbd.ContainerLimitation
 org.netbeans.modules.j2ee.deployment.impl.gen.nbd.NetbeansDeployment
 org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot
@@ -162,16 +160,11 @@ org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment
 org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory
 org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException
 org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor
+org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager
 org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer
 org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver
 org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory
 org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory
-org.netbeans.modules.j2ee.sun.api.ServerLocationManager
-org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory
-org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog
-org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory
-org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
-org.netbeans.modules.glassfish.spi.ServerUtilities
 
 #IZ 177644
 org.netbeans.modules.schema2beans.AttrProp
