@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
@@ -315,7 +316,10 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                 public boolean cancel() {
                     Thread t = synchThread.get();
                     if (t != null) {
-                        LOG.fine("Cancelling synchronization of " + getUrl());
+                        LOG.log(Level.FINE, "Cancelling synchronization of {0}", getUrl());
+                        if (!isPersisted()) {
+                            properties.put(INSTANCE_SYNC, "0");
+                        }
                         t.interrupt();
                         handle.get().finish();
                         return true;
@@ -497,12 +501,12 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             task.cancel();
         }
         
-        public void run() {
-            synchronize();
+        @Override public void run() {
             // Refresh wait time
             String s = getProperties().get(INSTANCE_SYNC);
             int pause = Integer.parseInt(s) * 60 * 1000;
             if (pause > 0) {
+                synchronize();
                 task.schedule(pause);
             }
         }
