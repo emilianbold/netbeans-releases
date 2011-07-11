@@ -47,7 +47,6 @@ package org.netbeans.core.windows.actions;
 
 
 import java.awt.event.*;
-import java.beans.*;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
@@ -55,7 +54,6 @@ import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.view.ui.slides.SlideController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.actions.SaveAction;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
@@ -121,7 +119,7 @@ public abstract class ActionUtils {
             }
             //dock group
             if( Switches.isEditorModeUndockingEnabled() && isEditor )
-                actions.add( new DockModeAction( mode) );
+                actions.add( new DockModeAction( mode, null ) );
 
             if( isEditor ) {
                 actions.add( null ); // Separator
@@ -174,7 +172,7 @@ public abstract class ActionUtils {
             }
             //dock group
             if( Switches.isViewModeUndockingEnabled() )
-                actions.add( new DockModeAction( mode) );
+                actions.add( new DockModeAction( mode, null ) );
             
             if( isEditor ) {
                 actions.add( null ); // Separator
@@ -224,8 +222,8 @@ public abstract class ActionUtils {
                 actions.add(new DockWindowAction(tc));
             }
             //dock group
-            if( Switches.isViewModeUndockingEnabled() )
-                actions.add( new DockModeAction( mode) );
+            if( Switches.isViewModeUndockingEnabled() || Switches.isModeSlidingEnabled() )
+                actions.add( new DockModeAction( findPreviousMode( tc, mode ), mode) );
             
             if( isEditor ) {
                 actions.add( null ); // Separator
@@ -274,7 +272,7 @@ public abstract class ActionUtils {
             }
             //dock group
             if( Switches.isEditorModeUndockingEnabled() )
-                actions.add( new DockModeAction( mode) );
+                actions.add( new DockModeAction( mode, null ) );
         } else if (kind == Constants.MODE_KIND_VIEW) {
             //close window
             if( Switches.isViewTopComponentClosingEnabled() ) {
@@ -305,6 +303,13 @@ public abstract class ActionUtils {
             //float group
             if( Switches.isViewModeUndockingEnabled() )
                 actions.add( new UndockModeAction( mode) );
+            //dock window
+            if( Switches.isTopComponentUndockingEnabled()) {
+                actions.add(createDisabledAction("CTL_UndockWindowAction_Dock"));
+            }
+            //dock group
+            if( Switches.isViewModeUndockingEnabled() )
+                actions.add( new DockModeAction( mode, null ) );
             
         } else if (kind == Constants.MODE_KIND_SLIDING) {
             if( Switches.isViewTopComponentClosingEnabled() ) {
@@ -415,37 +420,6 @@ public abstract class ActionUtils {
         }
     } // End of class ToggleWindowTransparencyAction
 
-    private static class SaveDocumentAction extends AbstractAction implements PropertyChangeListener {
-        private final TopComponent tc;
-        private Action saveAction;
-        
-        public SaveDocumentAction(TopComponent tc) {
-            this.tc = tc;
-            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_SaveDocumentAction"));
-            // share key accelerator with org.openide.actions.SaveAction
-            saveAction = (Action)SaveAction.get(SaveAction.class);
-            putValue(Action.ACCELERATOR_KEY, saveAction.getValue(Action.ACCELERATOR_KEY));
-            // fix of 40954 - weak listener instead of hard one
-            PropertyChangeListener weakL = WeakListeners.propertyChange(this, saveAction);
-            saveAction.addPropertyChangeListener(weakL);
-            setEnabled(getSaveCookie(tc) != null);
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            saveDocument(tc);
-        }
-
-        /** Keep accelerator key in sync with org.openide.actions.SaveAction */
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Action.ACCELERATOR_KEY.equals(evt.getPropertyName())) {
-                putValue(Action.ACCELERATOR_KEY, saveAction.getValue(Action.ACCELERATOR_KEY));
-            }
-        }
-        
-    } // End of class SaveDocumentAction.
-    
     private static class CloneDocumentAction extends AbstractAction {
         private final TopComponent tc;
         public CloneDocumentAction(TopComponent tc) {
@@ -621,6 +595,16 @@ public abstract class ActionUtils {
                 mode = (ModeImpl)wm.findMode(multiviewParent);
         }
         return mode;
+    }
+    
+    private static ModeImpl findPreviousMode( TopComponent tc, ModeImpl slidingMode ) {
+        ModeImpl res = null;
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        String tcId = wm.findTopComponentID( tc );
+        if( null != tcId ) {
+            res = wm.getPreviousModeForTopComponent( tcId, slidingMode );
+        }
+        return res;
     }
 }
 

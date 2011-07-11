@@ -54,8 +54,9 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.util.NbBundle;
 
 /**
- * Action perform dock, either of given or active Mode.
+ * Action to perform dock, either of given or active Mode.
  * Dock means move into main window area.
+ * If the given mode is minimized then this action restores its minimized windows instead.
  * 
  * @author S. Aubrecht
  * @since 2.30
@@ -63,6 +64,7 @@ import org.openide.util.NbBundle;
 public final class DockModeAction extends AbstractAction {
 
     private final ModeImpl mode;
+    private ModeImpl slidingMode;
 
     /**
      * Creates instance of action to Dock the whole mode of currently active top
@@ -77,8 +79,9 @@ public final class DockModeAction extends AbstractAction {
      * Undock/Dock of given Mode.
      * For use in the context menus.
      */
-    public DockModeAction (ModeImpl mode) {
-        this.mode = mode;
+    public DockModeAction (ModeImpl modeToRestore, ModeImpl slidingMode) {
+        this.mode = modeToRestore;
+        this.slidingMode = slidingMode;
         putValue(Action.NAME, NbBundle.getMessage(DockModeAction.class, "CTL_UndockModeAction_Dock")); //NOI18N
     }
     
@@ -86,10 +89,16 @@ public final class DockModeAction extends AbstractAction {
     public void actionPerformed (ActionEvent e) {
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         ModeImpl contextMode = getMode2WorkWith();
-        boolean isDocked = contextMode.getState() == Constants.MODE_STATE_JOINED;
+        if( null == contextMode )
+            return; //just being paranoid
+        if( null != slidingMode ) {
+            WindowManagerImpl.getInstance().userRestoredMode( slidingMode, contextMode );
+        } else {
+            boolean isDocked = contextMode.getState() == Constants.MODE_STATE_JOINED;
 
-        if (!isDocked) {
-            wmi.userDockedMode(contextMode);
+            if (!isDocked) {
+                wmi.userDockedMode(contextMode);
+            }
         }
     }
     
@@ -120,6 +129,8 @@ public final class DockModeAction extends AbstractAction {
         ModeImpl contextMode = getMode2WorkWith();
         if( null == contextMode )
             return false;
+        if( null != slidingMode )
+            return true;
         boolean docked = contextMode.getState() == Constants.MODE_STATE_JOINED;
         if( docked )
             return false;
