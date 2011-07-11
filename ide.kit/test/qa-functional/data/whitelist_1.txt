@@ -1,3 +1,9 @@
+#200035
+org.netbeans.modules.project.ui.groups.GroupOptionProcessor
+org.netbeans.modules.project.ui.Bundle
+org.netbeans.modules.project.ui.actions.Bundle
+org.netbeans.modules.project.ui.groups.Bundle
+
 #199644
 org.netbeans.modules.cnd.api.project.NativeProjectRegistry
 org.netbeans.modules.cnd.apt.debug.APTTraceFlags
