@@ -42,15 +42,10 @@
 
 package org.netbeans.modules.jira.issue;
 
-import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -75,22 +70,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicTreeUI;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import javax.swing.text.Element;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
@@ -103,54 +91,33 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
-    private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private NbJiraIssue issue;
     private JiraIssueFinder issueFinder;
-    private MouseAdapter listener;
-    private MouseMotionListener motionListener;
+    private HyperlinkSupport.Link issueLink;
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
     
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
-        motionListener = new MouseMotionAdapter() {
+        issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
+        issueLink = new HyperlinkSupport.Link() {
             @Override
-            public void mouseMoved(MouseEvent e) {
-                JTextPane pane = (JTextPane)e.getSource();
-                StyledDocument doc = pane.getStyledDocument();
-                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                AttributeSet as = elem.getAttributes();
-                if (StyleConstants.isUnderline(as)) {
-                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                } else {
-                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                }
-            }
-        };
-        listener = new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        JTextPane pane = (JTextPane)e.getSource();
-                        StyledDocument doc = pane.getStyledDocument();
-                        Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                        AttributeSet as = elem.getAttributes();
-                        IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
-                        if (issueAction != null) {
-                            issueAction.openIssue(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+            public void onClick(String linkText) {
+                final String issueKey = issueFinder.getIssueId(linkText);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Issue is = issue.getRepository().getIssue(issueKey);
+                        if (is != null) {
+                            is.open();
                         }
                     }
-                } catch(Exception ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                }
+                });
             }
         };
-
-        issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
         assert issueFinder != null;
     }
 
@@ -239,7 +206,7 @@ public class CommentsPanel extends JPanel {
         
         setupHeaderPanel(headerPanel, leftLabel, replyButton, rightLabel, stateLabel);
         setupTextPane(textPane, text);
-
+        
         // Layout
         horizontalGroup
             .add(headerPanel)
@@ -253,7 +220,6 @@ public class CommentsPanel extends JPanel {
     }
 
     private void setupTextPane(JTextPane textPane, String comment) {
-        StyledDocument doc = textPane.getStyledDocument();
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
@@ -261,35 +227,14 @@ public class CommentsPanel extends JPanel {
 
         // Stack-traces
         textPane.setText(comment);
-        StackTraceSupport.addHyperlinks(textPane);
-
-        // Issues/bugs
-        int[] pos = issueFinder.getIssueSpans(comment);
-        if (pos.length > 0) {
-            Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
-            hlStyle.addAttribute(ISSUE_ATTRIBUTE, new IssueAction());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);
-
-            for (int i=0; i<pos.length; i+=2) {
-                int off = pos[i];
-                int length = pos[i+1]-pos[i];
-                try {
-                    doc.remove(off, length);
-                    doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
-                } catch (BadLocationException blex) {
-                    Jira.LOG.log(Level.INFO, blex.getMessage(), blex);
-                }
-            }
-        }
-
+        HyperlinkSupport.getInstance().registerForStacktraces(textPane);
+        HyperlinkSupport.getInstance().registerForURLs(textPane);
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
+        
         textPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
-        textPane.addMouseListener(listener);
-        textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
@@ -345,21 +290,6 @@ public class CommentsPanel extends JPanel {
             };
         }
         return replyListener;
-    }
-
-    private class IssueAction {
-        void openIssue(final String hyperlinkText) {
-            final String issueKey = issueFinder.getIssueId(hyperlinkText);
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    Issue is = issue.getRepository().getIssue(issueKey);
-                    if (is != null) {
-                        is.open();
-                    }
-                }
-            });
-        }
     }
 
     public interface NewCommentHandler {

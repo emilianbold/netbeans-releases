@@ -91,7 +91,7 @@ import org.openide.util.NbBundle;
  *
 * @author Petr Hrebejk, Jan Stola, Tomas Stupka
  */
-public class StackTraceSupport {
+class StackTraceSupport {
 
     private static final Pattern ST_PATTERN =
            Pattern.compile("([\\p{Alnum}\\.\\$_<>]*?)\\((?:Native Method|Unknown Source|Compiled Code|([\\p{Alnum}\\.\\$_]*?):(\\p{Digit}+?))\\)", Pattern.DOTALL);
@@ -303,7 +303,7 @@ public class StackTraceSupport {
         }
     }
 
-    private static void open(String path, final int line) {
+    static void open(String path, final int line) {
         final FileObject fo = search(path);
         if ( fo != null ) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -380,15 +380,14 @@ public class StackTraceSupport {
         return GlobalPathRegistry.getDefault().findResource(path);
     }
 
-    private final static String STACKTRACE_ATTRIBUTE = "stacktrace"; // NOI18N
-    public static void addHyperlinks(JTextPane textPane) {
+    public static void register(JTextPane textPane) {
         StyledDocument doc = textPane.getStyledDocument();
         String comment = textPane.getText();
         List<StackTracePosition> stacktraces = find(comment);
         if (!stacktraces.isEmpty()) {
             Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("regularBlue", defStyle); // NOI18N
-            hlStyle.addAttribute(STACKTRACE_ATTRIBUTE, new StackTraceAction());
+            Style hlStyle = doc.addStyle("regularBlue-stacktrace", defStyle); // NOI18N
+            hlStyle.addAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE, new StackTraceAction());
             StyleConstants.setForeground(hlStyle, Color.BLUE);
             StyleConstants.setUnderline(hlStyle, true);
 
@@ -451,7 +450,7 @@ public class StackTraceSupport {
                         if (SwingUtilities.isLeftMouseButton(e)) {
                             Element elem = element(e);
                             AttributeSet as = elem.getAttributes();
-                            StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
+                            StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE);
                             if (stacktraceAction != null) {
                                 try {
                                     StackTraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()), false);
@@ -472,18 +471,10 @@ public class StackTraceSupport {
                 public void mouseReleased(MouseEvent e) {
                     showMenu(e);
                 }
+                
                 @Override
-                public void mouseMoved(MouseEvent e) {
-                    JTextPane pane = (JTextPane)e.getSource();
-                    StyledDocument doc = pane.getStyledDocument();
-                    Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                    AttributeSet as = elem.getAttributes();
-                    if (StyleConstants.isUnderline(as)) {
-                        pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    } else {
-                        pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                    }
-                }
+                public void mouseMoved(MouseEvent e) { }
+                
                 private Element element(MouseEvent e) {
                     JTextPane pane = (JTextPane)e.getSource();
                     StyledDocument doc = pane.getStyledDocument();
@@ -493,7 +484,7 @@ public class StackTraceSupport {
                     if (e.isPopupTrigger()) {
                         try {
                             Element elem = element(e);
-                            if (elem.getAttributes().getAttribute(STACKTRACE_ATTRIBUTE) != null) {
+                            if (elem.getAttributes().getAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE) != null) {
                                 String stackFrame = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
                                 JPopupMenu menu = new JPopupMenu();
                                 menu.add(new StackTraceAction(stackFrame, false));

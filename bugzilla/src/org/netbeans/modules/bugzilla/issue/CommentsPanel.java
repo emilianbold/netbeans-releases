@@ -44,7 +44,6 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -52,10 +51,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
-import java.net.URI;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -99,15 +94,14 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
-import org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.ErrorManager;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -119,8 +113,6 @@ import org.openide.util.RequestProcessor;
 public class CommentsPanel extends JPanel {
     static final RequestProcessor RP = new RequestProcessor("Bugzilla Comments Panel", 5, false); // NOI18N
     private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
-    private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
-    private final static String URL_ATTRIBUTE = "url hyperlink";        //NOI18N
     private final static String ATTACHMENT_ATTRIBUTE = "attachment hyperlink"; //NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
@@ -130,69 +122,29 @@ public class CommentsPanel extends JPanel {
     private BugzillaIssue issue;
     private List<BugzillaIssue.Attachment> attachments;
     private List<String> attachmentIds;
-    private MouseAdapter listener;
-    private MouseMotionListener motionListener;
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
+    private final Link issueLink;
     
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
-        motionListener = new MouseMotionAdapter() {
+        
+        issueLink = new HyperlinkSupport.Link() {
             @Override
-            public void mouseMoved(MouseEvent e) {
-                JTextPane pane = (JTextPane)e.getSource();
-                StyledDocument doc = pane.getStyledDocument();
-                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                AttributeSet as = elem.getAttributes();
-                if (StyleConstants.isUnderline(as)) {
-                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                } else {
-                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                }
-            }
-        };
-        listener = new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        JTextPane pane = (JTextPane)e.getSource();
-                        StyledDocument doc = pane.getStyledDocument();
-                        Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                        AttributeSet as = elem.getAttributes();
-
-                        IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
-                        if (issueAction != null) {
-                            int startOffset = elem.getStartOffset();
-                            int endOffset = elem.getEndOffset();
-                            int length = endOffset - startOffset;
-                            String hyperlinkText = doc.getText(startOffset, length);
-                            issueAction.openIssue(hyperlinkText);
-                            return;
-                        }
-
-                        UrlAction urlAction = (UrlAction) as.getAttribute(URL_ATTRIBUTE);
-                        if (urlAction != null) {
-                            int startOffset = elem.getStartOffset();
-                            int endOffset = elem.getEndOffset();
-                            int length = endOffset - startOffset;
-                            String hyperlinkText = doc.getText(startOffset, length);
-                            urlAction.openUrlHyperlink(hyperlinkText);
-                            return;
-                        }
-
-                        if (as.getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
-                            CommentsPanel.this.openAttachmentHyperlink(pane);
-                            return;
+            public void onClick(String linkText) {
+                final String issueKey = issueFinder.getIssueId(linkText);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Issue is = issue.getRepository().getIssue(issueKey);
+                        if (is != null) {
+                            is.open();
                         }
                     }
-                } catch(Exception ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                }
+                });
             }
         };
-
         issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
         assert issueFinder != null;
     }
@@ -312,62 +264,18 @@ public class CommentsPanel extends JPanel {
             .add(pane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
-    private void setupTextPane(JTextPane textPane, String comment) {
+    private void setupTextPane(final JTextPane textPane, String comment) {
+        textPane.setText(comment);
+        
+        HyperlinkSupport.getInstance().registerForStacktraces(textPane);
+        HyperlinkSupport.getInstance().registerForURLs(textPane);
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
+        
+        textPane.setBackground(new Color(0xf3f6fd));
         StyledDocument doc = textPane.getStyledDocument();
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
-        }
-
-        // Stack-traces
-        textPane.setText(comment);
-        StackTraceSupport.addHyperlinks(textPane);
-
-        // Issues/bugs
-        int[] pos = issueFinder.getIssueSpans(comment);
-        if (pos.length > 0) {
-            Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
-            hlStyle.addAttribute(ISSUE_ATTRIBUTE, new IssueAction());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);
-
-            for (int i=0; i<pos.length; i+=2) {
-                int off = pos[i];
-                int length = pos[i+1]-pos[i];
-                try {
-                    doc.remove(off, length);
-                    doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
-                } catch (BadLocationException blex) {
-                    Bugzilla.LOG.log(Level.INFO, blex.getMessage(), blex);
-                }
-            }
-        }
-
-        // URL hyperlinks
-        {
-            final int[] boundaries = WebUrlHyperlinkSupport.findBoundaries(comment);
-            if ((boundaries != null) && (boundaries.length != 0)) {
-                Style defStyle = StyleContext.getDefaultStyleContext()
-                                 .getStyle(StyleContext.DEFAULT_STYLE);
-                Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
-                hlStyle.addAttribute(URL_ATTRIBUTE, new UrlAction());
-                StyleConstants.setForeground(hlStyle, Color.BLUE);
-                StyleConstants.setUnderline(hlStyle, true);
-
-                for (int i = 0; i < boundaries.length; i+=2) {
-                    int off = boundaries[i];
-                    int length = boundaries[i + 1] - boundaries[i];
-                    try {
-                        doc.remove(off, length);
-                        doc.insertString(off, comment.substring(boundaries[i],
-                                                                boundaries[i + 1]),
-                                                                hlStyle);
-                    } catch (BadLocationException ex) {
-                        Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
-                    }
-                }
-            }
         }
 
         // attachments
@@ -375,25 +283,13 @@ public class CommentsPanel extends JPanel {
             final int[] boundaries = AttachmentHyperlinkSupport
                                      .findBoundaries(comment, attachmentIds);
             if ((boundaries != null) && (boundaries.length != 0)) {
-                Style defStyle = StyleContext.getDefaultStyleContext()
-                                 .getStyle(StyleContext.DEFAULT_STYLE);
-                Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
-                hlStyle.addAttribute(ATTACHMENT_ATTRIBUTE, new Object());
-                StyleConstants.setForeground(hlStyle, Color.BLUE);
-                StyleConstants.setUnderline(hlStyle, true);
-
-                for (int i = 0; i < boundaries.length; i+=2) {
-                    int off = boundaries[i];
-                    int length = boundaries[i + 1] - boundaries[i];
-                    try {
-                        doc.remove(off, length);
-                        doc.insertString(off, comment.substring(boundaries[i],
-                                                                boundaries[i + 1]),
-                                                                hlStyle);
-                    } catch (BadLocationException ex) {
-                        Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
+                HyperlinkSupport.Link attachmentLink = new HyperlinkSupport.Link() {
+                    @Override
+                    public void onClick(String linkText) {
+                        CommentsPanel.this.openAttachmentHyperlink(textPane);
                     }
-                }
+                };
+                HyperlinkSupport.getInstance().registerLink(textPane, new int[] {boundaries[0], boundaries[1]}, attachmentLink);
             }
         }
 
@@ -404,8 +300,6 @@ public class CommentsPanel extends JPanel {
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
-        textPane.addMouseListener(listener);
-        textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
@@ -463,37 +357,6 @@ public class CommentsPanel extends JPanel {
         return replyListener;
     }
 
-    private class IssueAction {
-        void openIssue(String hyperlinkText) {
-            final String issueNo = issueFinder.getIssueId(hyperlinkText);
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    Issue is = issue.getRepository().getIssue(issueNo);
-                    if (is != null) {
-                        is.open();
-                    }
-                }
-            });
-        }
-    }
-
-    private class UrlAction {
-        void openUrlHyperlink(String hyperlinkText) {
-            try {
-                URL url = new URI(hyperlinkText).toURL();
-                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-            } catch (Exception ex) {
-                assert false;
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                              "Could not open URL: "    //NOI18N
-                                                      + hyperlinkText);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                                 ex);
-            }
-        }
-    }
-
     private void openAttachmentHyperlink(JTextPane textPane) {
         String attachmentId = null;
         try {
@@ -545,18 +408,14 @@ public class CommentsPanel extends JPanel {
         public void setVisible(boolean b) {
             if (b) {
                 JTextPane pane = (JTextPane) getInvoker();
-                StyledDocument doc = pane.getStyledDocument();
-                Element elem = doc.getCharacterElement(pane.viewToModel(clickPoint));
-                if (elem.getAttributes().getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
-                    BugzillaIssue.Attachment attachment = getAttachment(pane);
-                    if (attachment != null) {
-                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
-                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
-                        if ("1".equals(attachment.getIsPatch())) { // NOI18N
-                            add(attachment.new ApplyPatchAction());
-                        }
-                        super.setVisible(true);
+                BugzillaIssue.Attachment attachment = getAttachment(pane);
+                if (attachment != null) {
+                    add(new JMenuItem(attachment.new DefaultAttachmentAction()));
+                    add(new JMenuItem(attachment.new SaveAttachmentAction()));
+                    if ("1".equals(attachment.getIsPatch())) { // NOI18N
+                        add(attachment.new ApplyPatchAction());
                     }
+                    super.setVisible(true);
                 }
             } else {
                 super.setVisible(false);
@@ -640,7 +499,7 @@ public class CommentsPanel extends JPanel {
             this.textPane = textPane;
             this.headerPanel = headerPanel;
             this.number = number;
-
+            
             border = headerPanel.getBorder(); 
             
             JTree tv = new JTree();
