@@ -2,6 +2,23 @@
 
 #include whitelist_bug_195029.txt
 
+#200050
+org.netbeans.modules.spring.beans.index.SpringBinaryIndexer
+org.netbeans.modules.spring.beans.index.SpringBinaryIndexer$Factory
+org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory
+org.netbeans.modules.web.beans.analysis.WebBeansModelAnalysisFactory
+org.netbeans.modules.web.el.ELIndexer$Factory
+org.netbeans.modules.web.el.ELLanguage
+org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor
+org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor$1Handler
+org.netbeans.modules.web.jsf.editor.facelets.LibraryDescriptor
+org.netbeans.modules.web.jsf.editor.index.JsfCustomIndexer$Factory
+org.netbeans.modules.web.jsf.editor.index.JsfIndexSupport
+org.netbeans.modules.websvc.api.jaxws.project.JaxWsBuildScriptExtensionProvider
+org.netbeans.modules.websvc.jaxwsmodel.project.J2seBuildScriptExtensionProvider
+org.netbeans.modules.websvc.jaxwsmodel.project.J2seJaxWsOpenHook
+
+
 #200047
 org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase
 org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper
