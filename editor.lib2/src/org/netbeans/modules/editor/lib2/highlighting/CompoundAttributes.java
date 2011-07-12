@@ -72,6 +72,7 @@ public final class CompoundAttributes implements AttributeSet {
     private final int startOffset; // 12 + 4 = 16 bytes
 
     public CompoundAttributes(int startOffset, HighlightItem[] highlightItems) {
+        assert (highlightItems.length >= 2) : "highlightItems.length=" + highlightItems.length + " < 2"; // NOI18N
         this.highlightItems = highlightItems;
         this.startOffset = startOffset;
     }
