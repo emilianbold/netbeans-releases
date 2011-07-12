@@ -160,6 +160,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.model</friend>
                 <friend>org.netbeans.modules.maven.osgi</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>
+                <friend>org.netbeans.modules.maven.refactoring</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.maven.search</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
@@ -210,6 +211,7 @@ made subject to such option by the copyright holder.
                 <package>org.codehaus.plexus</package>
                 <package>org.codehaus.plexus.classworlds</package>
                 <package>org.codehaus.plexus.classworlds.realm</package>
+                <package>org.codehaus.plexus.component.composition</package>
                 <package>org.codehaus.plexus.component.configurator.expression</package>
                 <package>org.codehaus.plexus.component.repository</package>
                 <package>org.codehaus.plexus.component.repository.exception</package>
