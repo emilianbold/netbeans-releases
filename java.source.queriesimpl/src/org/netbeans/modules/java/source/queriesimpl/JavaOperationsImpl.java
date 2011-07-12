@@ -209,7 +209,6 @@ class JavaOperationsImpl<T> implements ModelOperations {
             @NonNull final String clz,
             @NonNull final String methodName,
             final boolean rt,
-            final boolean includeComments,
             @NonNull final String returnType,
             @NonNull final String... parameterTypes) throws QueryException {
         final List<? extends ExecutableElement> methods = getMethods(clz, methodName, rt, returnType, parameterTypes);
@@ -225,15 +224,13 @@ class JavaOperationsImpl<T> implements ModelOperations {
         }
         int start = -1;
         int end = -1;
-        if (includeComments) {
-            List<Comment> cmts = control.getTreeUtilities().getComments(tp.getLeaf(), true);
-            if (!cmts.isEmpty()) {
-                start = cmts.iterator().next().pos();
-            }
-            cmts = control.getTreeUtilities().getComments(tp.getLeaf(), false);
-            if (!cmts.isEmpty()) {
-                end = cmts.listIterator().previous().pos();
-            }
+        List<Comment> cmts = control.getTreeUtilities().getComments(tp.getLeaf(), true);
+        if (!cmts.isEmpty()) {
+            start = cmts.iterator().next().pos();
+        }
+        cmts = control.getTreeUtilities().getComments(tp.getLeaf(), false);
+        if (!cmts.isEmpty()) {
+            end = cmts.listIterator().previous().pos();
         }
         if (start == -1) {
             start = (int) trees.getSourcePositions().getStartPosition(tp.getCompilationUnit(),tp.getLeaf());
