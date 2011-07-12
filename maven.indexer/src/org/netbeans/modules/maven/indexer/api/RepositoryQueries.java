@@ -56,6 +56,7 @@ import java.util.TreeSet;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
 import org.netbeans.modules.maven.indexer.spi.BaseQueries;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
+import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
 import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
@@ -298,6 +299,26 @@ public final class RepositoryQueries {
         }
         if (!query.isFinished())
             query.addResults(null, true);
+    }
+
+    /**
+     * Finds all usages of a given class.
+     * The implementation may not provide results within the same artifact, or on classes in the JRE.
+     * @param className the FQN of a class that might be used as an API
+     * @param repos repositories of this type to search in, or null (the implementation currently ignores remote repositories)
+     * @return a list of usages
+     * @since 1.17
+     */
+    public static List<ClassUsageQuery.ClassUsageResult> findClassUsages(String className, final RepositoryInfo... repos) {
+        final List<ClassUsageQuery.ClassUsageResult> result = new ArrayList<ClassUsageQuery.ClassUsageResult>();
+        for (List<RepositoryInfo> rps : splitReposByType(repos)) {
+            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
+            ClassUsageQuery q = impl.getCapabilityLookup().lookup(ClassUsageQuery.class);
+            if (q != null) {
+                result.addAll(q.findClassUsages(className, rps));
+            }
+        }
+        return result;
     }
 
     public static List<NBVersionInfo> findArchetypes(RepositoryInfo... repos) {
