@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,51 +40,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.actions;
+package org.netbeans.modules.versioning.options;
 
-import java.io.File;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.Mutex;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
-/**
- *
- * @author ondra
- */
-@ActionID(id = "org.netbeans.modules.git.ui.actions.DisconnectAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_DisconnectAction_Name")
-public class DisconnectAction extends SingleRepositoryAction {
-
+public final class GeneralAdvancedOption extends AdvancedOption {
+    
     @Override
-    protected void performAction (final File repository, File[] roots, VCSContext context) {
-        new GitProgressSupport() {
-            @Override
-            protected void perform () {
-                Git.getInstance().disconnectRepository(repository);
-                Git.getInstance().refreshAllAnnotations();
-                refreshState();
-                SystemAction.get(ConnectAction.class).refreshState();
-            }
-        }.start(Git.getInstance().getRequestProcessor(), repository, NbBundle.getMessage(DisconnectAction.class, "LBL_DisconnectProgress")); //NOI18N
+    public String getDisplayName() {
+        return NbBundle.getMessage(GeneralAdvancedOption.class, "AdvancedOption_DisplayName"); // NOI18N
     }
     
-    void refreshState () {
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run() {
-                setEnabled(enable(getActivatedNodes()));
-            }
-        });
+    @Override
+    public String getTooltip() {
+        return NbBundle.getMessage(GeneralAdvancedOption.class, "AdvancedOption_Tooltip"); // NOI18N
     }
+    
+    @Override
+    public OptionsPanelController create() {
+        return new GeneralOptionsPanelController();
+    }
+    
 }
