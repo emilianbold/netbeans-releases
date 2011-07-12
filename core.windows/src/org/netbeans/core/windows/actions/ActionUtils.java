@@ -126,8 +126,8 @@ public abstract class ActionUtils {
 
                 actions.add(new CloneDocumentAction(tc));
 
-                //TODO new tab group
-                //TODO collapse tab group
+                actions.add(new NewTabGroupAction(tc));
+                actions.add( new CollapseTabGroupAction( mode ) );
             }
         } else if (kind == Constants.MODE_KIND_VIEW) {
             //close window
@@ -250,7 +250,6 @@ public abstract class ActionUtils {
                 actions.add(createDisabledAction("CTL_CloseAllButThisAction")); //NOI18N
                 actions.add(null); // Separator
             }
-            actions.add(createDisabledAction("CTL_CloneDocumentAction"));
             
             actions.add(null); // Separator
 
@@ -273,6 +272,12 @@ public abstract class ActionUtils {
             //dock group
             if( Switches.isEditorModeUndockingEnabled() )
                 actions.add( new DockModeAction( mode, null ) );
+
+            actions.add(null); // Separator
+            
+            actions.add(createDisabledAction("CTL_CloneDocumentAction"));
+            actions.add(createDisabledAction("CTL_NewTabGroupAction"));
+            actions.add( new CollapseTabGroupAction( mode ) );
         } else if (kind == Constants.MODE_KIND_VIEW) {
             //close window
             if( Switches.isViewTopComponentClosingEnabled() ) {

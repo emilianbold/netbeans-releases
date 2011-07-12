@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -3002,7 +3003,90 @@ final class Central implements ControllerHandler {
     // ControllerHandler <<
     ////////////////////////////
     
-    private static void debugLog(String message) {
-        Debug.log(Central.class, message);
+    /**
+     * Creates a new mode and moves the given TopComponent into it.
+     * @param tc 
+     */
+    void newTabGroup( TopComponent tc ) {
+        ModeImpl currentMode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+        if( null == currentMode ) 
+            return;
+        ModeImpl newMode = attachModeToSide( currentMode, null, currentMode.getKind() );
+        moveTopComponentIntoMode( newMode, tc );
+        tc.requestActive();
+    }
+
+    /**
+     * Removes the given mode and moves all its TopComponents to some other mode.
+     * @param mode 
+     */
+    void collapseTabGroup( ModeImpl mode ) {
+        ModeImpl neighbor = findClosestNeighbor( mode );
+        if( null == neighbor )
+            return;
+        mergeModes( mode, neighbor, -1 );
+        updateViewAfterDnD( true );
+    }
+
+    /**
+     * Find mode that is closest to the given mode. Usually it's a neighbor at the 
+     * same level in the split hierarchy.
+     * @param mode
+     * @return Closest neighbor to the given mode or null.
+     */
+    private ModeImpl findClosestNeighbor( ModeImpl mode ) {
+        ArrayList<ModeImpl> modes = new ArrayList<ModeImpl>( model.getModes().size() );
+        ModeImpl inSplitLeftNeighbor = null;
+        ModeImpl inSplitRightNeighbor = null;
+        SplitConstraint[] sc = mode.getConstraints();
+        int index = sc[sc.length-1].index;
+        for( ModeImpl m : model.getModes() ) {
+            if( mode == m || m.getKind() != mode.getKind() || m.getState() != mode.getState() )
+                continue;
+            SplitConstraint[] otherSc = m.getConstraints();
+            if( sameSplit( sc, otherSc) ) {
+                int otherIndex = otherSc[sc.length-1].index;
+                if( index < otherIndex ) {
+                    if( null == inSplitLeftNeighbor || otherIndex > inSplitLeftNeighbor.getConstraints()[sc.length-1].index )
+                        inSplitLeftNeighbor = m;
+                } else {
+                    if( null == inSplitRightNeighbor || otherIndex < inSplitRightNeighbor.getConstraints()[sc.length-1].index )
+                        inSplitRightNeighbor = m;
+                }
+            }
+            modes.add( m );
+        }
+        if( modes.isEmpty() )
+            return null;
+        if( null != inSplitLeftNeighbor )
+            return inSplitLeftNeighbor;
+        if( null != inSplitRightNeighbor )
+            return inSplitRightNeighbor;
+        Collections.sort( modes, new Comparator<ModeImpl>() {
+            @Override
+            public int compare( ModeImpl o1, ModeImpl o2 ) {
+                SplitConstraint[] sc1 = o1.getConstraints();
+                SplitConstraint[] sc2 = o2.getConstraints();
+                return sc1.length - sc2.length;
+            }
+        });
+        return modes.get( 0 );
+    }
+    
+    /**
+     * Check if the given constraints point to docking areas at the same level
+     * in the split hierarchy.
+     * @param sc1
+     * @param sc2
+     * @return 
+     */
+    private boolean sameSplit( SplitConstraint[] sc1, SplitConstraint[] sc2 ) {
+        if( sc1.length != sc2.length )
+            return false;
+        for( int i=0; i<sc1.length-1; i++ ) {
+            if( sc1[i].orientation != sc2[i].orientation || sc1[i].index != sc2[i].index )
+                return false;
+        }
+        return sc1[sc1.length-1].orientation == sc2[sc2.length-1].orientation;
     }
 }
