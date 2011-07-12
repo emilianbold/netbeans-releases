@@ -75,16 +75,21 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         Cancellation.register(this);
     }
 
-    @Messages({"# {0} - repo name", "LBL_indexing_repo=Indexing Maven repository: {0}"})
+    @Messages({
+        "# {0} - repo name", "LBL_indexing_repo=Indexing Maven repository: {0}",
+        "LBL_findIndexableDirs=Counting indexable directories..."
+    })
     @Override public void scanningStarted(IndexingContext ctx) {
         if (handle != null) {
             handle.finish();
         }
         expectedDirs.clear();
         encounteredDirs.clear();
-        findIndexableDirs(ctx.getRepository());
         handle = ProgressHandleFactory.createHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
-        handle.start(expectedDirs.size());
+        handle.start();
+        handle.progress(LBL_findIndexableDirs());
+        findIndexableDirs(ctx.getRepository());
+        handle.switchToDeterminate(expectedDirs.size());
     }
     private void findIndexableDirs(File d) {
         // Try to guess what DefaultScanner might find. Hard to know for sure, so guess that nonempty leaf dirs will contain real artifacts.
