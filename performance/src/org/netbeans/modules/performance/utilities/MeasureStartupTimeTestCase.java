@@ -163,12 +163,12 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             long endTime=0;
             if (!(tempValue==null)) {
                 runTime = ((Long) tempValue).longValue(); // from STARTUP_DATA
-//                measuredValues.remove("IDE starts t = "); // remove from measured values, the rest we will log as performance data
+                measuredValues.remove("IDE starts t = "); // remove from measured values, the rest we will log as performance data
             }
             tempValue = measuredValues.get("IDE is running t=");
             if (!(tempValue==null)) {
                 endTime = ((Long) tempValue).longValue(); // from STARTUP_DATA
-//                measuredValues.remove("IDE is running t="); // remove from measured values, the rest we will log as performance data
+                measuredValues.remove("IDE is running t="); // remove from measured values, the rest we will log as performance data
             }
                         
             long startupTime = endTime - startTime;
@@ -390,7 +390,11 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      * @return User directory
      */
     protected File getUserdirFile() throws IOException {
-        return new File(new File(System.getProperty("userdir.prepared"),"sys"),"ide");
+        String usdPrep=System.getProperty("userdir.prepared");
+        if (!(usdPrep==null)) {
+            return new File(new File(usdPrep,"sys"),"ide");
+        }
+        return new File(new File(getWorkDir().getAbsolutePath(),"sys"),"ide");
     }
     
     /** Get Sketchpad directory.
