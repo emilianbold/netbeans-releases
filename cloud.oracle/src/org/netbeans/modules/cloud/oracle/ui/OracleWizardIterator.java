@@ -71,6 +71,10 @@ import org.openide.util.NbBundle;
 public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor>{
 
     private static final String LOCAL_DOMAIN_DIR = "JavaEE/Cloud9"; // NOI18N
+    
+    private static final String LOCAL_DOMAIN_USERNAME = "weblogic"; // NOI18N
+    
+    private static final String LOCAL_DOMAIN_PASSWORD = "welcome1"; // NOI18N
 
     private final ChangeSupport listeners;
     private WizardDescriptor wizard;
@@ -176,6 +180,8 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
             iterator.setServerRoot(serverPath);
             iterator.setDomainRoot(domainPath);
             iterator.setDomainName(domainName);
+            iterator.setUsername(LOCAL_DOMAIN_USERNAME);
+            iterator.setPassword(LOCAL_DOMAIN_PASSWORD);
 
             return iterator.instantiate(displayName);
         }
