@@ -265,12 +265,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
             mainElement = parser.getDocument().getDocumentElement();
         }
         catch (IOException ex) {
-            throw new PersistenceException(ex, "Cannot open form file"); // NOI18N
+            throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
         }
-        catch (org.xml.sax.SAXException e) {
-            // ignore SAXException?
-            e.printStackTrace();
-            return false;
+        catch (org.xml.sax.SAXException ex) {
+            throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
         }
 
         return mainElement != null && XML_FORM.equals(mainElement.getTagName());

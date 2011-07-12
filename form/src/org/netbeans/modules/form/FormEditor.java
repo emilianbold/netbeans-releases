@@ -521,10 +521,18 @@ public class FormEditor {
 
         for (Iterator it=persistenceErrors.iterator(); it.hasNext(); ) {
             Throwable t  = (Throwable) it.next();
+            String originalMessage = null;
             if (t instanceof PersistenceException) {
                 Throwable th = ((PersistenceException)t).getOriginalException();
-                if (th != null)
-                    t = th;
+                if (th != null) {
+                    // log the original exception so the user has a chance to find it in the log
+                    Logger.getLogger("").log(Level.INFO, null, th); // NOI18N
+                    if (checkNonFatalLoadingErrors) {
+                        t = th;
+                    } else {
+                        originalMessage = th.getLocalizedMessage();
+                    }
+                }
             }
 
             if (checkNonFatalLoadingErrors && !dataLossError) {
@@ -547,17 +555,19 @@ public class FormEditor {
                     dataLossError = true;
             }
 
-            errorManager.notify(ErrorManager.INFORMATIONAL, t); // log
-
-            if (formLoaded && persistManager != null) {
+            if (checkNonFatalLoadingErrors && persistManager != null) {
                 // creating report about problems while loading components, 
                 // setting props of components, ...
                 userErrorMsgs.append(persistManager.getExceptionAnnotation(t));
                 userErrorMsgs.append("\n\n");  // NOI18N
-            } else {
-                // fatal error
+            } else { // fatal error
+                String message = t.getLocalizedMessage();
+                if (originalMessage != null && originalMessage.length() > 0) {
+                    message = message != null && message.length() > 0 ?
+                              (message + "\n\n" + originalMessage) : originalMessage; // NOI18N
+                }
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        t.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE));
+                        message, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
 
