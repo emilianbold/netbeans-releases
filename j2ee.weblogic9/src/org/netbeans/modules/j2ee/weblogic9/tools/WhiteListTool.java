@@ -88,54 +88,22 @@ public class WhiteListTool {
             return true;
         }
 
-        File tempFile;
-        try {
-            tempFile = File.createTempFile("whitelist-", ".log");
-        } catch (IOException ex) {
-            tempFile = null;
+        File propertiesFo = InstalledFileLocator.getDefault().locate(
+                "modules/ext/cloud9.logging.properties", "org.netbeans.modules.libs.cloud9", false); // NOI18N
+
+        ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary());
+        if (propertiesFo != null) {
+            builder = builder.addArgument("-Djava.util.logging.config.file=" + propertiesFo.getAbsolutePath()); // NOI18N
         }
-        ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
-                .addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
+        builder = builder.addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
                 .addArgument(file.getAbsolutePath())
-                .addArgument("-l").addArgument(tempFile.getAbsolutePath()) // NOI18N
                 .redirectErrorStream(true)
                 .workingDirectory(file.getParentFile());
 
         ExecutionService service = ExecutionService.newService(builder,
                 TOOL_DESCRIPTOR, displayName);
         try {
-            boolean res = service.run().get().equals(Integer.valueOf(0));
-            InputOutput io = IOProvider.getDefault().getIO(displayName, false);
-            if (!io.isClosed()) {
-                OutputWriter ow = null;
-                FileReader fr = null;
-                try {
-                    ow = io.getOut();
-                    fr = new FileReader(tempFile);
-                    for (;;) {
-                        int ch = fr.read();
-                        if (ch == -1) {
-                            break;
-                        }
-                        ow.print((char)ch);
-                    }
-                } catch (IOException e) {
-                    
-                } finally {
-                    if (ow != null) {
-                        ow.close();
-                    }
-                    if (fr != null) {
-                        try {
-                            fr.close();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            }
-            tempFile.deleteOnExit();
-            return res;
+            return service.run().get().equals(Integer.valueOf(0));
         } catch (InterruptedException ex) {
             LOGGER.log(Level.INFO, null, ex);
             Thread.currentThread().interrupt();
