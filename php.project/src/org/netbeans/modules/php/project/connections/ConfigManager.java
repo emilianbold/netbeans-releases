@@ -177,9 +177,11 @@ public final class ConfigManager {
         return new Configuration(name);
     }
 
-    public synchronized void markAsCurrentConfiguration(String currentConfig) {
-        assert configs.keySet().contains(currentConfig);
-        this.currentConfig = currentConfig;
+    public void markAsCurrentConfiguration(String currentConfig) {
+        synchronized (this) {
+            assert configs.keySet().contains(currentConfig);
+            this.currentConfig = currentConfig;
+        }
         changeSupport.fireChange();
     }
 
