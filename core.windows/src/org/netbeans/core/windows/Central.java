@@ -2433,7 +2433,7 @@ final class Central implements ControllerHandler {
         for( TopComponent tc : slidingMode.getOpenedTopComponents() ) {
             String id = wm.findTopComponentID( tc );
             ModeImpl prevMode = model.getModeTopComponentPreviousMode( slidingMode, id );
-            if( prevMode.equals( modeToRestore ) ) {
+            if( null != prevMode && prevMode.equals( modeToRestore ) ) {
                 int prevIndex = model.getModeTopComponentPreviousIndex(slidingMode, id);
                 moveTopComponentIntoMode(prevMode, tc, prevIndex);
 
