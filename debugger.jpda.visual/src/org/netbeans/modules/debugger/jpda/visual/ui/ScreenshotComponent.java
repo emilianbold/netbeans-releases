@@ -117,6 +117,11 @@ public class ScreenshotComponent extends TopComponent {
         super.componentDeactivated();
         //canvas.deactivated();
     }
+
+    @Override
+    public int getPersistenceType() {
+        return PERSISTENCE_NEVER;
+    }
     
     private class ScreenshotCanvas extends Canvas {
         

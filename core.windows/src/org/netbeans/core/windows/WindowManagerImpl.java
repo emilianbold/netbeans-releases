@@ -1421,6 +1421,16 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         ModeImpl modeImpl = findModeImpl( mode.getName() );
         return null != modeImpl && modeImpl.getKind() == Constants.MODE_KIND_EDITOR;
     }
+    
+    public void newTabGroup( TopComponent tc ) {
+        assertEventDispatchThread();
+        central.newTabGroup( tc );
+    }
+    
+    public void collapseTabGroup( ModeImpl mode ) {
+        assertEventDispatchThread();
+        central.collapseTabGroup( mode );
+    }
 
     public final void mainWindowPainted () {
         if (!exclusivesCompleted && WindowManagerImpl.getInstance().isVisible()) {

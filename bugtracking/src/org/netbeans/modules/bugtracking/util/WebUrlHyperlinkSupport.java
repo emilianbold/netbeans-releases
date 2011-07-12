@@ -170,7 +170,7 @@ class WebUrlHyperlinkSupport {
                                       = new String[] {"http", "https", "mailto"}; //NOI18N
 
         private static final int LOWER_A = 'a';     //automatic conversion to int
-        private static final int LOWER_F = 'a';     //automatic conversion to int
+        private static final int LOWER_F = 'f';     //automatic conversion to int
         private static final int LOWER_Z = 'z';     //automatic conversion to int
 
         private State state = INIT;
