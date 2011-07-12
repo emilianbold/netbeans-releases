@@ -47,7 +47,6 @@ package org.netbeans.core.windows.actions;
 
 
 import java.awt.event.*;
-import java.beans.*;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
@@ -55,15 +54,12 @@ import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.view.ui.slides.SlideController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.actions.SaveAction;
-import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -79,7 +75,7 @@ public abstract class ActionUtils {
     private ActionUtils() {}
     
     public static Action[] createDefaultPopupActions(TopComponent tc) {
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
+        ModeImpl mode = findMode(tc);
         int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
         TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         boolean isEditor = tcTracker.isEditorTopComponent( tc );
@@ -123,16 +119,15 @@ public abstract class ActionUtils {
             }
             //dock group
             if( Switches.isEditorModeUndockingEnabled() && isEditor )
-                actions.add( new DockModeAction( mode) );
+                actions.add( new DockModeAction( mode, null ) );
 
             if( isEditor ) {
                 actions.add( null ); // Separator
 
-                actions.add(new SaveDocumentAction(tc));
                 actions.add(new CloneDocumentAction(tc));
 
-                //TODO new tab group
-                //TODO collapse tab group
+                actions.add(new NewTabGroupAction(tc));
+                actions.add( new CollapseTabGroupAction( mode ) );
             }
         } else if (kind == Constants.MODE_KIND_VIEW) {
             //close window
@@ -142,12 +137,6 @@ public abstract class ActionUtils {
                     actions.add(new CloseWindowAction(tc));
                 }
             }
-            //close other
-            CloseAllButThisAction allBut = new CloseAllButThisAction(tc, true);
-            if (mode != null && mode.getOpenedTopComponents().size() == 1) {
-                allBut.setEnabled(false);
-            }
-            actions.add(allBut);
             //close group
             if( Switches.isModeClosingEnabled() ) {
                 actions.add(new CloseModeAction(mode));
@@ -183,26 +172,63 @@ public abstract class ActionUtils {
             }
             //dock group
             if( Switches.isViewModeUndockingEnabled() )
-                actions.add( new DockModeAction( mode) );
+                actions.add( new DockModeAction( mode, null ) );
             
             if( isEditor ) {
                 actions.add( null ); // Separator
 
-                actions.add(new SaveDocumentAction(tc));
                 actions.add(new CloneDocumentAction(tc));
             }
 
         } else if (kind == Constants.MODE_KIND_SLIDING) {
-            if( Switches.isViewTopComponentClosingEnabled() && Switches.isClosingEnabled(tc)) {
-                actions.add(new CloseWindowAction(tc));
+            //close window
+            if( Switches.isClosingEnabled(tc)) {
+                if( (isEditor && Switches.isEditorTopComponentClosingEnabled()) 
+                        || (!isEditor && Switches.isViewTopComponentClosingEnabled()) ) {
+                    actions.add(new CloseWindowAction(tc));
+                }
             }
-            if (mode.getState() == Constants.MODE_STATE_JOINED
-                    && Switches.isTopComponentMaximizationEnabled()
+            //close group
+            if( Switches.isModeClosingEnabled() ) {
+                actions.add(new CloseModeAction(mode));
+            }
+            
+            actions.add( null ); //separator
+            
+            //maximize window
+            if (Switches.isTopComponentMaximizationEnabled()
                     && Switches.isMaximizationEnabled(tc)) {
                 actions.add(new MaximizeWindowAction(tc));
             }
+            
+            //minimize window
+            if( Switches.isTopComponentSlidingEnabled() && Switches.isSlidingEnabled( tc ) )
+                actions.add(createDisabledAction("CTL_MinimizeWindowAction"));
+            
+            //minimize group
+            if( Switches.isModeSlidingEnabled() )
+                actions.add(createDisabledAction("CTL_MinimizeModeAction"));
+
+            //undock window
             if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
                 actions.add(new UndockWindowAction(tc));
+            }
+            //undock group
+            if( Switches.isViewModeUndockingEnabled() )
+                actions.add(createDisabledAction("CTL_UndockModeAction"));
+        
+            //dock window
+            if( Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(tc)) {
+                actions.add(new DockWindowAction(tc));
+            }
+            //dock group
+            if( Switches.isViewModeUndockingEnabled() || Switches.isModeSlidingEnabled() )
+                actions.add( new DockModeAction( findPreviousMode( tc, mode ), mode) );
+            
+            if( isEditor ) {
+                actions.add( null ); // Separator
+
+                actions.add(new CloneDocumentAction(tc));
             }
         }
         
@@ -224,8 +250,6 @@ public abstract class ActionUtils {
                 actions.add(createDisabledAction("CTL_CloseAllButThisAction")); //NOI18N
                 actions.add(null); // Separator
             }
-            actions.add(createDisabledAction("LBL_SaveDocumentAction"));
-            actions.add(createDisabledAction("CTL_CloneDocumentAction"));
             
             actions.add(null); // Separator
 
@@ -247,15 +271,17 @@ public abstract class ActionUtils {
             }
             //dock group
             if( Switches.isEditorModeUndockingEnabled() )
-                actions.add( new DockModeAction( mode) );
+                actions.add( new DockModeAction( mode, null ) );
+
+            actions.add(null); // Separator
+            
+            actions.add(createDisabledAction("CTL_CloneDocumentAction"));
+            actions.add(createDisabledAction("CTL_NewTabGroupAction"));
+            actions.add( new CollapseTabGroupAction( mode ) );
         } else if (kind == Constants.MODE_KIND_VIEW) {
             //close window
             if( Switches.isViewTopComponentClosingEnabled() ) {
                 actions.add(createDisabledAction("CTL_CloseWindowAction"));
-            }
-            //close other
-            if( Switches.isViewTopComponentClosingEnabled() ) {
-                actions.add(createDisabledAction("CTL_CloseAllButThisAction"));
             }
             //close group
             if( Switches.isModeClosingEnabled() ) {
@@ -282,6 +308,13 @@ public abstract class ActionUtils {
             //float group
             if( Switches.isViewModeUndockingEnabled() )
                 actions.add( new UndockModeAction( mode) );
+            //dock window
+            if( Switches.isTopComponentUndockingEnabled()) {
+                actions.add(createDisabledAction("CTL_UndockWindowAction_Dock"));
+            }
+            //dock group
+            if( Switches.isViewModeUndockingEnabled() )
+                actions.add( new DockModeAction( mode, null ) );
             
         } else if (kind == Constants.MODE_KIND_SLIDING) {
             if( Switches.isViewTopComponentClosingEnabled() ) {
@@ -306,11 +339,11 @@ public abstract class ActionUtils {
 
     static Action createMinimizeWindowAction( TopComponent tc ) {
         SlideController slideController = ( SlideController ) SwingUtilities.getAncestorOfClass( SlideController.class, tc );
-        ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
-        int tabIndex = mode.getOpenedTopComponents().indexOf( tc );
+        ModeImpl mode = findMode( tc );
+        int tabIndex = null == mode ? -1 : mode.getOpenedTopComponents().indexOf( tc );
         boolean initialState = WindowManagerImpl.getInstance().isTopComponentMinimized( tc );
         Action res = new AutoHideWindowAction( slideController, tabIndex, initialState );
-        res.setEnabled( mode.getState() == Constants.MODE_STATE_JOINED );
+        res.setEnabled( null != mode && mode.getState() == Constants.MODE_STATE_JOINED );
         return res;
     }
     
@@ -392,37 +425,6 @@ public abstract class ActionUtils {
         }
     } // End of class ToggleWindowTransparencyAction
 
-    private static class SaveDocumentAction extends AbstractAction implements PropertyChangeListener {
-        private final TopComponent tc;
-        private Action saveAction;
-        
-        public SaveDocumentAction(TopComponent tc) {
-            this.tc = tc;
-            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_SaveDocumentAction"));
-            // share key accelerator with org.openide.actions.SaveAction
-            saveAction = (Action)SaveAction.get(SaveAction.class);
-            putValue(Action.ACCELERATOR_KEY, saveAction.getValue(Action.ACCELERATOR_KEY));
-            // fix of 40954 - weak listener instead of hard one
-            PropertyChangeListener weakL = WeakListeners.propertyChange(this, saveAction);
-            saveAction.addPropertyChangeListener(weakL);
-            setEnabled(getSaveCookie(tc) != null);
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            saveDocument(tc);
-        }
-
-        /** Keep accelerator key in sync with org.openide.actions.SaveAction */
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Action.ACCELERATOR_KEY.equals(evt.getPropertyName())) {
-                putValue(Action.ACCELERATOR_KEY, saveAction.getValue(Action.ACCELERATOR_KEY));
-            }
-        }
-        
-    } // End of class SaveDocumentAction.
-    
     private static class CloneDocumentAction extends AbstractAction {
         private final TopComponent tc;
         public CloneDocumentAction(TopComponent tc) {
@@ -502,8 +504,7 @@ public abstract class ActionUtils {
     /** Returns List of opened top components in mode of given TopComponent.
      */
     private static List<TopComponent> getOpened (TopComponent tc) {
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        ModeImpl mode = (ModeImpl) wm.findMode(tc);
+        ModeImpl mode = findMode(tc);
         List<TopComponent> tcs = new ArrayList<TopComponent>();
         if (mode != null) {
                 tcs.addAll(mode.getOpenedTopComponents());
@@ -540,7 +541,7 @@ public abstract class ActionUtils {
         if(tc instanceof TopComponent.Cloneable) {
             TopComponent clone = ((TopComponent.Cloneable)tc).cloneComponent();
             int openIndex = -1;
-            Mode m = WindowManager.getDefault().findMode(tc);
+            Mode m = findMode(tc);
             if( null != m ) {
                 TopComponent[] tcs = m.getTopComponents();
                 for( int i=0; i<tcs.length; i++ ) {
@@ -588,5 +589,27 @@ public abstract class ActionUtils {
         }
     }
     // Utility methods <<
+    
+    static ModeImpl findMode( TopComponent tc ) {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        ModeImpl mode = (ModeImpl)wm.findMode(tc);
+        if( null == mode ) {
+            //maybe it's multiview element
+            TopComponent multiviewParent = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, tc);
+            if( null != multiviewParent )
+                mode = (ModeImpl)wm.findMode(multiviewParent);
+        }
+        return mode;
+    }
+    
+    private static ModeImpl findPreviousMode( TopComponent tc, ModeImpl slidingMode ) {
+        ModeImpl res = null;
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        String tcId = wm.findTopComponentID( tc );
+        if( null != tcId ) {
+            res = wm.getPreviousModeForTopComponent( tcId, slidingMode );
+        }
+        return res;
+    }
 }
 

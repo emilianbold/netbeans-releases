@@ -49,57 +49,51 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
- * Action to perform dock, either of given or active Mode.
- * Dock means move into main window area.
- * If the given mode is minimized then this action restores its minimized windows instead.
+ * Action to move either either given or active editor top component to a new 
+ * document tab group.
  * 
  * @author S. Aubrecht
- * @since 2.30
+ * @since 2.36
  */
-public final class DockModeAction extends AbstractAction {
+public final class NewTabGroupAction extends AbstractAction {
 
-    private final ModeImpl mode;
-    private ModeImpl slidingMode;
+    private final TopComponent tc;
 
     /**
-     * Creates instance of action to Dock the whole mode of currently active top
-     * component in the system. For use in main menu.
+     * Creates instance of action to move currently active editor top
+     * component to a new document tab group. For use in main menu.
      */
-    public DockModeAction () {
-        this.mode = null;
-        putValue(Action.NAME, NbBundle.getMessage(DockModeAction.class, "CTL_UndockModeAction_Dock")); //NOI18N
+    public NewTabGroupAction () {
+        this( null );
     }
 
     /**
-     * Undock/Dock of given Mode.
+     * Move the given editor TopComponent to a new document tab group.
      * For use in the context menus.
      */
-    public DockModeAction (ModeImpl modeToRestore, ModeImpl slidingMode) {
-        this.mode = modeToRestore;
-        this.slidingMode = slidingMode;
-        putValue(Action.NAME, NbBundle.getMessage(DockModeAction.class, "CTL_UndockModeAction_Dock")); //NOI18N
+    public NewTabGroupAction (TopComponent tc) {
+        this.tc = tc;
+        putValue(Action.NAME, NbBundle.getMessage(NewTabGroupAction.class, "CTL_NewTabGroupAction")); //NOI18N
     }
     
     @Override
     public void actionPerformed (ActionEvent e) {
+        // contextTC shound never be null thanks to isEnabled impl
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
-        ModeImpl contextMode = getMode2WorkWith();
-        if( null == contextMode )
+        TopComponent contextTC = getTC2WorkWith();
+        if( null == contextTC )
             return; //just being paranoid
-        if( null != slidingMode ) {
-            WindowManagerImpl.getInstance().userRestoredMode( slidingMode, contextMode );
-        } else {
-            boolean isDocked = contextMode.getState() == Constants.MODE_STATE_JOINED;
-
-            if (!isDocked) {
-                wmi.userDockedMode(contextMode);
-            }
-        }
+        ModeImpl currentMode = ( ModeImpl ) wmi.findMode( contextTC );
+        if( null == currentMode || currentMode.getKind() != Constants.MODE_KIND_EDITOR 
+                || !wmi.isDocked( contextTC ) )
+            return;
+        wmi.newTabGroup( contextTC );
     }
     
     /** Overriden to share accelerator between instances of this action.
@@ -107,7 +101,7 @@ public final class DockModeAction extends AbstractAction {
     @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionUtils.putSharedAccelerator("UndockModeAction", newValue); //NOI18N
+            ActionUtils.putSharedAccelerator("NewTabGroupAction", newValue); //NOI18N
         } else {
             super.putValue(key, newValue);
         }
@@ -118,7 +112,7 @@ public final class DockModeAction extends AbstractAction {
     @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            return ActionUtils.getSharedAccelerator("UndockModeAction"); //NOI18N
+            return ActionUtils.getSharedAccelerator("NewTabGroupAction"); //NOI18N
         } else {
             return super.getValue(key);
         }
@@ -126,24 +120,25 @@ public final class DockModeAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-        ModeImpl contextMode = getMode2WorkWith();
-        if( null == contextMode )
-            return false;
-        if( null != slidingMode )
-            return true;
-        boolean docked = contextMode.getState() == Constants.MODE_STATE_JOINED;
-        if( docked )
-            return false;
-        if( contextMode.getKind() == Constants.MODE_KIND_EDITOR )
-            return Switches.isEditorModeUndockingEnabled();
-        return contextMode.getKind() == Constants.MODE_KIND_VIEW && Switches.isViewModeUndockingEnabled();
+        TopComponent context = getTC2WorkWith();
+        boolean res = null != context;
+        if( res ) {
+            WindowManagerImpl wm = WindowManagerImpl.getInstance();
+            ModeImpl mode = ( ModeImpl ) wm.findMode( context );
+            res &= null != mode;
+            if( res ) {
+                res &= mode.getKind() == Constants.MODE_KIND_EDITOR;
+                res &= mode.getOpenedTopComponents().size() > 1;
+                res &= wm.isDocked( tc );
+            }
+        }
+        return res;
     }
 
-    private ModeImpl getMode2WorkWith () {
-        if (mode != null) {
-            return mode;
+    private TopComponent getTC2WorkWith () {
+        if (tc != null) {
+            return tc;
         }
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        return ( ModeImpl ) wm.findMode( wm.getRegistry().getActivated() );
+        return WindowManager.getDefault().getRegistry().getActivated();
     }
 }

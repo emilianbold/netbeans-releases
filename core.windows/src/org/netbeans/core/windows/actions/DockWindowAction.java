@@ -86,11 +86,20 @@ public final class DockWindowAction extends AbstractAction {
         // contextTC shound never be null thanks to isEnabled impl
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         TopComponent contextTC = getTC2WorkWith();
-        boolean isDocked = wmi.isDocked(contextTC);
-        ModeImpl mode = (ModeImpl)wmi.findMode(contextTC);
+        if( null == contextTC )
+            return; //just being paranoid
+        
+        if( wmi.isTopComponentMinimized( tc ) ) {
+            //restore from minimized state
+            wmi.setTopComponentMinimized( tc, false );
+        } else {
+            //dock floating window
+            boolean isDocked = wmi.isDocked(contextTC);
+            ModeImpl mode = (ModeImpl)wmi.findMode(contextTC);
 
-        if (!isDocked) {
-            wmi.userDockedTopComponent(contextTC, mode);
+            if (!isDocked) {
+                wmi.userDockedTopComponent(contextTC, mode);
+            }
         }
     }
     
@@ -121,9 +130,13 @@ public final class DockWindowAction extends AbstractAction {
         TopComponent context = getTC2WorkWith();
         boolean res = null != context;
         if( res ) {
-            res &= Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(context);
-            if( res ) {
-                res &= !WindowManagerImpl.getInstance().isDocked( context );
+            if( WindowManagerImpl.getInstance().isTopComponentMinimized( context ) ) {
+                res = true;
+            } else {
+                res &= Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(context);
+                if( res ) {
+                    res &= !WindowManagerImpl.getInstance().isDocked( context );
+                }
             }
         }
         return res;

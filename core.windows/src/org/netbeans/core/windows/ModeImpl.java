@@ -453,7 +453,7 @@ public final class ModeImpl implements Mode {
      * @return True if this mode is minimized.
      * @since 2.30
      */
-    boolean isMinimized() {
+    public boolean isMinimized() {
         return getCentral().isModeMinimized( this );
     }
     
