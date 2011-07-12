@@ -51,9 +51,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.junit.NbTestCase;
+import junit.framework.TestCase;
 import org.netbeans.modules.java.source.queries.api.Function;
 import org.netbeans.modules.java.source.queries.api.Queries;
 import org.netbeans.modules.java.source.queries.api.QueryException;
@@ -68,7 +66,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Zezula
  */
-public class QueryOperationsTestBase extends NbTestCase {
+public abstract class QueryOperationsTestBase extends TestCase {
 
     protected static final String[] TEST_1 = {
         "org.me.test",
@@ -208,8 +206,8 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestGetTopLevelClasses(
-            @NonNull final String[] testCase,
-            @NonNull final Collection<? extends String> expected) throws Exception {
+            final String[] testCase,
+            final Collection<? extends String> expected) throws Exception {
         final URL fo1 = prepareTest(
             srcRoot,
             testCase[0],
@@ -234,9 +232,9 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestGetSuperClass(
-            @NonNull final String[] testCase,
-            @NonNull final String fqn,
-            @NonNull final String expected) throws Exception {
+            final String[] testCase,
+            final String fqn,
+            final String expected) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -261,9 +259,9 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestGetInterfaces(
-            @NonNull final String[] testCase,
-            @NonNull final String fqn,
-            @NonNull final Collection< ? extends String> expected) throws Exception {
+            final String[] testCase,
+            final String fqn,
+            final Collection< ? extends String> expected) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -288,9 +286,9 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestGetBinaryName(
-            @NonNull final String[] testCase,
-            @NonNull final String fqn,
-            @NonNull final String expected) throws Exception {
+            final String[] testCase,
+            final String fqn,
+            final String expected) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -322,11 +320,11 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestGetFieldNames(
-            @NonNull final String[] testCase,
-            @NonNull final String fqn,
+            final String[] testCase,
+            final String fqn,
             final boolean useRT,
-            @NonNull final String type,
-            @NonNull final Collection<? extends String> expected) throws Exception {
+            final String type,
+            final Collection<? extends String> expected) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -411,12 +409,12 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestGetMethodNames(
-            @NonNull final String[] testCase,
-            @NonNull final String fqn,
+            final String[] testCase,
+            final String fqn,
             final boolean useRT,
-            @NonNull final String retType,
-            @NonNull final List<? extends String> paramTypes,
-            @NonNull final Collection<? extends String> expected) throws Exception {
+            final String retType,
+            final List<? extends String> paramTypes,
+            final Collection<? extends String> expected) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -461,14 +459,14 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestGetMethodSpan(
-            @NonNull final String[] testCase,
-            @NonNull final String fqn,
-            @NonNull final String methodName,
+            final String[] testCase,
+            final String fqn,
+            final String methodName,
             final boolean useRT,
             final boolean includeComments,
-            @NonNull final String retType,
-            @NonNull final List<? extends String> paramTypes,
-            @NonNull final int[] expected) throws Exception {
+            final String retType,
+            final List<? extends String> paramTypes,
+            final int[] expected) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -511,11 +509,11 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestModifyInterfaces(
-        @NonNull final String[] testCase,
-            @NonNull final String clz,
-            @NonNull final Collection<? extends String> toAdd,
-            @NonNull final Collection<? extends String> toRemove,
-            @NonNull final Collection<? extends String> expected
+            final String[] testCase,
+            final String clz,
+            final Collection<? extends String> toAdd,
+            final Collection<? extends String> toRemove,
+            final Collection<? extends String> expected
             ) throws Exception {
         final URL file = prepareTest(
             srcRoot,
@@ -555,10 +553,10 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestSetSuperClass(
-        @NonNull final String[] testCase,
-        @NonNull final String clz,
-        @NonNull final String superClz,
-        @NonNull final String expected) throws Exception {
+        final String[] testCase,
+        final String clz,
+        final String superClz,
+        final String expected) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -593,10 +591,10 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestRenameField(
-            @NonNull final String[] testCase,
-            @NonNull final String fqn,
-            @NonNull final String oldFieldName,
-            @NonNull final String newFieldName) throws Exception {
+            final String[] testCase,
+            final String fqn,
+            final String oldFieldName,
+            final String newFieldName) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -631,9 +629,9 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     private void doTestFixImports(
-            @NonNull final String[] testCase,
-            @NonNull final int[][] ranges,
-            @NonNull final String expected) throws Exception {
+            final String[] testCase,
+            final int[][] ranges,
+            final String expected) throws Exception {
         final URL file = prepareTest(
             srcRoot,
             testCase[0],
@@ -654,8 +652,8 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     protected final <T> void assertContentEquals(
-            @NullAllowed final Collection<? extends T> expected,
-            @NullAllowed final Collection<? extends T> result) {
+            final Collection<? extends T> expected,
+            final Collection<? extends T> result) {
         if (expected == null) {
             assertNull("Expected null but got: " + result ,result);
         } else {
@@ -683,10 +681,10 @@ public class QueryOperationsTestBase extends NbTestCase {
     }
 
     protected final URL prepareTest(
-            @NonNull final FileObject root,
-            @NonNull final String pkg,
-            @NonNull final String name,
-            @NonNull final String content) throws IOException {
+            final FileObject root,
+            final String pkg,
+            final String name,
+            final String content) throws IOException {
         if (Lookup.getDefault().lookup(QueriesController.class) == null) {
             throw new IllegalStateException("Run the ModelOperationsTest subclass in impl module.");
         }
@@ -718,7 +716,35 @@ public class QueryOperationsTestBase extends NbTestCase {
         return fo.getURL();
     }
 
-    private static String removeWhiteSpaces(@NonNull final String str) {
+    protected final void clearWorkDir() throws IOException {
+        final File workDir = getWorkDir();
+        deleteSubFiles (workDir);
+    }
+
+    private void deleteSubFiles(final File folder) throws IOException {
+        final File[] children = folder.listFiles();
+        if (children != null) {
+            for (File child : children) {
+                deleteFiles(child);
+            }
+        }
+    }
+
+    private void deleteFiles (final File file) throws IOException {
+        if (file.isDirectory()) {
+            final File[] children = file.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    deleteFiles(child);
+                }
+            }
+        }
+        file.delete();
+    }
+
+    protected abstract File getWorkDir() throws IOException;
+
+    private static String removeWhiteSpaces(final String str) {
         final StringBuilder sb = new StringBuilder();
         for (int i=0; i< str.length(); i++) {
             final char c = str.charAt(i);
