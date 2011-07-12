@@ -14,7 +14,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-eclipse-jgit.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.jgit-1.0.0-rc3.jar</binary-origin>
+                <binary-origin>external/org.eclipse.jgit-1.0.0.201106090707-r.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
