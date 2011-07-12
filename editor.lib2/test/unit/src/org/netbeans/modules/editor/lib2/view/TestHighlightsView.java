@@ -44,16 +44,12 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  *
@@ -71,7 +67,7 @@ public class TestHighlightsView extends EditorView {
     private int length; // 28 + 4 = 32 bytes
 
     /** Attributes for rendering */
-    private final AttributeSet attributes; // 32 + 4 = 36 bytes
+    private AttributeSet attributes; // 32 + 4 = 36 bytes
 
     public TestHighlightsView(int offset, int length, AttributeSet attributes) {
         super(null);
@@ -105,6 +101,10 @@ public class TestHighlightsView extends EditorView {
     public int getStartOffset() {
         return getEndOffset() - getLength();
     }
+    
+    public void setStartOffset(int startOffset) {
+        setRawEndOffset(startOffset + getLength());
+    }
 
     @Override
     public int getEndOffset() {
@@ -121,6 +121,10 @@ public class TestHighlightsView extends EditorView {
     @Override
     public AttributeSet getAttributes() {
         return attributes;
+    }
+    
+    public void setAttributes(AttributeSet attrs) {
+        this.attributes = attrs;
     }
 
     ParagraphView getParagraphView() {

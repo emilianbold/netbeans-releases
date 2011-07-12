@@ -72,6 +72,8 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
     
     private final List<WeakReference<HlSequence>> activeHlSeqs = new ArrayList<WeakReference<HlSequence>>();
     
+    private HighlightsChangeEvent layerEvent;
+    
     public DirectMergeContainer(HighlightsContainer[] layers) {
         this.layers = layers;
         for (int i = 0; i < layers.length; i++) {
@@ -101,19 +103,37 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
 
     @Override
     public void highlightChanged(HighlightsChangeEvent event) {
-        event = new HighlightsChangeEvent(this, event.getStartOffset(), event.getEndOffset());
-        for (HighlightsChangeListener l : listeners) {
-            l.highlightChanged(event);
-        }
-        synchronized (activeHlSeqs) {
-            for (WeakReference<HlSequence> hlSeqRef : activeHlSeqs) {
-                HlSequence seq = hlSeqRef.get();
-                if (seq != null) {
-                    seq.notifyLayersChanged();
-                }
+        layerEvent = event;
+        try {
+            event = new HighlightsChangeEvent(this, event.getStartOffset(), event.getEndOffset());
+            for (HighlightsChangeListener l : listeners) {
+                l.highlightChanged(event);
             }
-            activeHlSeqs.clear();
+            synchronized (activeHlSeqs) {
+                for (WeakReference<HlSequence> hlSeqRef : activeHlSeqs) {
+                    HlSequence seq = hlSeqRef.get();
+                    if (seq != null) {
+                        seq.notifyLayersChanged();
+                    }
+                }
+                activeHlSeqs.clear();
+            }
+        } finally {
+            layerEvent = null;
         }
+    }
+    
+    /**
+     * Get event from a contained layer which caused highlight change
+     * (mainly for debugging purposes).
+     * <br/>
+     * The information is only available during firing to change listeners registered by
+     * {@link #addHighlightsChangeListener(org.netbeans.spi.editor.highlighting.HighlightsChangeListener)}.
+     * 
+     * @return event sent by a layer.
+     */
+    public HighlightsChangeEvent layerEvent() {
+        return layerEvent;
     }
 
     @Override

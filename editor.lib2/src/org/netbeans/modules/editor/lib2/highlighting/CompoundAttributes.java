@@ -71,7 +71,7 @@ public final class CompoundAttributes implements AttributeSet {
      */
     private final int startOffset; // 12 + 4 = 16 bytes
 
-    public CompoundAttributes(HighlightItem[] highlightItems, int startOffset) {
+    public CompoundAttributes(int startOffset, HighlightItem[] highlightItems) {
         this.highlightItems = highlightItems;
         this.startOffset = startOffset;
     }
