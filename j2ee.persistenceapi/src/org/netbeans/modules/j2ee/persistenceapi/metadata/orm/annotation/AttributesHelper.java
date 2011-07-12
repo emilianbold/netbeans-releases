@@ -48,6 +48,7 @@ import java.lang.String;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
@@ -103,6 +104,8 @@ public final class AttributesHelper {
             if (propertyName == null) {
                 return;
             }
+            ExecutableElement el = (ExecutableElement) element;
+            if(el.getParameters()!=null && el.getParameters().size()>0)return; //getter shouldn't have any parameters, if there are any it's not a property
         }
         propertyHandler.handleProperty(element, propertyName);
     }
