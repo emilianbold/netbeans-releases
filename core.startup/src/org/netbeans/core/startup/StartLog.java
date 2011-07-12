@@ -152,6 +152,9 @@ public class StartLog {
      */
     public static void logMeasuredStartupTime(long end){
         LOG.log(Level.FINE, "finish", end);
+        if("tests".equals(logProp)) {
+            impl.flush();
+        }            
     }
     
     /** The dummy, no-op implementation */
