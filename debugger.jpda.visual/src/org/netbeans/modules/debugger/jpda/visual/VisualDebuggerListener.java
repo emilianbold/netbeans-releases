@@ -113,7 +113,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             Exceptions.printStackTrace(ex);
         } catch (InvocationException ex) {
             final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, ((JPDAThreadImpl) thread).getDebugger());
+            iextr.setPreferredThread((JPDAThreadImpl) thread);
             iextr.getMessage();
+            iextr.getLocalizedMessage();
             iextr.getCause();
             iextr.getStackTrace();
             Exceptions.printStackTrace(iextr);
@@ -141,6 +143,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     @Override
     public void engineRemoved(DebuggerEngine engine) {
         // TODO: Stop the remote service.
+        // TODO: Remove the screenhots components.
     }
     
 }

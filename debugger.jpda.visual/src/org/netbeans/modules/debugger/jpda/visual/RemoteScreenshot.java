@@ -366,18 +366,12 @@ public class RemoteScreenshot {
             //Exceptions.printStackTrace(iex);
 
             final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, ((JPDAThreadImpl) t).getDebugger());
-            /*
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    iextr.getMessage();
-                    iextr.getLocalizedMessage();
-                    iextr.getCause();
-                    iextr.getStackTrace();
-                    Exceptions.printStackTrace(iextr);
-                }
-            }, 100);
-              */
+            // Initialize the translated exception:
+            iextr.setPreferredThread((JPDAThreadImpl) t);
+            iextr.getMessage();
+            iextr.getLocalizedMessage();
+            iextr.getCause();
+            iextr.getStackTrace();
             throw new RetrievalException(iex.getMessage(), iextr);
         } catch (InvalidTypeException itex) {
             throw new RetrievalException(itex.getMessage(), itex);
@@ -645,6 +639,7 @@ public class RemoteScreenshot {
                 return ex.getMessage();
             } catch (final InvocationException ex) {
                 final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, debugger);
+                iextr.setPreferredThread(t);
                 /*
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override
