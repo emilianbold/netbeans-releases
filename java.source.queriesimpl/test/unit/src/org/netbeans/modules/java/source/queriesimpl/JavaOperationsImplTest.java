@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source.queriesimpl;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -49,6 +50,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.queries.spi.QueryOperationsTestBase;
@@ -62,6 +64,8 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Zezula
  */
 public class JavaOperationsImplTest extends QueryOperationsTestBase {
+
+    private File wd;
 
     public JavaOperationsImplTest(final String name) {
         super(name);
@@ -108,4 +112,11 @@ public class JavaOperationsImplTest extends QueryOperationsTestBase {
         }
     }
 
+    @Override
+    protected final File getWorkDir() throws IOException {
+        if (wd == null) {
+            wd = new NbTestCase(getName()){}.getWorkDir();
+        }
+        return wd;
+    }
 }
