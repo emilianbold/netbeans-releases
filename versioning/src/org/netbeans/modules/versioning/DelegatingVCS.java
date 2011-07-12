@@ -86,7 +86,7 @@ public class DelegatingVCS extends VersioningSystem {
         VersioningManager.LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", map.get("displayName")); // NOI18N
     }
 
-    VersioningSystem getDelegate() {
+    public VersioningSystem getDelegate() {
         if(delegate == null) {
             VersioningManager.getInstance().flushNullOwners();   
             delegate = (VersioningSystem) map.get("delegate");                  // NOI18N
