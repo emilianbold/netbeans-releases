@@ -46,7 +46,6 @@
 package org.netbeans.core.windows.model;
 
 
-import java.util.ArrayList;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.SplitConstraint;
@@ -77,6 +76,7 @@ final class EditorSplitSubModel extends SplitSubModel {
     
 
     /** Overrides superclass method to prevent removing of editor node. */
+    @Override
     protected boolean removeNodeFromTree(Node node) {
         if(node == editorNode) {
             // XXX Prevents removing of editor node.
@@ -99,6 +99,7 @@ final class EditorSplitSubModel extends SplitSubModel {
         return editorNode.getEditorArea();
     }
 
+    @Override
     public boolean setSplitWeights( ModelElement[] snapshots, double[] splitWeights) {
         if( super.setSplitWeights( snapshots, splitWeights ) ) {
             return true;
@@ -118,6 +119,7 @@ final class EditorSplitSubModel extends SplitSubModel {
             this.editorArea = editorArea;
         }
 
+        @Override
         public boolean isVisibleInSplit() {
             return true;
         }
@@ -126,10 +128,12 @@ final class EditorSplitSubModel extends SplitSubModel {
             return editorArea;
         }
         
+        @Override
         public double getResizeWeight() {
             return 1D;
         }
         
+        @Override
         public ModeStructureSnapshot.ElementSnapshot createSnapshot() {
             return new ModeStructureSnapshot.EditorSnapshot(this, null,
                 editorArea.createSplitSnapshot(), getResizeWeight());
@@ -138,17 +142,20 @@ final class EditorSplitSubModel extends SplitSubModel {
     
     
     // XXX
+    @Override
     protected boolean addNodeToTreeAroundEditor(Node addingNode, String side) {
         // Update
+        double dropRatio = Constants.DROP_AROUND_EDITOR_RATIO;
         Node attachNode = editorNode;
+        // Update
         if(attachNode == root) {
             int addingIndex = (side == Constants.TOP || side == Constants.LEFT) ? 0 : -1;
             int oldIndex = addingIndex == 0 ? -1 : 0;
             // Create new branch.
             int orientation = (side == Constants.TOP || side == Constants.BOTTOM) ? Constants.VERTICAL : Constants.HORIZONTAL;
             SplitNode newSplit = new SplitNode(orientation);
-            newSplit.setChildAt(addingIndex, Constants.DROP_TO_SIDE_RATIO, addingNode);
-            newSplit.setChildAt(oldIndex, 1D - Constants.DROP_TO_SIDE_RATIO, attachNode);
+            newSplit.setChildAt(addingIndex, dropRatio, addingNode);
+            newSplit.setChildAt(oldIndex, 1D - dropRatio, attachNode);
             root = newSplit;
         } else {
             SplitNode parent = attachNode.getParent();
@@ -160,13 +167,21 @@ final class EditorSplitSubModel extends SplitSubModel {
             double attachWeight = parent.getChildSplitWeight(attachNode);
             // Create new branch.
             int orientation = (side == Constants.TOP || side == Constants.BOTTOM) ? Constants.VERTICAL : Constants.HORIZONTAL;
-            SplitNode newSplit = new SplitNode(orientation);
-            parent.removeChild(attachNode);
-            int addingIndex = (side == Constants.TOP || side == Constants.LEFT) ? 0 : -1;
-            int oldIndex = addingIndex == 0 ? -1 : 0;
-            newSplit.setChildAt(addingIndex, Constants.DROP_AROUND_RATIO, addingNode);
-            newSplit.setChildAt(oldIndex, 1D - Constants.DROP_AROUND_RATIO, attachNode);
-            parent.setChildAt(attachIndex, attachWeight, newSplit);
+            if( orientation == parent.getOrientation() ) {
+                //reuse existing split
+                if( side == Constants.BOTTOM || side == Constants.RIGHT )
+                    attachIndex++;
+                parent.setChildAt( attachIndex, dropRatio, addingNode );
+            } else {
+                //split orientation does not match, create a new sub-split
+                SplitNode newSplit = new SplitNode(orientation);
+                parent.removeChild(attachNode);
+                int addingIndex = (side == Constants.TOP || side == Constants.LEFT) ? 0 : -1;
+                int oldIndex = addingIndex == 0 ? -1 : 0;
+                newSplit.setChildAt(addingIndex, dropRatio, addingNode);
+                newSplit.setChildAt(oldIndex, 1D - dropRatio, attachNode);
+                parent.setChildAt(attachIndex, attachWeight, newSplit);
+            }
         }
         
         return true;

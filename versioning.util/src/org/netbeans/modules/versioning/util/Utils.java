@@ -123,7 +123,7 @@ public final class Utils {
      */
     private static final RequestProcessor vcsParallelRequestProcessor = new RequestProcessor("Versioning parallel tasks", 5, true);
 
-    private static /*final*/ File [] unversionedFolders;
+    private static /*final*/ File [] unversionedFolders = getUnversionedFolders();
 
     /**
      * Metrics logger
@@ -133,29 +133,45 @@ public final class Utils {
     /**
      * Keeps track about already logged metrics events
      */
-    private static Set<String> metrics = new HashSet<String>(3);
+    private static final Set<String> metrics = new HashSet<String>(3);
 
-    static {
-        try {
-            String uf = VersioningSupport.getPreferences().get("unversionedFolders", null);
-            String ufProp = System.getProperty("versioning.unversionedFolders", null); //NOI18N
-            if (ufProp != null && ufProp.length() > 0) {
-                uf = uf == null || uf.length() == 0 ? ufProp : uf + ";" + ufProp; //NOI18N
-            }
-            if (uf == null || uf.length() == 0) {
-                unversionedFolders = new File[0];
-            } else {
-                String [] paths = uf.split("\\;");
-                unversionedFolders = new File[paths.length];
-                int idx = 0;
-                for (String path : paths) {
-                    unversionedFolders[idx++] = new File(path);
+    private static File[] getUnversionedFolders () {
+        if (unversionedFolders == null) {
+            File[] files;
+            try {
+                String uf = VersioningSupport.getPreferences().get("unversionedFolders", ""); //NOI18N
+                String ufProp = System.getProperty("versioning.unversionedFolders", ""); //NOI18N
+                StringBuilder sb = new StringBuilder(uf);
+                String nbUserdir = System.getProperty("netbeans.user", ""); //NOI18N
+                if (!nbUserdir.isEmpty() && !"true".equals(System.getProperty("versioning.netbeans.user.versioned", "false"))) { //NOI18N
+                    if (sb.length() > 0) {
+                        sb.append(';');
+                    }
+                    sb.append(nbUserdir);
                 }
+                if (!ufProp.isEmpty()) {
+                    if (sb.length() > 0) {
+                        sb.append(';');
+                    }
+                    sb.append(ufProp);
+                }
+                if (sb.length() == 0) {
+                    files = new File[0];
+                } else {
+                    String [] paths = sb.toString().split("\\;");
+                    files = new File[paths.length];
+                    int idx = 0;
+                    for (String path : paths) {
+                        files[idx++] = new File(path);
+                    }
+                }
+            } catch (Exception e) {
+                files = new File[0];
+                Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
             }
-        } catch (Exception e) {
-            unversionedFolders = new File[0];
-            Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
+            unversionedFolders = files;
         }
+        return unversionedFolders;
     }
     private static File tempDir;
 
@@ -468,7 +484,7 @@ public final class Utils {
                 flat.add(files[i]);
             }
         }
-        if (flat.size() == 0) {
+        if (flat.isEmpty()) {
             return new File[][] { new File[0], files };
         } else {
             Set<File> allFiles = new HashSet<File>(Arrays.asList(files));
@@ -534,12 +550,13 @@ public final class Utils {
     public static Reader getDocumentReader(final Document doc) {
         final String[] str = new String[1];
         Runnable run = new Runnable() {
+            @Override
             public void run () {
                 try {
                     str[0] = doc.getText(0, doc.getLength());
                 } catch (javax.swing.text.BadLocationException e) {
                     // impossible
-                    e.printStackTrace();
+                    LOG.log(Level.INFO, null, e);
                 }
             }
         };
@@ -811,7 +828,7 @@ public final class Utils {
         if(folder.getPath().startsWith("\\\\")) {
             return folder.getParent() == null || folder.getParent().equals("\\\\");
         }
-        for (File unversionedFolder : unversionedFolders) {
+        for (File unversionedFolder : getUnversionedFolders()) {
             if (isAncestorOrEqual(unversionedFolder, folder)) {
                 return true;
             }
@@ -1138,49 +1155,62 @@ public final class Utils {
             this.file = file;
         }
 
+        @Override
         public InputStream inputStream() throws IOException {
             return file.getInputStream();
         }
 
+        @Override
         public OutputStream outputStream() throws IOException {
             throw new IOException();
         }
 
+        @Override
         public Date getTime() {
             return file.lastModified();
         }
 
+        @Override
         public String getMimeType() {
             return file.getMIMEType();
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
         }
 
+        @Override
         public void addVetoableChangeListener(VetoableChangeListener l) {
         }
 
+        @Override
         public void removeVetoableChangeListener(VetoableChangeListener l) {
         }
 
+        @Override
         public boolean isValid() {
             return file.isValid();
         }
 
+        @Override
         public boolean isModified() {
             return false;
         }
 
+        @Override
         public void markModified() throws IOException {
             throw new IOException();
         }
 
+        @Override
         public void unmarkModified() {
         }
 
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return null;
         }
@@ -1202,22 +1232,27 @@ public final class Utils {
             kit.read(new InputStreamReader(stream, charset), doc, 0);
         }
 
+        @Override
         protected String messageSave() {
             return name;
         }
 
+        @Override
         protected String messageName() {
             return name;
         }
 
+        @Override
         protected String messageToolTip() {
             return name;
         }
 
+        @Override
         protected String messageOpening() {
             return name;
         }
 
+        @Override
         protected String messageOpened() {
             return name;
         }
@@ -1270,6 +1305,7 @@ public final class Utils {
     }
 
     private static class LogTask implements Runnable {
+        @Override
         public void run() {
             File[] folders;
             synchronized (foldersToCheck) {

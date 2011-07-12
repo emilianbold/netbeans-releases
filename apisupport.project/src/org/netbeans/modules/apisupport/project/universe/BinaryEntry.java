@@ -46,13 +46,14 @@ package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.openide.modules.Dependency;
 
 final class BinaryEntry extends AbstractBinaryEntry {
     private final File nbdestdir;
     
-    public BinaryEntry(String cnb, File jar, File[] exts, File nbdestdir, File clusterDir,
+    public BinaryEntry(String cnb, File jar, File[] exts, @NonNull File nbdestdir, File clusterDir,
             String releaseVersion, String specVersion, String[] providedTokens,
             ManifestManager.PackageExport[] publicPackages, String[] friends,
             boolean deprecated, Set<Dependency> moduleDependencies) {

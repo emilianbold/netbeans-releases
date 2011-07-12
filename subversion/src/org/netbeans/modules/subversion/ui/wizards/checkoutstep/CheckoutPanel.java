@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.wizards.checkoutstep;
 
+import javax.swing.GroupLayout;
 import java.awt.Component;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -51,15 +52,14 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import org.jdesktop.layout.GroupLayout;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
-import static org.jdesktop.layout.LayoutStyle.UNRELATED;
+import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 
 /**
  *
@@ -125,69 +125,69 @@ public class CheckoutPanel extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(LEADING)
-                        .add(lblSpecifyRepoFolders)
-                        .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(LEADING)
-                                        .add(lblRepoFolders)
-                                        .add(lblRepoRevision))
+                        .addComponent(lblSpecifyRepoFolders)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(LEADING)
+                                        .addComponent(lblRepoFolders)
+                                        .addComponent(lblRepoRevision))
                                 .addPreferredGap(RELATED)
-                                .add(layout.createParallelGroup(LEADING)
-                                        .add(layout.createSequentialGroup()
-                                                .add(repositoryPathTextField)
+                                .addGroup(layout.createParallelGroup(LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(repositoryPathTextField)
                                                 .addPreferredGap(RELATED)
-                                                .add(browseRepositoryButton))
-                                        .add(layout.createSequentialGroup()
-                                                .add(revisionTextField, DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                                                .addComponent(browseRepositoryButton))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(revisionTextField, DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                                                 .addPreferredGap(RELATED)
-                                                .add(searchRevisionButton)
-                                                .add(browseRevisionButton))))
-                        .add(atWorkingDirLevelCheckBox)
-                        .add(exportCheckBox)
-                        .add(lblSpecifyLocalFolders)
-                        .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(LEADING)
-                                        .add(lblLocalFolder)
-                                        .add(lblWorkingCopy))
+                                                .addComponent(searchRevisionButton)
+                                                .addComponent(browseRevisionButton))))
+                        .addComponent(atWorkingDirLevelCheckBox)
+                        .addComponent(exportCheckBox)
+                        .addComponent(lblSpecifyLocalFolders)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(LEADING)
+                                        .addComponent(lblLocalFolder)
+                                        .addComponent(lblWorkingCopy))
                                 .addPreferredGap(RELATED)
-                                .add(layout.createParallelGroup(LEADING)
-                                        .add(layout.createSequentialGroup()
-                                                .add(workdirTextField)
+                                .addGroup(layout.createParallelGroup(LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(workdirTextField)
                                                 .addPreferredGap(RELATED)
-                                                .add(browseWorkdirButton))
-                                        .add(workingCopy, 0, DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .add(scanForProjectsCheckBox)
+                                                .addComponent(browseWorkdirButton))
+                                        .addComponent(workingCopy, 0, DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(scanForProjectsCheckBox)
         );
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
-                        .add(lblSpecifyRepoFolders)
+                        .addComponent(lblSpecifyRepoFolders)
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(lblRepoFolders)
-                                .add(repositoryPathTextField)
-                                .add(browseRepositoryButton))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(lblRepoFolders)
+                                .addComponent(repositoryPathTextField)
+                                .addComponent(browseRepositoryButton))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(lblRepoRevision)
-                                .add(revisionTextField)
-                                .add(searchRevisionButton)
-                                .add(browseRevisionButton))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(lblRepoRevision)
+                                .addComponent(revisionTextField)
+                                .addComponent(searchRevisionButton)
+                                .addComponent(browseRevisionButton))
                         .addPreferredGap(UNRELATED)
-                        .add(atWorkingDirLevelCheckBox)
+                        .addComponent(atWorkingDirLevelCheckBox)
                         .addPreferredGap(RELATED)
-                        .add(exportCheckBox)
-                        .add(28)
-                        .add(lblSpecifyLocalFolders)
+                        .addComponent(exportCheckBox)
+                        .addGap(28)
+                        .addComponent(lblSpecifyLocalFolders)
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(lblLocalFolder)
-                                .add(workdirTextField)
-                                .add(browseWorkdirButton))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(lblLocalFolder)
+                                .addComponent(workdirTextField)
+                                .addComponent(browseWorkdirButton))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(lblWorkingCopy)
-                                .add(workingCopy))
-                        .add(18)
-                        .add(scanForProjectsCheckBox)
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(lblWorkingCopy)
+                                .addComponent(workingCopy))
+                        .addGap(18)
+                        .addComponent(scanForProjectsCheckBox)
         );
         layout.linkSize(new Component[] {lblRepoFolders, lblRepoRevision, lblLocalFolder, lblWorkingCopy});
 

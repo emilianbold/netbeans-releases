@@ -671,24 +671,7 @@ public final class MultiViewPeer  {
     
     
     private boolean isToolbarVisible() {
-        //TODO need some way to restrict the validity of this swicth only to multiviews that contain
-        // sources in some form..
-        // Only permit hiding of the editor toolbar in case there's just the editor component
-        // Otherwise it may happen that the toolbar would not be visible and could not be used
-        // for e.g. Design <-> Source switching
-        JEditorPane pane = getEditorPane();
-        if (pane != null && model.getCreatedElements().size() == 1) {
-              Object obj = pane.getActionMap().get("toggle-toolbar");
-              if (obj == null) {
-                  return true;
-              }
-        } else {
-            return true;
-        }
-        if (editorSettingsPreferences == null) {
-            return true;
-        }
-        return editorSettingsPreferences.getBoolean(TOOLBAR_VISIBLE_PROP, true);
+        return editorSettingsPreferences == null || editorSettingsPreferences.getBoolean(TOOLBAR_VISIBLE_PROP, true);
     }
 
     

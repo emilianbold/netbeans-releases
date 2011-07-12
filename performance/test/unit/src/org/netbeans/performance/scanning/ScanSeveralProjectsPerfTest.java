@@ -109,9 +109,9 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
                         "mediawiki.zip",
                         "mediawiki-1.14.0"
                 },
-                { "http://spbweb.russia.sun.com/~ok153203/lime6.zip",
-                            "lime6.zip",
-                            "lime6"
+                { "http://hg.netbeans.org/binaries/F06FC0FE0FADAB8275F29F47ED449ACF3C5F0CF0-tomcat6.zip",
+                            "tomcat6.zip",
+                            "tomcat6"
                 },
                 { "http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
                         "openjdk.zip",

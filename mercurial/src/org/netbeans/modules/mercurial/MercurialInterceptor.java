@@ -91,7 +91,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
     private final HgFolderEventsHandler hgFolderEventsHandler;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
-    private static final File userDir = System.getProperty("netbeans.user", "").isEmpty() ? null : new File(System.getProperty("netbeans.user")); //NOI18N;
     private final Mercurial hg;
 
     MercurialInterceptor(Mercurial hg, FileStatusCache cache) {
@@ -104,7 +103,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public boolean beforeDelete(File file) {
-        Mercurial.LOG.fine("beforeDelete " + file);
+        Mercurial.LOG.log(Level.FINE, "beforeDelete {0}", file);
         if (file == null) return false;
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
 
@@ -119,7 +118,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         // XXX runnig hg rm for each particular file when removing a whole firectory might no be neccessery:
         //     just delete it via file.delete and call, group the files in afterDelete and schedule a delete
         //     fo the parent or for a bunch of files at once. 
-        Mercurial.LOG.fine("doDelete " + file);
+        Mercurial.LOG.log(Level.FINE, "doDelete {0}", file);
         if (file == null) return;
         File root = hg.getRepositoryRoot(file);
         try {
@@ -132,7 +131,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public void afterDelete(final File file) {
-        Mercurial.LOG.fine("afterDelete " + file);
+        Mercurial.LOG.log(Level.FINE, "afterDelete {0}", file);
         if (file == null) return;
         // we don't care about ignored files
         // IMPORTANT: false means mind checking the sharability as this might cause deadlock situations
@@ -147,10 +146,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public boolean beforeMove(File from, File to) {
-        Mercurial.LOG.fine("beforeMove " + from + "->" + to);
-        if (isUnderIgnoredUserDir(from)) {
-            return false;
-        }
+        Mercurial.LOG.log(Level.FINE, "beforeMove {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || to.exists()) return true;
         
         if (hg.isManaged(from)) {
@@ -161,7 +157,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public void doMove(final File from, final File to) throws IOException {
-        Mercurial.LOG.fine("doMove " + from + "->" + to);
+        Mercurial.LOG.log(Level.FINE, "doMove {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || to.exists()) return;
         if (SwingUtilities.isEventDispatchThread()) {
             Mercurial.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace()); // NOI18N
@@ -211,7 +207,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public void afterMove(final File from, final File to) {
-        Mercurial.LOG.fine("afterMove " + from + "->" + to);
+        Mercurial.LOG.log(Level.FINE, "afterMove {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || !to.exists()) return;
 
         File parent = from.getParentFile();
@@ -229,10 +225,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public boolean beforeCopy (File from, File to) {
-        Mercurial.LOG.fine("beforeCopy " + from + "->" + to);
-        if (isUnderIgnoredUserDir(to)) {
-            return false;
-        }
+        Mercurial.LOG.log(Level.FINE, "beforeCopy {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || to.exists()) return true;
 
         return hg.isManaged(from) && hg.isManaged(to);
@@ -240,7 +233,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public void doCopy (final File from, final File to) throws IOException {
-        Mercurial.LOG.fine("doCopy " + from + "->" + to);
+        Mercurial.LOG.log(Level.FINE, "doCopy {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || to.exists()) return;
 
         File root = hg.getRepositoryRoot(from);
@@ -267,7 +260,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public void afterCopy (final File from, final File to) {
-        Mercurial.LOG.fine("afterCopy " + from + "->" + to);
+        Mercurial.LOG.log(Level.FINE, "afterCopy {0}->{1}", new Object[]{from, to});
         if (to == null) return;
 
         File parent = to.getParentFile();
@@ -279,10 +272,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     
     @Override
     public boolean beforeCreate(final File file, boolean isDirectory) {
-        Mercurial.LOG.fine("beforeCreate " + file + " " + isDirectory);
-        if (isUnderIgnoredUserDir(file)) {
-            return false;
-        }
+        Mercurial.LOG.log(Level.FINE, "beforeCreate {0} {1}", new Object[]{file, isDirectory});
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
             File root = hg.getRepositoryRoot(file);
@@ -314,13 +304,13 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     @Override
     public void doCreate(File file, boolean isDirectory) throws IOException {
-        Mercurial.LOG.fine("doCreate " + file + " " + isDirectory);
+        Mercurial.LOG.log(Level.FINE, "doCreate {0} {1}", new Object[]{file, isDirectory});
         super.doCreate(file, isDirectory);
     }
 
     @Override
     public void afterCreate(final File file) {
-        Mercurial.LOG.fine("afterCreate " + file);
+        Mercurial.LOG.log(Level.FINE, "afterCreate {0}", file);
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {
             reScheduleRefresh(800, file);
@@ -362,7 +352,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
         // refresh all at once
-        Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());
+        Mercurial.STATUS_LOG.log(Level.FINE, "reScheduleRefresh: adding {0}", fileToRefresh.getAbsolutePath());
         if (!HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
             filesToRefresh.add(fileToRefresh);
         }
@@ -371,7 +361,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void reScheduleRefresh (int delayMillis, Set<File> filesToRefresh) {
         // refresh all at once
-        Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + filesToRefresh);
+        Mercurial.STATUS_LOG.log(Level.FINE, "reScheduleRefresh: adding {0}", filesToRefresh);
         this.filesToRefresh.addAll(filesToRefresh);
         refreshTask.schedule(delayMillis);
     }
@@ -416,10 +406,6 @@ public class MercurialInterceptor extends VCSInterceptor {
      */
     Set<File> getSeenRoots (File repositoryRoot) {
         return hgFolderEventsHandler.getSeenRoots(repositoryRoot);
-    }
-
-    private boolean isUnderIgnoredUserDir (File file) {
-        return userDir != null && Utils.isAncestorOrEqual(userDir, file) && HgUtils.isIgnored(file, false);
     }
 
     private class RefreshTask implements Runnable {
@@ -558,7 +544,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     if (list != null) {
                         FileUtil.removeRecursiveListener(list, hgFolder);
                     }
-                    Mercurial.STATUS_LOG.fine("refreshHgFolderTimestamp: " + hgFolder.getAbsolutePath() + " no longer exists"); //NOI18N
+                    Mercurial.STATUS_LOG.log(Level.FINE, "refreshHgFolderTimestamp: {0} no longer exists", hgFolder.getAbsolutePath()); //NOI18N
                 }
             }
         }
@@ -567,7 +553,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             long lastModified = 0;
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("mercurial.handleDirstateEvents", "true"))) { //NOI18N
                 hgFolder = FileUtil.normalizeFile(hgFolder);
-                Mercurial.STATUS_LOG.finer("handleHgFolderEvent: special FS event handling for " + hgFolder.getAbsolutePath()); //NOI18N
+                Mercurial.STATUS_LOG.log(Level.FINER, "handleHgFolderEvent: special FS event handling for {0}", hgFolder.getAbsolutePath()); //NOI18N
                 lastModified = hgFolder.lastModified();
                 Long lastCachedModified = null;
                 synchronized (hgFolders) {
@@ -582,9 +568,10 @@ public class MercurialInterceptor extends VCSInterceptor {
                 }
                 if (lastCachedModified == null) {
                     File repository = hgFolder.getParentFile();
-                    Mercurial.STATUS_LOG.fine("handleDirstateEvent: planning repository scan for " + repository.getAbsolutePath()); //NOI18N
+                    Mercurial.STATUS_LOG.log(Level.FINE, "handleDirstateEvent: planning repository scan for {0}", repository.getAbsolutePath()); //NOI18N
                     reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
                     refreshOpenFilesTask.schedule(3000);
+                    WorkingCopyInfo.refreshAsync(repository);
                 }
             }
             return lastModified;
@@ -657,7 +644,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     if (newlyAddedRoot != null) {
                         synchronized (hgFolders) {
                             // this means the repository has not yet been scanned, so scan it
-                            Mercurial.STATUS_LOG.fine("pingRepositoryRootFor: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath()); //NOI18N
+                            Mercurial.STATUS_LOG.log(Level.FINE, "pingRepositoryRootFor: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getAbsolutePath(), file.getAbsolutePath()}); //NOI18N
                             reScheduleRefresh(4000, newlyAddedRoot);
                             if (!hgFolders.containsKey(hgFolder)) {
                                 if (hgFolder.isDirectory()) {

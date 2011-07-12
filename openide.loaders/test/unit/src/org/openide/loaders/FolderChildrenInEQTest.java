@@ -42,6 +42,7 @@
 package org.openide.loaders;
 
 import java.util.concurrent.CountDownLatch;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
@@ -93,6 +94,11 @@ public class FolderChildrenInEQTest extends FolderChildrenTest {
         
         assertFalse("No leaf", arr[0].isLeaf());
         assertTrue("File B is leaf", arr[1].isLeaf());
+    }
+
+    @RandomlyFails // NB-Core-Build #6728: Accepts only Ahoj expected:<1> but was:<2>
+    @Override public void testChildrenCanGC() throws Exception {
+        super.testChildrenCanGC();
     }
     
 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.versioning.diff;
 
+import javax.swing.LayoutStyle;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,12 +55,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import org.jdesktop.layout.LayoutStyle;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import static javax.swing.JComponent.LEFT_ALIGNMENT;
 import static javax.swing.SwingConstants.SOUTH;
-import static org.jdesktop.layout.LayoutStyle.UNRELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 
 /**
  *
@@ -160,7 +160,7 @@ class ExpandableMessage extends JPanel implements ActionListener {
 
     private static Component makeVerticalStrut(JComponent compA,
                                                JComponent compB) {
-        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        LayoutStyle layoutStyle = LayoutStyle.getInstance();
         return Box.createVerticalStrut(
                 layoutStyle.getPreferredGap(compA,
                                             compB,

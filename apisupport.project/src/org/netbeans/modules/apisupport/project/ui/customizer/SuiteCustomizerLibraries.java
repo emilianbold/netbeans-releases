@@ -576,7 +576,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     .addComponent(managePlafsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(javaPlatformButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(74, Short.MAX_VALUE)
+                .addContainerGap(82, Short.MAX_VALUE)
                 .addComponent(resolveButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(addProjectButton)
@@ -589,7 +589,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             .addGroup(layout.createSequentialGroup()
                 .addComponent(viewLabel)
                 .addContainerGap())
-            .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+            .addComponent(view, javax.swing.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1734,6 +1734,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
             UniverseModule dep = modules.get(cnb);
             if (dep == null) {
+                if (cnb.equals("org.netbeans.libs.junit4")) {
+                    // E.g. from some test pseudomodule. Just ignore this; tests can usually be run anyway.
+                    continue;
+                }
                 FixInfo.putUnfixable(fi, new String[] {"ERR_no_dep", mdn, mc, cnb});
                 return true;
             }

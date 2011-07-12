@@ -63,19 +63,19 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
-import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -120,7 +120,8 @@ public class HudsonConnector {
                 "?tree=primaryView[name],views[name,url,jobs[name]]," +
                 "jobs[name,url,color,displayName,buildable,inQueue," +
                 "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
-                "modules[name,displayName,url,color]]" :
+                "modules[name,displayName,url,color]]," +
+                "securedJobs[name,url]" : // HUDSON-3924
                 "?depth=1&xpath=/&exclude=//assignedLabel&exclude=//primaryView/job" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
@@ -305,11 +306,15 @@ public class HudsonConnector {
         NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node n = nodes.item(i);
-            if (!n.getNodeName().equals(XML_API_JOB_ELEMENT)) {
+            boolean secured = n.getNodeName().equals(XML_API_SECURED_JOB_ELEMENT);
+            if (!n.getNodeName().equals(XML_API_JOB_ELEMENT) && !secured) {
                 continue;
             }
             
             HudsonJobImpl job = new HudsonJobImpl(instance);
+            if (secured) {
+                job.putProperty(JOB_COLOR, Color.secured);
+            }
             
             NodeList jobDetails = n.getChildNodes();
             for (int k = 0; k < jobDetails.getLength(); k++) {
@@ -384,7 +389,8 @@ public class HudsonConnector {
             }
 
             for (HudsonView v : instance.getViews()) {
-                if (null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
+                if (/* https://github.com/hudson/hudson/commit/105f2b09cf1376f9fe4dbf80c5bdb7a0d30ba1c1#commitcomment-447142 */secured ||
+                        null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
                     job.addView(v);
             }
 

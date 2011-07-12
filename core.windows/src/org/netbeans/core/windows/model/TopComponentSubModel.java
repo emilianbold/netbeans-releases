@@ -383,5 +383,9 @@ final class TopComponentSubModel {
     private void clearSlidingProperty(TopComponent tc) {
         tc.putClientProperty(IS_SLIDING, null);
     }
-    
+
+    void setOpenedTopComponents( List<TopComponent> opened ) {
+        this.openedTopComponents.clear();
+        this.openedTopComponents.addAll( opened );
+    }
 }

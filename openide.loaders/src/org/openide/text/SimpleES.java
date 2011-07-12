@@ -46,9 +46,11 @@ package org.openide.text;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import org.netbeans.modules.openide.loaders.Unmodify;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
@@ -57,6 +59,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiDataObject.Entry;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.windows.CloneableOpenSupport;
@@ -67,21 +70,11 @@ import org.openide.windows.CloneableOpenSupport;
  * @author Jaroslav Tulach
  */
 final class SimpleES extends DataEditorSupport 
-implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie {
+implements OpenCookie, EditCookie, EditorCookie.Observable, 
+PrintCookie, CloseCookie, SaveAsCapable, LineCookie {
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */
-    private final SaveCookie saveCookie = new SaveCookie() {
-        /** Implements <code>SaveCookie</code> interface. */
-        @Override
-        public void save() throws IOException {
-            SimpleES.this.saveDocument();
-        }
-
-        @Override
-        public String toString() {
-            return getDataObject().getPrimaryFile().getNameExt();
-        }
-    };
+    private final SaveCookie saveCookie = new SaveCookieImpl();
     
     private final CookieSet set;
     private final Callable<Pane> factory;
@@ -134,10 +127,10 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     }
 
     /** Overrides superclass method. Adds removing of save cookie. */
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
-
-        removeSaveCookie();
+        removeSaveCookie(true);
     }
 
     /** Helper method. Adds save cookie to the data object. */
@@ -152,7 +145,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     }
 
     /** Helper method. Removes save cookie from the data object. */
-    private void removeSaveCookie() {
+    private void removeSaveCookie(boolean setModified) {
         DataObject obj = getDataObject();
         
         // Remove save cookie from the data object.
@@ -160,7 +153,9 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
 
         if(cookie != null && cookie.equals(saveCookie)) {
             set.remove(saveCookie);
-            obj.setModified(false);
+            if (setModified) {
+                obj.setModified(false);
+            }
         }
     }
 
@@ -200,5 +195,26 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
             return getDataObject().getCookie(SimpleES.class);
         }
     } // End of nested Environment class.
+
+    private class SaveCookieImpl implements SaveCookie, Unmodify {
+        public SaveCookieImpl() {
+        }
+
+        /** Implements <code>SaveCookie</code> interface. */
+        @Override
+        public void save() throws IOException {
+            SimpleES.this.saveDocument();
+        }
+
+        @Override
+        public String toString() {
+            return getDataObject().getPrimaryFile().getNameExt();
+        }
+
+        @Override
+        public void unmodify() {
+            removeSaveCookie(false);
+        }
+    }
 
 }

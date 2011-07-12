@@ -270,12 +270,15 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
             <mkdir dir="${test.@{test.type}.out.folder}"/>
             <jar destfile="${test.@{test.type}.out.folder}/tests.jar" basedir="${build.test.@{test.type}.classes.dir}" filesetmanifest="merge"/>
             <!-- create properties -->
+            <condition property="netbeans.dest.dir.excludes" value="NOTHING" else="${netbeans.dest.dir}/extra">
+                <equals arg1="extra" arg2="${cluster.dir}"/> <!-- #200055 -->
+            </condition>
             <shorterpaths inref="test.@{test.type}.run.cp"
                           out="test.@{test.type}.run.cp.short"
                           extralibs="extra.test.libs.short"
                           extralibsdir="${extra.test.libs.dir}"
                           testproperties="${test.@{test.type}.out.folder}/test.properties">
-                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir" excluded="${netbeans.dest.dir}/extra"/> <!-- for pre-7.0 and NB.org projects -->
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir" excluded="${netbeans.dest.dir.excludes}"/> <!-- for pre-7.0 and NB.org projects -->
                 <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
                 <!-- XXX this will not be right on Macs: -->
                 <replacement dir="${nbjdk.home}/jre" name="java.home"/>

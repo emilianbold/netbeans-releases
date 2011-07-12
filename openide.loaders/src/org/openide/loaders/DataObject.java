@@ -58,6 +58,7 @@ import javax.swing.event.*;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
+import org.netbeans.modules.openide.loaders.Unmodify;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
@@ -470,6 +471,10 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                 syncModified.remove (this);
                 if (present == null) {
                     new DOSavable(this).remove();
+                } 
+                Unmodify un = getLookup().lookup(Unmodify.class);
+                if (un != null) {
+                    un.unmodify();
                 }
             }
             firePropertyChange(DataObject.PROP_MODIFIED,

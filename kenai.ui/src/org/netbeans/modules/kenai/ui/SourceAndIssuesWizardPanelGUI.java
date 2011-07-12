@@ -416,8 +416,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 4, 0);
         add(sourceCodeLabel, gridBagConstraints);
-
         sourceCodeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.sourceCodeLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         repoComboBox.setEnabled(false);
         repoComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -430,9 +430,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 4, 4, 0);
         add(repoComboBox, gridBagConstraints);
-
         repoComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoComboBox.AccessibleContext.accessibleName")); // NOI18N
         repoComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         issueTrackingLabel.setLabelFor(issuesComboBox);
         Mnemonics.setLocalizedText(issueTrackingLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -441,8 +441,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(4, 0, 4, 0);
         add(issueTrackingLabel, gridBagConstraints);
-
         issueTrackingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         issuesComboBox.setEnabled(false);
         issuesComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -457,9 +457,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(4, 4, 4, 0);
         add(issuesComboBox, gridBagConstraints);
-
         issuesComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesComboBox.AccessibleContext.accessibleName")); // NOI18N
         issuesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -487,8 +487,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(8, 0, 0, 0);
         add(repoNameLabel, gridBagConstraints);
-
         repoNameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         repoNameTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -498,9 +498,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(8, 4, 0, 0);
         add(repoNameTextField, gridBagConstraints);
-
         repoNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameTextField.AccessibleContext.accessibleName")); // NOI18N
         repoNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
         localRepoFolderLabel.setLabelFor(localFolderTextField);
         Mnemonics.setLocalizedText(localRepoFolderLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localRepoFolderLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -508,7 +508,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(localRepoFolderLabel, gridBagConstraints);
-
         localRepoFolderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localRepoFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(repoNamePreviewLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNamePreviewLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -520,9 +519,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 8, 16, 0);
         add(repoNamePreviewLabel, gridBagConstraints);
-
         repoNamePreviewLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNamePreviewLabel.AccessibleContext.accessibleName")); // NOI18N
         repoNamePreviewLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoNamePreviewLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         localFolderTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.text")); // NOI18N
         localFolderTextField.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent evt) {
@@ -537,9 +536,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(localFolderTextField, gridBagConstraints);
-
         localFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         localFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
@@ -556,7 +555,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(createChatRoom, gridBagConstraints);
-
         createChatRoom.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.createChatRoom.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(localFolderBrowseButton, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderBrowseButton.text"));
         localFolderBrowseButton.addActionListener(new ActionListener() {
@@ -572,8 +570,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(localFolderBrowseButton, gridBagConstraints);
-
         localFolderBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.localFolderBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -589,8 +587,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(8, 0, 0, 0);
         add(repoUrlLabel, gridBagConstraints);
-
         repoUrlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         repoUrlTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -601,7 +599,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(8, 4, 0, 0);
         add(repoUrlTextField, gridBagConstraints);
-
         repoUrlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlTextField.AccessibleContext.accessibleName")); // NOI18N
         repoUrlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.repoUrlTextField.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(noneRepoDescLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noneRepoDescLabel.text"));
@@ -614,8 +611,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
         add(noneRepoDescLabel, gridBagConstraints);
-
         noneRepoDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noneRepoDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         issueTrackingUrlLabel.setLabelFor(issuesUrlTextField);
         Mnemonics.setLocalizedText(issueTrackingUrlLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingUrlLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -624,8 +621,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(8, 0, 0, 0);
         add(issueTrackingUrlLabel, gridBagConstraints);
-
         issueTrackingUrlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issueTrackingUrlLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         issuesUrlTextField.setText(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesUrlTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -636,7 +633,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(8, 4, 0, 0);
         add(issuesUrlTextField, gridBagConstraints);
-
         issuesUrlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesUrlTextField.AccessibleContext.accessibleName")); // NOI18N
         issuesUrlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.issuesUrlTextField.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(noIssueTrackingDescLabel, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noIssueTrackingDescLabel.text"));
@@ -649,8 +645,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 8, 0, 0);
         add(noIssueTrackingDescLabel, gridBagConstraints);
-
         noIssueTrackingDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.noIssueTrackingDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 16;
@@ -699,7 +695,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.EAST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(addProjectButton, gridBagConstraints);
-
         addProjectButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.addProjectButton.AccessibleContext.accessibleName")); // NOI18N
         addProjectButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.addProjectButton.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(addFolderButton, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.addFolderButton.text"));
@@ -715,7 +710,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.EAST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(addFolderButton, gridBagConstraints);
-
         addFolderButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.addFolderButton.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.removeButton.text"));
         removeButton.addActionListener(new ActionListener() {
@@ -730,8 +724,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.SOUTHEAST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(removeButton, gridBagConstraints);
-
         removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         autoCommit.setSelected(true);
         Mnemonics.setLocalizedText(autoCommit, NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.autoCommit.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -742,8 +736,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         add(autoCommit, gridBagConstraints);
-
         autoCommit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.autoCommit.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

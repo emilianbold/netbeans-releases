@@ -7,7 +7,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -18,7 +18,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="httpCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="321" max="32767" attributes="0"/>
+              <EmptySpace pref="326" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="27" pref="27" max="27" attributes="0"/>
@@ -47,8 +47,8 @@
                               <Component id="psswdField" alignment="0" max="32767" attributes="1"/>
                               <Component id="userField" alignment="0" max="32767" attributes="1"/>
                           </Group>
-                          <Component id="urlField" alignment="0" max="32767" attributes="1"/>
-                          <Component id="nameField" alignment="0" max="32767" attributes="1"/>
+                          <Component id="urlField" alignment="0" pref="385" max="32767" attributes="1"/>
+                          <Component id="nameField" alignment="0" pref="385" max="32767" attributes="1"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">

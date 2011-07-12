@@ -358,7 +358,7 @@ public final class Git {
         File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
         File knownParent = null;
         for (File r : roots) {
-            if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+            if(!Utils.isScanForbidden(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
                 knownParent = r;
             }
         }
