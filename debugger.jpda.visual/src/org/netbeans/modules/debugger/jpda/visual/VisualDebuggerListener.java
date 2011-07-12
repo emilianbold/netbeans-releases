@@ -136,6 +136,8 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             serviceClass.invokeMethod(tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            cor.enableCollection(); // While AWTAccessLoop is running, it should not be collected.
         }
         logger.fine("The RemoteServiceClass is there: "+RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
     }
