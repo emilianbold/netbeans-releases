@@ -51,8 +51,11 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -60,6 +63,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib2.highlighting.CompoundAttributes;
 
 /**
  * Various view utilities.
@@ -69,14 +73,6 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 public final class ViewUtils {
     
-    /**
-     * To how big fractions the sizes (fonts, ascents etc.) are ceil-ed/floor-ed.
-     */
-    private static final double ROUND_FRACTION = 8d;
-
-    // -J-Dorg.netbeans.modules.editor.lib2.view.ViewUtils.level=FINE
-    private static final Logger LOG = Logger.getLogger(ViewUtils.class.getName());
-
     private ViewUtils() { // No instances
     }
 
@@ -90,13 +86,6 @@ public final class ViewUtils {
         return new Rectangle2D.Double(r.getX(), r.getY(), r.getWidth(), r.getHeight());
     }
     
-    public static Rectangle2D.Double shape2RelBounds(Shape s, double x, double y) {
-        Rectangle2D.Double r = shape2Bounds(s);
-        r.x = x - r.x;
-        r.y = y - r.y;
-        return r;
-    }
-
     public static Rectangle2D shapeAsRect(Shape s) {
         Rectangle2D r;
         if (s instanceof Rectangle2D) {
@@ -117,43 +106,63 @@ public final class ViewUtils {
         g.fillRect(
                 (int) r.getX(),
                 (int) r.getY(),
-                (int) Math.ceil(r.getWidth()),
-                (int) Math.ceil(r.getHeight())
+                (int) Math.ceil(r.getWidth()), // Fill will end at (including) width-1
+                (int) Math.ceil(r.getHeight()) // Fill will end at (including) height-1
         );
     }
 
-    public static void applyBackgroundAttributes(AttributeSet attributes,
-            Color defaultBackground, Graphics2D graphics)
-    {
-        if (attributes != null) {
-            Color c = (Color) attributes.getAttribute(StyleConstants.Background);
-            if (c != null) {
-                defaultBackground = c;
+    public static boolean applyBackgroundColor(Graphics2D g, AttributeSet attrs, JTextComponent c) {
+        boolean overrides = false;
+        Color background;
+        if (attrs != null) {
+            background = (Color) attrs.getAttribute(StyleConstants.Background);
+            if (background != null) {
+                if (!background.equals(c.getBackground())) {
+                    overrides = true;
+                }
+            } else {
+                background = c.getBackground();
             }
+        } else {
+            background = c.getBackground();
         }
-        graphics.setColor(defaultBackground);
+        if (background != null) {
+            g.setColor(background);
+        }
+        return overrides;
     }
 
-    public static void applyForegroundAttributes(AttributeSet attributes, Font defaultFont,
-            Color defaultForeground, Graphics2D graphics)
-    {
-        if (attributes != null) {
-            Color c = (Color) attributes.getAttribute(StyleConstants.Foreground);
-            if (c != null) {
-                defaultForeground = c;
+    public static void applyForegroundColor(Graphics2D g, AttributeSet attrs, JTextComponent c) {
+        Color foreground;
+        if (attrs != null) {
+            foreground = (Color) attrs.getAttribute(StyleConstants.Foreground);
+            if (foreground == null) {
+                foreground = c.getForeground();
             }
-            defaultFont = getFont(attributes, defaultFont);
+        } else {
+            foreground = c.getForeground();
         }
-        graphics.setColor(defaultForeground);
-        graphics.setFont(defaultFont);
+        if (foreground != null) {
+            g.setColor(foreground);
+        }
     }
 
-    public static Font getFont(AttributeSet attributes, Font defaultFont) {
-        if (attributes != null) {
-            String fontName = (String) attributes.getAttribute(StyleConstants.FontFamily);
-            Boolean bold = (Boolean) attributes.getAttribute(StyleConstants.Bold);
-            Boolean italic = (Boolean) attributes.getAttribute(StyleConstants.Italic);
-            Integer fontSizeInteger = (Integer) attributes.getAttribute(StyleConstants.FontSize);
+    public static void applyFont(Graphics2D g, AttributeSet attrs, JTextComponent c) {
+        Font font = c.getFont();
+        if (attrs != null) {
+            font = getFont(attrs, font);
+        }
+        if (font != null) {
+            g.setFont(font);
+        }
+    }
+
+    public static Font getFont(AttributeSet attrs, Font defaultFont) {
+        if (attrs != null) {
+            String fontName = (String) attrs.getAttribute(StyleConstants.FontFamily);
+            Boolean bold = (Boolean) attrs.getAttribute(StyleConstants.Bold);
+            Boolean italic = (Boolean) attrs.getAttribute(StyleConstants.Italic);
+            Integer fontSizeInteger = (Integer) attrs.getAttribute(StyleConstants.FontSize);
             if (fontName != null || bold != null || italic != null || fontSizeInteger != null) {
                 if (fontName == null) {
                     fontName = defaultFont.getFontName();
@@ -178,12 +187,18 @@ public final class ViewUtils {
         return defaultFont;
     }
 
-    public static int getOtherAxis(int axis) {
-        return (axis == View.X_AXIS) ? View.Y_AXIS : View.X_AXIS;
-    }
-    
     public static String toStringAxis(int axis) {
         return (axis == View.X_AXIS) ? "X" : "Y";
+    }
+    
+    public static String toStringDirection(int direction) {
+        switch (direction) {
+            case SwingConstants.WEST: return "WEST";
+            case SwingConstants.EAST: return "EAST";
+            case SwingConstants.NORTH: return "NORTH";
+            case SwingConstants.SOUTH: return "SOUTH";
+            default: return "<INVALID-DIRECTION>";
+        }
     }
 
     public static void repaint(JComponent component, Rectangle2D r) {
@@ -365,41 +380,52 @@ public final class ViewUtils {
     }
 
     /**
-     * Ceil (round up) given float number to maximum of 1/8 of fractional parts for
-     * bound-related operations to partly eliminate rounding errors.
+     * Useful for checking whether a view uses a compound attributes in which case
+     * it should use another way of displaying itself.
+     * @param attrs regular attributes or compound attributes (or null).
+     * @return true if attributes are compound or false otherwise.
      */
-    public static float ceilFractions(float f) {
-        return (float) (Math.ceil(f * ROUND_FRACTION) / ROUND_FRACTION);
+    public static boolean isCompoundAttributes(AttributeSet attrs) {
+        return (attrs instanceof CompoundAttributes);
     }
 
     /**
-     * Ceil (round up) given double number to maximum of 1/8 of fractional parts for
-     * bound-related operations to partly eliminate rounding errors.
-     * <br/>
-     * Return float since after ceiling to fractions the mantissa should be reasonably small
-     * (for numbers used in rendering).
+     * Get first attribute set of a compound attribute set or the given attribute set
+     * if it's not compound.
+     * @param attrs regular attributes or compound attributes (or null).
+     * @return first attribute set.
      */
-    public static float ceilFractions(double d) {
-        return (float) (Math.ceil(d * ROUND_FRACTION) / ROUND_FRACTION);
+    public static AttributeSet getFirstAttributes(AttributeSet attrs) {
+        return (attrs instanceof CompoundAttributes)
+                ? ((CompoundAttributes)attrs).highlightItems()[0].getAttributes()
+                : attrs;
     }
 
     /**
-     * Floor (round down) given float number to maximum of 1/8 of fractional parts for
-     * bound-related operations to partly eliminate rounding errors.
+     * Run directly (if this is event dispatch thread) or post the runnable to EDT.
+     *
+     * @param r 
      */
-    public static float floorFractions(float f) {
-        return (float) (Math.floor(f * ROUND_FRACTION) / ROUND_FRACTION);
+    public static void runInEQ(Runnable r) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
 
     /**
-     * Floor (round down) given double number to maximum of 1/8 of fractional parts for
-     * bound-related operations to partly eliminate rounding errors.
-     * <br/>
-     * Return float since after flooring to fractions the mantissa should be reasonably small
-     * (for numbers used in rendering).
+     * Log msg with FINE level or dump a stack if the logger has FINEST level.
+     *
+     * @param logger
+     * @param msg message to log
      */
-    public static float floorFractions(double d) {
-        return (float) (Math.floor(d * ROUND_FRACTION) / ROUND_FRACTION);
+    public static void log(Logger logger, String msg) {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.INFO, "Cause of " + msg, new Exception());
+        } else {
+            logger.fine(msg);
+        }
     }
 
 }

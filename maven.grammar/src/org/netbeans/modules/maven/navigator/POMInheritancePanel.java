@@ -56,6 +56,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.cookies.EditCookie;
 import org.openide.explorer.ExplorerManager;
@@ -115,12 +116,12 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
     public void run() {
         //#164852 somehow a folder dataobject slipped in, test mimetype to avoid that.
         // the root cause of the problem is unknown though
-        if (current != null && "text/x-maven-pom+xml".equals(current.getPrimaryFile().getMIMEType())) { //NOI18N
+        if (current != null && POMDataObject.MIME_TYPE.equals(current.getPrimaryFile().getMIMEType())) { //NOI18N
             File file = FileUtil.toFile(current.getPrimaryFile());
             // can be null for stuff in jars?
             if (file != null) {
                 try {
-                    List<Model> lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder());
+                    List<Model> lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getProjectEmbedder());
                     final Children ch = Children.create(new PomChildren(lin), false);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {

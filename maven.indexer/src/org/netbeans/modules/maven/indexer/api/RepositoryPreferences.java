@@ -87,7 +87,6 @@ public final class RepositoryPreferences {
     /*index settings */
     public static final String PROP_INDEX_FREQ = "indexUpdateFrequency"; //NOI18N
     public static final String PROP_LAST_INDEX_UPDATE = "lastIndexUpdate"; //NOI18N
-    public static final String PROP_SNAPSHOTS = "includeSnapshots"; //NOI18N
     public static final int FREQ_ONCE_WEEK = 0;
     public static final int FREQ_ONCE_DAY = 1;
     public static final int FREQ_STARTUP = 2;
@@ -248,14 +247,6 @@ public final class RepositoryPreferences {
 
     public void setLastIndexUpdate(String repoId,Date date) {
         getPreferences().putLong(PROP_LAST_INDEX_UPDATE + "." + repoId, date.getTime());
-    }
-
-    public boolean isIncludeSnapshots() {
-        return getPreferences().getBoolean(PROP_SNAPSHOTS, true);
-    }
-
-    public void setIncludeSnapshots(boolean includeSnapshots) {
-        getPreferences().putBoolean(PROP_SNAPSHOTS, includeSnapshots);
     }
 
 }

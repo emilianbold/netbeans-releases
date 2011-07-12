@@ -281,93 +281,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="dep-nb">
-  <ul>
-   <li>
-    <api group="java" name="ProjectAPI" type="import" category="devel">
-     <p>
-      For many purposes.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="ProjectUIAPI" type="import" category="devel">
-     <p>
-      For many purposes.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="ProjectUIAPI-provider" type="import" category="friend">
-     <p>
-      Implements callback from this module.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="GeneralQueriesAPI" type="import" category="devel">
-     <p>
-      For many purposes.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Filesystems" type="import" category="official">
-     <p>
-      For many purposes.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Nodes" type="import" category="official">
-     <p>
-      For explorer tabs.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Explorer" type="import" category="official">
-     <p>
-      For explorer tabs.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Windows" type="import" category="official">
-     <p>
-      For explorer tabs.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Actions" type="import" category="official">
-     <p>
-      For menu item UI.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Datasystems" type="import" category="official">
-     <p>
-      For internal purposes.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="SearchAPI" type="import" category="devel">
-     <p>
-      Special search functionality for project nodes.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="XMLCatalogAPI" type="import" category="devel">
-     <p>
-      Validation of <code>project.xml</code> files (cf. #49976).
-     </p>
-    </api>
-   </li>
-  </ul>
-  <defaultanswer generate="none"/>
+  <defaultanswer generate="here"/>
  </answer>
 
 
@@ -719,6 +633,13 @@ made subject to such option by the copyright holder.
       whenever such action is invoked. This message can then be consumed
       by enhanced UI logger that track what the user is going.
       </api>
+    </li>
+   <li>
+    <api group="cli" name="group" type="export" category="devel">
+     <p>
+         Can use <code>--open-group <i>NAME</i></code> to open a project group at startup, or <code>--close-group</code>.
+     </p>
+    </api>
     </li>
   </ul>
  </answer>

@@ -217,7 +217,7 @@ public class DocumentUtil {
         return query;
     }
                                     
-    static Term referencesTerm (String resourceName, final Set<ClassIndexImpl.UsageType> usageType) {
+    static Term referencesTerm (String resourceName, final Set<? extends ClassIndexImpl.UsageType> usageType) {
         assert resourceName  != null;
         if (usageType != null) {
             resourceName = encodeUsage (resourceName, usageType, WILDCARD).toString();
@@ -291,7 +291,7 @@ public class DocumentUtil {
         return encodeUsage (className, usageTypes, NO).toString();
     }
     
-    private static StringBuilder encodeUsage (final String className, final Set<ClassIndexImpl.UsageType> usageTypes, char fill) {
+    private static StringBuilder encodeUsage (final String className, final Set<? extends ClassIndexImpl.UsageType> usageTypes, char fill) {
         assert className != null;
         assert usageTypes != null;
         StringBuilder builder = new StringBuilder ();

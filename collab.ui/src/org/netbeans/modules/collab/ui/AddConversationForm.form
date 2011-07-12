@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
       <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
-        <CompundBorder>
+        <CompoundBorder>
           <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="5" left="5" right="5" top="5"/>
           </Border>
-        </CompundBorder>
+        </CompoundBorder>
       </Border>
     </Property>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -16,9 +16,11 @@
     </Property>
   </Properties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -31,13 +33,13 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
-            <CompundBorder>
+            <CompoundBorder>
               <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Find Public Conversation">
                   <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/collab/ui/Bundle.properties" key="TITLE_AddConversationForm_FindConference" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </TitledBorder>
               </Border>
-            </CompundBorder>
+            </CompoundBorder>
           </Border>
         </Property>
       </Properties>
@@ -120,7 +122,7 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.CompoundBorderInfo">
-            <CompundBorder>
+            <CompoundBorder>
               <Border PropertyName="outside" info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Subscribe To Conversations">
                   <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/collab/ui/Bundle.properties" key="LBL_AddConversationForm_ConferencesToAdd" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -129,7 +131,7 @@
               <Border PropertyName="inside" info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder/>
               </Border>
-            </CompundBorder>
+            </CompoundBorder>
           </Border>
         </Property>
       </Properties>

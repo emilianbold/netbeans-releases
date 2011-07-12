@@ -288,39 +288,39 @@ public class SpringCustomizerPanel extends javax.swing.JPanel implements HelpCtx
             }
         });
 
-        org.jdesktop.layout.GroupLayout configFilesPanelLayout = new org.jdesktop.layout.GroupLayout(configFilesPanel);
+        javax.swing.GroupLayout configFilesPanelLayout = new javax.swing.GroupLayout(configFilesPanel);
         configFilesPanel.setLayout(configFilesPanelLayout);
         configFilesPanelLayout.setHorizontalGroup(
-            configFilesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(configFilesPanelLayout.createSequentialGroup()
+            configFilesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configFilesPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(configFilesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(filesLabel)
-                    .add(filesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(configFilesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(removeFileButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(detectFilesButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(addFileButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(configFilesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(filesLabel)
+                    .addComponent(filesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(configFilesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(removeFileButton, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+                    .addComponent(detectFilesButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(addFileButton, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        configFilesPanelLayout.linkSize(new java.awt.Component[] {addFileButton, detectFilesButton, removeFileButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        configFilesPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addFileButton, detectFilesButton, removeFileButton});
 
         configFilesPanelLayout.setVerticalGroup(
-            configFilesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(configFilesPanelLayout.createSequentialGroup()
+            configFilesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configFilesPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(filesLabel)
-                .add(6, 6, 6)
-                .add(configFilesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(configFilesPanelLayout.createSequentialGroup()
-                        .add(addFileButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(detectFilesButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeFileButton))
-                    .add(filesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
+                .addComponent(filesLabel)
+                .addGap(6, 6, 6)
+                .addGroup(configFilesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(configFilesPanelLayout.createSequentialGroup()
+                        .addComponent(addFileButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(detectFilesButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeFileButton))
+                    .addComponent(filesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -375,69 +375,69 @@ public class SpringCustomizerPanel extends javax.swing.JPanel implements HelpCtx
             }
         });
 
-        org.jdesktop.layout.GroupLayout configFileGroupsPanelLayout = new org.jdesktop.layout.GroupLayout(configFileGroupsPanel);
+        javax.swing.GroupLayout configFileGroupsPanelLayout = new javax.swing.GroupLayout(configFileGroupsPanel);
         configFileGroupsPanel.setLayout(configFileGroupsPanelLayout);
         configFileGroupsPanelLayout.setHorizontalGroup(
-            configFileGroupsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(configFileGroupsPanelLayout.createSequentialGroup()
+            configFileGroupsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configFileGroupsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(configFileGroupsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(groupFilesLabel)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, configFileGroupsPanelLayout.createSequentialGroup()
-                        .add(configFileGroupsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, groupFilesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, groupsLabel)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(configFileGroupsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(removeGroupButton, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(editGroupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, addGroupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, addGroupFilesButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(removeGroupFileButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addGroup(configFileGroupsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(groupFilesLabel)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, configFileGroupsPanelLayout.createSequentialGroup()
+                        .addGroup(configFileGroupsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(groupFilesScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                            .addComponent(groupsLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(groupsScrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(configFileGroupsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(removeGroupButton, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(editGroupButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(addGroupButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(addGroupFilesButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(removeGroupFileButton))))
                 .addContainerGap())
         );
 
-        configFileGroupsPanelLayout.linkSize(new java.awt.Component[] {addGroupButton, addGroupFilesButton, editGroupButton, removeGroupButton, removeGroupFileButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        configFileGroupsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addGroupButton, addGroupFilesButton, editGroupButton, removeGroupButton, removeGroupFileButton});
 
         configFileGroupsPanelLayout.setVerticalGroup(
-            configFileGroupsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(configFileGroupsPanelLayout.createSequentialGroup()
+            configFileGroupsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configFileGroupsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(groupsLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(configFileGroupsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(configFileGroupsPanelLayout.createSequentialGroup()
-                        .add(addGroupButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(editGroupButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeGroupButton))
-                    .add(configFileGroupsPanelLayout.createSequentialGroup()
-                        .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(groupFilesLabel)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(configFileGroupsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(groupFilesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
-                    .add(configFileGroupsPanelLayout.createSequentialGroup()
-                        .add(addGroupFilesButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeGroupFileButton)))
+                .addComponent(groupsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(configFileGroupsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(configFileGroupsPanelLayout.createSequentialGroup()
+                        .addComponent(addGroupButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(editGroupButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeGroupButton))
+                    .addGroup(configFileGroupsPanelLayout.createSequentialGroup()
+                        .addComponent(groupsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(groupFilesLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(configFileGroupsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(groupFilesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                    .addGroup(configFileGroupsPanelLayout.createSequentialGroup()
+                        .addComponent(addGroupFilesButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeGroupFileButton)))
                 .addContainerGap())
         );
 
         springConfigPane.addTab(org.openide.util.NbBundle.getMessage(SpringCustomizerPanel.class, "LBL_ConfigFileGroupsTitle"), configFileGroupsPanel); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(springConfigPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(springConfigPane, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(springConfigPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(springConfigPane, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 

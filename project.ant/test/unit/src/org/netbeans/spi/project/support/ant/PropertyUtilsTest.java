@@ -55,7 +55,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import junit.framework.TestResult;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -75,15 +74,21 @@ public class PropertyUtilsTest extends NbTestCase {
         super(name);
     }
     
-    public @Override void run(final TestResult result) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-            public Void run() {
-                PropertyUtilsTest.super.run(result);
+    @Override protected void runTest() throws Throwable {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            @Override public Void run() throws Exception {
+                try {
+                    PropertyUtilsTest.super.runTest();
+                } catch (Exception x) {
+                    throw x;
+                } catch (Throwable x) {
+                    throw new Exception(x);
+                }
                 return null;
             }
         });
     }
-    
+
     public void testTokenizePath() throws Exception {
         assertEquals("basic tokenization works on ':'",
                 Arrays.asList(new String[] {"foo", "bar"}),

@@ -48,31 +48,35 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-/** Used to call "Undock Window" popup menu item, "Window|Undock Window" main menu item or
+/** Used to call "Float" popup menu item or
  * "org.netbeans.core.windows.actions.UndockWindowAction". 
  *
  * @see Action
  * @see org.netbeans.jellytools.TopComponentOperator
- * @author Vojtech.Sigler@sun.com
+ * @author Vojtech Sigler
+ * @author Jiri Skrivanek
  */
 public class UndockWindowAction extends Action {
 
     /** Window main menu item. */
     private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
-                                                                    "Menu/Window");
-    /** "Window|Undock Window"" main menu item. */
-    private static final String menuPath = windowItem
-                                            + "|"
-                                            + Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                            "CTL_UndockWindowAction");
-
+            "Menu/Window");
+    private static final String configureWindowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
+            "Menu/Window/ConfigureWindow");
+    /** "Window|Configure Window|Float" main menu item. */
+    private static final String floatMenuPath = windowItem
+            + "|"
+            + configureWindowItem
+            + "|"
+            + Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+            "CTL_UndockWindowAction");
     /** "Undock Window" popup menu item. */
-    private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                            "CTL_UndockWindowAction");
+    private static final String floatPopupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
+            "CTL_UndockWindowAction");
 
     /** Create new UndockWindowAction instance. */
     public UndockWindowAction() {
-        super(menuPath, popupPath, "org.netbeans.core.windows.actions.UndockWindowAction");
+        super(floatMenuPath, floatPopupPath, "org.netbeans.core.windows.actions.UndockWindowAction");
     }
 
     /** Performs popup action "Undock Window" on given component operator
@@ -80,9 +84,10 @@ public class UndockWindowAction extends Action {
      * as parameter.
      * @param compOperator operator which should be activated and undocked
      */
+    @Override
     public void performPopup(ComponentOperator compOperator) {
-        if(compOperator instanceof TopComponentOperator) {
-            performPopup((TopComponentOperator)compOperator);
+        if (compOperator instanceof TopComponentOperator) {
+            performPopup((TopComponentOperator) compOperator);
         } else {
             throw new UnsupportedOperationException(
                     "UndockWindowAction can only be called on TopComponentOperator.");
@@ -95,43 +100,46 @@ public class UndockWindowAction extends Action {
      * @param tco top component operator which should be activated and undocked
      */
     public void performPopup(TopComponentOperator tco) {
-        tco.pushMenuOnTab(popupPath);
+        tco.pushMenuOnTab(floatPopupPath);
     }
 
     /** Throws UnsupportedOperationException because UndockWindowAction doesn't have
      * popup representation on nodes.
      * @param nodes array of nodes
      */
+    @Override
     public void performPopup(Node[] nodes) {
         throw new UnsupportedOperationException(
-                    "UndockWindowAction doesn't have popup representation on nodes.");
+                "UndockWindowAction doesn't have popup representation on nodes.");
     }
 
     /** Throws UnsupportedOperationException because UndockWindowAction doesn't have
      * representation on nodes.
      * @param nodes array of nodes
      */
+    @Override
     public void performAPI(Node[] nodes) {
         throw new UnsupportedOperationException(
-                    "UndockWindowAction doesn't have popup representation on nodes.");
+                "UndockWindowAction doesn't have popup representation on nodes.");
     }
 
     /** Throws UnsupportedOperationException because UndockWindowAction doesn't have
      * representation on nodes.
      * @param nodes array of nodes
      */
+    @Override
     public void performMenu(Node[] nodes) {
         throw new UnsupportedOperationException(
-                    "UndockWindowAction doesn't have popup representation on nodes.");
+                "UndockWindowAction doesn't have popup representation on nodes.");
     }
 
     /** Throws UnsupportedOperationException because UndockWindowAction doesn't have
      * representation on nodes.
      * @param nodes array of nodes
      */
+    @Override
     public void performShortcut(Node[] nodes) {
         throw new UnsupportedOperationException(
-                    "UndockWindowAction doesn't have popup representation on nodes.");
+                "UndockWindowAction doesn't have popup representation on nodes.");
     }
-
 }

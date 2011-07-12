@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomas
  */
-public class StatusTest extends AbstractHgTest {
+public class StatusTest extends AbstractHgTestCase {
 
     public StatusTest(String arg0) {
         super(arg0);

@@ -73,6 +73,14 @@ public abstract class TabControlButton extends JButton {
     public static final int ID_DROP_DOWN_BUTTON = 8;
     public static final int ID_SCROLL_LEFT_BUTTON = 9;
     public static final int ID_SCROLL_RIGHT_BUTTON = 10;
+    /**
+     * @since 1.27
+     */
+    public static final int ID_RESTORE_GROUP_BUTTON = 11;
+    /**
+     * @since 1.27
+     */
+    public static final int ID_SLIDE_GROUP_BUTTON = 12;
     
     public static final int STATE_DEFAULT = 0;
     public static final int STATE_PRESSED = 1;
@@ -129,38 +137,45 @@ public abstract class TabControlButton extends JButton {
         return buttonId;
     }
 
+    @Override
     public Icon getIcon() {
         if( null != displayer )
             return displayer.getUI().getButtonIcon( getButtonId(), STATE_DEFAULT );
         return null;
     }
 
+    @Override
     public Icon getPressedIcon() {
         if( null != displayer )
             return displayer.getUI().getButtonIcon( getButtonId(), STATE_PRESSED );
         return null;
     }
 
+    @Override
     public Icon getRolloverIcon() {
         if( null != displayer )
             return displayer.getUI().getButtonIcon( getButtonId(), STATE_ROLLOVER );
         return null;
     }
 
+    @Override
     public Icon getRolloverSelectedIcon() {
         return getRolloverIcon();
     }
 
+    @Override
     public Icon getDisabledIcon() {
         if( null != displayer )
             return displayer.getUI().getButtonIcon( getButtonId(), STATE_DISABLED );
         return null;
     }
 
+    @Override
     public Icon getDisabledSelectedIcon() {
         return getDisabledIcon();
     }
 
+    @Override
     public void updateUI() {
         super.updateUI();
         // don't call configureButton() from super constructor
@@ -185,6 +200,7 @@ public abstract class TabControlButton extends JButton {
         }
     }
 
+    @Override
     protected void fireActionPerformed(ActionEvent event) {
         super.fireActionPerformed(event);
         performAction( event );

@@ -71,6 +71,12 @@ public class TopComponentProcessorTest extends  NbTestCase {
         return getName().contains("InEQ");
     }
 
+    public void testTCRegisteredInRoleFine() throws Exception {
+        FileObject set = FileUtil.getConfigFile("Windows2/Roles/UnitTestRole/Components/my-tc2.settings");
+        assertNotNull("Settings file found", set);
+        assertValidate(set.asText());
+    }
+
     public void testTCRegisteredFine() throws Exception {
         FileObject set = FileUtil.getConfigFile("Windows2/Components/my-tc.settings");
         assertNotNull("Settings file found", set);
@@ -158,6 +164,17 @@ public class TopComponentProcessorTest extends  NbTestCase {
         preferredID="my-tc", iconBase="org/openide/windows/Icon.png"
     )
     public static class TC1 extends TopComponent {
+    }
+    
+    @TopComponent.Registration(
+        mode="output",
+        openAtStartup=false,
+        role="UnitTestRole"
+    )
+    @TopComponent.Description(
+        preferredID="my-tc2", iconBase="org/openide/windows/Icon.png"
+    )
+    public static class TC2 extends TopComponent {
     }
     
     @TopComponent.Registration(

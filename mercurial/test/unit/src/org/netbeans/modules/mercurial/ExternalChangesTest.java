@@ -61,12 +61,13 @@ import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
+import org.openide.util.test.MockLookup;
 
 /**
  * Testing cache refresh after external changes - IZ #126156
  * @author ondra
  */
-public class ExternalChangesTest extends AbstractHgTest {
+public class ExternalChangesTest extends AbstractHgTestCase {
 
     FileObject workdirFO;
     File workdir;
@@ -80,8 +81,9 @@ public class ExternalChangesTest extends AbstractHgTest {
 
     @Override
     public void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
+        MockLookup.setLayersAndInstances();
 
         // create
         workdirFO = FileUtil.toFileObject(workdir = getWorkTreeDir());

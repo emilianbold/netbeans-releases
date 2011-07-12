@@ -70,12 +70,14 @@ final class ViewTabLayoutModel implements TabLayoutModel {
         this.renderTarget = renderTarget;
     }
 
+    @Override
     public int getH(int index) {
         checkIndex(index);
         Insets insets = renderTarget.getInsets();
         return renderTarget.getHeight() - (insets.bottom + insets.top);
     }
 
+    @Override
     public int getW(int index) {
         checkIndex(index);
         int x = computeX(index);
@@ -91,16 +93,19 @@ final class ViewTabLayoutModel implements TabLayoutModel {
         return nextX - x;
     }
 
+    @Override
     public int getX(int index) {
         checkIndex(index);
         return computeX(index);
     }
 
+    @Override
     public int getY(int index) {
         checkIndex(index);
         return renderTarget.getInsets().top;
     }
 
+    @Override
     public int indexOfPoint(int x, int y) {
         Insets insets = renderTarget.getInsets();
         int contentWidth = renderTarget.getWidth()
@@ -122,6 +127,7 @@ final class ViewTabLayoutModel implements TabLayoutModel {
         return -1;
     }
 
+    @Override
     public int dropIndexOfPoint(int x, int y) {
         Insets insets = renderTarget.getInsets();
         int contentWidth = renderTarget.getWidth()
@@ -141,6 +147,7 @@ final class ViewTabLayoutModel implements TabLayoutModel {
         return Math.min(result, model.size());
     }
 
+    @Override
     public void setPadding(Dimension d) {
         //do nothing
     }

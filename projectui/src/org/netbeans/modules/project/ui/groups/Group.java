@@ -45,13 +45,17 @@
 package org.netbeans.modules.project.ui.groups;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -66,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.filesystems.FileObject;
@@ -154,9 +159,6 @@ public abstract class Group {
             UILOG.log(rec);
         }
         Group old = getActiveGroup();
-        if (old != null) {
-            old.closed();
-        }
         if (nue != null) {
             NODE.put(KEY_ACTIVE, nue.id);
         } else {
@@ -166,8 +168,51 @@ public abstract class Group {
             }
             NODE.remove(KEY_ACTIVE);
         }
+        if (projectsLoaded) {
         // OK if g == old; still want to fix open projects.
+            switchingGroup.set(true);
+            try {
         open(nue);
+            } finally {
+                switchingGroup.set(false);
+            }
+        } else {
+            OpenProjectListSettings settings = OpenProjectListSettings.getInstance();
+            settings.setOpenProjectsURLsAsStrings(nue != null ? nue.projectPaths() : Collections.<String>emptyList());
+            settings.setMainProjectURL(nue != null ? nue.prefs().get(KEY_MAIN, null) : null);
+            // XXX with #168578 could adjust open files too
+        }
+    }
+    private static boolean projectsLoaded;
+    /**
+     * Until this is called, property changes are just from startup.
+     * @see org.netbeans.modules.project.ui.OpenProjectList.LoadOpenProjects#updateGlobalState
+     */
+    public static void projectsLoaded() {
+        projectsLoaded = true;
+    }
+    private static final ThreadLocal<Boolean> switchingGroup = new ThreadLocal<Boolean>() {
+        @Override protected Boolean initialValue() {
+            return false;
+        }
+    };
+    static {
+        LOG.fine("initializing open projects listener");
+        OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override public void propertyChange(PropertyChangeEvent evt) {
+                if (!projectsLoaded || switchingGroup.get()) {
+                    return;
+                }
+                String propertyName = evt.getPropertyName();
+                if (propertyName != null) {
+                    Group g = getActiveGroup();
+                    if (g != null) {
+                        LOG.log(Level.FINE, "received {0} on {1}", new Object[] {propertyName, g.id});
+                        g.openProjectsEvent(propertyName);
+                    }
+                }
+            }
+        });
     }
 
     protected static String sanitizeNameAndUniquifyForId(String name) {
@@ -266,6 +311,22 @@ public abstract class Group {
 
     protected abstract void findProjects(Set<Project> projects, ProgressHandle h, int start, int end);
 
+    /**
+     * Gets a list of paths (URLs) to projects in the group.
+     * @return a list based on {@link #getProjects()} in the default implementation
+     */
+    protected List<String> projectPaths() {
+        List<String> urls = new ArrayList<String>();
+        for (Project p : getProjects()) {
+            try {
+                urls.add(p.getProjectDirectory().getURL().toString());
+            } catch (FileStateInvalidException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+        return urls;
+    }
+
     protected static String progressMessage(Project p) {
         return NbBundle.getMessage(Group.class, "Group.progress_project", ProjectUtils.getInformation(p).getDisplayName());
     }
@@ -343,11 +404,10 @@ public abstract class Group {
         
     }
 
-    /**
-     * Called before a group is closed.
-     */
-    protected void closed() {
+    protected void openProjectsEvent(String propertyName) {
+        if (propertyName.equals(OpenProjects.PROPERTY_MAIN_PROJECT)) {
         setMainProject(OpenProjects.getDefault().getMainProject());
+    }
     }
 
     /**

@@ -163,12 +163,12 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         jEditorPane1.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
         jEditorPane2.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
         jEditorPane3.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
-        jEditorPane3.getDocument().addDocumentListener(jEditorPane3);
+        jEditorPane3.getDocument().addDocumentListener((MergePane)jEditorPane3);
     }
 
     @Override
     public void removeNotify() {
-        jEditorPane3.getDocument().removeDocumentListener(jEditorPane3);
+        jEditorPane3.getDocument().removeDocumentListener((MergePane)jEditorPane3);
         super.removeNotify();
     }
 
@@ -1475,22 +1475,22 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
 
     public void highlightRegion1(int line1, int line2, java.awt.Color color) {
         StyledDocument doc = (StyledDocument) jEditorPane1.getDocument();
-        jEditorPane1.addHighlight(doc, line1, line2, color);
+        ((MergePane)jEditorPane1).addHighlight(doc, line1, line2, color);
     }
     
     public void highlightRegion2(int line1, int line2, java.awt.Color color) {
         StyledDocument doc = (StyledDocument) jEditorPane2.getDocument();
-        jEditorPane2.addHighlight(doc, line1, line2, color);
+        ((MergePane)jEditorPane2).addHighlight(doc, line1, line2, color);
     }
     
     public void highlightRegion3(int line1, int line2, java.awt.Color color) {
         StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
-        jEditorPane3.addHighlight(doc, line1, line2, color);
+        ((MergePane)jEditorPane3).addHighlight(doc, line1, line2, color);
     }
     
     public void unhighlightRegion3(int line1, int line2) {
         StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
-        jEditorPane3.removeHighlight(doc, line1, line2);
+        ((MergePane)jEditorPane3).removeHighlight(doc, line1, line2);
     }
     
     private void addEmptyLines(StyledDocument doc, int line, int numLines) {
@@ -1561,9 +1561,9 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
     final javax.swing.JPanel filePanel1 = new javax.swing.JPanel();
     final javax.swing.JPanel filePanel2 = new javax.swing.JPanel();
     final javax.swing.JButton firstConflictButton = new javax.swing.JButton();
-    final MergePane jEditorPane1 = new MergePane();
-    final MergePane jEditorPane2 = new MergePane();
-    final MergePane jEditorPane3 = new MergePane();
+    final javax.swing.JEditorPane jEditorPane1 = new MergePane();
+    final javax.swing.JEditorPane jEditorPane2 = new MergePane();
+    final javax.swing.JEditorPane jEditorPane3 = new MergePane();
     final javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
     final javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
     final javax.swing.JButton lastConflictButton = new javax.swing.JButton();

@@ -169,7 +169,12 @@ final class NewLoaderIterator extends BasicWizardIterator {
                 if (v == null) {
                     return false;
                 }
-                return v.compareTo(new SpecificationVersion("1.24")) >= 0; // NOI18N
+                SpecificationVersion l = getModuleInfo().getDependencyVersion("org.openide.loaders"); // NOI18N
+                if (l == null) {
+                    return false;
+                }
+                return v.compareTo(new SpecificationVersion("1.24")) >= 0 // NOI18N
+                  && l.compareTo(new SpecificationVersion("7.26")) >= 0; // NOI18N
             } catch (IOException ex) {
                 return false;
             }

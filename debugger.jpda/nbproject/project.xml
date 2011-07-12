@@ -50,15 +50,6 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.debugger.jpda</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.jdesktop.layout</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.debugger</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -269,6 +260,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javafx.debugger</friend>
+                <friend>org.netbeans.modules.debugger.jpda.visual</friend>
                 <package>org.netbeans.modules.debugger.jpda</package>
                 <package>org.netbeans.modules.debugger.jpda.actions</package>
                 <package>org.netbeans.modules.debugger.jpda.breakpoints</package>

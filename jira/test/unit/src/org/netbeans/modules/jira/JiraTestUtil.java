@@ -86,7 +86,7 @@ public class JiraTestUtil {
 
     public static final String TEST_PROJECT = "TESTPROJECT";
     public static final String REPO_PASSWD  = "unittest";
-    public static final String REPO_URL     = "http://kenai-test.czech.sun.com:8090";
+    public static final String REPO_URL     = "http://bugtracking-test.cz.oracle.com:8090";
     public static final String REPO_USER    = "unittest";
 
     public static NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();

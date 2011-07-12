@@ -95,6 +95,14 @@ public class Event {
         return listenerMethod;
     }
 
+    public final String getEventParameterType() {
+        Class[] paramTypes = listenerMethod != null ? listenerMethod.getParameterTypes() : null;
+        if (paramTypes != null && paramTypes.length == 1) {
+            return paramTypes[0].getCanonicalName();
+        }
+        return null;
+    }
+
     public boolean hasEventHandlers() {
         return eventHandlers != null && eventHandlers.size() > 0;
     }

@@ -1447,6 +1447,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             NbJiraIssue issue = issuePanel.getIssue();
             if (issue != null) {
                 issue.closed();
+                issuePanel.closed();
             }
         }
 

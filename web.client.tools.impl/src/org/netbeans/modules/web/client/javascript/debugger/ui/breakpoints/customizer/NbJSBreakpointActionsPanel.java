@@ -103,7 +103,8 @@ public class NbJSBreakpointActionsPanel extends javax.swing.JPanel {
         setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Actions_Panel_BorderTitle"))); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
-        tfPrintText.setToolTipText("null");
+        java.util.ResourceBundle bundle1 = java.util.ResourceBundle.getBundle("{bundleNameSlashes}"); // NOI18N
+        tfPrintText.setToolTipText(bundle1.getString("TTT_TF_Actions_Panel_Print_Text")); // NOI18N
         tfPrintText.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tfPrintTextActionPerformed(evt);
@@ -116,7 +117,8 @@ public class NbJSBreakpointActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(tfPrintText, gridBagConstraints);
-        tfPrintText.getAccessibleContext().setAccessibleDescription("null");
+        java.util.ResourceBundle bundle2 = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
+        tfPrintText.getAccessibleContext().setAccessibleDescription(bundle2.getString("ACSD_TF_Actions_Panel_Print_Text")); // NOI18N
 
         jLabel1.setLabelFor(cbSuspend);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("L_Actions_Panel_Suspend")); // NOI18N
@@ -125,9 +127,9 @@ public class NbJSBreakpointActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription("null");
+        jLabel1.getAccessibleContext().setAccessibleDescription(bundle2.getString("ASCD_L_Actions_Panel_Suspend")); // NOI18N
 
-        cbSuspend.setToolTipText("null");
+        cbSuspend.setToolTipText(bundle1.getString("TTT_CB_Actions_Panel_Suspend")); // NOI18N
         cbSuspend.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbSuspendActionPerformed(evt);
@@ -137,7 +139,7 @@ public class NbJSBreakpointActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cbSuspend, gridBagConstraints);
-        cbSuspend.getAccessibleContext().setAccessibleDescription("null");
+        cbSuspend.getAccessibleContext().setAccessibleDescription(bundle2.getString("ASCD_CB_Actions_Panel_Suspend")); // NOI18N
 
         jLabel2.setLabelFor(tfPrintText);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("L_Actions_Panel_Print_Text")); // NOI18N
@@ -146,9 +148,9 @@ public class NbJSBreakpointActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleDescription("null");
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointActionsPanel.class, "ACSD_PrintText")); // NOI18N
 
-        getAccessibleContext().setAccessibleDescription("null");
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointActionsPanel.class, "ACSD_Actions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void tfPrintTextActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tfPrintTextActionPerformed

@@ -51,12 +51,13 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author ondra
  */
-public class FileStatusCacheTest extends AbstractHgTest {
+public class FileStatusCacheTest extends AbstractHgTestCase {
 
     private File workdir;
 
@@ -66,8 +67,9 @@ public class FileStatusCacheTest extends AbstractHgTest {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
+        MockLookup.setLayersAndInstances();
         // create
         workdir = getWorkTreeDir();
         Mercurial.STATUS_LOG.setLevel(Level.FINE);

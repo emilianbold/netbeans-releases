@@ -92,7 +92,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     
     /*package*/ static final boolean RETURN_JAVA_IO_FILE = Boolean.getBoolean("remote.java.io.file");
 
-    public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
+    protected RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
         RemoteLogger.assertTrue(execEnv.isRemote());        
         //RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N

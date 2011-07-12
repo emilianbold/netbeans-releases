@@ -523,7 +523,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         String s = ps.nextPair();
         String jvms = ""; //NOI18N
         while (s != null) {
-            if (s.startsWith("-") || s.contains("%classpath")) { //NOI18N
+            if (s.startsWith("-") || /* #199411 */s.startsWith("\"-") || s.contains("%classpath")) { //NOI18N
                 jvms = jvms + " " + s;
             } else if (s.equals("${packageClassName}") || s.matches("[\\w]+[\\.]{0,1}[\\w\\.]*")) { //NOI18N
                 break;

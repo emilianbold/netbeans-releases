@@ -223,27 +223,27 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout installedPanelLayout = new org.jdesktop.layout.GroupLayout(installedPanel);
+        javax.swing.GroupLayout installedPanelLayout = new javax.swing.GroupLayout(installedPanel);
         installedPanel.setLayout(installedPanelLayout);
         installedPanelLayout.setHorizontalGroup(
-            installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(installedPanelLayout.createSequentialGroup()
+            installedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(reloadInstalledButton)
-                    .add(uninstallButton)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE))
+                .addGroup(installedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(reloadInstalledButton)
+                    .addComponent(uninstallButton)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE))
                 .addContainerGap())
         );
         installedPanelLayout.setVerticalGroup(
-            installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
+            installedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(reloadInstalledButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(uninstallButton)
+                .addComponent(reloadInstalledButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(uninstallButton)
                 .addContainerGap())
         );
 
@@ -296,38 +296,38 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout newPluginPanelLayout = new org.jdesktop.layout.GroupLayout(newPluginPanel);
+        javax.swing.GroupLayout newPluginPanelLayout = new javax.swing.GroupLayout(newPluginPanel);
         newPluginPanel.setLayout(newPluginPanelLayout);
         newPluginPanelLayout.setHorizontalGroup(
-            newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(newPluginPanelLayout.createSequentialGroup()
+            newPluginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(newPluginPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
-                    .add(newPluginPanelLayout.createSequentialGroup()
-                        .add(installButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(pluginLocationLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(pluginZipPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(pluginBrowseButton))
-                    .add(reloadAvailableButton))
+                .addGroup(newPluginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                    .addGroup(newPluginPanelLayout.createSequentialGroup()
+                        .addComponent(installButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pluginLocationLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pluginZipPath, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pluginBrowseButton))
+                    .addComponent(reloadAvailableButton))
                 .addContainerGap())
         );
         newPluginPanelLayout.setVerticalGroup(
-            newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, newPluginPanelLayout.createSequentialGroup()
+            newPluginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, newPluginPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(reloadAvailableButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(installButton)
-                    .add(pluginBrowseButton)
-                    .add(pluginLocationLabel)
-                    .add(pluginZipPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addComponent(reloadAvailableButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(newPluginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(installButton)
+                    .addComponent(pluginBrowseButton)
+                    .addComponent(pluginLocationLabel)
+                    .addComponent(pluginZipPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -340,20 +340,20 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
 
         pluginsPanel.addTab(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.newPlugins"), newPluginPanel); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(pluginsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
+                .addComponent(pluginsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(pluginsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
+                .addComponent(pluginsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

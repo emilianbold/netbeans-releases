@@ -156,6 +156,7 @@ public class NavigationTreeViewTest extends NbTestCase {
         LOG.info("setRootContext done");
         em.setSelectedNodes(new Node[] { first });
         LOG.log(Level.INFO, "setSelectedNodes to {0}", first);
+        LOG.log(Level.INFO, "Verify setSelectedNodes: {0}", Arrays.asList(em.getSelectedNodes()));
 
         EventQueue.invokeAndWait(new Runnable() {
             @Override

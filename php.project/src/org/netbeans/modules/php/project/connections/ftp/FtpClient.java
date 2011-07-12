@@ -297,7 +297,7 @@ public class FtpClient implements RemoteClient {
                     LOGGER.log(Level.FINE, "NULL returned for listing of {0}", pwd);
                     continue;
                 }
-                result.add(new RemoteFileImpl(f));
+                result.add(new RemoteFileImpl(f, pwd));
             }
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while listing files for " + pwd, ex);
@@ -483,15 +483,23 @@ public class FtpClient implements RemoteClient {
 
     private final class RemoteFileImpl implements RemoteFile {
         private final FTPFile ftpFile;
+        private final String parentDirectory;
 
-        public RemoteFileImpl(FTPFile ftpFile) {
+        public RemoteFileImpl(FTPFile ftpFile, String parentDirectory) {
             assert ftpFile != null;
+            assert parentDirectory != null;
             this.ftpFile = ftpFile;
+            this.parentDirectory = parentDirectory;
         }
 
         @Override
         public String getName() {
             return ftpFile.getName();
+        }
+
+        @Override
+        public String getParentDirectory() {
+            return parentDirectory;
         }
 
         @Override

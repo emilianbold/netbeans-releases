@@ -47,7 +47,6 @@ package org.netbeans.modules.subversion.ui.history;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
-import org.jdesktop.layout.GroupLayout;
 import org.openide.awt.Mnemonics;
 import org.tigris.subversion.svnclientadapter.*;
 import org.netbeans.modules.subversion.ui.browser.Browser;
@@ -60,9 +59,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  * Packages search criteria in Search History panel.
@@ -230,52 +229,52 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
-                        .add(12)
-                        .add(layout.createParallelGroup(LEADING)
-                                .add(jLabel1)
-                                .add(jLabel2)
-                                .add(jLabel3)
-                                .add(jLabel4))
+                        .addGap(12)
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(jLabel1)
+                                .addComponent(jLabel2)
+                                .addComponent(jLabel3)
+                                .addComponent(jLabel4))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(LEADING)
-                                .add(tfCommitMessage)
-                                .add(tfUsername)
-                                .add(layout.createSequentialGroup()
-                                        .add(tfFrom)
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(tfCommitMessage)
+                                .addComponent(tfUsername)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(tfFrom)
                                         .addPreferredGap(RELATED)
-                                        .add(jLabel5))
-                                .add(layout.createSequentialGroup()
-                                        .add(tfTo)
+                                        .addComponent(jLabel5))
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(tfTo)
                                         .addPreferredGap(RELATED)
-                                        .add(jLabel6)))
+                                        .addComponent(jLabel6)))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(LEADING)
-                                .add(bBrowseFrom)
-                                .add(bBrowseTo))
-                        .add(11)
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(bBrowseFrom)
+                                .addComponent(bBrowseTo))
+                        .addGap(11)
         );
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
-                        .add(8)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(jLabel1)
-                                .add(tfCommitMessage))
+                        .addGap(8)
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(jLabel1)
+                                .addComponent(tfCommitMessage))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(jLabel2)
-                                .add(tfUsername))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(jLabel2)
+                                .addComponent(tfUsername))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(jLabel3)
-                                .add(tfFrom)
-                                .add(jLabel5)
-                                .add(bBrowseFrom))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(jLabel3)
+                                .addComponent(tfFrom)
+                                .addComponent(jLabel5)
+                                .addComponent(bBrowseFrom))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(jLabel4)
-                                .add(tfTo)
-                                .add(jLabel6)
-                                .add(bBrowseTo))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(jLabel4)
+                                .addComponent(tfTo)
+                                .addComponent(jLabel6)
+                                .addComponent(bBrowseTo))
                         //no gap at the bottom
         );
 

@@ -19,7 +19,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -28,7 +28,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jSeparator2" alignment="0" pref="525" max="32767" attributes="0"/>
+          <Component id="jSeparator2" alignment="0" pref="589" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="projectRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -36,8 +36,8 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="wadlTextField" alignment="0" pref="399" max="32767" attributes="2"/>
-                          <Component id="jScrollPane1" alignment="0" pref="399" max="32767" attributes="2"/>
+                          <Component id="wadlTextField" alignment="0" pref="434" max="32767" attributes="2"/>
+                          <Component id="jScrollPane1" alignment="0" pref="434" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                   </Group>
@@ -49,9 +49,9 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectTextField" alignment="1" pref="370" max="32767" attributes="2"/>
-                          <Component id="locationCB" alignment="1" pref="370" max="32767" attributes="2"/>
-                          <Component id="folderTextField" alignment="1" pref="370" max="32767" attributes="2"/>
+                          <Component id="projectTextField" alignment="1" pref="374" max="32767" attributes="2"/>
+                          <Component id="locationCB" alignment="1" pref="374" max="32767" attributes="2"/>
+                          <Component id="folderTextField" alignment="1" pref="374" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                   </Group>
@@ -64,7 +64,7 @@
                   <Component id="wadlBrowseButton" linkSize="9" min="-2" max="-2" attributes="1"/>
               </Group>
           </Group>
-          <Component id="jSeparator1" alignment="0" pref="525" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="0" pref="589" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="overwriteCheckBox" min="-2" max="-2" attributes="0"/>
