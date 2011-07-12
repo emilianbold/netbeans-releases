@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -55,4 +56,5 @@ public interface MakeProjectCustomizer {
     public String getMakefileWriter();
     public String getOutputValue(MakeConfiguration makeConfiguration);
     public Action[] getActions(Project project);
+    public Object[] getLookup(FileObject getProjectDirectory, Object[] base);
 }

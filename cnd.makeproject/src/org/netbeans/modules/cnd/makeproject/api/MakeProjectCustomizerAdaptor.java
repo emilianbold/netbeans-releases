@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -68,6 +69,11 @@ public abstract class MakeProjectCustomizerAdaptor implements MakeProjectCustomi
     @Override
     public Action[] getActions(Project project) {
         return null;
+    }
+    
+    @Override
+    public Object[] getLookup(FileObject getProjectDirectory, Object[] base) {
+        return base;
     }
     
 }

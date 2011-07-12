@@ -297,7 +297,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
         Info info = new Info();
-        Lookup lkp = Lookups.fixed(new Object[]{
+        Object[] lookups = new Object[] {
                     info,
                     aux,
                     helper.createCacheDirectoryProvider(),
@@ -322,7 +322,13 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources)
-                });
+                };
+        
+        MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
+        if (makeProjectCustomizer != null) {
+            lookups = makeProjectCustomizer.getLookup(getProjectDirectory(), lookups);
+        }
+        Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
     }
 
@@ -654,9 +660,28 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     public void setSourceEncoding(String sourceEncoding) {
         this.sourceEncoding = sourceEncoding;
     }
+    
+    private MakeProjectCustomizer getProjectCustomizer(String customizerId) {
+        if (customizerId == null) {
+            return null;
+        }
+        MakeProjectCustomizer makeProjectCustomizer = null;
+        Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
+        for (MakeProjectCustomizer instance : mwc) {
+            if (customizerId.equals(instance.getCustomizerId())) {
+                makeProjectCustomizer = instance;
+                break;
+            }
+        }
+        return makeProjectCustomizer;
+    }
+    
+    private String getProjectCustomizerId() {
+        return getCustomizerIdFromProjectXML();
+    }
 
     /**
-     * @return active configuration type (doesn't force reading configuration metadata) (V >= V78). Returns -1 if not found.
+     * @return 
      */
     private String getCustomizerIdFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
@@ -1132,21 +1157,21 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             return icon;
         }
         
-        private String getProjectCustomizerId() {
-            return getCustomizerIdFromProjectXML();
-        }
-        
-        private MakeProjectCustomizer getProjectCustomizer(String customizerId) {
-            MakeProjectCustomizer makeProjectCustomizer = null;
-            Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
-            for (MakeProjectCustomizer instance : mwc) {
-                if (customizerId.equals(instance.getCustomizerId())) {
-                    makeProjectCustomizer = instance;
-                    break;
-                }
-            }
-            return makeProjectCustomizer;
-        }
+//        private String getProjectCustomizerId() {
+//            return getCustomizerIdFromProjectXML();
+//        }
+//        
+//        private MakeProjectCustomizer getProjectCustomizer(String customizerId) {
+//            MakeProjectCustomizer makeProjectCustomizer = null;
+//            Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
+//            for (MakeProjectCustomizer instance : mwc) {
+//                if (customizerId.equals(instance.getCustomizerId())) {
+//                    makeProjectCustomizer = instance;
+//                    break;
+//                }
+//            }
+//            return makeProjectCustomizer;
+//        }
 
         @Override
         public Project getProject() {
