@@ -59,7 +59,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -71,7 +70,6 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.Roots;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
@@ -173,11 +171,12 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.java.source.WhiteListQueryImplementation;
+import org.netbeans.spi.java.source.WhiteListQueryImplementation.WhiteListImplementation;
+import org.netbeans.spi.java.source.support.WhiteListQueryMergerSupport;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -583,6 +582,8 @@ public final class WebProject implements Project {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
+            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
+            new ServerWhiteListDelegation(this),
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             libMod,
@@ -608,6 +609,35 @@ public final class WebProject implements Project {
         return LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
     
+    private static class ServerWhiteListDelegation implements WhiteListQueryImplementation {
+
+        private WebProject project;
+
+        public ServerWhiteListDelegation(WebProject project) {
+            this.project = project;
+        }
+        
+        @Override
+        public WhiteListImplementation getWhiteList(FileObject file) {
+            String servInstID = project.evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+            if (servInstID != null) {
+                J2eePlatform platform;
+                try {
+                    platform = Deployment.getDefault().getServerInstance(servInstID).getJ2eePlatform();
+                    WhiteListQueryImplementation sw = platform.getLookup().lookup(WhiteListQueryImplementation.class);
+                    if (sw != null) {
+                        return sw.getWhiteList(file);
+                    }
+                } catch (InstanceRemovedException ex) {
+                    //Exceptions.printStackTrace(ex);
+                }
+            }
+            return null;
+        }
+        
+    }
+
+
     public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
     }
