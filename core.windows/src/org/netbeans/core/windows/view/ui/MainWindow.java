@@ -302,6 +302,8 @@ public final class MainWindow {
         if (innerIconsPanel != null) {
             panel.add (innerIconsPanel, BorderLayout.EAST);
         }
+        if( showCustomBackground )
+            panel.setOpaque( false );
     }
     
     private static Lookup.Result<StatusLineElementProvider> result;
@@ -320,6 +322,8 @@ public final class MainWindow {
         }
         Iterator<? extends StatusLineElementProvider> it = c.iterator ();
         JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
+        if( showCustomBackground )
+            icons.setOpaque( false );
         icons.setBorder (BorderFactory.createEmptyBorder (1, 0, 0, 2));
         boolean some = false;
         while (it.hasNext ()) {

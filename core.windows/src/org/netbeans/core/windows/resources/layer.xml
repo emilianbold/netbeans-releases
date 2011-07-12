@@ -93,6 +93,8 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-windows-actions-MinimizeWindowAction.instance"/>
             <file name="org-netbeans-core-windows-actions-UndockModeAction.instance"/>
             <file name="org-netbeans-core-windows-actions-DockModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-NewTabGroupAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-CollapseTabGroupAction.instance"/>
         </folder>
     </folder>
     
@@ -216,9 +218,16 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="900"/>
                 </file>
                 
-                <!-- TODO new tab group -->
+                <file name="NewDocumentTabGroupAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NewTabGroupAction.instance"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+                
+                <file name="CollapseDocumentTabGroupAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CollapseTabGroupAction.instance"/>
+                    <attr name="position" intvalue="1100"/>
+                </file>
 
-                <!-- TODO collapse group -->
             </folder>
             <file name="Separator4.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

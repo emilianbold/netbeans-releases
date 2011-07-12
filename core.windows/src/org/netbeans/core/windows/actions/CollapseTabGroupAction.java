@@ -55,22 +55,21 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.windows.WindowManager;
 
 
 /**
- * Minimize all TopComponent in a given non-editor Mode.
+ * Move all windows from the given editor mode to other nearest editor mode.
  * 
  * @author S. Aubrecht
- * @since 2.30
+ * @since 2.36
  */
-public final class MinimizeModeAction extends AbstractAction
+public final class CollapseTabGroupAction extends AbstractAction
 implements PropertyChangeListener {
 
-    public MinimizeModeAction() {
-        putValue(NAME, NbBundle.getMessage(CloseModeAction.class, "CTL_MinimizeModeAction"));
+    public CollapseTabGroupAction() {
+        putValue(NAME, NbBundle.getMessage(CloseModeAction.class, "CTL_CollapseTabGroupAction"));
         TopComponent.getRegistry().addPropertyChangeListener(
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         WindowManager.getDefault().addPropertyChangeListener(
@@ -88,16 +87,21 @@ implements PropertyChangeListener {
     }
     
     private ModeImpl mode;
-    // dno't update enable state, is tied to one component only
-    public MinimizeModeAction(ModeImpl mode) {
-        //Include the name in the label for the popup menu - it may be clicked over
-        //a component that is not selected
+    
+    public CollapseTabGroupAction(ModeImpl mode) {
         putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class,
-        "CTL_MinimizeModeAction")); //NOI18N
+        "CTL_CollapseTabGroupAction")); //NOI18N
         this.mode = mode;
-        setEnabled(Switches.isModeSlidingEnabled() 
-                && mode.getKind() == Constants.MODE_KIND_VIEW 
-                && mode.getState() == Constants.MODE_STATE_JOINED );
+        if (SwingUtilities.isEventDispatchThread()) {
+            updateEnabled();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateEnabled();
+                }
+            });
+        }
     }
     
     
@@ -111,7 +115,7 @@ implements PropertyChangeListener {
                 contextMode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
         }
         if(contextMode != null) {
-            WindowManagerImpl.getInstance().userMinimizedMode( contextMode );
+            WindowManagerImpl.getInstance().collapseTabGroup( contextMode );
         }
     }
 
@@ -135,15 +139,22 @@ implements PropertyChangeListener {
             setEnabled(false);
             return;
         }
-        setEnabled(Switches.isModeSlidingEnabled() 
-                && contextMode.getKind() == Constants.MODE_KIND_VIEW 
-                && contextMode.getState() == Constants.MODE_STATE_JOINED );
+        boolean enable = contextMode.getState() == Constants.MODE_STATE_JOINED;
+        boolean hasOtherEditorMode = false;
+        for( ModeImpl m : WindowManagerImpl.getInstance().getModes() ) {
+            if( m.getKind() == Constants.MODE_KIND_EDITOR && m.getState() == Constants.MODE_STATE_JOINED && m != contextMode ) {
+                hasOtherEditorMode = true;
+                break;
+            }
+        }
+        enable &= hasOtherEditorMode;
+        setEnabled( enable );
     }
     
     @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionUtils.putSharedAccelerator("MinimizeMode", newValue); //NOI18N
+            ActionUtils.putSharedAccelerator("CollapseTabGroup", newValue); //NOI18N
         } else {
             super.putValue(key, newValue);
         }
@@ -152,7 +163,7 @@ implements PropertyChangeListener {
     @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            return ActionUtils.getSharedAccelerator("MinimizeMode"); //NOI18N
+            return ActionUtils.getSharedAccelerator("CollapseTabGroup"); //NOI18N
         } else {
             return super.getValue(key);
         }

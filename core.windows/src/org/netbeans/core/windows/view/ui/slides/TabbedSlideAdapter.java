@@ -63,7 +63,6 @@ import javax.swing.SingleSelectionModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.view.ui.Tabbed;
@@ -409,17 +408,10 @@ public final class TabbedSlideAdapter implements Tabbed {
     @Override
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
         boolean isMDI = WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
-        TabData td = slideBar.getModel().getTab(tabIndex);
-        boolean slidingEnabled = true;
-        if( td.getComponent() instanceof TopComponent ) {
-            slidingEnabled = Switches.isSlidingEnabled((TopComponent)td.getComponent());
-        }
-        Action[] result = new Action[defaultActions.length + (isMDI && Switches.isTopComponentSlidingEnabled() && slidingEnabled ? 2 : 0)];
+        Action[] result = new Action[defaultActions.length + (isMDI ? 1 : 0)];
         System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
-        if (isMDI && Switches.isTopComponentSlidingEnabled() && slidingEnabled) {
-            result[defaultActions.length] = 
-                new ActionUtils.AutoHideWindowAction(slideBar, tabIndex, true);
-            result[defaultActions.length+1] =
+        if (isMDI) {
+            result[defaultActions.length] =
                 new ActionUtils.ToggleWindowTransparencyAction(slideBar,
                     tabIndex,
                     slideBar.isSlidedTabTransparent()

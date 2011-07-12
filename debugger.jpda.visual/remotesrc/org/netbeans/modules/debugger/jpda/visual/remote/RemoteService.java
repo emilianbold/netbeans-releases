@@ -69,6 +69,8 @@ public class RemoteService {
         if (!awtAccessLoop) {
             awtAccessLoop = true;
             Thread loop = new Thread(new AWTAccessLoop(), AWTAccessThreadName);
+            loop.setDaemon(true);
+            loop.setPriority(Thread.MIN_PRIORITY);
             loop.start();
         }
     }
