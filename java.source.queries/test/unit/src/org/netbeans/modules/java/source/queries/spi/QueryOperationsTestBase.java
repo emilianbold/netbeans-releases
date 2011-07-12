@@ -436,23 +436,15 @@ public abstract class QueryOperationsTestBase extends TestCase {
     }
 
     public void testGetMethodSpan() throws Exception {
-        doTestGetMethodSpan(TEST_5,"org.me.test.Test5","m1", false, false,
+        doTestGetMethodSpan(TEST_5,"org.me.test.Test5","m1", false,
                 "void",
                 Collections.<String>emptyList(),
                 new int[] {67,79});
-        doTestGetMethodSpan(TEST_5,"org.me.test.Test5", "m1", false, false,
+        doTestGetMethodSpan(TEST_5,"org.me.test.Test5", "m1", false,
                 "void",
                 Collections.singletonList("int"),
                 new int[] {84,119});
-        doTestGetMethodSpan(TEST_5,"org.me.test.Test5", "m2", false, false,
-                "int",
-                Arrays.asList("int","int"),
-                new int[] {152,215});
-        doTestGetMethodSpan(TEST_5,"org.me.test.Test5","m2",false, false,
-                "void",
-                Collections.<String>emptyList(),
-                new int[] {220,244});
-        doTestGetMethodSpan(TEST_5,"org.me.test.Test5", "m2",false, true,
+        doTestGetMethodSpan(TEST_5,"org.me.test.Test5", "m2",false,
                 "int",
                 Arrays.asList("int","int"),
                 new int[] {124,215});
@@ -463,7 +455,6 @@ public abstract class QueryOperationsTestBase extends TestCase {
             final String fqn,
             final String methodName,
             final boolean useRT,
-            final boolean includeComments,
             final String retType,
             final List<? extends String> paramTypes,
             final int[] expected) throws Exception {
@@ -481,7 +472,6 @@ public abstract class QueryOperationsTestBase extends TestCase {
                         fqn,
                         methodName,
                         useRT,
-                        includeComments,
                         retType,
                         paramTypes == null ? null : paramTypes.toArray(new String[paramTypes.size()]));
                 }
