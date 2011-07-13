@@ -94,7 +94,7 @@ made subject to such option by the copyright holder.
     
     <target name="download-project" depends="init-download-project" if="do-download-project">
         <mkdir dir="${temp_dir}"/>
-        <get src="http://hg.netbeans.org/binaries/F06FC0FE0FADAB8275F29F47ED449ACF3C5F0CF0-tomcat6.zip"
+        <get src="http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip"
             dest="${temp_dir}/tomcat6.zip"/>
     </target>
     
