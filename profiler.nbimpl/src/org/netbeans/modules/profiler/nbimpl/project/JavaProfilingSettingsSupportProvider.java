@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.project;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.spi.project.ProfilingSettingsSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -51,12 +52,17 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  */
 @ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProfilingSettingsSupportProvider.class, 
                         projectTypes={
-                            @ProjectType(id="org-netbeans-modules-java-j2seproject"),
-                            @ProjectType(id="org-netbeans-modules-ant-freeform", position=1201),
-                            @ProjectType(id="org-netbeans-modules-apisupport-project"),
-                            @ProjectType(id="org-netbeans-modules-maven")
+                            @ProjectType(id="org-netbeans-modules-java-j2seproject"), // NOI18N
+                            @ProjectType(id="org-netbeans-modules-ant-freeform", position=1201), // NOI18N
+                            @ProjectType(id="org-netbeans-modules-apisupport-project"), // NOI18N
+                            @ProjectType(id="org-netbeans-modules-apisupport-project-suite"), // NOI18N
+                            @ProjectType(id="org-netbeans-modules-maven") // NOI18N
                         }
 )
 public class JavaProfilingSettingsSupportProvider extends ProfilingSettingsSupportProvider.Default {
+    
+    public JavaProfilingSettingsSupportProvider(Project project) {
+        super(project);
+    }
     
 }

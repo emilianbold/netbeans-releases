@@ -61,8 +61,6 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 )
 public class J2EEProfilingSettingsSupportProvider extends ProfilingSettingsSupportProvider.Default {
     
-    private final Project project;
-    
     private SettingsCustomizer configurator;
     private LoadGenPanel loadGenConfig = null;
     
@@ -83,7 +81,7 @@ public class J2EEProfilingSettingsSupportProvider extends ProfilingSettingsSuppo
 //                                    propertyChange(pcl, loadGenConfig));
                         }
 
-                        loadGenConfig.attach(project);
+                        loadGenConfig.attach((Project)getProject());
 
                         return loadGenConfig;
                     }
@@ -107,7 +105,7 @@ public class J2EEProfilingSettingsSupportProvider extends ProfilingSettingsSuppo
     }
     
     public J2EEProfilingSettingsSupportProvider(Project project) {
-        this.project = project;
+        super(project);
     }
     
 }

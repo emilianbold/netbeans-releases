@@ -196,10 +196,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                                                                                  "SelectProfilingTask_ChooserComboAccessDescr"); // NOI18N
     private static final String WORKDIR_INVALID_MSG = NbBundle.getMessage(SelectProfilingTask.class,
                                                                                  "SelectProfilingTask_WorkDirInvalidMsg"); // NOI18N
-    private static final String PROJECT_CLASSES_FILTER = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                                 "SelectProfilingTask_ProfileProjectClassesString"); // NOI18N
-    private static final String PROJECT_SUBPROJECTS_CLASSES_FILTER = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                                 "SelectProfilingTask_ProfileProjectSubprojectClassesString"); // NOI18N
                                                                                                                                  // -----
 
     // --- Constants declaration -------------------------------------------------
@@ -213,8 +209,12 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     // --- Instance variables declaration ----------------------------------------
     private static SelectProfilingTask defaultInstance;
     
-    private static SimpleFilter PROJECT_FILTER = new SimpleFilter(PROJECT_CLASSES_FILTER, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, ""); // NOI18N
-    private static SimpleFilter PROJECT_SUBPROJECTS_FILTER = new SimpleFilter(PROJECT_SUBPROJECTS_CLASSES_FILTER, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, ""); // NOI18N
+    private static SimpleFilter PROJECT_FILTER =
+            new SimpleFilter(ProfilingSettingsSupport.get(null).getProjectOnlyFilterName(),
+            SimpleFilter.SIMPLE_FILTER_INCLUSIVE, ""); // NOI18N
+    private static SimpleFilter PROJECT_SUBPROJECTS_FILTER =
+            new SimpleFilter(ProfilingSettingsSupport.get(null).getProjectSubprojectsFilterName(),
+            SimpleFilter.SIMPLE_FILTER_INCLUSIVE, ""); // NOI18N
 
     // --- UI components declaration ---------------------------------------------
     private static final Image BACKGROUND_IMAGE = UIUtils.isNimbus() ? null : Icons.getImage(STPIcons.STP_GRAPHICS);
@@ -603,39 +603,12 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         if (configurator != null) {
             synchronizeCurrentSettings();
 
-//            ProfilingSettings settings = configurator.createFinalSettings();
-
             final ProgressHandle pHandle = ProgressHandleFactory.createHandle(INIT_SESSION_STRING);
             pHandle.setInitialDelay(0);
             pHandle.start();
             
             try {
-
-//                if (project != null) {
-// FIXXX                     
-//                    boolean rootMethodsPending = settings.instrRootMethodsPending;
-//                    boolean predefinedFilterPending = predefinedInstrFilterKeys.contains(settings.getSelectedInstrumentationFilter());
-//
-//                    if (rootMethodsPending || predefinedFilterPending) {
-//                        // Lazily compute default root methods
-//                        if (rootMethodsPending) {
-//                            if (settings.getProfileUnderlyingFramework())
-//                                settings.setInstrumentationRootMethods(new ClientUtils.SourceCodeSelection[0]);
-//                            else
-//                                settings.setInstrumentationRootMethods(ProjectContentsSupport.get(project).getProfilingRoots(profiledFile, false)); // TODO: true/false based on selected filter
-//                        }
-//
-//                        // Lazily compute instrumentation filters
-//                        if (predefinedFilterPending) {
-//                            settings.setSelectedInstrumentationFilter(getResolvedPredefinedFilter((SimpleFilter) settings.getSelectedInstrumentationFilter()));
-//                        }
-//                    }
-//                }
-                
-//                return settings;
-                
                 return configurator.createFinalSettings();
-            
             } finally {
                 SwingUtilities.invokeLater(new Runnable() { // use SwingUtilities to give the UI some time when result is computed too soon
                     public void run() { pHandle.finish(); }
@@ -1028,12 +1001,17 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     
     private static List<SimpleFilter> getProjectDefaultInstrFilters(Lookup.Provider project) {
         List<SimpleFilter> v = new ArrayList<SimpleFilter>();
-
-//        if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
+        
+        ProfilingSettingsSupport pss = ProfilingSettingsSupport.get(project);
+        String projectFilterName = pss.getProjectOnlyFilterName();
+        if (projectFilterName != null) {
+            PROJECT_FILTER.setFilterName(projectFilterName);
             v.add(PROJECT_FILTER);
-//        }
+        }
 
-        if (ProjectUtilities.hasSubprojects(project)) {
+        String projectSubprojectsFilterName = pss.getProjectSubprojectsFilterName();
+        if (projectFilterName != null) {
+            PROJECT_SUBPROJECTS_FILTER.setFilterName(projectSubprojectsFilterName);
             v.add(PROJECT_SUBPROJECTS_FILTER);
         }
 
@@ -1048,11 +1026,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 SelectProfilingTask.this.project = project;
 
                 if (project != null) {
-                    // FIXXX predefinedInstrFilterKeys = ProjectContentsSupport.get(project).getPredefinedInstrumentationFilters();
                     predefinedInstrFilterKeys = getProjectDefaultInstrFilters(project);
                     predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
-//                    predefinedInstrFilters = null;
-//                    predefinedInstrFilterKeys = null;
                 } else {
                     predefinedInstrFilters = null;
                     predefinedInstrFilterKeys = null;
