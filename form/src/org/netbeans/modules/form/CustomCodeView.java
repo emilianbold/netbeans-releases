@@ -71,7 +71,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import javax.swing.undo.UndoManager;
-import org.netbeans.editor.BaseDocument;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -120,6 +119,8 @@ class CustomCodeView extends javax.swing.JPanel {
 
     private Map<CodeCategory, EditBlockInfo[]> editBlockInfos;
     private Map<CodeCategory, GuardBlockInfo[]> guardBlockInfos;
+
+    private static final String UNDO_MANAGER_PROP = "undo-manager"; // from BaseDocument // NOI18N
 
     // -----
 
@@ -188,11 +189,11 @@ class CustomCodeView extends javax.swing.JPanel {
         buildCodeView(CodeCategory.CREATE_AND_INIT);
         buildCodeView(CodeCategory.DECLARATION);
 
-        Object um = initCodeEditor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        Object um = initCodeEditor.getDocument().getProperty(UNDO_MANAGER_PROP);
         if (um instanceof UndoManager) {
             ((UndoManager)um).discardAllEdits();
         }
-        um = declareCodeEditor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        um = declareCodeEditor.getDocument().getProperty(UNDO_MANAGER_PROP);
         if (um instanceof UndoManager) {
             ((UndoManager)um).discardAllEdits();
         }
@@ -704,7 +705,7 @@ class CustomCodeView extends javax.swing.JPanel {
                 gutter.revalidate();
                 gutter.repaint();
             }
-            ((BaseDocument)doc).resetUndoMerge();
+//            ((BaseDocument)doc).resetUndoMerge();
         }
     }
 
