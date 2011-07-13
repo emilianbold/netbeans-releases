@@ -91,7 +91,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
     public ToggleBookmarkAction() {
         this(null);
     }
-    
+
     public ToggleBookmarkAction(JTextComponent component) {
         super(
             NbBundle.getMessage(ToggleBookmarkAction.class, ACTION_NAME),ImageUtilities.loadImageIcon(ACTION_ICON, false));
@@ -99,6 +99,18 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         
         this.component = component;
+        updateEnabled();
+        EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateEnabled();
+            }
+        });
+    }
+
+    private void updateEnabled() {
+        setEnabled(isEnabled());
     }
 
     @Override
@@ -126,7 +138,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         if (component != null) {
             return true;
         } else {
-            if (EditorRegistry.componentList().isEmpty()) {
+            if (EditorRegistry.lastFocusedComponent() == null) {
                 return false;
             }
 
