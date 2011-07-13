@@ -51,13 +51,19 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -69,6 +75,8 @@ import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
+import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
+import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -90,6 +98,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private Task prepareTask;
     private RepositoryComboSupport rs;
     private Node[] context;
+    private DelegatingUndoRedoManager delegatingUndoRedoManager;
 
     /**
      * Creates new {@code IssueTopComponent}.
@@ -112,6 +121,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         issuePanel.add(findBar, BorderLayout.PAGE_END);
     }
 
+    @Override
+    public UndoRedo getUndoRedo() {
+        if(delegatingUndoRedoManager == null) {
+            delegatingUndoRedoManager = new DelegatingUndoRedoManager();
+        }
+        return delegatingUndoRedoManager;
+    }
+    
     /**
      * Returns issue displayed by this top-component.
      *
@@ -190,6 +207,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         this.issue = issue;
         preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
+        
+        if(isOpened()) {
+            // #opened() did not fire beacuse of null issue -> fire afterwards
+            issue.getController().opened();
+        }
+        ((DelegatingUndoRedoManager)getUndoRedo()).init();
+        
         repoPanel.setVisible(false);
         setNameAndTooltip();
         issue.addPropertyChangeListener(this);
@@ -331,7 +355,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     if (issue == null) {
                         return;
                     }
-
+                    ((DelegatingUndoRedoManager)getUndoRedo()).init();
+                    
                     IssueAccessor.getInstance().setSelection(issue, context);
 
                     SwingUtilities.invokeLater(new Runnable() {
@@ -339,6 +364,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         public void run() {
                             controller = issue.getController();
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
+                            controller.opened(); // XXX TC wasn't realy opened
                             issue.addPropertyChangeListener(IssueTopComponent.this);
                             revalidate();
                             repaint();
@@ -507,4 +533,77 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
 
+    private class DelegatingUndoRedoManager implements UndoRedo {
+        private UndoRedo delegate;
+        final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+    
+        void init() {
+            delegate = UndoRedoSupport.getUndoRedo(issue);
+            synchronized(this) {
+                for (ChangeListener l : listeners) {
+                    delegate.addChangeListener(l);
+                }
+            }
+            for (ChangeListener l : listeners) {
+                l.stateChanged(new ChangeEvent(delegate));
+            }
+        }
+        
+        @Override
+        public boolean canUndo() {
+            return delegate != null ? delegate.canUndo() : UndoRedo.NONE.canUndo();
+        }
+
+        @Override
+        public boolean canRedo() {
+            return delegate != null ? delegate.canRedo() : UndoRedo.NONE.canRedo();
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            if(delegate != null) {
+                delegate.undo();
+            } else {
+                UndoRedo.NONE.undo();
+            }
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            if(delegate != null) {
+                delegate.redo();
+            } else {
+                UndoRedo.NONE.redo();
+            }
+        }
+        @Override
+        public void addChangeListener(ChangeListener l) {
+            if(delegate != null) {
+                delegate.addChangeListener(l);
+            } else {
+                synchronized(this) {
+                    listeners.add(l); 
+                }
+            }
+        }
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+            if(delegate != null) {
+                delegate.removeChangeListener(l);
+            } else {
+                synchronized(this) {
+                    listeners.remove(l); 
+                }
+            }
+        }
+        @Override
+        public String getUndoPresentationName() {
+            return delegate != null ? delegate.getUndoPresentationName() : UndoRedo.NONE.getUndoPresentationName();
+        }
+        @Override
+        public String getRedoPresentationName() {
+            return delegate != null ? delegate.getRedoPresentationName() : UndoRedo.NONE.getRedoPresentationName();
+        }
+    }
+    
 }
