@@ -104,7 +104,6 @@ import org.openide.util.RequestProcessor;
 public class CommentsPanel extends JPanel {
     static final RequestProcessor RP = new RequestProcessor("Bugzilla Comments Panel", 5, false); // NOI18N
     private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
-    private final static String ATTACHMENT_ATTRIBUTE = "attachment hyperlink"; //NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private final static int MAX_COMMENT_HEIGHT = 10000;
@@ -263,12 +262,6 @@ public class CommentsPanel extends JPanel {
 
         // Layout
         layoutHeaderPanel(headerPanel, iconLabel, leftLabel, commentLabel, rightLabel, replyButton, stateLabel);
-
-//        iconLabel.setBorder(new LineBorder(Color.BLACK, 1));
-//        placeholder.setBorder(new LineBorder(Color.red, 1));
-//        pane.setBorder(new LineBorder(Color.GREEN, 1));
-//        leftLabel.setBorder(new LineBorder(Color.red, 1));
-//        commentLabel.setBorder(new LineBorder(Color.blue, 1));
         
         iconLabel.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
         placeholder.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
@@ -557,8 +550,6 @@ public class CommentsPanel extends JPanel {
             setComponentPopupMenu(expandPopup);
             setState(isCollapsed(number));
             expandLabels.add(this);
-//            setOpaque(true);
-//            setBackground(CommentsPanel.this.getBackground());
         }
         
         @Override
