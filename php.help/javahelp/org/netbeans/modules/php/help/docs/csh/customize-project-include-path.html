@@ -45,34 +45,34 @@ made subject to such option by the copyright holder.
             }
             -->
         </style>
-        <title>Customizing the Project Settings: Include Path</title>
+        <title>Include Path/Ignored Folders</title>
     </head>
     <body>
         <h1>
-            Customizing the Project Settings: Include Path
+            Customizing the Project Settings: Include Path and Ignored Folders
         </h1>
         <p>
             <small><a href="#seealso">See Also</a></small>
         </p>
         <p>
-            On the Include Path panel, specify the location of the files that you need to use in the
-            project but do not need to locate together with the source files.
-        </p>
-        <ol>
-            <li>
-                To add a folder, click Add Folder. The Select Folder(s) dialog box opens.
-            </li>
-            <li>
-                Select the relevant folders and click Open. You return to the PHP Include Path panel. The
-                new folder is added to the list.
-            </li>
-            <li>
-                To navigate through the list, use the buttons Move Up and Move Down.
-            </li>
-            <li>
-                To remove a folder from the list of included folder, select the folder and click Remove.
-            </li>
-        </ol>
+            The Include Path property refers to project-specific files, such as libraries,
+            that are not source files but that are included in the project. To add a
+            file universally to PHP projects, go to Tools &gt; Options &gt; PHP &gt; General
+            and add the file to the Global Include Path.</p>
+        <p>The Ignored Files property is the opposite of the Include Path. These are files
+        inside the PHP project that you want the IDE to ignore for FTP upload, scanning, etc.</p>
+        <p>Both Include Path and Ignored Files properties contain the following elements:</p>
+        <ul>
+            <li>A table listing the included or ignored files</li>
+            <li>An Add Folder button. Press this button to open a dialog where you browse
+            for files to add to the include path or ignore.</li>
+            <li>A Remove button. Select a file or folder and press this button to remove it from
+            the Include or Ignore list.</li>
+        </ul>        
+        <p>In addition, the Include Path properties include Move Up and Move Down buttons. 
+        Select a file and press one of these buttons to change the file's ranking in the list.
+        A higher-ranked file takes precedence over a lower-ranked file.</p>
+        
         <dl>
             <dt>
                 <a name="seealso">See Also</a>
