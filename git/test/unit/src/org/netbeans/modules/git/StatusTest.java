@@ -389,10 +389,8 @@ public class StatusTest extends AbstractGitTestCase {
         status = getCache().getStatus(folder);
         assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         handler.waitForFilesToRefresh();
-        status = getCache().getStatus(folder);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
-        status = getCache().getStatus(file1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
+        waitForStatus(folder, Status.NOTVERSIONED_EXCLUDED);
+        waitForStatus(file1, Status.NOTVERSIONED_EXCLUDED);
     }
 
     public void testPurgeRemovedIgnoredFiles () throws Exception {
@@ -849,6 +847,18 @@ public class StatusTest extends AbstractGitTestCase {
         Image icon = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         icon = annotator.annotateIcon(icon, context);
         assertEquals(string, ImageUtilities.getImageToolTip(icon));
+    }
+
+    private void waitForStatus (File file, Status expectedStatus) throws InterruptedException {
+        FileInformation status = null;
+        for (int i = 0; i < 100; ++i) {
+            status = getCache().getStatus(file);
+            if (status.containsStatus(expectedStatus)) {
+                break;
+            }
+            Thread.sleep(200);
+        }
+        assertTrue("Status of " + file + " - " + status.getStatusText() + "; expected " + expectedStatus, status.containsStatus(expectedStatus));
     }
 
     @ServiceProvider(service=SharabilityQueryImplementation.class)
