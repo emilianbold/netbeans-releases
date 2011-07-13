@@ -208,8 +208,11 @@ public class CommentsPanel extends JPanel {
         JPanel placeholder = createTextPanelPlaceholder();      
         JLabel commentLabel = new JLabel();
         JLabel rightLabel = new JLabel();
-        JLabel iconLabel = new ExpandLabel(placeholder, textPane, headerPanel, commentLabel, number);
+        ExpandLabel iconLabel = new ExpandLabel(placeholder, textPane, headerPanel, commentLabel, number);
         JLabel leftLabel = new JLabel();
+        
+        headerPanel.addMouseListener(iconLabel);
+        headerPanel.setComponentPopupMenu(expandPopup);
         
         // left label
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
@@ -220,19 +223,25 @@ public class CommentsPanel extends JPanel {
             leftTxt = MessageFormat.format(leftFormat, authorTxt);
         } else {
             leftTxt = authorTxt;
-        } 
+        }
         leftLabel.setText(leftTxt);
         leftLabel.setLabelFor(textPane);
         leftLabel.setForeground(GREY_FOREGROUND);
         leftLabel.setOpaque(false);
+        leftLabel.addMouseListener(iconLabel);
+        leftLabel.setComponentPopupMenu(expandPopup);
         
         // comment label
         commentLabel.setOpaque(false);
+        commentLabel.addMouseListener(iconLabel);
+        commentLabel.setComponentPopupMenu(expandPopup);
         
         // right label
         rightLabel.setText(dateTimeString);
         rightLabel.setForeground(GREY_FOREGROUND);
         rightLabel.setOpaque(false);
+        rightLabel.addMouseListener(iconLabel);
+        rightLabel.setComponentPopupMenu(expandPopup);
         
         // state label
         JLabel stateLabel = null;
