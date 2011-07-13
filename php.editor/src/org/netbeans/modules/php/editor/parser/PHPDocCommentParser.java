@@ -255,15 +255,14 @@ public class PHPDocCommentParser {
             if (index > 0) {
                 name = name.substring(index + 1);
             }
+        } else {
+            // probably defined without () after the name
+            // then we expect that the name is after the first space
+            String[] tokens = description.trim().split("[ ]+"); //NOI18N
+            if (tokens.length > 1){
+                name = tokens[1];
+            }
         }
-//        String[] tokens = description.trim().split("[ \n\t(]+"); //NOI18N
-//        
-//
-//        if (tokens.length > 0 && tokens[0].length() > 0 && tokens[0].charAt(0) == '$'){
-//            variable = tokens[0].trim();
-//        } else if ((tokens.length > 1) && (tokens[1].charAt(0) == '$')) {
-//            variable = tokens[1].trim();
-//        }
         return name;
     }
 
