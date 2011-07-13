@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -172,7 +173,7 @@ public class PHPDocCommentParser {
 
     private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description, String originalComment, int originalCommentStart) {
         List<PHPDocTypeNode> docTypes = new ArrayList<PHPDocTypeNode>();
-        if (PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type)) {
+        if (type == PHPDocTag.Type.METHOD || PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type)) {
             for (String stype : getTypes(description)) {
                 stype = removeHTMLTags(stype);
                 int startDocNode = findStartOfDocNode(originalComment, originalCommentStart, stype, start);
@@ -202,9 +203,17 @@ public class PHPDocCommentParser {
                     return new PHPDocVarTypeTag(start, end, type, description, docTypes, varibaleNode);
                 }
                 return null;
+            } else if (type == PHPDocTag.Type.METHOD) {
+                String name = getMethodName(description);
+                if (name != null) {
+                    int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, name, start);
+                    PHPDocNode methodNode = new PHPDocNode(startOfVariable, startOfVariable + name.length(), name);
+                    return new PHPDocMethodTag(start, end, type, docTypes,  methodNode, null, description);
+                }
+                return null;
             }
             return new PHPDocTypeTag(start, end, type, description, docTypes);
-        }
+        } 
         return new PHPDocTag(start, end, type, description);
     }
 
@@ -235,6 +244,27 @@ public class PHPDocCommentParser {
             variable = tokens[1].trim();
         }
         return variable;
+    }
+    
+    private String getMethodName(String description) {
+        String name = null;
+        int index = description.indexOf('(');
+        if (index > 0 ) {
+            name = description.substring(0, index);
+            index = name.lastIndexOf(' ');
+            if (index > 0) {
+                name = name.substring(index + 1);
+            }
+        }
+//        String[] tokens = description.trim().split("[ \n\t(]+"); //NOI18N
+//        
+//
+//        if (tokens.length > 0 && tokens[0].length() > 0 && tokens[0].charAt(0) == '$'){
+//            variable = tokens[0].trim();
+//        } else if ((tokens.length > 1) && (tokens[1].charAt(0) == '$')) {
+//            variable = tokens[1].trim();
+//        }
+        return name;
     }
 
     private String removeHTMLTags(String text) {

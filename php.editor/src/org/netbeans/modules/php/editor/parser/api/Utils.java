@@ -196,6 +196,10 @@ public class Utils {
         @Override
         public void visit(PHPDocVarTypeTag node) {
         }
+        
+        @Override
+        public void visit(PHPDocMethodTag node) {
+        }
     }
 
     private static class NodeHierarchyFinder extends DefaultTreePathVisitor {

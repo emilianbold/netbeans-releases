@@ -373,6 +373,13 @@ public class DefaultVisitor implements Visitor {
     public void visit(PHPDocTypeTag node) {
         scan(node.getTypes());
     }
+    
+    @Override
+    public void visit(PHPDocMethodTag node) {
+        scan(node.getMethodName());
+        scan(node.getTypes());
+        scan(node.getParameters());
+    }
 
     public void visit(PHPDocVarTypeTag node) {
         scan(node.getVariable());
