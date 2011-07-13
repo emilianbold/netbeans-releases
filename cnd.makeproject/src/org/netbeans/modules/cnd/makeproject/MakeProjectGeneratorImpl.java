@@ -202,6 +202,9 @@ public class MakeProjectGeneratorImpl {
                 mk.setRemoteMode(RemoteProject.Mode.REMOTE_SOURCES);
             }
         }
+        if (prjParams.getCustomizerId() != null) {
+            dirFO.createData("cndcustomizerid." + prjParams.getCustomizerId()); // NOI18N
+        }
         final Iterator<SourceFolderInfo> sourceFolders = prjParams.getSourceFolders();
         final String sourceFoldersFilter = prjParams.getSourceFoldersFilter();
         final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
@@ -214,7 +217,7 @@ public class MakeProjectGeneratorImpl {
         Element nameEl = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-
+        
         FileObject sourceBaseFO;
         if (prjParams.getFullRemote()) {
             // mode

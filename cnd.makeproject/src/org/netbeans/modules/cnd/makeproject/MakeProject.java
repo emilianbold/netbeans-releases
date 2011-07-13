@@ -677,7 +677,20 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
     
     private String getProjectCustomizerId() {
-        return getCustomizerIdFromProjectXML();
+        String id = getCustomizerIdFromProjectXML();
+        if (id == null) {
+            FileObject[] children = getProjectDirectory().getChildren();
+            for (FileObject c : children) {
+                String name = c.getName();
+                String ext = c.getExt();
+                if (name.equals("cndcustomizerid")) {
+                    id = ext;
+                    break;
+                }
+            }
+        }
+        //System.out.println("getProjectCustomizerId " + id);
+        return id;
     }
 
     /**

@@ -95,6 +95,7 @@ public class ProjectGenerator {
         private String subProjects;
         private Map<String, Object> templateParams;
         private String databaseConnection;
+        private String customizerId;
 
         public ProjectParameters(String projectName, File projectFolder) {
             this(projectName, new FSPath(CndFileUtils.getLocalFileSystem(), projectFolder.getAbsolutePath()));
@@ -352,6 +353,20 @@ public class ProjectGenerator {
          */
         public void setLogicalFolderItems(Iterator<LogicalFolderInfo> logicalFolderItems) {
             this.logicalFolderItems = logicalFolderItems;
+        }
+
+        /**
+         * @return the customizerId
+         */
+        public String getCustomizerId() {
+            return customizerId;
+        }
+
+        /**
+         * @param customizerId the customizerId to set
+         */
+        public void setCustomizerId(String customizerId) {
+            this.customizerId = customizerId;
         }
 
     }
