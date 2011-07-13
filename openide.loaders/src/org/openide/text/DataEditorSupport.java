@@ -45,6 +45,7 @@
 package org.openide.text;
 
 
+import org.netbeans.modules.openide.loaders.SimpleES;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedOutputStream;
