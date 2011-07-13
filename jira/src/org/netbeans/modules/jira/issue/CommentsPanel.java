@@ -342,7 +342,9 @@ public class CommentsPanel extends JPanel {
     }
     
     void storeSettings() {
-        IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
+        if(issue != null) {
+            IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
+        } 
     }    
     
     private class ExpandLabel extends JLabel implements MouseListener {
