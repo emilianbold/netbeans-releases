@@ -54,6 +54,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.View;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib2.highlighting.DirectMergeContainer;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightsList;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightsReader;
@@ -267,21 +268,26 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             assert (endOffset >= 0) : "startOffset=" + endOffset + " < 0"; // NOI18N
             startOffset = Math.min(startOffset, docTextLength);
             endOffset = Math.min(endOffset, docTextLength);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINER, "highlightChanged: event:<{0}{1}{2}>, thread:{3}\n", //NOI18N
-                        new Object[] {startOffset, ',', endOffset, Thread.currentThread()}); // NOI18N
+            if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
+                HighlightsChangeEvent layerEvent = (highlightsContainer instanceof DirectMergeContainer)
+                        ? ((DirectMergeContainer) highlightsContainer).layerEvent()
+                        : null;
+                String layerInfo = (layerEvent != null) ? " Layer:" + layerEvent.getSource() : null; // NOI18N
+                ViewUtils.log(ViewHierarchy.CHANGE_LOG, "HIGHLIGHT-CHANGE: <" + // NOI18N
+                        startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
             }
-
             if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
-                if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
-                    ViewUtils.log(ViewHierarchy.CHANGE_LOG, "CHANGE in HighlightsViewFactory: <" + // NOI18N
-                            startOffset + "," + endOffset + ">\n"); // NOI18N
-                }
                 fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
             }
 
         } else { // Paint highlights change
             assert (evt.getSource() == paintHighlightsContainer);
+            HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
+                    ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
+                    : null;
+            String layerInfo = (layerEvent != null) ? " Layer:" + layerEvent.getSource() : null; // NOI18N
+            ViewUtils.log(ViewHierarchy.CHANGE_LOG, "HIGHLIGHT-REPAINT-CHANGE: <" + // NOI18N
+                    startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
             offsetRepaint(startOffset, endOffset);
         }
     }

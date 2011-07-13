@@ -133,8 +133,6 @@ public interface ModelOperations {
      * @param cls the fully qualified name of the class to look up methods in
      * @param methodName name of the method
      * @param useRawTypes if true the erasure is done before comparison
-     * @param includeComments if true the length of the preceding and trailing
-     * comments is added to method span
      * @param returnType the return type of the method specified by
      * the class canonical name, @see Class#getCanonicalName. If useRawTypes is
      * false parameterized type is allowed.
@@ -150,7 +148,6 @@ public interface ModelOperations {
             @NonNull String cls,
             @NonNull String methodName,
             boolean useRawTypes,
-            boolean includeComments,
             @NonNull String returnType,
             @NonNull String... parameterTypes) throws QueryException;
 

@@ -75,6 +75,12 @@ public final class HighlightsList {
         this.startOffset = startOffset;
     }
     
+    public HighlightsList(int startOffset, HighlightItem[] items) {
+        this.highlightItems = items;
+        this.endIndex = items.length;
+        this.startOffset = startOffset;
+    }
+    
     public int startOffset() {
         return startOffset;
     }
@@ -245,7 +251,7 @@ public final class HighlightsList {
         HighlightItem[] cutItems = new HighlightItem[count];
         System.arraycopy(highlightItems, startIndex, cutItems, 0, count);
         cutStartItems(count);
-        CompoundAttributes cAttrs = new CompoundAttributes(cutItems, startOffset);
+        CompoundAttributes cAttrs = new CompoundAttributes(startOffset, cutItems);
         startOffset = lastItemEndOffset;
         return cAttrs;
     }
@@ -255,7 +261,7 @@ public final class HighlightsList {
         cutItems[count] = new HighlightItem(cutEndOffset, lastAttrs);
         System.arraycopy(highlightItems, startIndex, cutItems, 0, count);
         cutStartItems(count);
-        CompoundAttributes cAttrs = new CompoundAttributes(cutItems, startOffset);
+        CompoundAttributes cAttrs = new CompoundAttributes(startOffset, cutItems);
         startOffset = cutEndOffset;
         return cAttrs;
     }
